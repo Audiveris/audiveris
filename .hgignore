@@ -9,6 +9,7 @@ dev/material/tasks-graph.pdf
 
 .hgignore
 *.exe
+*.lnk
 *.log
 *.mf
 build/*

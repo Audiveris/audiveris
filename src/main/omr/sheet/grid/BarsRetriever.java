@@ -294,6 +294,10 @@ public class BarsRetriever
 
         detectStartColumns(); // Detect start columns and purge following ones if not full
 
+        detectBracePortions(); // Detect brace portions at start of staff
+
+        buildBraces(); // Build braces across staves out of brace portions
+
         detectBracketEnds(); // Detect top and bottom portions of brackets
 
         detectBracketMiddles(); // Detect middle portions of brackets
@@ -307,10 +311,6 @@ public class BarsRetriever
         purgeCClefs(); // Purge C-clef-based false barlines
 
         checkUnalignedPeaks(); // In multi-staff systems, delete the unaligned peaks
-
-        detectBracePortions(); // Detect brace portions at start of staff
-
-        buildBraces(); // Build braces across staves out of brace portions
 
         partitionWidths(); // Partition peaks between thin and thick
 
@@ -417,14 +417,14 @@ public class BarsRetriever
             List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
 
             for (StaffPeak peak : projector.getPeaks()) {
-                // Take proper slice of sections for this peak
+                // Build filament from proper slice of sections for this peak
                 final List<Section> sections = getPeakSections(peak, allSections);
                 final Filament filament = factory.buildBarFilament(sections, peak.getBounds());
 
                 if (filament != null) {
                     filamentIndex.register(filament);
                     peak.setFilament(filament);
-                    logger.debug("Staff#{} {}", projector.getStaff().getId(), peak);
+                    logger.debug("{}", peak);
                 } else {
                     toRemove.add(peak);
                 }
@@ -632,7 +632,7 @@ public class BarsRetriever
                 }
 
                 if (column == null) {
-                    columns.add(column = new BarColumn(system));
+                    columns.add(column = new BarColumn(system, peakGraph));
                 }
 
                 column.addChain(chain);
@@ -642,7 +642,7 @@ public class BarsRetriever
                 logger.info("{}", system);
 
                 for (BarColumn column : columns) {
-                    logger.info("   {} {}", column.getStatusString(), column.dumpString(peakGraph));
+                    logger.info("   {} {}", column.isFull() ? "---" : "   ", column);
                 }
             }
         }
@@ -1016,7 +1016,7 @@ public class BarsRetriever
     /**
      * Within each system, retrieve all parts and groups.
      * <ul>
-     * <li>A bracket defines a (bracket) group.
+     * <li>A bracket/square defines a (bracket/square) group.
      * <li>No staff connection implies different parts.
      * <li>Braced staves represent a single part when not connected to other staves, otherwise it is
      * a group.
@@ -1025,55 +1025,36 @@ public class BarsRetriever
     private void createParts ()
     {
         for (SystemInfo system : sheet.getSystems()) {
-            List<Staff> staves = system.getStaves();
-
-            // All groups in this system
-            List<PartGroup> allGroups = system.getPartGroups();
-
-            // Current active groups
-            Map<Integer, PartGroup> activeGroups = new TreeMap<Integer, PartGroup>();
+            final List<Staff> staves = system.getStaves();
+            final List<PartGroup> allGroups = system.getPartGroups(); // All groups in this system
+            final Map<Integer, PartGroup> activeGroups = new TreeMap<Integer, PartGroup>(); // Active groups
 
             for (Staff staff : staves) {
-                List<StaffPeak> peaks = projectorOf(staff).getPeaks();
+                final StaffProjector projector = projectorOf(staff);
+                final List<StaffPeak> peaks = projector.getPeaks();
+                final StaffPeak.Bar startBar = getPeakEnd(LEFT, peaks); // Starting barline?
 
-                // Look for starting barline
-                StaffPeak.Bar endBar = getPeakEnd(LEFT, peaks);
-
-                if (endBar == null) {
-                    // Staff = system, just one part
-                    logger.debug("Staff#{} no starting barline", staff.getId());
-                    createPart(system, staff, staff);
+                if (startBar == null) {
+                    logger.debug("Staff#{} one-staff system", staff.getId());
+                    createPart(system, staff, staff); // Staff = system, just one part
 
                     continue;
                 }
 
-                int endIndex = peaks.indexOf(endBar);
-
-                if (endIndex == 0) {
-                    // Isolated staff: just one part
-                    logger.debug("Staff#{} nothing before starting barline", staff.getId());
-                    createPart(system, staff, staff);
-
-                    continue;
-                }
-
-                // Check for part connection below this staff
-                boolean bottomConn = isPartConnected(staff, BOTTOM);
-
-                // Going from endBar to the left, look for bracket(s), square, brace
+                // Going from startBar (excluded) to the left, look for bracket/square peaks
+                final boolean botConn = isPartConnected(staff, BOTTOM); // Part connection below?
                 int level = 0;
 
-                for (int i = endIndex - 1; i >= 0; i--) {
+                for (int i = peaks.indexOf(startBar) - 1; i >= 0; i--) {
+                    final StaffPeak peak = peaks.get(i);
                     level++;
-
-                    StaffPeak peak = peaks.get(i);
 
                     if (peak.isBracket()) {
                         final PartGroup pg;
 
                         if (peak.isBracketEnd(TOP)) {
                             // Start bracket group
-                            pg = new PartGroup(level, Symbol.bracket, bottomConn, staff.getId());
+                            pg = new PartGroup(level, Symbol.bracket, botConn, staff.getId());
                             allGroups.add(pg);
                             activeGroups.put(level, pg);
                             logger.debug("Staff#{} start bracket {}", staff.getId(), pg);
@@ -1095,61 +1076,6 @@ public class BarsRetriever
                                 logger.warn("Staff#{} no group level:{}", staff.getId(), level);
                             }
                         }
-
-                        // All peaks browsed?
-                        if (i == 0) {
-                            createPart(system, staff, staff);
-                        }
-                    } else if (peak instanceof StaffPeak.Brace) {
-                        if (peak.isBraceEnd(TOP)) {
-                            // Start brace group
-                            PartGroup pg = new PartGroup(
-                                    level,
-                                    Symbol.brace,
-                                    bottomConn,
-                                    staff.getId());
-                            allGroups.add(pg);
-                            activeGroups.put(level, pg);
-                            logger.debug("Staff#{} start brace {}", staff.getId(), pg);
-                        } else {
-                            // Continue brace group
-                            PartGroup pg = activeGroups.get(level);
-
-                            if (pg != null) {
-                                pg.setLastStaffId(staff.getId());
-
-                                // Stop brace group?
-                                if (peak.isBraceEnd(BOTTOM)) {
-                                    activeGroups.put(level, null);
-
-                                    final int firstId = pg.getFirstStaffId();
-                                    final int lastId = pg.getLastStaffId();
-                                    final Staff firstStaff = staffManager.getStaff(firstId - 1);
-                                    final Staff lastStaff = staffManager.getStaff(lastId - 1);
-
-                                    // Was this brace a real group?
-                                    if (!bottomConn && !isPartConnected(firstStaff, TOP)) {
-                                        // No, just a multi-staff instrument
-                                        logger.debug(
-                                                "Staff#{} end multi-staff instrument {}",
-                                                staff.getId(),
-                                                pg);
-                                        allGroups.remove(pg);
-                                        createPart(system, firstStaff, lastStaff);
-                                    } else {
-                                        int i1 = staves.indexOf(firstStaff);
-                                        int i2 = staves.indexOf(lastStaff);
-                                        logger.debug("Staff#{} stop brace {}", staff.getId(), pg);
-
-                                        for (Staff s : staves.subList(i1, i2 + 1)) {
-                                            createPart(system, s, s);
-                                        }
-                                    }
-                                }
-                            } else {
-                                logger.warn("Staff#{} no group level:{}", staff.getId(), level);
-                            }
-                        }
                     } else {
                         // A simple (square) portion
                         StaffPeak.Bar bar = (StaffPeak.Bar) peak;
@@ -1159,7 +1085,7 @@ public class BarsRetriever
                             PartGroup pg = new PartGroup(
                                     level,
                                     Symbol.square,
-                                    bottomConn,
+                                    botConn,
                                     staff.getId());
                             allGroups.add(pg);
                             activeGroups.put(level, pg);
@@ -1183,6 +1109,61 @@ public class BarsRetriever
                             }
                         } else {
                             logger.warn("Staff#{} weird square portion", staff.getId());
+                        }
+                    }
+                }
+
+                final StaffPeak.Brace bracePeak = projector.getBracePeak(); // Leading brace peak?
+
+                if (bracePeak == null) {
+                    logger.debug("Staff#{} no brace before starting barline", staff.getId());
+                    createPart(system, staff, staff);
+                } else {
+                    level++;
+
+                    if (bracePeak.isBraceEnd(TOP)) {
+                        // Start brace group
+                        PartGroup pg = new PartGroup(level, Symbol.brace, botConn, staff.getId());
+                        allGroups.add(pg);
+                        activeGroups.put(level, pg);
+                        logger.debug("Staff#{} start brace {}", staff.getId(), pg);
+                    } else {
+                        // Continue brace group
+                        PartGroup pg = activeGroups.get(level);
+
+                        if (pg != null) {
+                            pg.setLastStaffId(staff.getId());
+
+                            // Stop brace group?
+                            if (bracePeak.isBraceEnd(BOTTOM)) {
+                                activeGroups.put(level, null);
+
+                                final int firstId = pg.getFirstStaffId();
+                                final int lastId = pg.getLastStaffId();
+                                final Staff firstStaff = staffManager.getStaff(firstId - 1);
+                                final Staff lastStaff = staffManager.getStaff(lastId - 1);
+
+                                // Was this brace a real group?
+                                if (!botConn && !isPartConnected(firstStaff, TOP)) {
+                                    // No, just a multi-staff instrument
+                                    logger.debug(
+                                            "Staff#{} end multi-staff instrument {}",
+                                            staff.getId(),
+                                            pg);
+                                    allGroups.remove(pg);
+                                    createPart(system, firstStaff, lastStaff);
+                                } else {
+                                    int i1 = staves.indexOf(firstStaff);
+                                    int i2 = staves.indexOf(lastStaff);
+                                    logger.debug("Staff#{} stop brace {}", staff.getId(), pg);
+
+                                    for (Staff s : staves.subList(i1, i2 + 1)) {
+                                        createPart(system, s, s);
+                                    }
+                                }
+                            }
+                        } else {
+                            logger.warn("Staff#{} no group level:{}", staff.getId(), level);
                         }
                     }
                 }
@@ -1255,32 +1236,21 @@ public class BarsRetriever
                 continue;
             }
 
-            // Check what we have on left side of start column (this column excluded)
-            // (nothing)
-            // Bracket
-            // Brace
-            // Brace + Bracket
-            // Square
-            // Square + Bracket
+            // Simply look further left for brace
             final StaffPeak firstPeak = peaks.get(0);
-            StaffPeak.Brace bracePeak = null;
+            int maxRight = firstPeak.getStart() - 1;
+            int minLeft = maxRight - params.maxBraceWidth;
+            StaffPeak.Brace bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
-            if ((iStart == 0) || firstPeak.isBracket()) {
-                // Simply look further left for brace
-                final int maxRight = firstPeak.getStart() - 1;
-                final int minLeft = maxRight - params.maxBraceWidth;
-                bracePeak = lookForBracePeak(staff, minLeft, maxRight);
-            } else if (peaks.size() > 1) {
-                // First peak could be a square (no need to look further left for a brace)
-                // First peak could be a brace (mistaken for a bar)
+            if ((bracePeak == null) && (iStart >= 1)) {
+                // First peak could actually be a brace (mistaken for a bar)
                 final StaffPeak secondPeak = peaks.get(1);
-                final int maxRight = secondPeak.getStart() - 1;
-                final int minLeft = maxRight - params.maxBraceWidth;
+                maxRight = secondPeak.getStart() - 1;
+                minLeft = maxRight - params.maxBraceWidth;
                 bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
                 if (bracePeak != null) {
-                    // This is a brace peak, hence remove fake bar peak
-                    projector.removePeak(firstPeak);
+                    projector.removePeak(firstPeak); // Remove fake bar peak
                 }
             }
 
@@ -1437,7 +1407,7 @@ public class BarsRetriever
                         }
                     }
 
-                    if (column.isFullyConnected(peakGraph)) {
+                    if (column.isFullyConnected()) {
                         startColumn = column;
                     }
                 }
@@ -1456,7 +1426,7 @@ public class BarsRetriever
                 || ((firstFull.getXDsk() - minDsk) > params.maxBarToLinesLeftEnd)) {
                 // Use staff lines as limit (already done)
             } else if (startColumn != null) {
-                // Use last full column as limit
+                // Use start column as limit
                 for (StaffPeak peak : startColumn.getPeaks()) {
                     Staff staff = peak.getStaff();
                     staff.setAbscissa(LEFT, peak.getStop());
@@ -1483,7 +1453,7 @@ public class BarsRetriever
             }
 
             if ((startColumn != null) && logger.isDebugEnabled()) {
-                logger.debug("{} startColumn: {}", system, startColumn.dumpString(peakGraph));
+                logger.debug("{} startColumn: {}", system, startColumn);
             }
         }
     }
@@ -1820,14 +1790,8 @@ public class BarsRetriever
 
         // Define lookup region for serif
         final Filament barFilament = peak.getFilament();
-        final Rectangle glyphBox = barFilament.getBounds();
-        final int yBox = (side == TOP)
-                ? (Math.min(
-                        glyphBox.y + params.serifThickness,
-                        peak.getTop() - halfLine) - params.serifRoiHeight)
-                : Math.max(
-                        (glyphBox.y + glyphBox.height) - params.serifThickness,
-                        peak.getBottom() + halfLine);
+        final int yBox = (side == TOP) ? (peak.getTop() - halfLine - params.serifRoiHeight)
+                : (peak.getBottom() + halfLine);
         final Rectangle roi = new Rectangle(
                 peak.getStop() + 1,
                 yBox,
@@ -2172,7 +2136,10 @@ public class BarsRetriever
 
         logger.debug("Staff#{} {}", staff.getId(), bracePeak);
 
-        ///projector.insertBracePeak(bracePeak);
+        if (bracePeak.isVip()) {
+            logger.info("VIP {}", bracePeak);
+        }
+
         return bracePeak;
     }
 
@@ -2334,7 +2301,7 @@ public class BarsRetriever
         }
 
         if (!toRemove.isEmpty()) {
-            logger.debug("Purging connections {}", toRemove);
+            logger.debug("Purging alignments {}", toRemove);
             peakGraph.removeAllEdges(toRemove);
         }
     }
@@ -2505,7 +2472,6 @@ public class BarsRetriever
                         logger.info("VIP removing curved {}", peak);
                     }
 
-                    peak.set(BRACE);
                     toRemove.add(peak);
                 }
             }
@@ -2673,7 +2639,7 @@ public class BarsRetriever
                 "Minimum mean curvature for a bar line (rather than a brace)");
 
         private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(
-                40,
+                35, ///40,
                 "Maximum mean curvature for a brace");
 
         private final Scale.Fraction maxDoubleBarGap = new Scale.Fraction(

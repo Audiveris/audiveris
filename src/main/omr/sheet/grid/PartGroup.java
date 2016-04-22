@@ -74,7 +74,7 @@ public class PartGroup
      *
      * @param number       group level
      * @param symbol       symbol used
-     * @param barline      use bar line connections?
+     * @param barline      use barline connections?
      * @param firstStaffId ID of first staff in group
      */
     public PartGroup (int number,

@@ -325,6 +325,82 @@ public class StaffProjector
         findPeaks();
     }
 
+    //----------------//
+    // refineRightEnd //
+    //----------------//
+    /**
+     * Try to use the extreme peak on staff right side, to refine the precise abscissa
+     * where the staff ends.
+     * <p>
+     * When this method is called, the staff sides are defined only by the ends of the lines built
+     * with long sections.
+     * An extreme peak can be used as abscissa reference only if it is either beyond current staff
+     * end or sufficiently close to the end.
+     * If no such peak is found, we stop right before the blank region assuming that this is a
+     * measure with no outside bar.
+     */
+    public void refineRightEnd ()
+    {
+        final int linesEnd = staff.getAbscissa(RIGHT); // As defined by end of long staff lines
+        int staffEnd = linesEnd;
+        StaffPeak endPeak = null;
+        Integer peakEnd = null;
+
+        // Look for a suitable peak
+        if (!peaks.isEmpty()) {
+            StaffPeak peak = null;
+            peak = peaks.get(peaks.size() - 1);
+
+            if (peak != null) {
+                // Check side position of peak wrt staff, it must be external
+                final int peakMid = (peak.getStart() + peak.getStop()) / 2;
+                final int toPeak = peakMid - linesEnd;
+
+                if (toPeak >= 0) {
+                    endPeak = peak;
+                    peakEnd = endPeak.getStop();
+                    staffEnd = peakEnd;
+                }
+            }
+        }
+
+        // Continue and stop at first small blank region (or bracket) encountered if any.
+        // Then keep the additional line chunk if long enough.
+        // If not, use peak mid as staff end.
+        Blank blank = selectBlank(RIGHT, staffEnd, params.minSmallBlankWidth);
+
+        if (blank != null) {
+            int x = blank.start - 1;
+
+            if (endPeak != null) {
+                if ((x - peakEnd) > params.maxBarToLinesRightEnd) {
+                    // We have significant line chunks beyond bar, hence peak is not the limit
+                    logger.debug(
+                            "Staff#{} RIGHT set at blank {} (vs {})",
+                            staff.getId(),
+                            x,
+                            linesEnd);
+                    staff.setAbscissa(RIGHT, x);
+                } else {
+                    // No significant line chunks, ignore them and stay with peak as the limit
+                    final int peakMid = (endPeak.getStart() + endPeak.getStop()) / 2;
+                    logger.debug(
+                            "Staff#{} RIGHT set at peak {} (vs {})",
+                            staff.getId(),
+                            peakMid,
+                            linesEnd);
+                    staff.setAbscissa(RIGHT, peakMid);
+                    endPeak.setStaffEnd(RIGHT);
+                }
+            } else {
+                logger.debug("Staff#{} RIGHT set at blank {} (vs {})", staff.getId(), x, linesEnd);
+                staff.setAbscissa(RIGHT, x);
+            }
+        } else {
+            logger.warn("Staff#{} no clear end on RIGHT", staff.getId());
+        }
+    }
+
     //------------//
     // removePeak //
     //------------//
@@ -565,25 +641,6 @@ public class StaffProjector
             return null;
         }
 
-        // Compute chunk if relevant
-        final Integer leftChunk = getChunk(start, -1);
-        final Integer rightChunk = getChunk(stop, +1);
-        final int chunk;
-
-        if ((leftChunk != null) && (rightChunk != null)) {
-            chunk = Math.max(leftChunk, rightChunk);
-        } else if (leftChunk != null) {
-            chunk = leftChunk;
-        } else if (rightChunk != null) {
-            chunk = rightChunk;
-        } else {
-            return null;
-        }
-
-        if (chunk > params.chunkThreshold) {
-            return null;
-        }
-
         // Compute largest white gap
         final int xMid = (start + stop) / 2;
         final int yTop = staff.getFirstLine().yAt(xMid);
@@ -604,12 +661,9 @@ public class StaffProjector
 
         // Compute black core & impacts
         double coreImpact = (value - minValue) / valueRange;
-        final double chunkRange = params.chunkThreshold - params.linesThreshold;
-        double beltImpact = (params.chunkThreshold - chunk) / chunkRange;
         double gapImpact = 1 - ((double) data.gap / params.gapThreshold);
         GradeImpacts impacts = new BarlineInter.Impacts(
                 coreImpact,
-                beltImpact,
                 gapImpact,
                 newStart.grade,
                 newStop.grade);
@@ -723,43 +777,6 @@ public class StaffProjector
         logger.debug("Staff#{} peaks:{}", staff.getId(), peaks);
     }
 
-    //----------//
-    // getChunk //
-    //----------//
-    /**
-     * Check if peak side is free of pixels (except staff lines).
-     *
-     * @param xStart starting abscissa
-     * @param dir    desired abscissa direction (-1 for LEFT, +1 for RIGHT)
-     * @return the maximum number of pixels found on specified side, null if not relevant.
-     *         This number is composed of the staff line pixels plus the pixels
-     *         from other stuff (generally beams or note heads) found.
-     *         When two peaks are very close, this test is not reliable between the peaks.
-     */
-    private Integer getChunk (int xStart,
-                              int dir)
-    {
-        final int xEnd = xClamp(xStart + (dir * (1 + params.barChunkDx)));
-        int minValue = Integer.MAX_VALUE;
-
-        for (int x = xStart + dir; (dir * (xEnd - x)) >= 0; x += dir) {
-            int proj = projection.getValue(x);
-
-            // If we encounter a peak, chunk test may not be reliable because of risk of pixels stuck
-            if (proj >= params.barThreshold) {
-                if (minValue <= params.chunkThreshold) {
-                    return minValue;
-                } else {
-                    return null;
-                }
-            }
-
-            minValue = Math.min(minValue, proj);
-        }
-
-        return minValue;
-    }
-
     //----------------//
     // refinePeakSide //
     //----------------//
@@ -827,89 +844,6 @@ public class StaffProjector
             return new PeakSide(x, derImpact);
         } else {
             return null; // Invalid
-        }
-    }
-
-    //----------------//
-    // refineRightEnd //
-    //----------------//
-    /**
-     * Try to use the extreme peak on staff right side, to refine the precise abscissa
-     * where the staff ends.
-     * <p>
-     * When this method is called, the staff sides are defined only by the ends of the lines built
-     * with long sections.
-     * An extreme peak can be used as abscissa reference only if it is either beyond current staff
-     * end or sufficiently close to the end.
-     * If no such peak is found, we stop right before the blank region assuming that this is a
-     * measure with no outside bar.
-     */
-    public void refineRightEnd ()
-    {
-        final int linesEnd = staff.getAbscissa(RIGHT); // As defined by end of long staff lines
-        int staffEnd = linesEnd;
-        StaffPeak endPeak = null;
-        Integer peakEnd = null;
-
-        // Look for a suitable peak
-        StaffPeak bracket = null; // Last bracket encountered (on left side) if any
-
-        if (!peaks.isEmpty()) {
-            StaffPeak peak = null;
-            peak = peaks.get(peaks.size() - 1);
-
-            // Just in case
-            if (peak.isBracket()) {
-                peak = null;
-            }
-
-            if (peak != null) {
-                // Check side position of peak wrt staff, it must be external
-                final int peakMid = (peak.getStart() + peak.getStop()) / 2;
-                final int toPeak = peakMid - linesEnd;
-
-                if (toPeak >= 0) {
-                    endPeak = peak;
-                    peakEnd = endPeak.getStop();
-                    staffEnd = peakEnd;
-                }
-            }
-        }
-
-        // Continue and stop at first small blank region (or bracket) encountered if any.
-        // Then keep the additional line chunk if long enough.
-        // If not, use peak mid as staff end.
-        Blank blank = selectBlank(RIGHT, staffEnd, params.minSmallBlankWidth);
-
-        if (blank != null) {
-            int x = blank.start - 1;
-
-            if (endPeak != null) {
-                if ((bracket == null) && ((x - peakEnd) > params.maxBarToLinesRightEnd)) {
-                    // We have significant line chunks beyond bar, hence peak is not the limit
-                    logger.debug(
-                            "Staff#{} RIGHT set at blank {} (vs {})",
-                            staff.getId(),
-                            x,
-                            linesEnd);
-                    staff.setAbscissa(RIGHT, x);
-                } else {
-                    // No significant line chunks, ignore them and stay with peak as the limit
-                    final int peakMid = (endPeak.getStart() + endPeak.getStop()) / 2;
-                    logger.debug(
-                            "Staff#{} RIGHT set at peak {} (vs {})",
-                            staff.getId(),
-                            peakMid,
-                            linesEnd);
-                    staff.setAbscissa(RIGHT, peakMid);
-                    endPeak.setStaffEnd(RIGHT);
-                }
-            } else {
-                logger.debug("Staff#{} RIGHT set at blank {} (vs {})", staff.getId(), x, linesEnd);
-                staff.setAbscissa(RIGHT, x);
-            }
-        } else {
-            logger.warn("Staff#{} no clear end on RIGHT", staff.getId());
         }
     }
 
@@ -1277,7 +1211,7 @@ public class StaffProjector
 
             {
                 // BarPeak min threshold
-                XYSeries minSeries = new XYSeries("BarThreshold");
+                XYSeries minSeries = new XYSeries("MinBar");
                 minSeries.add(xMin, params.barThreshold);
                 minSeries.add(xMax, params.barThreshold);
                 add(minSeries, Color.GREEN, true);
@@ -1285,7 +1219,7 @@ public class StaffProjector
 
             {
                 // BracePeak min threshold
-                XYSeries minSeries = new XYSeries("BraceThreshold");
+                XYSeries minSeries = new XYSeries("MinBrace");
                 minSeries.add(xMin, params.braceThreshold);
                 minSeries.add(xMax, params.braceThreshold);
                 add(minSeries, Color.ORANGE, true);

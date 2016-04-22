@@ -15,7 +15,7 @@ import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
 
-import org.jgrapht.Graph;
+import org.jgrapht.graph.SimpleDirectedGraph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +25,21 @@ import java.util.Collection;
 import java.util.TreeSet;
 
 /**
- * Class {@code BarColumn} handles a column of peaks as barline candidates, since
- * column consistency helps handle candidates properly.
+ * Class {@code BarColumn} handles a system-based column of aligned projection peaks,
+ * since column consistency helps handle barline candidates.
+ * <ul>
+ * <li>By definition, all members (peaks) of a column are aligned.
+ * <li>The <b>start column</b> is the column that really indicates the left side of a system, just
+ * before the staff lines begin.
+ * <li>A column is said to be <b>full</b> when it contains a peak for every staff in its
+ * containing system.
+ * On the left side of a system, before the start column, we can have partial (non-full) columns
+ * made of square / bracket / brace segments.
+ * The start column, as well as all the other columns on right side of the start column until the
+ * system right end, must be full.
+ * <li>A column is said to be <b>fully-connected</b> when it is full and all its peaks are linked
+ * by concrete connections. The system start column must be a fully-connected column.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -34,24 +47,15 @@ public class BarColumn
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(BarColumn.class);
-
-    //~ Enumerations -------------------------------------------------------------------------------
-    public enum Status
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** A full barline with one peak on each staff. */
-        FULL,
-        /** Some peaks missing. */
-        PART,
-        /** Not a full barline. Group / brace on left side, otherwise plain garbage. */
-        NONE;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(
+            BarColumn.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** The sheet graph of peaks. */
+    private final SimpleDirectedGraph<StaffPeak, BarAlignment> peakGraph;
+
     /** The containing system. */
-    final SystemInfo system;
+    private final SystemInfo system;
 
     /** One peak item per staff. */
     private final StaffPeak[] peaks;
@@ -63,16 +67,19 @@ public class BarColumn
     private Double width;
 
     /** Current status. */
-    private Status status;
+    private Boolean full;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BarColumn} object.
      *
-     * @param system the containing system
+     * @param system    the containing system
+     * @param peakGraph the sheet graph of peaks
      */
-    public BarColumn (SystemInfo system)
+    public BarColumn (SystemInfo system,
+                      SimpleDirectedGraph<StaffPeak, BarAlignment> peakGraph)
     {
+        this.peakGraph = peakGraph;
         this.system = system;
         peaks = new StaffPeak[system.getStaves().size()];
     }
@@ -97,7 +104,7 @@ public class BarColumn
         peaks[idx] = peak;
         xDsk = null;
         width = null;
-        status = null;
+        full = null;
     }
 
     //------------//
@@ -119,71 +126,12 @@ public class BarColumn
         return true;
     }
 
-    //------------//
-    // dumpString //
-    //-----------//
-    public String dumpString (Graph<StaffPeak, BarAlignment> peakGraph)
-    {
-        StringBuilder sb = new StringBuilder("Column ");
-
-        for (int i = 0; i < peaks.length; i++) {
-            StaffPeak peak = peaks[i];
-
-            if (i > 0) {
-                // Print link if any
-                BarAlignment link = (BarAlignment) peakGraph.getEdge(peaks[i - 1], peak);
-
-                if (link == null) {
-                    sb.append(" X ");
-                } else if (link instanceof BarConnection) {
-                    sb.append(" | ");
-                } else {
-                    sb.append(" ? ");
-                }
-            }
-
-            sb.append((peak != null) ? peak : "...");
-        }
-
-        return sb.toString();
-    }
-
     //----------//
     // getPeaks //
     //----------//
     public StaffPeak[] getPeaks ()
     {
         return peaks;
-    }
-
-    //-----------//
-    // getStatus //
-    //-----------//
-    public Status getStatus ()
-    {
-        if (status == null) {
-            status = computeStatus();
-        }
-
-        return status;
-    }
-
-    //-----------------//
-    // getStatusString //
-    //-----------------//
-    public String getStatusString ()
-    {
-        switch (getStatus()) {
-        case FULL:
-            return "---";
-
-        case PART:
-            return " ? ";
-
-        case NONE:
-        default:
-            return "   ";
-        }
     }
 
     //----------//
@@ -235,7 +183,11 @@ public class BarColumn
     //--------//
     public boolean isFull ()
     {
-        return getStatus() == Status.FULL;
+        if (full == null) {
+            full = computeStatus();
+        }
+
+        return full;
     }
 
     //------------------//
@@ -244,10 +196,9 @@ public class BarColumn
     /**
      * Report whether this column is full and all its peaks are connected.
      *
-     * @param peakGraph the graph of all peaks connections
      * @return true if full and connected
      */
-    public boolean isFullyConnected (Graph<StaffPeak, BarAlignment> peakGraph)
+    public boolean isFullyConnected ()
     {
         if (!isFull()) {
             return false;
@@ -299,8 +250,23 @@ public class BarColumn
     {
         StringBuilder sb = new StringBuilder("Column ");
 
-        for (StaffPeak peak : peaks) {
-            sb.append(" | ").append(peak);
+        for (int i = 0; i < peaks.length; i++) {
+            StaffPeak peak = peaks[i];
+
+            if (i > 0) {
+                // Print link if any
+                BarAlignment link = (BarAlignment) peakGraph.getEdge(peaks[i - 1], peak);
+
+                if (link == null) {
+                    sb.append(" X ");
+                } else if (link instanceof BarConnection) {
+                    sb.append(" | ");
+                } else {
+                    sb.append(" . ");
+                }
+            }
+
+            sb.append((peak != null) ? peak : "...");
         }
 
         return sb.toString();
@@ -309,7 +275,7 @@ public class BarColumn
     //---------------//
     // computeStatus //
     //---------------//
-    private Status computeStatus ()
+    private boolean computeStatus ()
     {
         int nb = 0;
 
@@ -319,13 +285,7 @@ public class BarColumn
             }
         }
 
-        if (nb == peaks.length) {
-            return Status.FULL; // Perfect
-        } else if (nb < (peaks.length / 2)) {
-            return Status.NONE; // Minority number of peaks in column, let's give up
-        } else {
-            return Status.PART; // Not perfect, but recovery could be tried?
-        }
+        return nb == peaks.length;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
