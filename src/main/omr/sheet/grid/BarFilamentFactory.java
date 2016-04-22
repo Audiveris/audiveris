@@ -208,11 +208,6 @@ public class BarFilamentFactory
         }
 
         if (!fil.getMembers().isEmpty()) {
-            //            if (constants.registerEachAndEveryGlyph.isSet()) {
-            //                return (Filament) nest.registerGlyph(fil); // Not really useful, but eases debug
-            //            } else {
-            //                return fil;
-            //            }
             return fil;
         } else {
             return null;
@@ -237,7 +232,7 @@ public class BarFilamentFactory
                 "Should we print out the stop watch?");
 
         private final Scale.Fraction minCoreSectionLength = new Scale.Fraction(
-                1,
+                0.5,
                 "Minimum length for a section to be considered as core");
 
         private final Scale.Fraction segmentLength = new Scale.Fraction(

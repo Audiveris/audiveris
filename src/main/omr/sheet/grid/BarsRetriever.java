@@ -1127,26 +1127,20 @@ public class BarsRetriever
         for (StaffProjector projector : projectors) {
             final Staff staff = projector.getStaff();
             final List<StaffPeak> peaks = projector.getPeaks();
-
-            if (peaks.isEmpty()) {
-                continue;
-            }
-
-            // Start peak must exist
-            int iStart = projector.getStartPeakIndex();
+            final int iStart = projector.getStartPeakIndex();
 
             if (iStart == -1) {
-                continue;
+                continue; // Start peak must exist
             }
 
-            // Simply look further left for brace
+            // Look for brace portion on left of first peak
             final StaffPeak firstPeak = peaks.get(0);
             int maxRight = firstPeak.getStart() - 1;
             int minLeft = maxRight - params.maxBraceWidth;
             StaffPeak.Brace bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
             if ((bracePeak == null) && (iStart >= 1)) {
-                // First peak could actually be a brace (mistaken for a bar)
+                // First peak could itself be a brace portion (mistaken for a bar)
                 final StaffPeak secondPeak = peaks.get(1);
                 maxRight = secondPeak.getStart() - 1;
                 minLeft = maxRight - params.maxBraceWidth;
@@ -1533,9 +1527,9 @@ public class BarsRetriever
         final List<BarConnection> list = new ArrayList<BarConnection>();
         final VerticalSide opposite = side.opposite();
         final List<StaffPeak> peaks = projectorOf(staff).getPeaks();
-        final StaffPeak.Bar leftBar = getPeakEnd(LEFT, peaks);
+        final StaffPeak.Bar startBar = getPeakEnd(LEFT, peaks);
 
-        if (leftBar == null) {
+        if (startBar == null) {
             return list;
         }
 
@@ -1546,9 +1540,7 @@ public class BarsRetriever
 
                 if (peak.getStaff() == staff) {
                     // Is this a part-connection, rather than a system-connection?
-                    int gap = peak.getStart() - leftBar.getStop() - 1;
-
-                    if (gap > params.maxDoubleBarGap) {
+                    if (peak.getStart() > startBar.getStart()) {
                         list.add(connection);
                     }
                 } else if (peak.getStaff().getId() > staff.getId()) {
@@ -1968,13 +1960,13 @@ public class BarsRetriever
         bracePeak.setFilament(filament);
 
         // A few tests on glyph
-        if (filament.getLength(VERTICAL) < ((staff.getLineCount() - 1) * scale.getInterline())) {
+        if (filament.getLength(VERTICAL) < params.minBracePortionHeight) {
             return null;
         }
 
         double curvature = filament.getMeanCurvature();
         logger.debug(
-                "Staff#{} brace curvature:{} vs {}",
+                "Staff#{} curvature:{} vs {}",
                 staff.getId(),
                 curvature,
                 params.maxBraceCurvature);
@@ -2006,10 +1998,10 @@ public class BarsRetriever
             bracePeak.set(BRACE_BOTTOM);
         }
 
-        logger.debug("Staff#{} {}", staff.getId(), bracePeak);
-
         if (bracePeak.isVip()) {
             logger.info("VIP {}", bracePeak);
+        } else {
+            logger.debug("{}", bracePeak);
         }
 
         return bracePeak;
@@ -2468,18 +2460,6 @@ public class BarsRetriever
                 0.2,
                 "Minimum difference between THIN/THICK width values");
 
-        private final Scale.Fraction maxBraceThickness = new Scale.Fraction(
-                1.0,
-                "Maximum thickness of a brace");
-
-        private final Scale.Fraction maxBraceWidth = new Scale.Fraction(
-                3.0,
-                "Maximum width of a brace");
-
-        private final Scale.Fraction maxBraceExtension = new Scale.Fraction(
-                1.0,
-                "Maximum extension for a brace above or below staff line");
-
         private final Scale.Fraction maxAlignmentDx = new Scale.Fraction(
                 0.5,
                 "Max abscissa shift for bar alignment");
@@ -2489,7 +2469,7 @@ public class BarsRetriever
                 "Max vertical gap when connecting bar lines");
 
         private final Constant.Ratio maxConnectionWhiteRatio = new Constant.Ratio(
-                0.25,
+                0.35,
                 "Max white ratio when connecting bar lines");
 
         private final Constant.Ratio minConnectionGrade = new Constant.Ratio(
@@ -2505,12 +2485,8 @@ public class BarsRetriever
                 "Maximum dx between bar and left end of staff lines");
 
         private final Scale.Fraction minBarCurvature = new Scale.Fraction(
-                18,
+                15,
                 "Minimum mean curvature for a bar line (rather than a brace)");
-
-        private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(
-                35, ///40,
-                "Maximum mean curvature for a brace");
 
         private final Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
                 0.75,
@@ -2531,10 +2507,6 @@ public class BarsRetriever
         private final Constant.Ratio unalignedDecreaseRatio = new Constant.Ratio(
                 0.30,
                 "Penalty ratio for unaligned bar lines (in multi-staff systems)");
-
-        private final Constant.Boolean deleteUnalignedBars = new Constant.Boolean(
-                true,
-                "Should unaligned bar lines be deleted? (in multi-staff systems)");
 
         // For C-clefs -----------------------------------------------------------------------------
         //
@@ -2559,6 +2531,26 @@ public class BarsRetriever
         private final Scale.Fraction braceSegmentLength = new Scale.Fraction(
                 1.0,
                 "Typical distance between brace points");
+
+        private final Scale.Fraction minBracePortionHeight = new Scale.Fraction(
+                3.0,
+                "Minimum height for a brace portion");
+
+        private final Scale.Fraction maxBraceThickness = new Scale.Fraction(
+                1.0,
+                "Maximum thickness of a brace");
+
+        private final Scale.Fraction maxBraceWidth = new Scale.Fraction(
+                3.0,
+                "Maximum width of a brace");
+
+        private final Scale.Fraction maxBraceExtension = new Scale.Fraction(
+                1.0,
+                "Maximum extension for a brace above or below staff line");
+
+        private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(
+                35,
+                "Maximum mean curvature for a brace");
 
         // For brackets ----------------------------------------------------------------------------
         //
@@ -2604,12 +2596,6 @@ public class BarsRetriever
 
         final double minNormedDeltaWidth;
 
-        final int maxBraceThickness;
-
-        final int maxBraceWidth;
-
-        final int maxBraceExtension;
-
         final int maxAlignmentDx;
 
         final double maxBarExtension;
@@ -2617,8 +2603,6 @@ public class BarsRetriever
         final int maxBarToLinesLeftEnd;
 
         final int minBarCurvature;
-
-        final int maxBraceCurvature;
 
         final int maxConnectionGap;
 
@@ -2641,6 +2625,16 @@ public class BarsRetriever
         final int braceLeftMargin;
 
         final int braceSegmentLength;
+
+        final int minBracePortionHeight;
+
+        final int maxBraceThickness;
+
+        final int maxBraceWidth;
+
+        final int maxBraceExtension;
+
+        final int maxBraceCurvature;
 
         final int serifSegmentLength;
 
@@ -2667,14 +2661,10 @@ public class BarsRetriever
         public Parameters (Scale scale)
         {
             minNormedDeltaWidth = constants.minThinThickDelta.getValue();
-            maxBraceThickness = scale.toPixels(constants.maxBraceThickness);
-            maxBraceWidth = scale.toPixels(constants.maxBraceWidth);
-            maxBraceExtension = scale.toPixels(constants.maxBraceExtension);
             maxAlignmentDx = scale.toPixels(constants.maxAlignmentDx);
             maxBarExtension = scale.toPixels(constants.maxBarExtension);
             maxBarToLinesLeftEnd = scale.toPixels(constants.maxBarToLinesLeftEnd);
             minBarCurvature = scale.toPixels(constants.minBarCurvature);
-            maxBraceCurvature = scale.toPixels(constants.maxBraceCurvature);
             maxConnectionGap = scale.toPixels(constants.maxConnectionGap);
             maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();
             minConnectionGrade = constants.minConnectionGrade.getValue();
@@ -2688,6 +2678,12 @@ public class BarsRetriever
 
             braceLeftMargin = scale.toPixels(constants.braceLeftMargin);
             braceSegmentLength = scale.toPixels(constants.braceSegmentLength);
+            minBracePortionHeight = scale.toPixels(constants.minBracePortionHeight);
+            maxBraceThickness = scale.toPixels(constants.maxBraceThickness);
+            maxBraceWidth = scale.toPixels(constants.maxBraceWidth);
+            maxBraceExtension = scale.toPixels(constants.maxBraceExtension);
+            maxBraceCurvature = scale.toPixels(constants.maxBraceCurvature);
+
             serifSegmentLength = scale.toPixels(constants.serifSegmentLength);
             minBracketWidth = scale.toPixels(constants.minBracketWidth);
             maxBracketExtension = scale.toPixels(constants.maxBracketExtension);
