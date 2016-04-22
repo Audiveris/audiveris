@@ -1034,11 +1034,11 @@ public class StaffProjector
                 "Minimum absolute derivative for peak side");
 
         private final Scale.Fraction barThreshold = new Scale.Fraction(
-                2.5, ///3.0,
+                2.5,
                 "Minimum cumul value to detect bar peak");
 
         private final Scale.Fraction braceThreshold = new Scale.Fraction(
-                2,
+                1.5,
                 "Minimum cumul value to detect brace peak");
 
         private final Scale.Fraction gapThreshold = new Scale.Fraction(
@@ -1046,7 +1046,7 @@ public class StaffProjector
                 "Maximum vertical gap length in a bar");
 
         private final Scale.Fraction chunkThreshold = new Scale.Fraction(
-                0.8, ///0.4,
+                0.8,
                 "Maximum cumul value to detect chunk (on top of lines)");
 
         private final Scale.LineFraction blankThreshold = new Scale.LineFraction(
@@ -1054,7 +1054,7 @@ public class StaffProjector
                 "Maximum cumul value (in LineFraction) to detect no-line regions");
 
         private final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
-                1.0,
+                1.25,
                 "Minimum width for a wide blank region (to limit peaks search)");
 
         private final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(

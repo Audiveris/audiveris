@@ -1176,28 +1176,21 @@ public class BarsRetriever
         for (StaffProjector projector : projectors) {
             final Staff staff = projector.getStaff();
             final List<StaffPeak> peaks = projector.getPeaks();
+            final int iStart = projector.getStartPeakIndex();
 
-            for (int i = 0, iBreak = peaks.size(); i < iBreak; i++) {
-                StaffPeak p = peaks.get(i);
+            if (iStart == -1) {
+                continue; // Start peak must exist
+            }
 
-                if (p instanceof StaffPeak.Brace) {
-                    continue;
-                }
-
-                final StaffPeak.Bar peak = (StaffPeak.Bar) p;
-
-                // Check peak is on left side of staff start
-                if (peak.getStart() > staff.getAbscissa(LEFT)) {
-                    continue StaffLoop; // This is the end for current staff
-                }
+            for (int i = iStart - 1; i >= 0; i--) {
+                final StaffPeak.Bar peak = (StaffPeak.Bar) peaks.get(i);
 
                 // Sufficient width?
                 if (peak.getWidth() < params.minBracketWidth) {
                     continue;
                 }
 
-                final StaffPeak.Bar nextPeak = (StaffPeak.Bar) ((i < (iBreak - 1))
-                        ? peaks.get(i + 1) : null);
+                final StaffPeak.Bar rightPeak = (StaffPeak.Bar) peaks.get(i + 1);
 
                 // It cannot go too far beyond staff height
                 for (VerticalSide side : VerticalSide.values()) {
@@ -1207,7 +1200,7 @@ public class BarsRetriever
                     Filament serif;
 
                     if ((ext <= params.maxBracketExtension)
-                        && (null != (serif = getSerif(staff, peak, nextPeak, side)))) {
+                        && (null != (serif = getSerif(staff, peak, rightPeak, side)))) {
                         logger.debug("Staff#{} {} bracket end", staff.getId(), side);
 
                         peak.setBracketEnd(side, serif);
@@ -1670,14 +1663,14 @@ public class BarsRetriever
      * Define a region of interest just beyond glyph end and look for sections contained in roi.
      * Build a glyph from connected sections and check its shape.
      *
-     * @param peak     provided peak
-     * @param nextPeak next peak on right, if any
-     * @param side     TOP or BOTTOM
+     * @param peak      provided peak
+     * @param rightPeak next peak on right, if any
+     * @param side      TOP or BOTTOM
      * @return serif filament if serif was detected
      */
     private Filament getSerif (Staff staff,
                                StaffPeak.Bar peak,
-                               StaffPeak.Bar nextPeak,
+                               StaffPeak.Bar rightPeak,
                                VerticalSide side)
     {
         // Constants
@@ -1701,8 +1694,8 @@ public class BarsRetriever
         sections.addAll(vLag.intersectedSections(roi));
         sections.removeAll(barFilament.getMembers());
 
-        if (nextPeak != null) {
-            sections.removeAll(nextPeak.getFilament().getMembers());
+        if (rightPeak != null) {
+            sections.removeAll(rightPeak.getFilament().getMembers());
         }
 
         if (sections.isEmpty()) {
