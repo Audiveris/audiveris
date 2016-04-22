@@ -302,15 +302,11 @@ public class BarsRetriever
 
         detectBracketMiddles(); // Detect middle portions of brackets
 
-        checkInitialPeaks(); // Remove some of false barlines that are brace portions on left side
-
-        purgeLongPeaks(); // Purge long peaks that do not connect staves
+        purgeLongPeaks(); // For one-staff systems, purge long peaks
 
         refineRightEnds(); // Define precise right end of each staff
 
         purgeCClefs(); // Purge C-clef-based false barlines
-
-        checkUnalignedPeaks(); // In multi-staff systems, delete the unaligned peaks
 
         partitionWidths(); // Partition peaks between thin and thick
 
@@ -780,99 +776,6 @@ public class BarsRetriever
         }
 
         return null;
-    }
-
-    //-------------------//
-    // checkInitialPeaks //
-    //-------------------//
-    /**
-     * Only for multi-staff system, check the initial peaks on left side.
-     * They must be connected.
-     * <p>
-     * A brace portion may have been mistaken for a bar.
-     * [Nota: Upper & lower portions of a brace may exhibit a "connection" and thus survive].
-     */
-    private void checkInitialPeaks ()
-    {
-        for (SystemInfo system : sheet.getSystems()) {
-            if (system.getStaves().size() > 1) {
-                for (Staff staff : system.getStaves()) {
-                    final StaffProjector projector = projectorOf(staff);
-                    final List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
-
-                    for (StaffPeak p : projector.getPeaks()) {
-                        StaffPeak.Bar peak = (StaffPeak.Bar) p;
-
-                        if (peak.isStaffEnd(LEFT)) {
-                            break;
-                        }
-
-                        if (isConnected(peak, TOP) || isConnected(peak, BOTTOM)) {
-                            break;
-                        }
-
-                        // Here we have a (false barline?) peak with no connection at all
-                        if (peak.isVip()) {
-                            logger.info("VIP removing initial {}", peak);
-                        }
-
-                        toRemove.add(peak);
-                    }
-
-                    if (!toRemove.isEmpty()) {
-                        logger.debug("Staff#{} removing initials {}", staff.getId(), toRemove);
-                        projector.removePeaks(toRemove);
-                    }
-                }
-            }
-        }
-    }
-
-    //---------------------//
-    // checkUnalignedPeaks //
-    //---------------------//
-    /**
-     * Only for multi-staff systems, check the peaks alignments.
-     * Give a bonus to every peak aligned (or connected) with a peak in a staff nearby and
-     * weaken (or delete) the isolated ones.
-     */
-    private void checkUnalignedPeaks ()
-    {
-        final boolean deletion = constants.deleteUnalignedBars.isSet();
-
-        for (SystemInfo system : sheet.getSystems()) {
-            if (system.getStaves().size() > 1) {
-                for (Staff staff : system.getStaves()) {
-                    final StaffProjector projector = projectorOf(staff);
-                    final List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
-
-                    for (StaffPeak p : projector.getPeaks()) {
-                        if (p instanceof StaffPeak.Bar) {
-                            StaffPeak.Bar peak = (StaffPeak.Bar) p;
-
-                            if (isAligned(peak, TOP) || isAligned(peak, BOTTOM)) {
-                                peak.set(ALIGNED);
-                            } else {
-                                peak.set(UNALIGNED);
-
-                                if (deletion) {
-                                    if (peak.isVip()) {
-                                        logger.info("VIP unaligned {}", peak);
-                                    }
-
-                                    toRemove.add(peak);
-                                }
-                            }
-                        }
-                    }
-
-                    if (!toRemove.isEmpty()) {
-                        logger.debug("Staff#{} removing unaligneds {}", staff.getId(), toRemove);
-                        projector.removePeaks(toRemove);
-                    }
-                }
-            }
-        }
     }
 
     //------------------------//
@@ -2025,37 +1928,6 @@ public class BarsRetriever
         return false;
     }
 
-    //--------------------//
-    // isJustAfterBracket //
-    //--------------------//
-    /**
-     * Check whether the provided peak is located just after a bracket end.
-     * (if so, it is likely to go slightly beyond staff height)
-     *
-     * @param peaks sequence of peaks
-     * @param peak  the provided peak
-     * @param side  which vertical side is being considered
-     * @return true if just after bracket end
-     */
-    private boolean isJustAfterBracket (List<StaffPeak> peaks,
-                                        StaffPeak.Bar peak,
-                                        VerticalSide side)
-    {
-        int index = peaks.indexOf(peak);
-
-        if (index == 0) {
-            return false;
-        }
-
-        StaffPeak prevPeak = peaks.get(index - 1);
-
-        if (!prevPeak.isBracketEnd(side)) {
-            return false;
-        }
-
-        return (peak.getStart() - prevPeak.getStop() - 1) <= params.maxDoubleBarGap;
-    }
-
     //-----------------//
     // isPartConnected //
     //-----------------//
@@ -2487,40 +2359,38 @@ public class BarsRetriever
     // purgeLongPeaks //
     //----------------//
     /**
-     * Purge long thin bars (those getting above or below the related staff) that do not
-     * connect staves.
-     * <p>
-     * Just after a bracket end, the glyph of following bar line may go slightly beyond staff.
-     * <p>
-     * Thick bars are not concerned by this test, because they cannot be mistaken for stems and can
-     * appear to be extended because of brackets.
+     * For 1-staff systems only, purge bars getting above or below the related staff.
      */
     private void purgeLongPeaks ()
     {
-        for (StaffProjector projector : projectors) {
+        for (SystemInfo system : sheet.getSystems()) {
+            if (system.getStaves().size() > 1) {
+                continue;
+            }
+
+            final Staff staff = system.getStaves().get(0);
+            final StaffProjector projector = projectorOf(staff);
             final List<StaffPeak> peaks = projector.getPeaks();
-            final Staff staff = projector.getStaff();
+            final int iStart = projector.getStartPeakIndex();
             final Set<StaffPeak.Bar> toRemove = new LinkedHashSet<StaffPeak.Bar>();
 
-            for (StaffPeak p : peaks) {
-                StaffPeak.Bar peak = (StaffPeak.Bar) p;
+            for (int i = 0; i < peaks.size(); i++) {
+                if (i <= iStart) {
+                    continue;
+                }
 
-                // Check whether the glyph gets above and/or below the staff
-                if (!peak.isBracket()) {
-                    for (VerticalSide side : VerticalSide.values()) {
-                        double ext = extensionOf(peak, side);
+                StaffPeak.Bar peak = (StaffPeak.Bar) peaks.get(i);
 
-                        if (ext > params.maxBarExtension) {
-                            if (!isJustAfterBracket(peaks, (StaffPeak.Bar) peak, side)) {
-                                if (!isConnected(peak, side)) {
-                                    if (peak.isVip()) {
-                                        logger.info("VIP removed {} long {}", side, peak);
-                                    }
+                // Check whether the filament gets above and/or below the staff
+                for (VerticalSide side : VerticalSide.values()) {
+                    double ext = extensionOf(peak, side);
 
-                                    toRemove.add(peak);
-                                }
-                            }
+                    if (ext > params.maxBarExtension) {
+                        if (peak.isVip()) {
+                            logger.info("VIP removed {} long {}", side, peak);
                         }
+
+                        toRemove.add(peak);
                     }
                 }
             }
