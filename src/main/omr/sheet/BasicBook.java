@@ -19,6 +19,8 @@ import omr.constant.ConstantSet;
 import omr.image.FilterDescriptor;
 import omr.image.ImageLoading;
 
+import omr.log.LogUtil;
+
 import omr.run.RunTable;
 
 import omr.score.OpusExporter;
@@ -309,12 +311,20 @@ public class BasicBook
                 @Override
                 public void run ()
                 {
-                    for (SheetStub stub : new ArrayList<SheetStub>(stubs)) {
-                        // Close stub UI, if any
-                        if (stub.getAssembly() != null) {
-                            StubsController.getInstance().deleteAssembly(stub);
-                            stub.getAssembly().close();
+                    try {
+                        LogUtil.start(BasicBook.this);
+
+                        for (SheetStub stub : new ArrayList<SheetStub>(stubs)) {
+                            LogUtil.start(stub);
+
+                            // Close stub UI, if any
+                            if (stub.getAssembly() != null) {
+                                StubsController.getInstance().deleteAssembly(stub);
+                                stub.getAssembly().close();
+                            }
                         }
+                    } finally {
+                        LogUtil.stopBook();
                     }
                 }
             });
@@ -331,7 +341,7 @@ public class BasicBook
         // Time for some cleanup...
         Memory.gc();
 
-        logger.info("{} closed.", this);
+        logger.info("Book closed.");
     }
 
     //-------------//
@@ -373,37 +383,36 @@ public class BasicBook
             @Override
             public void run ()
             {
-                final StubsController controller = StubsController.getInstance();
+                try {
+                    LogUtil.start(BasicBook.this);
 
-                // Allocate one tab per stub
-                for (SheetStub stub : stubs) {
-                    controller.addAssembly(stub.getAssembly());
-                }
+                    final StubsController controller = StubsController.getInstance();
 
-                controller.adjustStubTabs(BasicBook.this);
+                    // Allocate one tab per stub
+                    for (SheetStub stub : stubs) {
+                        controller.addAssembly(stub.getAssembly());
+                    }
 
-                // Focus on first valid stub, if any
-                SheetStub validStub = getFirstValidStub();
+                    controller.adjustStubTabs(BasicBook.this);
 
-                if (validStub != null) {
-                    controller.selectAssembly(validStub);
-                } else {
-                    logger.info("No valid sheet in {}", this);
+                    // Focus on first valid stub, if any
+                    SheetStub validStub = getFirstValidStub();
+
+                    if (validStub != null) {
+                        controller.selectAssembly(validStub);
+                    } else {
+                        logger.info("No valid sheet in {}", this);
+                    }
+                } finally {
+                    LogUtil.stopBook();
                 }
             }
         };
 
-        if (false) {
-            SwingUtilities.invokeLater(doRun);
-        } else {
-            try {
-                ///logger.info("Start createStubsTabs");
-                SwingUtilities.invokeAndWait(doRun);
-
-                ///logger.info("Stop  createStubsTabs");
-            } catch (Exception ex) {
-                logger.warn("Error in createStubsTabs", ex);
-            }
+        try {
+            SwingUtilities.invokeAndWait(doRun);
+        } catch (Exception ex) {
+            logger.warn("Error in createStubsTabs, {}", ex, ex);
         }
     }
 
@@ -516,9 +525,14 @@ public class BasicBook
                                     public Void call ()
                                             throws StepException
                                     {
-                                        stub.ensureStep(target);
+                                        try {
+                                            LogUtil.start(stub);
+                                            stub.ensureStep(target);
 
-                                        return null;
+                                            return null;
+                                        } finally {
+                                            LogUtil.stopStub();
+                                        }
                                     }
                                 });
                             }
@@ -545,11 +559,15 @@ public class BasicBook
                     } else {
                         // Process one sheet after the other
                         for (SheetStub stub : new ArrayList<SheetStub>(stubs)) {
+                            LogUtil.start(stub);
+
                             if (!stub.isDone(target)) {
                                 if (!stub.ensureStep(target)) {
                                     failure = true;
                                 }
                             }
+
+                            LogUtil.stopStub();
                         }
                     }
 
@@ -910,6 +928,7 @@ public class BasicBook
 
             Unmarshaller um = getJaxbContext().createUnmarshaller();
             final BasicBook book = (BasicBook) um.unmarshal(is);
+            LogUtil.start(book);
             book.initTransients(null, projectPath);
             is.close();
             rootPath.getFileSystem().close(); // Close project file
@@ -923,6 +942,8 @@ public class BasicBook
             if (constants.printWatch.isSet()) {
                 watch.print();
             }
+
+            LogUtil.stopBook();
         }
     }
 
@@ -1026,14 +1047,15 @@ public class BasicBook
                 BookManager.getDefaultPrintPath(this));
 
         try {
-            new BookPdfOutput(this, pdfPath.toFile()).write(null);
-            logger.info("Book printed to {}", pdfPath);
-
+            LogUtil.start(BasicBook.this);
+            new BookPdfOutput(BasicBook.this, pdfPath.toFile()).write(null);
             setPrintPath(pdfPath);
             BookManager.setDefaultPrintFolder(pdfPath.getParent().toString());
             getScript().addTask(new PrintTask(pdfPath, null));
         } catch (Exception ex) {
             logger.warn("Cannot write PDF to " + pdfPath, ex);
+        } finally {
+            LogUtil.stopBook();
         }
     }
 
@@ -1080,11 +1102,17 @@ public class BasicBook
                 @Override
                 public void run ()
                 {
-                    final StubsController controller = StubsController.getInstance();
-                    final SheetStub stub = controller.getSelectedStub();
+                    try {
+                        LogUtil.start(BasicBook.this);
 
-                    if ((stub != null) && (stub.getBook() == BasicBook.this)) {
-                        controller.refresh();
+                        final StubsController controller = StubsController.getInstance();
+                        final SheetStub stub = controller.getSelectedStub();
+
+                        if ((stub != null) && (stub.getBook() == BasicBook.this)) {
+                            controller.refresh();
+                        }
+                    } finally {
+                        ///LogUtil.stopBook();
                     }
                 }
             });

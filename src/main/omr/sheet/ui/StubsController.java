@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.lag.Lag;
 
+import omr.log.LogUtil;
+
 import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SheetStub;
@@ -131,6 +133,68 @@ public class StubsController
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // getCurrentBook //
+    //----------------//
+    /**
+     * Convenient method to get the current book instance, if any.
+     *
+     * @return the current book instance, or null
+     */
+    public static Book getCurrentBook ()
+    {
+        SheetStub stub = getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        return stub.getBook();
+    }
+
+    //----------------//
+    // getCurrentStub //
+    //----------------//
+    /**
+     * Convenient method to get the currently selected sheet stub, if any.
+     *
+     * @return the selected stub, or null
+     */
+    public static SheetStub getCurrentStub ()
+    {
+        return getInstance().getSelectedStub();
+    }
+
+    //--------------//
+    // getEarlyStep //
+    //--------------//
+    /**
+     * Report the step run by default on every new stub displayed.
+     *
+     * @return the default target step
+     */
+    public static Step getEarlyStep ()
+    {
+        return constants.earlyStep.getValue();
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class.
+     *
+     * @return the single instance
+     */
+    public static StubsController getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new StubsController();
+        }
+
+        return INSTANCE;
+    }
+
     //-------------//
     // addAssembly //
     //-------------//
@@ -300,68 +364,6 @@ public class StubsController
         return stubsPane;
     }
 
-    //----------------//
-    // getCurrentBook //
-    //----------------//
-    /**
-     * Convenient method to get the current book instance, if any.
-     *
-     * @return the current book instance, or null
-     */
-    public static Book getCurrentBook ()
-    {
-        SheetStub stub = getCurrentStub();
-
-        if (stub != null) {
-            return stub.getBook();
-        }
-
-        return null;
-    }
-
-    //----------------//
-    // getCurrentStub //
-    //----------------//
-    /**
-     * Convenient method to get the currently selected sheet stub, if any.
-     *
-     * @return the selected stub, or null
-     */
-    public static SheetStub getCurrentStub ()
-    {
-        return getInstance().getSelectedStub();
-    }
-
-    //--------------//
-    // getEarlyStep //
-    //--------------//
-    /**
-     * Report the step run by default on every new stub displayed.
-     *
-     * @return the default target step
-     */
-    public static Step getEarlyStep ()
-    {
-        return constants.earlyStep.getValue();
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class.
-     *
-     * @return the single instance
-     */
-    public static StubsController getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new StubsController();
-        }
-
-        return INSTANCE;
-    }
-
     //-----------------//
     // getSelectedStub //
     //-----------------//
@@ -389,7 +391,7 @@ public class StubsController
     public void markTab (SheetStub stub,
                          Color color)
     {
-        logger.debug("mark {} in {}", stub, color);
+        logger.debug("mark {} with {}", stub, color);
 
         int tabIndex = stubsPane.indexOfComponent(stub.getAssembly().getComponent());
 
@@ -544,6 +546,8 @@ public class StubsController
      * This method is called whenever the sheet selection is modified,
      * whether programmatically (by means of {@link #selectAssembly} or {@link
      * SheetStub#reset()} or by user action (manual selection of the sheet tab).
+     * <p>
+     * This method is run on EDT.
      */
     @Override
     public void stateChanged (ChangeEvent e)
@@ -555,17 +559,36 @@ public class StubsController
         if (tabIndex != -1) {
             // Remember the new selected sheet stub
             JComponent component = (JComponent) stubsPane.getComponentAt(tabIndex);
-            SheetStub stub = stubsMap.get(component);
+            final SheetStub stub = stubsMap.get(component);
 
             if (!stub.getBook().isClosing()) {
-                // Check whether we should run early steps on the sheet
-                checkStubStatus(stub, tabIndex);
+                Callable<Void> task = new Callable<Void>()
+                {
+                    @Override
+                    public Void call ()
+                            throws Exception
+                    {
+                        try {
+                            LogUtil.start(stub);
 
-                // Tell the selected assembly that it now has the focus
-                stub.getAssembly().assemblySelected();
+                            // Check whether we should run early steps on the sheet
+                            checkStubStatus(stub, tabIndex);
 
-                // This is the new current stub
-                callAboutStub(stub);
+                            // Tell the selected assembly that it now has the focus
+                            stub.getAssembly().assemblySelected();
+
+                            // This is the new current stub
+                            callAboutStub(stub);
+
+                            return null;
+                        } finally {
+                            LogUtil.stopStub();
+                        }
+                    }
+                };
+
+                // Since we are on Swing EDT, use asynchronous processing
+                OmrExecutors.getCachedLowExecutor().submit(task);
             }
         }
     }
@@ -654,6 +677,8 @@ public class StubsController
     /**
      * Check whether the selected sheet is visible and, if not so, launch the proper
      * early steps on the sheet.
+     * <p>
+     * Method is called on non-EDT task.
      *
      * @param stub     the sheet at hand
      * @param tabIndex the corresponding tab index in stubsPane
@@ -661,43 +686,30 @@ public class StubsController
     private void checkStubStatus (final SheetStub stub,
                                   final int tabIndex)
     {
-        logger.debug("checkStubStatus for {}", stub);
+        logger.debug("checkStubStatus");
 
         Step currentStep = stub.getCurrentStep();
 
-        if (currentStep == null) {
-            final Step earlyStep = getEarlyStep();
+        if (currentStep != null) {
+            return;
+        }
 
-            if ((earlyStep != null) && !stub.isDone(earlyStep)) {
-                // Process sheet asynchronously
-                Callable<Void> task = new Callable<Void>()
-                {
-                    @Override
-                    public Void call ()
-                            throws Exception
-                    {
-                        boolean ok = stub.ensureStep(earlyStep);
-                        markTab(stub, ok ? Color.BLACK : Color.RED);
+        final Step earlyStep = getEarlyStep();
 
-                        return null;
-                    }
-
-                    @Override
-                    public String toString ()
-                    {
-                        return earlyStep + " for " + stub;
-                    }
-                };
-
-                logger.debug("launching {}", task);
+        if ((earlyStep != null) && !stub.isDone(earlyStep)) {
+            try {
+                LogUtil.start(stub);
                 stubsPane.setForegroundAt(tabIndex, Colors.SHEET_BUSY);
+                logger.debug("launching {}", this);
 
-                // Since we are on Swing EDT, use asynchronous processing
-                OmrExecutors.getCachedLowExecutor().submit(task);
-            } else if (!stub.hasSheet()) {
-                // Stub just loaded from project file, load & display the related sheet
-                stub.getSheet().displayMainTabs();
+                boolean ok = stub.ensureStep(earlyStep);
+                markTab(stub, ok ? Color.BLACK : Color.RED);
+            } finally {
+                LogUtil.stopStub();
             }
+        } else if (!stub.hasSheet()) {
+            // Stub just loaded from project file, load & display the related sheet
+            stub.getSheet().displayMainTabs();
         }
     }
 

@@ -82,7 +82,7 @@ public class StemSeedsStep
         // Retrieve typical stem width on global sheet
         StemScale stemScale = new StemScaler(sheet).retrieveStemWidth();
 
-        logger.info("{}{}", sheet.getLogPrefix(), stemScale);
+        logger.info("{}", stemScale);
         sheet.getScale().setStemScale(stemScale);
 
         return null;

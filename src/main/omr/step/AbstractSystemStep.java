@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
+import omr.log.LogUtil;
 
 /**
  * Abstract class {@code AbstractSystemStep} is a basis for any step working on the
@@ -178,25 +179,28 @@ public abstract class AbstractSystemStep<C>
             for (final SystemInfo system : systems) {
                 tasks.add(
                         new Callable<Void>()
-                        {
-                            @Override
-                            public Void call ()
+                {
+                    @Override
+                    public Void call ()
                             throws Exception
-                            {
-                                try {
-                                    logger.debug(
-                                            "{} doSystem #{}",
-                                            AbstractSystemStep.this,
-                                            system.getId());
+                    {
+                        try {
+                            LogUtil.start(sheet);
+                            logger.debug(
+                                    "{} doSystem #{}",
+                                    AbstractSystemStep.this,
+                                    system.getId());
 
-                                    doSystem(system, context);
-                                } catch (Exception ex) {
-                                    logger.warn(system.getLogPrefix() + ex, ex);
-                                }
+                            doSystem(system, context);
+                        } catch (Exception ex) {
+                            logger.warn(system.getLogPrefix() + ex, ex);
+                        } finally {
+                            LogUtil.stopStub();
+                        }
 
-                                return null;
-                            }
-                        });
+                        return null;
+                    }
+                });
             }
 
             // Launch all system tasks in parallel and wait for their completion

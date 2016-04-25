@@ -18,6 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphFactory;
+import omr.glyph.GlyphIndex;
 import omr.glyph.Symbol.Group;
 
 import omr.image.ImageUtil;
@@ -53,7 +54,6 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import omr.glyph.GlyphIndex;
 
 /**
  * Class {@code SpotsBuilder} performs morphology analysis to retrieve the major spots
@@ -161,8 +161,7 @@ public class SpotsBuilder
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
         final float radius = (float) (diameter - 1) / 2;
         logger.debug(
-                "{}Spots retrieval beam: {}, diameter: {} ...",
-                sheet.getLogPrefix(),
+                "Spots retrieval beam: {}, diameter: {} ...",
                 String.format("%.1f", beam),
                 String.format("%.1f", diameter));
 
@@ -260,7 +259,7 @@ public class SpotsBuilder
             }
         }
 
-        logger.debug("{}Spots retrieved: {}", sheet.getLogPrefix(), count);
+        logger.debug("Spots retrieved: {}", count);
     }
 
     //------------------//

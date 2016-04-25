@@ -327,8 +327,7 @@ public class PageRhythm
 
         Rational topGuess = histo.getMaxBucket();
         logger.info(
-                "{}{} Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
-                page.getSheet().getLogPrefix(),
+                "{} Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
                 range,
                 avgGuess,
                 topGuess,

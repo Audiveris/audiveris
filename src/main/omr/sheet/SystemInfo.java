@@ -624,13 +624,9 @@ public class SystemInfo
      */
     public String getLogPrefix ()
     {
-        StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
+        StringBuilder sb = new StringBuilder();
 
-        if (sb.length() > 1) {
-            sb.insert(sb.length() - 2, "-S" + id);
-        } else {
-            sb.append("S").append(id).append(" ");
-        }
+        sb.append("S").append(id).append(" ");
 
         return sb.toString();
     }
@@ -1272,6 +1268,7 @@ public class SystemInfo
     {
         StringBuilder sb = new StringBuilder();
         sb.append("System#").append(id);
+
         //        sb.append(" T").append(getFirstStaff().getId());
         //
         //        if (staves.size() > 1) {
@@ -1279,7 +1276,6 @@ public class SystemInfo
         //        }
         //
         //sb.append("}");
-
         return sb.toString();
     }
 

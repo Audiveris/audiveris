@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr;
 
+import omr.log.LogUtil;
+
 import omr.script.ExportTask;
 import omr.script.PrintTask;
 import omr.script.SaveTask;
@@ -678,6 +680,8 @@ public class CLI
         protected void processBook (Book book)
         {
             try {
+                LogUtil.start(book);
+
                 // Specific sheets to process?
                 final SortedSet<Integer> sheetIds = params.getSheetIds();
 
@@ -738,6 +742,8 @@ public class CLI
                 if (OMR.gui == null) {
                     book.close();
                 }
+
+                LogUtil.stopBook();
             }
         }
     }

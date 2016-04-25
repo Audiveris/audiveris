@@ -608,10 +608,7 @@ public class SystemManager
 
                     if ((ul.getX() - ulOther.getX()) >= minShift) {
                         system.setIndented(true);
-                        logger.info(
-                                "{}Indentation detected for system#{}",
-                                sheet.getLogPrefix(),
-                                system.getId());
+                        logger.info("Indentation detected for system#{}", system.getId());
 
                         break;
                     }
@@ -656,7 +653,7 @@ public class SystemManager
         int pageNb = sheet.getPages().size();
 
         if (pageNb > 1) {
-            logger.info("{}{} pages found in sheet", sheet.getLogPrefix(), pageNb);
+            logger.info("{} pages found in sheet", pageNb);
         }
 
         for (Page page : sheet.getPages()) {
@@ -694,7 +691,7 @@ public class SystemManager
                 sb.append(", no system found");
             }
 
-            logger.info("{}{}", sheet.getLogPrefix(), sb);
+            logger.info("{}", sb);
         }
     }
 

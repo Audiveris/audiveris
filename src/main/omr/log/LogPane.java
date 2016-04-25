@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Insets;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -114,41 +115,57 @@ public class LogPane
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        while (LogGuiAppender.getEventCount() > 0) {
-                            ILoggingEvent event = LogGuiAppender.pollEvent();
+        {
+            @Override
+            public void run ()
+            {
+                while (LogGuiAppender.getEventCount() > 0) {
+                    ILoggingEvent event = LogGuiAppender.pollEvent();
 
-                            if (event != null) {
-                                // Color
-                                StyleConstants.setForeground(
-                                        attributes,
-                                        getLevelColor(event.getLevel()));
+                    if (event != null) {
+                        // Color
+                        StyleConstants.setForeground(
+                                attributes,
+                                getLevelColor(event.getLevel()));
 
-                                // Font name
-                                StyleConstants.setFontFamily(
-                                        attributes,
-                                        constants.fontName.getValue());
+                        // Font name
+                        StyleConstants.setFontFamily(
+                                attributes,
+                                constants.fontName.getValue());
 
-                                // Font size
-                                StyleConstants.setFontSize(
-                                        attributes,
-                                        constants.fontSize.getValue());
+                        // Font size
+                        StyleConstants.setFontSize(
+                                attributes,
+                                constants.fontSize.getValue());
 
-                                try {
-                                    document.insertString(
-                                            document.getLength(),
-                                            event.getFormattedMessage() + "\n",
-                                            attributes);
-                                } catch (BadLocationException ex) {
-                                    ex.printStackTrace();
+                        try {
+                            Map<String, String> mdc = event.getMDCPropertyMap();
+                            String book = mdc.get(LogUtil.BOOK);
+                            String sheet = mdc.get(LogUtil.SHEET);
+                            StringBuilder sb = new StringBuilder();
+
+                            if (book != null) {
+                                sb.append('[');
+                                sb.append(book);
+
+                                if (sheet != null) {
+                                    sb.append(sheet);
                                 }
+
+                                sb.append("] ");
                             }
+
+                            document.insertString(
+                                    document.getLength(),
+                                    sb + event.getFormattedMessage() + "\n",
+                                    attributes);
+                        } catch (BadLocationException ex) {
+                            ex.printStackTrace();
                         }
                     }
-                });
+                }
+            }
+        });
     }
 
     //---------------//

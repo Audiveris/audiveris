@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.log;
 
+import omr.sheet.Book;
+import omr.sheet.SheetStub;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
@@ -19,14 +22,17 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.util.StatusPrinter;
-import java.nio.file.Files;
 
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javax.swing.SwingUtilities;
 
 /**
  * Class {@code LogUtil} handles logging features based on underlying LogBack binding.
@@ -36,6 +42,15 @@ import java.util.Date;
 public abstract class LogUtil
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    /** MDC key for context. */
+    public static final String CONTEXT = "CONTEXT";
+
+    /** MDC key for book context. */
+    public static final String BOOK = "BOOK";
+
+    /** MDC key for sheet/stub context. */
+    public static final String SHEET = "SHEET";
 
     /** System property for LogBack configuration. */
     private static final String LOGBACK_LOGGING_KEY = "logback.configurationFile";
@@ -100,7 +115,7 @@ public abstract class LogUtil
         consoleAppender.setName("CONSOLE");
         consoleAppender.setContext(loggerContext);
         consoleEncoder.setContext(loggerContext);
-        consoleEncoder.setPattern("%-5level %caller{1} - %msg%n%ex");
+        consoleEncoder.setPattern("%-5level %caller{1} [%X{BOOK}%X{SHEET}] %msg%n%ex");
         consoleEncoder.start();
         consoleAppender.setEncoder(consoleEncoder);
         consoleAppender.start();
@@ -118,7 +133,7 @@ public abstract class LogUtil
         logFile = Paths.get(System.getProperty("java.io.tmpdir"), "audiveris-" + now + ".log");
         fileAppender.setFile(logFile.toAbsolutePath().toString());
         fileEncoder.setContext(loggerContext);
-        fileEncoder.setPattern("%date %level \\(%file:%line\\) - %msg%ex%n");
+        fileEncoder.setPattern("%date %level \\(%file:%line\\) [%X{BOOK}%X{SHEET}] %msg%ex%n");
         fileEncoder.start();
         fileAppender.setEncoder(fileEncoder);
         fileAppender.start();
@@ -131,13 +146,6 @@ public abstract class LogUtil
         guiAppender.start();
         root.addAppender(guiAppender);
 
-        // STEP
-        Appender stepAppender = new LogStepAppender();
-        stepAppender.setName("STEP");
-        stepAppender.setContext(loggerContext);
-        stepAppender.start();
-        root.addAppender(stepAppender);
-
         // Levels
         root.setLevel(Level.INFO);
 
@@ -145,6 +153,70 @@ public abstract class LogUtil
         StatusPrinter.print(loggerContext);
 
         root.info("Logging to file {}", logFile.toAbsolutePath());
+    }
+
+    //-------//
+    // start //
+    //-------//
+    /**
+     * In the calling thread, start log annotation with stub ID.
+     *
+     * @param stub the sheet/stub related to processing
+     */
+    public static void start (SheetStub stub)
+    {
+        start(stub.getBook());
+
+        if (!SwingUtilities.isEventDispatchThread()) {
+            MDC.put(SHEET, stub.getNum());
+            ///System.out.println("startSheet '" + stub.getNum() + "' on " + Thread.currentThread());
+        }
+    }
+
+    //-------//
+    // start //
+    //-------//
+    /**
+     * In the calling thread, start log annotation with book ID.
+     *
+     * @param book the book related to processing
+     */
+    public static void start (Book book)
+    {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            MDC.put(BOOK, book.getRadix());
+            ///System.out.println("startBook '" + book.getRadix() + "' on " + Thread.currentThread());
+        }
+    }
+
+    //----------//
+    // stopBook //
+    //----------//
+    /**
+     * In the calling thread, stop book log annotation.
+     */
+    public static void stopBook ()
+    {
+        stopStub();
+
+        if (!SwingUtilities.isEventDispatchThread()) {
+            MDC.remove(BOOK);
+            ///System.out.println("stopBook on " + Thread.currentThread());
+        }
+    }
+
+    //----------//
+    // stopStub //
+    //----------//
+    /**
+     * In the calling thread, stop sheet stub log annotation.
+     */
+    public static void stopStub ()
+    {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            MDC.remove(SHEET);
+            ///System.out.println("stopSheet on " + Thread.currentThread());
+        }
     }
 
     //---------//

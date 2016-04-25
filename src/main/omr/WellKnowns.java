@@ -447,7 +447,7 @@ public abstract class WellKnowns
         ///logger.info("Token #{}", 2);
         if (!RUNNING_FROM_JAR) {
             // Just to remind the developer we are NOT running in normal mode
-            logger.info("[Not running from jar]");
+            logger.info("Not running from jar.");
         } else {
             // Debug, to identify this jar
             logger.debug("JarTime: {} JarFile: {}", JAR_TIME, JAR_FILE.getName());

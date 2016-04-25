@@ -286,7 +286,7 @@ public class ScaleBuilder
         if (backPeak != null) {
             final int guess = (int) Math.rint(
                     constants.beamAsBackRatio.getValue() * backPeak.getKey().best);
-            logger.info("{}No beam peak found, guessed value {}", sheet.getLogPrefix(), guess);
+            logger.info("No beam peak found, guessed value {}", guess);
 
             return new BeamScale(guess, true);
         }
@@ -399,7 +399,7 @@ public class ScaleBuilder
     private void retrieveVertPeaks ()
             throws StepException
     {
-        StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
+        StringBuilder sb = new StringBuilder();
         // Foreground peak
         forePeak = foreHisto.getPeak(quorumRatio, constants.foreSpreadRatio.getValue(), 0);
         sb.append("fore:").append(forePeak);

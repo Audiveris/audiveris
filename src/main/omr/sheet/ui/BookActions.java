@@ -17,6 +17,8 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.log.LogUtil;
+
 import omr.plugin.Plugin;
 import omr.plugin.PluginManager;
 
@@ -82,10 +84,20 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBException;
 
 /**
  * Class {@code BookActions} gathers all UI actions related to current book.
+ * <p>
+ * Swing EDT processes Runnable instances found in its event queue.
+ * Via {@link SwingUtilities} new Runnable instances can further be appended to the event queue.
+ * Unless log context is explicitly started and stopped in such Runnable, there is no reliable way
+ * to set log context for the EDT.
+ * <p>
+ * By definition, all actions defined in this class are initiated on Swing EDT.
+ * Hence, if log context handling is wanted, the action must delegate processing to a separate task
+ * (log context can easily be handled in a non-EDT thread).
  *
  * @author Hervé Bitteur
  */
@@ -136,90 +148,6 @@ public class BookActions
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // browseBook //
-    //------------//
-    /**
-     * Launch the tree display of the current book.
-     *
-     * @param e
-     */
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public void browseBook (ActionEvent e)
-    {
-        OMR.gui.getApplication().show(StubsController.getCurrentBook().getBrowserFrame());
-    }
-
-    //-----------//
-    // buildBook //
-    //-----------//
-    /**
-     * Launch or complete the transcription of all sheets and merge them at book level.
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = BOOK_IDLE)
-    public Task<Void, Void> buildBook (ActionEvent e)
-    {
-        Book book = StubsController.getCurrentStub().getBook();
-
-        // Check if (valid) sheets still need to be processed
-        int todo = 0;
-
-        for (SheetStub stub : book.getValidStubs()) {
-            if (!stub.isDone(Step.PAGE)) {
-                todo++;
-            }
-        }
-
-        if (todo > 0) {
-            return new BuildBookTask(book);
-        } else {
-            logger.info("No sheet transcription needed");
-
-            return null;
-        }
-    }
-
-    //-------------//
-    // buildScores //
-    //-------------//
-    /**
-     * Build all scores at book level.
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = BOOK_IDLE)
-    public Task<Void, Void> buildScores (ActionEvent e)
-    {
-        Book book = StubsController.getCurrentStub().getBook();
-
-        return new BuildScoresTask(book);
-    }
-
-    //------------//
-    // buildSheet //
-    //------------//
-    /**
-     * Launch sheet transcription.
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = STUB_IDLE)
-    public Task<Void, Void> buildSheet (ActionEvent e)
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-
-        if (stub.isDone(Step.PAGE)) {
-            return new RebuildTask(stub.getSheet());
-        } else {
-            return new BuildSheetTask(stub.getSheet());
-        }
-    }
-
     //-----------------//
     // checkParameters //
     //-----------------//
@@ -360,6 +288,107 @@ public class BookActions
         }
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized BookActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new BookActions();
+        }
+
+        return INSTANCE;
+    }
+
+    //------------//
+    // browseBook //
+    //------------//
+    /**
+     * Launch the tree display of the current book.
+     *
+     * @param e
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void browseBook (ActionEvent e)
+    {
+        OMR.gui.getApplication().show(StubsController.getCurrentBook().getBrowserFrame());
+    }
+
+    //-----------//
+    // buildBook //
+    //-----------//
+    /**
+     * Launch or complete the transcription of all sheets and merge them at book level.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> buildBook (ActionEvent e)
+    {
+        Book book = StubsController.getCurrentStub().getBook();
+
+        // Check if (valid) sheets still need to be processed
+        int todo = 0;
+
+        for (SheetStub stub : book.getValidStubs()) {
+            if (!stub.isDone(Step.PAGE)) {
+                todo++;
+            }
+        }
+
+        if (todo > 0) {
+            return new BuildBookTask(book);
+        } else {
+            logger.info("No sheet transcription needed for {}", book);
+
+            return null;
+        }
+    }
+
+    //-------------//
+    // buildScores //
+    //-------------//
+    /**
+     * Build all scores at book level.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> buildScores (ActionEvent e)
+    {
+        Book book = StubsController.getCurrentStub().getBook();
+
+        return new BuildScoresTask(book);
+    }
+
+    //------------//
+    // buildSheet //
+    //------------//
+    /**
+     * Launch sheet transcription.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = STUB_IDLE)
+    public Task<Void, Void> buildSheet (ActionEvent e)
+    {
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub.isDone(Step.PAGE)) {
+            return new RebuildTask(stub.getSheet());
+        } else {
+            return new BuildSheetTask(stub.getSheet());
+        }
+    }
+
     //-----------//
     // cleanBook //
     //-----------//
@@ -371,8 +400,8 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public void cleanBook (ActionEvent e)
     {
-        SheetStub stub = StubsController.getCurrentStub();
-        stub.getBook().deleteExport();
+        Book book = StubsController.getCurrentStub().getBook();
+        book.deleteExport();
     }
 
     //------------//
@@ -399,21 +428,14 @@ public class BookActions
      * Action that handles the closing of the currently selected book.
      *
      * @param e the event that triggered this action
+     * @return the task which will close the book
      */
     @Action(enabledProperty = STUB_AVAILABLE)
-    public void closeBook (ActionEvent e)
+    public Task<Void, Void> closeBook (ActionEvent e)
     {
         Book book = StubsController.getCurrentBook();
 
-        if (book != null) {
-            if (checkStored(book)) {
-                // Pre-select the suitable "next" book tab
-                StubsController.getInstance().selectOtherBook(book);
-
-                // Now close the book (+ related tab)
-                book.close();
-            }
-        }
+        return new CloseBookTask(book);
     }
 
     //------------------//
@@ -443,7 +465,7 @@ public class BookActions
     {
         SheetStub stub = StubsController.getCurrentStub();
 
-        if ((stub != null) && stub.isDone(Step.GRID)) {
+        if (stub.isDone(Step.GRID)) {
             stub.getSheet().displayDataTab();
         }
     }
@@ -461,20 +483,21 @@ public class BookActions
     {
         SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub != null) {
-            SheetAssembly assembly = stub.getAssembly();
+        if (stub == null) {
+            return;
+        }
 
-            if (assembly.getPane(SheetTab.NO_STAFF_TAB.label) == null) {
-                Sheet sheet = stub.getSheet(); // This may load the sheet...
-                assembly.addViewTab(
-                        SheetTab.NO_STAFF_TAB,
-                        new ScrollImageView(
-                                sheet,
-                                new ImageView(
-                                        sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF)
-                                        .getBufferedImage())),
-                        new BoardsPane(new PixelBoard(sheet)));
-            }
+        SheetAssembly assembly = stub.getAssembly();
+
+        if (assembly.getPane(SheetTab.NO_STAFF_TAB.label) == null) {
+            Sheet sheet = stub.getSheet(); // This may load the sheet...
+            assembly.addViewTab(
+                    SheetTab.NO_STAFF_TAB,
+                    new ScrollImageView(
+                            sheet,
+                            new ImageView(
+                                    sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF).getBufferedImage())),
+                    new BoardsPane(new PixelBoard(sheet)));
         }
     }
 
@@ -490,6 +513,11 @@ public class BookActions
     public void displayPicture (ActionEvent e)
     {
         SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return;
+        }
+
         ((BasicSheet) stub.getSheet()).createPictureView();
     }
 
@@ -506,18 +534,20 @@ public class BookActions
     {
         SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub != null) {
-            SheetAssembly assembly = stub.getAssembly();
+        if (stub == null) {
+            return;
+        }
 
-            if (assembly.getPane(SheetTab.STAFF_LINE_TAB.label) == null) {
-                Sheet sheet = stub.getSheet(); // This may load the sheet...
-                assembly.addViewTab(
-                        SheetTab.STAFF_LINE_TAB,
-                        new ScrollImageView(
-                                sheet,
-                                new ImageView(sheet.getPicture().buildStaffLineGlyphsImage())),
-                        new BoardsPane(new PixelBoard(sheet)));
-            }
+        SheetAssembly assembly = stub.getAssembly();
+
+        if (assembly.getPane(SheetTab.STAFF_LINE_TAB.label) == null) {
+            Sheet sheet = stub.getSheet(); // This may load the sheet...
+            assembly.addViewTab(
+                    SheetTab.STAFF_LINE_TAB,
+                    new ScrollImageView(
+                            sheet,
+                            new ImageView(sheet.getPicture().buildStaffLineGlyphsImage())),
+                    new BoardsPane(new PixelBoard(sheet)));
         }
     }
 
@@ -548,12 +578,14 @@ public class BookActions
     {
         SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub != null) {
-            Script script = stub.getBook().getScript();
+        if (stub == null) {
+            return;
+        }
 
-            if (script != null) {
-                script.dump();
-            }
+        Script script = stub.getBook().getScript();
+
+        if (script != null) {
+            script.dump();
         }
     }
 
@@ -589,10 +621,10 @@ public class BookActions
             return null;
         }
 
-        final Path exportPathSsansExt = book.getExportPathSansExt();
+        final Path exportPathSansExt = book.getExportPathSansExt();
 
-        if (exportPathSsansExt != null) {
-            return new ExportBookTask(book, exportPathSsansExt);
+        if (exportPathSansExt != null) {
+            return new ExportBookTask(book, exportPathSansExt);
         } else {
             return exportBookAs(e);
         }
@@ -614,7 +646,7 @@ public class BookActions
         final Book book = StubsController.getCurrentBook();
 
         if (book == null) {
-            return null; // Not likely to happen, but safer
+            return null;
         }
 
         // Let user select book export target
@@ -687,23 +719,6 @@ public class BookActions
     public HistoryMenu getInputHistoryMenu ()
     {
         return inputHistoryMenu;
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized BookActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new BookActions();
-        }
-
-        return INSTANCE;
     }
 
     //-----------------------//
@@ -888,8 +903,7 @@ public class BookActions
     // plotStaves //
     //------------//
     /**
-     * Action that allows to display the horizontal projection of a
-     * selected staff.
+     * Action that allows to display the horizontal projection of a selected staff.
      * We need a sub-menu to select proper staff.
      * TODO: this is really a dirty hack!
      *
@@ -900,47 +914,49 @@ public class BookActions
     {
         final SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub != null) {
-            final Sheet sheet = stub.getSheet();
-            final StaffManager staffManager = sheet.getStaffManager();
-
-            if (staffManager.getStaffCount() == 0) {
-                logger.info("No staff data available yet");
-
-                return;
-            }
-
-            JPopupMenu popup = new JPopupMenu("Staves IDs");
-
-            // Menu title
-            JMenuItem title = new JMenuItem("Select staff ID:");
-            title.setHorizontalAlignment(SwingConstants.CENTER);
-            title.setEnabled(false);
-            popup.add(title);
-            popup.addSeparator();
-
-            ActionListener listener = new ActionListener()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    int index = Integer.decode(e.getActionCommand()) - 1;
-                    Staff staff = staffManager.getStaff(index);
-                    new StaffProjector(sheet, staff, null).plot();
-                }
-            };
-
-            // Populate popup
-            for (Staff staff : staffManager.getStaves()) {
-                JMenuItem item = new JMenuItem("" + staff.getId());
-                item.addActionListener(listener);
-                popup.add(item);
-            }
-
-            // Display popup menu
-            JFrame frame = OMR.gui.getFrame();
-            popup.show(frame, frame.getWidth() / 6, frame.getHeight() / 4);
+        if (stub == null) {
+            return;
         }
+
+        final Sheet sheet = stub.getSheet();
+        final StaffManager staffManager = sheet.getStaffManager();
+
+        if (staffManager.getStaffCount() == 0) {
+            logger.info("No staff data available yet");
+
+            return;
+        }
+
+        JPopupMenu popup = new JPopupMenu("Staves IDs");
+
+        // Menu title
+        JMenuItem title = new JMenuItem("Select staff ID:");
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        title.setEnabled(false);
+        popup.add(title);
+        popup.addSeparator();
+
+        ActionListener listener = new ActionListener()
+        {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                int index = Integer.decode(e.getActionCommand()) - 1;
+                Staff staff = staffManager.getStaff(index);
+                new StaffProjector(sheet, staff, null).plot();
+            }
+        };
+
+        // Populate popup
+        for (Staff staff : staffManager.getStaves()) {
+            JMenuItem item = new JMenuItem("" + staff.getId());
+            item.addActionListener(listener);
+            popup.add(item);
+        }
+
+        // Display popup menu
+        JFrame frame = OMR.gui.getFrame();
+        popup.show(frame, frame.getWidth() / 6, frame.getHeight() / 4);
     }
 
     //----------//
@@ -956,12 +972,14 @@ public class BookActions
     {
         SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub != null) {
-            if (stub.isDone(Step.STEM_SEEDS)) {
-                new StemScaler(stub.getSheet()).displayChart();
-            } else {
-                logger.warn("Cannot display stem plot, for lack of stem data");
-            }
+        if (stub == null) {
+            return;
+        }
+
+        if (stub.isDone(Step.STEM_SEEDS)) {
+            new StemScaler(stub.getSheet()).displayChart();
+        } else {
+            logger.warn("Cannot display stem plot, for lack of stem data");
         }
     }
 
@@ -969,7 +987,7 @@ public class BookActions
     // printBook //
     //-----------//
     /**
-     * Write the currently selected book, as a PDF file
+     * Print the currently selected book, as a PDF file
      *
      * @param e the event that triggered this action
      * @return the task to launch in background
@@ -985,11 +1003,11 @@ public class BookActions
 
         final Path bookPrintPath = book.getPrintPath();
 
-        if (bookPrintPath != null) {
-            return new PrintBookTask(book, bookPrintPath);
-        } else {
+        if (bookPrintPath == null) {
             return printBookAs(e);
         }
+
+        return new PrintBookTask(book, bookPrintPath);
     }
 
     //-------------//
@@ -1011,18 +1029,18 @@ public class BookActions
         }
 
         // Select target book print path
-        final Path bookPath = UIUtil.pathChooser(
+        final Path bookPrintPath = UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
                 BookManager.getDefaultPrintPath(book),
                 new OmrFileFilter(OMR.PDF_EXTENSION),
                 "Choose book print target");
 
-        if (bookPath == null) {
+        if (bookPrintPath == null) {
             return null;
         }
 
-        return new PrintBookTask(book, bookPath);
+        return new PrintBookTask(book, bookPrintPath);
     }
 
     //--------------//
@@ -1247,7 +1265,11 @@ public class BookActions
     @Action(enabledProperty = BOOK_IDLE)
     public void swapSheets (ActionEvent e)
     {
-        Book book = StubsController.getCurrentStub().getBook();
+        Book book = StubsController.getCurrentBook();
+
+        if (book == null) {
+            return;
+        }
 
         book.swapAllSheets();
     }
@@ -1434,6 +1456,23 @@ public class BookActions
         return new OmrFileFilter(ext, new String[]{ext});
     }
 
+    //----------------------//
+    // getDefaultScriptPath //
+    //----------------------//
+    /**
+     * Report the default path where the script should be written to
+     *
+     * @param book the containing book
+     * @return the default path for saving the script
+     */
+    private Path getDefaultScriptPath (Book book)
+    {
+        return (book.getScriptPath() != null) ? book.getScriptPath()
+                : Paths.get(
+                        constants.defaultScriptDirectory.getValue(),
+                        book.getRadix() + OMR.SCRIPT_EXTENSION);
+    }
+
     //-------------------//
     // selectProjectPath //
     //-------------------//
@@ -1454,23 +1493,6 @@ public class BookActions
                 filter(OMR.PROJECT_EXTENSION));
 
         return (prjPath == null) ? null : prjPath;
-    }
-
-    //----------------------//
-    // getDefaultScriptPath //
-    //----------------------//
-    /**
-     * Report the default path where the script should be written to
-     *
-     * @param book the containing book
-     * @return the default path for saving the script
-     */
-    private Path getDefaultScriptPath (Book book)
-    {
-        return (book.getScriptPath() != null) ? book.getScriptPath()
-                : Paths.get(
-                        constants.defaultScriptDirectory.getValue(),
-                        book.getRadix() + OMR.SCRIPT_EXTENSION);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1502,6 +1524,7 @@ public class BookActions
             if (Files.exists(path)) {
                 // Actually open the project
                 Book book = OMR.engine.loadProject(path);
+                LogUtil.start(book);
                 book.createStubsTabs(); // Tabs are now accessible
             } else {
                 logger.warn("Path {} does not exist", path);
@@ -1540,6 +1563,7 @@ public class BookActions
                 try {
                     // Actually open the image file
                     Book book = OMR.engine.loadInput(path);
+                    LogUtil.start(book);
                     book.createStubs(null);
                     book.createStubsTabs(); // Tabs are now accessible
 
@@ -1581,6 +1605,7 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
+            LogUtil.start(book);
             book.setPrintPath(bookPrintPath);
             //
             //            for (Sheet sheet : book.getStubs()) {
@@ -1618,10 +1643,79 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
+            LogUtil.start(sheet);
             sheet.print(sheetPrintPath);
 
             return null;
         }
+    }
+
+    //---------------//
+    // CloseBookTask //
+    //---------------//
+    private static class CloseBookTask
+            extends BasicTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Book book;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create an asynchronous task to close the book.
+         *
+         * @param book the book to close
+         */
+        public CloseBookTask (Book book)
+        {
+            this.book = book;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+
+            LogUtil.start(book);
+
+            if (checkStored(book)) {
+                // Pre-select the suitable "next" book tab
+                StubsController.getInstance().selectOtherBook(book);
+
+                // Now close the book (+ related tab)
+                LogUtil.start(book);
+                book.close();
+            }
+
+            return null;
+
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean promptParameters = new Constant.Boolean(
+                false,
+                "Should we prompt the user for score parameters?");
+
+        private final Constant.String validImageExtensions = new Constant.String(
+                ".bmp .gif .jpg .png .tiff .tif .pdf",
+                "Valid image file extensions, whitespace-separated");
+
+        private final Constant.Boolean closeConfirmation = new Constant.Boolean(
+                true,
+                "Should we ask confirmation for closing an unsaved project?");
+
+        private final Constant.String defaultScriptDirectory = new Constant.String(
+                WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
+                "Default directory for saved scripts");
     }
 
     //---------------//
@@ -1646,6 +1740,8 @@ public class BookActions
                 throws InterruptedException
         {
             try {
+                LogUtil.start(book);
+
                 for (SheetStub stub : book.getValidStubs()) {
                     stub.ensureStep(Step.PAGE);
                 }
@@ -1679,8 +1775,12 @@ public class BookActions
                 throws InterruptedException
         {
             try {
+                LogUtil.start(book);
+
                 for (SheetStub stub : book.getValidStubs()) {
+                    LogUtil.start(stub);
                     stub.ensureStep(Step.PAGE);
+                    LogUtil.stopStub();
                 }
 
                 book.buildScores();
@@ -1714,6 +1814,7 @@ public class BookActions
                 throws InterruptedException
         {
             try {
+                LogUtil.start(sheet);
                 sheet.ensureStep(Step.PAGE);
             } catch (Exception ex) {
                 logger.warn("Could not build page", ex);
@@ -1721,31 +1822,6 @@ public class BookActions
 
             return null;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean promptParameters = new Constant.Boolean(
-                false,
-                "Should we prompt the user for score parameters?");
-
-        private final Constant.String validImageExtensions = new Constant.String(
-                ".bmp .gif .jpg .png .tiff .tif .pdf",
-                "Valid image file extensions, whitespace-separated");
-
-        private final Constant.Boolean closeConfirmation = new Constant.Boolean(
-                true,
-                "Should we ask confirmation for closing an unsaved project?");
-
-        private final Constant.String defaultScriptDirectory = new Constant.String(
-                WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
-                "Default directory for saved scripts");
     }
 
     //---------//
@@ -1810,6 +1886,8 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
+            LogUtil.start(book);
+
             if (checkParameters(book)) {
                 book.export();
             }
@@ -1843,6 +1921,7 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
+            LogUtil.start(sheet);
             sheet.getBook().setExportPathSansExt(bookExportPathSansExt);
 
             if (checkParameters(sheet)) {
@@ -1992,6 +2071,7 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
+            LogUtil.start(book);
             book.store(projectPath);
             BookActions.getInstance().setBookModified(false);
             book.getScript().addTask(new SaveTask(projectPath, null));
@@ -2028,6 +2108,9 @@ public class BookActions
             FileOutputStream fos = null;
 
             try {
+                final Book book = script.getBook();
+                LogUtil.start(book);
+
                 Path folder = path.getParent();
 
                 if (!Files.exists(folder)) {
@@ -2039,7 +2122,7 @@ public class BookActions
                 omr.script.ScriptManager.getInstance().store(script, fos);
                 logger.info("Script stored as {}", path);
                 constants.defaultScriptDirectory.setValue(folder.toString());
-                script.getBook().setScriptPath(path);
+                book.setScriptPath(path);
             } catch (FileNotFoundException ex) {
                 logger.warn("Cannot find script file " + path + ", " + ex, ex);
             } catch (JAXBException ex) {

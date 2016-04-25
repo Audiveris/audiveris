@@ -66,6 +66,9 @@ public class RunTableHolder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // getData //
+    //---------//
     /**
      * Return the handled data.
      *
@@ -83,8 +86,8 @@ public class RunTableHolder
                         Unmarshaller um = jaxbContext.createUnmarshaller();
 
                         // Open project file system
-                        Path dataFile = sheet.getBook().openSheetFolder(sheet.getNumber())
-                                .resolve(pathString);
+                        Path dataFile = sheet.getBook().openSheetFolder(sheet.getNumber()).resolve(
+                                pathString);
                         logger.debug("path: {}", dataFile);
 
                         InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
@@ -103,11 +106,17 @@ public class RunTableHolder
         return data;
     }
 
+    //---------//
+    // hasData //
+    //---------//
     public boolean hasData ()
     {
         return data != null;
     }
 
+    //---------//
+    // setData //
+    //---------//
     public void setData (RunTable data)
     {
         this.data = data;

@@ -50,6 +50,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import omr.log.LogUtil;
 
 /**
  * Class {@code BasicStub} is the implementation of SheetStub.
@@ -143,7 +144,7 @@ public class BasicStub
         // If no stub is left, force book closing
         if (!book.isClosing()) {
             if (!book.getStubs().isEmpty()) {
-                logger.info("{}Sheet closed", getLogPrefix());
+                logger.info("Sheet closed");
             } else {
                 book.close();
             }
@@ -266,19 +267,17 @@ public class BasicStub
         return latest;
     }
 
-    //--------------//
-    // getLogPrefix //
-    //--------------//
+    //--------//
+    // getNum //
+    //--------//
     @Override
-    public String getLogPrefix ()
+    public String getNum ()
     {
-        if (BookManager.isMultiBook()) {
-            return "[" + getId() + "] ";
-        } else if (book.isMultiSheet()) {
-            return "[#" + getNumber() + "] ";
-        } else {
-            return "";
+        if (book.isMultiSheet()) {
+            return "#" + number;
         }
+
+        return "";
     }
 
     //-----------//
@@ -300,6 +299,10 @@ public class BasicStub
             synchronized (this) {
                 // We have to recheck sheet, which may have just been allocated
                 if (sheet == null) {
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        logger.warn("getSheet called on EDT");
+                    }
+
                     // Actually load the sheet
                     if (!isDone(Step.LOAD)) {
                         // LOAD not yet performed: load from book image file
@@ -330,6 +333,7 @@ public class BasicStub
                             // Complete sheet reload
                             watch.start("afterReload");
                             sheet.afterReload(this);
+                            LogUtil.start(sheet);
                             logger.info("Loaded {} {}", sheetFile, sheet.getId());
                         } catch (Exception ex) {
                             logger.warn("Error in loading sheet structure " + ex, ex);

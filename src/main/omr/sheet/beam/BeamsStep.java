@@ -78,7 +78,7 @@ public class BeamsStep
         }
 
         if (distances.getCardinality() > 0) {
-            logger.info("{}BeamDistance{{}}", sheet.getLogPrefix(), distances);
+            logger.info("BeamDistance{{}}", distances);
 
             sheet.getScale()
                     .setBeamDistance(distances.getMeanValue(), distances.getStandardDeviation());

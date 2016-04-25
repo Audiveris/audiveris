@@ -81,7 +81,7 @@ public class ScaleStep
         ScaleBuilder builder = new ScaleBuilder(sheet);
         Scale scale = builder.retrieveScale();
 
-        logger.info("{}{}", sheet.getLogPrefix(), scale);
+        logger.info("{}", scale);
 
         sheet.setScale(scale);
     }

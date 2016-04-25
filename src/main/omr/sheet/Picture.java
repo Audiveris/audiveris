@@ -370,10 +370,7 @@ public class Picture
             watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
 
             final int radius = constants.gaussianRadius.getValue();
-            logger.debug(
-                    "{}Image blurred with gaussian kernel radius: {}",
-                    sheet.getLogPrefix(),
-                    radius);
+            logger.debug("Image blurred with gaussian kernel radius: {}", radius);
 
             GaussianGrayFilter gaussianFilter = new GaussianGrayFilter(radius);
 
@@ -618,10 +615,7 @@ public class Picture
             watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
 
             final int radius = constants.medianRadius.getValue();
-            logger.debug(
-                    "{}Image filtered with median kernel radius: {}",
-                    sheet.getLogPrefix(),
-                    radius);
+            logger.debug("Image filtered with median kernel radius: {}", radius);
 
             MedianGrayFilter medianFilter = new MedianGrayFilter(radius);
 
@@ -835,7 +829,7 @@ public class Picture
     private ByteProcessor binarized (ByteProcessor src)
     {
         FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
-        logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
+        logger.info("{} {}", "Binarization", desc);
         sheet.getStub().getFilterParam().setActual(desc);
 
         PixelFilter filter = desc.getFilter(src);

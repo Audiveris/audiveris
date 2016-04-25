@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.script;
 
+import omr.log.LogUtil;
+
 import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SheetStub;
@@ -43,13 +45,19 @@ public class ScoreTask
         Book book = sheet.getBook();
 
         try {
+            LogUtil.start(book);
+
             for (SheetStub stub : book.getValidStubs()) {
+                LogUtil.start(stub);
                 stub.ensureStep(Step.PAGE);
+                LogUtil.stopStub();
             }
 
             book.buildScores();
         } catch (Exception ex) {
-            logger.warn("Could not build score(s) for book, " + ex, ex);
+            logger.warn("Could not build book score(s), {}", ex, ex);
+        } finally {
+            LogUtil.stopBook();
         }
     }
 }

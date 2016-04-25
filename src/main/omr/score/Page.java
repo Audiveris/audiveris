@@ -197,7 +197,7 @@ public class Page
 
         msg.append(": [").append(sb).append("]");
 
-        logger.info("{}{}", sheet.getLogPrefix(), msg.toString());
+        logger.info("{}", msg.toString());
     }
 
     //--------------//

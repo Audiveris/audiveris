@@ -92,7 +92,7 @@ public class BinaryStep
         //        logger.info("hasGray: {}", hasGray);
         //
         FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
-        logger.debug("{}{}", sheet.getLogPrefix(), "Binarization");
+        logger.debug("{}", "Binarization");
         sheet.getStub().getFilterParam().setActual(desc);
 
         PixelFilter filter = desc.getFilter(initial);

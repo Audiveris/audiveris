@@ -110,11 +110,11 @@ public interface SheetStub
     Step getLatestStep ();
 
     /**
-     * Report the proper prefix to use when logging a message
+     * Report the number string for this sheet in containing book
      *
-     * @return the proper prefix
+     * @return "#n" for a multi-sheet book, "" otherwise
      */
-    String getLogPrefix ();
+    String getNum ();
 
     /**
      * Report the number for this sheet in containing book

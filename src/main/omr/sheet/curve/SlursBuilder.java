@@ -68,9 +68,6 @@ import java.util.Set;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 /**
  * Class {@code SlursBuilder} builds all slur curves from a sheet skeleton.
@@ -156,7 +153,7 @@ public class SlursBuilder
             // Handle tie collisions on same chord
             handleTieCollisions();
 
-            logger.info("{}Slurs: {}", sheet.getLogPrefix(), pageSlurs.size());
+            logger.info("Slurs: {}", pageSlurs.size());
             logger.debug("Slur maxClumpSize: {}", maxClumpSize);
         } catch (Throwable ex) {
             logger.warn("Error in SlursBuilder: " + ex, ex);

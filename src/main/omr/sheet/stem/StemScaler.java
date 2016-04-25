@@ -174,7 +174,7 @@ public class StemScaler
             double ratio = constants.stemAsForeRatio.getValue();
             mainStem = (int) Math.rint(ratio * scale.getMainFore());
             maxStem = (int) Math.rint(ratio * scale.getMaxFore());
-            logger.info("{}No stem peak found, computing defaults", sheet.getLogPrefix());
+            logger.info("No stem peak found, computing defaults");
         }
 
         return new StemScale(mainStem, maxStem);

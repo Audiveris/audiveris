@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.script;
 
+import omr.log.LogUtil;
+
 import static omr.script.ScriptTask.logger;
 
 import omr.sheet.Sheet;
@@ -66,9 +68,14 @@ public class SheetStepTask
     public void core (final Sheet sheet)
             throws StepException
     {
-        sheet.ensureStep(step);
-        logger.info("End of sheet step {}", step);
-        sheet.getBook().getScript().addTask(this);
+        try {
+            LogUtil.start(sheet);
+            sheet.ensureStep(step);
+            logger.info("End of sheet step {}", step);
+            sheet.getBook().getScript().addTask(this);
+        } finally {
+            LogUtil.stopStub();
+        }
     }
 
     //-----------//

@@ -139,8 +139,7 @@ public class SectionSets
                     Section section = lag.getEntity(sectionId.id);
 
                     if (section == null) {
-                        logger.warn(
-                                sheet.getLogPrefix() + "Cannot find section for " + sectionId);
+                        logger.warn("Cannot find section for " + sectionId);
                     } else {
                         sectionSet.add(section);
                     }

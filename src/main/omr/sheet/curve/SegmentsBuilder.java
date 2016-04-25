@@ -106,7 +106,7 @@ public class SegmentsBuilder
             ///logger.info("purgeDuplicates...");
             purgeDuplicates();
 
-            logger.info("{}Segments: {}", sheet.getLogPrefix(), segments.size());
+            logger.info("Segments: {}", segments.size());
             logger.debug("Segment maxClumpSize: {}", maxClumpSize);
         } catch (Throwable ex) {
             logger.warn("Error in SegmentsBuilder: " + ex, ex);

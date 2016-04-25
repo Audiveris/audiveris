@@ -21,15 +21,15 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
 import omr.glyph.GlyphFactory;
+import omr.glyph.GlyphIndex;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
+import omr.glyph.Symbol.Group;
 
 import omr.math.Clustering;
 import omr.math.Population;
 import omr.math.Projection;
-
 import static omr.run.Orientation.VERTICAL;
-
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -76,8 +76,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import omr.glyph.GlyphIndex;
-import omr.glyph.Symbol.Group;
 
 /**
  * Class {@code KeyBuilder} retrieves a staff key signature through the projection
@@ -376,8 +374,7 @@ public class KeyBuilder
 
                 if (alter.getIntegerPitch() != std) {
                     logger.info(
-                            "{}Staff#{} slice index:{} pitch adjusted from {} to {}",
-                            sheet.getLogPrefix(),
+                            "Staff#{} slice index:{} pitch adjusted from {} to {}",
                             staff.getId(),
                             i,
                             alter.getIntegerPitch(),
@@ -1029,15 +1026,13 @@ public class KeyBuilder
                 // Set range.start here, since first chunk may be later skipped if lacking peak
                 range.start = space.stop + 1;
             }
-        } else // Make sure we have some item
-         if (peaks.isEmpty()) {
-                range.start = space.stop + 1;
-            } else // Second (wide) space stops it
-             if (space.getWidth() > params.maxInnerSpace) {
-                    range.stop = space.start;
-                    space.setWide();
-                    keepOn = false;
-                }
+        } else if (peaks.isEmpty()) {
+            range.start = space.stop + 1;
+        } else if (space.getWidth() > params.maxInnerSpace) {
+            range.stop = space.start;
+            space.setWide();
+            keepOn = false;
+        }
 
         events.add(space);
 
@@ -1070,6 +1065,7 @@ public class KeyBuilder
         purgeGlyphs(glyphs, rect);
 
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+
         for (ListIterator<Glyph> li = glyphs.listIterator(); li.hasNext();) {
             Glyph glyph = li.next();
             glyph = glyphIndex.registerOriginal(glyph);
@@ -1583,18 +1579,13 @@ public class KeyBuilder
                     if (index != null) {
                         if (index > i) {
                             // Insert missing slice!
-                            logger.debug(
-                                    "{}Staff#{} slice inserted at index:{}",
-                                    sheet.getLogPrefix(),
-                                    builder.getId(),
-                                    i);
+                            logger.debug("Staff#{} slice inserted at index:{}", builder.getId(), i);
                             builder.insertSlice(i, globalOffsets.get(i));
                         }
                     } else {
                         // Slice too far on left
                         logger.debug(
-                                "{}Staff#{} misaligned slice index:{} x:{}",
-                                sheet.getLogPrefix(),
+                                "Staff#{} misaligned slice index:{} x:{}",
                                 builder.getId(),
                                 i,
                                 x);

@@ -25,17 +25,15 @@ import omr.lag.JunctionRatioPolicy;
 import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionFactory;
-import omr.lag.Sections;
 import omr.lag.SectionTally;
+import omr.lag.Sections;
 
 import omr.math.LineUtil;
 import omr.math.NaturalSpline;
 import omr.math.Population;
 
 import omr.run.Orientation;
-
 import static omr.run.Orientation.*;
-
 import omr.run.Run;
 import omr.run.RunTable;
 
@@ -55,14 +53,11 @@ import omr.ui.util.UIUtil;
 import omr.util.Dumping;
 import omr.util.Entities;
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.TOP;
 
 import ij.process.ByteProcessor;
@@ -432,7 +427,7 @@ public class LinesRetriever
             watch.start("retrieveGlobalSlope");
             globalSlope = retrieveGlobalSlope();
             sheet.setSkew(new Skew(globalSlope, sheet));
-            logger.info("{}Sheet slope: {}", sheet.getLogPrefix(), (float) globalSlope);
+            logger.info("Global slope: {}", String.format("%.5f", globalSlope));
 
             // Purge sloped filaments
             purgeSlopedFilaments();
@@ -453,10 +448,7 @@ public class LinesRetriever
             if ((secondInterline != null) && !discardedFilaments.isEmpty()) {
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Entities.byId);
-                logger.info(
-                        "{}Searching clusters with secondInterline: {}",
-                        sheet.getLogPrefix(),
-                        secondInterline);
+                logger.info("Searching clusters with secondInterline: {}", secondInterline);
                 secondClustersRetriever = new ClustersRetriever(
                         sheet,
                         secondFilaments,
@@ -1109,10 +1101,7 @@ public class LinesRetriever
         }
 
         if (!toRemove.isEmpty()) {
-            logger.debug(
-                    "{}Discarded curved line filaments: {}",
-                    sheet.getLogPrefix(),
-                    toRemove.size());
+            logger.debug("Discarded curved line filaments: {}", toRemove.size());
             filaments.removeAll(toRemove);
         }
     }
@@ -1146,7 +1135,7 @@ public class LinesRetriever
         }
 
         if (!toRemove.isEmpty()) {
-            logger.debug("{}Discarded sloped filaments: {}", sheet.getLogPrefix(), toRemove.size());
+            logger.debug("Discarded sloped filaments: {}", toRemove.size());
             filaments.removeAll(toRemove);
         }
     }

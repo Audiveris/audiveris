@@ -326,7 +326,7 @@ public class TextBuilder
      */
     public void dumpTextLines (String title)
     {
-        logger.info("{} {} lines: {}", title, sheet.getLogPrefix(), textLines.size());
+        logger.info("{} lines: {}", title, textLines.size());
 
         for (TextLine line : textLines) {
             logger.info("   {}", line);

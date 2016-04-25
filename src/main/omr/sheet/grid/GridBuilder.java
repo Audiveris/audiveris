@@ -143,7 +143,7 @@ public class GridBuilder
                 targetBuilder.buildInfo();
             }
         } catch (Throwable ex) {
-            logger.warn(sheet.getLogPrefix() + "Error in GridBuilder: " + ex, ex);
+            logger.warn("Error in GridBuilder: {}", ex, ex);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();

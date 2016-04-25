@@ -710,13 +710,13 @@ public class BasicSheet
         return locationService;
     }
 
-    //--------------//
-    // getLogPrefix //
-    //--------------//
+    //--------//
+    // getNum //
+    //--------//
     @Override
-    public String getLogPrefix ()
+    public String getNum ()
     {
-        return stub.getLogPrefix();
+        return stub.getNum();
     }
 
     //-----------//
@@ -1146,7 +1146,7 @@ public class BasicSheet
 
             for (Step step : mySteps) {
                 watch.start(step.name());
-                StepMonitoring.notifyMsg(getLogPrefix() + step);
+                StepMonitoring.notifyMsg(step.toString());
                 doOneStep(step, systems);
             }
 
@@ -1157,11 +1157,11 @@ public class BasicSheet
 
             return true; // Normal exit
         } catch (StepException se) {
-            logger.info("{}Processing stopped. {}", getLogPrefix(), se.getMessage());
+            logger.info("Processing stopped. {}", se.getMessage());
         } catch (ProcessingCancellationException pce) {
             throw pce;
         } catch (Exception ex) {
-            logger.warn(getLogPrefix() + "Error in performing " + mySteps + " " + ex, ex);
+            logger.warn("Error in performing " + mySteps + " " + ex, ex);
         } finally {
             stub.setModified(true); // At end of processing
             StepMonitoring.notifyStop();
@@ -1199,7 +1199,7 @@ public class BasicSheet
     {
         try {
             long startTime = System.currentTimeMillis();
-            logger.debug("{}{} starting", getLogPrefix(), step);
+            logger.debug("{} starting", step);
             setCurrentStep(step);
 
             // Reset sheet relevant data
@@ -1217,7 +1217,7 @@ public class BasicSheet
 
             final long stopTime = System.currentTimeMillis();
             final long duration = stopTime - startTime;
-            logger.debug("{}{} completed in {} ms", getLogPrefix(), step, duration);
+            logger.debug("{} completed in {} ms", step, duration);
 
             done(step); // Full completion
         } catch (StepException ex) {

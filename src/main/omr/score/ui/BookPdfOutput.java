@@ -122,6 +122,8 @@ public class BookPdfOutput
                 // This is the end...
                 g2.dispose();
             }
+
+            logger.info("Book printed to {}", file);
         } finally {
             if (document != null) {
                 document.close();

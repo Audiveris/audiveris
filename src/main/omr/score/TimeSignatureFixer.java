@@ -158,8 +158,7 @@ public class TimeSignatureFixer
             }
         });
         logger.debug(
-                "{}Best inferred time sigs in [M#{},M#{}]: {}",
-                startStack.getSystem().getPage().getSheet().getLogPrefix(),
+                "Best inferred time sigs in [M#{},M#{}]: {}",
                 startStack.getIdValue(),
                 stopStack.getIdValue(),
                 sigs);
@@ -186,8 +185,7 @@ public class TimeSignatureFixer
 
                             if ((timeRational == null) || !timeRational.equals(bestRational)) {
                                 logger.info(
-                                        "{}Measure#{} {}T{} {}->{}",
-                                        measure.getPart().getSystem().getSheet().getLogPrefix(),
+                                        "Measure#{} {}T{} {}->{}",
                                         measure.getStack().getPageId(),
                                         staff.getId(),
                                         staff.getId(),

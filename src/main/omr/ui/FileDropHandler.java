@@ -15,6 +15,8 @@ import omr.OMR;
 
 import omr.constant.ConstantSet;
 
+import omr.log.LogUtil;
+
 import omr.script.ScriptManager;
 
 import omr.sheet.Book;
@@ -199,17 +201,22 @@ public class FileDropHandler
         {
             logger.info("Dropping book file {}", file);
 
-            final Book book = OMR.engine.loadInput(file.toPath());
-            book.createStubs(null);
-            book.createStubsTabs(); // Tabs are now accessible
+            try {
+                final Book book = OMR.engine.loadInput(file.toPath());
+                LogUtil.start(book);
+                book.createStubs(null);
+                book.createStubsTabs(); // Tabs are now accessible
 
-            // If a specific drop target is specified, run it on book as a whole
-            // Otherwise run the early target on first stub only.
-            if (dropStep != null) {
-                book.doStep(dropStep, null);
+                // If a specific drop target is specified, run it on book as a whole
+                // Otherwise run the early target on first stub only.
+                if (dropStep != null) {
+                    book.doStep(dropStep, null);
+                }
+
+                return null;
+            } finally {
+                LogUtil.stopBook();
             }
-
-            return null;
         }
     }
 
