@@ -130,7 +130,7 @@ public abstract class LogUtil
         fileAppender.setAppend(false);
 
         String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(new Date());
-        logFile = Paths.get(System.getProperty("java.io.tmpdir"), "audiveris-" + now + ".log");
+        logFile = Paths.get(System.getProperty("user.home"), "audiveris-" + now + ".log");
         fileAppender.setFile(logFile.toAbsolutePath().toString());
         fileEncoder.setContext(loggerContext);
         fileEncoder.setPattern("%date %level \\(%file:%line\\) [%X{BOOK}%X{SHEET}] %msg%ex%n");
