@@ -1073,7 +1073,7 @@ public class BarsRetriever
             }
 
             if (!allGroups.isEmpty()) {
-                logger.info(stringOf(allGroups, system));
+                dumpGroups(allGroups, system);
             }
         }
     }
@@ -1345,6 +1345,19 @@ public class BarsRetriever
             if ((startColumn != null) && logger.isDebugEnabled()) {
                 logger.debug("{} startColumn: {}", system, startColumn);
             }
+        }
+    }
+
+    //------------//
+    // dumpGroups //
+    //------------//
+    private void dumpGroups (List<PartGroup> groups,
+                             SystemInfo system)
+    {
+        logger.info("System#{}", system.getId());
+
+        for (PartGroup group : groups) {
+            logger.info("   {}", group);
         }
     }
 
@@ -2418,22 +2431,6 @@ public class BarsRetriever
         for (StaffProjector projector : projectors) {
             projector.refineRightEnd();
         }
-    }
-
-    //----------//
-    // stringOf //
-    //----------//
-    private String stringOf (List<PartGroup> groups,
-                             SystemInfo system)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("System#").append(system.getId());
-
-        for (PartGroup group : groups) {
-            sb.append("\n   ").append(group);
-        }
-
-        return sb.toString();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

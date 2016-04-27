@@ -614,6 +614,8 @@ public class MainGui
                         ba.getInputHistoryMenu().populate((JMenu) item, BookActions.class);
                     } else if (itemName.equals("projectHistory")) {
                         ba.getProjectHistoryMenu().populate((JMenu) item, BookActions.class);
+                    } else if (itemName.equals("scriptHistory")) {
+                        ba.getScriptHistoryMenu().populate((JMenu) item, BookActions.class);
                     }
                 }
             }

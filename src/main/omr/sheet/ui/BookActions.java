@@ -12,7 +12,6 @@
 package omr.sheet.ui;
 
 import omr.OMR;
-import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -136,6 +135,9 @@ public class BookActions
     /** Sub-menu on projects history. */
     private final HistoryMenu projectHistoryMenu;
 
+    /** Sub-menu on scripts history. */
+    private final HistoryMenu scriptHistoryMenu;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BookActions object.
@@ -143,8 +145,9 @@ public class BookActions
     private BookActions ()
     {
         final BookManager mgr = BookManager.getInstance();
-        inputHistoryMenu = new HistoryMenu(mgr.getInputHistory(), OpenTask.class);
+        inputHistoryMenu = new HistoryMenu(mgr.getInputHistory(), OpenInputTask.class);
         projectHistoryMenu = new HistoryMenu(mgr.getProjectHistory(), OpenProjectTask.class);
+        scriptHistoryMenu = new HistoryMenu(mgr.getScriptHistory(), LoadScriptTask.class);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -729,6 +732,14 @@ public class BookActions
         return projectHistoryMenu;
     }
 
+    //----------------------//
+    // getScriptHistoryMenu //
+    //----------------------//
+    public HistoryMenu getScriptHistoryMenu ()
+    {
+        return scriptHistoryMenu;
+    }
+
     //-----------------//
     // invalidateSheet //
     //-----------------//
@@ -808,7 +819,7 @@ public class BookActions
         final Path path = UIUtil.pathChooser(
                 false,
                 OMR.gui.getFrame(),
-                Paths.get(constants.defaultScriptDirectory.getValue()),
+                Paths.get(BookManager.getDefaultScriptFolder()),
                 new OmrFileFilter("Score script files", new String[]{OMR.SCRIPT_EXTENSION}));
 
         if (path != null) {
@@ -854,7 +865,7 @@ public class BookActions
      * @return the asynchronous task, or null
      */
     @Action
-    public OpenTask openImageFile (ActionEvent e)
+    public OpenInputTask openImageFile (ActionEvent e)
     {
         String suffixes = constants.validImageExtensions.getValue();
         String allSuffixes = suffixes + " " + suffixes.toUpperCase();
@@ -868,7 +879,7 @@ public class BookActions
 
         if (path != null) {
             if (Files.exists(path)) {
-                return new OpenTask(path);
+                return new OpenInputTask(path);
             } else {
                 logger.warn("File not found {}", path);
             }
@@ -1175,7 +1186,8 @@ public class BookActions
         }
 
         // Let the user select a project output file
-        final Path projectPath = selectProjectPath(true, BookManager.getDefaultProjectPath(book));
+        final Path defaultProjectPath = BookManager.getDefaultProjectPath(book);
+        final Path projectPath = selectProjectPath(true, defaultProjectPath);
         final Path bookPath = book.getProjectPath();
 
         if ((projectPath != null)
@@ -1244,7 +1256,7 @@ public class BookActions
         Path scriptPath = UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
-                getDefaultScriptPath(book),
+                BookManager.getDefaultScriptPath(book),
                 new OmrFileFilter("Script files", new String[]{OMR.SCRIPT_EXTENSION}));
 
         if (scriptPath != null) {
@@ -1456,23 +1468,6 @@ public class BookActions
         return new OmrFileFilter(ext, new String[]{ext});
     }
 
-    //----------------------//
-    // getDefaultScriptPath //
-    //----------------------//
-    /**
-     * Report the default path where the script should be written to
-     *
-     * @param book the containing book
-     * @return the default path for saving the script
-     */
-    private Path getDefaultScriptPath (Book book)
-    {
-        return (book.getScriptPath() != null) ? book.getScriptPath()
-                : Paths.get(
-                        constants.defaultScriptDirectory.getValue(),
-                        book.getRadix() + OMR.SCRIPT_EXTENSION);
-    }
-
     //-------------------//
     // selectProjectPath //
     //-------------------//
@@ -1496,6 +1491,115 @@ public class BookActions
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // LoadScriptTask //
+    //----------------//
+    public static class LoadScriptTask
+            extends PathTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public LoadScriptTask (Path path)
+        {
+            super(path);
+        }
+
+        public LoadScriptTask ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            // Actually run the script
+            logger.info("Running script file {} ...", path);
+
+            FileInputStream is = null;
+
+            try {
+                is = new FileInputStream(path.toFile());
+
+                final Script script = ScriptManager.getInstance().load(is);
+
+                if (logger.isDebugEnabled()) {
+                    script.dump();
+                }
+
+                // Remember (even across runs) the parent directory
+                BookManager.setDefaultScriptFolder(path.getParent().toString());
+                BookManager.getInstance().getScriptHistory().add(path);
+                script.run();
+            } catch (FileNotFoundException ex) {
+                logger.warn("Cannot find script file {}", path);
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                        logger.warn("Error closing script file {}", path);
+                    }
+                }
+            }
+
+            return null;
+        }
+    }
+
+    //---------------//
+    // OpenInputTask //
+    //---------------//
+    /**
+     * Task that opens a book image file.
+     */
+    public static class OpenInputTask
+            extends PathTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public OpenInputTask (Path path)
+        {
+            super(path);
+        }
+
+        public OpenInputTask ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            if (Files.exists(path)) {
+                try {
+                    // Actually open the image file
+                    Book book = OMR.engine.loadInput(path);
+                    LogUtil.start(book);
+                    book.createStubs(null);
+                    book.createStubsTabs(); // Tabs are now accessible
+
+                    // Launch early steps on first stub
+                    SheetStub stub = book.getFirstValidStub();
+
+                    if (stub != null) {
+                        LogUtil.start(stub);
+                        stub.ensureStep(StubsController.getEarlyStep());
+                    }
+                } catch (Exception ex) {
+                    logger.warn("Error opening path " + path + " " + ex, ex);
+                } finally {
+                    LogUtil.stopBook();
+                }
+            } else {
+                logger.warn("Path {} does not exist", path);
+            }
+
+            return null;
+        }
+    }
+
     //-----------------//
     // OpenProjectTask //
     //-----------------//
@@ -1522,55 +1626,13 @@ public class BookActions
                 throws InterruptedException
         {
             if (Files.exists(path)) {
-                // Actually open the project
-                Book book = OMR.engine.loadProject(path);
-                LogUtil.start(book);
-                book.createStubsTabs(); // Tabs are now accessible
-            } else {
-                logger.warn("Path {} does not exist", path);
-            }
-
-            return null;
-        }
-    }
-
-    //----------//
-    // OpenTask //
-    //----------//
-    /**
-     * Task that opens a book image file.
-     */
-    public static class OpenTask
-            extends PathTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public OpenTask (Path path)
-        {
-            super(path);
-        }
-
-        public OpenTask ()
-        {
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            if (Files.exists(path)) {
                 try {
-                    // Actually open the image file
-                    Book book = OMR.engine.loadInput(path);
+                    // Actually open the project
+                    Book book = OMR.engine.loadProject(path);
                     LogUtil.start(book);
-                    book.createStubs(null);
                     book.createStubsTabs(); // Tabs are now accessible
-
-                    // Launch early steps on first stub
-                    book.getFirstValidStub().ensureStep(StubsController.getEarlyStep());
-                } catch (Exception ex) {
-                    logger.warn("Error opening path " + path + " " + ex, ex);
+                } finally {
+                    LogUtil.stopBook();
                 }
             } else {
                 logger.warn("Path {} does not exist", path);
@@ -1605,14 +1667,18 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            LogUtil.start(book);
-            book.setPrintPath(bookPrintPath);
-            //
-            //            for (Sheet sheet : book.getStubs()) {
-            //                sheet.ensureStep(Step.PAGE);
-            //            }
-            //
-            book.print();
+            try {
+                LogUtil.start(book);
+                book.setPrintPath(bookPrintPath);
+                //
+                //            for (Sheet sheet : book.getStubs()) {
+                //                sheet.ensureStep(Step.PAGE);
+                //            }
+                //
+                book.print();
+            } finally {
+                LogUtil.stopBook();
+            }
 
             return null;
         }
@@ -1643,53 +1709,14 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            LogUtil.start(sheet);
-            sheet.print(sheetPrintPath);
-
-            return null;
-        }
-    }
-
-    //---------------//
-    // CloseBookTask //
-    //---------------//
-    private static class CloseBookTask
-            extends BasicTask
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final Book book;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Create an asynchronous task to close the book.
-         *
-         * @param book the book to close
-         */
-        public CloseBookTask (Book book)
-        {
-            this.book = book;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-
-            LogUtil.start(book);
-
-            if (checkStored(book)) {
-                // Pre-select the suitable "next" book tab
-                StubsController.getInstance().selectOtherBook(book);
-
-                // Now close the book (+ related tab)
-                LogUtil.start(book);
-                book.close();
+            try {
+                LogUtil.start(sheet);
+                sheet.print(sheetPrintPath);
+            } finally {
+                LogUtil.stopBook();
             }
 
             return null;
-
         }
     }
 
@@ -1712,10 +1739,6 @@ public class BookActions
         private final Constant.Boolean closeConfirmation = new Constant.Boolean(
                 true,
                 "Should we ask confirmation for closing an unsaved project?");
-
-        private final Constant.String defaultScriptDirectory = new Constant.String(
-                WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
-                "Default directory for saved scripts");
     }
 
     //---------------//
@@ -1747,6 +1770,8 @@ public class BookActions
                 }
             } catch (Exception ex) {
                 logger.warn("Could not build book", ex);
+            } finally {
+                LogUtil.stopBook();
             }
 
             return null;
@@ -1786,6 +1811,8 @@ public class BookActions
                 book.buildScores();
             } catch (Exception ex) {
                 logger.warn("Could not build score(s) of book, " + ex, ex);
+            } finally {
+                LogUtil.stopBook();
             }
 
             return null;
@@ -1818,6 +1845,53 @@ public class BookActions
                 sheet.ensureStep(Step.PAGE);
             } catch (Exception ex) {
                 logger.warn("Could not build page", ex);
+            } finally {
+                LogUtil.stopBook();
+            }
+
+            return null;
+        }
+    }
+
+    //---------------//
+    // CloseBookTask //
+    //---------------//
+    private static class CloseBookTask
+            extends BasicTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Book book;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create an asynchronous task to close the book.
+         *
+         * @param book the book to close
+         */
+        public CloseBookTask (Book book)
+        {
+            this.book = book;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                LogUtil.start(book);
+
+                if (checkStored(book)) {
+                    // Pre-select the suitable "next" book tab
+                    StubsController.getInstance().selectOtherBook(book);
+
+                    // Now close the book (+ related tab)
+                    LogUtil.start(book);
+                    book.close();
+                }
+            } finally {
+                LogUtil.stopBook();
             }
 
             return null;
@@ -1886,10 +1960,14 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            LogUtil.start(book);
+            try {
+                LogUtil.start(book);
 
-            if (checkParameters(book)) {
-                book.export();
+                if (checkParameters(book)) {
+                    book.export();
+                }
+            } finally {
+                LogUtil.stopBook();
             }
 
             return null;
@@ -1921,66 +1999,16 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            LogUtil.start(sheet);
-            sheet.getBook().setExportPathSansExt(bookExportPathSansExt);
-
-            if (checkParameters(sheet)) {
-                sheet.ensureStep(Step.PAGE);
-                sheet.export();
-            }
-
-            return null;
-        }
-    }
-
-    //----------------//
-    // LoadScriptTask //
-    //----------------//
-    private static class LoadScriptTask
-            extends BasicTask
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Path path;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        LoadScriptTask (Path path)
-        {
-            this.path = path;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            // Actually run the script
-            logger.info("Running script file {} ...", path);
-
-            FileInputStream is = null;
-
             try {
-                is = new FileInputStream(path.toFile());
+                LogUtil.start(sheet);
+                sheet.getBook().setExportPathSansExt(bookExportPathSansExt);
 
-                final Script script = ScriptManager.getInstance().load(is);
-
-                if (logger.isDebugEnabled()) {
-                    script.dump();
+                if (checkParameters(sheet)) {
+                    sheet.ensureStep(Step.PAGE);
+                    sheet.export();
                 }
-
-                // Remember (even across runs) the parent directory
-                constants.defaultScriptDirectory.setValue(path.getParent().toString());
-                script.run();
-            } catch (FileNotFoundException ex) {
-                logger.warn("Cannot find script file {}", path);
             } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ex) {
-                        logger.warn("Error closing script file {}", path);
-                    }
-                }
+                LogUtil.stopBook();
             }
 
             return null;
@@ -2071,10 +2099,14 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            LogUtil.start(book);
-            book.store(projectPath);
-            BookActions.getInstance().setBookModified(false);
-            book.getScript().addTask(new SaveTask(projectPath, null));
+            try {
+                LogUtil.start(book);
+                book.store(projectPath);
+                BookActions.getInstance().setBookModified(false);
+                book.getScript().addTask(new SaveTask(projectPath, null));
+            } finally {
+                LogUtil.stopBook();
+            }
 
             return null;
         }
@@ -2121,7 +2153,7 @@ public class BookActions
                 fos = new FileOutputStream(path.toFile());
                 omr.script.ScriptManager.getInstance().store(script, fos);
                 logger.info("Script stored as {}", path);
-                constants.defaultScriptDirectory.setValue(folder.toString());
+                BookManager.setDefaultScriptFolder(folder.toString());
                 book.setScriptPath(path);
             } catch (FileNotFoundException ex) {
                 logger.warn("Cannot find script file " + path + ", " + ex, ex);
@@ -2136,6 +2168,8 @@ public class BookActions
                     } catch (IOException ignored) {
                     }
                 }
+
+                LogUtil.stopBook();
             }
 
             return null;

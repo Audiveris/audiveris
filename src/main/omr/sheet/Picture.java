@@ -604,6 +604,26 @@ public class Picture
         return tables.get(key) != null;
     }
 
+    //---------------//
+    // hasTableReady //
+    //---------------//
+    /**
+     * Report whether the desired table is known and loaded.
+     *
+     * @param key key of desired table
+     * @return true if we have a tableHolder with loaded data
+     */
+    public boolean hasTableReady (TableKey key)
+    {
+        RunTableHolder tableHolder = tables.get(key);
+
+        if (tableHolder == null) {
+            return false;
+        }
+
+        return tableHolder.hasData();
+    }
+
     //----------------//
     // medianFiltered //
     //----------------//

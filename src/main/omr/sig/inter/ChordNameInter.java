@@ -161,7 +161,7 @@ public class ChordNameInter
     };
 
     /** Compiled patterns for whole chord symbol. */
-    private static List<Pattern> patterns = null;
+    private static List<Pattern> patterns;
 
     /** Pattern for one degree. (in a sequence of degrees) */
     private static final String degPat = group(DEG_ALTER, Alter.CLASS) + "?"

@@ -186,6 +186,9 @@ public abstract class WellKnowns
     /** The default folder where scores data is stored. */
     public static final Path DEFAULT_SCORES_FOLDER = DATA_FOLDER.resolve("scores");
 
+    /** The default base for separate folders. */
+    public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER;
+
     static {
         /** Logging configuration. */
         LogUtil.initialize(CONFIG_FOLDER);

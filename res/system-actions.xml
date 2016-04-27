@@ -17,6 +17,7 @@
     
     <action domain="FILE" section="10" class="omr.sheet.ui.BookActions" menu="inputHistory"         button="javax.swing.JButton"/>
     <action domain="FILE" section="10" class="omr.sheet.ui.BookActions" method="openImageFile"      button="javax.swing.JButton"/>
+    <action domain="FILE" section="20" class="omr.sheet.ui.BookActions" menu="scriptHistory"        button="javax.swing.JButton"/>
     <action domain="FILE" section="20" class="omr.sheet.ui.BookActions" method="loadScript"/>
     <action domain="FILE" section="20" class="omr.sheet.ui.BookActions" method="storeScript"/>
     <action domain="FILE" section="20" class="omr.sheet.ui.BookActions" method="storeScriptAs"/>

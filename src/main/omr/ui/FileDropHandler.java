@@ -114,7 +114,7 @@ public class FileDropHandler
                 } else if (fileName.endsWith(OMR.PROJECT_EXTENSION)) {
                     new DropProjectTask(file).execute();
                 } else {
-                    new DropImageTask(file, defaultStep.getTarget()).execute();
+                    new DropInputTask(file, defaultStep.getTarget()).execute();
                 }
             }
         } catch (UnsupportedFlavorException ex) {
@@ -175,9 +175,9 @@ public class FileDropHandler
     }
 
     //---------------//
-    // DropImageTask //
+    // DropInputTask //
     //---------------//
-    private static class DropImageTask
+    private static class DropInputTask
             extends BasicTask
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -187,7 +187,7 @@ public class FileDropHandler
         private final Step dropStep;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public DropImageTask (File file,
+        public DropInputTask (File file,
                               Step dropStep)
         {
             this.file = file;
@@ -199,7 +199,7 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            logger.info("Dropping book file {}", file);
+            logger.info("Dropping input file {}", file);
 
             try {
                 final Book book = OMR.engine.loadInput(file.toPath());

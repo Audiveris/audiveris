@@ -14,6 +14,7 @@ package omr.script;
 import omr.OMR;
 
 import omr.sheet.Book;
+import omr.sheet.BookManager;
 import omr.sheet.Sheet;
 
 import java.nio.file.Path;
@@ -74,6 +75,11 @@ public class SaveTask
                         ? Paths.get(
                                 folder.toString(),
                                 book.getRadix() + OMR.PROJECT_EXTENSION) : null);
+
+        if (projectPath == null) {
+            projectPath = BookManager.getDefaultProjectPath(book);
+        }
+
         book.store(projectPath);
     }
 

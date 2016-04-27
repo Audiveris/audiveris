@@ -43,9 +43,6 @@ public abstract class LogUtil
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** MDC key for context. */
-    public static final String CONTEXT = "CONTEXT";
-
     /** MDC key for book context. */
     public static final String BOOK = "BOOK";
 
@@ -59,6 +56,38 @@ public abstract class LogUtil
     private static final String LOGBACK_FILE_NAME = "logback.xml";
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // addAppender //
+    //-------------//
+    /**
+     * Start a specific file logging, typically for the processing of a given project.
+     *
+     * @param name      appender name (typically the book radix)
+     * @param logFolder target folder where the log file is to be written
+     */
+    public static void addAppender (String name,
+                                    Path logFolder)
+    {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+                Logger.ROOT_LOGGER_NAME);
+        FileAppender fileAppender = new FileAppender();
+        PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
+        fileAppender.setName(name);
+        fileAppender.setContext(loggerContext);
+        fileAppender.setAppend(false);
+
+        String now = new SimpleDateFormat("yyyyMMdd'T'HHmm").format(new Date());
+        Path logFile = logFolder.resolve(name + "-" + now + ".log");
+        fileAppender.setFile(logFile.toAbsolutePath().toString());
+        fileEncoder.setContext(loggerContext);
+        fileEncoder.setPattern("%date %level [%X{BOOK}%X{SHEET}] %25file:%-4line | %msg%n%ex");
+        fileEncoder.start();
+        fileAppender.setEncoder(fileEncoder);
+        fileAppender.start();
+        root.addAppender(fileAppender);
+    }
+
     //------------//
     // initialize //
     //------------//
@@ -155,6 +184,21 @@ public abstract class LogUtil
         root.info("Logging to file {}", logFile.toAbsolutePath());
     }
 
+    //----------------//
+    // removeAppender //
+    //----------------//
+    /**
+     * Terminate the specific file logging.
+     *
+     * @param name appender name (typically the book radix)
+     */
+    public static void removeAppender (String name)
+    {
+        Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+                Logger.ROOT_LOGGER_NAME);
+        root.detachAppender(name);
+    }
+
     //-------//
     // start //
     //-------//
@@ -169,6 +213,7 @@ public abstract class LogUtil
 
         if (!SwingUtilities.isEventDispatchThread()) {
             MDC.put(SHEET, stub.getNum());
+
             ///System.out.println("startSheet '" + stub.getNum() + "' on " + Thread.currentThread());
         }
     }
@@ -185,6 +230,7 @@ public abstract class LogUtil
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             MDC.put(BOOK, book.getRadix());
+
             ///System.out.println("startBook '" + book.getRadix() + "' on " + Thread.currentThread());
         }
     }
@@ -201,6 +247,7 @@ public abstract class LogUtil
 
         if (!SwingUtilities.isEventDispatchThread()) {
             MDC.remove(BOOK);
+
             ///System.out.println("stopBook on " + Thread.currentThread());
         }
     }
@@ -215,6 +262,7 @@ public abstract class LogUtil
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             MDC.remove(SHEET);
+
             ///System.out.println("stopSheet on " + Thread.currentThread());
         }
     }

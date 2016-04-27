@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.image.FilterDescriptor;
 
+import omr.log.LogUtil;
+
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.StubsController;
 
@@ -50,7 +52,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import omr.log.LogUtil;
 
 /**
  * Class {@code BasicStub} is the implementation of SheetStub.
@@ -299,10 +300,10 @@ public class BasicStub
             synchronized (this) {
                 // We have to recheck sheet, which may have just been allocated
                 if (sheet == null) {
-                    if (SwingUtilities.isEventDispatchThread()) {
-                        logger.warn("getSheet called on EDT");
-                    }
-
+                    //                    if (SwingUtilities.isEventDispatchThread()) {
+                    //                        logger.warn("getSheet called on EDT");
+                    //                    }
+                    //
                     // Actually load the sheet
                     if (!isDone(Step.LOAD)) {
                         // LOAD not yet performed: load from book image file
@@ -334,7 +335,7 @@ public class BasicStub
                             watch.start("afterReload");
                             sheet.afterReload(this);
                             LogUtil.start(sheet);
-                            logger.info("Loaded {} {}", sheetFile, sheet.getId());
+                            logger.info("Loaded {}", sheetFile);
                         } catch (Exception ex) {
                             logger.warn("Error in loading sheet structure " + ex, ex);
                         } finally {

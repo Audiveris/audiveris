@@ -14,6 +14,7 @@ package omr.script;
 import omr.OMR;
 
 import omr.sheet.Book;
+import omr.sheet.BookManager;
 
 import omr.step.ProcessingCancellationException;
 
@@ -107,9 +108,12 @@ public class ScriptManager
         try {
             long start = System.currentTimeMillis();
             logger.info("Loading script file {} ...", file);
+
             try (FileInputStream fis = new FileInputStream(file)) {
                 script = load(fis);
             }
+
+            BookManager.getInstance().getScriptHistory().add(file.toPath());
             script.run();
 
             long stop = System.currentTimeMillis();

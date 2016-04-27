@@ -18,13 +18,16 @@ import omr.script.PrintTask;
 import omr.script.SaveTask;
 
 import omr.sheet.Book;
+import omr.sheet.BookManager;
 import omr.sheet.SheetStub;
 
 import omr.step.ProcessingCancellationException;
 import omr.step.Step;
 
 import omr.util.Dumping;
+import omr.util.FileUtil;
 
+import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -32,6 +35,7 @@ import org.kohsuke.args4j.OptionDef;
 import org.kohsuke.args4j.spi.FieldSetter;
 import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Setter;
+import org.kohsuke.args4j.spi.StopOptionHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,13 +156,18 @@ public class CLI
      *
      * @return the collection of tasks
      */
-    public List<Callable<Void>> getCliTasks ()
+    public List<CliTask> getCliTasks ()
     {
-        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+        List<CliTask> tasks = new ArrayList<CliTask>();
 
         // Inputs
         for (Path input : params.inputFiles) {
             tasks.add(new InputTask(input));
+        }
+
+        // Arguments are considered as inputs
+        for (Path argument : params.arguments) {
+            tasks.add(new InputTask(argument));
         }
 
         // Projects
@@ -362,6 +371,79 @@ public class CLI
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // CliTask //
+    //---------//
+    /**
+     * Define a CLI task on a book (input, project or script).
+     */
+    public abstract static class CliTask
+            implements Callable<Void>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Source file path. */
+        public final Path path;
+
+        /** Radix. */
+        private final String radix;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public CliTask (Path path)
+        {
+            this.path = path;
+
+            String nameSansExt = FileUtil.getNameSansExtension(path);
+            String alias = BookManager.getInstance().getAlias(nameSansExt);
+            radix = ((alias != null) && !alias.isEmpty()) ? alias : nameSansExt;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public Void call ()
+                throws Exception
+        {
+            // Check source does exist
+            if (!Files.exists(path)) {
+                String msg = "Could not find file " + path;
+                logger.warn(msg);
+                throw new RuntimeException(msg);
+            }
+
+            // Obtain the book instance
+            final Book book = loadBook(path);
+
+            // Process the book instance
+            processBook(book);
+
+            return null;
+        }
+
+        /**
+         * @return the radix
+         */
+        public String getRadix ()
+        {
+            return radix;
+        }
+
+        /** Getting the book instance.
+         *
+         * @param path path to source
+         * @return the loaded book
+         */
+        protected abstract Book loadBook (Path path);
+
+        /** Processing the book instance.
+         *
+         * @param book the book to process
+         */
+        protected void processBook (Book book)
+        {
+            // Void by default
+        }
+    }
+
     //-----------------------//
     // IntArrayOptionHandler //
     //-----------------------//
@@ -492,6 +574,11 @@ public class CLI
                                            + " (ignored if -saveAs is used)", metaVar = "<project-folder>")
         Path saveFolder;
 
+        /** Final arguments, with optional "--" separator. */
+        @Argument
+        @Option(name = "--", handler = StopOptionHandler.class)
+        List<Path> arguments = new ArrayList<Path>();
+
         //~ Constructors ---------------------------------------------------------------------------
         private Parameters ()
         {
@@ -571,61 +658,133 @@ public class CLI
         }
     }
 
-    //---------//
-    // CliTask //
-    //---------//
+    //------------//
+    // ScriptTask //
+    //------------//
     /**
-     * Define a CLI task on a book (input, project or script).
+     * Processing a script file.
      */
-    private abstract static class CliTask
-            implements Callable<Void>
+    private static class ScriptTask
+            extends CliTask
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Source file path. */
-        public final Path path;
-
         //~ Constructors ---------------------------------------------------------------------------
-        public CliTask (Path path)
+
+        public ScriptTask (Path path)
         {
-            this.path = path;
+            super(path);
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public Void call ()
-                throws Exception
+        public String toString ()
         {
-            // Check source does exist
-            if (!Files.exists(path)) {
-                String msg = "Could not find file " + path;
-                logger.warn(msg);
-                throw new RuntimeException(msg);
-            }
-
-            // Obtain the book instance
-            final Book book = loadBook(path);
-
-            // Process the book instance
-            processBook(book);
-
-            return null;
+            return "Script " + path;
         }
 
-        /** Getting the book instance.
-         *
-         * @param path path to source
-         * @return the loaded book
-         */
-        protected abstract Book loadBook (Path path);
+        @Override
+        protected Book loadBook (Path path)
+        {
+            return OMR.engine.loadScript(path);
+        }
+    }
 
-        /** Processing the book instance.
-         *
-         * @param book the book to process
-         */
+    //----------------//
+    // ProcessingTask //
+    //----------------//
+    /**
+     * Processing common to both input (images) and projects.
+     */
+    private abstract class ProcessingTask
+            extends CliTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public ProcessingTask (Path path)
+        {
+            super(path);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
         protected void processBook (Book book)
         {
-            // Void by default
+            final Path folder = BookManager.getDefaultProjectPath(book).getParent();
+
+            try {
+                if (!Files.exists(folder)) {
+                    Files.createDirectories(folder);
+                }
+
+                LogUtil.addAppender(book.getRadix(), folder);
+                LogUtil.start(book);
+
+                // Specific sheets to process?
+                final SortedSet<Integer> sheetIds = params.getSheetIds();
+
+                // Make sure stubs are available
+                if (book.getStubs().isEmpty()) {
+                    book.createStubs(sheetIds);
+                }
+
+                if (OMR.gui != null) {
+                    book.createStubsTabs(); // Tabs are now accessible
+                }
+
+                // Specific step to reach?
+                final Step targetStep = params.step;
+
+                if (targetStep != null) {
+                    logger.info(
+                            "Launching {} on book {}",
+                            targetStep,
+                            (sheetIds != null) ? ("sheets " + sheetIds) : "");
+
+                    for (SheetStub stub : book.getValidStubs()) {
+                        LogUtil.start(stub);
+
+                        if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
+                            stub.ensureStep(targetStep);
+                        }
+
+                        LogUtil.stopStub();
+                    }
+                }
+
+                // Book print?
+                if (params.print || (params.printAs != null) || (params.printFolder != null)) {
+                    logger.debug("Print output");
+                    new PrintTask(params.printAs, params.printFolder).core(
+                            book.getFirstValidStub().getSheet());
+                }
+
+                // Book export?
+                if (params.export || (params.exportAs != null) || (params.exportFolder != null)) {
+                    logger.debug("Export output");
+                    new ExportTask(params.exportAs, params.exportFolder).core(
+                            book.getFirstValidStub().getSheet());
+                }
+
+                // Book save?
+                if (params.save || (params.saveAs != null) || (params.saveFolder != null)) {
+                    logger.debug("Save book");
+                    new SaveTask(params.saveAs, params.saveFolder).core(
+                            book.getFirstValidStub().getSheet());
+                }
+            } catch (ProcessingCancellationException pce) {
+                logger.warn("Cancelled " + book, pce);
+                throw pce;
+            } catch (Throwable ex) {
+                logger.warn("Exception occurred " + ex, ex);
+                throw new RuntimeException(ex);
+            } finally {
+                // Close (when in batch mode only)
+                if (OMR.gui == null) {
+                    book.close();
+                }
+
+                LogUtil.stopBook();
+                LogUtil.removeAppender(book.getRadix());
+            }
         }
     }
 
@@ -656,95 +815,6 @@ public class CLI
         protected Book loadBook (Path path)
         {
             return OMR.engine.loadInput(path);
-        }
-    }
-
-    //----------------//
-    // ProcessingTask //
-    //----------------//
-    /**
-     * Processing common to both input (images) and projects.
-     */
-    private abstract class ProcessingTask
-            extends CliTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public ProcessingTask (Path path)
-        {
-            super(path);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected void processBook (Book book)
-        {
-            try {
-                LogUtil.start(book);
-
-                // Specific sheets to process?
-                final SortedSet<Integer> sheetIds = params.getSheetIds();
-
-                // Make sure stubs are available
-                if (book.getStubs().isEmpty()) {
-                    book.createStubs(sheetIds);
-                }
-
-                if (OMR.gui != null) {
-                    book.createStubsTabs(); // Tabs are now accessible
-                }
-
-                // Specific step to reach?
-                final Step targetStep = params.step;
-
-                if (targetStep != null) {
-                    logger.info(
-                            "Launching {} on {} {}",
-                            targetStep,
-                            path,
-                            (sheetIds != null) ? ("sheets " + sheetIds) : "");
-
-                    for (SheetStub stub : book.getValidStubs()) {
-                        if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
-                            stub.ensureStep(targetStep);
-                        }
-                    }
-                }
-
-                // Book print?
-                if (params.print || (params.printAs != null) || (params.printFolder != null)) {
-                    logger.debug("Print output");
-                    new PrintTask(params.printAs, params.printFolder).core(
-                            book.getFirstValidStub().getSheet());
-                }
-
-                // Book export?
-                if (params.export || (params.exportAs != null) || (params.exportFolder != null)) {
-                    logger.debug("Export output");
-                    new ExportTask(params.exportAs, params.exportFolder).core(
-                            book.getFirstValidStub().getSheet());
-                }
-
-                // Book save?
-                if (params.save || (params.saveAs != null) || (params.saveFolder != null)) {
-                    logger.debug("Save book");
-                    new SaveTask(params.saveAs, params.saveFolder).core(
-                            book.getFirstValidStub().getSheet());
-                }
-            } catch (ProcessingCancellationException pce) {
-                logger.warn("Cancelled " + book, pce);
-                throw pce;
-            } catch (Throwable ex) {
-                logger.warn("Exception occurred " + ex, ex);
-                throw ex;
-            } finally {
-                // Close (when in batch mode only)
-                if (OMR.gui == null) {
-                    book.close();
-                }
-
-                LogUtil.stopBook();
-            }
         }
     }
 
@@ -781,36 +851,6 @@ public class CLI
             }
 
             return book;
-        }
-    }
-
-    //------------//
-    // ScriptTask //
-    //------------//
-    /**
-     * Processing a script file.
-     */
-    private static class ScriptTask
-            extends CliTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public ScriptTask (Path path)
-        {
-            super(path);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return "Script " + path;
-        }
-
-        @Override
-        protected Book loadBook (Path path)
-        {
-            return OMR.engine.loadScript(path);
         }
     }
 }

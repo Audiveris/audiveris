@@ -146,6 +146,13 @@ public interface Book
     Path getInputPath ();
 
     /**
+     * Report the book name alias if any.
+     *
+     * @return book alias or null
+     */
+    String getAlias ();
+
+    /**
      * Report the radix of the file that corresponds to the book.
      * It is based on the simple file name of the book, with no path and no extension.
      *
@@ -171,6 +178,13 @@ public interface Book
      * @return the closing flag
      */
     boolean isClosing ();
+
+    /**
+     * Set the book alias
+     *
+     * @param alias the book alias
+     */
+    void setAlias (String alias);
 
     /**
      * Flag this book as closing.

@@ -249,6 +249,8 @@ public abstract class UIUtil
                 }
             };
 
+            fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+
             // Pre-select the directory, and potentially the file to save to
             if (startFile != null) {
                 if (startFile.isDirectory()) {

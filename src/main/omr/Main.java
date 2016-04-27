@@ -11,9 +11,13 @@
 // </editor-fold>
 package omr;
 
+import omr.CLI.CliTask;
+
 import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
+
+import omr.log.LogUtil;
 
 import omr.sheet.BookManager;
 
@@ -35,6 +39,7 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Class {@code Main} is the main class for OMR application.
@@ -213,7 +218,7 @@ public class Main
     //----------//
     // logTasks //
     //----------//
-    private static void logTasks (List<Callable<Void>> tasks,
+    private static void logTasks (List<CliTask> tasks,
                                   boolean inParallel)
     {
         StringBuilder sb = new StringBuilder();
@@ -260,9 +265,11 @@ public class Main
     private static boolean runBatchTasks ()
     {
         boolean failure = false;
-        final List<Callable<Void>> tasks = cli.getCliTasks();
+        final List<CliTask> tasks = cli.getCliTasks();
 
         if (!tasks.isEmpty()) {
+            final int timeout = constants.processTimeOut.getValue();
+
             // Run all tasks in parallel or one task at a time
             if (constants.batchTasksInParallel.isSet()) {
                 try {
@@ -270,7 +277,7 @@ public class Main
 
                     List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
                             tasks,
-                            constants.processTimeOut.getValue(),
+                            timeout,
                             TimeUnit.SECONDS);
                     logger.info("Checking {} task(s)", tasks.size());
 
@@ -279,7 +286,16 @@ public class Main
                         try {
                             future.get();
                         } catch (Exception ex) {
-                            logger.warn("Future exception", ex);
+                            CliTask task = tasks.get(futures.indexOf(future));
+                            final String radix = task.getRadix();
+
+                            if (ex instanceof TimeoutException) {
+                                logger.warn("TIMEOUT at {} seconds for '{}'", timeout, radix, ex);
+                            } else {
+                                logger.warn("Future exception", ex);
+                            }
+
+                            LogUtil.removeAppender(task.getRadix());
                             failure = true;
                         }
                     }
@@ -290,15 +306,23 @@ public class Main
             } else {
                 logTasks(tasks, false);
 
-                for (Callable<Void> task : tasks) {
+                for (CliTask task : tasks) {
                     try {
                         Future<Void> future = OmrExecutors.getCachedLowExecutor().submit(task);
 
                         // Check for time-out
                         try {
-                            future.get(constants.processTimeOut.getValue(), TimeUnit.SECONDS);
+                            future.get(timeout, TimeUnit.SECONDS);
                         } catch (Exception ex) {
-                            logger.warn("Future exception", ex);
+                            final String radix = task.getRadix();
+
+                            if (ex instanceof TimeoutException) {
+                                logger.warn("TIMEOUT at {} seconds for '{}'", timeout, radix, ex);
+                            } else {
+                                logger.warn("Future exception", ex);
+                            }
+
+                            LogUtil.removeAppender(task.getRadix());
                             failure = true;
                         }
                     } catch (Exception ex) {

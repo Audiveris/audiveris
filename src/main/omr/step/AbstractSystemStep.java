@@ -13,6 +13,8 @@ package omr.step;
 
 import omr.OMR;
 
+import omr.log.LogUtil;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -24,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
-import omr.log.LogUtil;
 
 /**
  * Abstract class {@code AbstractSystemStep} is a basis for any step working on the

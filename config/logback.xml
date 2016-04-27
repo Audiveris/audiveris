@@ -22,7 +22,7 @@ Predefined MDC keys:
         <append>true</append>
         <file>${user.home}/audiveris-${bySecond}.log</file>
         <encoder>
-            <pattern>%date %level \(%file:%line\) [%X{BOOK}%X{SHEET}] %msg%ex%n</pattern>
+            <pattern>%date %level \(%file:%line\) [%X{BOOK}%X{SHEET}] %msg%n%ex</pattern>
         </encoder>
     </appender>
     
@@ -36,6 +36,7 @@ Predefined MDC keys:
     </root>
     
     <!-- Define DEBUG loggers here below: -->
+    <!--    <logger name="omr.CLI" level="DEBUG"/>-->
     <!--    <logger name="omr.sheet.grid.BarsRetriever" level="DEBUG"/>-->
     <!--    <logger name="omr.sheet.grid.StaffProjector" level="DEBUG"/>-->
     <!--    <logger name="omr.glyph.GlyphCluster" level="DEBUG"/>-->
@@ -77,6 +78,5 @@ Predefined MDC keys:
     <!--    <logger name="omr.step.StepMonitor" level="DEBUG"/>-->
     <!--    <logger name="omr.script.Script" level="DEBUG"/>-->
     <!--    <logger name="omr.sheet.picture.PictureLoader" level="DEBUG"/>-->
-    <!--    <logger name="omr.CLI" level="DEBUG"/>-->
 
 </configuration>

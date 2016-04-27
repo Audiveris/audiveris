@@ -110,10 +110,7 @@ public abstract class ImageLoading
             }
         }
 
-        if (loader != null) {
-            final int count = loader.getImageCount();
-            logger.debug("{} sheet{} in {}", count, ((count > 1) ? "s" : ""), imgPath);
-        } else {
+        if (loader == null) {
             logger.warn("Cannot find a loader for {}", imgPath);
         }
 

@@ -30,6 +30,7 @@ import java.lang.reflect.Proxy;
 import java.nio.file.Paths;
 
 import javax.swing.SwingWorker;
+import omr.sheet.BookManager;
 
 /**
  * Class {@code MacApplication} provides dynamic hooks into the
@@ -116,6 +117,7 @@ public class MacApplication
                         try {
                             final Script script = ScriptManager.getInstance().load(
                                     new FileInputStream(file));
+                            BookManager.getInstance().getScriptHistory().add(file.toPath());
 
                             if (logger.isDebugEnabled()) {
                                 script.dump();

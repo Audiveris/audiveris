@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Sequence of patterns to apply on file names, with stop at first match. -->
+
+<alias-patterns>
+    <!-- 
+    This pattern is meant for IMSLP library.
+    For example the name "IMSLP02956-Scarlatti_-_Book_of_22_Piano_and_Harpsichord_Pieces_-_Part_1"
+    would be aliased as: "IMSLP02956"
+    -->
+    <pattern>(IMSLP[0-9]*)-.*</pattern>
+    <!-- 
+    You can add more patterns at will... 
+    -->
+</alias-patterns>

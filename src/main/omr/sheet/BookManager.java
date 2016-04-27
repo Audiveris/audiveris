@@ -23,6 +23,7 @@ import omr.score.Score;
 
 import omr.script.ScriptManager;
 
+import omr.util.FileUtil;
 import omr.util.PathHistory;
 
 import org.slf4j.Logger;
@@ -40,10 +41,10 @@ import java.util.List;
  * Class {@code BookManager} is a singleton which provides administrative features
  * for book instances.
  * <p>
- * It handles the collection of all book instances currently loaded, as well as the recent history
- * of books previously loaded.
+ * It handles the collection of all book instances currently loaded, as well as the list of books
+ * most recently loaded.
  * <p>
- * It handles where and how to handle projects and export or print books and sheets.
+ * It handles where and how to handle inputs, projects, exports, prints and scripts.
  * <p>
  * The way books and sheets are exported depends on whether we allow the use of MusicXML
  * <b>Opus</b>:
@@ -81,56 +82,9 @@ import java.util.List;
  * single book, discovering the 4 movements one after the other, and finally creating one MusicXML
  * Opus containing 4 {@link Score} instances, one for each movement.
  * <p>
- * In practice, we will rather process input by physical chunks, say 1 sheet (or 5 sheets) at a
- * time, and assemble the logical items in a second phase.
- * The final result will be the same, but this approach will require the handling of intermediate
- * Book and Score instances.
- * <p>
- * Intermediate items, with book chunks of 1 sheet, could be structured as follows:
- * <blockquote>
- * <pre>
- * Mozart_S40/
- * Mozart_S40/book-1-sheet#1.mxl
- * Mozart_S40/book-2-sheet#2.mxl
- * [...]
- * Mozart_S40/book-33-sheet#33.mvt1.mxl
- * Mozart_S40/book-33-sheet#33.mvt2.mxl
- * [...]
- * Mozart_S40/book-49-sheet#49.mxl
- * </pre>
- * </blockquote>
- * Intermediate items, with book chunks of 5 sheets, could be structured as follows:
- * <blockquote>
- * <pre>
- * Mozart_S40/
- * Mozart_S40/book-1-5-sheet#1.mxl
- * Mozart_S40/book-1-5-sheet#2.mxl
- * Mozart_S40/book-1-5-sheet#3.mxl
- * Mozart_S40/book-1-5-sheet#4.mxl
- * Mozart_S40/book-1-5-sheet#5.mxl
- *
- * Mozart_S40/book-6-10-sheet#6.mxl
- * Mozart_S40/book-6-10-sheet#7.mxl
- * [...]
- * Mozart_S40/book-26-30-sheet#30.mxl
- *
- * Mozart_S40/book-31-35-sheet#31.mxl
- * Mozart_S40/book-31-35-sheet#32.mxl
- * Mozart_S40/book-31-35-sheet#33.mvt1.mxl
- * Mozart_S40/book-31-35-sheet#33.mvt2.mxl
- * Mozart_S40/book-31-35-sheet#34.mxl
- * Mozart_S40/book-31-35-sheet#35.mxl
- *
- * Mozart_S40/book-36-40-sheet#36.mxl
- * [...]
- * Mozart_S40/book-41-45-sheet#45.mxl
- *
- * Mozart_S40/book-46-49-sheet#46.mxl
- * Mozart_S40/book-46-49-sheet#47.mxl
- * Mozart_S40/book-46-49-sheet#48.mxl
- * Mozart_S40/book-46-49-sheet#49.mxl
- * </pre>
- * </blockquote>
+ * In practice, we will rather process input by physical chunks, say one sheet at a time, and
+ * progressively populate the project (Book) file.
+ * In a final phase, the various scores will be assembled and exported.
  * <p>
  * <img alt="Cycle img" src="doc-files/Cycle.png">
  *
@@ -142,7 +96,7 @@ public class BookManager
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    static final Constants constants = new Constants();
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(BookManager.class);
 
@@ -151,13 +105,19 @@ public class BookManager
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** All book instances. */
-    final List<Book> books = new ArrayList<Book>();
+    private final List<Book> books = new ArrayList<Book>();
+
+    /** Alias patterns. */
+    private final AliasPatterns aliasPatterns = new AliasPatterns();
 
     /** Input file history. (filled only when images (books) are successfully loaded) */
     private PathHistory inputHistory;
 
     /** Project file history. (filled only when projects are successfully loaded or saved) */
     private PathHistory projectHistory;
+
+    /** Script file history. (filled only when scripts are successfully loaded or saved) */
+    private PathHistory scriptHistory;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -250,6 +210,33 @@ public class BookManager
 
             return null;
         }
+    }
+
+    //----------//
+    // getAlias //
+    //----------//
+    /**
+     * Try to retrieve an alias for the provided name, by applying registered patterns.
+     *
+     * @param name the full name provided
+     * @return the first alias found, or null if none
+     */
+    public String getAlias (String name)
+    {
+        return aliasPatterns.getAlias(name);
+    }
+
+    //----------------------//
+    // getDefaultBaseFolder //
+    //----------------------//
+    /**
+     * Report the default base for separate folders.
+     *
+     * @return the default base
+     */
+    public static String getDefaultBaseFolder ()
+    {
+        return constants.defaultBaseFolder.getValue();
     }
 
     //------------------------//
@@ -389,7 +376,53 @@ public class BookManager
         }
 
         // Define target based on global folder and book name
-        return Paths.get(getDefaultProjectFolder(), book.getRadix() + OMR.PROJECT_EXTENSION);
+        if (constants.useSeparateProjectFolders.isSet()) {
+            Path folder = Paths.get(getDefaultBaseFolder(), book.getRadix());
+
+            try {
+                if (!Files.exists(folder)) {
+                    Files.createDirectories(folder);
+                }
+
+                return folder.resolve(book.getRadix() + OMR.PROJECT_EXTENSION);
+            } catch (IOException ex) {
+                logger.warn("Cannot create {}", folder, ex);
+
+                return null;
+            }
+        } else {
+            return Paths.get(getDefaultProjectFolder(), book.getRadix() + OMR.PROJECT_EXTENSION);
+        }
+    }
+
+    //------------------------//
+    // getDefaultScriptFolder //
+    //------------------------//
+    /**
+     * Report the folder where scripts should be found.
+     *
+     * @return the latest script folder
+     */
+    public static String getDefaultScriptFolder ()
+    {
+        return constants.defaultScriptFolder.getValue();
+    }
+
+    //----------------------//
+    // getDefaultScriptPath //
+    //----------------------//
+    /**
+     * Report the default path where the script should be written to
+     *
+     * @param book the containing book
+     * @return the default path for saving the script
+     */
+    public static Path getDefaultScriptPath (Book book)
+    {
+        return (book.getScriptPath() != null) ? book.getScriptPath()
+                : Paths.get(
+                        constants.defaultScriptFolder.getValue(),
+                        book.getRadix() + OMR.SCRIPT_EXTENSION);
     }
 
     //--------------------//
@@ -440,30 +473,40 @@ public class BookManager
     {
         if (INSTANCE == null) {
             INSTANCE = new BookManager();
+
         }
 
         return INSTANCE;
     }
 
-    //-------------------//
-    // getProjectHistory //
-    //-------------------//
-    /**
-     * Get access to the list of previous projects.
-     *
-     * @return the history set of project files
-     */
-    public PathHistory getProjectHistory ()
+    //-------------//
+    // getAllBooks //
+    //-------------//
+    @Override
+    public List<Book> getAllBooks ()
     {
-        if (projectHistory == null) {
-            projectHistory = new PathHistory(
-                    "Project History",
-                    constants.projectHistory,
-                    constants.defaultProjectFolder,
+        return Collections.unmodifiableList(books);
+    }
+
+    //------------------//
+    // getScriptHistory //
+    //------------------//
+    /**
+     * Get access to the list of previous scripts.
+     *
+     * @return the history set of script files
+     */
+    public PathHistory getScriptHistory ()
+    {
+        if (scriptHistory == null) {
+            scriptHistory = new PathHistory(
+                    "Script History",
+                    constants.scriptHistory,
+                    constants.defaultScriptFolder,
                     constants.historySize.getValue());
         }
 
-        return projectHistory;
+        return scriptHistory;
     }
 
     //-------------//
@@ -486,6 +529,18 @@ public class BookManager
     public Book loadInput (Path path)
     {
         final Book book = new BasicBook(path);
+
+        // Alias?
+        if (constants.useAliasPatterns.isSet()) {
+            final String nameSansExt = FileUtil.getNameSansExtension(path);
+            String alias = getAlias(nameSansExt);
+
+            if (alias != null) {
+                book.setAlias(alias);
+                logger.info("Found alias: {} for {}", alias, nameSansExt);
+            }
+        }
+
         book.setModified(true);
         addBook(book);
 
@@ -561,6 +616,14 @@ public class BookManager
         constants.defaultProjectFolder.setValue(value);
     }
 
+    //------------------------//
+    // setDefaultScriptFolder //
+    //------------------------//
+    public static void setDefaultScriptFolder (String value)
+    {
+        constants.defaultScriptFolder.setValue(value);
+    }
+
     //----------------//
     // useCompression //
     //----------------//
@@ -590,13 +653,25 @@ public class BookManager
         return constants.defaultSigned.isSet();
     }
 
-    //-------------//
-    // getAllBooks //
-    //-------------//
-    @Override
-    public List<Book> getAllBooks ()
+    //-------------------//
+    // getProjectHistory //
+    //-------------------//
+    /**
+     * Get access to the list of previous projects.
+     *
+     * @return the history set of project files
+     */
+    public PathHistory getProjectHistory ()
     {
-        return Collections.unmodifiableList(books);
+        if (projectHistory == null) {
+            projectHistory = new PathHistory(
+                    "Project History",
+                    constants.projectHistory,
+                    constants.defaultProjectFolder,
+                    constants.historySize.getValue());
+        }
+
+        return projectHistory;
     }
 
     //---------//
@@ -649,21 +724,37 @@ public class BookManager
                 true,
                 "Should we compress the MusicXML output?");
 
-        private final Constant.String defaultExportFolder = new Constant.String(
-                WellKnowns.DEFAULT_SCORES_FOLDER.toString(),
-                "Default folder for saved scores");
+        private final Constant.Boolean useAliasPatterns = new Constant.Boolean(
+                true,
+                "Should we apply alias patterns on input names?");
+
+        private final Constant.Boolean useSeparateProjectFolders = new Constant.Boolean(
+                true,
+                "Should we use a separate folder for each project?");
+
+        private final Constant.String defaultBaseFolder = new Constant.String(
+                WellKnowns.DEFAULT_BASE_FOLDER.toString(),
+                "Default base for separate project folders");
+
+        private final Constant.String defaultInputFolder = new Constant.String(
+                WellKnowns.EXAMPLES_FOLDER.toString(),
+                "Default folder for selection of image files");
 
         private final Constant.String defaultProjectFolder = new Constant.String(
                 WellKnowns.DEFAULT_PROJECTS_FOLDER.toString(),
                 "Default folder for Audiveris projects");
 
+        private final Constant.String defaultExportFolder = new Constant.String(
+                WellKnowns.DEFAULT_SCORES_FOLDER.toString(),
+                "Default folder for saved scores");
+
         private final Constant.String defaultPrintFolder = new Constant.String(
                 WellKnowns.DEFAULT_PRINT_FOLDER.toString(),
                 "Default folder for printing sheet files");
 
-        private final Constant.String defaultInputFolder = new Constant.String(
-                WellKnowns.EXAMPLES_FOLDER.toString(),
-                "Default folder for selection of image files");
+        private final Constant.String defaultScriptFolder = new Constant.String(
+                WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
+                "Default folder for saved scripts");
 
         private final Constant.String defaultDewarpFolder = new Constant.String(
                 WellKnowns.TEMP_FOLDER.toString(),
@@ -680,6 +771,10 @@ public class BookManager
         private final Constant.String projectHistory = new Constant.String(
                 "",
                 "History of projects most recently loaded or saved");
+
+        private final Constant.String scriptHistory = new Constant.String(
+                "",
+                "History of scripts most recently loaded or saved");
 
         private final Constant.Integer historySize = new Constant.Integer(
                 "count",

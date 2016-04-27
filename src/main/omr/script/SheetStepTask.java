@@ -12,7 +12,6 @@
 package omr.script;
 
 import omr.log.LogUtil;
-
 import static omr.script.ScriptTask.logger;
 
 import omr.sheet.Sheet;

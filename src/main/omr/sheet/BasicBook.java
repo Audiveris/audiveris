@@ -124,6 +124,10 @@ public class BasicBook
     @XmlAttribute(name = "path")
     private final Path path;
 
+    /** Book alias, if any. */
+    @XmlElement(name = "alias")
+    private String alias;
+
     /** Sheet offset of image file with respect to full work, if any. */
     @XmlAttribute(name = "offset")
     private Integer offset;
@@ -194,16 +198,16 @@ public class BasicBook
      * <p>
      * NOTA: This meta-book feature is not yet in use.
      *
-     * @param radix a radix name for this book
+     * @param nameSansExt a name (sans extension) for this book
      */
-    public BasicBook (String radix)
+    public BasicBook (String nameSansExt)
     {
-        Objects.requireNonNull(radix, "Trying to create a meta Book with null radix");
+        Objects.requireNonNull(nameSansExt, "Trying to create a meta Book with null name");
 
         path = null;
         subBooks = new ArrayList<Book>();
 
-        initTransients(radix, null);
+        initTransients(nameSansExt, null);
     }
 
     /**
@@ -355,6 +359,7 @@ public class BasicBook
         if (loader != null) {
             final int imageCount = loader.getImageCount();
             loader.dispose();
+            logger.info("{} sheet{} in {}", imageCount, ((imageCount > 1) ? "s" : ""), path);
 
             if (sheetNumbers == null) {
                 sheetNumbers = new TreeSet<Integer>();
@@ -653,6 +658,18 @@ public class BasicBook
         getScript().addTask(new ExportTask(bookPathSansExt, null));
     }
 
+    //----------//
+    // getAlias //
+    //----------//
+    /**
+     * @return the alias
+     */
+    @Override
+    public String getAlias ()
+    {
+        return alias;
+    }
+
     //-----------------//
     // getBrowserFrame //
     //-----------------//
@@ -865,43 +882,6 @@ public class BasicBook
         subBooks.add(book);
     }
 
-    //-----------//
-    // isClosing //
-    //-----------//
-    @Override
-    public boolean isClosing ()
-    {
-        return closing;
-    }
-
-    //------------//
-    // isModified //
-    //------------//
-    @Override
-    public boolean isModified ()
-    {
-        if (modified) {
-            return true; // The book itself is modified
-        }
-
-        for (SheetStub stub : stubs) {
-            if (stub.isModified()) {
-                return true; // This sheet is modified
-            }
-        }
-
-        return false;
-    }
-
-    //--------------//
-    // isMultiSheet //
-    //--------------//
-    @Override
-    public boolean isMultiSheet ()
-    {
-        return stubs.size() > 1;
-    }
-
     //-------------//
     // loadProject //
     //-------------//
@@ -947,32 +927,6 @@ public class BasicBook
         }
     }
 
-    //----------------//
-    // loadSheetImage //
-    //----------------//
-    @Override
-    public BufferedImage loadSheetImage (int id)
-    {
-        try {
-            final ImageLoading.Loader loader = ImageLoading.getLoader(path);
-
-            if (loader == null) {
-                return null;
-            }
-
-            BufferedImage img = loader.getImage(id);
-            logger.debug("{} loaded sheet#{} {}x{}", this, id, img.getWidth(), img.getHeight());
-
-            loader.dispose();
-
-            return img;
-        } catch (IOException ex) {
-            logger.warn("Error in book.readImage", ex);
-
-            return null;
-        }
-    }
-
     //-----------------//
     // openProjectFile //
     //-----------------//
@@ -1005,6 +959,69 @@ public class BasicBook
         }
 
         return null;
+    }
+
+    //-----------//
+    // isClosing //
+    //-----------//
+    @Override
+    public boolean isClosing ()
+    {
+        return closing;
+    }
+
+    //------------//
+    // isModified //
+    //------------//
+    @Override
+    public boolean isModified ()
+    {
+        if (modified) {
+            return true; // The book itself is modified
+        }
+
+        for (SheetStub stub : stubs) {
+            if (stub.isModified()) {
+                return true; // This sheet is modified
+            }
+        }
+
+        return false;
+    }
+
+    //--------------//
+    // isMultiSheet //
+    //--------------//
+    @Override
+    public boolean isMultiSheet ()
+    {
+        return stubs.size() > 1;
+    }
+
+    //----------------//
+    // loadSheetImage //
+    //----------------//
+    @Override
+    public BufferedImage loadSheetImage (int id)
+    {
+        try {
+            final ImageLoading.Loader loader = ImageLoading.getLoader(path);
+
+            if (loader == null) {
+                return null;
+            }
+
+            BufferedImage img = loader.getImage(id);
+            logger.info("Loaded sheet#{} size: {}x{}", id, img.getWidth(), img.getHeight());
+
+            loader.dispose();
+
+            return img;
+        } catch (IOException ex) {
+            logger.warn("Error in book.loadSheetImage", ex);
+
+            return null;
+        }
     }
 
     //-----------------//
@@ -1068,6 +1085,19 @@ public class BasicBook
         return stubs.remove(stub);
     }
 
+    //----------//
+    // setAlias //
+    //----------//
+    /**
+     * @param alias the alias to set
+     */
+    @Override
+    public void setAlias (String alias)
+    {
+        this.alias = alias;
+        radix = alias;
+    }
+
     //------------//
     // setClosing //
     //------------//
@@ -1112,7 +1142,7 @@ public class BasicBook
                             controller.refresh();
                         }
                     } finally {
-                        ///LogUtil.stopBook();
+                        LogUtil.stopBook();
                     }
                 }
             });
@@ -1162,7 +1192,7 @@ public class BasicBook
         try {
             final Path root;
             checkRadixChange(projectPath);
-            logger.info("{}.store", this);
+            logger.info("Storing project...");
 
             if ((this.projectPath == null)
                 || this.projectPath.toAbsolutePath().equals(projectPath.toAbsolutePath())) {
@@ -1210,7 +1240,7 @@ public class BasicBook
             BookManager.getInstance().getProjectHistory().add(projectPath); // Insert in history
             BookManager.setDefaultProjectFolder(projectPath.getParent().toString());
 
-            logger.info("{} stored into {}", this, projectPath);
+            logger.info("Project stored into {}", projectPath);
         } catch (Throwable ex) {
             logger.warn("Error storing " + this + " to " + projectPath + " ex:" + ex, ex);
         }
@@ -1375,17 +1405,18 @@ public class BasicBook
     //----------------//
     // initTransients //
     //----------------//
-    private void initTransients (String radix,
+    private void initTransients (String nameSansExt,
                                  Path projectPath)
     {
-        if (radix != null) {
-            this.radix = radix;
+        if (nameSansExt != null) {
+            // Apply alias patterns if any
+            this.radix = nameSansExt;
         }
 
         if (projectPath != null) {
             this.projectPath = projectPath;
 
-            if (radix == null) {
+            if (nameSansExt == null) {
                 this.radix = FileUtil.getNameSansExtension(projectPath);
             }
         }
