@@ -286,6 +286,12 @@ public class BarsRetriever
         // Create systems from bar connections
         SystemManager mgr = sheet.getSystemManager();
         mgr.setSystems(createSystems(getSystemTops()));
+
+        if (mgr.getSystems().isEmpty()) {
+            logger.warn("No system found");
+            throw new StepException("No system found");
+        }
+
         logger.info("Systems: {}", mgr.getSystemsString());
 
         purgeCrossAlignments(); // Purge alignments across systems, they are not relevant

@@ -381,7 +381,11 @@ public class SystemManager
             sb.append("]");
         }
 
-        return sb.toString();
+        if (sb.length() > 0) {
+            return sb.toString();
+        }
+
+        return "none found!";
     }
 
     //--------------------//

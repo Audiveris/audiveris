@@ -1537,7 +1537,7 @@ public class BookActions
                 if (is != null) {
                     try {
                         is.close();
-                    } catch (IOException ex) {
+                    } catch (IOException ignored) {
                         logger.warn("Error closing script file {}", path);
                     }
                 }

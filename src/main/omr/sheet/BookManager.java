@@ -375,8 +375,8 @@ public class BookManager
             return book.getProjectPath();
         }
 
-        // Define target based on global folder and book name
         if (constants.useSeparateProjectFolders.isSet()) {
+            // Define target based on base + book folder and book name
             Path folder = Paths.get(getDefaultBaseFolder(), book.getRadix());
 
             try {
@@ -391,6 +391,7 @@ public class BookManager
                 return null;
             }
         } else {
+            // Define target based on global folder and book name
             return Paths.get(getDefaultProjectFolder(), book.getRadix() + OMR.PROJECT_EXTENSION);
         }
     }
@@ -419,10 +420,31 @@ public class BookManager
      */
     public static Path getDefaultScriptPath (Book book)
     {
-        return (book.getScriptPath() != null) ? book.getScriptPath()
-                : Paths.get(
-                        constants.defaultScriptFolder.getValue(),
-                        book.getRadix() + OMR.SCRIPT_EXTENSION);
+        // If book already has a target, use it
+        if (book.getScriptPath() != null) {
+            return book.getScriptPath();
+        }
+
+        if (constants.useSeparateProjectFolders.isSet()) {
+            // Define target based on base + book folder and book name
+            Path folder = Paths.get(getDefaultBaseFolder(), book.getRadix());
+
+            try {
+                if (!Files.exists(folder)) {
+                    Files.createDirectories(folder);
+                }
+
+                return folder.resolve(book.getRadix() + OMR.SCRIPT_EXTENSION);
+            } catch (IOException ex) {
+                logger.warn("Cannot create {}", folder, ex);
+
+                return null;
+            }
+        } else {
+            // Define target based on global folder and book name
+            return Paths.get(getDefaultScriptFolder(), book.getRadix() + OMR.PROJECT_EXTENSION);
+        }
+
     }
 
     //--------------------//

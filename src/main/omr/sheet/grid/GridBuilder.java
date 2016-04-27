@@ -142,6 +142,8 @@ public class GridBuilder
                 sheet.addItemRenderer(targetBuilder);
                 targetBuilder.buildInfo();
             }
+        } catch (StepException se) {
+            throw se;
         } catch (Throwable ex) {
             logger.warn("Error in GridBuilder: {}", ex, ex);
         } finally {
