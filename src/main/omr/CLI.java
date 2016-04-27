@@ -709,6 +709,7 @@ public class CLI
         protected void processBook (Book book)
         {
             final Path folder = BookManager.getDefaultProjectPath(book).getParent();
+            boolean cancelled = false;
 
             try {
                 if (!Files.exists(folder)) {
@@ -771,7 +772,8 @@ public class CLI
                             book.getFirstValidStub().getSheet());
                 }
             } catch (ProcessingCancellationException pce) {
-                logger.warn("Cancelled " + book, pce);
+                logger.warn("Cancelled " + book);
+                cancelled = true;
                 throw pce;
             } catch (Throwable ex) {
                 logger.warn("Exception occurred " + ex, ex);
@@ -779,6 +781,11 @@ public class CLI
             } finally {
                 // Close (when in batch mode only)
                 if (OMR.gui == null) {
+                    if (cancelled) {
+                        // Make a backup if needed, then save project "in its current status"
+                        book.store(BookManager.getDefaultProjectPath(book), true);
+                    }
+
                     book.close();
                 }
 

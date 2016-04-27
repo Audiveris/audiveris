@@ -17,8 +17,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
-import omr.log.LogUtil;
-
 import omr.sheet.BookManager;
 
 import omr.ui.MainGui;
@@ -127,9 +125,9 @@ public class Main
             // Run the required tasks, if any (and remember if at least one task failed)
             boolean failure = runBatchTasks();
 
-            // At this point all tasks have completed (normally or not)
-            // So shutdown immediately the executors
-            OmrExecutors.shutdown(true);
+            // At this point all tasks have completed (except timeout...)
+            // So shutdown gracefully the executors
+            OmrExecutors.shutdown(false);
 
             // Store latest constant values on disk?
             if (constants.persistBatchCliConstants.getValue()) {
@@ -291,11 +289,11 @@ public class Main
 
                             if (ex instanceof TimeoutException) {
                                 logger.warn("TIMEOUT at {} seconds for '{}'", timeout, radix, ex);
+                                future.cancel(true);
                             } else {
                                 logger.warn("Future exception", ex);
                             }
 
-                            LogUtil.removeAppender(task.getRadix());
                             failure = true;
                         }
                     }
@@ -318,11 +316,11 @@ public class Main
 
                             if (ex instanceof TimeoutException) {
                                 logger.warn("TIMEOUT at {} seconds for '{}'", timeout, radix, ex);
+                                future.cancel(true);
                             } else {
                                 logger.warn("Future exception", ex);
                             }
 
-                            LogUtil.removeAppender(task.getRadix());
                             failure = true;
                         }
                     } catch (Exception ex) {

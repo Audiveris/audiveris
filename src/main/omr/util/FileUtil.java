@@ -45,6 +45,10 @@ public abstract class FileUtil
 
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
+    private static final String BACKUP_EXT_RADIX = ".backup_";
+
+    private static final int BACKUP_MAX = 99;
+
     //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // avoidExtensions //
@@ -76,6 +80,39 @@ public abstract class FileUtil
         }
 
         return path;
+    }
+
+    //--------//
+    // backup //
+    //--------//
+    /**
+     * Rename the (existing) file as a backup.
+     * This is done by appending ".backup_N" to the file name, N being the first available number
+     *
+     * @param source the path to rename
+     * @return the path to the renamed file, or null if failed
+     */
+    public static Path backup (Path source)
+    {
+        Path target = null;
+
+        try {
+            String radix = source + BACKUP_EXT_RADIX;
+
+            for (int i = 1; i <= BACKUP_MAX; i++) {
+                target = Paths.get(String.format("%s%02d", radix, i));
+
+                if (!Files.exists(target)) {
+                    Files.move(source, target);
+
+                    return target;
+                }
+            }
+        } catch (IOException ex) {
+            logger.warn("Could not rename {} as {}", source, target, ex);
+        }
+
+        return null;
     }
 
     //------//

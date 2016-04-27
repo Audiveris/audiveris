@@ -113,104 +113,16 @@ public interface Book
     static final String BOOK_INTERNALS = "book.xml";
 
     //~ Methods ------------------------------------------------------------------------------------
-    // -------------
-    // --- Admin ---
-    // -------------
-    //
     /**
-     * Include a (sub) book into this (super) book.
-     *
-     * @param book the sub book to include
+     * Determine scores by gathering and connecting sheets pages.
      */
-    void includeBook (Book book);
-
-    /**
-     * Report the offset of this book, with respect to a containing super-book.
-     *
-     * @return the offset (in terms of number of sheets)
-     */
-    Integer getOffset ();
-
-    /**
-     * Assign this book offset (WRT containing super-book)
-     *
-     * @param offset the offset to set
-     */
-    void setOffset (Integer offset);
-
-    /**
-     * Report the path name of the book image(s) input.
-     *
-     * @return the image input path
-     */
-    Path getInputPath ();
-
-    /**
-     * Report the book name alias if any.
-     *
-     * @return book alias or null
-     */
-    String getAlias ();
-
-    /**
-     * Report the radix of the file that corresponds to the book.
-     * It is based on the simple file name of the book, with no path and no extension.
-     *
-     * @return the book input file radix
-     */
-    String getRadix ();
-
-    /**
-     * Report the proper prefix to use when logging a user message related to this book
-     *
-     * @return the proper prefix
-     */
-    String getLogPrefix ();
+    void buildScores ();
 
     /**
      * Delete this book instance, as well as its related resources.
      */
     void close ();
 
-    /**
-     * Report whether this book is closing
-     *
-     * @return the closing flag
-     */
-    boolean isClosing ();
-
-    /**
-     * Set the book alias
-     *
-     * @param alias the book alias
-     */
-    void setAlias (String alias);
-
-    /**
-     * Flag this book as closing.
-     *
-     * @param closing the closing to set
-     */
-    void setClosing (boolean closing);
-
-    /**
-     * Report whether the book has been modified with respect to its project data.
-     *
-     * @return true if modified
-     */
-    boolean isModified ();
-
-    /**
-     * Set the modified flag.
-     *
-     * @param val the new flag value
-     */
-    void setModified (boolean val);
-
-    // --------------
-    // --- Sheets ---
-    // --------------
-    //
     /**
      * Create as many sheet stubs as there are images in the input image file.
      * A created stub is nearly empty, the related image will have to be loaded later.
@@ -225,95 +137,14 @@ public interface Book
     void createStubsTabs ();
 
     /**
+     * Delete the exported MusicXML, if any.
+     */
+    void deleteExport ();
+
+    /**
      * Display all stubs assemblies, including the invalid ones.
      */
     void displayAllStubs ();
-
-    /**
-     * Hide stub assemblies of invalid sheets.
-     */
-    void hideInvalidStubs ();
-
-    /**
-     * Actually load the image that corresponds to the specified sheet id.
-     *
-     * @param id specified sheet id
-     * @return the loaded sheet image
-     */
-    BufferedImage loadSheetImage (int id);
-
-    /**
-     * Report whether this book contains several sheets.
-     *
-     * @return true for several sheets
-     */
-    boolean isMultiSheet ();
-
-    /**
-     * Report the sheet stub with provided id (counted from 1).
-     *
-     * @param sheetId the desired value for sheet id
-     * @return the proper sheet stub, or null if not found
-     */
-    SheetStub getStub (int sheetId);
-
-    /**
-     * Report the first non-discarded stub in this book
-     *
-     * @return the first non-discarded stub, or null
-     */
-    SheetStub getFirstValidStub ();
-
-    /**
-     * Open (in the project zipped file) the folder for provided sheet number
-     *
-     * @param number sheet number (1-based) within the book
-     * @return the path to sheet folder
-     */
-    Path openSheetFolder (int number);
-
-    /**
-     * Report all the sheets stubs contained in this book.
-     *
-     * @return the immutable list of sheets stubs, list may be empty but is never null
-     */
-    List<SheetStub> getStubs ();
-
-    /**
-     * Report the non-discarded sheets stubs in this book.
-     *
-     * @return the immutable list of valid sheets stubs
-     */
-    List<SheetStub> getValidStubs ();
-
-    /**
-     * Remove the specified sheet stub from the containing book.
-     * <p>
-     * Typically, when the sheet carries no music information, it can be removed from the book
-     * (without changing the IDs of the sibling sheets in the book)
-     *
-     * @param stub the sheet stub to remove
-     * @return true if actually removed
-     */
-    boolean removeStub (SheetStub stub);
-
-    /**
-     * Swap all sheets, except the current one if any.
-     */
-    void swapAllSheets ();
-
-    // ---------------------
-    // --- Transcription ---
-    // ---------------------
-    //
-    /**
-     * Convenient method to perform all needed transcription steps on (all or some sheets
-     * of) this book.
-     *
-     * @return true if OK
-     * @param sheetIds specific set of sheet IDs if any, null for all
-     */
-    boolean transcribe (SortedSet<Integer> sheetIds);
 
     /**
      * Perform a specific step (and all needed intermediate steps) on all or some sheets
@@ -325,61 +156,6 @@ public interface Book
      */
     boolean doStep (Step target,
                     SortedSet<Integer> sheetIds);
-
-    /**
-     * Determine scores by gathering and connecting sheets pages.
-     */
-    void buildScores ();
-
-    /**
-     * Report the scores (movements) detected in this book.
-     *
-     * @return the immutable list of scores
-     */
-    List<Score> getScores ();
-
-    // ------------------
-    // --- Parameters ---
-    // ------------------
-    //
-    /**
-     * Report the binarization filter defined at book level.
-     *
-     * @return the filter param
-     */
-    Param<FilterDescriptor> getFilterParam ();
-
-    /**
-     * Report the OCR language(s) specification defined at book level
-     *
-     * @return the OCR language(s) spec
-     */
-    Param<String> getLanguageParam ();
-
-    // -----------------
-    // --- Artifacts ---
-    // -----------------
-    //
-    /**
-     * Create a dedicated frame, where book hierarchy can be browsed interactively.
-     *
-     * @return the created frame
-     */
-    JFrame getBrowserFrame ();
-
-    /**
-     * Report the path (without extension) where book is to be exported.
-     *
-     * @return the book export path without extension, or null
-     */
-    Path getExportPathSansExt ();
-
-    /**
-     * Remember the path (without extension) where the book is to be exported.
-     *
-     * @param exportPathSansExt the book export path (without extension)
-     */
-    void setExportPathSansExt (Path exportPathSansExt);
 
     /**
      * Export this book scores using MusicXML format.
@@ -397,9 +173,67 @@ public interface Book
     void export ();
 
     /**
-     * Delete the exported MusicXML, if any.
+     * Report the book name alias if any.
+     *
+     * @return book alias or null
      */
-    void deleteExport ();
+    String getAlias ();
+
+    /**
+     * Create a dedicated frame, where book hierarchy can be browsed interactively.
+     *
+     * @return the created frame
+     */
+    JFrame getBrowserFrame ();
+
+    /**
+     * Report the path (without extension) where book is to be exported.
+     *
+     * @return the book export path without extension, or null
+     */
+    Path getExportPathSansExt ();
+
+    /**
+     * Report the binarization filter defined at book level.
+     *
+     * @return the filter param
+     */
+    Param<FilterDescriptor> getFilterParam ();
+
+    /**
+     * Report the first non-discarded stub in this book
+     *
+     * @return the first non-discarded stub, or null
+     */
+    SheetStub getFirstValidStub ();
+
+    /**
+     * Report the path name of the book image(s) input.
+     *
+     * @return the image input path
+     */
+    Path getInputPath ();
+
+    /**
+     * Report the OCR language(s) specification defined at book level
+     *
+     * @return the OCR language(s) spec
+     */
+    Param<String> getLanguageParam ();
+
+    /**
+     * Report the proper prefix to use when logging a user message related to this book
+     *
+     * @return the proper prefix
+     */
+    String getLogPrefix ();
+
+    /**
+     * Report the offset of this book, with respect to a containing super-book.
+     *
+     * @return the offset (in terms of number of sheets)
+     */
+    Integer getOffset ();
 
     /**
      * Report the path, if any, where book is to be printed.
@@ -409,16 +243,26 @@ public interface Book
     Path getPrintPath ();
 
     /**
-     * Remember to which path book print data is to be written.
+     * Report where the book project is kept.
      *
-     * @param printPath the print path
+     * @return the book project path
      */
-    void setPrintPath (Path printPath);
+    Path getProjectPath ();
 
     /**
-     * Print this book in PDF format.
+     * Report the radix of the file that corresponds to the book.
+     * It is based on the simple file name of the book, with no path and no extension.
+     *
+     * @return the book input file radix
      */
-    void print ();
+    String getRadix ();
+
+    /**
+     * Report the scores (movements) detected in this book.
+     *
+     * @return the immutable list of scores
+     */
+    List<Score> getScores ();
 
     /**
      * Report the script of actions performed on this book.
@@ -435,6 +279,135 @@ public interface Book
     Path getScriptPath ();
 
     /**
+     * Report the sheet stub with provided id (counted from 1).
+     *
+     * @param sheetId the desired value for sheet id
+     * @return the proper sheet stub, or null if not found
+     */
+    SheetStub getStub (int sheetId);
+
+    /**
+     * Report all the sheets stubs contained in this book.
+     *
+     * @return the immutable list of sheets stubs, list may be empty but is never null
+     */
+    List<SheetStub> getStubs ();
+
+    /**
+     * Report the non-discarded sheets stubs in this book.
+     *
+     * @return the immutable list of valid sheets stubs
+     */
+    List<SheetStub> getValidStubs ();
+
+    /**
+     * Hide stub assemblies of invalid sheets.
+     */
+    void hideInvalidStubs ();
+
+    /**
+     * Include a (sub) book into this (super) book.
+     *
+     * @param book the sub book to include
+     */
+    void includeBook (Book book);
+
+    /**
+     * Report whether this book is closing
+     *
+     * @return the closing flag
+     */
+    boolean isClosing ();
+
+    /**
+     * Report whether the book has been modified with respect to its project data.
+     *
+     * @return true if modified
+     */
+    boolean isModified ();
+
+    /**
+     * Report whether this book contains several sheets.
+     *
+     * @return true for several sheets
+     */
+    boolean isMultiSheet ();
+
+    /**
+     * Actually load the image that corresponds to the specified sheet id.
+     *
+     * @param id specified sheet id
+     * @return the loaded sheet image
+     */
+    BufferedImage loadSheetImage (int id);
+
+    /**
+     * Open (in the project zipped file) the folder for provided sheet number
+     *
+     * @param number sheet number (1-based) within the book
+     * @return the path to sheet folder
+     */
+    Path openSheetFolder (int number);
+
+    /**
+     * Print this book in PDF format.
+     */
+    void print ();
+
+    /**
+     * Remove the specified sheet stub from the containing book.
+     * <p>
+     * Typically, when the sheet carries no music information, it can be removed from the book
+     * (without changing the IDs of the sibling sheets in the book)
+     *
+     * @param stub the sheet stub to remove
+     * @return true if actually removed
+     */
+    boolean removeStub (SheetStub stub);
+
+    /**
+     * Set the book alias
+     *
+     * @param alias the book alias
+     */
+    void setAlias (String alias);
+
+    /**
+     * Flag this book as closing.
+     *
+     * @param closing the closing to set
+     */
+    void setClosing (boolean closing);
+
+    /**
+     * Remember the path (without extension) where the book is to be exported.
+     *
+     * @param exportPathSansExt the book export path (without extension)
+     */
+    void setExportPathSansExt (Path exportPathSansExt);
+
+    /**
+     * Set the modified flag.
+     *
+     * @param val the new flag value
+     */
+    void setModified (boolean val);
+
+    /**
+     * Assign this book offset (WRT containing super-book)
+     *
+     * @param offset the offset to set
+     */
+    void setOffset (Integer offset);
+
+    /**
+     * Remember to which path book print data is to be written.
+     *
+     * @param printPath the print path
+     */
+    void setPrintPath (Path printPath);
+
+    /**
      * Remember the path where the book script is written.
      *
      * @param scriptPath the related script path
@@ -442,21 +415,30 @@ public interface Book
     void setScriptPath (Path scriptPath);
 
     /**
-     * Report where the book project is kept.
-     *
-     * @return the book project path
-     */
-    Path getProjectPath ();
-
-    /**
      * Store book project to disk.
      *
      * @param projectPath target path for storing the project
+     * @param withBackup  if true, rename beforehand any existing target as a backup
      */
-    void store (Path projectPath);
+    void store (Path projectPath,
+                boolean withBackup);
 
     /**
      * Store book project to disk, using its current project path.
      */
     void store ();
+
+    /**
+     * Swap all sheets, except the current one if any.
+     */
+    void swapAllSheets ();
+
+    /**
+     * Convenient method to perform all needed transcription steps on (all or some sheets
+     * of) this book.
+     *
+     * @return true if OK
+     * @param sheetIds specific set of sheet IDs if any, null for all
+     */
+    boolean transcribe (SortedSet<Integer> sheetIds);
 }

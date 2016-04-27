@@ -255,12 +255,35 @@ public class BasicSheet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // getSheetFileName //
-    //------------------//
-    public static String getSheetFileName (int number)
+    //----------//
+    // setImage //
+    //----------//
+    @Override
+    public final void setImage (BufferedImage image)
+            throws StepException
     {
-        return Sheet.INTERNALS_RADIX + number + ".xml";
+        try {
+            picture = new Picture(this, image, locationService);
+
+            if (OMR.gui != null) {
+                createPictureView();
+            }
+
+            done(Step.LOAD);
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " + getBook().getInputPath() + "\n"
+                         + ex.getMessage();
+
+            if (OMR.gui != null) {
+                OMR.gui.displayWarning(msg);
+            } else {
+                logger.warn(msg);
+            }
+
+            throw new StepException(ex);
+        } catch (Throwable ex) {
+            logger.warn("Error loading image", ex);
+        }
     }
 
     //-----------------//
@@ -551,35 +574,12 @@ public class BasicSheet
         return errorsEditor;
     }
 
-    //----------//
-    // setImage //
-    //----------//
-    @Override
-    public final void setImage (BufferedImage image)
-            throws StepException
+    //------------------//
+    // getSheetFileName //
+    //------------------//
+    public static String getSheetFileName (int number)
     {
-        try {
-            picture = new Picture(this, image, locationService);
-
-            if (OMR.gui != null) {
-                createPictureView();
-            }
-
-            done(Step.LOAD);
-        } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file " + getBook().getInputPath() + "\n"
-                         + ex.getMessage();
-
-            if (OMR.gui != null) {
-                OMR.gui.displayWarning(msg);
-            } else {
-                logger.warn(msg);
-            }
-
-            throw new StepException(ex);
-        } catch (Throwable ex) {
-            logger.warn("Error loading image", ex);
-        }
+        return Sheet.INTERNALS_RADIX + number + ".xml";
     }
 
     //------------------//
@@ -1145,6 +1145,12 @@ public class BasicSheet
             StepMonitoring.notifyStart();
 
             for (Step step : mySteps) {
+                if (Thread.interrupted()) {
+                    logger.warn("{} got interrupted.");
+
+                    throw new ProcessingCancellationException();
+                }
+
                 watch.start(step.name());
                 StepMonitoring.notifyMsg(step.toString());
                 doOneStep(step, systems);
@@ -1172,6 +1178,33 @@ public class BasicSheet
         }
 
         return false;
+    }
+
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    private void done (Step step)
+    {
+        ((BasicStub) stub).done(step);
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(BasicSheet.class);
+        }
+
+        return jaxbContext;
     }
 
     //-------------------------//
@@ -1220,6 +1253,8 @@ public class BasicSheet
             logger.debug("{} completed in {} ms", step, duration);
 
             done(step); // Full completion
+        } catch (ProcessingCancellationException pce) {
+            throw pce;
         } catch (StepException ex) {
             throw ex;
         } catch (Throwable ex) {
@@ -1229,33 +1264,6 @@ public class BasicSheet
             setCurrentStep(null);
             StepMonitoring.notifyStep(this, step); // Stop
         }
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(BasicSheet.class);
-        }
-
-        return jaxbContext;
-    }
-
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    private void done (Step step)
-    {
-        ((BasicStub) stub).done(step);
     }
 
     //---------------------//

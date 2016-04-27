@@ -274,7 +274,7 @@ public class BookActions
 
                 try {
                     // Save the project to target file
-                    book.store(projectPath);
+                    book.store(projectPath, false);
 
                     return true; // Project successfully saved
                 } catch (Exception ex) {
@@ -2101,7 +2101,7 @@ public class BookActions
         {
             try {
                 LogUtil.start(book);
-                book.store(projectPath);
+                book.store(projectPath, false);
                 BookActions.getInstance().setBookModified(false);
                 book.getScript().addTask(new SaveTask(projectPath, null));
             } finally {

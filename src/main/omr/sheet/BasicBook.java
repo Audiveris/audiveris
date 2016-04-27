@@ -1185,9 +1185,19 @@ public class BasicBook
     // store //
     //-------//
     @Override
-    public void store (Path projectPath)
+    public void store (Path projectPath,
+                       boolean withBackup)
     {
         Memory.gc(); // Launch garbage collection, to save on weak glyph references ...
+
+        // Backup existing project file?
+        if (withBackup && Files.exists(projectPath)) {
+            Path backup = FileUtil.backup(projectPath);
+
+            if (backup != null) {
+                logger.info("Previous project file renamed as {}", backup);
+            }
+        }
 
         try {
             final Path root;
@@ -1240,7 +1250,7 @@ public class BasicBook
             BookManager.getInstance().getProjectHistory().add(projectPath); // Insert in history
             BookManager.setDefaultProjectFolder(projectPath.getParent().toString());
 
-            logger.info("Project stored into {}", projectPath);
+            logger.info("Project stored as {}", projectPath);
         } catch (Throwable ex) {
             logger.warn("Error storing " + this + " to " + projectPath + " ex:" + ex, ex);
         }
@@ -1255,7 +1265,7 @@ public class BasicBook
         if (projectPath == null) {
             logger.warn("Projectpath not defined");
         } else {
-            store(projectPath);
+            store(projectPath, false);
         }
     }
 

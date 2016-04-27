@@ -80,7 +80,7 @@ public class SaveTask
             projectPath = BookManager.getDefaultProjectPath(book);
         }
 
-        book.store(projectPath);
+        book.store(projectPath, false);
     }
 
     //-----------//
