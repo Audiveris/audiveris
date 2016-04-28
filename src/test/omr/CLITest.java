@@ -62,17 +62,17 @@ public class CLITest
     }
 
     @Test
-    public void testProject ()
+    public void testBook ()
             throws Exception
     {
-        System.out.println("\n+++ testProject");
+        System.out.println("\n+++ testBook");
 
-        String[] args = new String[]{"-project", "myProject#1.omr", "-project", "myProject#2.omr"};
+        String[] args = new String[]{"-book", "myBook#1.omr", "-book", "myBook#2.omr"};
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
         assertEquals(
-                Arrays.asList("myProject#1.omr", "myProject#2.omr").toString(),
-                params.projectFiles.toString());
+                Arrays.asList("myBook#1.omr", "myBook#2.omr").toString(),
+                params.bookFiles.toString());
     }
 
     @Test
@@ -96,13 +96,13 @@ public class CLITest
     }
 
     @Test
-    public void testProjectMissing ()
+    public void testBookMissing ()
             throws Exception
     {
-        System.out.println("\n+++ testProjectMissing");
+        System.out.println("\n+++ testBookMissing");
         Locale.setDefault(Locale.GERMAN);
 
-        String[] args = new String[]{"-project"};
+        String[] args = new String[]{"-book"};
 
         try {
             CLI.Parameters params = instance.getParameters(args);
@@ -111,7 +111,7 @@ public class CLITest
         } catch (CmdLineException ex) {
             System.out.println(ex.getMessage());
             System.out.println(ex.getLocalizedMessage());
-            assertTrue(ex.getMessage().contains("-project"));
+            assertTrue(ex.getMessage().contains("-book"));
         }
     }
 

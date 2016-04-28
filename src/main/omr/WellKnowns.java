@@ -180,8 +180,8 @@ public abstract class WellKnowns
     /** The default folder where scripts data is stored. */
     public static final Path DEFAULT_SCRIPTS_FOLDER = DATA_FOLDER.resolve("scripts");
 
-    /** The default folder where projects data is stored. */
-    public static final Path DEFAULT_PROJECTS_FOLDER = DATA_FOLDER.resolve("projects");
+    /** The default folder where books data is stored. */
+    public static final Path DEFAULT_BOOKS_FOLDER = DATA_FOLDER.resolve("books");
 
     /** The default folder where scores data is stored. */
     public static final Path DEFAULT_SCORES_FOLDER = DATA_FOLDER.resolve("scores");

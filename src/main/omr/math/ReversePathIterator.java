@@ -8,7 +8,7 @@ package omr.math;
 // ============================================================================
 // File:               ReversePathIterator.java
 //
-// Project:            General utilities.
+// Book:            General utilities.
 //
 // Purpose:            Is missing in java.awt.geom.
 //

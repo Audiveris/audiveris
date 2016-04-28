@@ -105,7 +105,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * Class {@code BasicSheet} is our implementation of {@link Sheet} interface.
  * <p>
  * The picture below represents the data model used for marshalling/unmarshalling a sheet to/from
- * a sheet#n.xml file within a project .omr file
+ * a sheet#n.xml file within a book .omr file
  * <p>
  * Most entities are represented here. Some Inter instances are listed only via their containing
  * entity, such as tuplets in MeasureStack, slurs and lyrics in Part, ledgers and bars in Staff,
@@ -749,7 +749,7 @@ public class BasicSheet
             try {
                 setImage(img);
             } catch (StepException ex) {
-                logger.warn("Error setting image id " + getNumber(), ex);
+                logger.warn("Error setting image id {}", getNumber(), ex);
             }
         }
 

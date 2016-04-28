@@ -24,7 +24,7 @@ import java.util.List;
  * A Book instance can be obtained from:<ul>
  * <li>An input image file, via {@link #loadInput(java.nio.file.Path)},</li>
  * <li>A script file, via {@link #loadScript(java.nio.file.Path)},</li>
- * <li>A project file, via {@link #loadProject(java.nio.file.Path)}.</li>
+ * <li>A book file, via {@link #loadBook(java.nio.file.Path)}.</li>
  * </ul>
  * <p>
  * Subsequent actions are performed directly on a Book instance.
@@ -51,12 +51,12 @@ public interface OmrEngine
     Book loadInput (Path path);
 
     /**
-     * Build a book out of a project file, which has previously been saved.
+     * Build a book out of a book file, which has previously been saved.
      *
-     * @param path path to the input project file
+     * @param path path to the book file
      * @return the allocated book
      */
-    Book loadProject (Path path);
+    Book loadBook (Path path);
 
     /**
      * Build a book out of a script file.

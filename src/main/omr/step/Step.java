@@ -47,7 +47,7 @@ public enum Step
     SCALE("Compute sheet line thickness, interline, beam thickness", new ScaleStep()),
     GRID("Retrieve staff lines, barlines, systems & parts", new GridStep()),
     HEADERS("Retrieve Clef-Key-Time systems headers", new HeadersStep()),
-    STEM_SEEDS("Retrieve Stem thickness & seeds for stems", new StemSeedsStep()),
+    STEM_SEEDS("Retrieve stem thickness & seeds for stems", new StemSeedsStep()),
     BEAMS("Retrieve beams", new BeamsStep()),
     LEDGERS("Retrieve ledgers", new LedgersStep()),
     HEADS("Retrieve note heads & whole notes", new HeadsStep()),

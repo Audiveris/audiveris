@@ -95,7 +95,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getScript}</li>
  * <li>{@link #getScriptPath}</li>
  * <li>{@link #setScriptPath}</li>
- * <li>{@link #getProjectPath}</li>
+ * <li>{@link #getBookPath}</li>
  * <li>{@link #store}</li>
  * </ul></dd>
  * </dl>
@@ -109,7 +109,7 @@ public interface Book
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** File name for book internals in project file system: {@value}. */
+    /** File name for book internals in book file system: {@value}. */
     static final String BOOK_INTERNALS = "book.xml";
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -243,11 +243,11 @@ public interface Book
     Path getPrintPath ();
 
     /**
-     * Report where the book project is kept.
+     * Report where the book book is kept.
      *
-     * @return the book project path
+     * @return the book book path
      */
-    Path getProjectPath ();
+    Path getBookPath ();
 
     /**
      * Report the radix of the file that corresponds to the book.
@@ -320,7 +320,7 @@ public interface Book
     boolean isClosing ();
 
     /**
-     * Report whether the book has been modified with respect to its project data.
+     * Report whether the book has been modified with respect to its book data.
      *
      * @return true if modified
      */
@@ -342,7 +342,7 @@ public interface Book
     BufferedImage loadSheetImage (int id);
 
     /**
-     * Open (in the project zipped file) the folder for provided sheet number
+     * Open (in the book zipped file) the folder for provided sheet number
      *
      * @param number sheet number (1-based) within the book
      * @return the path to sheet folder
@@ -415,16 +415,16 @@ public interface Book
     void setScriptPath (Path scriptPath);
 
     /**
-     * Store book project to disk.
+     * Store book book to disk.
      *
-     * @param projectPath target path for storing the project
+     * @param bookPath target path for storing the book
      * @param withBackup  if true, rename beforehand any existing target as a backup
      */
-    void store (Path projectPath,
+    void store (Path bookPath,
                 boolean withBackup);
 
     /**
-     * Store book project to disk, using its current project path.
+     * Store book book to disk, using its current book path.
      */
     void store ();
 

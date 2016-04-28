@@ -25,7 +25,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * Class {@code PathHistory} handles a history of paths, as used for latest input or
- * project files.
+ * book files.
  *
  * @author Hervé Bitteur
  */

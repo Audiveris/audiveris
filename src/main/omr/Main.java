@@ -94,7 +94,7 @@ public class Main
      */
     public static void main (String[] args)
     {
-        // Process CLI arguments
+        // Process CLI parameters
         processCli(args);
 
         // Initialize tool parameters
@@ -236,7 +236,7 @@ public class Main
     private static void processCli (String[] args)
     {
         try {
-            // First get the provided arguments if any
+            // First get the provided parameters if any
             cli = new CLI(WellKnowns.TOOL_NAME);
             cli.getParameters(args);
 
@@ -249,7 +249,7 @@ public class Main
                 logger.debug("Running in interactive mode");
             }
         } catch (CmdLineException ex) {
-            logger.warn("Error in command line: " + ex.getLocalizedMessage(), ex);
+            logger.warn("Error in command line: {}", ex.getLocalizedMessage(), ex);
             logger.warn("Exiting ...");
 
             // Stop the JVM, with failure status (1)
@@ -291,7 +291,7 @@ public class Main
                                 logger.warn("TIMEOUT at {} seconds for '{}'", timeout, radix, ex);
                                 future.cancel(true);
                             } else {
-                                logger.warn("Future exception", ex);
+                                logger.warn("Future exception, {}", ex.toString(), ex);
                             }
 
                             failure = true;
@@ -318,7 +318,7 @@ public class Main
                                 logger.warn("TIMEOUT at {} seconds for '{}'", timeout, radix, ex);
                                 future.cancel(true);
                             } else {
-                                logger.warn("Future exception", ex);
+                                logger.warn("Future exception, {}", ex.toString(), ex);
                             }
 
                             failure = true;

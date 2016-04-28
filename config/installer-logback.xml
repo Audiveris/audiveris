@@ -7,7 +7,7 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
-            <pattern>%-5level %caller{1} - %msg%ex%n</pattern>
+            <pattern>%-5level %caller{1} - %msg%n%ex</pattern>
             <!--            <pattern>%-5level %msg%n %ex</pattern>-->
         </encoder>
     </appender>
@@ -16,7 +16,7 @@
         <append>true</append>
         <file>${user.home}/audiveris-installer-${bySecond}.log</file>
         <encoder>
-            <pattern>%date %level \(%file:%line\) - %msg%ex%n</pattern>
+            <pattern>%date %level \(%file:%line\) - %msg%n%ex</pattern>
         </encoder>
     </appender>
     

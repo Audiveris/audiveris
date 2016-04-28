@@ -708,7 +708,7 @@ public class StubsController
                 LogUtil.stopStub();
             }
         } else if (!stub.hasSheet()) {
-            // Stub just loaded from project file, load & display the related sheet
+            // Stub just loaded from book file, load & display the related sheet
             stub.getSheet().displayMainTabs();
         }
     }

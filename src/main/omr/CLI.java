@@ -55,8 +55,12 @@ import java.util.concurrent.Callable;
 /**
  * Class {@code CLI} parses and holds the parameters of the command line interface.
  * <p>
- * At any location in the command line, an item starting with the &#64; character will be
- * interpreted as an indirection to a file, whose content must be expanded in line.
+ * At any location in the command line, an item starting with the &#64; character is
+ * interpreted as referring to a file, whose content is expanded in line.
+ * <p>
+ * NOTA: each line of such a referred file is taken as a whole and interpreted as a single item,
+ * hence please make sure to put only one item per line.
+ * Note also that a blank line is interpreted as a "" item.
  * <p>
  * The command line parameters can be (order and case are not relevant):
  * <dl>
@@ -92,17 +96,17 @@ import java.util.concurrent.Callable;
  * <dt><b>-printDir DIR</b></dt>
  * <dd>Prints out book to specific folder (ignored if -printAs is used)</dd>
  *
- * <dt><b>-project FILE</b></dt>
- * <dd>Loads the provided project file</dd>
+ * <dt><b>-book FILE</b></dt>
+ * <dd>Loads the provided book file</dd>
  *
  * <dt><b>-save</b></dt>
- * <dd>Saves project</dd>
+ * <dd>Saves book</dd>
  *
  * <dt><b>-saveAs FILE</b></dt>
- * <dd>Saves project to specific file</dd>
+ * <dd>Saves book to specific file</dd>
  *
  * <dt><b>-saveDir DIR</b></dt>
- * <dd>Saves project to specific folder (ignored if -saveAs is used)</dd>
+ * <dd>Saves book to specific folder (ignored if -saveAs is used)</dd>
  *
  * <dt><b>-script FILE</b></dt>
  * <dd>Runs the provided script file</dd>
@@ -112,7 +116,12 @@ import java.util.concurrent.Callable;
  *
  * <dt><b>-step STEP</b></dt>
  * <dd>Defines a specific transcription step (to be performed on each input referenced from the
- * command line</dd>
+ * command line)</dd>
+ * </dl>
+ *
+ * <dt><b>--</b></dt>
+ * <dd>This optional item marks the end of options and indicates that all following items are
+ * arguments.</dd>
  * </dl>
  *
  * @author Hervé Bitteur
@@ -152,7 +161,7 @@ public class CLI
     // getCliTasks //
     //-------------//
     /**
-     * Prepare the collection of CLI tasks (inputs, projects, scripts).
+     * Prepare the collection of CLI tasks (inputs, books, scripts).
      *
      * @return the collection of tasks
      */
@@ -170,9 +179,9 @@ public class CLI
             tasks.add(new InputTask(argument));
         }
 
-        // Projects
-        for (Path project : params.projectFiles) {
-            tasks.add(new ProjectTask(project));
+        // Books
+        for (Path book : params.bookFiles) {
+            tasks.add(new BookTask(book));
         }
 
         // Scripts
@@ -352,12 +361,22 @@ public class CLI
         buf.append("\n").append(toolName).append(" Version:");
         buf.append("\n   ").append(WellKnowns.TOOL_REF);
 
-        // Print arguments syntax
-        buf.append("\nSyntax:\n");
+        // Print syntax
+        buf.append("\n");
+        buf.append("\nSyntax:");
+        buf.append("\n   audiveris [OPTIONS] [INPUT_FILES]\n");
+
+        buf.append("\nOptions:\n");
 
         StringWriter writer = new StringWriter();
         parser.printUsage(writer, null);
         buf.append(writer.toString());
+
+        buf.append("\nInput file extensions:");
+        buf.append("\n   .omr        : book file");
+        buf.append("\n   .script.xml : script file");
+        buf.append("\n   [any other] : image file");
+        buf.append("\n");
 
         // Print all steps
         buf.append("\nSheet steps are in order:");
@@ -375,7 +394,7 @@ public class CLI
     // CliTask //
     //---------//
     /**
-     * Define a CLI task on a book (input, project or script).
+     * Define a CLI task on a book (input, book or script).
      */
     public abstract static class CliTask
             implements Callable<Void>
@@ -527,9 +546,9 @@ public class CLI
         @Option(name = "-input", usage = "Loads the provided input file", metaVar = "<input-file>")
         final List<Path> inputFiles = new ArrayList<Path>();
 
-        /** The list of project file names to load. */
-        @Option(name = "-project", usage = "Loads the provided project file", metaVar = "<project-file>")
-        final List<Path> projectFiles = new ArrayList<Path>();
+        /** The list of book file names to load. */
+        @Option(name = "-book", usage = "Loads the provided book file", metaVar = "<book-file>")
+        final List<Path> bookFiles = new ArrayList<Path>();
 
         /** The set of sheet IDs to load. */
         @Option(name = "-sheets", usage = "Selects specific sheets (1-based)", handler = IntArrayOptionHandler.class)
@@ -562,16 +581,16 @@ public class CLI
         Path printFolder;
 
         /** Should book be saved?. */
-        @Option(name = "-save", usage = "Saves project")
+        @Option(name = "-save", usage = "Saves book")
         boolean save;
 
         /** Full target file for save. */
-        @Option(name = "-saveAs", usage = "Saves project to specific file", metaVar = "<project-file>")
+        @Option(name = "-saveAs", usage = "Saves book to specific file", metaVar = "<book-file>")
         Path saveAs;
 
         /** Target directory for save. */
-        @Option(name = "-saveDir", usage = "Saves project to specific folder"
-                                           + " (ignored if -saveAs is used)", metaVar = "<project-folder>")
+        @Option(name = "-saveDir", usage = "Saves book to specific folder"
+                                           + " (ignored if -saveAs is used)", metaVar = "<book-folder>")
         Path saveFolder;
 
         /** Final arguments, with optional "--" separator. */
@@ -692,7 +711,7 @@ public class CLI
     // ProcessingTask //
     //----------------//
     /**
-     * Processing common to both input (images) and projects.
+     * Processing common to both input (images) and books.
      */
     private abstract class ProcessingTask
             extends CliTask
@@ -708,7 +727,7 @@ public class CLI
         @Override
         protected void processBook (Book book)
         {
-            final Path folder = BookManager.getDefaultProjectPath(book).getParent();
+            final Path folder = BookManager.getDefaultBookPath(book).getParent();
             boolean cancelled = false;
 
             try {
@@ -782,8 +801,8 @@ public class CLI
                 // Close (when in batch mode only)
                 if (OMR.gui == null) {
                     if (cancelled) {
-                        // Make a backup if needed, then save project "in its current status"
-                        book.store(BookManager.getDefaultProjectPath(book), true);
+                        // Make a backup if needed, then save book "in its current status"
+                        book.store(BookManager.getDefaultBookPath(book), true);
                     }
 
                     book.close();
@@ -826,17 +845,17 @@ public class CLI
     }
 
     //-------------//
-    // ProjectTask //
+    // BookTask //
     //-------------//
     /**
-     * CLI task to process a project file.
+     * CLI task to process a book file.
      */
-    private class ProjectTask
+    private class BookTask
             extends ProcessingTask
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public ProjectTask (Path path)
+        public BookTask (Path path)
         {
             super(path);
         }
@@ -845,13 +864,13 @@ public class CLI
         @Override
         public String toString ()
         {
-            return "Project " + path;
+            return "Book " + path;
         }
 
         @Override
         protected Book loadBook (Path path)
         {
-            Book book = OMR.engine.loadProject(path);
+            Book book = OMR.engine.loadBook(path);
 
             if (OMR.gui != null) {
                 book.createStubsTabs(); // Tabs are now accessible
@@ -861,37 +880,3 @@ public class CLI
         }
     }
 }
-//
-//        /** Should bench data be produced?. */
-//        @Option(name = "-bench", usage = "Outputs bench data")
-//        boolean bench;
-//
-//        /** Target directory for bench data. */
-//        @Option(name = "-benchDir", usage = "Outputs bench data to specific folder", metaVar = "<bench-folder>")
-//        Path benchFolder;
-/*
- *
- * <dt><b>-bench</b></dt>
- * <dd>Outputs bench data</dd>
- *
- * <dt><b>-benchDir DIR</b></dt>
- * <dd>Outputs bench data to specific folder</dd>
- */
-
-//    //----------------//
-//    // getBenchFolder //
-//    //----------------//
-//    /**
-//     * Report the bench folder if present on the CLI
-//     *
-//     * @return the CLI bench folder, or null
-//     */
-//    public Path getBenchFolder ()
-//    {
-//        if (params.benchFolder == null) {
-//            return null;
-//        }
-//
-//        return params.benchFolder.toPath();
-//    }
-//

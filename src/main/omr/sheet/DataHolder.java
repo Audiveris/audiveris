@@ -101,7 +101,7 @@ public class DataHolder<T>
                 JAXBContext jaxbContext = JAXBContext.newInstance(classe);
                 Unmarshaller um = jaxbContext.createUnmarshaller();
 
-                // Open project file system
+                // Open book file system
                 Path dataFile = sheet.getBook().openSheetFolder(sheet.getNumber())
                         .resolve(pathString);
                 logger.debug("path: {}", dataFile);
@@ -110,7 +110,7 @@ public class DataHolder<T>
                 data = (T) um.unmarshal(is);
                 is.close();
 
-                // Close project file system
+                // Close book file system
                 dataFile.getFileSystem().close();
 
                 logger.info("Loaded {}", dataFile);

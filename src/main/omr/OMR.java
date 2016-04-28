@@ -24,9 +24,6 @@ public abstract class OMR
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** The extension used for bench files: {@value}. */
-    public static final String BENCH_EXTENSION = ".bench.properties";
-
     /** The extension used for compressed score output files: {@value}. */
     public static final String COMPRESSED_SCORE_EXTENSION = ".mxl";
 
@@ -39,8 +36,8 @@ public abstract class OMR
     /** The extension used for compressed score print files: {@value}. */
     public static final String PDF_EXTENSION = ".pdf";
 
-    /** The extension used for Audiveris project files: {@value}. */
-    public static final String PROJECT_EXTENSION = ".omr";
+    /** The extension used for Audiveris book files: {@value}. */
+    public static final String BOOK_EXTENSION = ".omr";
 
     /** The extension used for score output files: {@value}. */
     public static final String SCORE_EXTENSION = ".xml";

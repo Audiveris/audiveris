@@ -222,7 +222,7 @@ public abstract class ImageLoading
 
             logger.debug("No image read by JAI for {}", imgPath);
         } catch (Exception ex) {
-            logger.warn("JAI failed opening " + imgPath + " ", ex);
+            logger.warn("JAI failed opening {}, {} ", imgPath, ex.toString(), ex);
         }
 
         return null;

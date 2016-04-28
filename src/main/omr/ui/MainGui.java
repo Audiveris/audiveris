@@ -447,7 +447,7 @@ public class MainGui
         // Just in case we already have messages pending
         notifyLog();
 
-        // Launch inputs, projects & scripts
+        // Launch inputs, books & scripts
         for (Callable<Void> task : Main.getCli().getCliTasks()) {
             OmrExecutors.getCachedLowExecutor().submit(task);
         }
@@ -612,8 +612,8 @@ public class MainGui
 
                     if (itemName.equals("inputHistory")) {
                         ba.getInputHistoryMenu().populate((JMenu) item, BookActions.class);
-                    } else if (itemName.equals("projectHistory")) {
-                        ba.getProjectHistoryMenu().populate((JMenu) item, BookActions.class);
+                    } else if (itemName.equals("bookHistory")) {
+                        ba.getBookHistoryMenu().populate((JMenu) item, BookActions.class);
                     } else if (itemName.equals("scriptHistory")) {
                         ba.getScriptHistoryMenu().populate((JMenu) item, BookActions.class);
                     }

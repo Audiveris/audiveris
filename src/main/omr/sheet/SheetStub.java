@@ -146,7 +146,7 @@ public interface SheetStub
     boolean isDone (Step step);
 
     /**
-     * Has the sheet been modified with respect to its project data?.
+     * Has the sheet been modified with respect to its book data?.
      *
      * @return true if modified
      */
@@ -184,7 +184,7 @@ public interface SheetStub
     void invalidate ();
 
     /**
-     * Store sheet material into project.
+     * Store sheet material into book.
      */
     void storeSheet ();
 }

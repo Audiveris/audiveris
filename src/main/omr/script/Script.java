@@ -64,9 +64,9 @@ public class Script
     @XmlAttribute(name = "input")
     private final Path inputPath;
 
-    /** Full path to the Book project file. */
-    @XmlAttribute(name = "project")
-    private final Path projectPath;
+    /** Full path to the Book book file. */
+    @XmlAttribute(name = "book")
+    private final Path bookPath;
 
     /** Sheet offset of the book WRT full work. */
     @XmlAttribute(name = "offset")
@@ -114,9 +114,9 @@ public class Script
     {
         this.book = book;
 
-        projectPath = book.getProjectPath();
+        bookPath = book.getBookPath();
 
-        inputPath = (projectPath == null) ? book.getInputPath() : null;
+        inputPath = (bookPath == null) ? book.getInputPath() : null;
 
         offset = book.getOffset();
 
@@ -132,7 +132,7 @@ public class Script
     private Script ()
     {
         inputPath = null;
-        projectPath = null;
+        bookPath = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -221,8 +221,8 @@ public class Script
                 book = OMR.engine.loadInput(inputPath);
                 book.setOffset(offset);
                 book.createStubs(sheetIds); // This loads all specified sheets indices
-            } else if (projectPath != null) {
-                book = OMR.engine.loadProject(projectPath);
+            } else if (bookPath != null) {
+                book = OMR.engine.loadBook(bookPath);
             } else {
                 logger.warn("No book defined in script");
 
@@ -299,8 +299,8 @@ public class Script
 
         if (inputPath != null) {
             sb.append(" ").append(inputPath);
-        } else if (projectPath != null) {
-            sb.append(" ").append(projectPath);
+        } else if (bookPath != null) {
+            sb.append(" ").append(bookPath);
         } else if (book != null) {
             sb.append(" ").append(book.getRadix());
         }

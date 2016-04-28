@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SaveTask} saves project on disk.
+ * Class {@code SaveTask} saves book on disk.
  *
  * @author Hervé Bitteur
  */
@@ -44,7 +44,7 @@ public class SaveTask
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a task to save a project, providing either the full target
+     * Create a task to save a book, providing either the full target
      * file or just the target folder (and using default file name).
      *
      * @param file   the full target file, or null
@@ -70,17 +70,17 @@ public class SaveTask
     public void core (Sheet sheet)
     {
         Book book = sheet.getBook();
-        Path projectPath = (file != null) ? file
+        Path bookPath = (file != null) ? file
                 : ((folder != null)
                         ? Paths.get(
                                 folder.toString(),
-                                book.getRadix() + OMR.PROJECT_EXTENSION) : null);
+                                book.getRadix() + OMR.BOOK_EXTENSION) : null);
 
-        if (projectPath == null) {
-            projectPath = BookManager.getDefaultProjectPath(book);
+        if (bookPath == null) {
+            bookPath = BookManager.getDefaultBookPath(book);
         }
 
-        book.store(projectPath, false);
+        book.store(bookPath, false);
     }
 
     //-----------//

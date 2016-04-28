@@ -437,8 +437,8 @@ public class GuiActions
             classes(new JTextField()),
             /** Link to web site */
             home(new JEditorPane("text/html", "")),
-            /** Link to project site */
-            project(new JEditorPane("text/html", "")),
+            /** Link to book site */
+            book(new JEditorPane("text/html", "")),
             /** License */
             license(new JTextField()),
             /** Java vendor */

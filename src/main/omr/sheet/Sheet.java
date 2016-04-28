@@ -325,10 +325,10 @@ public interface Sheet
     void print (Path sheetPrintPath);
 
     /**
-     * Store sheet internals into book project file system.
+     * Store sheet internals into book book file system.
      *
-     * @param sheetPath    path of sheet in new) project file
-     * @param oldSheetPath path of sheet in old project file, if any
+     * @param sheetPath    path of sheet in new) book file
+     * @param oldSheetPath path of sheet in old book file, if any
      */
     void store (Path sheetPath,
                 Path oldSheetPath);

@@ -111,7 +111,7 @@ public class AdaptiveDescriptor
 
             return (PixelFilter) cons.newInstance(source, meanCoeff, stdDevCoeff);
         } catch (Throwable ex) {
-            logger.error("Error on getFilter {}", ex);
+            logger.error("Error on getFilter {}", ex.toString(), ex);
 
             return null;
         }

@@ -111,8 +111,8 @@ public class FileDropHandler
 
                 if (fileName.endsWith(OMR.SCRIPT_EXTENSION)) {
                     new DropScriptTask(file).execute();
-                } else if (fileName.endsWith(OMR.PROJECT_EXTENSION)) {
-                    new DropProjectTask(file).execute();
+                } else if (fileName.endsWith(OMR.BOOK_EXTENSION)) {
+                    new DropBookTask(file).execute();
                 } else {
                     new DropInputTask(file, defaultStep.getTarget()).execute();
                 }
@@ -221,9 +221,9 @@ public class FileDropHandler
     }
 
     //-----------------//
-    // DropProjectTask //
+    // DropBookTask //
     //-----------------//
-    private static class DropProjectTask
+    private static class DropBookTask
             extends BasicTask
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -231,7 +231,7 @@ public class FileDropHandler
         private final File file;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public DropProjectTask (File file)
+        public DropBookTask (File file)
         {
             this.file = file;
         }
@@ -241,7 +241,7 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            Book book = OMR.engine.loadProject(file.toPath());
+            Book book = OMR.engine.loadBook(file.toPath());
             book.createStubsTabs(); // Tabs are now accessible
 
             return null;

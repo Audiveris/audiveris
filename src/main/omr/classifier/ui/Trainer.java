@@ -225,7 +225,7 @@ public class Trainer
         //        // Just in case we already have messages pending
         //        notifyLog();
         //
-        //        // Launch inputs, projects & scripts
+        //        // Launch inputs, books & scripts
         //        for (Callable<Void> task : Main.getCli().getCliTasks()) {
         //            OmrExecutors.getCachedLowExecutor().submit(task);
         //        }

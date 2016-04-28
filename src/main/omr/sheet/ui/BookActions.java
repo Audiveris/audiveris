@@ -132,8 +132,8 @@ public class BookActions
     /** Sub-menu on inputs history. */
     private final HistoryMenu inputHistoryMenu;
 
-    /** Sub-menu on projects history. */
-    private final HistoryMenu projectHistoryMenu;
+    /** Sub-menu on books history. */
+    private final HistoryMenu bookHistoryMenu;
 
     /** Sub-menu on scripts history. */
     private final HistoryMenu scriptHistoryMenu;
@@ -146,7 +146,7 @@ public class BookActions
     {
         final BookManager mgr = BookManager.getInstance();
         inputHistoryMenu = new HistoryMenu(mgr.getInputHistory(), OpenInputTask.class);
-        projectHistoryMenu = new HistoryMenu(mgr.getProjectHistory(), OpenProjectTask.class);
+        bookHistoryMenu = new HistoryMenu(mgr.getBookHistory(), OpenBookTask.class);
         scriptHistoryMenu = new HistoryMenu(mgr.getScriptHistory(), LoadScriptTask.class);
     }
 
@@ -251,32 +251,32 @@ public class BookActions
                     "Save modified book " + book.getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
-                Path projectPath;
+                Path bookPath;
 
-                if (book.getProjectPath() == null) {
+                if (book.getBookPath() == null) {
                     // Find a suitable target file
-                    projectPath = BookManager.getDefaultProjectPath(book);
+                    bookPath = BookManager.getDefaultBookPath(book);
 
                     // Check the target is fine
-                    if (!confirmed(projectPath)) {
+                    if (!confirmed(bookPath)) {
                         // Let the user select an alternate output file
-                        projectPath = selectProjectPath(
+                        bookPath = selectBookPath(
                                 true,
-                                BookManager.getDefaultProjectPath(book));
+                                BookManager.getDefaultBookPath(book));
 
-                        if ((projectPath == null) || !confirmed(projectPath)) {
+                        if ((bookPath == null) || !confirmed(bookPath)) {
                             return false; // No suitable target found
                         }
                     }
                 } else {
-                    projectPath = book.getProjectPath();
+                    bookPath = book.getBookPath();
                 }
 
                 try {
-                    // Save the project to target file
-                    book.store(projectPath, false);
+                    // Save the book to target file
+                    book.store(bookPath, false);
 
-                    return true; // Project successfully saved
+                    return true; // Book successfully saved
                 } catch (Exception ex) {
                     logger.warn("Error saving book", ex);
 
@@ -725,11 +725,11 @@ public class BookActions
     }
 
     //-----------------------//
-    // getProjectHistoryMenu //
+    // getBookHistoryMenu //
     //-----------------------//
-    public HistoryMenu getProjectHistoryMenu ()
+    public HistoryMenu getBookHistoryMenu ()
     {
-        return projectHistoryMenu;
+        return bookHistoryMenu;
     }
 
     //----------------------//
@@ -833,20 +833,20 @@ public class BookActions
     // openBook //
     //----------//
     /**
-     * Action that let the user select a book project.
+     * Action that let the user select a book book.
      *
      * @param e the event that triggered this action
      * @return the asynchronous task, or null
      */
     @Action
-    public OpenProjectTask openBook (ActionEvent e)
+    public OpenBookTask openBook (ActionEvent e)
     {
-        final String dir = BookManager.getDefaultProjectFolder();
-        final Path path = selectProjectPath(false, Paths.get(dir));
+        final String dir = BookManager.getDefaultBookFolder();
+        final Path path = selectBookPath(false, Paths.get(dir));
 
         if (path != null) {
             if (Files.exists(path)) {
-                return new OpenProjectTask(path);
+                return new OpenBookTask(path);
             } else {
                 logger.warn("Path not found {}", path);
             }
@@ -1095,12 +1095,12 @@ public class BookActions
     }
 
     //----------------//
-    // projectHistory //
+    // bookHistory //
     //----------------//
     @Action
-    public void projectHistory (ActionEvent e)
+    public void bookHistory (ActionEvent e)
     {
-        logger.info("projectHistory");
+        logger.info("bookHistory");
     }
 
     //--------------//
@@ -1164,10 +1164,10 @@ public class BookActions
         }
 
         // Ask user confirmation for overwriting if file already exists
-        final Path projectPath = BookManager.getDefaultProjectPath(book);
+        final Path bookPath = BookManager.getDefaultBookPath(book);
 
-        if ((book.getProjectPath() != null) && confirmed(projectPath)) {
-            return new StoreBookTask(book, projectPath);
+        if ((book.getBookPath() != null) && confirmed(bookPath)) {
+            return new StoreBookTask(book, bookPath);
         } else {
             return saveBookAs(e);
         }
@@ -1185,15 +1185,15 @@ public class BookActions
             return null;
         }
 
-        // Let the user select a project output file
-        final Path defaultProjectPath = BookManager.getDefaultProjectPath(book);
-        final Path projectPath = selectProjectPath(true, defaultProjectPath);
-        final Path bookPath = book.getProjectPath();
+        // Let the user select a book output file
+        final Path defaultBookPath = BookManager.getDefaultBookPath(book);
+        final Path targetPath = selectBookPath(true, defaultBookPath);
+        final Path ownPath = book.getBookPath();
 
-        if ((projectPath != null)
-            && (((bookPath != null) && bookPath.toAbsolutePath().equals(projectPath.toAbsolutePath()))
-                || confirmed(projectPath))) {
-            return new StoreBookTask(book, projectPath);
+        if ((targetPath != null)
+            && (((ownPath != null) && ownPath.toAbsolutePath().equals(targetPath.toAbsolutePath()))
+                || confirmed(targetPath))) {
+            return new StoreBookTask(book, targetPath);
         }
 
         return null;
@@ -1469,23 +1469,23 @@ public class BookActions
     }
 
     //-------------------//
-    // selectProjectPath //
+    // selectBookPath //
     //-------------------//
     /**
-     * Let the user interactively select a project path
+     * Let the user interactively select a book path
      *
      * @param path default path
      * @param save true for write, false for read
      * @return the selected path or null
      */
-    private static Path selectProjectPath (boolean save,
-                                           Path path)
+    private static Path selectBookPath (boolean save,
+                                        Path path)
     {
         Path prjPath = UIUtil.pathChooser(
                 save,
                 OMR.gui.getFrame(),
                 path,
-                filter(OMR.PROJECT_EXTENSION));
+                filter(OMR.BOOK_EXTENSION));
 
         return (prjPath == null) ? null : prjPath;
     }
@@ -1601,22 +1601,22 @@ public class BookActions
     }
 
     //-----------------//
-    // OpenProjectTask //
+    // OpenBookTask //
     //-----------------//
     /**
-     * Task that opens a book project file.
+     * Task that opens a book book file.
      */
-    public static class OpenProjectTask
+    public static class OpenBookTask
             extends PathTask
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public OpenProjectTask (Path path)
+        public OpenBookTask (Path path)
         {
             super(path);
         }
 
-        public OpenProjectTask ()
+        public OpenBookTask ()
         {
         }
 
@@ -1627,8 +1627,8 @@ public class BookActions
         {
             if (Files.exists(path)) {
                 try {
-                    // Actually open the project
-                    Book book = OMR.engine.loadProject(path);
+                    // Actually open the book
+                    Book book = OMR.engine.loadBook(path);
                     LogUtil.start(book);
                     book.createStubsTabs(); // Tabs are now accessible
                 } finally {
@@ -1738,7 +1738,7 @@ public class BookActions
 
         private final Constant.Boolean closeConfirmation = new Constant.Boolean(
                 true,
-                "Should we ask confirmation for closing an unsaved project?");
+                "Should we ask confirmation for closing an unsaved book?");
     }
 
     //---------------//
@@ -1921,7 +1921,7 @@ public class BookActions
             if (!getSpecific().equals(specific)) {
                 constants.closeConfirmation.setValue(specific);
                 logger.info(
-                        "You will {} be prompted to save project when closing",
+                        "You will {} be prompted to save book when closing",
                         specific ? "now" : "no longer");
 
                 return true;
@@ -2078,20 +2078,20 @@ public class BookActions
 
         final Book book;
 
-        final Path projectPath;
+        final Path bookPath;
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create an asynchronous task to store the book.
          *
-         * @param book        the book to export
-         * @param projectPath (non-null) the target to store book path
+         * @param book     the book to export
+         * @param bookPath (non-null) the target to store book path
          */
         public StoreBookTask (Book book,
-                              Path projectPath)
+                              Path bookPath)
         {
             this.book = book;
-            this.projectPath = projectPath;
+            this.bookPath = bookPath;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -2101,9 +2101,9 @@ public class BookActions
         {
             try {
                 LogUtil.start(book);
-                book.store(projectPath, false);
+                book.store(bookPath, false);
                 BookActions.getInstance().setBookModified(false);
-                book.getScript().addTask(new SaveTask(projectPath, null));
+                book.getScript().addTask(new SaveTask(bookPath, null));
             } finally {
                 LogUtil.stopBook();
             }

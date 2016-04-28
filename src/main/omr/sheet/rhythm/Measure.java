@@ -1398,7 +1398,7 @@ public class Measure
     /**
      * Report the measure ID within page (in fact the related stack ID).
      * <p>
-     * NOTA: @XmlAttribute annotation forces this information to be written in project file
+     * NOTA: @XmlAttribute annotation forces this information to be written in book file
      * (although it is not used when unmarshalling)
      *
      * @return the page ID of containing stack

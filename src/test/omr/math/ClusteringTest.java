@@ -1,16 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package omr.math;
 
 import static omr.math.Clustering.*;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -24,7 +15,6 @@ public class ClusteringTest
     static java.util.Random random = new java.util.Random(111);
 
     //~ Constructors -------------------------------------------------------------------------------
-
     /**
      * Creates a new ClusteringTest object.
      */
@@ -33,7 +23,6 @@ public class ClusteringTest
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-
     public static double gaussianSample (double mu,
                                          double sigma)
     {
@@ -76,11 +65,11 @@ public class ClusteringTest
         //        fail("The test case is a prototype.");
 
         // generate random values
-        int      N = 4000;
+        int N = 4000;
         double[] x = generateSample(N);
 
         // initial guess for the laws parameters (uniform)
-        int   G = 3;
+        int G = 3;
         Law[] laws = new Law[G];
         laws[0] = new Gaussian(4.0, 1.0);
         laws[1] = new Gaussian(8.0, 1.0);

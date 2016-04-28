@@ -100,7 +100,7 @@ public class BasicStub
     /** The step being performed on the sheet. */
     private volatile Step currentStep;
 
-    /** Has sheet been modified, WRT its project data. */
+    /** Has sheet been modified, WRT its book data. */
     private boolean modified = false;
 
     /** Related assembly instance, if any. */
@@ -313,13 +313,13 @@ public class BasicStub
                             logger.info("Could not load sheet for stub {}", this);
                         }
                     } else {
-                        // LOAD already performed: load from project file
+                        // LOAD already performed: load from book file
                         StopWatch watch = new StopWatch("Load Sheet " + this);
 
                         try {
                             watch.start("unmarshal");
 
-                            // Open the project file system
+                            // Open the book file system
                             Path sheetFile = book.openSheetFolder(number).resolve(
                                     BasicSheet.getSheetFileName(number));
                             InputStream is = Files.newInputStream(
@@ -327,7 +327,7 @@ public class BasicStub
                                     StandardOpenOption.READ);
                             sheet = BasicSheet.unmarshal(is);
 
-                            // Close the stream as well as the project file system
+                            // Close the stream as well as the book file system
                             is.close();
                             sheetFile.getFileSystem().close();
 

@@ -274,7 +274,7 @@ public class Plugin
                 title = (String) engine.get("pluginTitle");
                 tip = (String) engine.get("pluginTip");
             } catch (Exception ex) {
-                logger.warn(this + " error", ex);
+                logger.warn("{} error", this, ex);
             }
         } else {
             throw new JavascriptUnavailableException();

@@ -146,8 +146,8 @@ public class BasicBook
     /** The related file radix (file name without extension). */
     private String radix;
 
-    /** File path where the project is kept. */
-    private Path projectPath;
+    /** File path where the book is kept. */
+    private Path bookPath;
 
     /** File path where the book is printed. */
     private Path printPath;
@@ -224,18 +224,18 @@ public class BasicBook
     // closeFileSystem //
     //-----------------//
     /**
-     * Close the provided (project) file system.
+     * Close the provided (book) file system.
      *
-     * @param fileSystem the project file system
+     * @param fileSystem the book file system
      */
     public static void closeFileSystem (FileSystem fileSystem)
     {
         try {
             fileSystem.close();
 
-            logger.info("Project file system closed.");
+            logger.info("Book file system closed.");
         } catch (Exception ex) {
-            logger.warn("Could not close project file system " + ex, ex);
+            logger.warn("Could not close book file system " + ex, ex);
         }
     }
 
@@ -767,12 +767,12 @@ public class BasicBook
     }
 
     //----------------//
-    // getProjectPath //
+    // getBookPath //
     //----------------//
     @Override
-    public Path getProjectPath ()
+    public Path getBookPath ()
     {
-        return projectPath;
+        return bookPath;
     }
 
     //----------//
@@ -882,40 +882,40 @@ public class BasicBook
         subBooks.add(book);
     }
 
-    //-------------//
-    // loadProject //
-    //-------------//
+    //----------//
+    // loadBook //
+    //----------//
     /**
-     * Load a book out of a provided project file.
+     * Load a book out of a provided book file.
      *
-     * @param projectPath path to the (zipped) project file
+     * @param bookPath path to the (zipped) book file
      * @return the loaded book if successful
      */
-    public static Book loadProject (Path projectPath)
+    public static Book loadBook (Path bookPath)
     {
-        StopWatch watch = new StopWatch("loadProject " + projectPath);
+        StopWatch watch = new StopWatch("loadBook " + bookPath);
 
         try {
-            logger.info("Loading project {} ...", projectPath);
+            logger.info("Loading book {} ...", bookPath);
             watch.start("book");
 
-            // Open project file
-            Path rootPath = Zip.openFileSystem(projectPath);
+            // Open book file
+            Path rootPath = Zip.openFileSystem(bookPath);
 
-            // Load book internals (just the stubs)
-            Path bookPath = rootPath.resolve(Book.BOOK_INTERNALS);
-            InputStream is = Files.newInputStream(bookPath, StandardOpenOption.READ);
+            // Load book internals (just the stubs) out of book.xml
+            Path internalsPath = rootPath.resolve(Book.BOOK_INTERNALS);
+            InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ);
 
             Unmarshaller um = getJaxbContext().createUnmarshaller();
             final BasicBook book = (BasicBook) um.unmarshal(is);
             LogUtil.start(book);
-            book.initTransients(null, projectPath);
+            book.initTransients(null, bookPath);
             is.close();
-            rootPath.getFileSystem().close(); // Close project file
+            rootPath.getFileSystem().close(); // Close book file
 
             return book;
         } catch (Exception ex) {
-            logger.warn("Error loading project " + projectPath + " " + ex, ex);
+            logger.warn("Error loading book " + bookPath + " " + ex, ex);
 
             return null;
         } finally {
@@ -928,34 +928,34 @@ public class BasicBook
     }
 
     //-----------------//
-    // openProjectFile //
+    // openBookFile //
     //-----------------//
     /**
-     * Open the project file (supposed to already exist at location provided by
-     * '{@code projectPath}' parameter) for reading or writing.
+     * Open the book file (supposed to already exist at location provided by
+     * '{@code bookPath}' parameter) for reading or writing.
      * <p>
-     * When IO operations are finished, the project file must be closed via
+     * When IO operations are finished, the book file must be closed via
      * {@link #closeFileSystem(java.nio.file.FileSystem)}
      *
-     * @param projectPath project path name
-     * @return the root path of the (zipped) project file system
+     * @param bookPath book path name
+     * @return the root path of the (zipped) book file system
      */
-    public static Path openProjectFile (Path projectPath)
+    public static Path openBookFile (Path bookPath)
     {
-        if (projectPath == null) {
-            throw new IllegalStateException("projectPath is null");
+        if (bookPath == null) {
+            throw new IllegalStateException("bookPath is null");
         }
 
         try {
-            logger.debug("Project file system opened");
+            logger.debug("Book file system opened");
 
-            FileSystem fileSystem = FileSystems.newFileSystem(projectPath, null);
+            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, null);
 
             return fileSystem.getPath(fileSystem.getSeparator());
         } catch (FileNotFoundException ex) {
-            logger.warn("File not found: " + projectPath, ex);
+            logger.warn("File not found: " + bookPath, ex);
         } catch (IOException ex) {
-            logger.warn("Error reading project:" + projectPath, ex);
+            logger.warn("Error reading book:" + bookPath, ex);
         }
 
         return null;
@@ -1025,20 +1025,20 @@ public class BasicBook
     }
 
     //-----------------//
-    // openProjectFile //
+    // openBookFile //
     //-----------------//
     /**
-     * Open the project file (supposed to already exist at location provided by
-     * '{@code projectPath}' member) for reading or writing.
+     * Open the book file (supposed to already exist at location provided by
+     * '{@code bookPath}' member) for reading or writing.
      * <p>
-     * When IO operations are finished, the project file must be closed via
+     * When IO operations are finished, the book file must be closed via
      * {@link #closeFileSystem(java.nio.file.FileSystem)}
      *
-     * @return the root path of the (zipped) project file system
+     * @return the root path of the (zipped) book file system
      */
-    public Path openProjectFile ()
+    public Path openBookFile ()
     {
-        return Zip.openFileSystem(projectPath);
+        return Zip.openFileSystem(bookPath);
     }
 
     //-----------------//
@@ -1047,7 +1047,7 @@ public class BasicBook
     @Override
     public Path openSheetFolder (int number)
     {
-        Path root = openProjectFile();
+        Path root = openBookFile();
 
         return root.resolve(INTERNALS_RADIX + number);
     }
@@ -1185,31 +1185,31 @@ public class BasicBook
     // store //
     //-------//
     @Override
-    public void store (Path projectPath,
+    public void store (Path bookPath,
                        boolean withBackup)
     {
         Memory.gc(); // Launch garbage collection, to save on weak glyph references ...
 
-        // Backup existing project file?
-        if (withBackup && Files.exists(projectPath)) {
-            Path backup = FileUtil.backup(projectPath);
+        // Backup existing book file?
+        if (withBackup && Files.exists(bookPath)) {
+            Path backup = FileUtil.backup(bookPath);
 
             if (backup != null) {
-                logger.info("Previous project file renamed as {}", backup);
+                logger.info("Previous book file renamed as {}", backup);
             }
         }
 
         try {
             final Path root;
-            checkRadixChange(projectPath);
-            logger.info("Storing project...");
+            checkRadixChange(bookPath);
+            logger.info("Storing book...");
 
-            if ((this.projectPath == null)
-                || this.projectPath.toAbsolutePath().equals(projectPath.toAbsolutePath())) {
-                if (this.projectPath == null) {
-                    root = Zip.createFileSystem(projectPath);
+            if ((this.bookPath == null)
+                || this.bookPath.toAbsolutePath().equals(bookPath.toAbsolutePath())) {
+                if (this.bookPath == null) {
+                    root = Zip.createFileSystem(bookPath);
                 } else {
-                    root = Zip.openFileSystem(projectPath);
+                    root = Zip.openFileSystem(bookPath);
                 }
 
                 storeBookXml(root); // Book itself (book.xml)
@@ -1222,13 +1222,13 @@ public class BasicBook
                     }
                 }
             } else {
-                // (Store as): Switch from old to new project file
-                root = createProjectFile(projectPath);
+                // (Store as): Switch from old to new book file
+                root = createBookFile(bookPath);
 
                 storeBookXml(root); // Book itself (book.xml)
 
                 // Contained sheets
-                final Path oldRoot = openProjectFile(this.projectPath);
+                final Path oldRoot = openBookFile(this.bookPath);
 
                 for (SheetStub stub : stubs) {
                     final Path oldSheetPath = oldRoot.resolve(INTERNALS_RADIX + stub.getNumber());
@@ -1241,18 +1241,18 @@ public class BasicBook
                     }
                 }
 
-                oldRoot.getFileSystem().close(); // Close old project file
+                oldRoot.getFileSystem().close(); // Close old book file
             }
 
             root.getFileSystem().close();
-            this.projectPath = projectPath;
+            this.bookPath = bookPath;
 
-            BookManager.getInstance().getProjectHistory().add(projectPath); // Insert in history
-            BookManager.setDefaultProjectFolder(projectPath.getParent().toString());
+            BookManager.getInstance().getBookHistory().add(bookPath); // Insert in history
+            BookManager.setDefaultBookFolder(bookPath.getParent().toString());
 
-            logger.info("Project stored as {}", projectPath);
+            logger.info("Book stored as {}", bookPath);
         } catch (Throwable ex) {
-            logger.warn("Error storing " + this + " to " + projectPath + " ex:" + ex, ex);
+            logger.warn("Error storing " + this + " to " + bookPath + " ex:" + ex, ex);
         }
     }
 
@@ -1262,10 +1262,10 @@ public class BasicBook
     @Override
     public void store ()
     {
-        if (projectPath == null) {
-            logger.warn("Projectpath not defined");
+        if (bookPath == null) {
+            logger.warn("Bookpath not defined");
         } else {
-            store(projectPath, false);
+            store(bookPath, false);
         }
     }
 
@@ -1321,43 +1321,43 @@ public class BasicBook
     }
 
     //-------------------//
-    // createProjectFile //
+    // createBookFile //
     //-------------------//
     /**
-     * Create a new project file system dedicated to this book at the location provided
-     * by '{@code projectpath}' member.
+     * Create a new book file system dedicated to this book at the location provided
+     * by '{@code bookpath}' member.
      * If such file already exists, it is deleted beforehand.
      * <p>
-     * When IO operations are finished, the project file must be closed via
+     * When IO operations are finished, the book file must be closed via
      * {@link #closeFileSystem(java.nio.file.FileSystem)}
      *
-     * @return the root path of the (zipped) project file system
+     * @return the root path of the (zipped) book file system
      */
-    private static Path createProjectFile (Path projectPath)
+    private static Path createBookFile (Path bookPath)
     {
-        if (projectPath == null) {
-            throw new IllegalStateException("projectPath is null");
+        if (bookPath == null) {
+            throw new IllegalStateException("bookPath is null");
         }
 
         try {
-            Files.deleteIfExists(projectPath);
+            Files.deleteIfExists(bookPath);
         } catch (IOException ex) {
-            logger.warn("Error deleting project: " + projectPath, ex);
+            logger.warn("Error deleting book: " + bookPath, ex);
         }
 
         try {
             // Make sure the containing folder exists
-            Files.createDirectories(projectPath.getParent());
+            Files.createDirectories(bookPath.getParent());
 
             // Make it a zip file
-            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(projectPath.toFile()));
+            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(bookPath.toFile()));
             zos.close();
         } catch (IOException ex) {
-            logger.warn("Error creating project:" + projectPath, ex);
+            logger.warn("Error creating book:" + bookPath, ex);
         }
 
-        // Finally open the project file just created
-        return Zip.openFileSystem(projectPath);
+        // Finally open the book file just created
+        return Zip.openFileSystem(bookPath);
     }
 
     //----------------//
@@ -1378,17 +1378,16 @@ public class BasicBook
     // checkRadixChange //
     //------------------//
     /**
-     * If the (new) project name does not match current one, update the book radix
+     * If the (new) book name does not match current one, update the book radix
      * (and the title of first displayed sheet if any).
      *
-     * @param projectPath new project target path
+     * @param bookPath new book target path
      */
-    private void checkRadixChange (Path projectPath)
+    private void checkRadixChange (Path bookPath)
     {
         // Are we changing the target name WRT the default name?
-        final String newRadix = FileUtil.avoidExtensions(
-                projectPath.getFileName(),
-                OMR.PROJECT_EXTENSION).toString();
+        final String newRadix = FileUtil.avoidExtensions(bookPath.getFileName(),
+                                                         OMR.BOOK_EXTENSION).toString();
 
         if (!newRadix.equals(radix)) {
             // Update book radix
@@ -1416,18 +1415,18 @@ public class BasicBook
     // initTransients //
     //----------------//
     private void initTransients (String nameSansExt,
-                                 Path projectPath)
+                                 Path bookPath)
     {
         if (nameSansExt != null) {
             // Apply alias patterns if any
             this.radix = nameSansExt;
         }
 
-        if (projectPath != null) {
-            this.projectPath = projectPath;
+        if (bookPath != null) {
+            this.bookPath = bookPath;
 
             if (nameSansExt == null) {
-                this.radix = FileUtil.getNameSansExtension(projectPath);
+                this.radix = FileUtil.getNameSansExtension(bookPath);
             }
         }
     }
@@ -1454,7 +1453,7 @@ public class BasicBook
     /**
      * Store the book internals into book.xml file.
      *
-     * @param root root pat of project file system
+     * @param root root pat of book file system
      * @throws IOException
      * @throws JAXBException
      */

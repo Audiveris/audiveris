@@ -121,7 +121,7 @@ public abstract class SheetPainter
             sigPainter.process(system.getSig());
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn("Cannot paint system#" + system.getId(), ex);
+            logger.warn("Cannot paint system#{}", system.getId(), ex);
         }
     }
 }

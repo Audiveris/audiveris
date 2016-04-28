@@ -752,7 +752,7 @@ public class Picture
             if (!holder.hasData()) {
                 if (oldSheetPath != null) {
                     try {
-                        // Copy from old project file to new
+                        // Copy from old book file to new
                         Path oldTablePath = oldSheetPath.resolve(key + ".xml");
                         Files.copy(oldTablePath, tablepath);
                         logger.info("Copied {}", tablepath);

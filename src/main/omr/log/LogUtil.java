@@ -60,7 +60,7 @@ public abstract class LogUtil
     // addAppender //
     //-------------//
     /**
-     * Start a specific file logging, typically for the processing of a given project.
+     * Start a specific file logging, typically for the processing of a given book.
      *
      * @param name      appender name (typically the book radix)
      * @param logFolder target folder where the log file is to be written
