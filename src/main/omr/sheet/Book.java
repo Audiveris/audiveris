@@ -71,7 +71,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dt>Transcription</dt>
  * <dd><ul>
  * <li>{@link #transcribe}</li>
- * <li>{@link #doStep}</li>
+ * <li>{@link #reachBookStep}</li>
  * <li>{@link #buildScores}</li>
  * <li>{@link #getScores}</li>
  * </ul></dd>
@@ -147,17 +147,6 @@ public interface Book
     void displayAllStubs ();
 
     /**
-     * Perform a specific step (and all needed intermediate steps) on all or some sheets
-     * of this book.
-     *
-     * @param target   the targeted step
-     * @param sheetIds specific set of sheet IDs if any, null for all
-     * @return true if OK on all sheet actions
-     */
-    boolean doStep (Step target,
-                    SortedSet<Integer> sheetIds);
-
-    /**
      * Export this book scores using MusicXML format.
      * <p>
      * Assuming 'BOOK' is the radix of book name, several outputs can be considered:
@@ -178,6 +167,13 @@ public interface Book
      * @return book alias or null
      */
     String getAlias ();
+
+    /**
+     * Report where the book is kept.
+     *
+     * @return the book path
+     */
+    Path getBookPath ();
 
     /**
      * Create a dedicated frame, where book hierarchy can be browsed interactively.
@@ -222,13 +218,6 @@ public interface Book
     Param<String> getLanguageParam ();
 
     /**
-     * Report the proper prefix to use when logging a user message related to this book
-     *
-     * @return the proper prefix
-     */
-    String getLogPrefix ();
-
-    /**
      * Report the offset of this book, with respect to a containing super-book.
      *
      * @return the offset (in terms of number of sheets)
@@ -241,13 +230,6 @@ public interface Book
      * @return the print path, or null
      */
     Path getPrintPath ();
-
-    /**
-     * Report where the book book is kept.
-     *
-     * @return the book book path
-     */
-    Path getBookPath ();
 
     /**
      * Report the radix of the file that corresponds to the book.
@@ -355,6 +337,15 @@ public interface Book
     void print ();
 
     /**
+     * Reach a specific step (and all needed intermediate steps) on all valid sheets
+     * of this book.
+     *
+     * @param target the targeted step
+     * @return true if OK on all sheet actions
+     */
+    boolean reachBookStep (Step target);
+
+    /**
      * Remove the specified sheet stub from the containing book.
      * <p>
      * Typically, when the sheet carries no music information, it can be removed from the book
@@ -415,18 +406,27 @@ public interface Book
     void setScriptPath (Path scriptPath);
 
     /**
-     * Store book book to disk.
+     * Store book to disk.
      *
-     * @param bookPath target path for storing the book
-     * @param withBackup  if true, rename beforehand any existing target as a backup
+     * @param bookPath   target path for storing the book
+     * @param withBackup if true, rename beforehand any existing target as a backup
      */
     void store (Path bookPath,
                 boolean withBackup);
 
     /**
-     * Store book book to disk, using its current book path.
+     * Store book to disk, using its current book path.
      */
     void store ();
+
+    /**
+     * Store the book information (global info + stub steps) into book file system.
+     *
+     * @param root root path of book file system
+     * @throws Exception
+     */
+    void storeBookInfo (Path root)
+            throws Exception;
 
     /**
      * Swap all sheets, except the current one if any.
@@ -434,11 +434,10 @@ public interface Book
     void swapAllSheets ();
 
     /**
-     * Convenient method to perform all needed transcription steps on (all or some sheets
-     * of) this book.
+     * Convenient method to perform all needed transcription steps on all valid sheets
+     * of this book.
      *
      * @return true if OK
-     * @param sheetIds specific set of sheet IDs if any, null for all
      */
-    boolean transcribe (SortedSet<Integer> sheetIds);
+    boolean transcribe ();
 }

@@ -40,10 +40,7 @@ public class SegmentTask
         super(sheet, glyphs);
     }
 
-    //-------------//
-    // SegmentTask //
-    //-------------//
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     private SegmentTask ()
     {
     }

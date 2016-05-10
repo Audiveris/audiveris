@@ -14,12 +14,12 @@ package omr.util;
 import java.nio.file.Path;
 
 /**
- * Class {@code PathTask} is a BasicTask that operates on a path.
+ * Class {@code PathTask} is a VoidTask that operates on a path.
  *
  * @author Hervé Bitteur
  */
 public abstract class PathTask
-        extends BasicTask
+        extends VoidTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ public abstract class PathTask
     /**
      * Creates a new {@code PathTask} object.
      *
-     * @param path DOCUMENT ME!
+     * @param path the related path
      */
     protected PathTask (Path path)
     {

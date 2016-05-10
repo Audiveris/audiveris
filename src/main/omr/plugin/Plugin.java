@@ -18,7 +18,7 @@ import omr.sheet.Book;
 
 import omr.step.Step;
 
-import omr.util.BasicTask;
+import omr.util.VoidTask;
 import omr.util.FileUtil;
 
 import org.jdesktop.application.Task;
@@ -162,7 +162,7 @@ public class Plugin
     {
         // Make sure all sheets have been transcribed
         for (SheetStub stub : book.getStubs()) {
-            stub.ensureStep(Step.PAGE);
+            stub.reachStep(Step.PAGE);
         }
 
         // Make sure we have the export file
@@ -290,7 +290,7 @@ public class Plugin
      * The life-cycle of this instance is limited to the duration of the task.
      */
     private class PluginTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 

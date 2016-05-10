@@ -165,19 +165,6 @@ public class StubsController
         return getInstance().getSelectedStub();
     }
 
-    //--------------//
-    // getEarlyStep //
-    //--------------//
-    /**
-     * Report the step run by default on every new stub displayed.
-     *
-     * @return the default target step
-     */
-    public static Step getEarlyStep ()
-    {
-        return constants.earlyStep.getValue();
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -588,6 +575,7 @@ public class StubsController
                 };
 
                 // Since we are on Swing EDT, use asynchronous processing
+                logger.debug("StubsController stateChanged for {}", stub);
                 OmrExecutors.getCachedLowExecutor().submit(task);
             }
         }
@@ -647,6 +635,19 @@ public class StubsController
         }
     }
 
+    //--------------//
+    // getEarlyStep //
+    //--------------//
+    /**
+     * Report the step run by default on every new stub displayed.
+     *
+     * @return the default target step
+     */
+    private static Step getEarlyStep ()
+    {
+        return constants.earlyStep.getValue();
+    }
+
     //----------//
     // bindKeys //
     //----------//
@@ -702,7 +703,7 @@ public class StubsController
                 stubsPane.setForegroundAt(tabIndex, Colors.SHEET_BUSY);
                 logger.debug("launching {}", this);
 
-                boolean ok = stub.ensureStep(earlyStep);
+                boolean ok = stub.reachStep(earlyStep);
                 markTab(stub, ok ? Color.BLACK : Color.RED);
             } finally {
                 LogUtil.stopStub();

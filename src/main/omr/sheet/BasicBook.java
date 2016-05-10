@@ -220,25 +220,6 @@ public class BasicBook
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // closeFileSystem //
-    //-----------------//
-    /**
-     * Close the provided (book) file system.
-     *
-     * @param fileSystem the book file system
-     */
-    public static void closeFileSystem (FileSystem fileSystem)
-    {
-        try {
-            fileSystem.close();
-
-            logger.info("Book file system closed.");
-        } catch (Exception ex) {
-            logger.warn("Could not close book file system " + ex, ex);
-        }
-    }
-
     //-------------//
     // buildScores //
     //-------------//
@@ -346,6 +327,25 @@ public class BasicBook
         Memory.gc();
 
         logger.info("Book closed.");
+    }
+
+    //-----------------//
+    // closeFileSystem //
+    //-----------------//
+    /**
+     * Close the provided (book) file system.
+     *
+     * @param fileSystem the book file system
+     */
+    public static void closeFileSystem (FileSystem fileSystem)
+    {
+        try {
+            fileSystem.close();
+
+            logger.info("Book file system closed.");
+        } catch (Exception ex) {
+            logger.warn("Could not close book file system " + ex, ex);
+        }
     }
 
     //-------------//
@@ -471,135 +471,6 @@ public class BasicBook
     }
 
     //--------//
-    // doStep //
-    //--------//
-    @Override
-    public boolean doStep (final Step target,
-                           SortedSet<Integer> sheetIds)
-    {
-        logger.debug("doStep {} on {}", target, this);
-
-        try {
-            if (target == null) {
-                return true; // Nothing to do
-            }
-
-            // Find the least advanced step performed across all book sheets
-            Step least = Step.last();
-
-            for (SheetStub stub : getStubs()) {
-                Step latest = stub.getLatestStep();
-
-                if (latest == null) {
-                    // This sheet has not been processed at all
-                    least = null;
-
-                    break;
-                }
-
-                if (latest.compareTo(least) < 0) {
-                    least = latest;
-                }
-            }
-
-            if ((least != null) && (least.compareTo(target) >= 0)) {
-                return true; // Nothing to do
-            }
-
-            // Launch the steps on each sheet
-            logger.info("{}Book processing {}", getLogPrefix(), target);
-
-            long startTime = System.currentTimeMillis();
-
-            try {
-                notifyStart();
-
-                if (isMultiSheet()) {
-                    boolean failure = false;
-
-                    if (OmrExecutors.defaultParallelism.getTarget() == true) {
-                        // Process all sheets in parallel
-                        List<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
-
-                        for (final SheetStub stub : new ArrayList<SheetStub>(stubs)) {
-                            if (!stub.isDone(target)) {
-                                tasks.add(
-                                        new Callable<Void>()
-                                {
-                                    @Override
-                                    public Void call ()
-                                            throws StepException
-                                    {
-                                        try {
-                                            LogUtil.start(stub);
-                                            stub.ensureStep(target);
-
-                                            return null;
-                                        } finally {
-                                            LogUtil.stopStub();
-                                        }
-                                    }
-                                });
-                            }
-                        }
-
-                        try {
-                            List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
-                                    .invokeAll(tasks);
-
-                            for (Future future : futures) {
-                                try {
-                                    future.get();
-                                } catch (Exception ex) {
-                                    logger.warn("Future exception", ex);
-                                    failure = true;
-                                }
-                            }
-
-                            return !failure;
-                        } catch (InterruptedException ex) {
-                            logger.warn("Error in parallel doScoreStepSet", ex);
-                            failure = true;
-                        }
-                    } else {
-                        // Process one sheet after the other
-                        for (SheetStub stub : new ArrayList<SheetStub>(stubs)) {
-                            LogUtil.start(stub);
-
-                            if (!stub.isDone(target)) {
-                                if (!stub.ensureStep(target)) {
-                                    failure = true;
-                                }
-                            }
-
-                            LogUtil.stopStub();
-                        }
-                    }
-
-                    return !failure;
-                } else {
-                    // Process the single sheet
-                    return stubs.get(0).ensureStep(target);
-                }
-            } finally {
-                notifyStop();
-
-                long stopTime = System.currentTimeMillis();
-                logger.debug("End of step set in {} ms.", (stopTime - startTime));
-
-                // Record the step tasks to script
-                getScript().addTask(new BookStepTask(target));
-            }
-        } catch (ProcessingCancellationException pce) {
-            throw pce;
-        } catch (Exception ex) {
-            logger.warn("Error in performing " + target, ex);
-        }
-
-        return false;
-    }
-
-    //--------//
     // export //
     //--------//
     @Override
@@ -670,6 +541,15 @@ public class BasicBook
         return alias;
     }
 
+    //-------------//
+    // getBookPath //
+    //-------------//
+    @Override
+    public Path getBookPath ()
+    {
+        return bookPath;
+    }
+
     //-----------------//
     // getBrowserFrame //
     //-----------------//
@@ -735,19 +615,6 @@ public class BasicBook
         return languageParam;
     }
 
-    //--------------//
-    // getLogPrefix //
-    //--------------//
-    @Override
-    public String getLogPrefix ()
-    {
-        if (BookManager.isMultiBook()) {
-            return "[" + radix + "] ";
-        } else {
-            return "";
-        }
-    }
-
     //-----------//
     // getOffset //
     //-----------//
@@ -764,15 +631,6 @@ public class BasicBook
     public Path getPrintPath ()
     {
         return printPath;
-    }
-
-    //----------------//
-    // getBookPath //
-    //----------------//
-    @Override
-    public Path getBookPath ()
-    {
-        return bookPath;
     }
 
     //----------//
@@ -882,6 +740,43 @@ public class BasicBook
         subBooks.add(book);
     }
 
+    //-----------//
+    // isClosing //
+    //-----------//
+    @Override
+    public boolean isClosing ()
+    {
+        return closing;
+    }
+
+    //------------//
+    // isModified //
+    //------------//
+    @Override
+    public boolean isModified ()
+    {
+        if (modified) {
+            return true; // The book itself is modified
+        }
+
+        for (SheetStub stub : stubs) {
+            if (stub.isModified()) {
+                return true; // This sheet is modified
+            }
+        }
+
+        return false;
+    }
+
+    //--------------//
+    // isMultiSheet //
+    //--------------//
+    @Override
+    public boolean isMultiSheet ()
+    {
+        return stubs.size() > 1;
+    }
+
     //----------//
     // loadBook //
     //----------//
@@ -927,9 +822,35 @@ public class BasicBook
         }
     }
 
-    //-----------------//
+    //----------------//
+    // loadSheetImage //
+    //----------------//
+    @Override
+    public BufferedImage loadSheetImage (int id)
+    {
+        try {
+            final ImageLoading.Loader loader = ImageLoading.getLoader(path);
+
+            if (loader == null) {
+                return null;
+            }
+
+            BufferedImage img = loader.getImage(id);
+            logger.info("Loaded image size: {}x{}", img.getWidth(), img.getHeight());
+
+            loader.dispose();
+
+            return img;
+        } catch (IOException ex) {
+            logger.warn("Error in book.loadSheetImage", ex);
+
+            return null;
+        }
+    }
+
+    //--------------//
     // openBookFile //
-    //-----------------//
+    //--------------//
     /**
      * Open the book file (supposed to already exist at location provided by
      * '{@code bookPath}' parameter) for reading or writing.
@@ -959,69 +880,6 @@ public class BasicBook
         }
 
         return null;
-    }
-
-    //-----------//
-    // isClosing //
-    //-----------//
-    @Override
-    public boolean isClosing ()
-    {
-        return closing;
-    }
-
-    //------------//
-    // isModified //
-    //------------//
-    @Override
-    public boolean isModified ()
-    {
-        if (modified) {
-            return true; // The book itself is modified
-        }
-
-        for (SheetStub stub : stubs) {
-            if (stub.isModified()) {
-                return true; // This sheet is modified
-            }
-        }
-
-        return false;
-    }
-
-    //--------------//
-    // isMultiSheet //
-    //--------------//
-    @Override
-    public boolean isMultiSheet ()
-    {
-        return stubs.size() > 1;
-    }
-
-    //----------------//
-    // loadSheetImage //
-    //----------------//
-    @Override
-    public BufferedImage loadSheetImage (int id)
-    {
-        try {
-            final ImageLoading.Loader loader = ImageLoading.getLoader(path);
-
-            if (loader == null) {
-                return null;
-            }
-
-            BufferedImage img = loader.getImage(id);
-            logger.info("Loaded sheet#{} size: {}x{}", id, img.getWidth(), img.getHeight());
-
-            loader.dispose();
-
-            return img;
-        } catch (IOException ex) {
-            logger.warn("Error in book.loadSheetImage", ex);
-
-            return null;
-        }
     }
 
     //-----------------//
@@ -1074,6 +932,129 @@ public class BasicBook
         } finally {
             LogUtil.stopBook();
         }
+    }
+
+    //---------------//
+    // reachBookStep //
+    //---------------//
+    @Override
+    public boolean reachBookStep (final Step target)
+    {
+        try {
+            logger.debug("reachStep {}", target);
+
+            // Check against the least advanced step performed across all valid sheets
+            Step least = getLeastStep();
+
+            if ((least != null) && (least.compareTo(target) >= 0)) {
+                return true; // Nothing to do
+            }
+
+            // Launch the steps on each sheet
+            logger.info("Book reaching {}", target);
+
+            long startTime = System.currentTimeMillis();
+
+            try {
+                boolean someFailure = false;
+                notifyStart();
+
+                if (isMultiSheet()
+                    && constants.processAllStubsInParallel.isSet()
+                    && (OmrExecutors.defaultParallelism.getTarget() == true)) {
+                    // Process all sheets in parallel
+                    List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
+
+                    for (final SheetStub stub : getValidStubs()) {
+                        if (!stub.isDone(target)) {
+                            tasks.add(
+                                    new Callable<Boolean>()
+                            {
+                                @Override
+                                public Boolean call ()
+                                        throws StepException
+                                {
+                                    try {
+                                        LogUtil.start(stub);
+
+                                        return stub.reachStep(target);
+                                    } finally {
+                                        LogUtil.stopStub();
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    try {
+                        List<Future<Boolean>> futures = OmrExecutors.getCachedLowExecutor()
+                                .invokeAll(tasks);
+
+                        for (Future<Boolean> future : futures) {
+                            try {
+                                if (!future.get()) {
+                                    someFailure = true;
+                                }
+                            } catch (Exception ex) {
+                                logger.warn("Future exception", ex);
+                                someFailure = true;
+                            }
+                        }
+
+                        return !someFailure;
+                    } catch (InterruptedException ex) {
+                        logger.warn("Error in parallel reachBookStep", ex);
+                        someFailure = true;
+                    }
+                } else {
+                    // Process one sheet after the other
+                    for (SheetStub stub : getValidStubs()) {
+                        LogUtil.start(stub);
+
+                        if (!stub.isDone(target)) {
+                            try {
+                                // (We put no timeout on single sheet work)
+                                if (stub.reachStep(target)) {
+                                    // At end of each sheet processing:
+                                    // Save sheet to disk (including global book info)
+                                    if (OMR.gui == null) {
+                                        stub.swapSheet();
+                                    }
+
+                                    ///stub.storeSheet();
+                                } else {
+                                    someFailure = true;
+                                }
+                            } catch (Exception ex) {
+                                // Exception (such as timeout) raised on a stub
+                                // Let processing continue for the other stubs
+                                logger.warn("Error processing stub");
+                                someFailure = true;
+                            }
+                        }
+
+                        LogUtil.stopStub();
+                    }
+                }
+
+                return !someFailure;
+            } finally {
+                LogUtil.stopStub();
+                notifyStop();
+
+                long stopTime = System.currentTimeMillis();
+                logger.debug("End of step set in {} ms.", (stopTime - startTime));
+
+                // Record the step task into script
+                getScript().addTask(new BookStepTask(target));
+            }
+        } catch (ProcessingCancellationException pce) {
+            throw pce;
+        } catch (Exception ex) {
+            logger.warn("Error in performing " + target, ex);
+        }
+
+        return false;
     }
 
     //------------//
@@ -1212,20 +1193,24 @@ public class BasicBook
                     root = Zip.openFileSystem(bookPath);
                 }
 
-                storeBookXml(root); // Book itself (book.xml)
+                if (modified) {
+                    storeBookInfo(root); // Book info (book.xml)
+                }
 
                 // Contained sheets
                 for (SheetStub stub : stubs) {
                     if (stub.isModified()) {
-                        final Path sheetPath = root.resolve(INTERNALS_RADIX + stub.getNumber());
-                        stub.getSheet().store(sheetPath, null);
+                        final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
+                        stub.getSheet().store(sheetFolder, null);
                     }
                 }
             } else {
                 // (Store as): Switch from old to new book file
                 root = createBookFile(bookPath);
 
-                storeBookXml(root); // Book itself (book.xml)
+                if (modified) {
+                    storeBookInfo(root); // Book info (book.xml)
+                }
 
                 // Contained sheets
                 final Path oldRoot = openBookFile(this.bookPath);
@@ -1267,6 +1252,26 @@ public class BasicBook
         } else {
             store(bookPath, false);
         }
+    }
+
+    //---------------//
+    // storeBookInfo // TODO: should this method be synchronized?
+    //---------------//
+    @Override
+    public void storeBookInfo (Path root)
+            throws Exception
+    {
+        Path bookPath = root.resolve(Book.BOOK_INTERNALS);
+        Files.deleteIfExists(bookPath);
+
+        OutputStream os = Files.newOutputStream(bookPath, StandardOpenOption.CREATE);
+        Marshaller m = getJaxbContext().createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+        m.marshal(this, os);
+        os.close();
+
+        setModified(false);
+        logger.info("Stored {}", bookPath);
     }
 
     //---------------//
@@ -1315,14 +1320,52 @@ public class BasicBook
     // transcribe //
     //------------//
     @Override
-    public boolean transcribe (SortedSet<Integer> sheetIds)
+    public boolean transcribe ()
     {
-        return doStep(Step.last(), sheetIds);
+        return reachBookStep(Step.last());
     }
 
-    //-------------------//
+    //------------------//
+    // checkRadixChange //
+    //------------------//
+    /**
+     * If the (new) book name does not match current one, update the book radix
+     * (and the title of first displayed sheet if any).
+     *
+     * @param bookPath new book target path
+     */
+    private void checkRadixChange (Path bookPath)
+    {
+        // Are we changing the target name WRT the default name?
+        final String newRadix = FileUtil.avoidExtensions(
+                bookPath.getFileName(),
+                OMR.BOOK_EXTENSION).toString();
+
+        if (!newRadix.equals(radix)) {
+            // Update book radix
+            radix = newRadix;
+
+            // We are really changing the radix, so nullify all other paths
+            exportPathSansExt = printPath = scriptPath = null;
+
+            if (OMR.gui != null) {
+                // Update UI first sheet tab
+                SwingUtilities.invokeLater(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        StubsController.getInstance().updateFirstStubTitle(BasicBook.this);
+                    }
+                });
+            }
+        }
+    }
+
+    //----------------//
     // createBookFile //
-    //-------------------//
+    //----------------//
     /**
      * Create a new book file system dedicated to this book at the location provided
      * by '{@code bookpath}' member.
@@ -1374,41 +1417,31 @@ public class BasicBook
         return jaxbContext;
     }
 
-    //------------------//
-    // checkRadixChange //
-    //------------------//
+    //--------------//
+    // getLeastStep //
+    //--------------//
     /**
-     * If the (new) book name does not match current one, update the book radix
-     * (and the title of first displayed sheet if any).
+     * Report the less advanced step reached among all book valid stubs.
      *
-     * @param bookPath new book target path
+     * @return the least step, null if any stub has not reached the first step (LOAD)
      */
-    private void checkRadixChange (Path bookPath)
+    private Step getLeastStep ()
     {
-        // Are we changing the target name WRT the default name?
-        final String newRadix = FileUtil.avoidExtensions(bookPath.getFileName(),
-                                                         OMR.BOOK_EXTENSION).toString();
+        Step least = Step.last();
 
-        if (!newRadix.equals(radix)) {
-            // Update book radix
-            radix = newRadix;
+        for (SheetStub stub : getValidStubs()) {
+            Step latest = stub.getLatestStep();
 
-            // We are really changing the radix, so nullify all other paths
-            exportPathSansExt = printPath = scriptPath = null;
+            if (latest == null) {
+                return null; // This sheet has not been processed at all
+            }
 
-            if (OMR.gui != null) {
-                // Update UI first sheet tab
-                SwingUtilities.invokeLater(
-                        new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        StubsController.getInstance().updateFirstStubTitle(BasicBook.this);
-                    }
-                });
+            if (latest.compareTo(least) < 0) {
+                least = latest;
             }
         }
+
+        return least;
     }
 
     //----------------//
@@ -1438,38 +1471,13 @@ public class BasicBook
     {
         // Make sure all sheets have been transcribed
         for (SheetStub stub : getValidStubs()) {
-            stub.ensureStep(Step.PAGE);
+            stub.reachStep(Step.PAGE);
         }
 
         // Group book pages into scores, if not already done
         if (scores.isEmpty()) {
             buildScores();
         }
-    }
-
-    //--------------//
-    // storeBookXml //
-    //--------------//
-    /**
-     * Store the book internals into book.xml file.
-     *
-     * @param root root pat of book file system
-     * @throws IOException
-     * @throws JAXBException
-     */
-    private void storeBookXml (Path root)
-            throws IOException, JAXBException
-    {
-        Path bookPath = root.resolve(Book.BOOK_INTERNALS);
-        Files.deleteIfExists(bookPath);
-
-        OutputStream os = Files.newOutputStream(bookPath, StandardOpenOption.CREATE);
-        Marshaller m = getJaxbContext().createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(this, os);
-        os.close();
-        setModified(false);
-        logger.info("Stored {}", bookPath);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1508,5 +1516,9 @@ public class BasicBook
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch for book loading?");
+
+        private final Constant.Boolean processAllStubsInParallel = new Constant.Boolean(
+                false,
+                "Should we process all stubs of a book in parallel? (beware of many stubs)");
     }
 }

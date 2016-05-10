@@ -145,7 +145,7 @@ public class LedgersFilter
             new LagController(sheet, lag, SheetTab.LEDGER_TAB).refresh();
 
             // Filament board
-            sheet.getAssembly().addBoard(
+            sheet.getStub().getAssembly().addBoard(
                     SheetTab.LEDGER_TAB,
                     new FilamentBoard(sheet.getFilamentIndex().getEntityService(), true));
         }

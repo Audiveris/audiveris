@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.step;
 
+import omr.Main;
 import omr.OMR;
 
 import omr.log.LogUtil;
@@ -84,23 +85,21 @@ public abstract class AbstractSystemStep<C>
      * Actually perform the step.
      * This method is run when this step is explicitly selected
      *
-     * @param systems systems to process (null means all systems)
-     * @param sheet   the sheet to process
+     * @param sheet the sheet to process
      * @throws StepException raised if processing failed
      */
     @Override
-    public void doit (Collection<SystemInfo> systems,
-                      Sheet sheet)
+    public void doit (Sheet sheet)
             throws StepException
     {
         // Preliminary actions
-        final C context = doProlog(systems, sheet);
+        final C context = doProlog(sheet);
 
         // Processing system per system
-        doitPerSystem(systems, sheet, context);
+        doitPerSystem(sheet, context);
 
         // Final actions
-        doEpilog(systems, sheet, context);
+        doEpilog(sheet, context);
     }
 
     //-------------------//
@@ -125,13 +124,11 @@ public abstract class AbstractSystemStep<C>
     /**
      * Final processing for this step, once all systems have been processed.
      *
-     * @param systems the systems which have been updated
      * @param sheet   the containing sheet
      * @param context the sheet context
      * @throws StepException raised if processing failed
      */
-    protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet sheet,
+    protected void doEpilog (Sheet sheet,
                              C context)
             throws StepException
     {
@@ -144,13 +141,12 @@ public abstract class AbstractSystemStep<C>
     /**
      * Do preliminary common work before all systems processing are launched in parallel.
      *
-     * @param systems the systems which will be updated
-     * @param sheet   the containing sheet
+     * param sheet the containing sheet
+     *
      * @return the created sheet context
      * @throws StepException raised if processing failed
      */
-    protected C doProlog (Collection<SystemInfo> systems,
-                          Sheet sheet)
+    protected C doProlog (Sheet sheet)
             throws StepException
     {
         // Empty by default
@@ -161,23 +157,19 @@ public abstract class AbstractSystemStep<C>
     // doitPerSystem //
     //---------------//
     /**
-     * Launch the system processing in parallel, one task per system
+     * Launch the system processing (perhaps in parallel, one task per system)
      *
      * @param systems the systems to process
      * @param sheet   the containing sheet
      */
-    private void doitPerSystem (Collection<SystemInfo> systems,
-                                final Sheet sheet,
+    private void doitPerSystem (final Sheet sheet,
                                 final C context)
     {
         try {
-            Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
+            final boolean parallel = Main.processSystemsInParallel();
+            final Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
-            if (systems == null) {
-                systems = sheet.getSystems();
-            }
-
-            for (final SystemInfo system : systems) {
+            for (final SystemInfo system : sheet.getSystems()) {
                 tasks.add(
                         new Callable<Void>()
                 {
@@ -185,8 +177,13 @@ public abstract class AbstractSystemStep<C>
                     public Void call ()
                             throws Exception
                     {
+                        // If run on a separate thread (case of parallel), we have to set/unset log
+                        // If not, let's no unset log (it may be needed in following epilog)
                         try {
-                            LogUtil.start(sheet);
+                            if (parallel) {
+                                LogUtil.start(sheet.getStub());
+                            }
+
                             logger.debug(
                                     "{} doSystem #{}",
                                     AbstractSystemStep.this,
@@ -196,7 +193,9 @@ public abstract class AbstractSystemStep<C>
                         } catch (Exception ex) {
                             logger.warn(system.getLogPrefix() + ex, ex);
                         } finally {
-                            LogUtil.stopStub();
+                            if (parallel) {
+                                LogUtil.stopStub();
+                            }
                         }
 
                         return null;
@@ -204,11 +203,21 @@ public abstract class AbstractSystemStep<C>
                 });
             }
 
-            // Launch all system tasks in parallel and wait for their completion
-            OmrExecutors.getLowExecutor().invokeAll(tasks);
+            // Process all systems
+            if (parallel) {
+                // In parallel
+                OmrExecutors.getLowExecutor().invokeAll(tasks);
+            } else {
+                // In sequence
+                for (Callable<Void> task : tasks) {
+                    task.call();
+                }
+            }
         } catch (InterruptedException ex) {
-            logger.warn("doitPerSystem got interrupted");
+            logger.warn("doitPerSystem got interrupted for {}", this);
             throw new ProcessingCancellationException(ex);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 }

@@ -102,7 +102,8 @@ public class DataHolder<T>
                 Unmarshaller um = jaxbContext.createUnmarshaller();
 
                 // Open book file system
-                Path dataFile = sheet.getBook().openSheetFolder(sheet.getNumber())
+                Path dataFile = sheet.getStub().getBook()
+                        .openSheetFolder(sheet.getStub().getNumber())
                         .resolve(pathString);
                 logger.debug("path: {}", dataFile);
 
@@ -114,7 +115,6 @@ public class DataHolder<T>
                 dataFile.getFileSystem().close();
 
                 logger.info("Loaded {}", dataFile);
-
             } catch (Exception ex) {
                 logger.warn("Error unmarshalling from " + pathString, ex);
             }

@@ -24,7 +24,6 @@ import omr.step.StepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -67,8 +66,7 @@ public class HeadsStep
     // doProlog //
     //----------//
     @Override
-    protected Context doProlog (Collection<SystemInfo> systems,
-                                Sheet sheet)
+    protected Context doProlog (Sheet sheet)
             throws StepException
     {
         // Build proper distance table and make it available for system-level processing

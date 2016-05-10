@@ -105,7 +105,7 @@ public class ParametersTask
     public void core (Sheet sheet)
             throws Exception
     {
-        Book book = sheet.getBook();
+        Book book = sheet.getStub().getBook();
         StringBuilder sb = new StringBuilder();
 
         // Score Binarization
@@ -168,7 +168,7 @@ public class ParametersTask
         }
 
         if (sb.length() > 0) {
-            logger.info("{}parameters{}", book.getLogPrefix(), sb);
+            logger.info("parameters{}", sb);
         }
     }
 
@@ -183,9 +183,9 @@ public class ParametersTask
     @Override
     public void epilog (Sheet sheet)
     {
-        Step latestStep = sheet.getLatestStep();
+        Step latestStep = sheet.getStub().getLatestStep();
 
-        for (SheetStub stub : sheet.getBook().getStubs()) {
+        for (SheetStub stub : sheet.getStub().getBook().getStubs()) {
             Step from = null;
 
             // Language

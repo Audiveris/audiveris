@@ -15,9 +15,10 @@ import omr.classifier.NeuralClassifier;
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import omr.classifier.SampleRepository.AdditionEvent;
+
 import static omr.classifier.SampleRepository.STANDARD_INTERLINE;
+
 import omr.classifier.SheetContainer.Descriptor;
-import omr.classifier.WekaClassifier;
 
 import omr.glyph.Glyph;
 import omr.glyph.GlyphsModel;
@@ -79,10 +80,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+
 import static javax.swing.JSplitPane.HORIZONTAL_SPLIT;
 import static javax.swing.JSplitPane.VERTICAL_SPLIT;
+
 import javax.swing.ListCellRenderer;
+
 import static javax.swing.ListSelectionModel.SINGLE_SELECTION;
+
 import javax.swing.Scrollable;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -175,8 +180,9 @@ public class SampleVerifier
         SampleController controller = new SampleController(sampleService);
         boardsPane = new BoardsPane(
                 new SampleBoard(controller),
-                new EvaluationBoard(NeuralClassifier.getInstance(), controller, true),
-                new EvaluationBoard(WekaClassifier.getInstance(), controller, true));
+                new EvaluationBoard(NeuralClassifier.getInstance(), controller, true)
+        //                , new EvaluationBoard(WekaClassifier.getInstance(), controller, true)
+        );
 
         // Stay informed of repository dynamic updates
         repository.addListener(this);

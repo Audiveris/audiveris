@@ -53,7 +53,7 @@ import omr.ui.util.UIUtil;
 import omr.ui.view.HistoryMenu;
 import omr.ui.view.ScrollView;
 
-import omr.util.BasicTask;
+import omr.util.VoidTask;
 import omr.util.FileUtil;
 import omr.util.Param;
 import omr.util.PathTask;
@@ -724,9 +724,9 @@ public class BookActions
         return inputHistoryMenu;
     }
 
-    //-----------------------//
+    //--------------------//
     // getBookHistoryMenu //
-    //-----------------------//
+    //--------------------//
     public HistoryMenu getBookHistoryMenu ()
     {
         return bookHistoryMenu;
@@ -833,7 +833,7 @@ public class BookActions
     // openBook //
     //----------//
     /**
-     * Action that let the user select a book book.
+     * Action that let the user select a book.
      *
      * @param e the event that triggered this action
      * @return the asynchronous task, or null
@@ -902,8 +902,8 @@ public class BookActions
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub != null) {
-            if (stub.isDone(Step.SCALE)) {
-                new ScaleBuilder(stub.getSheet()).displayChart();
+            if (stub.isDone(Step.BINARY)) {
+                new ScaleBuilder(stub.getSheet(), true).displayChart();
             } else {
                 logger.warn("Cannot display scale plot, for lack of scale data");
             }
@@ -1094,9 +1094,9 @@ public class BookActions
         return new PrintSheetTask(stub.getSheet(), sheetPath);
     }
 
-    //----------------//
+    //-------------//
     // bookHistory //
-    //----------------//
+    //-------------//
     @Action
     public void bookHistory (ActionEvent e)
     {
@@ -1468,9 +1468,9 @@ public class BookActions
         return new OmrFileFilter(ext, new String[]{ext});
     }
 
-    //-------------------//
+    //----------------//
     // selectBookPath //
-    //-------------------//
+    //----------------//
     /**
      * Let the user interactively select a book path
      *
@@ -1579,14 +1579,6 @@ public class BookActions
                     LogUtil.start(book);
                     book.createStubs(null);
                     book.createStubsTabs(); // Tabs are now accessible
-
-                    // Launch early steps on first stub
-                    SheetStub stub = book.getFirstValidStub();
-
-                    if (stub != null) {
-                        LogUtil.start(stub);
-                        stub.ensureStep(StubsController.getEarlyStep());
-                    }
                 } catch (Exception ex) {
                     logger.warn("Error opening path " + path + " " + ex, ex);
                 } finally {
@@ -1600,11 +1592,11 @@ public class BookActions
         }
     }
 
-    //-----------------//
+    //--------------//
     // OpenBookTask //
-    //-----------------//
+    //--------------//
     /**
-     * Task that opens a book book file.
+     * Task that opens a book file.
      */
     public static class OpenBookTask
             extends PathTask
@@ -1646,7 +1638,7 @@ public class BookActions
     // PrintBookTask //
     //---------------//
     public static class PrintBookTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -1672,7 +1664,7 @@ public class BookActions
                 book.setPrintPath(bookPrintPath);
                 //
                 //            for (Sheet sheet : book.getStubs()) {
-                //                sheet.ensureStep(Step.PAGE);
+                //                sheet.reachBookStep(Step.PAGE);
                 //            }
                 //
                 book.print();
@@ -1688,7 +1680,7 @@ public class BookActions
     // PrintSheetTask //
     //----------------//
     public static class PrintSheetTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -1710,7 +1702,7 @@ public class BookActions
                 throws InterruptedException
         {
             try {
-                LogUtil.start(sheet);
+                LogUtil.start(sheet.getStub());
                 sheet.print(sheetPrintPath);
             } finally {
                 LogUtil.stopBook();
@@ -1745,7 +1737,7 @@ public class BookActions
     // BuildBookTask //
     //---------------//
     private static class BuildBookTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -1766,7 +1758,7 @@ public class BookActions
                 LogUtil.start(book);
 
                 for (SheetStub stub : book.getValidStubs()) {
-                    stub.ensureStep(Step.PAGE);
+                    stub.reachStep(Step.PAGE);
                 }
             } catch (Exception ex) {
                 logger.warn("Could not build book", ex);
@@ -1782,7 +1774,7 @@ public class BookActions
     // BuildScoresTask //
     //-----------------//
     private static class BuildScoresTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -1804,7 +1796,7 @@ public class BookActions
 
                 for (SheetStub stub : book.getValidStubs()) {
                     LogUtil.start(stub);
-                    stub.ensureStep(Step.PAGE);
+                    stub.reachStep(Step.PAGE);
                     LogUtil.stopStub();
                 }
 
@@ -1823,7 +1815,7 @@ public class BookActions
     // BuildSheetTask //
     //----------------//
     private static class BuildSheetTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -1841,8 +1833,8 @@ public class BookActions
                 throws InterruptedException
         {
             try {
-                LogUtil.start(sheet);
-                sheet.ensureStep(Step.PAGE);
+                LogUtil.start(sheet.getStub());
+                sheet.getStub().reachStep(Step.PAGE);
             } catch (Exception ex) {
                 logger.warn("Could not build page", ex);
             } finally {
@@ -1857,7 +1849,7 @@ public class BookActions
     // CloseBookTask //
     //---------------//
     private static class CloseBookTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -1935,7 +1927,7 @@ public class BookActions
     // ExportBookTask //
     //----------------//
     private static class ExportBookTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -1978,7 +1970,7 @@ public class BookActions
     // ExportSheetTask //
     //-----------------//
     private static class ExportSheetTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -2000,11 +1992,11 @@ public class BookActions
                 throws InterruptedException
         {
             try {
-                LogUtil.start(sheet);
-                sheet.getBook().setExportPathSansExt(bookExportPathSansExt);
+                LogUtil.start(sheet.getStub());
+                sheet.getStub().getBook().setExportPathSansExt(bookExportPathSansExt);
 
                 if (checkParameters(sheet)) {
-                    sheet.ensureStep(Step.PAGE);
+                    sheet.getStub().reachStep(Step.PAGE);
                     sheet.export();
                 }
             } finally {
@@ -2019,7 +2011,7 @@ public class BookActions
     // RebuildTask //
     //-------------//
     private static class RebuildTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -2051,7 +2043,7 @@ public class BookActions
     // RecordGlyphsTask //
     //------------------//
     private static class RecordGlyphsTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Methods --------------------------------------------------------------------------------
 
@@ -2072,7 +2064,7 @@ public class BookActions
     // StoreBookTask //
     //---------------//
     private static class StoreBookTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -2116,7 +2108,7 @@ public class BookActions
     // StoreScriptTask //
     //-----------------//
     private static class StoreScriptTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 

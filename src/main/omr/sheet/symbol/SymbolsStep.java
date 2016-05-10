@@ -28,7 +28,6 @@ import omr.ui.selection.SelectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -106,8 +105,7 @@ public class SymbolsStep
     // doProlog //
     //----------//
     @Override
-    protected Context doProlog (Collection<SystemInfo> systems,
-                                Sheet sheet)
+    protected Context doProlog (Sheet sheet)
             throws StepException
     {
         /**

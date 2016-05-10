@@ -17,12 +17,9 @@ import omr.plugin.Plugin;
 
 import omr.sheet.Book;
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
 
 /**
  * Class {@code PluginStep} launches the default plugin.
@@ -58,11 +55,10 @@ public class PluginStep
     // doit //
     //------//
     @Override
-    public void doit (Collection<SystemInfo> systems,
-                      Sheet sheet)
+    public void doit (Sheet sheet)
             throws StepException
     {
-        Book book = sheet.getBook();
+        Book book = sheet.getStub().getBook();
 
         // Interactive or Batch?
         if (OMR.gui != null) {

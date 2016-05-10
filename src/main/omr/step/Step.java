@@ -12,7 +12,6 @@
 package omr.step;
 
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 import omr.sheet.beam.BeamsStep;
 import omr.sheet.beam.CueBeamsStep;
 import omr.sheet.curve.CurvesStep;
@@ -30,8 +29,6 @@ import omr.sheet.symbol.SymbolsStep;
 import omr.sheet.ui.SheetTab;
 
 import omr.text.TextsStep;
-
-import java.util.Collection;
 
 /**
  * Enum {@code Step} describes the steps of sheet processing pipeline.
@@ -153,15 +150,13 @@ public enum Step
     /**
      * Run the step.
      *
-     * @param systems systems to process (null means all systems)
-     * @param sheet   the sheet to work upon
+     * @param sheet the sheet to work upon
      * @throws StepException if processing had to stop at this step
      */
-    public void doit (Collection<SystemInfo> systems,
-                      Sheet sheet)
+    public void doit (Sheet sheet)
             throws StepException
     {
-        helper.doit(systems, sheet);
+        helper.doit(sheet);
     }
 
     //----------------//

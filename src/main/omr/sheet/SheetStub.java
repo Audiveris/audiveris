@@ -16,6 +16,7 @@ import omr.image.FilterDescriptor;
 import omr.sheet.ui.SheetAssembly;
 
 import omr.step.Step;
+import omr.step.StepException;
 
 import omr.util.LiveParam;
 
@@ -46,19 +47,16 @@ public interface SheetStub
     Sheet createSheet ();
 
     /**
-     * Swap sheet material.
-     * If modified and not discarded, sheet material will be stored before being disposed of.
-     */
-    void swapSheet ();
-
-    /**
-     * Make sure the provided step has been reached on this sheet stub
-     * (NOTA: this is a synchronized method which may launch a synchronous processing).
+     * An abnormal situation has been found, as detailed in provided message,
+     * now how should we proceed, depending on batch mode or user answer.
      *
-     * @param step the step to check
-     * @return true if OK
+     * @param msg   the problem description
+     * @param dummy true for a dummy (positive) decision
+     * @throws StepException thrown when processing must stop
      */
-    boolean ensureStep (Step step);
+    void decideOnRemoval (String msg,
+                          boolean dummy)
+            throws StepException;
 
     /**
      * In non batch mode, report the related SheetAssembly for GUI
@@ -138,6 +136,11 @@ public interface SheetStub
     boolean hasSheet ();
 
     /**
+     * Flag a stub as invalid (containing no music).
+     */
+    void invalidate ();
+
+    /**
      * Report whether the specified step has been performed on this sheet
      *
      * @param step the step to check
@@ -160,16 +163,18 @@ public interface SheetStub
     boolean isValid ();
 
     /**
+     * Make sure the provided step has been reached on this sheet stub
+     * (NOTA: this is a synchronized method which may launch a synchronous processing).
+     *
+     * @param step the step to check
+     * @return true if OK
+     */
+    boolean reachStep (Step step);
+
+    /**
      * Reset this stub to its initial state (that is valid and non-processed).
      */
     void reset ();
-
-    /**
-     * Record the starting or stopping of a step.
-     *
-     * @param step the starting step, or null when step is over
-     */
-    void setCurrentStep (Step step);
 
     /**
      * Set the modified flag.
@@ -179,12 +184,16 @@ public interface SheetStub
     void setModified (boolean val);
 
     /**
-     * Flag a stub as invalid (containing no music).
+     * Store sheet material into book.
+     *
+     * @throws Exception if storing fails
      */
-    void invalidate ();
+    void storeSheet ()
+            throws Exception;
 
     /**
-     * Store sheet material into book.
+     * Swap sheet material.
+     * If modified and not discarded, sheet material will be stored before being disposed of.
      */
-    void storeSheet ();
+    void swapSheet ();
 }

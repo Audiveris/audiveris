@@ -17,11 +17,12 @@ import omr.sheet.Sheet;
 import omr.sheet.SheetStub;
 import omr.sheet.ui.StubsController;
 
+import omr.step.ProcessingCancellationException;
 import omr.step.Step;
 
 import omr.ui.util.AbstractMenuListener;
 
-import omr.util.BasicTask;
+import omr.util.VoidTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,22 +164,26 @@ public class StepMenu
         public void actionPerformed (ActionEvent e)
         {
             final SheetStub stub = StubsController.getCurrentStub();
-            new BasicTask()
+            new VoidTask()
             {
                 @Override
                 protected Void doInBackground ()
                         throws Exception
                 {
-                    Step sofar = stub.getLatestStep();
+                    try {
+                        Step sofar = stub.getLatestStep();
 
-                    if ((sofar == null) || (sofar.compareTo(step) <= 0)) {
-                        // Here work on the sheet
-                        final Sheet sheet = stub.getSheet();
-                        new SheetStepTask(sheet, step).run(sheet);
-                    } else {
-                        // There we rebuild just the current sheet
-                        ///Stepping.reprocessSheet(step, sheet, null, true);
-                        logger.info("Step {} already done", step);
+                        if ((sofar == null) || (sofar.compareTo(step) <= 0)) {
+                            // Here work on the sheet
+                            final Sheet sheet = stub.getSheet();
+                            new SheetStepTask(sheet, step).run(sheet);
+                        } else {
+                            // There we rebuild just the current sheet
+                            ///Stepping.reprocessSheet(step, sheet, null, true);
+                            logger.info("Step {} already done", step);
+                        }
+                    } catch (ProcessingCancellationException pce) {
+                        logger.info("ProcessingCancellationException detected");
                     }
 
                     return null;

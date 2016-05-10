@@ -31,9 +31,7 @@ import omr.ui.util.ItemRenderer;
 import omr.ui.view.ScrollView;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -127,7 +125,7 @@ public class TargetBuilder
 
         // Add a view on dewarped image?
         if (OMR.gui != null) {
-            sheet.getAssembly().addViewTab(
+            sheet.getStub().getAssembly().addViewTab(
                     "Dewarped",
                     new ScrollView(new DewarpedView(dewarpedImage)),
                     null);
@@ -442,7 +440,7 @@ public class TargetBuilder
         {
             super(image);
 
-//            setModelSize(new Dimension(image.getWidth(), image.getHeight()));
+            //            setModelSize(new Dimension(image.getWidth(), image.getHeight()));
             // Location service
             setLocationService(sheet.getLocationService());
 

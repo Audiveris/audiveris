@@ -34,7 +34,6 @@ import java.util.jar.JarFile;
 /**
  * Class {@code WellKnowns} gathers top public static final data to be shared within
  * Audiveris application.
- *
  * <p>
  * Note that a few initial operations are performed here, because they need to take place before any
  * other class is loaded.
@@ -170,9 +169,6 @@ public abstract class WellKnowns
 
     /** The folder where training material is stored. */
     public static final Path TRAIN_FOLDER = DATA_FOLDER.resolve("train");
-
-    /** The default folder where benches data is stored. */
-    public static final Path DEFAULT_BENCHES_FOLDER = DATA_FOLDER.resolve("benches");
 
     /** The default folder where PDF data is stored. */
     public static final Path DEFAULT_PRINT_FOLDER = DATA_FOLDER.resolve("print");

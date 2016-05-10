@@ -67,15 +67,22 @@ public class PrintTask
     //------//
     // core //
     //------//
-    @Override
-    public void core (Sheet sheet)
+    public void core (Book book)
     {
-        Book book = sheet.getBook();
         Path bookPath = (file != null) ? file
                 : ((folder != null) ? folder.resolve(book.getRadix() + OMR.PDF_EXTENSION)
                         : null);
         book.setPrintPath(bookPath);
         book.print();
+    }
+
+    //------//
+    // core //
+    //------//
+    @Override
+    public void core (Sheet sheet)
+    {
+        core(sheet.getStub().getBook());
     }
 
     //-----------//

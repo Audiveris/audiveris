@@ -22,8 +22,6 @@ import omr.step.StepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-
 /**
  * Class {@code MeasuresStep} allocates the measures from the relevant bar lines.
  *
@@ -60,8 +58,7 @@ public class MeasuresStep
     // doEpilog //
     //----------//
     @Override
-    protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet sheet,
+    protected void doEpilog (Sheet sheet,
                              Void context)
             throws StepException
     {

@@ -75,7 +75,7 @@ public class AssignTask
         this(sheet, null, false, glyphs);
     }
 
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     protected AssignTask ()
     {
         shape = null;

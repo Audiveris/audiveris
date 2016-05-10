@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.OMR;
 import static omr.WellKnowns.LINE_SEPARATOR;
 
 import omr.constant.Constant;
@@ -26,7 +25,6 @@ import omr.run.Run;
 import omr.run.RunTable;
 
 import omr.sheet.Scale.BeamScale;
-import omr.sheet.ui.StubsController;
 
 import omr.step.StepException;
 
@@ -40,9 +38,6 @@ import java.awt.Point;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 /**
  * Class {@code ScaleBuilder} computes the global scale of a given sheet by processing
@@ -123,15 +118,21 @@ public class ScaleBuilder
     /** Second frequent length of vertical background runs found, if any. */
     private PeakEntry<Double> secondBackPeak;
 
+    /** True when this instance is meant only to display graphs. */
+    private final boolean dummy;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Constructor to enable scale computation on a given sheet.
      *
      * @param sheet the sheet at hand
+     * @param dummy true when instance is created only to display graphs
      */
-    public ScaleBuilder (Sheet sheet)
+    public ScaleBuilder (Sheet sheet,
+                         boolean dummy)
     {
         this.sheet = sheet;
+        this.dummy = dummy;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -230,14 +231,16 @@ public class ScaleBuilder
         int interline = (int) (forePeak.getKey().best + backPeak.getKey().best);
 
         if (interline == 0) {
-            makeDecision(
+            sheet.getStub().decideOnRemoval(
                     sheet.getId() + LINE_SEPARATOR + "Interline value is zero." + LINE_SEPARATOR
-                    + "This sheet does not seem to contain staff lines.");
+                    + "This sheet does not seem to contain staff lines.",
+                    false);
         } else if (interline < constants.minResolution.getValue()) {
-            makeDecision(
+            sheet.getStub().decideOnRemoval(
                     sheet.getId() + LINE_SEPARATOR + "With an interline value of " + interline
                     + " pixels," + LINE_SEPARATOR + "either this sheet contains no staves,"
-                    + LINE_SEPARATOR + "or the picture resolution is too low (try 300 DPI).");
+                    + LINE_SEPARATOR + "or the picture resolution is too low (try 300 DPI).",
+                    false);
         }
     }
 
@@ -263,9 +266,10 @@ public class ScaleBuilder
         }
 
         if (error != null) {
-            makeDecision(
+            sheet.getStub().decideOnRemoval(
                     sheet.getId() + LINE_SEPARATOR + error + LINE_SEPARATOR
-                    + "This sheet does not seem to contain staff lines.");
+                    + "This sheet does not seem to contain staff lines.",
+                    false);
         }
     }
 
@@ -348,48 +352,6 @@ public class ScaleBuilder
             return new Scale.Range(min, best, max);
         } else {
             return null;
-        }
-    }
-
-    //--------------//
-    // makeDecision //
-    //--------------//
-    /**
-     * An abnormal situation has been found, as detailed in provided message,
-     * now how should we proceed, depending on batch mode or user answer.
-     *
-     * @param msg the problem description
-     * @throws StepException thrown when processing must stop
-     */
-    private void makeDecision (String msg)
-            throws StepException
-    {
-        logger.warn(msg.replaceAll(LINE_SEPARATOR, " "));
-
-        Book book = sheet.getBook();
-
-        if (OMR.gui != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    // Make sheet visible to the user
-                    StubsController.getInstance().selectAssembly(sheet.getStub());
-                }
-            });
-        }
-
-        if ((OMR.gui == null)
-            || (OMR.gui.displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
-            if (book.isMultiSheet()) {
-                sheet.invalidate();
-                sheet.close();
-                throw new StepException("Sheet removed");
-            } else {
-                throw new StepException("Sheet ignored");
-            }
         }
     }
 
@@ -560,28 +522,56 @@ public class ScaleBuilder
             Scale scale = sheet.getScale();
             String xLabel = "Lengths - " + ((scale != null) ? scale : "*no scale*");
 
-            new HistogramPlotter(sheet, "vertical both", both, bothHisto, bothPeak, null, upper).plot(
-                    new Point(0, 0),
-                    xLabel,
-                    constants.bothSpreadRatio.getValue(),
-                    quorumRatio);
-            new HistogramPlotter(sheet, "vertical black", fore, foreHisto, forePeak, null, upper).plot(
-                    new Point(20, 20),
-                    xLabel,
-                    constants.foreSpreadRatio.getValue(),
-                    quorumRatio);
-            new HistogramPlotter(
-                    sheet,
-                    "vertical white",
-                    back,
-                    backHisto,
-                    backPeak,
-                    secondBackPeak,
-                    upper).plot(
-                    new Point(40, 40),
-                    xLabel,
-                    constants.backSpreadRatio.getValue(),
-                    quorumRatio);
+            try {
+                new HistogramPlotter(
+                        sheet,
+                        "vertical both",
+                        both,
+                        bothHisto,
+                        bothPeak,
+                        null,
+                        upper).plot(
+                        new Point(0, 0),
+                        xLabel,
+                        constants.bothSpreadRatio.getValue(),
+                        quorumRatio);
+            } catch (Throwable ex) {
+                logger.warn("Error in plotting both", ex);
+            }
+
+            try {
+                new HistogramPlotter(
+                        sheet,
+                        "vertical black",
+                        fore,
+                        foreHisto,
+                        forePeak,
+                        null,
+                        upper).plot(
+                        new Point(20, 20),
+                        xLabel,
+                        constants.foreSpreadRatio.getValue(),
+                        quorumRatio);
+            } catch (Throwable ex) {
+                logger.warn("Error in plotting black", ex);
+            }
+
+            try {
+                new HistogramPlotter(
+                        sheet,
+                        "vertical white",
+                        back,
+                        backHisto,
+                        backPeak,
+                        secondBackPeak,
+                        upper).plot(
+                        new Point(40, 40),
+                        xLabel,
+                        constants.backSpreadRatio.getValue(),
+                        quorumRatio);
+            } catch (Throwable ex) {
+                logger.warn("Error in plotting white", ex);
+            }
         }
 
         //-----------------//

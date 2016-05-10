@@ -20,8 +20,6 @@ import omr.lag.LagManager;
 
 import omr.score.Page;
 
-import omr.ui.selection.SelectionService;
-
 import omr.sig.InterIndex;
 import omr.sig.inter.Inter;
 import omr.sig.relation.CrossExclusion;
@@ -29,6 +27,7 @@ import omr.sig.relation.CrossExclusion;
 import omr.step.StepException;
 
 import omr.ui.ErrorsEditor;
+import omr.ui.selection.SelectionService;
 import omr.ui.util.ItemRenderer;
 
 import java.awt.Graphics2D;
@@ -41,67 +40,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Interface {@code Sheet} corresponds to one image in a book image file.
- * It extends the {@link SheetStub} interface.
  * <p>
  * If a movement break occurs in the middle of a sheet, this sheet will contain at least two pages,
  * but in most cases there is exactly one {@link Page} instance per Sheet instance.
- * <p>
- * Methods are organized as follows:
- * <dl>
- * <dt>Administration</dt>
- * <dd><ul>
- * <li>{@link #addPage}</li>
- * <li>{@link #afterReload}</li>
- * <li>{@link #getPages}</li>
- * <li>{@link #getStub}</li>
- * <li>{@link #setImage}</li>
- * <li>{@link #transcribe}</li>
- * </ul></dd>
- *
- * <dt>Companions</dt>
- * <dd><ul>
- * <li>{@link #getSystemManager}</li>
- * <li>{@link #getStaffManager}</li>
- * <li>{@link #getLagManager}</li>
- * <li>{@link #getInterIndex}</li>
- * <li>{@link #getGlyphIndex}</li>
- * <li>{@link #getFilamentIndex}</li>
- * </ul></dd>
- *
- * <dt>Artifacts</dt>
- * <dd><ul>
- * <li>{@link #getPicture}</li>
- * <li>{@link #getWidth}</li>
- * <li>{@link #getHeight}</li>
- * <li>{@link #getScale}</li>
- * <li>{@link #setScale}</li>
- * <li>{@link #getInterline}</li>
- * <li>{@link #getSkew}</li>
- * <li>{@link #setSkew}</li>
- * <li>{@link #getSystems}</li>
- * <li>{@link #getSheetDelta}</li>
- * <li>{@link #export}</li>
- * <li>{@link #deleteExport}</li>
- * <li>{@link #print}</li>
- * <li>{@link #store}</li>
- * </ul></dd>
- *
- * <dt>UI</dt>
- * <dd><ul>
- * <li>{@link #getLocationService}</li>
- * <li>{@link #getSymbolsEditor}</li>
- * <li>{@link #getErrorsEditor}</li>
- * <li>{@link #getSymbolsController}</li>
- * <li>{@link #addItemRenderer}</li>
- * <li>{@link #renderItems}</li>
- * </ul></dd>
- * </dl>
  *
  * @author Hervé Bitteur
  */
 @XmlJavaTypeAdapter(BasicSheet.Adapter.class)
 public interface Sheet
-        extends SheetStub
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -109,37 +55,14 @@ public interface Sheet
     static final String INTERNALS_RADIX = "sheet#";
 
     //~ Methods ------------------------------------------------------------------------------------
-    // -------------
-    // --- Admin ---
-    // -------------
-    //
     /**
-     * Complete sheet initialization, after reload.
+     * In non batch mode, register a class instance to render items on top of UI views.
      *
-     * @param stub the sheet stub
+     * @param renderer an item renderer
+     * @return true if renderer was added, false in batch
      */
-    void afterReload (SheetStub stub);
+    boolean addItemRenderer (ItemRenderer renderer);
 
-    /**
-     * Report the related sheet stub.
-     *
-     * @return the related stub (non null)
-     */
-    SheetStub getStub ();
-
-    /**
-     * Assign the related image to this sheet
-     *
-     * @param image the loaded image
-     * @throws StepException
-     */
-    void setImage (BufferedImage image)
-            throws StepException;
-
-    // -------------
-    // --- Pages ---
-    // -------------
-    //
     /**
      * Add a related page to this sheet.
      *
@@ -148,157 +71,26 @@ public interface Sheet
     void addPage (Page page);
 
     /**
-     * Report the collections of pages found in this sheet (generally just one).
+     * Complete sheet initialization, after reload.
      *
-     * @return the list of page(s)
+     * @param stub the sheet stub
      */
-    List<Page> getPages ();
-
-    // ---------------------
-    // --- Transcription ---
-    // ---------------------
-    //
-    /**
-     * Convenient method to perform all needed transcription steps on this sheet.
-     *
-     * @return true if OK
-     */
-    boolean transcribe ();
-
-    // ------------------
-    // --- Companions ---
-    // ------------------
-    //
-    /**
-     * Access to the system manager for this sheet
-     *
-     * @return the SystemManager instance
-     */
-    SystemManager getSystemManager ();
+    void afterReload (SheetStub stub);
 
     /**
-     * Access to the staff manager for this sheet
-     *
-     * @return the staff Manager
+     * Delete the sheet exported MusicXML, if any.
      */
-    StaffManager getStaffManager ();
+    void deleteExport ();
 
     /**
-     * Access to the lag manager for this sheet
-     *
-     * @return the lag Manager
+     * Display the DATA_TAB.
      */
-    LagManager getLagManager ();
+    void displayDataTab ();
 
     /**
-     * Access to the Inter index for this sheet
-     *
-     * @return the sheet Inter's index
+     * Display the main tabs related to this sheet.
      */
-    InterIndex getInterIndex ();
-
-    /**
-     * Report the global nest for glyphs of this sheet, or null
-     *
-     * @return the nest for glyphs, perhaps null
-     */
-    GlyphIndex getGlyphIndex ();
-
-    /**
-     * Report the global index for filaments of this sheet, or null
-     *
-     * @return the index for filaments, perhaps null
-     */
-    FilamentIndex getFilamentIndex ();
-
-    /**
-     * Report the cross-system exclusions.
-     *
-     * @return the map of cross-exclusions
-     */
-    Map<Inter, List<CrossExclusion>> getCrossExclusions ();
-
-    // -----------------
-    // --- Artifacts ---
-    // -----------------
-    //
-    /**
-     * Report the picture of this sheet, that provides sources and tables.
-     *
-     * @return the related picture
-     */
-    Picture getPicture ();
-
-    /**
-     * Report whether the Picture instance exists in sheet.
-     *
-     * @return true if so
-     */
-    boolean hasPicture ();
-
-    /**
-     * Report the picture width in pixels
-     *
-     * @return the picture width
-     */
-    int getWidth ();
-
-    /**
-     * Report the picture height in pixels
-     *
-     * @return the picture height
-     */
-    int getHeight ();
-
-    /**
-     * Report the computed scale of this sheet.
-     * This drives several processing thresholds.
-     *
-     * @return the sheet scale
-     */
-    Scale getScale ();
-
-    /**
-     * Remember scale information to this sheet
-     *
-     * @param scale the computed sheet global scale
-     */
-    void setScale (Scale scale);
-
-    /**
-     * Convenient method to report the key scaling information of the sheet
-     *
-     * @return the scale interline value
-     */
-    int getInterline ();
-
-    /**
-     * Report the skew information for this sheet.
-     *
-     * @return the skew information
-     */
-    Skew getSkew ();
-
-    /**
-     * Link skew information to this sheet
-     *
-     * @param skew the skew information
-     */
-    void setSkew (Skew skew);
-
-    /**
-     * Convenient way to get an unmodifiable view on sheet systems.
-     *
-     * @return a view on systems list
-     */
-    List<SystemInfo> getSystems ();
-
-    /**
-     * Report the measured difference between entities and pixels.
-     *
-     * @return the sheetDelta
-     */
-    SheetDiff getSheetDelta ();
+    void displayMainTabs ();
 
     /**
      * Export a single sheet in MusicXML.
@@ -313,43 +105,11 @@ public interface Sheet
     void export ();
 
     /**
-     * Delete the sheet exported MusicXML, if any.
-     */
-    void deleteExport ();
-
-    /**
-     * Print the sheet physical appearance using PDF format.
+     * Report the cross-system exclusions.
      *
-     * @param sheetPrintPath path of sheet print file
+     * @return the map of cross-exclusions
      */
-    void print (Path sheetPrintPath);
-
-    /**
-     * Store sheet internals into book book file system.
-     *
-     * @param sheetPath    path of sheet in new) book file
-     * @param oldSheetPath path of sheet in old book file, if any
-     */
-    void store (Path sheetPath,
-                Path oldSheetPath);
-
-    // ----------
-    // --- UI ---
-    // ----------
-    //
-    /**
-     * In non batch mode, give access to sheet location service.
-     *
-     * @return the selection service dedicated to location in sheet (null in batch mode)
-     */
-    SelectionService getLocationService ();
-
-    /**
-     * In non batch mode, report the editor dealing with symbols recognition in this sheet
-     *
-     * @return the symbols editor, or null
-     */
-    SymbolsEditor getSymbolsEditor ();
+    Map<Inter, List<CrossExclusion>> getCrossExclusions ();
 
     /**
      * In non batch mode, report the editor dealing with detected errors in this sheet
@@ -359,6 +119,112 @@ public interface Sheet
     ErrorsEditor getErrorsEditor ();
 
     /**
+     * Report the global index for filaments of this sheet, or null
+     *
+     * @return the index for filaments, perhaps null
+     */
+    FilamentIndex getFilamentIndex ();
+
+    /**
+     * Report the global nest for glyphs of this sheet, or null
+     *
+     * @return the nest for glyphs, perhaps null
+     */
+    GlyphIndex getGlyphIndex ();
+
+    /**
+     * Report the picture height in pixels
+     *
+     * @return the picture height
+     */
+    int getHeight ();
+
+    /**
+     * Report the distinguished name for this sheet.
+     *
+     * @return sheet name
+     */
+    String getId ();
+
+    /**
+     * Access to the Inter index for this sheet
+     *
+     * @return the sheet Inter's index
+     */
+    InterIndex getInterIndex ();
+
+    /**
+     * Convenient method to report the key scaling information of the sheet
+     *
+     * @return the scale interline value
+     */
+    int getInterline ();
+
+    /**
+     * Access to the lag manager for this sheet
+     *
+     * @return the lag Manager
+     */
+    LagManager getLagManager ();
+
+    /**
+     * In non batch mode, give access to sheet location service.
+     *
+     * @return the selection service dedicated to location in sheet (null in batch mode)
+     */
+    SelectionService getLocationService ();
+
+    /**
+     * Report the collections of pages found in this sheet (generally just one).
+     *
+     * @return the list of page(s)
+     */
+    List<Page> getPages ();
+
+    /**
+     * Report the picture of this sheet, that provides sources and tables.
+     *
+     * @return the related picture
+     */
+    Picture getPicture ();
+
+    /**
+     * Report the computed scale of this sheet.
+     * This drives several processing thresholds.
+     *
+     * @return the sheet scale
+     */
+    Scale getScale ();
+
+    /**
+     * Report the measured difference between entities and pixels.
+     *
+     * @return the sheetDelta
+     */
+    SheetDiff getSheetDelta ();
+
+    /**
+     * Report the skew information for this sheet.
+     *
+     * @return the skew information
+     */
+    Skew getSkew ();
+
+    /**
+     * Access to the staff manager for this sheet
+     *
+     * @return the staff Manager
+     */
+    StaffManager getStaffManager ();
+
+    /**
+     * Report the related sheet stub.
+     *
+     * @return the related stub (non null)
+     */
+    SheetStub getStub ();
+
+    /**
      * In non batch mode, report the UI module for symbol assignment in this sheet
      *
      * @return the symbols controller
@@ -366,12 +232,46 @@ public interface Sheet
     SymbolsController getSymbolsController ();
 
     /**
-     * In non batch mode, register a class instance to render items on top of UI views.
+     * In non batch mode, report the editor dealing with symbols recognition in this sheet
      *
-     * @param renderer an item renderer
-     * @return true if renderer was added, false in batch
+     * @return the symbols editor, or null
      */
-    boolean addItemRenderer (ItemRenderer renderer);
+    SymbolsEditor getSymbolsEditor ();
+
+    /**
+     * Access to the system manager for this sheet
+     *
+     * @return the SystemManager instance
+     */
+    SystemManager getSystemManager ();
+
+    /**
+     * Convenient way to get an unmodifiable view on sheet systems.
+     *
+     * @return a view on systems list
+     */
+    List<SystemInfo> getSystems ();
+
+    /**
+     * Report the picture width in pixels
+     *
+     * @return the picture width
+     */
+    int getWidth ();
+
+    /**
+     * Report whether the Picture instance exists in sheet.
+     *
+     * @return true if so
+     */
+    boolean hasPicture ();
+
+    /**
+     * Print the sheet physical appearance using PDF format.
+     *
+     * @param sheetPrintPath path of sheet print file
+     */
+    void print (Path sheetPrintPath);
 
     /**
      * In non batch mode, apply the registered item renderings on the provided graphics.
@@ -381,12 +281,34 @@ public interface Sheet
     void renderItems (Graphics2D g);
 
     /**
-     * Display the main tabs related to this sheet.
+     * Assign the related image to this sheet
+     *
+     * @param image the loaded image
+     * @throws StepException
      */
-    void displayMainTabs ();
+    void setImage (BufferedImage image)
+            throws StepException;
 
     /**
-     * Display the DATA_TAB.
+     * Remember scale information to this sheet
+     *
+     * @param scale the computed sheet global scale
      */
-    void displayDataTab ();
+    void setScale (Scale scale);
+
+    /**
+     * Link skew information to this sheet
+     *
+     * @param skew the skew information
+     */
+    void setSkew (Skew skew);
+
+    /**
+     * Store sheet internals into book file system.
+     *
+     * @param sheetPath    path of sheet in new) book file
+     * @param oldSheetPath path of sheet in old book file, if any
+     */
+    void store (Path sheetPath,
+                Path oldSheetPath);
 }

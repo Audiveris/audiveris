@@ -11,7 +11,9 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.Main;
 import omr.OMR;
+import static omr.WellKnowns.LINE_SEPARATOR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -19,19 +21,23 @@ import omr.constant.ConstantSet;
 import omr.image.FilterDescriptor;
 
 import omr.log.LogUtil;
-
+import static omr.sheet.Sheet.INTERNALS_RADIX;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.StubsController;
 
+import omr.step.ProcessingCancellationException;
 import omr.step.Step;
 import omr.step.StepException;
+import omr.step.ui.StepMonitoring;
 
 import omr.ui.Colors;
 
 import omr.util.Jaxb;
 import omr.util.LiveParam;
 import omr.util.Navigable;
+import omr.util.OmrExecutors;
 import omr.util.StopWatch;
+import omr.util.Zip;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +48,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.EnumSet;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 import javax.swing.SwingUtilities;
@@ -95,7 +107,7 @@ public class BasicStub
     private Book book;
 
     /** Full sheet material, if any. */
-    private volatile Sheet sheet;
+    private volatile BasicSheet sheet;
 
     /** The step being performed on the sheet. */
     private volatile Step currentStep;
@@ -167,6 +179,46 @@ public class BasicStub
         return sheet;
     }
 
+    //-----------------//
+    // decideOnRemoval //
+    //-----------------//
+    @Override
+    public void decideOnRemoval (String msg,
+                                 boolean dummy)
+            throws StepException
+    {
+        if (dummy) {
+            throw new StepException("Dummy decision");
+        }
+
+        logger.warn(msg.replaceAll(LINE_SEPARATOR, " "));
+
+        if (OMR.gui != null) {
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    // Make sheet visible to the user
+                    StubsController.getInstance().selectAssembly(BasicStub.this);
+                }
+            });
+        }
+
+        if ((OMR.gui == null) /// || (OMR.gui.displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
+            || (OMR.gui.displayConfirmation(msg + LINE_SEPARATOR + "OK for discarding this sheet?"))) {
+            invalidate();
+
+            if (book.isMultiSheet()) {
+                close();
+                throw new StepException("Sheet removed");
+            } else {
+                throw new StepException("Sheet ignored");
+            }
+        }
+    }
+
     //------//
     // done //
     //------//
@@ -178,19 +230,6 @@ public class BasicStub
     public final void done (Step step)
     {
         doneSteps.add(step);
-    }
-
-    //------------//
-    // ensureStep //
-    //------------//
-    @Override
-    public synchronized boolean ensureStep (Step step)
-    {
-        if (!isDone(step)) {
-            return ((BasicSheet) getSheet()).doStep(step, null);
-        }
-
-        return true;
     }
 
     //-------------//
@@ -294,16 +333,16 @@ public class BasicStub
     // getSheet //
     //----------//
     @Override
-    public Sheet getSheet ()
+    public BasicSheet getSheet ()
     {
         if (sheet == null) {
             synchronized (this) {
                 // We have to recheck sheet, which may have just been allocated
                 if (sheet == null) {
-                    //                    if (SwingUtilities.isEventDispatchThread()) {
-                    //                        logger.warn("getSheet called on EDT");
-                    //                    }
-                    //
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        logger.warn("XXXX getSheet called on EDT XXXX");
+                    }
+
                     // Actually load the sheet
                     if (!isDone(Step.LOAD)) {
                         // LOAD not yet performed: load from book image file
@@ -334,7 +373,7 @@ public class BasicStub
                             // Complete sheet reload
                             watch.start("afterReload");
                             sheet.afterReload(this);
-                            LogUtil.start(sheet);
+                            LogUtil.start(this);
                             logger.info("Loaded {}", sheetFile);
                         } catch (Exception ex) {
                             logger.warn("Error in loading sheet structure " + ex, ex);
@@ -403,6 +442,62 @@ public class BasicStub
         return invalid == null;
     }
 
+    //-----------//
+    // reachStep //
+    //-----------//
+    /**
+     * Reach a step, including intermediate ones if any, with online progress monitor.
+     * <p>
+     * If any step throws {@link StepException} the processing is stopped.
+     *
+     * @param target the targeted step
+     * @return true if OK
+     */
+    @Override
+    public boolean reachStep (Step target)
+    {
+        final SortedSet<Step> neededSteps = getNeededSteps(target);
+
+        if (neededSteps.isEmpty()) {
+            return true;
+        }
+
+        final StopWatch watch = new StopWatch("reachStep " + target);
+        logger.debug("Sheet#{} {} scheduling {}", number, Thread.currentThread(), neededSteps);
+
+        try {
+            StepMonitoring.notifyStart();
+
+            for (final Step step : neededSteps) {
+                watch.start(step.name());
+                StepMonitoring.notifyMsg(step.toString());
+                logger.debug("{} reachStep {} to {}", Thread.currentThread(), step, target);
+                doOneStep(step);
+            }
+
+            if (OMR.gui != null) {
+                // Update sheet tab color
+                StubsController.getInstance().markTab(this, Color.BLACK);
+            }
+
+            return true; // Normal exit
+        } catch (ProcessingCancellationException pce) {
+            throw pce;
+        } catch (StepException ignored) {
+            logger.info("StepException detected in " + neededSteps);
+        } catch (Exception ex) {
+            logger.warn("Error in performing " + neededSteps + " " + ex, ex);
+        } finally {
+            StepMonitoring.notifyStop();
+
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+
+        return false;
+    }
+
     //-------//
     // reset //
     //-------//
@@ -412,8 +507,8 @@ public class BasicStub
         doneSteps.clear();
         invalid = null;
         sheet = null;
-        currentStep = null;
 
+        /// HB HB HB ??? currentStep = null;
         if (assembly != null) {
             assembly.reset();
         }
@@ -437,7 +532,6 @@ public class BasicStub
     //----------------//
     // setCurrentStep //
     //----------------//
-    @Override
     public void setCurrentStep (Step step)
     {
         currentStep = step;
@@ -461,8 +555,17 @@ public class BasicStub
     //------------//
     @Override
     public void storeSheet ()
+            throws Exception
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (modified) {
+            Path bookPath = BookManager.getDefaultBookPath(book);
+            Path root = Zip.openFileSystem(bookPath);
+            book.storeBookInfo(root); // Book info (book.xml)
+
+            Path sheetFolder = root.resolve(INTERNALS_RADIX + getNumber());
+            sheet.store(sheetFolder, null);
+            root.getFileSystem().close();
+        }
     }
 
     //-----------//
@@ -471,35 +574,39 @@ public class BasicStub
     @Override
     public void swapSheet ()
     {
-        if (isModified()) {
-            logger.info("{} storing", book);
-            book.store();
-        }
+        try {
+            if (isModified()) {
+                logger.info("{} storing", this);
+                storeSheet();
+            }
 
-        if (sheet != null) {
-            logger.info("{} disposed", sheet);
-            sheet = null;
-        }
+            if (sheet != null) {
+                logger.info("{} disposed", sheet);
+                sheet = null;
+            }
 
-        if (OMR.gui != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
+            if (OMR.gui != null) {
+                SwingUtilities.invokeLater(
+                        new Runnable()
                 {
-                    // Gray out the related tab
-                    StubsController ctrl = StubsController.getInstance();
-                    ctrl.markTab(BasicStub.this, Color.LIGHT_GRAY);
+                    @Override
+                    public void run ()
+                    {
+                        // Gray out the related tab
+                        StubsController ctrl = StubsController.getInstance();
+                        ctrl.markTab(BasicStub.this, Color.LIGHT_GRAY);
 
-                    // Close stub UI, if any
-                    if (assembly != null) {
-                        ///ctrl.deleteAssembly(BasicStub.this);
-                        assembly.reset();
-                        assembly.close();
+                        // Close stub UI, if any
+                        if (assembly != null) {
+                            ///ctrl.deleteAssembly(BasicStub.this);
+                            assembly.reset();
+                            assembly.close();
+                        }
                     }
-                }
-            });
+                });
+            }
+        } catch (Exception ex) {
+            logger.warn("Error swapping sheet", ex);
         }
     }
 
@@ -530,6 +637,114 @@ public class BasicStub
                                  Object parent)
     {
         initTransients((Book) parent);
+    }
+
+    //-----------//
+    // doOneStep //
+    //-----------//
+    /**
+     * Do just one specified step, synchronously, with display of related UI if any
+     * and recording of the step into the script.
+     *
+     * @param step the step to perform
+     * @throws StepException
+     */
+    private synchronized void doOneStep (final Step step)
+            throws StepException
+    {
+        logger.debug("{} doOneStep {}", Thread.currentThread(), step);
+
+        final int timeout = Main.getSheetStepTimeOut();
+        Future<Void> future = null;
+
+        try {
+            // Make sure sheet is available
+            if (!hasSheet()) {
+                getSheet();
+            }
+
+            if (isDone(step)) {
+                logger.debug("{} {} already done", Thread.currentThread(), step);
+
+                return;
+            }
+
+            // Implement a timeout for this step on the stub
+            future = OmrExecutors.getCachedLowExecutor().submit(
+                    new Callable<Void>()
+            {
+                @Override
+                public Void call ()
+                        throws Exception
+                {
+                    LogUtil.start(BasicStub.this);
+
+                    try {
+                        setCurrentStep(step);
+                        logger.debug("{} {} starting", Thread.currentThread(), step);
+                        StepMonitoring.notifyStep(BasicStub.this, step); // Start monitoring
+                        setModified(true); // At beginning of processing
+                        sheet.reset(step); // Reset sheet relevant data
+                        step.doit(sheet); // Standard processing on an existing sheet
+                        done(step); // Full completion
+
+                        // At end of each step, save sheet to disk?
+                        if ((OMR.gui == null) && Main.saveSheetOnEveryStep()) {
+                            storeSheet();
+                        }
+                    } finally {
+                        LogUtil.stopBook();
+                    }
+
+                    return null;
+                }
+            });
+
+            future.get(timeout, TimeUnit.SECONDS);
+        } catch (TimeoutException tex) {
+            logger.warn("Timeout {} seconds for step {}", timeout, step, tex);
+
+            // Signal the on-going step processing to stop (if possible)
+            if (future != null) {
+                future.cancel(true);
+            }
+
+            throw new ProcessingCancellationException(tex);
+        } catch (Exception ex) {
+            logger.warn("Error in {} {}", step, ex.toString(), ex);
+
+            Throwable cause = ex.getCause();
+
+            if (cause != null) {
+                logger.info("Cause {}", cause.toString());
+
+                if (cause instanceof StepException) {
+                    throw (StepException) cause;
+                }
+            }
+
+            throw new StepException(ex);
+        } finally {
+            setCurrentStep(null);
+            StepMonitoring.notifyStep(this, step); // Stop monitoring
+        }
+    }
+
+    //----------------//
+    // getNeededSteps //
+    //----------------//
+    private SortedSet<Step> getNeededSteps (Step target)
+    {
+        SortedSet<Step> neededSteps = new TreeSet();
+
+        // Add all needed steps
+        for (Step step : EnumSet.range(Step.first(), target)) {
+            if (!isDone(step)) {
+                neededSteps.add(step);
+            }
+        }
+
+        return neededSteps;
     }
 
     //----------------//

@@ -66,21 +66,26 @@ public class SaveTask
     //------//
     // core //
     //------//
-    @Override
-    public void core (Sheet sheet)
+    public void core (Book book)
     {
-        Book book = sheet.getBook();
         Path bookPath = (file != null) ? file
                 : ((folder != null)
-                        ? Paths.get(
-                                folder.toString(),
-                                book.getRadix() + OMR.BOOK_EXTENSION) : null);
+                        ? Paths.get(folder.toString(), book.getRadix() + OMR.BOOK_EXTENSION) : null);
 
         if (bookPath == null) {
             bookPath = BookManager.getDefaultBookPath(book);
         }
 
         book.store(bookPath, false);
+    }
+
+    //------//
+    // core //
+    //------//
+    @Override
+    public void core (Sheet sheet)
+    {
+        core(sheet.getStub().getBook());
     }
 
     //-----------//

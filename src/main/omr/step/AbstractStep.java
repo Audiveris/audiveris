@@ -14,13 +14,10 @@ package omr.step;
 import omr.OMR;
 
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 import omr.sheet.ui.SheetTab;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
 
 /**
  * Abstract class {@code AbstractStep} provides a convenient basis for any {@link Step}
@@ -70,12 +67,10 @@ public abstract class AbstractStep
      * Actually perform the step.
      * This method must be defined for any concrete Step.
      *
-     * @param systems the collection of systems to process, or null
-     * @param sheet   the related sheet
+     * @param sheet the related sheet
      * @throws StepException raised if processing failed
      */
-    public abstract void doit (Collection<SystemInfo> systems,
-                               Sheet sheet)
+    public abstract void doit (Sheet sheet)
             throws StepException;
 
     //-------------//

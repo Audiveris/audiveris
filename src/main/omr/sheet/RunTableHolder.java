@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code RunTableHolder} holds the reference to a run table, at least the path
- * to its marshalled data on disk, and on demand the unmarshalled run table itself.
+ * to its marshalled data on disk, and (on demand) the unmarshalled run table itself.
  *
  * @author Hervé Bitteur
  */
@@ -48,6 +48,9 @@ public class RunTableHolder
     /** Path to data on disk. */
     @XmlAttribute(name = "path")
     private final String pathString;
+
+    /** To avoid useless marshalling to disk. */
+    private boolean modified = false;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -86,15 +89,17 @@ public class RunTableHolder
                         Unmarshaller um = jaxbContext.createUnmarshaller();
 
                         // Open book file system
-                        Path dataFile = sheet.getBook().openSheetFolder(sheet.getNumber()).resolve(
+                        final SheetStub stub = sheet.getStub();
+                        Path dataFile = stub.getBook().openSheetFolder(stub.getNumber()).resolve(
                                 pathString);
                         logger.debug("path: {}", dataFile);
 
                         InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
                         data = (RunTable) um.unmarshal(is);
                         is.close();
-                        // Close book file system
-                        dataFile.getFileSystem().close();
+
+                        dataFile.getFileSystem().close(); // Close book file system
+                        modified = false;
                         logger.info("Loaded {}", dataFile);
                     } catch (Exception ex) {
                         logger.warn("Error unmarshalling from " + pathString, ex);
@@ -114,11 +119,28 @@ public class RunTableHolder
         return data != null;
     }
 
+    //------------//
+    // isModified //
+    //------------//
+    public boolean isModified ()
+    {
+        return modified;
+    }
+
     //---------//
     // setData //
     //---------//
     public void setData (RunTable data)
     {
         this.data = data;
+        modified = true;
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    public void setModified (boolean bool)
+    {
+        modified = bool;
     }
 }

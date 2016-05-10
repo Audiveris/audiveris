@@ -110,10 +110,10 @@ public class GridBuilder
                 sheet.getSymbolsEditor();
 
                 // Inter board
-                sheet.getAssembly().addBoard(SheetTab.DATA_TAB, new InterBoard(sheet));
+                sheet.getStub().getAssembly().addBoard(SheetTab.DATA_TAB, new InterBoard(sheet));
 
                 // Filament board
-                sheet.getAssembly().addBoard(
+                sheet.getStub().getAssembly().addBoard(
                         SheetTab.DATA_TAB,
                         new FilamentBoard(sheet.getFilamentIndex().getEntityService(), true));
             }

@@ -163,7 +163,7 @@ public class PictureView
                             throws Exception
                     {
                         try {
-                            LogUtil.start(sheet);
+                            LogUtil.start(sheet.getStub());
 
                             return sheet.getPicture().getTable(Picture.TableKey.BINARY);
                         } finally {

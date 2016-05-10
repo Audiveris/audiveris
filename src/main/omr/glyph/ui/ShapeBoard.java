@@ -425,7 +425,7 @@ public class ShapeBoard
                 ScreenPoint screenPoint = e.getDropLocation();
 
                 // The (zoomed) sheet view
-                ScrollView scrollView = sheet.getAssembly().getSelectedView();
+                ScrollView scrollView = sheet.getStub().getAssembly().getSelectedView();
 
                 if (screenPoint.isInComponent(scrollView.getComponent().getViewport())) {
                     RubberPanel view = scrollView.getView();
@@ -486,7 +486,7 @@ public class ShapeBoard
             ScreenPoint screenPoint = new ScreenPoint(absPt.x, absPt.y);
 
             // The (zoomed) sheet view
-            ScrollView scrollView = sheet.getAssembly().getSelectedView();
+            ScrollView scrollView = sheet.getStub().getAssembly().getSelectedView();
             Component component = scrollView.getComponent().getViewport();
 
             if (screenPoint.isInComponent(component)) {

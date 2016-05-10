@@ -44,10 +44,7 @@ public class SlurTask
         super(sheet, glyphs);
     }
 
-    //----------//
-    // SlurTask //
-    //----------//
-    /** No-arg constructor for JAXB only */
+    /** No-arg constructor for JAXB only. */
     private SlurTask ()
     {
     }

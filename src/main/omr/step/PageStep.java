@@ -30,7 +30,6 @@ import static omr.util.HorizontalSide.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -64,8 +63,7 @@ public class PageStep
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public void doit (Collection<SystemInfo> systems,
-                      Sheet sheet)
+    public void doit (Sheet sheet)
             throws StepException
     {
         for (Page page : sheet.getPages()) {

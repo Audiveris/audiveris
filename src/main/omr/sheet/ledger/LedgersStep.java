@@ -20,7 +20,6 @@ import omr.step.AbstractSystemStep;
 import omr.step.Step;
 import omr.step.StepException;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -77,8 +76,7 @@ public class LedgersStep
      * @return the context (map of sections per system)
      */
     @Override
-    protected Context doProlog (Collection<SystemInfo> systems,
-                                Sheet sheet)
+    protected Context doProlog (Sheet sheet)
             throws StepException
     {
         return new Context(new LedgersFilter(sheet).process());

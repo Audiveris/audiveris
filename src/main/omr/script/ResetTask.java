@@ -51,7 +51,7 @@ public class ResetTask
     @Override
     public void core (Sheet sheet)
     {
-        sheet.reset();
+        sheet.getStub().reset();
     }
 
     //-----------//

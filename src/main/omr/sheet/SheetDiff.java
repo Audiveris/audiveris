@@ -168,7 +168,7 @@ public class SheetDiff
 
         // Display the filtered differences
         if (OMR.gui != null) {
-            sheet.getAssembly().addViewTab(
+            sheet.getStub().getAssembly().addViewTab(
                     SheetTab.DIFF_TAB,
                     new ScrollView(new MyView(xor)),
                     new BoardsPane(new PixelBoard(sheet)));
@@ -425,7 +425,6 @@ public class SheetDiff
     {
 
         //~ Constructors ---------------------------------------------------------------------------
-
         public MyView (ByteProcessor filtered)
         {
             super(filtered.getBufferedImage());

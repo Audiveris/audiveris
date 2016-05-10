@@ -24,7 +24,6 @@ import omr.step.StepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -65,8 +64,7 @@ public class BeamsStep
     // doEpilog //
     //----------//
     @Override
-    protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet sheet,
+    protected void doEpilog (Sheet sheet,
                              Context context)
             throws StepException
     {
@@ -103,8 +101,7 @@ public class BeamsStep
      * @return the populated context
      */
     @Override
-    protected Context doProlog (Collection<SystemInfo> systems,
-                                Sheet sheet)
+    protected Context doProlog (Sheet sheet)
     {
         // Retrieve significant spots for the whole sheet
         new SpotsBuilder(sheet).buildSheetSpots();

@@ -74,7 +74,7 @@ public class AliasPatterns
             if (matcher.find()) {
                 String alias = matcher.group(1);
 
-                if ((alias != null) && !alias.isEmpty()) {
+                if ((alias != null) && !alias.isEmpty() && !alias.equals(name)) {
                     return alias;
                 }
             }

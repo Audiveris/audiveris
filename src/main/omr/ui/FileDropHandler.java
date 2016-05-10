@@ -23,7 +23,7 @@ import omr.sheet.Book;
 
 import omr.step.Step;
 
-import omr.util.BasicTask;
+import omr.util.VoidTask;
 import omr.util.Param;
 
 import org.slf4j.Logger;
@@ -178,7 +178,7 @@ public class FileDropHandler
     // DropInputTask //
     //---------------//
     private static class DropInputTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -210,7 +210,7 @@ public class FileDropHandler
                 // If a specific drop target is specified, run it on book as a whole
                 // Otherwise run the early target on first stub only.
                 if (dropStep != null) {
-                    book.doStep(dropStep, null);
+                    book.reachBookStep(dropStep);
                 }
 
                 return null;
@@ -220,11 +220,11 @@ public class FileDropHandler
         }
     }
 
-    //-----------------//
+    //--------------//
     // DropBookTask //
-    //-----------------//
+    //--------------//
     private static class DropBookTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -252,7 +252,7 @@ public class FileDropHandler
     // DropScriptTask //
     //----------------//
     private static class DropScriptTask
-            extends BasicTask
+            extends VoidTask
     {
         //~ Instance fields ------------------------------------------------------------------------
 

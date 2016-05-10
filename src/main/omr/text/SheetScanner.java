@@ -167,7 +167,7 @@ public class SheetScanner
 
         // Display for visual check?
         if (constants.displayTexts.isSet() && (OMR.gui != null)) {
-            sheet.getAssembly().addViewTab(
+            sheet.getStub().getAssembly().addViewTab(
                     "Texts",
                     new ScrollImageView(
                             sheet,
@@ -326,7 +326,8 @@ public class SheetScanner
             // Thicken the ledgerline 1 pixel above & 1 pixel below
             final Stroke oldStroke = g.getStroke();
             final Glyph glyph = ledger.getGlyph();
-            float thickness = (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL);
+            float thickness = (float) ledger.getGlyph()
+                    .getMeanThickness(Orientation.HORIZONTAL);
             thickness += 2;
             g.setStroke(new BasicStroke(thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND));
             glyph.renderLine(g);

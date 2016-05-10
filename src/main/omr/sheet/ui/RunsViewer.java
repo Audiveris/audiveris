@@ -74,7 +74,7 @@ public class RunsViewer
                 new RunBoard(table, true));
 
         // Here we create new tab with the name of the table
-        sheet.getAssembly().addViewTab(name, new ScrollView(view), boards);
+        sheet.getStub().getAssembly().addViewTab(name, new ScrollView(view), boards);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

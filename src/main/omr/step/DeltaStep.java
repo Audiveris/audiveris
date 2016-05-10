@@ -14,13 +14,10 @@ package omr.step;
 import omr.sheet.Book;
 import omr.sheet.Sheet;
 import omr.sheet.SheetDiff;
-import omr.sheet.SystemInfo;
+import omr.sheet.SheetStub;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import omr.sheet.SheetStub;
 
 /**
  * Class {@code DeltaStep} computes the delta value as a kind of recognition level on a
@@ -50,12 +47,11 @@ public class DeltaStep
     // doit //
     //------//
     @Override
-    public void doit (Collection<SystemInfo> systems,
-                      Sheet sheet)
+    public void doit (Sheet sheet)
             throws StepException
     {
         // Run it for ALL sheets of the book and compute a mean ratio other all sheets
-        final Book book = sheet.getBook();
+        final Book book = sheet.getStub().getBook();
         int count = 0;
         double globalRatio = 0;
 

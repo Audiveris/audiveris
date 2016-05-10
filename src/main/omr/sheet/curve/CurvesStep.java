@@ -12,12 +12,9 @@
 package omr.sheet.curve;
 
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 import omr.step.AbstractStep;
 import omr.step.StepException;
-
-import java.util.Collection;
 
 /**
  * Class {@code CurvesStep} retrieves all curves (slurs, wedges, endings) of a sheet.
@@ -41,8 +38,7 @@ public class CurvesStep
     // doit //
     //------//
     @Override
-    public void doit (Collection<SystemInfo> systems,
-                      Sheet sheet)
+    public void doit (Sheet sheet)
             throws StepException
     {
         new Curves(sheet).buildCurves();

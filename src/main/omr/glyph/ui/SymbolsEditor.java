@@ -12,7 +12,6 @@
 package omr.glyph.ui;
 
 import omr.classifier.NeuralClassifier;
-import omr.classifier.WekaClassifier;
 
 import omr.constant.ConstantSet;
 
@@ -178,9 +177,9 @@ public class SymbolsEditor
 
         boards.add(
                 new EvaluationBoard(sheet, NeuralClassifier.getInstance(), symbolsController, false));
-        boards.add(
-                new EvaluationBoard(sheet, WekaClassifier.getInstance(), symbolsController, false));
-
+//        boards.add(
+//                new EvaluationBoard(sheet, WekaClassifier.getInstance(), symbolsController, false));
+//
         BoardsPane boardsPane = new BoardsPane(boards);
 
         view = new MyView(sheet.getGlyphIndex());
@@ -188,7 +187,7 @@ public class SymbolsEditor
 
         // Create a hosting pane for the view
         ScrollView slv = new ScrollView(view);
-        sheet.getAssembly().addViewTab(SheetTab.DATA_TAB, slv, boardsPane);
+        sheet.getStub().getAssembly().addViewTab(SheetTab.DATA_TAB, slv, boardsPane);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

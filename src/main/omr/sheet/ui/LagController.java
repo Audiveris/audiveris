@@ -90,7 +90,7 @@ public class LagController
         // Specific rubber display
         view = new MyView(sheet.getGlyphIndex());
 
-        sheet.getAssembly().addViewTab(
+        sheet.getStub().getAssembly().addViewTab(
                 tab,
                 new ScrollView(view),
                 new BoardsPane(

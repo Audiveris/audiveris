@@ -143,7 +143,7 @@ public class VerticalsBuilder
      */
     public void addCheckBoard ()
     {
-        sheet.getAssembly().addBoard(
+        sheet.getStub().getAssembly().addBoard(
                 SheetTab.DATA_TAB,
                 new VertCheckBoard(sheet, sheet.getGlyphIndex().getEntityService(), eventClasses));
     }

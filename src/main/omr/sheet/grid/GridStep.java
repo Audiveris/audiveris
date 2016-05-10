@@ -18,7 +18,6 @@ import omr.glyph.ui.SymbolsEditor;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 import omr.sheet.ui.ImageView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScrollImageView;
@@ -34,8 +33,6 @@ import omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
 
 /**
  * Class {@code GridStep} implements <b>GRID</b> step, which retrieves all staves and
@@ -75,7 +72,7 @@ public class GridStep
         }
 
         if (constants.displayNoStaff.isSet()) {
-            sheet.getAssembly().addViewTab(
+            sheet.getStub().getAssembly().addViewTab(
                     SheetTab.NO_STAFF_TAB,
                     new ScrollImageView(
                             sheet,
@@ -89,8 +86,7 @@ public class GridStep
     // doit //
     //------//
     @Override
-    public void doit (Collection<SystemInfo> unused,
-                      Sheet sheet)
+    public void doit (Sheet sheet)
             throws StepException
     {
         StopWatch watch = new StopWatch("GridStep");

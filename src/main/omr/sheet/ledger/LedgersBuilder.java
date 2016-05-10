@@ -173,7 +173,7 @@ public class LedgersBuilder
      */
     public void addCheckBoard ()
     {
-        SheetAssembly assembly = sheet.getAssembly();
+        SheetAssembly assembly = sheet.getStub().getAssembly();
         assembly.addBoard(SheetTab.DATA_TAB, new LedgerCheckBoard(sheet));
         assembly.addBoard(SheetTab.LEDGER_TAB, new LedgerCheckBoard(sheet));
     }

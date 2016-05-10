@@ -95,7 +95,7 @@ public class SpotsController
     {
         final GlyphIndex index = sheet.getGlyphIndex();
         view = new MyView(index);
-        sheet.getAssembly().addViewTab(
+        sheet.getStub().getAssembly().addViewTab(
                 SheetTab.BEAM_SPOT_TAB,
                 new ScrollView(view),
                 new BoardsPane(new PixelBoard(sheet), new GlyphBoard(index.getEntityService(), true)));

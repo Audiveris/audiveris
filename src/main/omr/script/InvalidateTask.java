@@ -55,7 +55,7 @@ public class InvalidateTask
     @Override
     public void core (final Sheet sheet)
     {
-        sheet.invalidate();
+        sheet.getStub().invalidate();
 
         if (OMR.gui != null) {
             SwingUtilities.invokeLater(

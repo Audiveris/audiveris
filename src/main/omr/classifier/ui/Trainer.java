@@ -14,7 +14,6 @@ package omr.classifier.ui;
 import omr.OMR;
 
 import omr.classifier.NeuralClassifier;
-import omr.classifier.WekaClassifier;
 
 import omr.constant.ConstantManager;
 
@@ -99,12 +98,13 @@ public class Trainer
 
     /** Panel for Neural network validation */
     private final ValidationPanel validationPanel;
-
-    /** Panel for Bayesian "training" */
-    private final TrainingPanel bayesianPanel;
-
-    /** Panel for Bayesian validation */
-    private final ValidationPanel bayesianValidationPanel;
+//
+//    /** Panel for Bayesian "training" */
+//    private final TrainingPanel bayesianPanel;
+//
+//    /** Panel for Bayesian validation */
+//    private final ValidationPanel bayesianValidationPanel;
+//
 
     /** Current task */
     private final Task task = new Task();
@@ -127,13 +127,13 @@ public class Trainer
                 standardWidth,
                 NeuralClassifier.getInstance(),
                 selectionPanel);
-        bayesianPanel = new BayesianPanel(task, standardWidth, selectionPanel);
-        bayesianValidationPanel = new ValidationPanel(
-                task,
-                standardWidth,
-                WekaClassifier.getInstance(),
-                selectionPanel);
-
+//        bayesianPanel = new BayesianPanel(task, standardWidth, selectionPanel);
+//        bayesianValidationPanel = new ValidationPanel(
+//                task,
+//                standardWidth,
+//                WekaClassifier.getInstance(),
+//                selectionPanel);
+//
         // Initial state
         task.setActivity(Task.Activity.INACTIVE);
 
@@ -299,13 +299,13 @@ public class Trainer
 
         r += 2; // --------------------------------
         builder.add(validationPanel.getComponent(), cst.xy(1, r));
-
-        r += 2; // --------------------------------
-        builder.add(bayesianPanel.getComponent(), cst.xy(1, r));
-
-        r += 2; // --------------------------------
-        builder.add(bayesianValidationPanel.getComponent(), cst.xy(1, r));
-
+//
+//        r += 2; // --------------------------------
+//        builder.add(bayesianPanel.getComponent(), cst.xy(1, r));
+//
+//        r += 2; // --------------------------------
+//        builder.add(bayesianValidationPanel.getComponent(), cst.xy(1, r));
+//
         frame.add(builder.getPanel());
 
         // Resource injection

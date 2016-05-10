@@ -108,7 +108,7 @@ public class DistancesBuilder
                     new Class[]{AnchoredTemplateEvent.class});
             BufferedImage img = table.getImage(sheet.getScale().getInterline() / 2);
             TemplateBoard templateBoard = new TemplateBoard(sheet, table, templateService);
-            sheet.getAssembly().addViewTab(
+            sheet.getStub().getAssembly().addViewTab(
                     SheetTab.TEMPLATE_TAB,
                     new ScrollImageView(sheet, new TemplateView(sheet, img, table, templateService)),
                     new BoardsPane(new DistanceBoard(sheet, table), templateBoard));

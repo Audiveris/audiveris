@@ -760,9 +760,8 @@ public class Picture
                         logger.warn("Error in picture.store " + ex, ex);
                     }
                 }
-            } else {
+            } else if (holder.isModified()) {
                 try {
-                    // Too conservative. TODO: Has data been modified WRT file ???
                     Files.deleteIfExists(tablepath);
 
                     OutputStream os = Files.newOutputStream(tablepath, StandardOpenOption.CREATE);
@@ -772,6 +771,7 @@ public class Picture
                     RunTable table = holder.getData(sheet);
                     m.marshal(table, os);
                     os.close();
+                    holder.setModified(false);
                     logger.info("Stored {}", tablepath);
                 } catch (Exception ex) {
                     logger.warn("Error in picture.store " + ex, ex);

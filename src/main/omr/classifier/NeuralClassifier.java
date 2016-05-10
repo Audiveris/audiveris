@@ -148,7 +148,7 @@ public class NeuralClassifier
             synchronized (NeuralClassifier.class) {
                 if (INSTANCE == null) {
                     INSTANCE = new NeuralClassifier();
-                    logger.info("Using {} as shape classifier", INSTANCE.getName());
+                    logger.debug("Using {} as shape classifier", INSTANCE.getName());
                 }
             }
         }

@@ -15,6 +15,7 @@ import omr.WellKnowns;
 
 import omr.sheet.Book;
 import omr.sheet.Sheet;
+import omr.sheet.SheetStub;
 import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph;
@@ -27,10 +28,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import omr.sheet.SheetStub;
 
 /**
  * Class {@code TestStep} is an attempt to add a pseudo step for specific tests.
@@ -56,11 +55,10 @@ public class TestStep
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public void doit (Collection<SystemInfo> systems,
-                      Sheet aSheet)
+    public void doit (Sheet aSheet)
             throws StepException
     {
-        final Book book = aSheet.getBook();
+        final Book book = aSheet.getStub().getBook();
 
         for (SheetStub stub : book.getStubs()) {
             boolean sheetStarted = false;
@@ -138,6 +136,7 @@ public class TestStep
     private static Path getTestFile ()
     {
         String stamp = getTimeStamp();
+
         return WellKnowns.TEMP_FOLDER.resolve("TestFile " + stamp + ".txt");
     }
 

@@ -49,7 +49,7 @@ public class BookStepTask
         this.step = step;
     }
 
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor needed by JAXB. */
     private BookStepTask ()
     {
     }
@@ -62,8 +62,8 @@ public class BookStepTask
     public void core (final Sheet sheet)
             throws StepException
     {
-        final Book book = sheet.getBook();
-        book.doStep(step, null);
+        final Book book = sheet.getStub().getBook();
+        book.reachBookStep(step);
         logger.info("End of book step {}", step);
     }
 

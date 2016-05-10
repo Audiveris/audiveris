@@ -54,7 +54,7 @@ public class SheetStepTask
         this.step = step;
     }
 
-    /** No-arg constructor needed by JAXB */
+    /** No-arg constructor needed by JAXB. */
     private SheetStepTask ()
     {
     }
@@ -68,10 +68,10 @@ public class SheetStepTask
             throws StepException
     {
         try {
-            LogUtil.start(sheet);
-            sheet.ensureStep(step);
+            LogUtil.start(sheet.getStub());
+            sheet.getStub().reachStep(step);
             logger.info("End of sheet step {}", step);
-            sheet.getBook().getScript().addTask(this);
+            sheet.getStub().getBook().getScript().addTask(this);
         } finally {
             LogUtil.stopStub();
         }

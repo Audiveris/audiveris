@@ -13,7 +13,7 @@ package omr.step;
 
 /**
  * Class {@code ProcessingCancellationException} describes the exception raised then the
- * processing of a sheet has been cancelled (generally for time out).
+ * processing of a sheet has been canceled (typically because of time out).
  *
  * @author Hervé Bitteur
  */

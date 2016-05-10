@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.score;
 
+import omr.sheet.SystemInfo;
+
 import com.audiveris.proxymusic.Identification;
 import com.audiveris.proxymusic.Miscellaneous;
 import com.audiveris.proxymusic.MiscellaneousField;
@@ -23,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import omr.sheet.SystemInfo;
 
 /**
  * Class {@code Source} precisely describes the source of a Score.
@@ -136,6 +137,41 @@ public class Source
         return source;
     }
 
+    //------------//
+    // encodePage //
+    //------------//
+    public void encodePage (Page page,
+                            ScorePartwise scorePartwise)
+    {
+        final ObjectFactory factory = new ObjectFactory();
+        Identification identification = scorePartwise.getIdentification();
+
+        if (identification == null) {
+            identification = factory.createIdentification();
+            scorePartwise.setIdentification(identification);
+        }
+
+        Miscellaneous misc = identification.getMiscellaneous();
+
+        if (misc == null) {
+            misc = factory.createMiscellaneous();
+            identification.setMiscellaneous(misc);
+        }
+
+        Source.SheetSystems sheetSystems = new Source.SheetSystems(
+                page.getSheet().getStub().getNumber());
+        sheets.add(sheetSystems);
+
+        for (SystemInfo system : page.getSystems()) {
+            sheetSystems.getSystems().add(system.getId());
+        }
+
+        MiscellaneousField field = factory.createMiscellaneousField();
+        misc.getMiscellaneousField().add(field);
+        field.setName(SOURCE_PREFIX + SHEET_PREFIX + sheetSystems.sheetNumber);
+        field.setValue(packInts(sheetSystems.getSystems()));
+    }
+
     //-------------//
     // encodeScore //
     //-------------//
@@ -175,86 +211,52 @@ public class Source
         }
     }
 
-    //------------//
-    // encodePage //
-    //------------//
-    public void encodePage (Page page,
-                            ScorePartwise scorePartwise)
-    {
-        final ObjectFactory factory = new ObjectFactory();
-        Identification identification = scorePartwise.getIdentification();
-
-        if (identification == null) {
-            identification = factory.createIdentification();
-            scorePartwise.setIdentification(identification);
-        }
-
-        Miscellaneous misc = identification.getMiscellaneous();
-
-        if (misc == null) {
-            misc = factory.createMiscellaneous();
-            identification.setMiscellaneous(misc);
-        }
-
-        Source.SheetSystems sheetSystems = new Source.SheetSystems(page.getSheet().getNumber());
-        sheets.add(sheetSystems);
-
-        for (SystemInfo system : page.getSystems()) {
-            sheetSystems.getSystems().add(system.getId());
-        }
-
-        MiscellaneousField field = factory.createMiscellaneousField();
-        misc.getMiscellaneousField().add(field);
-        field.setName(SOURCE_PREFIX + SHEET_PREFIX + sheetSystems.sheetNumber);
-        field.setValue(packInts(sheetSystems.getSystems()));
-    }
-//
-//    //--------//
-//    // encode //
-//    //--------//
-//    public void encode (ScorePartwise scorePartwise)
-//    {
-//        final ObjectFactory factory = new ObjectFactory();
-//        Identification identification = scorePartwise.getIdentification();
-//
-//        if (identification == null) {
-//            identification = factory.createIdentification();
-//            scorePartwise.setIdentification(identification);
-//        }
-//
-//        Miscellaneous misc = identification.getMiscellaneous();
-//
-//        if (misc == null) {
-//            misc = factory.createMiscellaneous();
-//            identification.setMiscellaneous(misc);
-//        }
-//
-//        MiscellaneousField field;
-//
-//        if (file != null) {
-//            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-//            field.setName(SOURCE_PREFIX + "file");
-//            field.setValue(file);
-//        } else if (uri != null) {
-//            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-//            field.setName(SOURCE_PREFIX + "uri");
-//            field.setValue(uri.toString());
-//        }
-//
-//        if (offset != 0) {
-//            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-//            field.setName(SOURCE_PREFIX + "offset");
-//            field.setValue("" + offset);
-//        }
-//
-//        for (SheetSystems sheet : sheets) {
-//            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
-//            field.setName(SOURCE_PREFIX + SHEET_PREFIX + sheet.sheetNumber);
-//            field.setValue(packInts(sheet.getSystems()));
-//        }
-//    }
-//
-
+    //
+    //    //--------//
+    //    // encode //
+    //    //--------//
+    //    public void encode (ScorePartwise scorePartwise)
+    //    {
+    //        final ObjectFactory factory = new ObjectFactory();
+    //        Identification identification = scorePartwise.getIdentification();
+    //
+    //        if (identification == null) {
+    //            identification = factory.createIdentification();
+    //            scorePartwise.setIdentification(identification);
+    //        }
+    //
+    //        Miscellaneous misc = identification.getMiscellaneous();
+    //
+    //        if (misc == null) {
+    //            misc = factory.createMiscellaneous();
+    //            identification.setMiscellaneous(misc);
+    //        }
+    //
+    //        MiscellaneousField field;
+    //
+    //        if (file != null) {
+    //            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
+    //            field.setName(SOURCE_PREFIX + "file");
+    //            field.setValue(file);
+    //        } else if (uri != null) {
+    //            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
+    //            field.setName(SOURCE_PREFIX + "uri");
+    //            field.setValue(uri.toString());
+    //        }
+    //
+    //        if (offset != 0) {
+    //            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
+    //            field.setName(SOURCE_PREFIX + "offset");
+    //            field.setValue("" + offset);
+    //        }
+    //
+    //        for (SheetSystems sheet : sheets) {
+    //            misc.getMiscellaneousField().add(field = factory.createMiscellaneousField());
+    //            field.setName(SOURCE_PREFIX + SHEET_PREFIX + sheet.sheetNumber);
+    //            field.setValue(packInts(sheet.getSystems()));
+    //        }
+    //    }
+    //
     /**
      * @return the file
      */

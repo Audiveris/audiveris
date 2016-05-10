@@ -186,7 +186,7 @@ public class SpotsBuilder
                     img = buffer.getBufferedImage();
                 }
 
-                sheet.getAssembly().addViewTab(
+                sheet.getStub().getAssembly().addViewTab(
                         SheetTab.GRAY_SPOT_TAB,
                         new ScrollImageView(sheet, new ImageView(img)),
                         new BoardsPane(new PixelBoard(sheet)));

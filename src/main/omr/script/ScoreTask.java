@@ -42,14 +42,14 @@ public class ScoreTask
     public void core (Sheet sheet)
             throws Exception
     {
-        Book book = sheet.getBook();
+        Book book = sheet.getStub().getBook();
 
         try {
             LogUtil.start(book);
 
             for (SheetStub stub : book.getValidStubs()) {
                 LogUtil.start(stub);
-                stub.ensureStep(Step.PAGE);
+                stub.reachStep(Step.PAGE);
                 LogUtil.stopStub();
             }
 

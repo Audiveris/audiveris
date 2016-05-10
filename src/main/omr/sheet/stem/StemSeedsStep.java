@@ -22,8 +22,6 @@ import omr.step.StepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-
 /**
  * Class {@code StemSeedsStep} implements <b>STEM_SEEDS</b> step, which retrieves all
  * vertical sticks that may constitute <i>seeds</i> of future stems.
@@ -75,8 +73,7 @@ public class StemSeedsStep
     // doProlog //
     //----------//
     @Override
-    protected Void doProlog (Collection<SystemInfo> systems,
-                             Sheet sheet)
+    protected Void doProlog (Sheet sheet)
             throws StepException
     {
         // Retrieve typical stem width on global sheet

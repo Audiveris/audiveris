@@ -372,7 +372,7 @@ public class GlyphBoard
             //                        }
             //
             //                        if (noVirtuals) {
-            //                            new BasicTask()
+            //                            new VoidTask()
             //                            {
             //                                @Override
             //                                protected Void doInBackground ()
@@ -402,7 +402,7 @@ public class GlyphBoard
             //                                }
             //                            }.execute();
             //                        } else {
-            //                            new BasicTask()
+            //                            new VoidTask()
             //                            {
             //                                @Override
             //                                protected Void doInBackground ()

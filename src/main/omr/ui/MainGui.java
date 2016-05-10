@@ -449,6 +449,7 @@ public class MainGui
 
         // Launch inputs, books & scripts
         for (Callable<Void> task : Main.getCli().getCliTasks()) {
+            logger.info("MainGui submitting {}", task);
             OmrExecutors.getCachedLowExecutor().submit(task);
         }
     }

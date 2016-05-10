@@ -17,7 +17,6 @@ import omr.constant.ConstantSet;
 import omr.sheet.Scale;
 import omr.sheet.ScaleBuilder;
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 import omr.sheet.ui.DeltaView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetTab;
@@ -26,8 +25,6 @@ import omr.ui.BoardsPane;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
 
 /**
  * Class {@code ScaleStep} implements <b>SCALE</b> step, which determines the general
@@ -63,7 +60,7 @@ public class ScaleStep
     {
         if (constants.displayDelta.isSet()) {
             // Display delta view
-            sheet.getAssembly().addViewTab(
+            sheet.getStub().getAssembly().addViewTab(
                     SheetTab.DELTA_TAB,
                     new DeltaView(sheet),
                     new BoardsPane(new PixelBoard(sheet)));
@@ -74,11 +71,10 @@ public class ScaleStep
     // doit //
     //------//
     @Override
-    public void doit (Collection<SystemInfo> unused,
-                      Sheet sheet)
+    public void doit (Sheet sheet)
             throws StepException
     {
-        ScaleBuilder builder = new ScaleBuilder(sheet);
+        ScaleBuilder builder = new ScaleBuilder(sheet, false);
         Scale scale = builder.retrieveScale();
 
         logger.info("{}", scale);

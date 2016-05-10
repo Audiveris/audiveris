@@ -24,7 +24,6 @@ import omr.run.RunTableFactory;
 import omr.sheet.Picture;
 import omr.sheet.Picture.SourceKey;
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetTab;
 
@@ -34,8 +33,6 @@ import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
 
 /**
  * Class {@code BinaryStep} implements <b>BINARY</b> step, which binarizes the initial
@@ -69,7 +66,7 @@ public class BinaryStep
                            Sheet sheet)
     {
         // Switch from Picture to Binary display
-        SheetAssembly assembly = sheet.getAssembly();
+        SheetAssembly assembly = sheet.getStub().getAssembly();
         assembly.renameTab(SheetTab.PICTURE_TAB.label, SheetTab.BINARY_TAB.label);
     }
 
@@ -77,8 +74,7 @@ public class BinaryStep
     // doit //
     //------//
     @Override
-    public void doit (Collection<SystemInfo> unused,
-                      Sheet sheet)
+    public void doit (Sheet sheet)
             throws StepException
     {
         StopWatch watch = new StopWatch("Binary step for " + sheet.getId());

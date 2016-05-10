@@ -578,7 +578,7 @@ public class PartConnection
         @Override
         public int getInputIndex ()
         {
-            return page.getSheet().getNumber();
+            return page.getSheet().getStub().getNumber();
         }
 
         @Override

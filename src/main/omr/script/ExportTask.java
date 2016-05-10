@@ -66,14 +66,21 @@ public class ExportTask
     //------//
     // core //
     //------//
-    @Override
-    public void core (Sheet sheet)
+    public void core (Book book)
     {
-        Book book = sheet.getBook();
         Path exportPath = (file != null) ? file
                 : ((folder != null) ? folder.resolve(book.getRadix()) : null);
         book.setExportPathSansExt(ExportPattern.getPathSansExt(exportPath));
         book.export();
+    }
+
+    //------//
+    // core //
+    //------//
+    @Override
+    public void core (Sheet sheet)
+    {
+        core(sheet.getStub().getBook());
     }
 
     //-----------//

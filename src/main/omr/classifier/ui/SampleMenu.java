@@ -103,11 +103,11 @@ public class SampleMenu
             repository.loadRepository(false);
         }
 
-        final Book book = sheet.getBook();
+        final Book book = sheet.getStub().getBook();
         String name = FileUtil.getNameSansExtension(book.getInputPath());
 
         if (book.isMultiSheet()) {
-            name = name + "#" + sheet.getNumber();
+            name = name + "#" + sheet.getStub().getNumber();
         }
 
         SampleSheet sampleSheet = repository.findSheet(

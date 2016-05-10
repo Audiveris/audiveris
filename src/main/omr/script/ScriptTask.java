@@ -13,7 +13,7 @@ package omr.script;
 
 import omr.sheet.Sheet;
 
-import omr.util.BasicTask;
+import omr.util.VoidTask;
 
 import org.jdesktop.application.Task;
 
@@ -107,7 +107,7 @@ public abstract class ScriptTask
      */
     public Task<Void, Void> launch (final Sheet sheet)
     {
-        Task<Void, Void> task = new BasicTask()
+        VoidTask task = new VoidTask()
         {
             @Override
             protected Void doInBackground ()

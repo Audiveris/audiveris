@@ -163,9 +163,10 @@ public class HistogramPlotter
             secKey = (int) secondKey;
         }
 
-        XYSeries series = new XYSeries(
-                "Peak:" + key + "(" + (int) (peak.getValue() * 100) + "%)"
-                + ((secondPeak != null) ? (" & " + secKey) : ""));
+        String title = (peak == null) ? "No peak"
+                : ("Peak:" + key + "(" + (int) (peak.getValue() * 100) + "%)"
+                   + ((secondPeak != null) ? (" & " + secKey) : ""));
+        XYSeries series = new XYSeries(title);
 
         for (int i = 0; i <= upper; i++) {
             series.add(i, values[i]);

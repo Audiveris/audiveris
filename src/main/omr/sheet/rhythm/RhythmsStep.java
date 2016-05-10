@@ -22,8 +22,6 @@ import omr.step.StepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-
 /**
  * Class {@code RhythmsStep} is a comprehensive step that handles the timing of every
  * relevant item within a page.
@@ -47,8 +45,7 @@ public class RhythmsStep
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public void doit (Collection<SystemInfo> systems,
-                      Sheet sheet)
+    public void doit (Sheet sheet)
             throws StepException
     {
         // Detect cross-system exclusions

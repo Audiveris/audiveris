@@ -16,13 +16,17 @@ import omr.OMR;
 import org.jdesktop.application.Task;
 
 /**
- * Class {@code BasicTask} is an Application Framework Task for Audiveris application,
- * with no generic parameters to handle.
+ * Class {@code BasicTask} is an Application Framework Task for Audiveris application.
  *
  * @author Hervé Bitteur
+ *
+ * @param <T> the result type returned by this {@code SwingWorker's}
+ *            {@code doInBackground} and {@code get} methods
+ * @param <V> the type used for carrying out intermediate results by this
+ *            {@code SwingWorker's} {@code publish} and {@code process} methods
  */
-public abstract class BasicTask
-        extends Task<Void, Void>
+public abstract class BasicTask<T, V>
+        extends Task<T, V>
 {
     //~ Constructors -------------------------------------------------------------------------------
 

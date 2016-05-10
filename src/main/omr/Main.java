@@ -36,11 +36,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Class {@code Main} is the main class for OMR application.
+ * <p>
  * It deals with the main routine and its command line parameters.
  * It launches the User Interface, unless a batch mode is selected.
  *
@@ -81,6 +80,19 @@ public class Main
     public static CLI getCli ()
     {
         return cli;
+    }
+
+    //---------------------//
+    // getSheetStepTimeOut //
+    //---------------------//
+    /**
+     * Report the timeout value for any step on a sheet.
+     *
+     * @return the timeout value (in seconds)
+     */
+    public static int getSheetStepTimeOut ()
+    {
+        return constants.sheetStepTimeOut.getValue();
     }
 
     //------//
@@ -140,6 +152,22 @@ public class Main
                 System.exit(-1);
             }
         }
+    }
+
+    //--------------------------//
+    // processSystemsInParallel //
+    //--------------------------//
+    public static boolean processSystemsInParallel ()
+    {
+        return constants.processSystemsInParallel.isSet();
+    }
+
+    //----------------------//
+    // saveSheetOnEveryStep //
+    //----------------------//
+    public static boolean saveSheetOnEveryStep ()
+    {
+        return constants.saveSheetOnEveryStep.isSet();
     }
 
     //-------------//
@@ -266,17 +294,13 @@ public class Main
         final List<CliTask> tasks = cli.getCliTasks();
 
         if (!tasks.isEmpty()) {
-            final int timeout = constants.processTimeOut.getValue();
-
-            // Run all tasks in parallel or one task at a time
-            if (constants.batchTasksInParallel.isSet()) {
+            // Run all tasks in parallel? (or one task at a time)
+            if (constants.runBatchTasksInParallel.isSet()) {
                 try {
                     logTasks(tasks, true);
 
                     List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
-                            tasks,
-                            timeout,
-                            TimeUnit.SECONDS);
+                            tasks);
                     logger.info("Checking {} task(s)", tasks.size());
 
                     // Check for time-out
@@ -287,13 +311,7 @@ public class Main
                             CliTask task = tasks.get(futures.indexOf(future));
                             final String radix = task.getRadix();
 
-                            if (ex instanceof TimeoutException) {
-                                logger.warn("TIMEOUT at {} seconds for '{}'", timeout, radix, ex);
-                                future.cancel(true);
-                            } else {
-                                logger.warn("Future exception, {}", ex.toString(), ex);
-                            }
-
+                            logger.warn("Future exception on {}, {}", radix, ex.toString(), ex);
                             failure = true;
                         }
                     }
@@ -306,25 +324,10 @@ public class Main
 
                 for (CliTask task : tasks) {
                     try {
-                        Future<Void> future = OmrExecutors.getCachedLowExecutor().submit(task);
-
-                        // Check for time-out
-                        try {
-                            future.get(timeout, TimeUnit.SECONDS);
-                        } catch (Exception ex) {
-                            final String radix = task.getRadix();
-
-                            if (ex instanceof TimeoutException) {
-                                logger.warn("TIMEOUT at {} seconds for '{}'", timeout, radix, ex);
-                                future.cancel(true);
-                            } else {
-                                logger.warn("Future exception, {}", ex.toString(), ex);
-                            }
-
-                            failure = true;
-                        }
+                        task.call();
                     } catch (Exception ex) {
-                        logger.warn("Error in processing task " + task, ex);
+                        final String radix = task.getRadix();
+                        logger.warn("Exception on {}, {}", radix, ex.toString(), ex);
                         failure = true;
                     }
                 }
@@ -380,14 +383,22 @@ public class Main
                 false,
                 "Should we persist CLI-defined constants when running in batch?");
 
-        private final Constant.Boolean batchTasksInParallel = new Constant.Boolean(
+        private final Constant.Boolean runBatchTasksInParallel = new Constant.Boolean(
                 false,
                 "Should we process all tasks in parallel when running in batch?");
 
-        private final Constant.Integer processTimeOut = new Constant.Integer(
+        private final Constant.Boolean processSystemsInParallel = new Constant.Boolean(
+                false,
+                "Should we process all systems in parallel in a sheet?");
+
+        private final Constant.Boolean saveSheetOnEveryStep = new Constant.Boolean(
+                true,
+                "Should we save sheet after every successful step?");
+
+        private final Constant.Integer sheetStepTimeOut = new Constant.Integer(
                 "Seconds",
-                300,
-                "Process time-out, specified in seconds");
+                120,
+                "Time-out for one step on a sheet, specified in seconds");
 
         private final Constant.Boolean closeBookOnEnd = new Constant.Boolean(
                 true,

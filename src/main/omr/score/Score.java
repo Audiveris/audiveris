@@ -147,7 +147,10 @@ public class Score
     {
         getPages().add(page);
         pageRefs.add(
-                new PageRef(page.getSheet().getNumber(), page.getId(), page.getMeasureDeltaId()));
+                new PageRef(
+                        page.getSheet().getStub().getNumber(),
+                        page.getId(),
+                        page.getMeasureDeltaId()));
         page.setScore(this);
     }
 
@@ -572,7 +575,7 @@ public class Score
     //------------//
     private PageRef getPageRef (Page page)
     {
-        final int sheetNumber = page.getSheet().getNumber();
+        final int sheetNumber = page.getSheet().getStub().getNumber();
 
         for (PageRef pageRef : pageRefs) {
             if (pageRef.sheetNumber == sheetNumber) {

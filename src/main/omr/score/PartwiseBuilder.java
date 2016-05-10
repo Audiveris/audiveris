@@ -2090,7 +2090,7 @@ public class PartwiseBuilder
                 Identification identification = factory.createIdentification();
 
                 // Source
-                Book book = score.getFirstPage().getSheet().getBook();
+                Book book = score.getFirstPage().getSheet().getStub().getBook();
                 identification.setSource(book.getInputPath().toString());
 
                 // Encoding

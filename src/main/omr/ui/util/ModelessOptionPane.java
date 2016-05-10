@@ -33,7 +33,7 @@ import javax.swing.JOptionPane;
 
 /**
  * Class {@code ModelessOptionPane} is a basis for providing dialogs similar to
- * the ones provided by JOptionPane, but in a modeless way.
+ * the ones provided by JOptionPane, but in a mode-less way.
  *
  * @author Hervé Bitteur
  */
@@ -49,7 +49,7 @@ public class ModelessOptionPane
     // showConfirmDialog //
     //-------------------//
     /**
-     * Spawn a modeless dialog where the number of choices is determined by the
+     * Spawn a mode-less dialog where the number of choices is determined by the
      * {@code optionType} parameter.
      *
      * @param parentComponent determines the {@code Frame} in which the dialog is displayed; if
@@ -110,40 +110,40 @@ public class ModelessOptionPane
         dialog.addWindowFocusListener(adapter);
         dialog.addComponentListener(
                 new ComponentAdapter()
-                {
-                    @Override
-                    public void componentShown (ComponentEvent ce)
-                    {
-                        // reset value to ensure closing works properly
-                        pane.setValue(JOptionPane.UNINITIALIZED_VALUE);
-                    }
-                });
+        {
+            @Override
+            public void componentShown (ComponentEvent ce)
+            {
+                // reset value to ensure closing works properly
+                pane.setValue(JOptionPane.UNINITIALIZED_VALUE);
+            }
+        });
         pane.addPropertyChangeListener(
                 new PropertyChangeListener()
-                {
-                    @Override
-                    public void propertyChange (PropertyChangeEvent event)
-                    {
-                        // Let the defaultCloseOperation handle the closing
-                        // if the user closed the window without selecting a button
-                        // (newValue = null in that case).  Otherwise, close the dialog.
-                        if (dialog.isVisible()
-                            && (event.getSource() == pane)
-                            && (event.getPropertyName().equals(VALUE_PROPERTY))
-                            && (event.getNewValue() != null)
-                            && (event.getNewValue() != JOptionPane.UNINITIALIZED_VALUE)) {
-                            JOptionPane pane = (JOptionPane) event.getSource();
+        {
+            @Override
+            public void propertyChange (PropertyChangeEvent event)
+            {
+                // Let the defaultCloseOperation handle the closing
+                // if the user closed the window without selecting a button
+                // (newValue = null in that case).  Otherwise, close the dialog.
+                if (dialog.isVisible()
+                    && (event.getSource() == pane)
+                    && (event.getPropertyName().equals(VALUE_PROPERTY))
+                    && (event.getNewValue() != null)
+                    && (event.getNewValue() != JOptionPane.UNINITIALIZED_VALUE)) {
+                    JOptionPane pane = (JOptionPane) event.getSource();
 
-                            dialog.setVisible(false);
+                    dialog.setVisible(false);
 
-                            try {
-                                exchanger.exchange(optionOf(pane));
-                            } catch (InterruptedException ex) {
-                                logger.warn("Exchange got interrupted", ex);
-                            }
-                        }
+                    try {
+                        exchanger.exchange(optionOf(pane));
+                    } catch (InterruptedException ex) {
+                        logger.warn("Exchange got interrupted", ex);
                     }
-                });
+                }
+            }
+        });
         dialog.add(pane, BorderLayout.CENTER);
         dialog.setResizable(false);
         dialog.pack();
@@ -153,7 +153,9 @@ public class ModelessOptionPane
 
         // Put the calling thread on wait, until the user has made a choice
         try {
-            return exchanger.exchange(null);
+            Integer val = exchanger.exchange(null);
+
+            return val;
         } catch (InterruptedException ex) {
             logger.warn("Exchange got interrupted", ex);
 

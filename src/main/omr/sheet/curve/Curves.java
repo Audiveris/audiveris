@@ -98,7 +98,7 @@ public class Curves
         // Display skeleton buffer?
         if ((OMR.gui != null) && constants.displayCurves.isSet()) {
             view = new Curves.MyView(img);
-            sheet.getAssembly().addViewTab(
+            sheet.getStub().getAssembly().addViewTab(
                     "Curves",
                     new ScrollImageView(sheet, view),
                     new BoardsPane(new PixelBoard(sheet)));
