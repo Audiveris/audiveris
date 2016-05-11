@@ -63,7 +63,7 @@ public class BookStepTask
             throws StepException
     {
         final Book book = sheet.getStub().getBook();
-        book.reachBookStep(step);
+        book.reachBookStep(step, false, null);
         logger.info("End of book step {}", step);
     }
 

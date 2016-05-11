@@ -1664,7 +1664,7 @@ public class BookActions
                 book.setPrintPath(bookPrintPath);
                 //
                 //            for (Sheet sheet : book.getStubs()) {
-                //                sheet.reachBookStep(Step.PAGE);
+                //                sheet.reachBookStep(Step.PAGE, false, null);
                 //            }
                 //
                 book.print();

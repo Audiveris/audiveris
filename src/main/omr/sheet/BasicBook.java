@@ -12,6 +12,7 @@
 package omr.sheet;
 
 import omr.OMR;
+import omr.ProgramId;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -72,6 +73,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -116,6 +118,10 @@ public class BasicBook
     // Persistent data
     //----------------
     //
+    /** Related Audiveris version. */
+    @XmlAttribute(name = "software-version")
+    private String version;
+
     /** Sub books, if any. */
     @XmlElement(name = "sub-books")
     private final List<Book> subBooks;
@@ -731,6 +737,33 @@ public class BasicBook
         });
     }
 
+    //-----//
+    // ids //
+    //-----//
+    /**
+     * Build a string with just the IDs of the stub collection.
+     *
+     * @param stubs the collection of stub instances
+     * @return the string built
+     */
+    public static String ids (List<SheetStub> stubs)
+    {
+        if (stubs == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+
+        for (SheetStub entity : stubs) {
+            sb.append("#").append(entity.getNumber());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
     //-------------//
     // includeBook //
     //-------------//
@@ -766,15 +799,6 @@ public class BasicBook
         }
 
         return false;
-    }
-
-    //--------------//
-    // isMultiSheet //
-    //--------------//
-    @Override
-    public boolean isMultiSheet ()
-    {
-        return stubs.size() > 1;
     }
 
     //----------//
@@ -882,9 +906,18 @@ public class BasicBook
         return null;
     }
 
-    //-----------------//
+    //--------------//
+    // isMultiSheet //
+    //--------------//
+    @Override
+    public boolean isMultiSheet ()
+    {
+        return stubs.size() > 1;
+    }
+
+    //--------------//
     // openBookFile //
-    //-----------------//
+    //--------------//
     /**
      * Open the book file (supposed to already exist at location provided by
      * '{@code bookPath}' member) for reading or writing.
@@ -938,22 +971,30 @@ public class BasicBook
     // reachBookStep //
     //---------------//
     @Override
-    public boolean reachBookStep (final Step target)
+    public boolean reachBookStep (final Step target,
+                                  final boolean force,
+                                  final Set<Integer> sheetIds)
     {
         try {
-            logger.debug("reachStep {}", target);
+            final List<SheetStub> concernedStubs = getConcernedStubs(sheetIds);
+            logger.debug("reachStep {} force:{} sheetIds:{}", target, force, sheetIds);
 
-            // Check against the least advanced step performed across all valid sheets
-            Step least = getLeastStep();
+            if (!force) {
+                // Check against the least advanced step performed across all sheets concerned
+                Step least = getLeastStep(concernedStubs);
 
-            if ((least != null) && (least.compareTo(target) >= 0)) {
-                return true; // Nothing to do
+                if ((least != null) && (least.compareTo(target) >= 0)) {
+                    return true; // Nothing to do
+                }
             }
 
             // Launch the steps on each sheet
-            logger.info("Book reaching {}", target);
-
             long startTime = System.currentTimeMillis();
+            logger.info(
+                    "Book reaching {}{} on sheets:{}",
+                    target,
+                    force ? " force" : "",
+                    ids(concernedStubs));
 
             try {
                 boolean someFailure = false;
@@ -965,7 +1006,11 @@ public class BasicBook
                     // Process all sheets in parallel
                     List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
 
-                    for (final SheetStub stub : getValidStubs()) {
+                    for (final SheetStub stub : concernedStubs) {
+                        if (force && stub.isDone(target)) {
+                            stub.reset();
+                        }
+
                         if (!stub.isDone(target)) {
                             tasks.add(
                                     new Callable<Boolean>()
@@ -1008,8 +1053,12 @@ public class BasicBook
                     }
                 } else {
                     // Process one sheet after the other
-                    for (SheetStub stub : getValidStubs()) {
+                    for (SheetStub stub : concernedStubs) {
                         LogUtil.start(stub);
+
+                        if (force && stub.isDone(target)) {
+                            stub.reset();
+                        }
 
                         if (!stub.isDone(target)) {
                             try {
@@ -1255,7 +1304,7 @@ public class BasicBook
     }
 
     //---------------//
-    // storeBookInfo // TODO: should this method be synchronized?
+    // storeBookInfo //
     //---------------//
     @Override
     public void storeBookInfo (Path root)
@@ -1322,7 +1371,7 @@ public class BasicBook
     @Override
     public boolean transcribe ()
     {
-        return reachBookStep(Step.last());
+        return reachBookStep(Step.last(), false, null);
     }
 
     //------------------//
@@ -1403,6 +1452,22 @@ public class BasicBook
         return Zip.openFileSystem(bookPath);
     }
 
+    //-------------------//
+    // getConcernedStubs //
+    //-------------------//
+    private List<SheetStub> getConcernedStubs (Set<Integer> sheetIds)
+    {
+        List<SheetStub> list = new ArrayList<SheetStub>();
+
+        for (SheetStub stub : getValidStubs()) {
+            if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
+                list.add(stub);
+            }
+        }
+
+        return list;
+    }
+
     //----------------//
     // getJaxbContext //
     //----------------//
@@ -1421,15 +1486,15 @@ public class BasicBook
     // getLeastStep //
     //--------------//
     /**
-     * Report the less advanced step reached among all book valid stubs.
+     * Report the least advanced step reached among all provided stubs.
      *
      * @return the least step, null if any stub has not reached the first step (LOAD)
      */
-    private Step getLeastStep ()
+    private Step getLeastStep (List<SheetStub> stubs)
     {
         Step least = Step.last();
 
-        for (SheetStub stub : getValidStubs()) {
+        for (SheetStub stub : stubs) {
             Step latest = stub.getLatestStep();
 
             if (latest == null) {
@@ -1450,6 +1515,10 @@ public class BasicBook
     private void initTransients (String nameSansExt,
                                  Path bookPath)
     {
+        if (version == null) {
+            version = ProgramId.VERSION;
+        }
+
         if (nameSansExt != null) {
             // Apply alias patterns if any
             this.radix = nameSansExt;

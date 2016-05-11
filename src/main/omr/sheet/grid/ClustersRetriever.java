@@ -550,7 +550,7 @@ public class ClustersRetriever
 
             if (clusterBox == null) {
                 clusterBox = cluster.getBounds();
-                clusterBox.grow(params.clusterXMargin, params.clusterYMargin);
+                clusterBox.grow(params.maxMergeDx, params.clusterYMargin);
             }
 
             Rectangle filBox = fil.getBounds();
@@ -744,7 +744,7 @@ public class ClustersRetriever
             while (true) {
                 Wrapper<Integer> deltaPos = new Wrapper<Integer>();
                 Rectangle candidateBox = candidate.getBounds();
-                candidateBox.grow(params.clusterXMargin, params.clusterYMargin);
+                candidateBox.grow(params.maxMergeDx, params.clusterYMargin);
 
                 // Check the candidate vs all clusters until current excluded
                 for (LineCluster head : clusters) {
@@ -1055,7 +1055,7 @@ public class ClustersRetriever
                 "Maximum dy to aggregate a filament to a cluster");
 
         private final Scale.Fraction maxMergeDx = new Scale.Fraction(
-                10,
+                20,
                 "Maximum dx to merge two clusters");
 
         private final Scale.Fraction maxMergeDy = new Scale.Fraction(
@@ -1066,17 +1066,13 @@ public class ClustersRetriever
                 1.0,
                 "Maximum center dy to merge two clusters");
 
-        private final Scale.Fraction clusterXMargin = new Scale.Fraction(
-                4,
-                "Rough margin around cluster abscissa");
-
         private final Scale.Fraction clusterYMargin = new Scale.Fraction(
                 2,
                 "Rough margin around cluster ordinate");
 
         private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
-                0.3,
-                "Minimum cluster length (as ratio of median length)");
+                0.2,
+                "Minimum cluster true length (as ratio of median true length)");
     }
 
     //------//
@@ -1140,8 +1136,6 @@ public class ClustersRetriever
 
         final int maxMergeCenterDy;
 
-        final int clusterXMargin;
-
         final int clusterYMargin;
 
         //~ Constructors ---------------------------------------------------------------------------
@@ -1158,7 +1152,6 @@ public class ClustersRetriever
             maxMergeDx = scale.toPixels(constants.maxMergeDx);
             maxMergeDy = scale.toPixels(constants.maxMergeDy);
             maxMergeCenterDy = scale.toPixels(constants.maxMergeCenterDy);
-            clusterXMargin = scale.toPixels(constants.clusterXMargin);
             clusterYMargin = scale.toPixels(constants.clusterYMargin);
 
             if (logger.isDebugEnabled()) {

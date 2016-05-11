@@ -145,7 +145,7 @@ public class GridBuilder
         } catch (StepException se) {
             throw se;
         } catch (Throwable ex) {
-            logger.warn("Error in GridBuilder: {}", ex, ex);
+            logger.warn("Error in GridBuilder: {}", ex.toString(), ex);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();

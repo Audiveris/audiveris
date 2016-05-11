@@ -1284,28 +1284,32 @@ public class SystemInfo
     //-------------------//
     public final void updateCoordinates ()
     {
-        Staff firstStaff = getFirstStaff();
-        LineInfo firstLine = firstStaff.getFirstLine();
-        Point2D topLeft = firstLine.getEndPoint(LEFT);
+        try {
+            Staff firstStaff = getFirstStaff();
+            LineInfo firstLine = firstStaff.getFirstLine();
+            Point2D topLeft = firstLine.getEndPoint(LEFT);
 
-        Staff lastStaff = getLastStaff();
-        LineInfo lastLine = lastStaff.getLastLine();
-        Point2D botLeft = lastLine.getEndPoint(LEFT);
+            Staff lastStaff = getLastStaff();
+            LineInfo lastLine = lastStaff.getLastLine();
+            Point2D botLeft = lastLine.getEndPoint(LEFT);
 
-        left = Integer.MAX_VALUE;
+            left = Integer.MAX_VALUE;
 
-        int right = 0;
+            int right = 0;
 
-        for (Staff staff : staves) {
-            left = Math.min(left, staff.getAbscissa(LEFT));
-            right = Math.max(right, staff.getAbscissa(RIGHT));
+            for (Staff staff : staves) {
+                left = Math.min(left, staff.getAbscissa(LEFT));
+                right = Math.max(right, staff.getAbscissa(RIGHT));
+            }
+
+            top = (int) Math.rint(topLeft.getY());
+            width = right - left + 1;
+            deltaY = (int) Math.rint(
+                    lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+            bottom = (int) Math.rint(botLeft.getY());
+        } catch (Exception ex) {
+            logger.warn("Error updating coordinates for system#{}", id, ex);
         }
-
-        top = (int) Math.rint(topLeft.getY());
-        width = right - left + 1;
-        deltaY = (int) Math.rint(
-                lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-        bottom = (int) Math.rint(botLeft.getY());
     }
 
     //-----------//

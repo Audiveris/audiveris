@@ -296,6 +296,8 @@ public class BarsRetriever
 
         purgeCrossAlignments(); // Purge alignments across systems, they are not relevant
 
+        purgeExtendingPeaks(); // Purge peaks extending beyond system staves
+
         buildColumns(); // Within each system, organize peaks into system-based columns
 
         detectStartColumns(); // Detect start columns and purge following ones if not full
@@ -307,8 +309,6 @@ public class BarsRetriever
         detectBracketEnds(); // Detect top and bottom portions of brackets
 
         detectBracketMiddles(); // Detect middle portions of brackets
-
-        purgeLongPeaks(); // For one-staff systems, purge long peaks
 
         refineRightEnds(); // Define precise right end of each staff
 
@@ -619,25 +619,29 @@ public class BarsRetriever
                 columnMap.put(system, columns = new ArrayList<BarColumn>());
             }
 
-            for (Chain chain : chainMap.get(system)) {
-                BarColumn column = null;
+            final List<Chain> chains = chainMap.get(system);
 
-                if (!columns.isEmpty()) {
-                    column = columns.get(columns.size() - 1);
+            if (chains != null) {
+                for (Chain chain : chains) {
+                    BarColumn column = null;
 
-                    // Check dx and peak indices
-                    double dx = chain.first().getDeskewedAbscissa() - column.getXDsk();
+                    if (!columns.isEmpty()) {
+                        column = columns.get(columns.size() - 1);
 
-                    if ((Math.abs(dx) > maxDx) || !column.canInclude(chain)) {
-                        column = null;
+                        // Check dx and peak indices
+                        double dx = chain.first().getDeskewedAbscissa() - column.getXDsk();
+
+                        if ((Math.abs(dx) > maxDx) || !column.canInclude(chain)) {
+                            column = null;
+                        }
                     }
-                }
 
-                if (column == null) {
-                    columns.add(column = new BarColumn(system, peakGraph));
-                }
+                    if (column == null) {
+                        columns.add(column = new BarColumn(system, peakGraph));
+                    }
 
-                column.addChain(chain);
+                    column.addChain(chain);
+                }
             }
 
             if (logger.isDebugEnabled()) {
@@ -1073,6 +1077,8 @@ public class BarsRetriever
                             }
                         } else {
                             logger.warn("Staff#{} no group level:{}", staff.getId(), level);
+
+                            // TODO:  We need to create part & systems anyway !!!
                         }
                     }
                 }
@@ -1987,6 +1993,7 @@ public class BarsRetriever
             return null;
         }
 
+        final SystemInfo system = staff.getSystem();
         boolean beyondTop = false;
         boolean beyondBottom = false;
 
@@ -1995,8 +2002,10 @@ public class BarsRetriever
 
             if (ext > params.maxBraceExtension) {
                 if (side == TOP) {
-                    beyondTop = true;
-                } else {
+                    if (staff != system.getFirstStaff()) {
+                        beyondTop = true;
+                    }
+                } else if (staff != system.getLastStaff()) {
                     beyondBottom = true;
                 }
             }
@@ -2359,34 +2368,30 @@ public class BarsRetriever
         }
     }
 
-    //----------------//
-    // purgeLongPeaks //
-    //----------------//
+    //---------------------//
+    // purgeExtendingPeaks //
+    //---------------------//
     /**
-     * For 1-staff systems only, purge bars getting above or below the related staff.
+     * Purge bars extending above system top staff or below system bottom staff.
      */
-    private void purgeLongPeaks ()
+    private void purgeExtendingPeaks ()
     {
         for (SystemInfo system : sheet.getSystems()) {
-            if (system.getStaves().size() > 1) {
-                continue;
-            }
+            for (VerticalSide side : VerticalSide.values()) {
+                final Staff staff = (side == TOP) ? system.getFirstStaff()
+                        : system.getLastStaff();
+                final StaffProjector projector = projectorOf(staff);
+                final List<StaffPeak> peaks = projector.getPeaks();
+                final int iStart = projector.getStartPeakIndex();
+                final Set<StaffPeak.Bar> toRemove = new LinkedHashSet<StaffPeak.Bar>();
 
-            final Staff staff = system.getStaves().get(0);
-            final StaffProjector projector = projectorOf(staff);
-            final List<StaffPeak> peaks = projector.getPeaks();
-            final int iStart = projector.getStartPeakIndex();
-            final Set<StaffPeak.Bar> toRemove = new LinkedHashSet<StaffPeak.Bar>();
+                for (int i = 0; i < peaks.size(); i++) {
+                    if (i <= iStart) {
+                        continue;
+                    }
 
-            for (int i = 0; i < peaks.size(); i++) {
-                if (i <= iStart) {
-                    continue;
-                }
-
-                StaffPeak.Bar peak = (StaffPeak.Bar) peaks.get(i);
-
-                // Check whether the filament gets above and/or below the staff
-                for (VerticalSide side : VerticalSide.values()) {
+                    // Check whether the filament gets beyond the staff
+                    StaffPeak.Bar peak = (StaffPeak.Bar) peaks.get(i);
                     double ext = extensionOf(peak, side);
 
                     if (ext > params.maxBarExtension) {
@@ -2397,11 +2402,11 @@ public class BarsRetriever
                         toRemove.add(peak);
                     }
                 }
-            }
 
-            if (!toRemove.isEmpty()) {
-                logger.debug("Staff#{} removing longs {}", staff.getId(), toRemove);
-                projector.removePeaks(toRemove);
+                if (!toRemove.isEmpty()) {
+                    logger.debug("Staff#{} removing extendings {}", staff.getId(), toRemove);
+                    projector.removePeaks(toRemove);
+                }
             }
         }
     }

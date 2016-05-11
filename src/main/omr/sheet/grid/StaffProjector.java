@@ -1030,7 +1030,7 @@ public class StaffProjector
                 "Abscissa margin for refining peak sides");
 
         private final Scale.Fraction minDerivative = new Scale.Fraction(
-                0.625, ///0.75,
+                0.625,
                 "Minimum absolute derivative for peak side");
 
         private final Scale.Fraction barThreshold = new Scale.Fraction(
@@ -1038,7 +1038,7 @@ public class StaffProjector
                 "Minimum cumul value to detect bar peak");
 
         private final Scale.Fraction braceThreshold = new Scale.Fraction(
-                1.5,
+                1.1,
                 "Minimum cumul value to detect brace peak");
 
         private final Scale.Fraction gapThreshold = new Scale.Fraction(
@@ -1054,7 +1054,7 @@ public class StaffProjector
                 "Maximum cumul value (in LineFraction) to detect no-line regions");
 
         private final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
-                1.25,
+                2.0,
                 "Minimum width for a wide blank region (to limit peaks search)");
 
         private final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
@@ -1218,19 +1218,19 @@ public class StaffProjector
             }
 
             {
-                // BracePeak min threshold
-                XYSeries minSeries = new XYSeries("MinBrace");
-                minSeries.add(xMin, params.braceThreshold);
-                minSeries.add(xMax, params.braceThreshold);
-                add(minSeries, Color.ORANGE, true);
-            }
-
-            {
                 // Chunk threshold (assuming a 5-line staff)
                 XYSeries chunkSeries = new XYSeries("MaxChunk");
                 chunkSeries.add(xMin, params.chunkThreshold);
                 chunkSeries.add(xMax, params.chunkThreshold);
                 add(chunkSeries, Color.YELLOW, true);
+            }
+
+            {
+                // BracePeak min threshold
+                XYSeries minSeries = new XYSeries("MinBrace");
+                minSeries.add(xMin, params.braceThreshold);
+                minSeries.add(xMax, params.braceThreshold);
+                add(minSeries, Color.ORANGE, true);
             }
 
             {

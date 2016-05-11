@@ -210,7 +210,7 @@ public class FileDropHandler
                 // If a specific drop target is specified, run it on book as a whole
                 // Otherwise run the early target on first stub only.
                 if (dropStep != null) {
-                    book.reachBookStep(dropStep);
+                    book.reachBookStep(dropStep, false, null);
                 }
 
                 return null;

@@ -24,6 +24,7 @@ import omr.util.Param;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 
 import javax.swing.JFrame;
@@ -340,10 +341,14 @@ public interface Book
      * Reach a specific step (and all needed intermediate steps) on all valid sheets
      * of this book.
      *
-     * @param target the targeted step
+     * @param target   the targeted step
+     * @param force    if true and step already reached, sheet is reset and processed until step
+     * @param sheetIds IDs of selected valid sheets, or null for all valid sheets
      * @return true if OK on all sheet actions
      */
-    boolean reachBookStep (Step target);
+    boolean reachBookStep (Step target,
+                           boolean force,
+                           Set<Integer> sheetIds);
 
     /**
      * Remove the specified sheet stub from the containing book.

@@ -148,6 +148,19 @@ public class BasicStub
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    public final void done (Step step)
+    {
+        doneSteps.add(step);
+    }
+
     //-------//
     // close //
     //-------//
@@ -217,19 +230,6 @@ public class BasicStub
                 throw new StepException("Sheet ignored");
             }
         }
-    }
-
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    public final void done (Step step)
-    {
-        doneSteps.add(step);
     }
 
     //-------------//
@@ -508,7 +508,6 @@ public class BasicStub
         invalid = null;
         sheet = null;
 
-        /// HB HB HB ??? currentStep = null;
         if (assembly != null) {
             assembly.reset();
         }
@@ -559,12 +558,15 @@ public class BasicStub
     {
         if (modified) {
             Path bookPath = BookManager.getDefaultBookPath(book);
-            Path root = Zip.openFileSystem(bookPath);
-            book.storeBookInfo(root); // Book info (book.xml)
 
-            Path sheetFolder = root.resolve(INTERNALS_RADIX + getNumber());
-            sheet.store(sheetFolder, null);
-            root.getFileSystem().close();
+            synchronized (book) {
+                Path root = Zip.openFileSystem(bookPath);
+                book.storeBookInfo(root); // Book info (book.xml)
+
+                Path sheetFolder = root.resolve(INTERNALS_RADIX + getNumber());
+                sheet.store(sheetFolder, null);
+                root.getFileSystem().close();
+            }
         }
     }
 
@@ -687,11 +689,6 @@ public class BasicStub
                         sheet.reset(step); // Reset sheet relevant data
                         step.doit(sheet); // Standard processing on an existing sheet
                         done(step); // Full completion
-
-                        // At end of each step, save sheet to disk?
-                        if ((OMR.gui == null) && Main.saveSheetOnEveryStep()) {
-                            storeSheet();
-                        }
                     } finally {
                         LogUtil.stopBook();
                     }
@@ -701,6 +698,12 @@ public class BasicStub
             });
 
             future.get(timeout, TimeUnit.SECONDS);
+
+            // At end of each step, save sheet to disk?
+            if ((OMR.gui == null) && Main.saveSheetOnEveryStep()) {
+                logger.debug("{} calling storeSheet", Thread.currentThread());
+                storeSheet();
+            }
         } catch (TimeoutException tex) {
             logger.warn("Timeout {} seconds for step {}", timeout, step, tex);
 

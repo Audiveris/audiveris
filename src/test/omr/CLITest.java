@@ -14,9 +14,7 @@ package omr;
 import omr.step.Step;
 
 import omr.util.Dumping;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+
 import junit.framework.TestCase;
 
 import org.junit.Test;
@@ -24,7 +22,6 @@ import org.junit.Test;
 import org.kohsuke.args4j.CmdLineException;
 
 import java.util.Arrays;
-import java.util.Locale;
 
 /**
  * Unitary tests for CLI.
@@ -48,74 +45,6 @@ public class CLITest
 
     //~ Methods ------------------------------------------------------------------------------------
     @Test
-    public void testInput ()
-            throws Exception
-    {
-        System.out.println("\n+++ testInput");
-
-        String[] args = new String[]{"-input", "myInput#1.pdf", "-input", "myInput#2.pdf"};
-        CLI.Parameters params = instance.getParameters(args);
-        new Dumping().dump(params);
-        assertEquals(
-                Arrays.asList("myInput#1.pdf", "myInput#2.pdf").toString(),
-                params.inputFiles.toString());
-    }
-
-    @Test
-    public void testBook ()
-            throws Exception
-    {
-        System.out.println("\n+++ testBook");
-
-        String[] args = new String[]{"-book", "myBook#1.omr", "-book", "myBook#2.omr"};
-        CLI.Parameters params = instance.getParameters(args);
-        new Dumping().dump(params);
-        assertEquals(
-                Arrays.asList("myBook#1.omr", "myBook#2.omr").toString(),
-                params.bookFiles.toString());
-    }
-
-    @Test
-    public void testInputMissing ()
-            throws Exception
-    {
-        System.out.println("\n+++ testInputMissing");
-        Locale.setDefault(Locale.GERMAN);
-
-        String[] args = new String[]{"-input"};
-
-        try {
-            CLI.Parameters params = instance.getParameters(args);
-
-            fail();
-        } catch (CmdLineException ex) {
-            System.out.println(ex.getMessage());
-            System.out.println(ex.getLocalizedMessage());
-            assertTrue(ex.getMessage().contains("-input"));
-        }
-    }
-
-    @Test
-    public void testBookMissing ()
-            throws Exception
-    {
-        System.out.println("\n+++ testBookMissing");
-        Locale.setDefault(Locale.GERMAN);
-
-        String[] args = new String[]{"-book"};
-
-        try {
-            CLI.Parameters params = instance.getParameters(args);
-
-            fail();
-        } catch (CmdLineException ex) {
-            System.out.println(ex.getMessage());
-            System.out.println(ex.getLocalizedMessage());
-            assertTrue(ex.getMessage().contains("-book"));
-        }
-    }
-
-    @Test
     public void testOption ()
             throws Exception
     {
@@ -128,18 +57,6 @@ public class CLITest
         };
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
-    }
-
-    @Test
-    public void testSheets ()
-            throws Exception
-    {
-        System.out.println("\n+++ testSheets");
-
-        String[] args = new String[]{"-sheets", "3", "4", "6"};
-        CLI.Parameters params = instance.getParameters(args);
-        new Dumping().dump(params);
-        assertEquals(Arrays.asList(3, 4, 6).toString(), params.getSheetIds().toString());
     }
 
     @Test
@@ -157,23 +74,36 @@ public class CLITest
     }
 
     @Test
+    public void testSheets ()
+            throws Exception
+    {
+        System.out.println("\n+++ testSheets");
+
+        String[] args = new String[]{"-sheets", "3", "4", "6"};
+        CLI.Parameters params = instance.getParameters(args);
+        new Dumping().dump(params);
+        assertEquals(Arrays.asList(3, 4, 6).toString(), params.getSheetIds().toString());
+    }
+
+    @Test
     public void testSome ()
             throws Exception
     {
         System.out.println("\n+++ testSome");
 
         String[] args = new String[]{
-            "-help", "-batch", "-script", "myScript.xml", "-input",
-            "my Input.pdf", "-sheets", "5 2", " 3", "-step", "PAGE"
+            "-help", "-batch", "-sheets", "5 2", " 3", "-step", "PAGE",
+            "myScript.xml", "my Input.pdf"
         };
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
         assertEquals(true, params.batchMode);
         assertEquals(true, params.helpMode);
-        assertEquals("myScript.xml", params.scriptFiles.get(0).toString());
-        assertEquals("my Input.pdf", params.inputFiles.get(0).toString());
         assertEquals(Arrays.asList(2, 3, 5).toString(), params.getSheetIds().toString());
         assertEquals(Step.PAGE, params.step);
+        assertEquals(2, params.arguments.size());
+        assertEquals("myScript.xml", params.arguments.get(0).toString());
+        assertEquals("my Input.pdf", params.arguments.get(1).toString());
     }
 
     @Test

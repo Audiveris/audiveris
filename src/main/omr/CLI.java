@@ -235,7 +235,7 @@ public class CLI
     public Parameters getParameters (final String... args)
             throws CmdLineException
     {
-        logger.debug("CLI args: {}", Arrays.toString(args));
+        logger.info("CLI args: {}", Arrays.toString(args));
         actualArgs = args;
 
         parser.parseArgument(args);
@@ -521,6 +521,10 @@ public class CLI
         @Option(name = "-step", usage = "Defines a specific processing step")
         Step step;
 
+        /** Force step re-processing. */
+        @Option(name = "-force", usage = "Force step reprocessing")
+        boolean force;
+
         /** The map of application options. */
         @Option(name = "-option", usage = "Defines an application constant", handler = PropertyOptionHandler.class)
         Properties options;
@@ -572,15 +576,6 @@ public class CLI
         @Argument
         @Option(name = "--", handler = StopOptionHandler.class)
         List<Path> arguments = new ArrayList<Path>();
-
-        /** The list of script files to execute. */
-        final List<Path> scriptFiles = new ArrayList<Path>();
-
-        /** The list of input image files to load. */
-        final List<Path> inputFiles = new ArrayList<Path>();
-
-        /** The list of book files to load. */
-        final List<Path> bookFiles = new ArrayList<Path>();
 
         //~ Constructors ---------------------------------------------------------------------------
         private Parameters ()
@@ -780,7 +775,7 @@ public class CLI
 
                 // Specific step to reach on all sheets in the book?
                 if (params.step != null) {
-                    boolean ok = book.reachBookStep(params.step);
+                    boolean ok = book.reachBookStep(params.step, params.force, sheetIds);
 
                     if (!ok) {
                         return;
