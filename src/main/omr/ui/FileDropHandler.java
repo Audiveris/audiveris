@@ -205,7 +205,7 @@ public class FileDropHandler
                 final Book book = OMR.engine.loadInput(file.toPath());
                 LogUtil.start(book);
                 book.createStubs(null);
-                book.createStubsTabs(); // Tabs are now accessible
+                book.createStubsTabs(null); // Tabs are now accessible
 
                 // If a specific drop target is specified, run it on book as a whole
                 // Otherwise run the early target on first stub only.
@@ -242,7 +242,7 @@ public class FileDropHandler
                 throws Exception
         {
             Book book = OMR.engine.loadBook(file.toPath());
-            book.createStubsTabs(); // Tabs are now accessible
+            book.createStubsTabs(null); // Tabs are now accessible
 
             return null;
         }

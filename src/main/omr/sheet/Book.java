@@ -134,18 +134,16 @@ public interface Book
 
     /**
      * Insert stubs assemblies in UI tabbed pane.
+     * GUI will focus on first valid stub, unless a stub number is provided.
+     *
+     * @param focus the stub number to focus upon, or null
      */
-    void createStubsTabs ();
+    void createStubsTabs (Integer focus);
 
     /**
      * Delete the exported MusicXML, if any.
      */
     void deleteExport ();
-
-    /**
-     * Display all stubs assemblies, including the invalid ones.
-     */
-    void displayAllStubs ();
 
     /**
      * Export this book scores using MusicXML format.

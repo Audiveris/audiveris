@@ -1223,6 +1223,7 @@ public class Staff
     public void setArea (Area area)
     {
         this.area = area;
+        ///addAttachment("staff-area-" + id, area);
     }
 
     //---------//

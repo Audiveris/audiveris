@@ -213,8 +213,6 @@ public abstract class LogUtil
 
         if (!SwingUtilities.isEventDispatchThread()) {
             MDC.put(SHEET, stub.getNum());
-
-            ///System.out.println("startSheet '" + stub.getNum() + "' on " + Thread.currentThread());
         }
     }
 
@@ -229,9 +227,13 @@ public abstract class LogUtil
     public static void start (Book book)
     {
         if (!SwingUtilities.isEventDispatchThread()) {
-            MDC.put(BOOK, book.getRadix());
+            String str = book.getAlias();
 
-            ///System.out.println("startBook '" + book.getRadix() + "' on " + Thread.currentThread());
+            if (str == null) {
+                str = book.getRadix();
+            }
+
+            MDC.put(BOOK, str);
         }
     }
 
@@ -247,8 +249,6 @@ public abstract class LogUtil
 
         if (!SwingUtilities.isEventDispatchThread()) {
             MDC.remove(BOOK);
-
-            ///System.out.println("stopBook on " + Thread.currentThread());
         }
     }
 
@@ -262,8 +262,6 @@ public abstract class LogUtil
     {
         if (!SwingUtilities.isEventDispatchThread()) {
             MDC.remove(SHEET);
-
-            ///System.out.println("stopSheet on " + Thread.currentThread());
         }
     }
 

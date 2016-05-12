@@ -682,13 +682,7 @@ public class CLI
         @Override
         protected Book loadBook (Path path)
         {
-            Book book = OMR.engine.loadBook(path);
-
-            if (OMR.gui != null) {
-                book.createStubsTabs(); // Tabs are now accessible
-            }
-
-            return book;
+            return OMR.engine.loadBook(path);
         }
     }
 
@@ -770,7 +764,8 @@ public class CLI
                 }
 
                 if (OMR.gui != null) {
-                    book.createStubsTabs(); // Tabs are now accessible
+                    Integer focus = (sheetIds != null) ? sheetIds.first() : null;
+                    book.createStubsTabs(focus); // Tabs are now accessible
                 }
 
                 // Specific step to reach on all sheets in the book?

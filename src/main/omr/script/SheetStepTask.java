@@ -69,7 +69,7 @@ public class SheetStepTask
     {
         try {
             LogUtil.start(sheet.getStub());
-            sheet.getStub().reachStep(step);
+            sheet.getStub().reachStep(step, true);
             logger.info("End of sheet step {}", step);
             sheet.getStub().getBook().getScript().addTask(this);
         } finally {

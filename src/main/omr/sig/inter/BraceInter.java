@@ -17,6 +17,9 @@ import omr.glyph.Shape;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 
@@ -31,8 +34,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BraceInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(BraceInter.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BraceInter object.
      *
@@ -71,16 +77,20 @@ public class BraceInter
     {
         if (bounds == null) {
             if (glyph != null) {
-                // Extend brace glyph box to related part
-                final SystemInfo system = sig.getSystem();
-                final Rectangle box = glyph.getBounds();
-                final int xRight = box.x + box.width;
-                final Staff staff1 = system.getClosestStaff(new Point(xRight, box.y));
-                final Staff staff2 = system.getClosestStaff(
-                        new Point(xRight, box.y + box.height));
-                final int y1 = staff1.getFirstLine().yAt(xRight);
-                final int y2 = staff2.getLastLine().yAt(xRight);
-                bounds = new Rectangle(box.x, y1, box.width, y2 - y1 + 1);
+                try {
+                    // Extend brace glyph box to related part
+                    final SystemInfo system = sig.getSystem();
+                    final Rectangle box = glyph.getBounds();
+                    final int xRight = box.x + box.width;
+                    final Staff staff1 = system.getClosestStaff(new Point(xRight, box.y));
+                    final Staff staff2 = system.getClosestStaff(
+                            new Point(xRight, box.y + box.height));
+                    final int y1 = staff1.getFirstLine().yAt(xRight);
+                    final int y2 = staff2.getLastLine().yAt(xRight);
+                    bounds = new Rectangle(box.x, y1, box.width, y2 - y1 + 1);
+                } catch (Exception ex) {
+                    logger.warn("Error in getBounds for {}", this);
+                }
             }
         }
 

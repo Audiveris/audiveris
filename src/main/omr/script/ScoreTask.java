@@ -49,7 +49,7 @@ public class ScoreTask
 
             for (SheetStub stub : book.getValidStubs()) {
                 LogUtil.start(stub);
-                stub.reachStep(Step.PAGE);
+                stub.reachStep(Step.PAGE, false);
                 LogUtil.stopStub();
             }
 

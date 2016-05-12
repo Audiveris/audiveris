@@ -20,6 +20,8 @@ import omr.step.StepException;
 
 import omr.util.LiveParam;
 
+import java.util.concurrent.locks.Lock;
+
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -108,6 +110,13 @@ public interface SheetStub
     Step getLatestStep ();
 
     /**
+     * Report the lock that protects stub processing.
+     *
+     * @return stub processing lock
+     */
+    Lock getLock ();
+
+    /**
      * Report the number string for this sheet in containing book
      *
      * @return "#n" for a multi-sheet book, "" otherwise
@@ -164,12 +173,13 @@ public interface SheetStub
 
     /**
      * Make sure the provided step has been reached on this sheet stub
-     * (NOTA: this is a synchronized method which may launch a synchronous processing).
      *
-     * @param step the step to check
+     * @param step  the step to check
+     * @param force if true and step already reached, stub is reset and processed until step
      * @return true if OK
      */
-    boolean reachStep (Step step);
+    boolean reachStep (Step step,
+                       boolean force);
 
     /**
      * Reset this stub to its initial state (that is valid and non-processed).

@@ -162,7 +162,7 @@ public class Plugin
     {
         // Make sure all sheets have been transcribed
         for (SheetStub stub : book.getStubs()) {
-            stub.reachStep(Step.PAGE);
+            stub.reachStep(Step.PAGE, false);
         }
 
         // Make sure we have the export file

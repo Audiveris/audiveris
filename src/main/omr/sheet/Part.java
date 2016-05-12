@@ -590,7 +590,7 @@ public class Part
      */
     public Staff getStaffJustAbove (Point point)
     {
-        List<Staff> relevants = StaffManager.getStavesOf(point, staves, null);
+        List<Staff> relevants = StaffManager.getStavesOf(point, staves);
 
         if (!relevants.isEmpty()) {
             return relevants.get(0);
@@ -610,7 +610,7 @@ public class Part
      */
     public Staff getStaffJustBelow (Point point)
     {
-        List<Staff> relevants = StaffManager.getStavesOf(point, staves, null);
+        List<Staff> relevants = StaffManager.getStavesOf(point, staves);
 
         return relevants.get(relevants.size() - 1);
     }

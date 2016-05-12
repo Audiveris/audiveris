@@ -42,7 +42,6 @@ import omr.util.Zip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,6 +53,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 import javax.swing.SwingUtilities;
@@ -102,6 +103,9 @@ public class BasicStub
     // Transient data
     //---------------
     //
+    /** Processing lock. */
+    private final Lock lock = new ReentrantLock();
+
     /** Containing book. */
     @Navigable(false)
     private Book book;
@@ -307,6 +311,15 @@ public class BasicStub
         return latest;
     }
 
+    //---------//
+    // getLock //
+    //---------//
+    @Override
+    public Lock getLock ()
+    {
+        return lock;
+    }
+
     //--------//
     // getNum //
     //--------//
@@ -445,57 +458,66 @@ public class BasicStub
     //-----------//
     // reachStep //
     //-----------//
-    /**
-     * Reach a step, including intermediate ones if any, with online progress monitor.
-     * <p>
-     * If any step throws {@link StepException} the processing is stopped.
-     *
-     * @param target the targeted step
-     * @return true if OK
-     */
     @Override
-    public boolean reachStep (Step target)
+    public boolean reachStep (Step target,
+                              boolean force)
     {
-        final SortedSet<Step> neededSteps = getNeededSteps(target);
-
-        if (neededSteps.isEmpty()) {
-            return true;
-        }
-
+        final StubsController ctrl = (OMR.gui != null) ? StubsController.getInstance() : null;
         final StopWatch watch = new StopWatch("reachStep " + target);
-        logger.debug("Sheet#{} {} scheduling {}", number, Thread.currentThread(), neededSteps);
+        SortedSet<Step> neededSteps = null;
+        boolean ok = false;
+        getLock().lock();
+        logger.debug("reachStep got lock on {}", this);
 
         try {
+            if (force && isDone(target)) {
+                reset();
+            }
+
+            neededSteps = getNeededSteps(target);
+
+            if (neededSteps.isEmpty()) {
+                return true;
+            }
+
+            logger.debug("Sheet#{} scheduling {}", number, neededSteps);
+
             StepMonitoring.notifyStart();
+
+            if (ctrl != null) {
+                ctrl.markTab(this, Colors.SHEET_BUSY);
+            }
 
             for (final Step step : neededSteps) {
                 watch.start(step.name());
                 StepMonitoring.notifyMsg(step.toString());
-                logger.debug("{} reachStep {} to {}", Thread.currentThread(), step, target);
+                logger.debug("reachStep {} towards {}", step, target);
                 doOneStep(step);
             }
 
-            if (OMR.gui != null) {
-                // Update sheet tab color
-                StubsController.getInstance().markTab(this, Color.BLACK);
-            }
-
-            return true; // Normal exit
+            ok = true;
         } catch (ProcessingCancellationException pce) {
             throw pce;
         } catch (StepException ignored) {
             logger.info("StepException detected in " + neededSteps);
         } catch (Exception ex) {
-            logger.warn("Error in performing " + neededSteps + " " + ex, ex);
+            logger.warn("Error in performing {} {}", neededSteps, ex.toString(), ex);
         } finally {
             StepMonitoring.notifyStop();
 
             if (constants.printWatch.isSet()) {
                 watch.print();
             }
+
+            logger.debug("reachStep releasing lock on {}", this);
+            getLock().unlock();
         }
 
-        return false;
+        if (ctrl != null) {
+            ctrl.markTab(this, ok ? Colors.SHEET_OK : Colors.SHEET_NOT_OK);
+        }
+
+        return ok;
     }
 
     //-------//
@@ -513,7 +535,7 @@ public class BasicStub
         }
 
         setModified(true);
-        logger.info("Sheet {} reset as valid.", getId());
+        logger.info("Sheet#{} reset as valid.", number);
 
         if (OMR.gui != null) {
             SwingUtilities.invokeLater(
@@ -596,7 +618,7 @@ public class BasicStub
                     {
                         // Gray out the related tab
                         StubsController ctrl = StubsController.getInstance();
-                        ctrl.markTab(BasicStub.this, Color.LIGHT_GRAY);
+                        ctrl.markTab(BasicStub.this, Colors.SHEET_NOT_LOADED);
 
                         // Close stub UI, if any
                         if (assembly != null) {
@@ -618,11 +640,7 @@ public class BasicStub
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{#").append(number);
-        sb.append('}');
-
-        return sb.toString();
+        return "Stub#" + number;
     }
 
     //----------------//
@@ -651,11 +669,9 @@ public class BasicStub
      * @param step the step to perform
      * @throws StepException
      */
-    private synchronized void doOneStep (final Step step)
+    private void doOneStep (final Step step)
             throws StepException
     {
-        logger.debug("{} doOneStep {}", Thread.currentThread(), step);
-
         final int timeout = Main.getSheetStepTimeOut();
         Future<Void> future = null;
 
@@ -663,12 +679,6 @@ public class BasicStub
             // Make sure sheet is available
             if (!hasSheet()) {
                 getSheet();
-            }
-
-            if (isDone(step)) {
-                logger.debug("{} {} already done", Thread.currentThread(), step);
-
-                return;
             }
 
             // Implement a timeout for this step on the stub
@@ -683,7 +693,6 @@ public class BasicStub
 
                     try {
                         setCurrentStep(step);
-                        logger.debug("{} {} starting", Thread.currentThread(), step);
                         StepMonitoring.notifyStep(BasicStub.this, step); // Start monitoring
                         setModified(true); // At beginning of processing
                         sheet.reset(step); // Reset sheet relevant data
@@ -701,7 +710,7 @@ public class BasicStub
 
             // At end of each step, save sheet to disk?
             if ((OMR.gui == null) && Main.saveSheetOnEveryStep()) {
-                logger.debug("{} calling storeSheet", Thread.currentThread());
+                logger.debug("calling storeSheet");
                 storeSheet();
             }
         } catch (TimeoutException tex) {
@@ -761,14 +770,20 @@ public class BasicStub
      */
     private void initTransients (Book book)
     {
-        logger.debug("{} initTransients", this);
-        this.book = book;
+        try {
+            LogUtil.start(book);
 
-        filterContext = new LiveParam<FilterDescriptor>(book.getFilterParam());
-        textContext = new LiveParam<String>(book.getLanguageParam());
+            logger.trace("{} initTransients", this);
+            this.book = book;
 
-        if (OMR.gui != null) {
-            assembly = new SheetAssembly(this);
+            filterContext = new LiveParam<FilterDescriptor>(book.getFilterParam());
+            textContext = new LiveParam<String>(book.getLanguageParam());
+
+            if (OMR.gui != null) {
+                assembly = new SheetAssembly(this);
+            }
+        } finally {
+            LogUtil.stopBook();
         }
     }
 

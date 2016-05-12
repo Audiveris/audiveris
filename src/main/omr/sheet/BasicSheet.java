@@ -45,6 +45,7 @@ import omr.step.Step;
 import omr.step.StepException;
 
 import omr.ui.BoardsPane;
+import omr.ui.Colors;
 import omr.ui.ErrorsEditor;
 import omr.ui.selection.LocationEvent;
 import omr.ui.selection.PixelEvent;
@@ -59,7 +60,6 @@ import omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -367,7 +367,9 @@ public class BasicSheet
             createPictureView();
         }
 
-        StubsController.getInstance().markTab(stub, Color.BLACK);
+        if (!stub.isValid()) {
+            StubsController.getInstance().markTab(stub, Colors.SHEET_INVALID);
+        }
     }
 
     //-----------------//

@@ -1084,7 +1084,7 @@ public class SystemInfo
      */
     public List<Staff> getStavesOf (Point2D point)
     {
-        return StaffManager.getStavesOf(point, staves, null);
+        return StaffManager.getStavesOf(point, staves);
     }
 
     //--------//

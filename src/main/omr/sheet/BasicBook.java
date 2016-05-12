@@ -387,7 +387,7 @@ public class BasicBook
     // createStubsTabs //
     //-----------------//
     @Override
-    public void createStubsTabs ()
+    public void createStubsTabs (final Integer focus)
     {
         Runnable doRun = new Runnable()
         {
@@ -406,13 +406,22 @@ public class BasicBook
 
                     controller.adjustStubTabs(BasicBook.this);
 
-                    // Focus on first valid stub, if any
-                    SheetStub validStub = getFirstValidStub();
-
-                    if (validStub != null) {
-                        controller.selectAssembly(validStub);
+                    if (focus != null) {
+                        // Focus on provided stub ID
+                        if ((focus > 0) && (focus <= stubs.size())) {
+                            controller.selectAssembly(stubs.get(focus - 1));
+                        } else {
+                            logger.warn("Illegal focus id: {}", focus);
+                        }
                     } else {
-                        logger.info("No valid sheet in {}", this);
+                        // Focus on first valid stub, if any
+                        SheetStub validStub = getFirstValidStub();
+
+                        if (validStub != null) {
+                            controller.selectAssembly(validStub);
+                        } else {
+                            logger.info("No valid sheet in {}", this);
+                        }
                     }
                 } finally {
                     LogUtil.stopBook();
@@ -456,24 +465,6 @@ public class BasicBook
         } else {
             logger.info("Nothing to delete");
         }
-    }
-
-    //-----------------//
-    // displayAllStubs //
-    //-----------------//
-    @Override
-    public void displayAllStubs ()
-    {
-        SwingUtilities.invokeLater(
-                new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                final StubsController controller = StubsController.getInstance();
-                controller.displayAllStubs(BasicBook.this);
-            }
-        });
     }
 
     //--------//
@@ -1003,32 +994,26 @@ public class BasicBook
                 if (isMultiSheet()
                     && constants.processAllStubsInParallel.isSet()
                     && (OmrExecutors.defaultParallelism.getTarget() == true)) {
-                    // Process all sheets in parallel
+                    // Process all stubs in parallel
                     List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
 
                     for (final SheetStub stub : concernedStubs) {
-                        if (force && stub.isDone(target)) {
-                            stub.reset();
-                        }
-
-                        if (!stub.isDone(target)) {
-                            tasks.add(
-                                    new Callable<Boolean>()
+                        tasks.add(
+                                new Callable<Boolean>()
+                        {
+                            @Override
+                            public Boolean call ()
+                                    throws StepException
                             {
-                                @Override
-                                public Boolean call ()
-                                        throws StepException
-                                {
-                                    try {
-                                        LogUtil.start(stub);
+                                LogUtil.start(stub);
 
-                                        return stub.reachStep(target);
-                                    } finally {
-                                        LogUtil.stopStub();
-                                    }
+                                try {
+                                    return stub.reachStep(target, force);
+                                } finally {
+                                    LogUtil.stopStub();
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
 
                     try {
@@ -1052,37 +1037,30 @@ public class BasicBook
                         someFailure = true;
                     }
                 } else {
-                    // Process one sheet after the other
+                    // Process one stub after the other
                     for (SheetStub stub : concernedStubs) {
                         LogUtil.start(stub);
 
-                        if (force && stub.isDone(target)) {
-                            stub.reset();
-                        }
-
-                        if (!stub.isDone(target)) {
-                            try {
-                                // (We put no timeout on single sheet work)
-                                if (stub.reachStep(target)) {
-                                    // At end of each sheet processing:
-                                    // Save sheet to disk (including global book info)
-                                    if (OMR.gui == null) {
-                                        stub.swapSheet();
-                                    }
-
-                                    ///stub.storeSheet();
-                                } else {
-                                    someFailure = true;
+                        try {
+                            if (stub.reachStep(target, force)) {
+                                // At end of each sheet processing:
+                                // Save sheet to disk (including global book info)
+                                if (OMR.gui == null) {
+                                    stub.swapSheet();
                                 }
-                            } catch (Exception ex) {
-                                // Exception (such as timeout) raised on a stub
-                                // Let processing continue for the other stubs
-                                logger.warn("Error processing stub");
+
+                                ///stub.storeSheet();
+                            } else {
                                 someFailure = true;
                             }
+                        } catch (Exception ex) {
+                            // Exception (such as timeout) raised on stub
+                            // Let processing continue for the other stubs
+                            logger.warn("Error processing stub");
+                            someFailure = true;
+                        } finally {
+                            LogUtil.stopStub();
                         }
-
-                        LogUtil.stopStub();
                     }
                 }
 
@@ -1162,17 +1140,11 @@ public class BasicBook
                 @Override
                 public void run ()
                 {
-                    try {
-                        LogUtil.start(BasicBook.this);
+                    final StubsController controller = StubsController.getInstance();
+                    final SheetStub stub = controller.getSelectedStub();
 
-                        final StubsController controller = StubsController.getInstance();
-                        final SheetStub stub = controller.getSelectedStub();
-
-                        if ((stub != null) && (stub.getBook() == BasicBook.this)) {
-                            controller.refresh();
-                        }
-                    } finally {
-                        LogUtil.stopBook();
+                    if ((stub != null) && (stub.getBook() == BasicBook.this)) {
+                        controller.refresh();
                     }
                 }
             });
@@ -1540,7 +1512,7 @@ public class BasicBook
     {
         // Make sure all sheets have been transcribed
         for (SheetStub stub : getValidStubs()) {
-            stub.reachStep(Step.PAGE);
+            stub.reachStep(Step.PAGE, false);
         }
 
         // Group book pages into scores, if not already done

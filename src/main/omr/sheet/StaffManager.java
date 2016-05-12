@@ -117,7 +117,7 @@ public class StaffManager
                                          List<Staff> theStaves)
     {
         // All staves whose area contains the provided point
-        final List<Staff> found = getStavesOf(point, theStaves, null);
+        final List<Staff> found = getStavesOf(point, theStaves);
 
         switch (found.size()) {
         case 0:
@@ -231,18 +231,12 @@ public class StaffManager
      *
      * @param point     the provided pixel point
      * @param theStaves the list of staves to check
-     * @param found     (output) list to be populated (allocated if null)
-     * @return the containing staves info, perhaps empty but not null
+     * @return the containing staves
      */
     public static List<Staff> getStavesOf (Point2D point,
-                                           List<Staff> theStaves,
-                                           List<Staff> found)
+                                           List<Staff> theStaves)
     {
-        if (found != null) {
-            found.clear();
-        } else {
-            found = new ArrayList<Staff>();
-        }
+        List<Staff> found = new ArrayList<Staff>();
 
         for (Staff staff : theStaves) {
             Area area = staff.getArea();
@@ -461,7 +455,7 @@ public class StaffManager
      */
     public List<Staff> getStavesOf (Point2D point)
     {
-        return getStavesOf(point, staves, null);
+        return getStavesOf(point, staves);
     }
 
     //--------------//
@@ -567,8 +561,8 @@ public class StaffManager
     // vertNeighbors //
     //---------------//
     /**
-     * Report the staves, if any, which are located immediately on the
-     * desired vertical side of the current one.
+     * Report the staves, if any, which are located immediately on the desired vertical
+     * side of the current staff.
      * <p>
      * On the layout example:
      * <pre>
@@ -582,14 +576,16 @@ public class StaffManager
      * |   7   |
      * |   8   |
      * +-------+
-     * - neighborsOf(1, TOP) == []
+     * - neighborsOf(1, TOP)    == []
      * - neighborsOf(1, BOTTOM) == [2]
      * - neighborsOf(2, BOTTOM) == [3,5]
-     * - neighborsOf(5, TOP) == [2]
-     * - neighborsOf(6, TOP) == [3,5]
+     * - neighborsOf(5, TOP)    == [2]
+     * - neighborsOf(6, TOP)    == [3,5] (not just 5)
+     * - neighborsOf(3, BOTTOM) == [4,6] (not just 4)
      * - neighborsOf(4, BOTTOM) == [7]
-     * - neighborsOf(7, TOP) == [4,6]
-     * - neighborsOf(7, BOTTOM) == []
+     * - neighborsOf(7, TOP)    == [4,6]
+     * - neighborsOf(7, BOTTOM) == [8]
+     * - neighborsOf(8, BOTTOM) == []
      * </pre>
      *
      * @param current current staff
@@ -656,6 +652,6 @@ public class StaffManager
 
         private final Scale.Fraction verticalAreaMargin = new Scale.Fraction(
                 1.0,
-                "Vertical margin on system & staff areas");
+                "Vertical margin on staff areas");
     }
 }

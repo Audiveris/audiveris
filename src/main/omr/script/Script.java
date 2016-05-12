@@ -230,7 +230,7 @@ public class Script
             }
 
             if (OMR.gui != null) {
-                book.createStubsTabs(); // Tabs are now accessible
+                book.createStubsTabs(null); // Tabs are now accessible
             }
         }
 

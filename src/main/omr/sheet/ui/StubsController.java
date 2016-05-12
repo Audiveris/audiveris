@@ -119,7 +119,7 @@ public class StubsController
         stubsMap = new HashMap<JComponent, SheetStub>();
 
         stubsPane = new JTabbedPane();
-        stubsPane.setForeground(Color.LIGHT_GRAY);
+        stubsPane.setForeground(Colors.SHEET_NOT_LOADED);
 
         // Listener on sheet tab operations
         stubsPane.addChangeListener(this);
@@ -425,7 +425,7 @@ public class StubsController
      */
     public void refresh ()
     {
-        logger.debug("StubsController refresh()");
+        logger.trace("StubsController refresh()");
         callAboutStub(getSelectedStub());
     }
 
@@ -470,7 +470,15 @@ public class StubsController
      */
     public void selectAssembly (SheetStub stub)
     {
-        logger.debug("showAssembly for {}", stub);
+        logger.debug("selectAssembly for {}", stub);
+
+        if (stub == getSelectedStub()) {
+            logger.debug("{} already selected", stub);
+
+            return;
+        } else {
+            logger.debug("current selection: {}", getSelectedStub());
+        }
 
         // Make sure the assembly is part of the tabbed pane
         int tabIndex = stubsPane.indexOfComponent(stub.getAssembly().getComponent());
@@ -540,7 +548,6 @@ public class StubsController
     public void stateChanged (ChangeEvent e)
     {
         final int tabIndex = stubsPane.getSelectedIndex();
-        logger.debug("stateChanged tabIndex: {}", tabIndex);
 
         // User has selected a new sheet tab?
         if (tabIndex != -1) {
@@ -559,7 +566,7 @@ public class StubsController
                             LogUtil.start(stub);
 
                             // Check whether we should run early steps on the sheet
-                            checkStubStatus(stub, tabIndex);
+                            checkStubStatus(stub);
 
                             // Tell the selected assembly that it now has the focus
                             stub.getAssembly().assemblySelected();
@@ -575,7 +582,6 @@ public class StubsController
                 };
 
                 // Since we are on Swing EDT, use asynchronous processing
-                logger.debug("StubsController stateChanged for {}", stub);
                 OmrExecutors.getCachedLowExecutor().submit(task);
             }
         }
@@ -681,36 +687,38 @@ public class StubsController
      * <p>
      * Method is called on non-EDT task.
      *
-     * @param stub     the sheet at hand
-     * @param tabIndex the corresponding tab index in stubsPane
+     * @param stub the sheet at hand
      */
-    private void checkStubStatus (final SheetStub stub,
-                                  final int tabIndex)
+    private void checkStubStatus (final SheetStub stub)
     {
-        logger.debug("checkStubStatus");
+        logger.debug("stateChanged/checkStubStatus on {}", stub);
 
-        Step currentStep = stub.getCurrentStep();
-
-        if (currentStep != null) {
-            return;
-        }
-
-        final Step earlyStep = getEarlyStep();
-
-        if ((earlyStep != null) && !stub.isDone(earlyStep)) {
+        if (stub.getLock().tryLock()) {
             try {
                 LogUtil.start(stub);
-                stubsPane.setForegroundAt(tabIndex, Colors.SHEET_BUSY);
-                logger.debug("launching {}", this);
+                logger.debug("checkStubStatus got lock on {}", stub);
 
-                boolean ok = stub.reachStep(earlyStep);
-                markTab(stub, ok ? Color.BLACK : Color.RED);
+                final Step earlyStep = getEarlyStep();
+
+                if (earlyStep != null) {
+                    logger.debug("EarlyStep. reachStep {} on {}", earlyStep, stub);
+                    stub.reachStep(earlyStep, false);
+                }
+
+                if (!stub.hasSheet()) {
+                    // Stub just loaded from book file, load & display the related sheet
+                    logger.debug("get & display sheet for {}", stub);
+                    final Sheet sheet = stub.getSheet();
+                    markTab(stub, Colors.SHEET_OK);
+                    sheet.displayMainTabs();
+                }
             } finally {
+                logger.debug("checkStubStatus releasing lock on {}", stub);
+                stub.getLock().unlock();
                 LogUtil.stopStub();
             }
-        } else if (!stub.hasSheet()) {
-            // Stub just loaded from book file, load & display the related sheet
-            stub.getSheet().displayMainTabs();
+        } else {
+            logger.debug("{} currently busy, checkStubStatus giving up.", stub);
         }
     }
 

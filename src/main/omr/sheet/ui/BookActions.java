@@ -1578,7 +1578,7 @@ public class BookActions
                     Book book = OMR.engine.loadInput(path);
                     LogUtil.start(book);
                     book.createStubs(null);
-                    book.createStubsTabs(); // Tabs are now accessible
+                    book.createStubsTabs(null); // Tabs are now accessible
                 } catch (Exception ex) {
                     logger.warn("Error opening path " + path + " " + ex, ex);
                 } finally {
@@ -1622,7 +1622,7 @@ public class BookActions
                     // Actually open the book
                     Book book = OMR.engine.loadBook(path);
                     LogUtil.start(book);
-                    book.createStubsTabs(); // Tabs are now accessible
+                    book.createStubsTabs(null); // Tabs are now accessible
                 } finally {
                     LogUtil.stopBook();
                 }
@@ -1758,7 +1758,7 @@ public class BookActions
                 LogUtil.start(book);
 
                 for (SheetStub stub : book.getValidStubs()) {
-                    stub.reachStep(Step.PAGE);
+                    stub.reachStep(Step.PAGE, false);
                 }
             } catch (Exception ex) {
                 logger.warn("Could not build book", ex);
@@ -1796,7 +1796,7 @@ public class BookActions
 
                 for (SheetStub stub : book.getValidStubs()) {
                     LogUtil.start(stub);
-                    stub.reachStep(Step.PAGE);
+                    stub.reachStep(Step.PAGE, false);
                     LogUtil.stopStub();
                 }
 
@@ -1834,7 +1834,7 @@ public class BookActions
         {
             try {
                 LogUtil.start(sheet.getStub());
-                sheet.getStub().reachStep(Step.PAGE);
+                sheet.getStub().reachStep(Step.PAGE, false);
             } catch (Exception ex) {
                 logger.warn("Could not build page", ex);
             } finally {
@@ -1996,7 +1996,7 @@ public class BookActions
                 sheet.getStub().getBook().setExportPathSansExt(bookExportPathSansExt);
 
                 if (checkParameters(sheet)) {
-                    sheet.getStub().reachStep(Step.PAGE);
+                    sheet.getStub().reachStep(Step.PAGE, false);
                     sheet.export();
                 }
             } finally {
