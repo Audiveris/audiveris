@@ -22,6 +22,7 @@ import omr.glyph.Shape;
 
 import static omr.glyph.Shape.*;
 
+import omr.ui.Colors;
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -31,7 +32,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -254,7 +254,7 @@ abstract class TrainingPanel
      */
     private void defineLayout ()
     {
-        progressBar.setForeground(Color.ORANGE);
+        progressBar.setForeground(Colors.PROGRESS_BAR);
 
         // Buttons to select just the core samples, or the whole population
         CoreAction coreAction = new CoreAction();
@@ -283,10 +283,11 @@ abstract class TrainingPanel
         r += 2; // ----------------------------
         builder.add(coreButton, cst.xy(3, r));
         builder.add(coreNumber, cst.xy(5, r));
-//
-//        // Initialize with population cardinalities
-//        coreAction.actionPerformed(null);
-//        wholeAction.actionPerformed(null);
+
+        //
+        //        // Initialize with population cardinalities
+        //        coreAction.actionPerformed(null);
+        //        wholeAction.actionPerformed(null);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

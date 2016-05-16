@@ -287,7 +287,11 @@ public class LinesRetriever
 
             // Include isolated horizontal sticker sections
             watch.start("includeStickers");
-            includeStickers();
+            includeStickers(); // This may delete intermediate points
+
+            // Add intermediate points where needed
+            watch.start("fillHoles");
+            fillHoles();
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();

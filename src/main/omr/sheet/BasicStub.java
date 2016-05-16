@@ -369,19 +369,26 @@ public class BasicStub
                         StopWatch watch = new StopWatch("Load Sheet " + this);
 
                         try {
+                            Path sheetFile = null;
                             watch.start("unmarshal");
 
                             // Open the book file system
-                            Path sheetFile = book.openSheetFolder(number).resolve(
-                                    BasicSheet.getSheetFileName(number));
-                            InputStream is = Files.newInputStream(
-                                    sheetFile,
-                                    StandardOpenOption.READ);
-                            sheet = BasicSheet.unmarshal(is);
+                            try {
+                                book.getLock().lock();
+                                sheetFile = book.openSheetFolder(number).resolve(
+                                        BasicSheet.getSheetFileName(number));
 
-                            // Close the stream as well as the book file system
-                            is.close();
-                            sheetFile.getFileSystem().close();
+                                InputStream is = Files.newInputStream(
+                                        sheetFile,
+                                        StandardOpenOption.READ);
+                                sheet = BasicSheet.unmarshal(is);
+
+                                // Close the stream as well as the book file system
+                                is.close();
+                                sheetFile.getFileSystem().close();
+                            } finally {
+                                book.getLock().unlock();
+                            }
 
                             // Complete sheet reload
                             watch.start("afterReload");
@@ -579,15 +586,19 @@ public class BasicStub
             throws Exception
     {
         if (modified) {
+            book.getLock().lock();
+
             Path bookPath = BookManager.getDefaultBookPath(book);
 
-            synchronized (book) {
+            try {
                 Path root = Zip.openFileSystem(bookPath);
                 book.storeBookInfo(root); // Book info (book.xml)
 
                 Path sheetFolder = root.resolve(INTERNALS_RADIX + getNumber());
                 sheet.store(sheetFolder, null);
                 root.getFileSystem().close();
+            } finally {
+                book.getLock().unlock();
             }
         }
     }

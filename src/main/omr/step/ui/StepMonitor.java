@@ -15,10 +15,11 @@ import omr.constant.Constant;
 import omr.constant.Constant.Ratio;
 import omr.constant.ConstantSet;
 
+import omr.ui.Colors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.Graphics;
 
 import javax.swing.JProgressBar;
@@ -57,7 +58,7 @@ public class StepMonitor
         bar.setStringPainted(true);
         displayAnimation(false);
         bar.setString("");
-        bar.setForeground(Color.ORANGE);
+        bar.setForeground(Colors.PROGRESS_BAR);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -88,13 +89,13 @@ public class StepMonitor
         logger.debug("notifyMsg '{}'", msg);
         SwingUtilities.invokeLater(
                 new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        bar.setString(msg);
-                    }
-                });
+        {
+            @Override
+            public void run ()
+            {
+                bar.setString(msg);
+            }
+        });
     }
 
     //------------------//
@@ -143,20 +144,20 @@ public class StepMonitor
             logger.debug("animate");
             SwingUtilities.invokeLater(
                     new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            int old = bar.getValue();
+            {
+                @Override
+                public void run ()
+                {
+                    int old = bar.getValue();
 
-                            if (old > bar.getMinimum()) {
-                                int diff = bar.getMaximum() - old;
-                                int increment = (int) Math.round(diff * constants.ratio.getValue());
+                    if (old > bar.getMinimum()) {
+                        int diff = bar.getMaximum() - old;
+                        int increment = (int) Math.round(diff * constants.ratio.getValue());
 
-                                bar.setValue(old + increment);
-                            }
-                        }
-                    });
+                        bar.setValue(old + increment);
+                    }
+                }
+            });
         }
     }
 
@@ -173,18 +174,18 @@ public class StepMonitor
         logger.debug("setBar amount:{}", amount);
         SwingUtilities.invokeLater(
                 new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        int divisions = constants.divisions.getValue();
-                        bar.setMinimum(0);
-                        bar.setMaximum(divisions);
+        {
+            @Override
+            public void run ()
+            {
+                int divisions = constants.divisions.getValue();
+                bar.setMinimum(0);
+                bar.setMaximum(divisions);
 
-                        int val = (int) Math.round(divisions * amount);
-                        bar.setValue(val);
-                    }
-                });
+                int val = (int) Math.round(divisions * amount);
+                bar.setValue(val);
+            }
+        });
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

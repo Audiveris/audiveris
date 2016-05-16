@@ -265,7 +265,7 @@ public class ShapeSet
 
     public static final ShapeSet Clefs = new ShapeSet(
             G_CLEF,
-            new Color(0xff99ff), // new Color(0xcc00cc),
+            new Color(0xff99ff),
             shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
 
     /**

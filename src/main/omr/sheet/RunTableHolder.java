@@ -81,30 +81,32 @@ public class RunTableHolder
     public RunTable getData (Sheet sheet)
     {
         if (data == null) {
-            synchronized (this) {
-                // Double-check is needed!
+            final SheetStub stub = sheet.getStub();
+
+            try {
+                stub.getBook().getLock().lock();
+
                 if (data == null) {
-                    try {
-                        JAXBContext jaxbContext = JAXBContext.newInstance(RunTable.class);
-                        Unmarshaller um = jaxbContext.createUnmarshaller();
+                    JAXBContext jaxbContext = JAXBContext.newInstance(RunTable.class);
+                    Unmarshaller um = jaxbContext.createUnmarshaller();
 
-                        // Open book file system
-                        final SheetStub stub = sheet.getStub();
-                        Path dataFile = stub.getBook().openSheetFolder(stub.getNumber()).resolve(
-                                pathString);
-                        logger.debug("path: {}", dataFile);
+                    // Open book file system
+                    Path dataFile = stub.getBook().openSheetFolder(stub.getNumber())
+                            .resolve(pathString);
+                    logger.debug("path: {}", dataFile);
 
-                        InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
-                        data = (RunTable) um.unmarshal(is);
-                        is.close();
+                    InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
+                    data = (RunTable) um.unmarshal(is);
+                    is.close();
 
-                        dataFile.getFileSystem().close(); // Close book file system
-                        modified = false;
-                        logger.info("Loaded {}", dataFile);
-                    } catch (Exception ex) {
-                        logger.warn("Error unmarshalling from " + pathString, ex);
-                    }
+                    dataFile.getFileSystem().close(); // Close book file system
+                    modified = false;
+                    logger.info("Loaded {}", dataFile);
                 }
+            } catch (Exception ex) {
+                logger.warn("Error unmarshalling from " + pathString, ex);
+            } finally {
+                stub.getBook().getLock().unlock();
             }
         }
 

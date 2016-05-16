@@ -38,6 +38,15 @@ public class Colors
     /** Filament combs of second interline */
     public static final Color COMB_MINOR = new Color(200, 200, 0, alpha);
 
+    /** Color for standard distance */
+    public static final Color DISTANCE_STANDARD = Color.BLUE;
+
+    /** Color for zero distance (on foreground target) */
+    public static final Color DISTANCE_TARGET = Color.PINK;
+
+    /** Color for unknown distance (neutralized locations) */
+    public static final Color DISTANCE_UNKNOWN = Color.GREEN;
+
     /** Successful entities */
     public static final Color ENTITY = Color.BLACK;
 
@@ -86,6 +95,9 @@ public class Colors
     /** Music for mixed symbols view */
     public static final Color MUSIC_SYMBOLS = new Color(170, 255, 170, alpha);
 
+    /** Color for a progress bar */
+    public static final Color PROGRESS_BAR = Color.ORANGE;
+
     /** Rubber rectangle */
     public static final Color RUBBER_RECT = Color.RED;
 
@@ -103,6 +115,21 @@ public class Colors
 
     /** Known shape */
     public static final Color SHAPE_KNOWN = Color.GREEN;
+
+    /** Color for busy sheet tab */
+    public static final Color SHEET_BUSY = Color.ORANGE;
+
+    /** Color for invalid sheet tab */
+    public static final Color SHEET_INVALID = Color.PINK;
+
+    /** Color for not loaded sheet tab */
+    public static final Color SHEET_NOT_LOADED = Color.LIGHT_GRAY;
+
+    /** Color for not OK sheet tab */
+    public static final Color SHEET_NOT_OK = Color.RED;
+
+    /** Color for OK sheet tab */
+    public static final Color SHEET_OK = Color.BLACK;
 
     /** Time slot */
     public static final Color SLOT = new Color(192, 192, 192, alpha);
@@ -124,30 +151,6 @@ public class Colors
 
     /** Warping points */
     public static final Color WARP_POINT = Color.RED;
-
-    /** Color for not loaded sheet tab */
-    public static final Color SHEET_NOT_LOADED = Color.LIGHT_GRAY;
-
-    /** Color for busy sheet tab */
-    public static final Color SHEET_BUSY = Color.ORANGE;
-
-    /** Color for OK sheet tab */
-    public static final Color SHEET_OK = Color.BLACK;
-
-    /** Color for not OK sheet tab */
-    public static final Color SHEET_NOT_OK = Color.RED;
-
-    /** Color for invalid sheet tab */
-    public static final Color SHEET_INVALID = Color.PINK;
-
-    /** Color for zero distance (on foreground target) */
-    public static final Color DISTANCE_TARGET = Color.PINK;
-
-    /** Color for unknown distance (neutralized locations) */
-    public static final Color DISTANCE_UNKNOWN = Color.GREEN;
-
-    /** Color for standard distance */
-    public static final Color DISTANCE_STANDARD = Color.BLUE;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.concurrent.locks.Lock;
 
 import javax.swing.JFrame;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -215,6 +216,13 @@ public interface Book
      * @return the OCR language(s) spec
      */
     Param<String> getLanguageParam ();
+
+    /**
+     * Report the lock that protects book project file.
+     *
+     * @return book project lock
+     */
+    Lock getLock ();
 
     /**
      * Report the offset of this book, with respect to a containing super-book.

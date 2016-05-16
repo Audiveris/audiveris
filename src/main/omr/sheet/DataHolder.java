@@ -97,26 +97,30 @@ public class DataHolder<T>
     public T getData ()
     {
         if (data == null) {
+            final Book book = sheet.getStub().getBook();
+
             try {
-                JAXBContext jaxbContext = JAXBContext.newInstance(classe);
-                Unmarshaller um = jaxbContext.createUnmarshaller();
+                book.getLock().lock();
 
-                // Open book file system
-                Path dataFile = sheet.getStub().getBook()
-                        .openSheetFolder(sheet.getStub().getNumber())
-                        .resolve(pathString);
-                logger.debug("path: {}", dataFile);
+                if (data == null) {
+                    JAXBContext jaxbContext = JAXBContext.newInstance(classe);
+                    Unmarshaller um = jaxbContext.createUnmarshaller();
 
-                InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
-                data = (T) um.unmarshal(is);
-                is.close();
+                    // Open book file system
+                    Path dataFile = book.openSheetFolder(sheet.getStub().getNumber())
+                            .resolve(pathString);
+                    logger.debug("path: {}", dataFile);
 
-                // Close book file system
-                dataFile.getFileSystem().close();
-
-                logger.info("Loaded {}", dataFile);
+                    InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
+                    data = (T) um.unmarshal(is);
+                    is.close();
+                    logger.info("Loaded {}", dataFile);
+                    dataFile.getFileSystem().close(); // Close book file system
+                }
             } catch (Exception ex) {
                 logger.warn("Error unmarshalling from " + pathString, ex);
+            } finally {
+                book.getLock().unlock();
             }
         }
 

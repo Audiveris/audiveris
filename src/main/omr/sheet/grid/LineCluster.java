@@ -313,8 +313,7 @@ public class LineCluster
             // Interpolate vertically
             if ((prevPos != null) && (nextPos != null)) {
                 y = prevVal + (((pos - prevPos) * (nextVal - prevVal)) / (nextPos - prevPos));
-            } else // Extrapolate vertically, only for one interline max
-            if ((prevPos != null) && ((pos - prevPos) == 1)) {
+            } else if ((prevPos != null) && ((pos - prevPos) == 1)) {
                 y = prevVal + interline;
             } else if ((nextPos != null) && ((nextPos - pos) == 1)) {
                 y = nextVal - interline;
@@ -519,15 +518,17 @@ public class LineCluster
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{Cluster#");
+        StringBuilder sb = new StringBuilder("Cluster#");
         sb.append(getId());
 
-        sb.append(" interline:").append(getInterline());
+        sb.append("{interline:").append(getInterline());
 
         sb.append(" size:").append(getSize());
 
         for (Entry<Integer, StaffFilament> entry : lines.entrySet()) {
-            sb.append(" ").append(entry.getValue());
+            final StaffFilament fil = entry.getValue();
+            sb.append(" ").append("fil#").append(fil.getId()).append("@").append(
+                    fil.getClusterPos());
         }
 
         sb.append("}");
@@ -543,9 +544,8 @@ public class LineCluster
      * <p>
      * We prune the cluster incrementally, choosing either the top line or the
      * bottom line of the cluster.
-     * First criteria is the higher number of combs the filament is part of.
-     * Second criteria is the lower "true length", since ledgers are generally
-     * thicker than staff lines.
+     * We discard the line with the lower "true length".
+     * <p>
      * We could also use the presence of long segments (much longer than typical
      * ledger length) to differentiate staff lines from sequences of ledgers.
      *
@@ -559,31 +559,19 @@ public class LineCluster
         while (lines.size() > count) {
             // Remove the top or bottom line
             final StaffFilament top = lines.get(lines.firstKey());
-            int topCount = top.getCombs().size();
             int topWL = lineTrueLength(top);
 
             final StaffFilament bot = lines.get(lines.lastKey());
-            int botCount = bot.getCombs().size();
             int botWL = lineTrueLength(bot);
 
             final StaffFilament line; // Which line to remove?
 
-            if (topCount == botCount) {
-                // Use reverse true length
-                if (topWL > botWL) {
-                    line = top;
-                } else {
-                    line = bot;
-                }
-            } else if (topCount < botCount) {
+            // Pick up line with lower true length
+            if (topWL < botWL) {
                 line = top;
-            } else {
-                line = bot;
-            }
-
-            if (line == top) {
                 lines.remove(lines.firstKey());
             } else {
+                line = bot;
                 lines.remove(lines.lastKey());
             }
 
@@ -722,12 +710,28 @@ public class LineCluster
     // lineTrueLength //
     //----------------//
     /**
-     * Report an evaluation of how this filament is filled by sections
+     * Report an evaluation of how this filament is filled by sections.
+     * (sections are naturally ordered by abscissa, then ordinate, then id)
      *
      * @return how solid this filament is
      */
     private int lineTrueLength (Filament line)
     {
-        return (int) Math.rint((double) line.getWeight() / scale.getMainFore());
+        int xMin = line.getMembers().first().getStartCoord();
+        int xMax = -1;
+        int holes = 0;
+
+        for (Section s : line.getMembers()) {
+            final int start = s.getStartCoord();
+            final int stop = s.getStopCoord();
+
+            if ((xMax != -1) && (start > xMax)) {
+                holes += (start - xMax);
+            }
+
+            xMax = Math.max(xMax, stop);
+        }
+
+        return (xMax - xMin + 1) - holes;
     }
 }

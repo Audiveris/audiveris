@@ -18,6 +18,7 @@ import static omr.classifier.ui.Trainer.Task.Activity.*;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.ui.Colors;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.LLabel;
 import omr.ui.util.Panel;
@@ -29,7 +30,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.Comparator;
@@ -346,7 +346,7 @@ class SelectionPanel
     //--------------//
     private void defineLayout (String standardWidth)
     {
-        progressBar.setForeground(Color.ORANGE);
+        progressBar.setForeground(Colors.PROGRESS_BAR);
 
         FormLayout layout = Panel.makeFormLayout(3, 4, "", standardWidth, standardWidth);
         PanelBuilder builder = new PanelBuilder(layout, component);

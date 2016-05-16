@@ -128,7 +128,7 @@ public class SectionCompound
     public String dumpOf ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(this); ///.append("\n");
+        sb.append(this);
         sb.append(String.format("   sections=%s%n", Entities.ids(members)));
 
         if (partOf != null) {

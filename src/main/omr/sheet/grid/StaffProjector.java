@@ -458,7 +458,7 @@ public class StaffProjector
     // computeCoreLinesThickness //
     //---------------------------//
     /**
-     * Using the current definition on staff lines (made of only long filaments sofar)
+     * Using the current definition on staff lines (made of only long filaments so far)
      * estimate the cumulated staff line thicknesses for the staff.
      * <p>
      * NOTA: Since we may have holes in lines, and short sections have been left apart, the

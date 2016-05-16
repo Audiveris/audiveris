@@ -78,6 +78,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.ZipOutputStream;
 
 import javax.swing.JFrame;
@@ -149,6 +151,9 @@ public class BasicBook
     // Transient data
     //---------------
     //
+    /** Project file lock. */
+    private final Lock lock = new ReentrantLock();
+
     /** The related file radix (file name without extension). */
     private String radix;
 
@@ -612,6 +617,15 @@ public class BasicBook
         return languageParam;
     }
 
+    //---------//
+    // getLock //
+    //---------//
+    @Override
+    public Lock getLock ()
+    {
+        return lock;
+    }
+
     //-----------//
     // getOffset //
     //-----------//
@@ -804,6 +818,7 @@ public class BasicBook
     public static Book loadBook (Path bookPath)
     {
         StopWatch watch = new StopWatch("loadBook " + bookPath);
+        BasicBook book = null;
 
         try {
             logger.info("Loading book {} ...", bookPath);
@@ -817,7 +832,8 @@ public class BasicBook
             InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ);
 
             Unmarshaller um = getJaxbContext().createUnmarshaller();
-            final BasicBook book = (BasicBook) um.unmarshal(is);
+            book = (BasicBook) um.unmarshal(is);
+            book.getLock().lock();
             LogUtil.start(book);
             book.initTransients(null, bookPath);
             is.close();
@@ -831,6 +847,10 @@ public class BasicBook
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
+            }
+
+            if (book != null) {
+                book.getLock().unlock();
             }
 
             LogUtil.stopBook();
@@ -1203,6 +1223,7 @@ public class BasicBook
 
         try {
             final Path root;
+            getLock().lock();
             checkRadixChange(bookPath);
             logger.info("Storing book...");
 
@@ -1259,6 +1280,8 @@ public class BasicBook
             logger.info("Book stored as {}", bookPath);
         } catch (Throwable ex) {
             logger.warn("Error storing " + this + " to " + bookPath + " ex:" + ex, ex);
+        } finally {
+            getLock().unlock();
         }
     }
 
@@ -1282,17 +1305,17 @@ public class BasicBook
     public void storeBookInfo (Path root)
             throws Exception
     {
-        Path bookPath = root.resolve(Book.BOOK_INTERNALS);
-        Files.deleteIfExists(bookPath);
+        Path bookInternals = root.resolve(Book.BOOK_INTERNALS);
+        Files.deleteIfExists(bookInternals);
 
-        OutputStream os = Files.newOutputStream(bookPath, StandardOpenOption.CREATE);
+        OutputStream os = Files.newOutputStream(bookInternals, StandardOpenOption.CREATE);
         Marshaller m = getJaxbContext().createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(this, os);
         os.close();
 
         setModified(false);
-        logger.info("Stored {}", bookPath);
+        logger.info("Stored {}", bookInternals);
     }
 
     //---------------//

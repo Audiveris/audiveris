@@ -18,6 +18,8 @@ import omr.classifier.SampleRepository;
 
 import omr.glyph.Grades;
 
+import omr.ui.Colors;
+import omr.ui.field.LLabel;
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -27,7 +29,6 @@ import com.jgoodies.forms.layout.FormLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,6 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JProgressBar;
-import omr.ui.field.LLabel;
 
 /**
  * Class {@code ValidationPanel} handles the validation of an classifier against the
@@ -80,9 +80,7 @@ class ValidationPanel
     private final ValidateAction validateAction = new ValidateAction();
 
     /** Display percentage of samples correctly recognized. */
-    private final LLabel pcValue = new LLabel(
-            "%:",
-            "Percentage of samples correctly recognized");
+    private final LLabel pcValue = new LLabel("%:", "Percentage of samples correctly recognized");
 
     /** Display number of samples correctly recognized. */
     private final LLabel positiveValue = new LLabel(
@@ -184,7 +182,7 @@ class ValidationPanel
         int r = 1;
         builder.addSeparator("Validation", cst.xyw(3, r, 5));
         builder.add(progressBar, cst.xyw(9, r, 7));
-        progressBar.setForeground(Color.ORANGE);
+        progressBar.setForeground(Colors.PROGRESS_BAR);
 
         r += 2; // ----------------------------
 
@@ -232,9 +230,11 @@ class ValidationPanel
         falsePositives.clear();
 
         int positives = 0;
+
         if (!repository.isLoaded()) {
             repository.loadRepository(false);
         }
+
         final List<Sample> samples = repository.getAllSamples();
 
         progressBar.setValue(0);

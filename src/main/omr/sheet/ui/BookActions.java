@@ -237,7 +237,7 @@ public class BookActions
     // checkStored //
     //-------------//
     /**
-     * Check whether the provided book has been safely saved if needed
+     * Check whether the provided book has been saved if needed
      * (and therefore, if it can be closed)
      *
      * @param book the book to check
