@@ -189,8 +189,10 @@ public class StubsController
      * Add the provided sheet assembly.
      *
      * @param assembly the sheet assembly to add to tabbed pane
+     * @param index    desired index, null for end
      */
-    public void addAssembly (SheetAssembly assembly)
+    public void addAssembly (SheetAssembly assembly,
+                             Integer index)
     {
         SheetStub stub = assembly.getStub();
         logger.debug("addAssembly for {}", stub);
@@ -198,14 +200,9 @@ public class StubsController
         // Initial zoom ratio
         assembly.setZoomRatio(constants.initialZoomRatio.getValue());
 
-        // Make sure the assembly is part of the tabbed pane
-        int tabIndex = stubsPane.indexOfComponent(assembly.getComponent());
-
-        if (tabIndex == -1) {
-            // Insert in tabbed pane and in reverse map
-            stubsMap.put(assembly.getComponent(), stub);
-            insertAssembly(stub, stubsPane.getTabCount());
-        }
+        // Insert in reverse map and in tabbed pane
+        stubsMap.put(assembly.getComponent(), stub);
+        insertAssembly(stub, (index != null) ? index : stubsPane.getTabCount());
     }
 
     //----------------//
@@ -278,7 +275,7 @@ public class StubsController
         if (tabPivot == -1) {
             // Nothing displayed for this book yet, hence append all stubs at the end
             for (SheetStub stub : stubs) {
-                addAssembly(stub.getAssembly());
+                addAssembly(stub.getAssembly(), null);
             }
         } else {
             int stubPivot = getStubAt(tabPivot).getNumber() - 1;
@@ -547,44 +544,59 @@ public class StubsController
     @Override
     public void stateChanged (ChangeEvent e)
     {
-        final int tabIndex = stubsPane.getSelectedIndex();
+        // Did user select a new stub?
+        JComponent component = (JComponent) stubsPane.getSelectedComponent();
 
-        // User has selected a new sheet tab?
-        if (tabIndex != -1) {
-            // Remember the new selected sheet stub
-            JComponent component = (JComponent) stubsPane.getComponentAt(tabIndex);
-            final SheetStub stub = stubsMap.get(component);
-
-            if (!stub.getBook().isClosing()) {
-                Callable<Void> task = new Callable<Void>()
-                {
-                    @Override
-                    public Void call ()
-                            throws Exception
-                    {
-                        try {
-                            LogUtil.start(stub);
-
-                            // Check whether we should run early steps on the sheet
-                            checkStubStatus(stub);
-
-                            // Tell the selected assembly that it now has the focus
-                            stub.getAssembly().assemblySelected();
-
-                            // This is the new current stub
-                            callAboutStub(stub);
-
-                            return null;
-                        } finally {
-                            LogUtil.stopStub();
-                        }
-                    }
-                };
-
-                // Since we are on Swing EDT, use asynchronous processing
-                OmrExecutors.getCachedLowExecutor().submit(task);
-            }
+        if (component == null) {
+            return;
         }
+
+        final SheetStub stub = stubsMap.get(component);
+
+        if (stub == getSelectedStub()) {
+            return;
+        }
+
+        if (!stub.getBook().isClosing()) {
+            logger.debug("stateChanged for {}", stub);
+
+            // This is the new current stub
+            callAboutStub(stub);
+
+            reDisplay(stub);
+        }
+    }
+
+    //-----------//
+    // reDisplay //
+    //-----------//
+    public void reDisplay (final SheetStub stub)
+    {
+
+        Callable<Void> task = new Callable<Void>()
+        {
+            @Override
+            public Void call ()
+                    throws Exception
+            {
+                try {
+                    LogUtil.start(stub);
+
+                    // Check whether we should run early steps on the sheet
+                    checkStubStatus(stub);
+
+                    // Tell the selected assembly that it now has the focus
+                    stub.getAssembly().assemblySelected();
+
+                    return null;
+                } finally {
+                    LogUtil.stopStub();
+                }
+            }
+        };
+
+        // Since we are on Swing EDT, use asynchronous processing
+        OmrExecutors.getCachedLowExecutor().submit(task);
     }
 
     //-----------//
@@ -708,6 +720,7 @@ public class StubsController
                 if (!stub.hasSheet()) {
                     // Stub just loaded from book file, load & display the related sheet
                     logger.debug("get & display sheet for {}", stub);
+
                     final Sheet sheet = stub.getSheet();
                     markTab(stub, Colors.SHEET_OK);
                     sheet.displayMainTabs();

@@ -127,6 +127,20 @@ public class BarColumn
     }
 
     //----------//
+    // contains //
+    //----------//
+    public boolean contains (StaffPeak peak)
+    {
+        for (StaffPeak p : peaks) {
+            if (p == peak) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //----------//
     // getPeaks //
     //----------//
     public StaffPeak[] getPeaks ()

@@ -18,8 +18,6 @@ import omr.sheet.Staff;
 import static omr.sheet.grid.StaffPeak.Attribute.*;
 
 import omr.sig.GradeImpacts;
-import omr.sig.inter.AbstractVerticalInter;
-import omr.sig.inter.BraceInter;
 import omr.sig.inter.Inter;
 
 import omr.util.HorizontalSide;
@@ -35,11 +33,11 @@ import java.util.EnumSet;
 /**
  * Class {@code StaffPeak} represents a peak in staff projection onto x-axis.
  * <p>
- * Such peak can represent a brace peak or a bar peak (barline or bracket).
+ * Such peak can represent a brace portion, a barline portion or a bracket portion.
  *
  * @author Hervé Bitteur
  */
-public abstract class StaffPeak
+public class StaffPeak
         implements Comparable<StaffPeak>
 {
     //~ Enumerations -------------------------------------------------------------------------------
@@ -71,10 +69,6 @@ public abstract class StaffPeak
         CCLEF_TWO,
         /** This peak is part of the tail of a C-Clef */
         CCLEF_TAIL,
-        /** This peak is aligned (if not connected) with a peak in staff above or below */
-        ALIGNED,
-        /** This peak is in a multi-staff system, but not aligned */
-        UNALIGNED,
         /** This peak is a portion of a brace */
         BRACE,
         /** This peak is a top portion of a brace */
@@ -119,57 +113,36 @@ public abstract class StaffPeak
     /** Attributes currently set. */
     protected final EnumSet<Attribute> attrs = EnumSet.noneOf(Attribute.class);
 
+    /** Evaluation, if any. */
+    private final GradeImpacts impacts;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffPeak} object.
      *
-     * @param staff  containing staff
-     * @param top    top ordinate
-     * @param bottom bottom ordinate
-     * @param start  starting abscissa
-     * @param stop   stopping abscissa
+     * @param staff   containing staff
+     * @param top     top ordinate
+     * @param bottom  bottom ordinate
+     * @param start   starting abscissa
+     * @param stop    stopping abscissa
+     * @param impacts evaluation details or null
      */
     public StaffPeak (Staff staff,
                       int top,
                       int bottom,
                       int start,
-                      int stop)
+                      int stop,
+                      GradeImpacts impacts)
     {
         this.staff = staff;
         this.top = top;
         this.bottom = bottom;
         this.start = start;
         this.stop = stop;
+        this.impacts = impacts;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------//
-    // isSet //
-    //-------//
-    /**
-     * Check whether the provided attribute is set to this instance.
-     *
-     * @param attr provided attribute
-     * @return true if set
-     */
-    public final boolean isSet (Attribute attr)
-    {
-        return attrs.contains(attr);
-    }
-
-    //-----//
-    // set //
-    //-----//
-    /**
-     * Set the provided attribute to this instance.
-     *
-     * @param attr provided attribute
-     */
-    public final void set (Attribute attr)
-    {
-        attrs.add(attr);
-    }
-
     //-----------//
     // compareTo //
     //-----------//
@@ -245,6 +218,17 @@ public abstract class StaffPeak
     public Filament getFilament ()
     {
         return filament;
+    }
+
+    //------------//
+    // getImpacts //
+    //------------//
+    /**
+     * @return the impacts
+     */
+    public GradeImpacts getImpacts ()
+    {
+        return impacts;
     }
 
     //----------//
@@ -333,6 +317,19 @@ public abstract class StaffPeak
         return stop - start + 1;
     }
 
+    //---------//
+    // isBrace //
+    //---------//
+    /**
+     * Report whether this peak is a portion of a brace.
+     *
+     * @return true if brace, brace top, bottom or middle
+     */
+    public boolean isBrace ()
+    {
+        return isSet(BRACE) || isSet(BRACE_TOP) || isSet(BRACE_MIDDLE) || isSet(BRACE_BOTTOM);
+    }
+
     //------------//
     // isBraceEnd //
     //------------//
@@ -374,12 +371,18 @@ public abstract class StaffPeak
         return isSet((side == TOP) ? BRACKET_TOP : BRACKET_BOTTOM);
     }
 
-    //------------//
-    // isStaffEnd //
-    //------------//
-    public boolean isStaffEnd (HorizontalSide side)
+    //-------//
+    // isSet //
+    //-------//
+    /**
+     * Check whether the provided attribute is set to this instance.
+     *
+     * @param attr provided attribute
+     * @return true if set
+     */
+    public final boolean isSet (Attribute attr)
     {
-        return isSet((side == LEFT) ? STAFF_LEFT_END : STAFF_RIGHT_END);
+        return attrs.contains(attr);
     }
 
     //-------//
@@ -396,6 +399,27 @@ public abstract class StaffPeak
     public void render (Graphics2D g)
     {
         g.fillRect(start, top, stop - start + 1, bottom - top + 1);
+    }
+
+    //-----//
+    // set //
+    //-----//
+    /**
+     * Set the provided attribute to this instance.
+     *
+     * @param attr provided attribute
+     */
+    public final void set (Attribute attr)
+    {
+        attrs.add(attr);
+    }
+
+    //------------//
+    // isStaffEnd //
+    //------------//
+    public boolean isStaffEnd (HorizontalSide side)
+    {
+        return isSet((side == LEFT) ? STAFF_LEFT_END : STAFF_RIGHT_END);
     }
 
     //---------------//
@@ -427,6 +451,19 @@ public abstract class StaffPeak
         this.filament = filament;
     }
 
+    //----------//
+    // setInter //
+    //----------//
+    /**
+     * Set the related Inter.
+     *
+     * @param inter the inter to set (instance of BraceInter or AbstractVerticalInter)
+     */
+    public void setInter (Inter inter)
+    {
+        this.inter = inter;
+    }
+
     //-------------//
     // setStaffEnd //
     //-------------//
@@ -446,7 +483,7 @@ public abstract class StaffPeak
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder("Peak");
         sb.append("{");
 
         sb.append("(");
@@ -481,128 +518,129 @@ public abstract class StaffPeak
         return sb.toString();
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----//
-    // Bar //
-    //-----//
-    /**
-     * Class {@code Bar} records a peak in staff projection, likely to indicate a bar
-     * line or a bracket crossing the staff.
-     */
-    public static class Bar
-            extends StaffPeak
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Evaluation. */
-        private final GradeImpacts impacts;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a new BarPeak object.
-         *
-         * @param staff   containing staff
-         * @param top     top ordinate
-         * @param bottom  bottom ordinate
-         * @param start   starting abscissa
-         * @param stop    stopping abscissa
-         * @param impacts evaluation details
-         */
-        public Bar (Staff staff,
-                    int top,
-                    int bottom,
-                    int start,
-                    int stop,
-                    GradeImpacts impacts)
-        {
-            super(staff, top, bottom, start, stop);
-            this.impacts = impacts;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        //------------//
-        // getImpacts //
-        //------------//
-        /**
-         * @return the impacts
-         */
-        public GradeImpacts getImpacts ()
-        {
-            return impacts;
-        }
-
-        //----------//
-        // getInter //
-        //----------//
-        /**
-         * @return the inter
-         */
-        @Override
-        public AbstractVerticalInter getInter ()
-        {
-            return (AbstractVerticalInter) inter;
-        }
-
-        /**
-         * @param inter the inter to set
-         */
-        public void setInter (AbstractVerticalInter inter)
-        {
-            this.inter = inter;
-        }
-    }
-
-    //-------//
-    // Brace //
-    //-------//
-    /**
-     * Class {@code Brace} is a peak meant for brace portion.
-     */
-    public static class Brace
-            extends StaffPeak
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        /**
-         * Creates a new {@code BracePeak} object.
-         *
-         * @param staff  containing staff
-         * @param top    top ordinate
-         * @param bottom bottom ordinate
-         * @param start  starting abscissa
-         * @param stop   stopping abscissa
-         */
-        public Brace (Staff staff,
-                      int top,
-                      int bottom,
-                      int start,
-                      int stop)
-        {
-            super(staff, top, bottom, start, stop);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        //----------//
-        // getInter //
-        //----------//
-        /**
-         * @return the inter
-         */
-        @Override
-        public BraceInter getInter ()
-        {
-            return (BraceInter) inter;
-        }
-
-        //----------//
-        // setInter //
-        //----------//
-        /**
-         * @param inter the inter to set
-         */
-        public void setInter (BraceInter inter)
-        {
-            this.inter = inter;
-        }
-    }
+    //
+    //    //~ Inner Classes ------------------------------------------------------------------------------
+    //    //-----//
+    //    // Bar //
+    //    //-----//
+    //    /**
+    //     * Class {@code Bar} records a peak in staff projection, likely to indicate a bar
+    //     * line or a bracket crossing the staff.
+    //     */
+    //    public static class Bar
+    //            extends StaffPeak
+    //    {
+    //        //~ Instance fields ------------------------------------------------------------------------
+    //
+    //        /** Evaluation. */
+    //        private final GradeImpacts impacts;
+    //
+    //        //~ Constructors ---------------------------------------------------------------------------
+    //        /**
+    //         * Creates a new BarPeak object.
+    //         *
+    //         * @param staff   containing staff
+    //         * @param top     top ordinate
+    //         * @param bottom  bottom ordinate
+    //         * @param start   starting abscissa
+    //         * @param stop    stopping abscissa
+    //         * @param impacts evaluation details
+    //         */
+    //        public Bar (Staff staff,
+    //                    int top,
+    //                    int bottom,
+    //                    int start,
+    //                    int stop,
+    //                    GradeImpacts impacts)
+    //        {
+    //            super(staff, top, bottom, start, stop);
+    //            this.impacts = impacts;
+    //        }
+    //
+    //        //~ Methods --------------------------------------------------------------------------------
+    //        //------------//
+    //        // getImpacts //
+    //        //------------//
+    //        /**
+    //         * @return the impacts
+    //         */
+    //        public GradeImpacts getImpacts ()
+    //        {
+    //            return impacts;
+    //        }
+    //
+    //        //----------//
+    //        // getInter //
+    //        //----------//
+    //        /**
+    //         * @return the inter
+    //         */
+    //        @Override
+    //        public AbstractVerticalInter getInter ()
+    //        {
+    //            return (AbstractVerticalInter) inter;
+    //        }
+    //
+    //        /**
+    //         * @param inter the inter to set
+    //         */
+    //        public void setInter (AbstractVerticalInter inter)
+    //        {
+    //            this.inter = inter;
+    //        }
+    //    }
+    //
+    //    //-------//
+    //    // Brace //
+    //    //-------//
+    //    /**
+    //     * Class {@code Brace} is a peak meant for brace portion.
+    //     */
+    //    public static class Brace
+    //            extends StaffPeak
+    //    {
+    //        //~ Constructors ---------------------------------------------------------------------------
+    //
+    //        /**
+    //         * Creates a new {@code BracePeak} object.
+    //         *
+    //         * @param staff  containing staff
+    //         * @param top    top ordinate
+    //         * @param bottom bottom ordinate
+    //         * @param start  starting abscissa
+    //         * @param stop   stopping abscissa
+    //         */
+    //        public Brace (Staff staff,
+    //                      int top,
+    //                      int bottom,
+    //                      int start,
+    //                      int stop)
+    //        {
+    //            super(staff, top, bottom, start, stop);
+    //        }
+    //
+    //        //~ Methods --------------------------------------------------------------------------------
+    //        //----------//
+    //        // getInter //
+    //        //----------//
+    //        /**
+    //         * @return the inter
+    //         */
+    //        @Override
+    //        public BraceInter getInter ()
+    //        {
+    //            return (BraceInter) inter;
+    //        }
+    //
+    //        //----------//
+    //        // setInter //
+    //        //----------//
+    //        /**
+    //         * @param inter the inter to set
+    //         */
+    //        public void setInter (BraceInter inter)
+    //        {
+    //            this.inter = inter;
+    //        }
+    //    }
 }

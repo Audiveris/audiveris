@@ -551,7 +551,7 @@ public class BasicStub
                 @Override
                 public void run ()
                 {
-                    StubsController.getInstance().stateChanged(null);
+                    StubsController.getInstance().reDisplay(BasicStub.this);
                 }
             });
         }

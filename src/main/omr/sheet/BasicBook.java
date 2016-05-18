@@ -404,30 +404,37 @@ public class BasicBook
 
                     final StubsController controller = StubsController.getInstance();
 
-                    // Allocate one tab per stub
-                    for (SheetStub stub : stubs) {
-                        controller.addAssembly(stub.getAssembly());
-                    }
-
-                    controller.adjustStubTabs(BasicBook.this);
+                    // Determine which stub should get the focus
+                    SheetStub focusStub = null;
 
                     if (focus != null) {
-                        // Focus on provided stub ID
                         if ((focus > 0) && (focus <= stubs.size())) {
-                            controller.selectAssembly(stubs.get(focus - 1));
+                            focusStub = stubs.get(focus - 1);
                         } else {
                             logger.warn("Illegal focus id: {}", focus);
                         }
-                    } else {
-                        // Focus on first valid stub, if any
-                        SheetStub validStub = getFirstValidStub();
+                    }
 
-                        if (validStub != null) {
-                            controller.selectAssembly(validStub);
-                        } else {
+                    if (focusStub == null) {
+                        focusStub = getFirstValidStub(); // Focus on first valid stub, if any
+
+                        if (focusStub == null) {
                             logger.info("No valid sheet in {}", this);
                         }
                     }
+
+                    // Allocate one tab per stub, beginning by focusStub if any
+                    if (focusStub != null) {
+                        controller.addAssembly(focusStub.getAssembly(), null);
+                    }
+
+                    for (SheetStub stub : stubs) {
+                        if (stub != focusStub) {
+                            controller.addAssembly(stub.getAssembly(), stub.getNumber() - 1);
+                        }
+                    }
+
+                    controller.adjustStubTabs(BasicBook.this);
                 } finally {
                     LogUtil.stopBook();
                 }
