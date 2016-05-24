@@ -33,7 +33,7 @@ import java.util.EnumSet;
 /**
  * Class {@code StaffPeak} represents a peak in staff projection onto x-axis.
  * <p>
- * Such peak can represent a brace portion, a barline portion or a bracket portion.
+ * Such peak may indicate a brace portion, a barline portion, a bracket portion or just garbage.
  *
  * @author Hervé Bitteur
  */
@@ -43,7 +43,7 @@ public class StaffPeak
     //~ Enumerations -------------------------------------------------------------------------------
 
     /**
-     * All attributes flags that can be assigned to a Bar instance.
+     * All attributes flags that can be assigned to a StaffPeak instance.
      */
     public static enum Attribute
     {
@@ -486,11 +486,9 @@ public class StaffPeak
         StringBuilder sb = new StringBuilder("Peak");
         sb.append("{");
 
-        sb.append("(");
         sb.append(start);
         sb.append("-");
         sb.append(stop);
-        sb.append(")");
 
         if (filament != null) {
             sb.append(" F#").append(filament.getId());
@@ -517,130 +515,4 @@ public class StaffPeak
 
         return sb.toString();
     }
-
-    //
-    //    //~ Inner Classes ------------------------------------------------------------------------------
-    //    //-----//
-    //    // Bar //
-    //    //-----//
-    //    /**
-    //     * Class {@code Bar} records a peak in staff projection, likely to indicate a bar
-    //     * line or a bracket crossing the staff.
-    //     */
-    //    public static class Bar
-    //            extends StaffPeak
-    //    {
-    //        //~ Instance fields ------------------------------------------------------------------------
-    //
-    //        /** Evaluation. */
-    //        private final GradeImpacts impacts;
-    //
-    //        //~ Constructors ---------------------------------------------------------------------------
-    //        /**
-    //         * Creates a new BarPeak object.
-    //         *
-    //         * @param staff   containing staff
-    //         * @param top     top ordinate
-    //         * @param bottom  bottom ordinate
-    //         * @param start   starting abscissa
-    //         * @param stop    stopping abscissa
-    //         * @param impacts evaluation details
-    //         */
-    //        public Bar (Staff staff,
-    //                    int top,
-    //                    int bottom,
-    //                    int start,
-    //                    int stop,
-    //                    GradeImpacts impacts)
-    //        {
-    //            super(staff, top, bottom, start, stop);
-    //            this.impacts = impacts;
-    //        }
-    //
-    //        //~ Methods --------------------------------------------------------------------------------
-    //        //------------//
-    //        // getImpacts //
-    //        //------------//
-    //        /**
-    //         * @return the impacts
-    //         */
-    //        public GradeImpacts getImpacts ()
-    //        {
-    //            return impacts;
-    //        }
-    //
-    //        //----------//
-    //        // getInter //
-    //        //----------//
-    //        /**
-    //         * @return the inter
-    //         */
-    //        @Override
-    //        public AbstractVerticalInter getInter ()
-    //        {
-    //            return (AbstractVerticalInter) inter;
-    //        }
-    //
-    //        /**
-    //         * @param inter the inter to set
-    //         */
-    //        public void setInter (AbstractVerticalInter inter)
-    //        {
-    //            this.inter = inter;
-    //        }
-    //    }
-    //
-    //    //-------//
-    //    // Brace //
-    //    //-------//
-    //    /**
-    //     * Class {@code Brace} is a peak meant for brace portion.
-    //     */
-    //    public static class Brace
-    //            extends StaffPeak
-    //    {
-    //        //~ Constructors ---------------------------------------------------------------------------
-    //
-    //        /**
-    //         * Creates a new {@code BracePeak} object.
-    //         *
-    //         * @param staff  containing staff
-    //         * @param top    top ordinate
-    //         * @param bottom bottom ordinate
-    //         * @param start  starting abscissa
-    //         * @param stop   stopping abscissa
-    //         */
-    //        public Brace (Staff staff,
-    //                      int top,
-    //                      int bottom,
-    //                      int start,
-    //                      int stop)
-    //        {
-    //            super(staff, top, bottom, start, stop);
-    //        }
-    //
-    //        //~ Methods --------------------------------------------------------------------------------
-    //        //----------//
-    //        // getInter //
-    //        //----------//
-    //        /**
-    //         * @return the inter
-    //         */
-    //        @Override
-    //        public BraceInter getInter ()
-    //        {
-    //            return (BraceInter) inter;
-    //        }
-    //
-    //        //----------//
-    //        // setInter //
-    //        //----------//
-    //        /**
-    //         * @param inter the inter to set
-    //         */
-    //        public void setInter (BraceInter inter)
-    //        {
-    //            this.inter = inter;
-    //        }
-    //    }
 }

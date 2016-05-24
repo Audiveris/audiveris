@@ -36,14 +36,17 @@ public class BarAlignment
     /** Bar peak in the lower staff. */
     protected final StaffPeak bottomPeak;
 
-    /**
-     * Abscissa shift between de-skewed bottom peak and de-skewed top peak.
-     * (Normalized in interline fraction)
-     */
+    /** (Normalized) abscissa shift of de-skewed bottom peak vs de-skewed top peak. */
     protected final double dx;
+
+    /** (Normalized) delta width of bottom peak vs top peak. */
+    protected final double dWidth;
 
     /** Alignment quality. */
     private final GradeImpacts impacts;
+
+    /** Alignment grade. */
+    protected double grade;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -52,17 +55,22 @@ public class BarAlignment
      * @param topPeak    peak in the upper staff
      * @param bottomPeak peak in the lower staff
      * @param dx         bottomPeak.x - topPeak.x (de-skewed & normalized)
+     * @param dWidth     bottomPeak.width - topPeak.width (normalized)
      * @param impacts    the alignment quality
      */
     public BarAlignment (StaffPeak topPeak,
                          StaffPeak bottomPeak,
                          double dx,
+                         double dWidth,
                          GradeImpacts impacts)
     {
         this.topPeak = topPeak;
         this.bottomPeak = bottomPeak;
         this.dx = dx;
+        this.dWidth = dWidth;
         this.impacts = impacts;
+
+        grade = impacts.getGrade();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -83,8 +91,7 @@ public class BarAlignment
             if (best == null) {
                 best = align;
             } else if (best instanceof BarConnection) {
-                if (align instanceof BarConnection
-                    && (align.getImpacts().getGrade() > best.getImpacts().getGrade())) {
+                if (align instanceof BarConnection && (align.getGrade() > best.getGrade())) {
                     best = align;
                 }
             } else if (align instanceof BarConnection) {
@@ -138,6 +145,14 @@ public class BarAlignment
         }
     }
 
+    //----------//
+    // getGrade //
+    //----------//
+    public double getGrade ()
+    {
+        return grade;
+    }
+
     //------------//
     // getImpacts //
     //------------//
@@ -179,6 +194,7 @@ public class BarAlignment
     {
         StringBuilder sb = new StringBuilder();
         sb.append(getClass().getSimpleName());
+        sb.append(String.format("(%.3f)", grade));
         sb.append("{");
         sb.append(internals());
         sb.append("}");
@@ -192,10 +208,8 @@ public class BarAlignment
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("top:Staff#").append(topPeak.getStaff().getId()).append("-").append(topPeak);
-        sb.append(" bot:Staff#").append(bottomPeak.getStaff().getId()).append("-").append(
-                bottomPeak);
-        sb.append(String.format(" dx:%.1f", dx));
+        sb.append(topPeak).append(" ").append(bottomPeak).append(
+                String.format(" dx:%.0f dw:%.0f", dx, dWidth));
 
         return sb.toString();
     }
@@ -209,15 +223,17 @@ public class BarAlignment
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        private static final String[] NAMES = new String[]{"align"};
+        private static final String[] NAMES = new String[]{"align", "dWidth"};
 
-        private static final double[] WEIGHTS = new double[]{1};
+        private static final double[] WEIGHTS = new double[]{2, 1};
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Impacts (double align)
+        public Impacts (double align,
+                        double dWidth)
         {
             super(NAMES, WEIGHTS);
             setImpact(0, align);
+            setImpact(1, dWidth);
         }
     }
 }

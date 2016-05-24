@@ -45,14 +45,16 @@ public class BarConnection
     /**
      * Creates a new BarConnection object.
      *
-     * @param alignment the underlying bar line alignment
-     * @param impacts   the connection quality
+     * @param align   the underlying barline alignment
+     * @param impacts the connection quality
      */
-    public BarConnection (BarAlignment alignment,
+    public BarConnection (BarAlignment align,
                           GradeImpacts impacts)
     {
-        super(alignment.topPeak, alignment.bottomPeak, alignment.dx, alignment.getImpacts());
+        super(align.topPeak, align.bottomPeak, align.dx, align.dWidth, align.getImpacts());
         this.impacts = impacts;
+
+        grade = impacts.getGrade();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -120,19 +122,21 @@ public class BarConnection
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        private static final String[] NAMES = new String[]{"align", "white", "gap"};
+        private static final String[] NAMES = new String[]{"align", "dWidth", "white", "gap"};
 
-        private static final double[] WEIGHTS = new double[]{2, 1, 1};
+        private static final double[] WEIGHTS = new double[]{2, 1, 1, 1};
 
         //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double align,
+                        double dWidth,
                         double white,
                         double gap)
         {
             super(NAMES, WEIGHTS);
             setImpact(0, align);
-            setImpact(1, white);
-            setImpact(2, gap);
+            setImpact(1, dWidth);
+            setImpact(2, white);
+            setImpact(3, gap);
         }
     }
 }

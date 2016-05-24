@@ -29,28 +29,20 @@ import omr.lag.Lag;
 import omr.lag.Lags;
 import omr.lag.Section;
 
-import omr.math.AreaUtil;
-import omr.math.AreaUtil.CoreData;
-import omr.math.GeoPath;
 import omr.math.GeoUtil;
 import omr.math.PointUtil;
 import static omr.run.Orientation.*;
-import omr.run.RunTable;
 
 import omr.sheet.Part;
-import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.Skew;
 import omr.sheet.Staff;
 import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
-import omr.sheet.SystemManager;
 import omr.sheet.grid.BarColumn.Chain;
 import omr.sheet.grid.PartGroup.Symbol;
 import static omr.sheet.grid.StaffPeak.Attribute.*;
 
-import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractVerticalInter;
 import omr.sig.inter.BarConnectorInter;
@@ -76,14 +68,11 @@ import omr.util.Entities;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
+import omr.util.StopWatch;
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 
-import ij.process.ByteProcessor;
-
-import org.jgrapht.Graphs;
 import org.jgrapht.alg.ConnectivityInspector;
-import org.jgrapht.graph.SimpleDirectedGraph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,13 +85,11 @@ import java.awt.Stroke;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -175,18 +162,14 @@ public class BarsRetriever
     /** Scale-dependent constants. */
     private final Parameters params;
 
-    /** Lag of vertical runs. */
-    private Lag vLag;
-
     /** Related staff manager. */
     private final StaffManager staffManager;
 
     /** Staff projectors. (sequence parallel to staves in sheet) */
     private final List<StaffProjector> projectors = new ArrayList<StaffProjector>();
 
-    /** Graph of all peaks, linked by alignment/connection relationships. */
-    private final SimpleDirectedGraph<StaffPeak, BarAlignment> peakGraph = new SimpleDirectedGraph<StaffPeak, BarAlignment>(
-            BarAlignment.class);
+    /** Graph of all peaks. */
+    private final PeakGraph peakGraph;
 
     /** Columns of barlines, organized by system. */
     private final SortedMap<SystemInfo, List<BarColumn>> columnMap = new TreeMap<SystemInfo, List<BarColumn>>();
@@ -197,8 +180,8 @@ public class BarsRetriever
     /** Constructor for (bracket) serif compound. */
     private final CompoundConstructor serifConstructor;
 
-    /** Specific factory for peak-based filaments. */
-    private final BarFilamentFactory factory;
+    /** Specific builder for peak-based filaments. */
+    private final BarFilamentBuilder filamentBuilder;
 
     /** Index of filaments. */
     private final FilamentIndex filamentIndex;
@@ -220,11 +203,6 @@ public class BarsRetriever
         scale = sheet.getScale();
         params = new Parameters(scale);
 
-        // Companions
-        staffManager = sheet.getStaffManager();
-        factory = new BarFilamentFactory(scale);
-        filamentIndex = sheet.getFilamentIndex();
-
         // Specific constructors
         braceConstructor = new CompoundConstructor()
         {
@@ -242,29 +220,20 @@ public class BarsRetriever
                 return new StraightFilament(scale.getInterline());
             }
         };
+
+        // Companions
+        staffManager = sheet.getStaffManager();
+        filamentBuilder = new BarFilamentBuilder(sheet);
+        filamentIndex = sheet.getFilamentIndex();
+        peakGraph = new PeakGraph(sheet, projectors);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //
-    //------------------//
-    // buildVerticalLag //
-    //------------------//
-    /**
-     * Build the underlying vertical lag, from the provided runs table.
-     * This method must be called before building info.
-     *
-     * @param longVertTable the provided table of (long) vertical runs
-     */
-    public void buildVerticalLag (RunTable longVertTable)
-    {
-        vLag = sheet.getLagManager().buildVerticalLag(longVertTable);
-    }
-
     //---------//
     // process //
     //---------//
     /**
-     * Retrieve all bar lines, brackets and braces in the sheet and create systems,
+     * Retrieve all barlines, brackets and braces in the sheet and create systems,
      * groups and parts.
      *
      * @throws StepException raised if processing must stop
@@ -272,64 +241,70 @@ public class BarsRetriever
     public void process ()
             throws StepException
     {
-        findBarPeaks(); // Individual staff analysis to find raw bar peaks on x-axis projection
+        final StopWatch watch = new StopWatch("BarRetriever");
+        watch.start("buildSystems");
+        peakGraph.buildSystems(); // Build graph of staff peaks, until systems are known
 
-        buildBarSticks(); // Build core filament for each peak
-
-        detectCurvedPeaks(); // Flag any peak that looks like a curved entity (weak filter)
-
-        findAlignments(); // Find all peak alignments across staves
-
-        findConnections(); // Find all concrete connections across staves
-
-        purgeAlignments(); // Purge conflicting connections & alignments
-
-        // Create systems from bar connections
-        SystemManager mgr = sheet.getSystemManager();
-        mgr.setSystems(createSystems(getSystemTops()));
-
-        if (mgr.getSystems().isEmpty()) {
-            logger.warn("No system found");
-            throw new StepException("No system found");
-        }
-
-        logger.info("Systems: {}", mgr.getSystemsString());
-
-        purgeCrossAlignments(); // Purge alignments across systems, they are not relevant
-
+        watch.start("buildColumns");
         buildColumns(); // Within each system, organize peaks into system-based columns
 
-        detectStartColumns(); // Detect start columns and purge following ones if not full
+        watch.start("detectStartColumns");
+        detectStartColumns(); // Detect start columns
 
+        watch.start("purgePartialColumns");
+        purgePartialColumns(); // Purge partial columns after start
+
+        watch.start("purgeTooLeft");
         purgeTooLeft(); // Purge any peak located too far on left of start peak
 
+        watch.start("detectBracePortions");
         detectBracePortions(); // Detect brace portions at start of staff
 
-        buildBraces(); // Build braces across staves out of brace portions
+        watch.start("buildBraces");
+        buildBraces(); // Build brace interpretations across staves out of brace portions
 
+        watch.start("purgeLeftOfBraces");
         purgeLeftOfBraces(); // Purge any peak located on left side of brace
 
+        watch.start("detectBracketEnds");
         detectBracketEnds(); // Detect top and bottom portions of brackets
 
+        watch.start("detectBracketMiddles");
         detectBracketMiddles(); // Detect middle portions of brackets
 
+        watch.start("purgeUnalignedBars");
+        purgeUnalignedBars(); // On multi-staff systems, purge unaligned bars
+
+        watch.start("purgeExtendingPeaks");
         purgeExtendingPeaks(); // Purge peaks extending beyond system staves
 
+        watch.start("refineRightEnd");
         refineRightEnds(); // Define precise right end of each staff
 
+        watch.start("purgeCClefs");
         purgeCClefs(); // Purge C-clef-based false barlines
 
+        watch.start("partitionWidths");
         partitionWidths(); // Partition peaks between thin and thick
 
+        watch.start("createInters");
         createInters(); // Create barline and bracket interpretations within each system
 
+        watch.start("createConnectionInters");
         createConnectionInters(); // Create barline and bracket connection across staves
 
+        watch.start("groupBarlines");
         groupBarlines(); // Detect grouped barlines
 
+        watch.start("recordBars");
         recordBars(); // Record barlines in staff
 
+        watch.start("createParts");
         createParts(); // Build parts and groups
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
     }
 
     //-------------//
@@ -398,50 +373,6 @@ public class BarsRetriever
 
         g.setStroke(oldStroke);
         g.setColor(oldColor);
-    }
-
-    //----------------//
-    // buildBarSticks //
-    //----------------//
-    /**
-     * Build the underlying stick of every peak.
-     * <p>
-     * These sticks are needed to detect those peaks which go past staff height above,
-     * below, or both, and may rather be stems.
-     * They are used also to detect curly peaks that are due to brace portions (not reliable).
-     * <p>
-     * For each peak, we take a vertical "slice" of the relevant sections using a lookup area.
-     * We then run a dedicated factory on the sections and make it focus on the bar core area.
-     */
-    private void buildBarSticks ()
-    {
-        // Preselect sections of proper max width
-        final int maxWidth = getMaxPeaksWidth();
-        final List<Section> allSections = getSectionsByWidth(maxWidth);
-        logger.debug("sections:{}", allSections.size());
-
-        for (StaffProjector projector : projectors) {
-            List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
-
-            for (StaffPeak peak : projector.getPeaks()) {
-                // Build filament from proper slice of sections for this peak
-                final List<Section> sections = getPeakSections(peak, allSections);
-                final Filament filament = factory.buildBarFilament(sections, peak.getBounds());
-
-                if (filament != null) {
-                    filamentIndex.register(filament);
-                    peak.setFilament(filament);
-                    logger.debug("{}", peak);
-                } else {
-                    toRemove.add(peak);
-                }
-            }
-
-            if (!toRemove.isEmpty()) {
-                logger.debug("Staff#{} no filament {}", projector.getStaff().getId(), toRemove);
-                projector.removePeaks(toRemove);
-            }
-        }
     }
 
     //--------------------//
@@ -557,7 +488,7 @@ public class BarsRetriever
 
                         for (int i = iStart - 1; i >= 0; i--) {
                             StaffPeak p = otherProjector.getPeaks().get(i);
-                            BarAlignment alignment = checkAlignment(topPeak, p);
+                            BarAlignment alignment = peakGraph.checkAlignment(topPeak, p, true);
 
                             if (alignment != null) {
                                 otherPeak = p;
@@ -610,7 +541,7 @@ public class BarsRetriever
     //--------------//
     /**
      * Within each system, organize peaks into system columns.
-     * We use connections (and alignments when there is no connection)
+     * We use connections (or alignments when there is no connection)
      */
     private void buildColumns ()
     {
@@ -639,7 +570,7 @@ public class BarsRetriever
         }
 
         // Try to aggregate chains into full-size columns
-        final double maxDx = sheet.getScale().toPixelsDouble(constants.maxAlignmentDx);
+        final double maxDx = sheet.getScale().toPixelsDouble(peakGraph.getMaxAlignmentDx());
 
         for (SystemInfo system : sheet.getSystems()) {
             List<BarColumn> columns = columnMap.get(system);
@@ -674,10 +605,12 @@ public class BarsRetriever
             }
 
             if (logger.isDebugEnabled()) {
-                logger.info("{}", system);
+                logger.info("{} columns:{}", system, columns.size());
 
-                for (BarColumn column : columns) {
-                    logger.info("   {} {}", column.isFull() ? "---" : "   ", column);
+                for (int i = 0; i < columns.size(); i++) {
+                    BarColumn column = columns.get(i);
+                    String prefix = column.isFull() ? "---" : "   ";
+                    logger.info("{}  {} {}", i, prefix, column);
                 }
             }
         }
@@ -751,105 +684,6 @@ public class BarsRetriever
         }
     }
 
-    //----------------//
-    // checkAlignment //
-    //----------------//
-    /**
-     * Check whether two peaks (one in top staff, one in bottom staff) are aligned.
-     * <p>
-     * We check vertical alignment, taking sheet slope into account.
-     * TODO: perhaps check that peaks widths are "compatible"?
-     *
-     * @param topPeak peak in top staff
-     * @param botPeak peak in bottom staff
-     * @return the alignment found or null
-     */
-    private BarAlignment checkAlignment (StaffPeak topPeak,
-                                         StaffPeak botPeak)
-    {
-        final Skew skew = sheet.getSkew();
-        final int topMid = (topPeak.getStart() + topPeak.getStop()) / 2;
-        final double topDsk = skew.deskewed(new Point(topMid, topPeak.getOrdinate(BOTTOM))).getX();
-        final int botMid = (botPeak.getStart() + botPeak.getStop()) / 2;
-        final double botDsk = skew.deskewed(new Point(botMid, botPeak.getOrdinate(TOP))).getX();
-        final double dx = scale.pixelsToFrac(botDsk - topDsk);
-        final double maxDx = constants.maxAlignmentDx.getValue();
-
-        if (Math.abs(dx) > maxDx) {
-            return null;
-        }
-
-        final double alignImpact = 1 - (Math.abs(dx) / maxDx);
-
-        return new BarAlignment(topPeak, botPeak, dx, new BarAlignment.Impacts(alignImpact));
-    }
-
-    //-----------------//
-    // checkConnection //
-    //-----------------//
-    /**
-     * Check whether the provided alignment is a true connection, that is with concrete
-     * foreground pixels on the alignment line.
-     * <p>
-     * For this, we define a spline which goes through top & bottom points of each of the aligned
-     * peaks and look for pixels in the area.
-     *
-     * @param alignment the alignment to check.
-     * @return the connection if OK, null otherwise
-     */
-    private BarConnection checkConnection (BarAlignment alignment)
-    {
-        ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
-        StaffPeak p1 = alignment.topPeak;
-        StaffPeak p2 = alignment.bottomPeak;
-        final boolean vip = p1.isVip() || p2.isVip();
-
-        // Theoretical lines on left and right sides
-        final GeoPath leftLine = new GeoPath(
-                new Line2D.Double(
-                        new Point2D.Double(p1.getStart(), p1.getBottom()),
-                        new Point2D.Double(p2.getStart(), p2.getTop())));
-        final GeoPath rightLine = new GeoPath(
-                new Line2D.Double(
-                        new Point2D.Double(p1.getStop(), p1.getBottom()),
-                        new Point2D.Double(p2.getStop(), p2.getTop())));
-
-        final CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
-
-        if (vip) {
-            logger.info("VIP checkConnection {} and {} {}", p1, p2, data);
-        }
-
-        if ((data.gap <= params.maxConnectionGap)
-            && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
-            double whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
-            double gapImpact = 1 - ((double) data.gap / params.maxConnectionGap);
-            double alignImpact = alignment.getImpacts().getGrade() / alignment.getImpacts()
-                    .getIntrinsicRatio();
-            GradeImpacts impacts = new BarConnection.Impacts(alignImpact, whiteImpact, gapImpact);
-            double grade = impacts.getGrade();
-            logger.debug("{} grade:{} impacts:{}", alignment, grade, impacts);
-
-            final double minGrade = params.minConnectionGrade * impacts.getIntrinsicRatio();
-
-            if (grade >= minGrade) {
-                BarConnection connection = new BarConnection(alignment, impacts);
-
-                if (vip) {
-                    logger.info("VIP {}", connection);
-                }
-
-                return connection;
-            }
-        }
-
-        if (vip) {
-            logger.info("VIP no connection between {} and {}", p1, p2);
-        }
-
-        return null;
-    }
-
     //------------------------//
     // createConnectionInters //
     //------------------------//
@@ -909,7 +743,6 @@ public class BarsRetriever
 
             for (Staff staff : system.getStaves()) {
                 StaffProjector projector = projectorOf(staff);
-                StaffPeak bracePeak = projector.getBracePeak();
 
                 for (StaffPeak peak : projector.getPeaks()) {
                     if (peak.isBrace()) {
@@ -1134,9 +967,10 @@ public class BarsRetriever
                                 }
                             }
                         } else {
-                            logger.warn("Staff#{} no group level:{}", staff.getId(), level);
+                            logger.info("No brace partner at level:{} for {}", level, bracePeak);
 
-                            // TODO:  We need to create part & systems anyway !!!
+                            // We need to create part & systems anyway
+                            createPart(system, staff, staff);
                         }
                     }
                 }
@@ -1146,41 +980,6 @@ public class BarsRetriever
                 dumpGroups(allGroups, system);
             }
         }
-    }
-
-    //---------------//
-    // createSystems //
-    //---------------//
-    /**
-     * Build SystemInfo for each detected system.
-     *
-     * @param systems starting staves
-     * @return the sequence of systems
-     */
-    private List<SystemInfo> createSystems (Integer[] systemTops)
-    {
-        final List<SystemInfo> newSystems = new ArrayList<SystemInfo>();
-        Integer staffTop = null;
-        int systemId = 0;
-        SystemInfo system = null;
-
-        for (int i = 0; i < staffManager.getStaffCount(); i++) {
-            Staff staff = staffManager.getStaff(i);
-
-            // System break?
-            if ((staffTop == null) || (staffTop < systemTops[i])) {
-                // Start of a new system
-                staffTop = systemTops[i];
-
-                system = new SystemInfo(++systemId, sheet, staffManager.getRange(staff, staff));
-                newSystems.add(system);
-            } else {
-                // Continuing current system
-                system.setStaves(staffManager.getRange(system.getFirstStaff(), staff));
-            }
-        }
-
-        return newSystems;
     }
 
     //----------------------//
@@ -1207,6 +1006,10 @@ public class BarsRetriever
 
                         for (StaffPeak p : column.getPeaks()) {
                             if (p != null) {
+                                if (peak.isVip()) {
+                                    logger.info("VIP part of removed column {}", peak);
+                                }
+
                                 Staff staff = p.getStaff();
                                 StaffProjector projector = projectorOf(staff);
                                 projector.removePeak(p);
@@ -1358,45 +1161,6 @@ public class BarsRetriever
         }
     }
 
-    //-------------------//
-    // detectCurvedPeaks //
-    //-------------------//
-    /**
-     * Detect curved filaments (brace portions?) within peaks.
-     * Wrong bar line peaks may result from mistakes on brace portion.
-     * Such brace portions are characterized with:
-     * - Short average curvature (we use this!)
-     * - Low derivative
-     * - Location on left side of the staff
-     * - Small no-staff blank separation from rest of staff (but perhaps reduced to nothing)
-     * - Significant thickness
-     */
-    private void detectCurvedPeaks ()
-    {
-        for (StaffProjector projector : projectors) {
-            ///List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
-            for (StaffPeak peak : projector.getPeaks()) {
-                Filament fil = (Filament) peak.getFilament();
-                double curvature = fil.getMeanCurvature();
-
-                if (curvature < params.minBarCurvature) {
-                    if (fil.isVip()) {
-                        logger.info("VIP removing curved {}", peak);
-                    }
-
-                    ///toRemove.add(peak);
-                    peak.set(BRACE);
-                }
-            }
-
-            //
-            //            if (!toRemove.isEmpty()) {
-            //                logger.debug("Staff#{} removing curved {}", projector.getStaff().getId(), toRemove);
-            //                projector.removePeaks(toRemove);
-            //            }
-        }
-    }
-
     //--------------------//
     // detectStartColumns //
     //--------------------//
@@ -1416,26 +1180,18 @@ public class BarsRetriever
      * (This should be double-checked with gap being free of staff lines, but at this point staff
      * lines are not yet fully defined, and projection may be biased by brace touching next bar).
      * <p>
-     * When there is no first bar group, or when this group is located within staff width, use only
-     * the staff lines horizontal limits as the staff limit.
+     * When there is no first bar group, use only staff lines horizontal limits as the staff limit.
      */
     private void detectStartColumns ()
     {
-        final Skew skew = sheet.getSkew();
-
         for (SystemInfo system : sheet.getSystems()) {
             List<BarColumn> columns = columnMap.get(system);
-            BarColumn firstFull = null; // First full column encountered
-            BarColumn startColumn = null; // Last full column (within same group as first column)
+            BarColumn startColumn = null; // Last full column (within same group as first full)
 
             for (int i = 0; i < columns.size(); i++) {
                 final BarColumn column = columns.get(i);
 
                 if (column.isFull()) {
-                    if (firstFull == null) {
-                        firstFull = column;
-                    }
-
                     if (startColumn != null) {
                         double gap = (column.getXDsk() - (column.getWidth() / 2))
                                      - (startColumn.getXDsk() + (startColumn.getWidth() / 2));
@@ -1452,47 +1208,17 @@ public class BarsRetriever
                 }
             }
 
-            // Check location of last full column WRT staff lines limit
-            double minDsk = Double.MAX_VALUE;
+            if (startColumn != null) {
+                logger.debug("{} startColumn: {}", system, startColumn);
 
-            for (Staff staff : system.getStaves()) {
-                double xLeft = staff.getAbscissa(LEFT);
-                double yLeft = (staff.getFirstLine().yAt(xLeft) + staff.getLastLine().yAt(xLeft)) / 2;
-                minDsk = Math.min(minDsk, skew.deskewed(new Point2D.Double(xLeft, yLeft)).getX());
-            }
-
-            if ((firstFull == null)
-                || ((firstFull.getXDsk() - minDsk) > params.maxBarToLinesLeftEnd)) {
-                // Use staff lines as limit (already done)
-            } else if (startColumn != null) {
-                // Use start column as limit
+                // Use start column as left limit
                 for (StaffPeak peak : startColumn.getPeaks()) {
                     Staff staff = peak.getStaff();
                     staff.setAbscissa(LEFT, peak.getStop());
                     peak.setStaffEnd(LEFT);
                 }
-            }
-
-            // Remove all non-full columns located past staff left limit
-            for (Iterator<BarColumn> it = columns.iterator(); it.hasNext();) {
-                final BarColumn column = it.next();
-
-                if (!column.isFull()) {
-                    if ((startColumn == null) || (column.getXDsk() > startColumn.getXDsk())) {
-                        // Delete this column, with its related peaks
-                        for (StaffPeak peak : column.getPeaks()) {
-                            if (peak != null) {
-                                projectorOf(peak.getStaff()).removePeak(peak);
-                            }
-                        }
-
-                        it.remove();
-                    }
-                }
-            }
-
-            if ((startColumn != null) && logger.isDebugEnabled()) {
-                logger.debug("{} startColumn: {}", system, startColumn);
+            } else if (system.getStaves().size() > 1) {
+                logger.warn("No startColumn found for multi-staff {}", system);
             }
         }
     }
@@ -1530,72 +1256,6 @@ public class BarsRetriever
             return (peak.getTop() - halfLine - box.y);
         } else {
             return ((box.y + box.height) - 1 - halfLine - peak.getBottom());
-        }
-    }
-
-    //----------------//
-    // findAlignments //
-    //----------------//
-    /**
-     * Find all peak alignments across staves.
-     */
-    private void findAlignments ()
-    {
-        // Check for peaks aligned across staves
-        for (StaffProjector projector : projectors) {
-            final Staff staff = projector.getStaff();
-            final List<Staff> stavesBelow = staffManager.vertNeighbors(staff, BOTTOM);
-
-            // Make sure there are other staves on this side and they are "short-wise compatible"
-            // with current staff
-            if (stavesBelow.isEmpty() || (stavesBelow.get(0).isShort() != staff.isShort())) {
-                continue;
-            }
-
-            for (StaffPeak peak : projector.getPeaks()) {
-                for (Staff staffBelow : stavesBelow) {
-                    lookupPeaks(peak, staffBelow);
-                }
-            }
-        }
-    }
-
-    //--------------//
-    // findBarPeaks //
-    //--------------//
-    /**
-     * Use individual staff projections to retrieve bar peaks.
-     */
-    private void findBarPeaks ()
-    {
-        // Analysis staff per staff
-        for (Staff staff : staffManager.getStaves()) {
-            StaffProjector projector = new StaffProjector(sheet, staff, peakGraph);
-            projectors.add(projector);
-            projector.process();
-            Graphs.addAllVertices(peakGraph, projector.getPeaks());
-        }
-    }
-
-    //-----------------//
-    // findConnections //
-    //-----------------//
-    /**
-     * Find all peak concrete connections across staves.
-     */
-    private void findConnections ()
-    {
-        // Check among the alignments for peaks connected across staves
-        for (BarAlignment alignment : new ArrayList<BarAlignment>(peakGraph.edgeSet())) {
-            // Look for concrete connection
-            BarConnection connection = checkConnection(alignment);
-
-            if (connection != null) {
-                StaffPeak source = peakGraph.getEdgeSource(alignment);
-                StaffPeak target = peakGraph.getEdgeTarget(alignment);
-                peakGraph.removeEdge(alignment);
-                peakGraph.addEdge(source, target, connection);
-            }
         }
     }
 
@@ -1649,24 +1309,6 @@ public class BarsRetriever
     //----------------//
     // getConnections //
     //----------------//
-    private List<BarConnection> getConnections ()
-    {
-        List<BarConnection> list = new ArrayList<BarConnection>();
-
-        for (BarAlignment align : peakGraph.edgeSet()) {
-            if (align instanceof BarConnection) {
-                list.add((BarConnection) align);
-            }
-        }
-
-        Collections.sort(list);
-
-        return list;
-    }
-
-    //----------------//
-    // getConnections //
-    //----------------//
     private List<BarConnection> getConnections (Staff staff,
                                                 VerticalSide side)
     {
@@ -1701,68 +1343,42 @@ public class BarsRetriever
         return list;
     }
 
-    //------------------//
-    // getMaxPeaksWidth //
-    //------------------//
+    //-----------//
+    // getGroups //
+    //-----------//
     /**
-     * Retrieve the maximum width among all peaks.
+     * Report the peak groups as found in the provided sequence of peaks.
      *
-     * @return the maximum width
+     * @param peaks the horizontal sequence of peaks
+     * @return the groups detected
      */
-    private int getMaxPeaksWidth ()
+    private List<List<StaffPeak>> getGroups (List<StaffPeak> peaks)
     {
-        int maxWidth = 0;
+        List<List<StaffPeak>> groups = new ArrayList<List<StaffPeak>>();
+        List<StaffPeak> group = new ArrayList<StaffPeak>();
 
-        for (StaffProjector projector : projectors) {
-            for (StaffPeak peak : projector.getPeaks()) {
-                if (!(peak.isBrace())) {
-                    maxWidth = Math.max(maxWidth, peak.getWidth());
+        for (StaffPeak peak : peaks) {
+            if (!group.isEmpty()) {
+                int gap = peak.getStart() - group.get(group.size() - 1).getStop() - 1;
+
+                if (gap > params.maxDoubleBarGap) {
+                    if (group.size() > 1) {
+                        groups.add(new ArrayList<StaffPeak>(group));
+                    }
+
+                    group.clear();
                 }
             }
+
+            group.add(peak);
         }
 
-        return maxWidth;
-    }
-
-    //-----------------//
-    // getPeakSections //
-    //-----------------//
-    /**
-     * Select proper candidate sections for the peak at hand.
-     *
-     * @param peak        the peak to process
-     * @param allSections pre-filtered sheet-level collection
-     * @return the sub-collection of relevant sections
-     */
-    private List<Section> getPeakSections (StaffPeak peak,
-                                           List<Section> allSections)
-    {
-        final Rectangle peakBox = new Rectangle(
-                peak.getStart(),
-                peak.getTop(),
-                peak.getWidth(),
-                peak.getBottom() - peak.getTop() + 1);
-
-        // Increase height slightly beyond staff to allow detection of bracket ends
-        peakBox.grow(0, params.bracketLookupExtension);
-
-        final int xBreak = peakBox.x + peakBox.width;
-        final List<Section> sections = new ArrayList<Section>();
-        final int maxSectionWidth = peak.getWidth(); // Width of this particular peak
-
-        for (Section section : allSections) {
-            final Rectangle sectionBox = section.getBounds();
-
-            if (sectionBox.intersects(peakBox)) {
-                if (section.getLength(HORIZONTAL) <= maxSectionWidth) {
-                    sections.add(section);
-                }
-            } else if (sectionBox.x >= xBreak) {
-                break; // Since allSections are sorted by abscissa
-            }
+        // Last group?
+        if (group.size() > 1) {
+            groups.add(new ArrayList<StaffPeak>(group));
         }
 
-        return sections;
+        return groups;
     }
 
     //--------------------//
@@ -1781,6 +1397,7 @@ public class BarsRetriever
     {
         List<Section> sections = new ArrayList<Section>();
         Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
+        Lag vLag = sheet.getLagManager().getLag(Lags.VLAG);
 
         for (Lag lag : Arrays.asList(vLag, hLag)) {
             for (Section section : lag.getEntities()) {
@@ -1831,6 +1448,7 @@ public class BarsRetriever
         // Look for intersected sections
         // Remove sections from bar peak (and from next peak if any)
         Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
+        Lag vLag = sheet.getLagManager().getLag(Lags.VLAG);
         Set<Section> sections = hLag.intersectedSections(roi);
         sections.addAll(vLag.intersectedSections(roi));
         sections.removeAll(barFilament.getMembers());
@@ -1871,49 +1489,18 @@ public class BarsRetriever
         return serif;
     }
 
-    //---------------//
-    // getSystemTops //
-    //---------------//
-    /**
-     * Use connections across staves to gather staves into systems.
-     *
-     * @return the system top, per staff
-     */
-    private Integer[] getSystemTops ()
+    //---------------------//
+    // getStartColumnIndex //
+    //---------------------//
+    private int getStartColumnIndex (List<BarColumn> columns)
     {
-        // For each staff, gives the staff that starts the containing system
-        final Integer[] systemTops = new Integer[staffManager.getStaffCount()];
-
-        // Connections are ordered per top staff then per abscissa.
-        for (BarConnection connection : getConnections()) {
-            int top = connection.topPeak.getStaff().getId();
-            int bottom = connection.bottomPeak.getStaff().getId();
-
-            if (systemTops[top - 1] == null) {
-                // First connection ever between the 2 staves
-                systemTops[top - 1] = top;
-            }
-
-            systemTops[bottom - 1] = systemTops[top - 1];
-        }
-
-        // Complete assignments
-        for (int i = 1; i <= systemTops.length; i++) {
-            if (systemTops[i - 1] == null) {
-                systemTops[i - 1] = i;
+        for (int i = 0; i < columns.size(); i++) {
+            if (columns.get(i).isStart()) {
+                return i;
             }
         }
 
-        final int[] ids = new int[staffManager.getStaffCount()];
-
-        for (int i = 0; i < ids.length; i++) {
-            ids[i] = i + 1;
-        }
-
-        logger.debug("Staves:  {}", ids);
-        logger.debug("Systems: {}", (Object) systemTops);
-
-        return systemTops;
+        return -1;
     }
 
     //---------------//
@@ -1976,7 +1563,7 @@ public class BarsRetriever
     // groupBarlines //
     //---------------//
     /**
-     * Detect bar lines organized in groups.
+     * Detect barlines organized in groups.
      */
     private void groupBarlines ()
     {
@@ -2003,27 +1590,6 @@ public class BarsRetriever
                     prevPeak = peak;
                 }
             }
-        }
-    }
-
-    //-----------//
-    // isAligned //
-    //-----------//
-    /**
-     * Report whether the provided peak is involved in an alignment or a connection on
-     * the desired side.
-     *
-     * @param peak the peak to check
-     * @param side which side to look
-     * @return true if aligned or connected
-     */
-    private boolean isAligned (StaffPeak peak,
-                               VerticalSide side)
-    {
-        if (side == TOP) {
-            return peakGraph.inDegreeOf(peak) > 0;
-        } else {
-            return peakGraph.outDegreeOf(peak) > 0;
         }
     }
 
@@ -2085,10 +1651,10 @@ public class BarsRetriever
             return null;
         }
 
-        // Take proper slice of sections for this peak
-        final List<Section> sections = getPeakSections(bracePeak, allBraceSections);
-        Filament filament = factory.buildBarFilament(sections, bracePeak.getBounds());
-        filamentIndex.register(filament);
+        Filament filament = filamentBuilder.buildFilament(
+                bracePeak,
+                params.braceLookupExtension,
+                allBraceSections);
         bracePeak.setFilament(filament);
 
         // A few tests on glyph
@@ -2096,7 +1662,7 @@ public class BarsRetriever
             return null;
         }
 
-        double curvature = filament.getMeanCurvature();
+        double curvature = filament.getMeanCurvature(); // curvature radius value
         logger.debug(
                 "Staff#{} curvature:{} vs {}",
                 staff.getId(),
@@ -2114,7 +1680,7 @@ public class BarsRetriever
         for (VerticalSide side : VerticalSide.values()) {
             double ext = extensionOf(bracePeak, side);
 
-            if (ext > params.maxBraceExtension) {
+            if (ext > params.braceLookupExtension) {
                 if (side == TOP) {
                     if (staff != system.getFirstStaff()) {
                         beyondTop = true;
@@ -2140,28 +1706,6 @@ public class BarsRetriever
         }
 
         return bracePeak;
-    }
-
-    //-------------//
-    // lookupPeaks //
-    //-------------//
-    /**
-     * Lookup in the provided staff for one or several peaks compliant with (de-skewed)
-     * peak abscissa and peak kind.
-     *
-     * @param peak       the reference peak
-     * @param staffBelow the staff below to be browsed for alignment with peak
-     */
-    private void lookupPeaks (StaffPeak peak,
-                              Staff staffBelow)
-    {
-        for (StaffPeak peakBelow : projectorOf(staffBelow).getPeaks()) {
-            BarAlignment alignment = checkAlignment(peak, peakBelow);
-
-            if (alignment != null) {
-                peakGraph.addEdge(peak, peakBelow, alignment);
-            }
-        }
     }
 
     //-----------------//
@@ -2236,50 +1780,6 @@ public class BarsRetriever
         return projectors.get(staff.getId() - 1);
     }
 
-    //------------------//
-    // purgeConnections //
-    //------------------//
-    /**
-     * Purge the alignments and connections.
-     * <p>
-     * In set of alignment / connections a peak should appear at most once as top and at most once
-     * as bottom.
-     * In case of conflict, use quality to disambiguate.
-     * <ul>
-     * <li>Remove any alignment that conflicts with a connection.
-     * Any connection is given priority against conflicting alignment (simply because connection was
-     * validated by presence of enough black pixels in the inter-staff region)</li>
-     * <li>Remove duplicates: in the collection of alignments a peak should appear at most once as
-     * top and at most once as bottom. In case of conflict, use alignment quality to disambiguate.
-     * TODO: A more complex approach to disambiguate could use detection of pair of bars aligned
-     * with another pair of bars, and align left with left and right with right. But is it worth the
-     * added complexity?</li>
-     * </ul>
-     */
-    private void purgeAlignments ()
-    {
-        Set<BarAlignment> toRemove = new HashSet<BarAlignment>();
-
-        for (StaffPeak peak : peakGraph.vertexSet()) {
-            if (peakGraph.inDegreeOf(peak) > 1) {
-                Set<BarAlignment> edges = new HashSet(peakGraph.incomingEdgesOf(peak));
-                edges.remove(BarAlignment.bestOf(edges));
-                toRemove.addAll(edges);
-            }
-
-            if (peakGraph.outDegreeOf(peak) > 1) {
-                Set<BarAlignment> edges = new HashSet(peakGraph.outgoingEdgesOf(peak));
-                edges.remove(BarAlignment.bestOf(edges));
-                toRemove.addAll(edges);
-            }
-        }
-
-        if (!toRemove.isEmpty()) {
-            logger.debug("Purging alignments {}", toRemove);
-            peakGraph.removeAllEdges(toRemove);
-        }
-    }
-
     //-------------//
     // purgeCClefs //
     //-------------//
@@ -2328,7 +1828,7 @@ public class BarsRetriever
                         && !isConnected(peak, TOP)
                         && !isConnected(peak, BOTTOM)) {
                         if (logger.isDebugEnabled() || peak.isVip()) {
-                            logger.info("Got a C-Clef peak1 at {}", peak);
+                            logger.info("VIP Got a C-Clef peak1 at {}", peak);
                         }
 
                         final List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
@@ -2345,7 +1845,7 @@ public class BarsRetriever
                                 && !isConnected(peak2, TOP)
                                 && !isConnected(peak2, BOTTOM)) {
                                 if (logger.isDebugEnabled() || peak.isVip() || peak2.isVip()) {
-                                    logger.info("Got a C-Clef peak2 at {}", peak2);
+                                    logger.info("VIP Got a C-Clef peak2 at {}", peak2);
                                 }
 
                                 peak2.set(CCLEF_TWO);
@@ -2362,10 +1862,13 @@ public class BarsRetriever
                                         int otherMid = (otherPeak.getStart() + otherPeak.getStop()) / 2;
 
                                         if (otherMid < xBreak) {
-                                            logger.debug(
-                                                    "Staff#{} purging tail of C-Clef {}",
-                                                    staff.getId(),
-                                                    otherPeak);
+                                            if (logger.isDebugEnabled() || otherPeak.isVip()) {
+                                                logger.info(
+                                                        "VIP Staff#{} purging tail of C-Clef {}",
+                                                        staff.getId(),
+                                                        otherPeak);
+                                            }
+
                                             otherPeak.set(CCLEF_TAIL);
                                             toRemove.add(otherPeak);
                                             i++; // Don't re-browse this peak
@@ -2392,44 +1895,22 @@ public class BarsRetriever
         }
     }
 
-    //----------------------//
-    // purgeCrossAlignments //
-    //----------------------//
-    /**
-     * Only alignments within a system are meaningful.
-     * So, alignments across systems must be deleted.
-     */
-    private void purgeCrossAlignments ()
-    {
-        final Set<BarAlignment> toRemove = new HashSet<BarAlignment>();
-
-        for (BarAlignment alignment : peakGraph.edgeSet()) {
-            final SystemInfo s1 = alignment.getPeak(TOP).getStaff().getSystem();
-            final SystemInfo s2 = alignment.getPeak(BOTTOM).getStaff().getSystem();
-
-            if (s1 != s2) {
-                toRemove.add(alignment);
-            }
-        }
-
-        if (!toRemove.isEmpty()) {
-            logger.debug("Purging cross-system alignments{}", toRemove);
-            peakGraph.removeAllEdges(toRemove);
-        }
-    }
-
     //---------------------//
     // purgeExtendingPeaks //
     //---------------------//
     /**
      * Purge bars extending above system top staff or below system bottom staff.
      * <p>
-     * This purge does not apply to peaks on left of start column, since brackets and braces can
-     * extend past top/bottom staves.
+     * This purge apply only to peaks on right of start column, since brackets and braces, as
+     * well as the start column itself, can extend past top/bottom staves.
      */
     private void purgeExtendingPeaks ()
     {
         for (SystemInfo system : sheet.getSystems()) {
+            if (system.getStaves().size() >= params.largeSystemStaffCount) {
+                continue; // We cannot not ruin a whole column of large system here!
+            }
+
             for (VerticalSide side : VerticalSide.values()) {
                 final Staff staff = (side == TOP) ? system.getFirstStaff()
                         : system.getLastStaff();
@@ -2438,12 +1919,7 @@ public class BarsRetriever
                 final int iStart = projector.getStartPeakIndex();
                 final Set<StaffPeak> toRemove = new LinkedHashSet<StaffPeak>();
 
-                for (int i = 0; i < peaks.size(); i++) {
-                    if (i <= iStart) {
-                        continue;
-                    }
-
-                    // Check whether the filament gets beyond the staff
+                for (int i = iStart + 1; i < peaks.size(); i++) {
                     StaffPeak peak = peaks.get(i);
                     double ext = extensionOf(peak, side);
 
@@ -2459,7 +1935,7 @@ public class BarsRetriever
                 if (!toRemove.isEmpty()) {
                     logger.debug("Staff#{} removing extendings {}", staff.getId(), toRemove);
                     projector.removePeaks(toRemove);
-                    deleteRelatedColumns(system, toRemove); // Delete their related columns if any
+                    deleteRelatedColumns(system, toRemove);
                 }
             }
         }
@@ -2502,6 +1978,41 @@ public class BarsRetriever
                     logger.debug("Staff#{} removing lefts {}", staff.getId(), toRemove);
                     projector.removePeaks(toRemove);
                     deleteRelatedColumns(system, toRemove);
+                }
+            }
+        }
+    }
+
+    //---------------------//
+    // purgePartialColumns //
+    //---------------------//
+    /**
+     * Remove all non-full columns located on right side of staff left limit.
+     */
+    private void purgePartialColumns ()
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            final List<BarColumn> columns = columnMap.get(system);
+            final int iStart = getStartColumnIndex(columns); // Start column (or -1)
+
+            for (int i = iStart + 1; i < columns.size(); i++) {
+                final BarColumn column = columns.get(i);
+
+                if (!column.isFull()) {
+                    logger.debug("Deleting partial {}", column);
+
+                    // Delete this column, with its related peaks
+                    for (StaffPeak peak : column.getPeaks()) {
+                        if (peak != null) {
+                            if (peak.isVip()) {
+                                logger.info("VIP part of partial column {}", peak);
+                            }
+
+                            projectorOf(peak.getStaff()).removePeak(peak);
+                        }
+                    }
+
+                    columns.remove(i--);
                 }
             }
         }
@@ -2552,6 +2063,35 @@ public class BarsRetriever
         }
     }
 
+    //--------------------//
+    // purgeUnalignedBars //
+    //--------------------//
+    /**
+     * On multi-staff system, purge isolated bars (bars aligned with nothing).
+     */
+    private void purgeUnalignedBars ()
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            final List<Staff> staves = system.getStaves();
+
+            if (staves.size() > 1) {
+                for (Staff staff : staves) {
+                    final StaffProjector projector = projectorOf(staff);
+
+                    for (StaffPeak peak : new ArrayList<StaffPeak>(projector.getPeaks())) {
+                        if (peakGraph.edgesOf(peak).isEmpty()) {
+                            if (peak.isVip()) {
+                                logger.info("VIP unaligned {}", peak);
+                            }
+
+                            projector.removePeak(peak);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     //------------//
     // recordBars //
     //------------//
@@ -2594,41 +2134,31 @@ public class BarsRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
         private final Constant.Boolean showVerticalLines = new Constant.Boolean(
                 false,
                 "Should we show the vertical grid lines?");
+
+        private final Constant.Integer largeSystemStaffCount = new Constant.Integer(
+                "staves",
+                4,
+                "Minimum number of staves for a system to be large");
 
         private final Scale.Fraction minThinThickDelta = new Scale.Fraction(
                 0.2,
                 "Minimum difference between THIN/THICK width values");
 
-        private final Scale.Fraction maxAlignmentDx = new Scale.Fraction(
-                0.5,
-                "Max abscissa shift for bar alignment");
-
-        private final Scale.Fraction maxConnectionGap = new Scale.Fraction(
-                2.0,
-                "Max vertical gap when connecting bar lines");
-
-        private final Constant.Ratio maxConnectionWhiteRatio = new Constant.Ratio(
-                0.35,
-                "Max white ratio when connecting bar lines");
-
-        private final Constant.Ratio minConnectionGrade = new Constant.Ratio(
-                0.5,
-                "Minimum grade for a true connection");
-
         private final Scale.Fraction maxBarExtension = new Scale.Fraction(
-                0.5,
-                "Maximum extension for a bar line above or below staff line");
+                1.0, //0.5, TODO: should be larger for start column & before
+                // And should not ruin a whole connected column!!!
+                "Maximum extension for a barline above or below staff line");
 
         private final Scale.Fraction maxBarToLinesLeftEnd = new Scale.Fraction(
                 0.15,
                 "Maximum dx between bar and left end of staff lines");
-
-        private final Scale.Fraction minBarCurvature = new Scale.Fraction(
-                15,
-                "Minimum mean curvature for a bar line (rather than a brace)");
 
         private final Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
                 0.75,
@@ -2678,9 +2208,9 @@ public class BarsRetriever
                 3.0,
                 "Maximum width of a brace");
 
-        private final Scale.Fraction maxBraceExtension = new Scale.Fraction(
+        private final Scale.Fraction braceLookupExtension = new Scale.Fraction(
                 1.0,
-                "Maximum extension for a brace above or below staff line");
+                "Lookup height for brace end above or below staff line");
 
         private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(
                 35,
@@ -2694,11 +2224,7 @@ public class BarsRetriever
 
         private final Scale.Fraction maxBracketExtension = new Scale.Fraction(
                 1.25,
-                "Maximum extension for bracket end above or below staff line");
-
-        private final Scale.Fraction bracketLookupExtension = new Scale.Fraction(
-                2.0,
-                "Lookup height for bracket end above or below staff line");
+                "Maximum extension for bracket trunk end above or below staff line");
 
         private final Scale.Fraction serifSegmentLength = new Scale.Fraction(
                 1.0,
@@ -2728,21 +2254,13 @@ public class BarsRetriever
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final double minNormedDeltaWidth;
+        final int largeSystemStaffCount;
 
-        final int maxAlignmentDx;
+        final double minNormedDeltaWidth;
 
         final double maxBarExtension;
 
         final int maxBarToLinesLeftEnd;
-
-        final int minBarCurvature;
-
-        final int maxConnectionGap;
-
-        final double maxConnectionWhiteRatio;
-
-        final double minConnectionGrade;
 
         final int maxDoubleBarGap;
 
@@ -2766,7 +2284,7 @@ public class BarsRetriever
 
         final int maxBraceWidth;
 
-        final int maxBraceExtension;
+        final int braceLookupExtension;
 
         final int maxBraceCurvature;
 
@@ -2775,8 +2293,6 @@ public class BarsRetriever
         final int minBracketWidth;
 
         final int maxBracketExtension;
-
-        final int bracketLookupExtension;
 
         final int serifRoiWidth;
 
@@ -2794,14 +2310,10 @@ public class BarsRetriever
          */
         public Parameters (Scale scale)
         {
+            largeSystemStaffCount = constants.largeSystemStaffCount.getValue();
             minNormedDeltaWidth = constants.minThinThickDelta.getValue();
-            maxAlignmentDx = scale.toPixels(constants.maxAlignmentDx);
             maxBarExtension = scale.toPixels(constants.maxBarExtension);
             maxBarToLinesLeftEnd = scale.toPixels(constants.maxBarToLinesLeftEnd);
-            minBarCurvature = scale.toPixels(constants.minBarCurvature);
-            maxConnectionGap = scale.toPixels(constants.maxConnectionGap);
-            maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();
-            minConnectionGrade = constants.minConnectionGrade.getValue();
             maxDoubleBarGap = scale.toPixels(constants.maxDoubleBarGap);
             maxBraceBarGap = scale.toPixels(constants.maxBraceBarGap);
             minMeasureWidth = scale.toPixels(constants.minMeasureWidth);
@@ -2815,13 +2327,12 @@ public class BarsRetriever
             minBracePortionHeight = scale.toPixels(constants.minBracePortionHeight);
             maxBraceThickness = scale.toPixels(constants.maxBraceThickness);
             maxBraceWidth = scale.toPixels(constants.maxBraceWidth);
-            maxBraceExtension = scale.toPixels(constants.maxBraceExtension);
+            braceLookupExtension = scale.toPixels(constants.braceLookupExtension);
             maxBraceCurvature = scale.toPixels(constants.maxBraceCurvature);
 
             serifSegmentLength = scale.toPixels(constants.serifSegmentLength);
             minBracketWidth = scale.toPixels(constants.minBracketWidth);
             maxBracketExtension = scale.toPixels(constants.maxBracketExtension);
-            bracketLookupExtension = scale.toPixels(constants.bracketLookupExtension);
             serifRoiWidth = scale.toPixels(constants.serifRoiWidth);
             serifRoiHeight = scale.toPixels(constants.serifRoiHeight);
             serifThickness = scale.toPixels(constants.serifThickness);

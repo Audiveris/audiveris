@@ -90,6 +90,7 @@ import javax.swing.WindowConstants;
  * start (be it bar-based start or lines-only start).
  *
  * <li>A <b>stem</b> (with note heads located outside the staff height).
+ * <li>Just <b>garbage</b>.
  * </ol>
  * <p>
  * Before this class is used, staves are only defined by their lines made of long horizontal
@@ -279,6 +280,28 @@ public class StaffProjector
         }
 
         return -1;
+    }
+
+    //------------//
+    // insertPeak //
+    //------------//
+    /**
+     * Insert a new peak right before an existing one.
+     *
+     * @param toInsert the new peak to insert
+     * @param before   the existing peak before which insertion must be done
+     */
+    public void insertPeak (StaffPeak toInsert,
+                            StaffPeak before)
+    {
+        int index = peaks.indexOf(before);
+
+        if (index == -1) {
+            throw new IllegalArgumentException("insertPeak() before a non-existing peak");
+        }
+
+        peaks.add(index, toInsert);
+        peakGraph.addVertex(toInsert);
     }
 
     //------//

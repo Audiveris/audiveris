@@ -221,12 +221,13 @@ public class BarFilamentFactory
     private static final class Constants
             extends ConstantSet
     {
+
         //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean registerEachAndEveryGlyph = new Constant.Boolean(
-                false,
-                "(Debug) should we register each and every glyph?");
-
+//
+//        private final Constant.Boolean registerEachAndEveryGlyph = new Constant.Boolean(
+//                false,
+//                "(Debug) should we register each and every filament built?");
+//
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");

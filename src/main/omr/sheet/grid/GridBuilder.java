@@ -184,8 +184,8 @@ public class GridBuilder
     // buildAllLags //
     //--------------//
     /**
-     * From the sheet picture, build the vertical lag (for bar lines)
-     * and the horizontal lag (for staff lines).
+     * From the BINARY table, build the horizontal lag (for staff lines) and the
+     * vertical lag (for barlines).
      */
     private void buildAllLags ()
     {
@@ -201,7 +201,7 @@ public class GridBuilder
 
             // vLag creation
             watch.start("buildVerticalLag");
-            barsRetriever.buildVerticalLag(longVertTable);
+            sheet.getLagManager().buildVerticalLag(longVertTable);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();

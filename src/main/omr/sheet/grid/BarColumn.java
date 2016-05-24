@@ -15,8 +15,6 @@ import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
 
-import org.jgrapht.graph.SimpleDirectedGraph;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,12 +45,11 @@ public class BarColumn
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BarColumn.class);
+    private static final Logger logger = LoggerFactory.getLogger(BarColumn.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The sheet graph of peaks. */
-    private final SimpleDirectedGraph<StaffPeak, BarAlignment> peakGraph;
+    private final PeakGraph peakGraph;
 
     /** The containing system. */
     private final SystemInfo system;
@@ -66,9 +63,6 @@ public class BarColumn
     /** Mean width. */
     private Double width;
 
-    /** Current status. */
-    private Boolean full;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BarColumn} object.
@@ -77,7 +71,7 @@ public class BarColumn
      * @param peakGraph the sheet graph of peaks
      */
     public BarColumn (SystemInfo system,
-                      SimpleDirectedGraph<StaffPeak, BarAlignment> peakGraph)
+                      PeakGraph peakGraph)
     {
         this.peakGraph = peakGraph;
         this.system = system;
@@ -104,7 +98,6 @@ public class BarColumn
         peaks[idx] = peak;
         xDsk = null;
         width = null;
-        full = null;
     }
 
     //------------//
@@ -197,11 +190,8 @@ public class BarColumn
     //--------//
     public boolean isFull ()
     {
-        if (full == null) {
-            full = computeStatus();
-        }
+        return computeStatus();
 
-        return full;
     }
 
     //------------------//
@@ -294,7 +284,7 @@ public class BarColumn
         int nb = 0;
 
         for (StaffPeak peak : peaks) {
-            if (peak != null) {
+            if (peak != null && !peak.isBrace()) {
                 nb++;
             }
         }
