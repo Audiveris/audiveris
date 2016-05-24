@@ -24,6 +24,7 @@ import omr.plugin.PluginManager;
 import omr.score.ui.ScoreParameters;
 
 import omr.script.InvalidateTask;
+import omr.script.ResetBinaryTask;
 import omr.script.ResetTask;
 import omr.script.SaveTask;
 import omr.script.Script;
@@ -53,10 +54,10 @@ import omr.ui.util.UIUtil;
 import omr.ui.view.HistoryMenu;
 import omr.ui.view.ScrollView;
 
-import omr.util.VoidTask;
 import omr.util.FileUtil;
 import omr.util.Param;
 import omr.util.PathTask;
+import omr.util.VoidTask;
 import omr.util.WrappedBoolean;
 
 import org.jdesktop.application.Action;
@@ -260,9 +261,7 @@ public class BookActions
                     // Check the target is fine
                     if (!confirmed(bookPath)) {
                         // Let the user select an alternate output file
-                        bookPath = selectBookPath(
-                                true,
-                                BookManager.getDefaultBookPath(book));
+                        bookPath = selectBookPath(true, BookManager.getDefaultBookPath(book));
 
                         if ((bookPath == null) || !confirmed(bookPath)) {
                             return false; // No suitable target found
@@ -306,6 +305,15 @@ public class BookActions
         }
 
         return INSTANCE;
+    }
+
+    //-------------//
+    // bookHistory //
+    //-------------//
+    @Action
+    public void bookHistory (ActionEvent e)
+    {
+        logger.info("bookHistory");
     }
 
     //------------//
@@ -716,20 +724,20 @@ public class BookActions
         return new ExportSheetTask(stub.getSheet(), sheetPathSansExt);
     }
 
-    //---------------------//
-    // getInputHistoryMenu //
-    //---------------------//
-    public HistoryMenu getInputHistoryMenu ()
-    {
-        return inputHistoryMenu;
-    }
-
     //--------------------//
     // getBookHistoryMenu //
     //--------------------//
     public HistoryMenu getBookHistoryMenu ()
     {
         return bookHistoryMenu;
+    }
+
+    //---------------------//
+    // getInputHistoryMenu //
+    //---------------------//
+    public HistoryMenu getInputHistoryMenu ()
+    {
+        return inputHistoryMenu;
     }
 
     //----------------------//
@@ -1094,15 +1102,6 @@ public class BookActions
         return new PrintSheetTask(stub.getSheet(), sheetPath);
     }
 
-    //-------------//
-    // bookHistory //
-    //-------------//
-    @Action
-    public void bookHistory (ActionEvent e)
-    {
-        logger.info("bookHistory");
-    }
-
     //--------------//
     // recordGlyphs //
     //--------------//
@@ -1141,6 +1140,31 @@ public class BookActions
             if (answer == JOptionPane.YES_OPTION) {
                 final Sheet sheet = stub.getSheet();
                 new ResetTask(sheet).launch(sheet);
+            }
+        }
+    }
+
+    //--------------------//
+    // resetSheetToBinary //
+    //--------------------//
+    /**
+     * Action that resets the currently selected sheet to the binary step.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void resetSheetToBinary (ActionEvent e)
+    {
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub != null) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "Do you confirm resetting sheet " + stub.getId() + " to BINARY step?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                final Sheet sheet = stub.getSheet();
+                new ResetBinaryTask(sheet).launch(sheet);
             }
         }
     }
@@ -1547,6 +1571,48 @@ public class BookActions
         }
     }
 
+    //--------------//
+    // OpenBookTask //
+    //--------------//
+    /**
+     * Task that opens a book file.
+     */
+    public static class OpenBookTask
+            extends PathTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public OpenBookTask (Path path)
+        {
+            super(path);
+        }
+
+        public OpenBookTask ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            if (Files.exists(path)) {
+                try {
+                    // Actually open the book
+                    Book book = OMR.engine.loadBook(path);
+                    LogUtil.start(book);
+                    book.createStubsTabs(null); // Tabs are now accessible
+                } finally {
+                    LogUtil.stopBook();
+                }
+            } else {
+                logger.warn("Path {} does not exist", path);
+            }
+
+            return null;
+        }
+    }
+
     //---------------//
     // OpenInputTask //
     //---------------//
@@ -1581,48 +1647,6 @@ public class BookActions
                     book.createStubsTabs(null); // Tabs are now accessible
                 } catch (Exception ex) {
                     logger.warn("Error opening path " + path + " " + ex, ex);
-                } finally {
-                    LogUtil.stopBook();
-                }
-            } else {
-                logger.warn("Path {} does not exist", path);
-            }
-
-            return null;
-        }
-    }
-
-    //--------------//
-    // OpenBookTask //
-    //--------------//
-    /**
-     * Task that opens a book file.
-     */
-    public static class OpenBookTask
-            extends PathTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public OpenBookTask (Path path)
-        {
-            super(path);
-        }
-
-        public OpenBookTask ()
-        {
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            if (Files.exists(path)) {
-                try {
-                    // Actually open the book
-                    Book book = OMR.engine.loadBook(path);
-                    LogUtil.start(book);
-                    book.createStubsTabs(null); // Tabs are now accessible
                 } finally {
                     LogUtil.stopBook();
                 }

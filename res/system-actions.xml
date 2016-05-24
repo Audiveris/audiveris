@@ -38,8 +38,9 @@
     <action domain="BOOK" section="50" class="omr.sheet.ui.BookActions" method="closeBook"/>
     
     <action domain="SHEET" section="10" class="omr.sheet.ui.BookActions" method="buildSheet"/>
+    <action domain="SHEET" section="15" class="omr.sheet.ui.BookActions" method="resetSheetToBinary"/>
     <action domain="SHEET" section="15" class="omr.sheet.ui.BookActions" method="resetSheet"/>
-    <action domain="SHEET" section="15" class="omr.sheet.ui.BookActions" method="invalidateSheet"/>
+    <action domain="SHEET" section="18" class="omr.sheet.ui.BookActions" method="invalidateSheet"/>
     <action domain="SHEET" section="20" class="omr.sheet.ui.BookActions" method="plotScale"/>
     <action domain="SHEET" section="20" class="omr.sheet.ui.BookActions" method="plotStem"/>
     <action domain="SHEET" section="20" class="omr.sheet.ui.BookActions" method="plotStaves"/>

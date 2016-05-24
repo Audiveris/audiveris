@@ -87,6 +87,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import omr.run.RunTable;
 
 /**
  * Class {@code BasicSheet} is our implementation of {@link Sheet} interface.
@@ -224,6 +225,22 @@ public class BasicSheet
         }
     }
 
+    public BasicSheet (SheetStub stub,
+                       RunTable binaryTable)
+    {
+        Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
+
+        glyphIndex = new GlyphIndex();
+
+        initTransients(stub);
+
+        interIndex = new InterIndex(this);
+
+        if (binaryTable != null) {
+            setBinary(binaryTable);
+        }
+    }
+
     /**
      * No-arg constructor needed for JAXB.
      */
@@ -306,6 +323,24 @@ public class BasicSheet
         PictureView pictureView = new PictureView(this);
         stub.getAssembly().addViewTab(
                 SheetTab.PICTURE_TAB,
+                pictureView,
+                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+    }
+
+    //------------------//
+    // createBinaryView //
+    //------------------//
+    /**
+     * Create and display the picture view.
+     */
+    public void createBinaryView ()
+    {
+        locationService.subscribeStrongly(LocationEvent.class, picture);
+
+        // Display sheet picture
+        PictureView pictureView = new PictureView(this);
+        stub.getAssembly().addViewTab(
+                SheetTab.BINARY_TAB,
                 pictureView,
                 new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
@@ -656,6 +691,26 @@ public class BasicSheet
         } catch (Throwable ex) {
             logger.warn("Error loading image", ex);
         }
+    }
+
+    //-----------//
+    // setBinary //
+    //-----------//
+    private void setBinary (RunTable binaryTable)
+    {
+        try {
+            picture = new Picture(this, binaryTable);
+
+            if (OMR.gui != null) {
+                createBinaryView();
+            }
+
+            done(Step.LOAD);
+            done(Step.BINARY);
+        } finally {
+
+        }
+
     }
 
     //---------//

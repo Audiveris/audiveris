@@ -42,13 +42,6 @@ public interface SheetStub
     void close ();
 
     /**
-     * Create a sheet for this stub.
-     *
-     * @return the stub sheet just created
-     */
-    Sheet createSheet ();
-
-    /**
      * An abnormal situation has been found, as detailed in provided message,
      * now how should we proceed, depending on batch mode or user answer.
      *
@@ -185,6 +178,11 @@ public interface SheetStub
      * Reset this stub to its initial state (that is valid and non-processed).
      */
     void reset ();
+
+    /**
+     * Reset this stub to its BINARY step.
+     */
+    void resetToBinary ();
 
     /**
      * Set the modified flag.

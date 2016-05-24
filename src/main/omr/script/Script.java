@@ -84,6 +84,7 @@ public class Script
         @XmlElementRef(type = PrintTask.class),
         @XmlElementRef(type = SaveTask.class),
         @XmlElementRef(type = ResetTask.class),
+        @XmlElementRef(type = ResetBinaryTask.class),
         @XmlElementRef(type = ScoreTask.class),
         @XmlElementRef(type = SheetStepTask.class)
 

@@ -181,6 +181,28 @@ public class Picture
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
+     * Build a picture instance from a binary table.
+     *
+     * @param sheet       the related sheet
+     * @param binaryTable the provided binary table
+     */
+    public Picture (Sheet sheet,
+                    RunTable binaryTable)
+    {
+        initTransients(sheet);
+        levelService = null;
+
+        width = binaryTable.getWidth();
+        height = binaryTable.getHeight();
+
+        setTable(TableKey.BINARY, binaryTable);
+
+        // Remember the initial image
+        initialImage = null;
+        logger.debug("BinaryTable {}", binaryTable);
+    }
+
+    /**
      * Build a picture instance from a given original image.
      *
      * @param sheet        the related sheet
@@ -724,8 +746,8 @@ public class Picture
      * @param key   table key
      * @param table table to register
      */
-    public void setTable (TableKey key,
-                          RunTable table)
+    public final void setTable (TableKey key,
+                                RunTable table)
     {
         RunTableHolder tableHolder = new RunTableHolder(key + ".xml");
         tableHolder.setData(table);

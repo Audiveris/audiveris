@@ -21,6 +21,8 @@ import omr.constant.ConstantSet;
 import omr.image.FilterDescriptor;
 
 import omr.log.LogUtil;
+
+import omr.run.RunTable;
 import static omr.sheet.Sheet.INTERNALS_RADIX;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.StubsController;
@@ -42,6 +44,7 @@ import omr.util.Zip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -179,21 +182,6 @@ public class BasicStub
                 book.close();
             }
         }
-    }
-
-    //-------------//
-    // createSheet //
-    //-------------//
-    @Override
-    public Sheet createSheet ()
-    {
-        try {
-            sheet = new BasicSheet(this, null);
-        } catch (StepException ex) {
-            logger.warn("Error creating blank sheet", ex);
-        }
-
-        return sheet;
     }
 
     //-----------------//
@@ -360,7 +348,7 @@ public class BasicStub
                     if (!isDone(Step.LOAD)) {
                         // LOAD not yet performed: load from book image file
                         try {
-                            sheet = new BasicSheet(this, null);
+                            sheet = new BasicSheet(this, (BufferedImage) null);
                         } catch (StepException ignored) {
                             logger.info("Could not load sheet for stub {}", this);
                         }
@@ -533,28 +521,23 @@ public class BasicStub
     @Override
     public void reset ()
     {
-        doneSteps.clear();
-        invalid = null;
-        sheet = null;
-
-        if (assembly != null) {
-            assembly.reset();
-        }
-
-        setModified(true);
+        doReset();
         logger.info("Sheet#{} reset as valid.", number);
+        doRedisplay();
+    }
 
-        if (OMR.gui != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    StubsController.getInstance().reDisplay(BasicStub.this);
-                }
-            });
-        }
+    //---------------//
+    // resetToBinary //
+    //---------------//
+    @Override
+    public void resetToBinary ()
+    {
+        final RunTable binaryTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+
+        doReset();
+        sheet = new BasicSheet(this, binaryTable);
+        logger.info("Sheet#{} reset to BINARY.", number);
+        doRedisplay();
     }
 
     //----------------//
@@ -751,6 +734,40 @@ public class BasicStub
             setCurrentStep(null);
             StepMonitoring.notifyStep(this, step); // Stop monitoring
         }
+    }
+
+    //-------------//
+    // doRedisplay //
+    //-------------//
+    private void doRedisplay ()
+    {
+        if (OMR.gui != null) {
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    StubsController.getInstance().reDisplay(BasicStub.this);
+                }
+            });
+        }
+    }
+
+    //---------//
+    // doReset //
+    //---------//
+    private void doReset ()
+    {
+        doneSteps.clear();
+        invalid = null;
+        sheet = null;
+
+        if (assembly != null) {
+            assembly.reset();
+        }
+
+        setModified(true);
     }
 
     //----------------//
