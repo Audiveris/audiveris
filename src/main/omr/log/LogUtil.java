@@ -88,6 +88,26 @@ public abstract class LogUtil
         root.addAppender(fileAppender);
     }
 
+    //----------------//
+    // addGuiAppender //
+    //----------------//
+    /**
+     * Add a specific appender meant for GUI log pane.
+     * To be called only when running with a GUI.
+     */
+    public static void addGuiAppender ()
+    {
+        // GUI (filtered in LogGuiAppender)
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+                Logger.ROOT_LOGGER_NAME);
+        Appender guiAppender = new LogGuiAppender();
+        guiAppender.setName("GUI");
+        guiAppender.setContext(loggerContext);
+        guiAppender.start();
+        root.addAppender(guiAppender);
+    }
+
     //------------//
     // initialize //
     //------------//
@@ -167,13 +187,6 @@ public abstract class LogUtil
         fileAppender.setEncoder(fileEncoder);
         fileAppender.start();
         root.addAppender(fileAppender);
-
-        // GUI (filtered in LogGuiAppender)
-        Appender guiAppender = new LogGuiAppender();
-        guiAppender.setName("GUI");
-        guiAppender.setContext(loggerContext);
-        guiAppender.start();
-        root.addAppender(guiAppender);
 
         // Levels
         root.setLevel(Level.INFO);
