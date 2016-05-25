@@ -36,6 +36,7 @@ import omr.ui.Colors;
 
 import omr.util.Jaxb;
 import omr.util.LiveParam;
+import omr.util.Memory;
 import omr.util.Navigable;
 import omr.util.OmrExecutors;
 import omr.util.StopWatch;
@@ -211,7 +212,7 @@ public class BasicStub
             });
         }
 
-        if ((OMR.gui == null) /// || (OMR.gui.displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
+        if ((OMR.gui == null)
             || (OMR.gui.displayConfirmation(msg + LINE_SEPARATOR + "OK for discarding this sheet?"))) {
             invalidate();
 
@@ -466,7 +467,7 @@ public class BasicStub
 
         try {
             if (force && isDone(target)) {
-                reset();
+                resetToBinary();
             }
 
             neededSteps = getNeededSteps(target);
@@ -532,12 +533,16 @@ public class BasicStub
     @Override
     public void resetToBinary ()
     {
-        final RunTable binaryTable = sheet.getPicture().getTable(Picture.TableKey.BINARY);
-
-        doReset();
-        sheet = new BasicSheet(this, binaryTable);
-        logger.info("Sheet#{} reset to BINARY.", number);
-        doRedisplay();
+        try {
+            final RunTable binaryTable = getSheet().getPicture().getTable(Picture.TableKey.BINARY);
+            doReset();
+            sheet = new BasicSheet(this, binaryTable);
+            logger.info("Sheet#{} reset to BINARY.", number);
+            doRedisplay();
+        } catch (Throwable ex) {
+            logger.warn("Could not reset to BINARY {}", ex.toString(), ex);
+            reset();
+        }
     }
 
     //----------------//
@@ -601,6 +606,8 @@ public class BasicStub
             if (sheet != null) {
                 logger.info("{} disposed", sheet);
                 sheet = null;
+                Memory.gc(); // Trigger a garbage collection...
+                logger.info("memory: {}MB", (int) Math.rint(Memory.occupied() / (1024d * 1024d)));
             }
 
             if (OMR.gui != null) {

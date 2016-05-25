@@ -720,7 +720,7 @@ public class BarsRetriever
                     StaffPeak bottomPeak = connection.bottomPeak;
                     sig.addEdge(topPeak.getInter(), bottomPeak.getInter(), bcRel);
                 } catch (Exception ex) {
-                    logger.warn("Exception in createConnectionInters {}", ex.toString(), ex);
+                    logger.warn("Cannot create connection for {} {}", align, ex.toString(), ex);
                 }
             }
         }
@@ -798,21 +798,31 @@ public class BarsRetriever
                              Staff first,
                              Staff last)
     {
-        Part part = new Part(system);
+        final List<Part> parts = system.getParts();
+        final List<Staff> staves = system.getStaves();
+        int iFirst = staves.indexOf(first);
+        int iLast = staves.indexOf(last);
 
-        part.addStaff(first);
+        // Dirty hack to prevent multiple part creation for same staff
+        if (!parts.isEmpty()) {
+            final Part latestPart = parts.get(parts.size() - 1);
+            final Staff latestStaff = latestPart.getLastStaff();
+            final int iLatest = staves.indexOf(latestStaff);
 
-        if (last != first) {
-            List<Staff> staves = system.getStaves();
-            int iFirst = staves.indexOf(first);
-            int iLast = staves.indexOf(last);
-
-            for (Staff staff : staves.subList(iFirst + 1, iLast + 1)) {
-                part.addStaff(staff);
+            if (iLast <= iLatest) {
+                return null;
             }
+
+            iFirst = Math.max(iLatest + 1, iFirst);
         }
 
-        part.setId(1 + system.getParts().size());
+        Part part = new Part(system);
+
+        for (Staff staff : staves.subList(iFirst, iLast + 1)) {
+            part.addStaff(staff);
+        }
+
+        part.setId(1 + parts.size());
         system.addPart(part);
 
         return part;
@@ -947,9 +957,8 @@ public class BarsRetriever
                                 final Staff firstStaff = staffManager.getStaff(firstId - 1);
                                 final Staff lastStaff = staffManager.getStaff(lastId - 1);
 
-                                // Was this brace a real group?
                                 if (!botConn && !isPartConnected(firstStaff, TOP)) {
-                                    // No, just a multi-staff instrument
+                                    // One multi-staff instrument part
                                     logger.debug(
                                             "Staff#{} end multi-staff instrument {}",
                                             staff.getId(),
@@ -957,6 +966,7 @@ public class BarsRetriever
                                     allGroups.remove(pg);
                                     createPart(system, firstStaff, lastStaff);
                                 } else {
+                                    // Braced group of separate parts
                                     int i1 = staves.indexOf(firstStaff);
                                     int i2 = staves.indexOf(lastStaff);
                                     logger.debug("Staff#{} stop brace {}", staff.getId(), pg);
@@ -1480,7 +1490,7 @@ public class BarsRetriever
             logger.info(
                     "Staff#{} serif normalized weight too small {} vs {}",
                     staff.getId(),
-                    serif.getNormalizedWeight(scale.getInterline()),
+                    String.format("%.2f", serif.getNormalizedWeight(scale.getInterline())),
                     constants.serifMinWeight.getValue());
 
             return null;

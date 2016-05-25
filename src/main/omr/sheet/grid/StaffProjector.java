@@ -866,6 +866,9 @@ public class StaffProjector
                 for (StaffPeak peak : browseRange(start, stop)) {
                     peaks.add(peak);
                     peakGraph.addVertex(peak);
+
+                    // Make sure peaks do not overlap
+                    x = Math.max(x, peak.getStop());
                 }
 
                 start = -1;
