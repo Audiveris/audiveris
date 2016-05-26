@@ -43,7 +43,7 @@ public class BarAlignment
     protected final double dWidth;
 
     /** Alignment quality. */
-    private final GradeImpacts impacts;
+    protected final GradeImpacts impacts;
 
     /** Alignment grade. */
     protected double grade;

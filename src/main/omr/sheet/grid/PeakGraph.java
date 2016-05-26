@@ -22,6 +22,7 @@ import omr.lag.Section;
 
 import omr.math.AreaUtil;
 import omr.math.GeoPath;
+
 import static omr.run.Orientation.HORIZONTAL;
 
 import omr.sheet.Picture;
@@ -32,19 +33,21 @@ import omr.sheet.Staff;
 import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
-import static omr.sheet.grid.StaffPeak.Attribute.BRACE;
 
-import omr.sig.GradeImpacts;
+import static omr.sheet.grid.StaffPeak.Attribute.BRACE;
 
 import omr.step.StepException;
 
 import omr.util.Dumping;
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
+
 import omr.util.Navigable;
 import omr.util.StopWatch;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.BOTTOM;
 import static omr.util.VerticalSide.TOP;
 
@@ -404,7 +407,6 @@ public class PeakGraph
                 new Line2D.Double(
                         new Point2D.Double(p1.getStop(), p1.getBottom()),
                         new Point2D.Double(p2.getStop(), p2.getTop())));
-
         final AreaUtil.CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
 
         if (vip) {
@@ -413,23 +415,13 @@ public class PeakGraph
 
         if ((data.gap <= params.maxConnectionGap)
             && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
-            double whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
-            double gapImpact = 1 - ((double) data.gap / params.maxConnectionGap);
-            GradeImpacts impacts = new BarConnection.Impacts(whiteImpact, gapImpact);
-            double grade = impacts.getGrade();
-            logger.debug("{} grade:{} impacts:{}", alignment, grade, impacts);
+            BarConnection connection = new BarConnection(alignment);
 
-            final double minGrade = params.minConnectionGrade * impacts.getIntrinsicRatio();
-
-            if (grade >= minGrade) {
-                BarConnection connection = new BarConnection(alignment, impacts);
-
-                if (vip) {
-                    logger.info("VIP {}", connection);
-                }
-
-                return connection;
+            if (vip) {
+                logger.info("VIP {}", connection);
             }
+
+            return connection;
         }
 
         if (vip) {

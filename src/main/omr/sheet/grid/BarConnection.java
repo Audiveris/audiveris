@@ -13,9 +13,6 @@ package omr.sheet.grid;
 
 import omr.math.AreaUtil;
 
-import omr.sig.BasicImpacts;
-import omr.sig.GradeImpacts;
-
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 
@@ -32,9 +29,6 @@ public class BarConnection
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Connection quality. */
-    private final GradeImpacts impacts;
-
     /** Physical portion of the connection line, excluding portions within staves. */
     private Area area;
 
@@ -45,16 +39,11 @@ public class BarConnection
     /**
      * Creates a new BarConnection object.
      *
-     * @param align   the underlying barline alignment
-     * @param impacts the connection quality
+     * @param align the underlying barline alignment
      */
-    public BarConnection (BarAlignment align,
-                          GradeImpacts impacts)
+    public BarConnection (BarAlignment align)
     {
         super(align.topPeak, align.bottomPeak, align.dx, align.dWidth, align.getImpacts());
-        this.impacts = impacts;
-
-        grade = impacts.getGrade();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -68,15 +57,6 @@ public class BarConnection
         }
 
         return area;
-    }
-
-    //------------//
-    // getImpacts //
-    //------------//
-    @Override
-    public GradeImpacts getImpacts ()
-    {
-        return impacts;
     }
 
     //-----------/
@@ -99,44 +79,5 @@ public class BarConnection
     public double getWidth ()
     {
         return (topPeak.getWidth() + bottomPeak.getWidth()) / 2d;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" ").append(impacts);
-
-        return sb.toString();
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Impacts //
-    //---------//
-    /**
-     * This definition measures the connection quality (impacted by lack of black pixels
-     * and largest vertical gap), not the alignment quality.
-     */
-    public static class Impacts
-            extends BasicImpacts
-    {
-        //~ Static fields/initializers -------------------------------------------------------------
-
-        private static final String[] NAMES = new String[]{"white", "gap"};
-
-        private static final double[] WEIGHTS = new double[]{1, 1};
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Impacts (double white,
-                        double gap)
-        {
-            super(NAMES, WEIGHTS);
-            setImpact(0, white);
-            setImpact(1, gap);
-        }
     }
 }
