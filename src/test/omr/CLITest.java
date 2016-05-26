@@ -86,6 +86,30 @@ public class CLITest
     }
 
     @Test
+    public void testSheetsRange ()
+            throws Exception
+    {
+        System.out.println("\n+++ testSheetsRange");
+
+        String[] args = new String[]{"-sheets", "1", "3-6", "10"};
+        CLI.Parameters params = instance.getParameters(args);
+        new Dumping().dump(params);
+        assertEquals(Arrays.asList(1, 3, 4, 5, 6, 10).toString(), params.getSheetIds().toString());
+    }
+
+    @Test
+    public void testSheetsRange2 ()
+            throws Exception
+    {
+        System.out.println("\n+++ testSheetsRange2");
+
+        String[] args = new String[]{"-sheets", "1", "4 - 6", "20"};
+        CLI.Parameters params = instance.getParameters(args);
+        new Dumping().dump(params);
+        assertEquals(Arrays.asList(1, 4, 5, 6, 20).toString(), params.getSheetIds().toString());
+    }
+
+    @Test
     public void testSome ()
             throws Exception
     {

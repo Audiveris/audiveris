@@ -454,7 +454,11 @@ public class CLI
     // IntArrayOptionHandler //
     //-----------------------//
     /**
-     * Argument handler for an array of integers.
+     * Argument handler for an array of positive integers.
+     * <p>
+     * It also accepts a range of integers, such as: 3-10 to mean: 3 4 5 6 7 8 9 10.
+     * Restriction: the range cannot contain space if not quoted:
+     * 3-10 is OK, 3 - 10 is not, though "3 - 10" is OK.
      */
     public static class IntArrayOptionHandler
             extends OptionHandler<Integer>
@@ -488,9 +492,23 @@ public class CLI
                     break;
                 }
 
-                for (String p : param.split(" ")) {
-                    if (!p.isEmpty()) {
-                        setter.addValue(Integer.parseInt(p));
+                int minusPos = param.indexOf("-");
+
+                if (minusPos != -1) {
+                    // " a - b " or a-b
+                    String str1 = param.substring(0, minusPos).trim();
+                    String str2 = param.substring(minusPos + 1).trim();
+                    int i1 = Integer.parseInt(str1);
+                    int i2 = Integer.parseInt(str2);
+
+                    for (int i = i1; i <= i2; i++) {
+                        setter.addValue(i);
+                    }
+                } else {
+                    for (String p : param.split(" ")) {
+                        if (!p.isEmpty()) {
+                            setter.addValue(Integer.parseInt(p));
+                        }
                     }
                 }
             }
