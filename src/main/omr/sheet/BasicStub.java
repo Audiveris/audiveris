@@ -607,7 +607,7 @@ public class BasicStub
                 logger.info("{} disposed", sheet);
                 sheet = null;
                 Memory.gc(); // Trigger a garbage collection...
-                logger.info("memory: {}MB", (int) Math.rint(Memory.occupied() / (1024d * 1024d)));
+                logger.info("memory: {} MB", (int) Math.rint(Memory.occupied() / (1024d * 1024d)));
             }
 
             if (OMR.gui != null) {

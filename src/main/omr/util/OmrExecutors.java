@@ -207,9 +207,10 @@ public class OmrExecutors
                 try {
                     // Wait a while for existing tasks to terminate
                     if (!pool.awaitTermination(constants.graceDelay.getValue(), TimeUnit.SECONDS)) {
+                        logger.warn("Pool {} did not terminate", getName());
+
                         // Cancel currently executing tasks
                         pool.shutdownNow();
-                        logger.warn("Pool {} did not terminate", getName());
                     }
                 } catch (InterruptedException ie) {
                     // (Re-)Cancel if current thread also got interrupted

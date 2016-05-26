@@ -116,6 +116,9 @@ public class StaffPeak
     /** Evaluation, if any. */
     private final GradeImpacts impacts;
 
+    /** Containing column, if any. */
+    private BarColumn column;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code StaffPeak} object.
@@ -194,6 +197,17 @@ public class StaffPeak
     public Rectangle getBounds ()
     {
         return new Rectangle(start, top, getWidth(), bottom - top + 1);
+    }
+
+    //-----------//
+    // getColumn //
+    //-----------//
+    /**
+     * @return the column
+     */
+    public BarColumn getColumn ()
+    {
+        return column;
     }
 
     //---------------------//
@@ -441,6 +455,17 @@ public class StaffPeak
             set(BRACKET_BOTTOM);
             bottomSerif = serif;
         }
+    }
+
+    //-----------//
+    // setColumn //
+    //-----------//
+    /**
+     * @param column the column to set
+     */
+    public void setColumn (BarColumn column)
+    {
+        this.column = column;
     }
 
     //-------------//

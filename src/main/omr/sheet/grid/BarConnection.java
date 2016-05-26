@@ -117,26 +117,26 @@ public class BarConnection
     //---------//
     // Impacts //
     //---------//
+    /**
+     * This definition measures the connection quality (impacted by lack of black pixels
+     * and largest vertical gap), not the alignment quality.
+     */
     public static class Impacts
             extends BasicImpacts
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        private static final String[] NAMES = new String[]{"align", "dWidth", "white", "gap"};
+        private static final String[] NAMES = new String[]{"white", "gap"};
 
-        private static final double[] WEIGHTS = new double[]{2, 1, 1, 1};
+        private static final double[] WEIGHTS = new double[]{1, 1};
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Impacts (double align,
-                        double dWidth,
-                        double white,
+        public Impacts (double white,
                         double gap)
         {
             super(NAMES, WEIGHTS);
-            setImpact(0, align);
-            setImpact(1, dWidth);
-            setImpact(2, white);
-            setImpact(3, gap);
+            setImpact(0, white);
+            setImpact(1, gap);
         }
     }
 }

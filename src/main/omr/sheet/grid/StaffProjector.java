@@ -1112,7 +1112,7 @@ public class StaffProjector
                 0.1,
                 "Minimum width for a small blank region (to end a staff side)");
 
-        private final Scale.Fraction maxBarWidth = new Scale.Fraction(1.0, "Maximum bar width");
+        private final Scale.Fraction maxBarWidth = new Scale.Fraction(1.5, "Maximum bar width");
 
         private final Scale.Fraction maxBarToLinesRightEnd = new Scale.Fraction(
                 0.15,

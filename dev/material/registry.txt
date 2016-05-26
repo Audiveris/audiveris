@@ -1,0 +1,31 @@
+-- A few informations about use of Windows 10 registry for Audiveris
+--------------------------------------------------------------------
+
+
+-- 1/ Association of .omr file extension with Audiveris application --
+
+see https://social.msdn.microsoft.com/Forums/vstudio/en-US/630ed1d9-73f1-4cc0-bc84-04f29cffc13b/what-registry-keys-are-responsible-for-file-extension-association?forum=netfxbcl
+
+under HKEY_LOCAL_MACHINE\SOFTWARE\Classes
+-----------------------------------------
+created key: .omr Default: Audiveris.omr
+
+created key: Audiveris.omr Default: Audiveris project file
+    created subkey: DefaultIcon Default: d:\soft\audiveris-ng\res\icon-256.ico
+    created subkey: shell
+        created subkey: Open
+            created subkey: Command Default: c:\cygwin\bin\bash.exe -li d:\soft\audiveris-ng\launch.sh "%1"
+(TODO: this command is much too specific!)
+
+
+-- 2/ HKEY_CLASSES_ROOT --
+Not to be used directly, since it is just a merged view of:
+    HKEY_CURRENT_USER\SOFTWARE\Classes 
+    HKEY_LOCAL_MACHINE\SOFTWARE\Classes
+
+
+-- 3/ Probably related to some JWS installation of audiveris --
+under HKEY_CURRENT_USER\SOFTWARE
+exists key: Audiveris Ltd.
+    with subkey: Audiveris application
+        with key: application value: installed

@@ -96,6 +96,9 @@ public class BarColumn
     {
         int idx = peak.getStaff().getId() - system.getFirstStaff().getId();
         peaks[idx] = peak;
+        peak.setColumn(this);
+
+        // Invalidate cached data
         xDsk = null;
         width = null;
     }
@@ -117,20 +120,6 @@ public class BarColumn
         }
 
         return true;
-    }
-
-    //----------//
-    // contains //
-    //----------//
-    public boolean contains (StaffPeak peak)
-    {
-        for (StaffPeak p : peaks) {
-            if (p == peak) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //----------//

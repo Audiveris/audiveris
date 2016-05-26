@@ -193,14 +193,16 @@ public class PeakGraph
      * <p>
      * We check vertical alignment, taking sheet slope into account.
      *
-     * @param topPeak peak in top staff
-     * @param botPeak peak in bottom staff
-     * @param strict  true for dx check, false for no check (TODO: or use a larger dx?)
+     * @param topPeak       peak in top staff
+     * @param botPeak       peak in bottom staff
+     * @param stickAbscissa true for dx check, false for no check
+     * @param stickWidth    true for dWidth check, false for no check
      * @return the BarAlignment or null
      */
     public BarAlignment checkAlignment (StaffPeak topPeak,
                                         StaffPeak botPeak,
-                                        boolean strict)
+                                        boolean stickAbscissa,
+                                        boolean stickWidth)
     {
         final Skew skew = sheet.getSkew();
         final int topMid = (topPeak.getStart() + topPeak.getStop()) / 2;
@@ -209,13 +211,13 @@ public class PeakGraph
         final double botDsk = skew.deskewed(new Point(botMid, botPeak.getOrdinate(TOP))).getX();
         final double dx = botDsk - topDsk;
 
-        if (strict && (Math.abs(dx) > params.maxAlignmentDx)) {
+        if (stickAbscissa && (Math.abs(dx) > params.maxAlignmentDx)) {
             return null;
         }
 
         final double dWidth = botPeak.getWidth() - topPeak.getWidth();
 
-        if (strict && (Math.abs(dWidth) > params.maxAlignmentDeltaWidth)) {
+        if (stickWidth && (Math.abs(dWidth) > params.maxAlignmentDeltaWidth)) {
             return null;
         }
 
@@ -413,14 +415,7 @@ public class PeakGraph
             && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
             double whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
             double gapImpact = 1 - ((double) data.gap / params.maxConnectionGap);
-            double alignImpact = 1 - (Math.abs(alignment.dx) / params.maxAlignmentDx);
-            double widthImpact = 1
-                                 - (Math.abs(alignment.dWidth) / params.maxAlignmentDeltaWidth);
-            GradeImpacts impacts = new BarConnection.Impacts(
-                    alignImpact,
-                    widthImpact,
-                    whiteImpact,
-                    gapImpact);
+            GradeImpacts impacts = new BarConnection.Impacts(whiteImpact, gapImpact);
             double grade = impacts.getGrade();
             logger.debug("{} grade:{} impacts:{}", alignment, grade, impacts);
 
@@ -684,7 +679,7 @@ public class PeakGraph
                                       Staff staffAbove)
     {
         for (StaffPeak peakAbove : projectorOf(staffAbove).getPeaks()) {
-            BarAlignment alignment = checkAlignment(peakAbove, peak, true);
+            BarAlignment alignment = checkAlignment(peakAbove, peak, true, true);
 
             if (alignment != null) {
                 ///logger.debug("{}", alignment);
@@ -707,7 +702,7 @@ public class PeakGraph
                                       Staff staffBelow)
     {
         for (StaffPeak peakBelow : projectorOf(staffBelow).getPeaks()) {
-            BarAlignment alignment = checkAlignment(peak, peakBelow, true);
+            BarAlignment alignment = checkAlignment(peak, peakBelow, true, true);
 
             if (alignment != null) {
                 logger.debug("{}", alignment);
@@ -1163,7 +1158,7 @@ public class PeakGraph
             StaffPeak bottom = bottomGroup.get(i);
             removeAllEdges(new ArrayList<BarAlignment>(outgoingEdgesOf(top)));
             removeAllEdges(new ArrayList<BarAlignment>(incomingEdgesOf(bottom)));
-            addEdge(top, bottom, checkAlignment(top, bottom, false));
+            addEdge(top, bottom, checkAlignment(top, bottom, false, false));
         }
     }
 
@@ -1300,7 +1295,7 @@ public class PeakGraph
                 "Max abscissa shift for bar alignment");
 
         private final Scale.Fraction maxAlignmentDeltaWidth = new Scale.Fraction(
-                0.5,
+                0.6,
                 "Max delta width for bar alignment");
 
         private final Scale.Fraction maxConnectionGap = new Scale.Fraction(

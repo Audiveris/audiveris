@@ -484,19 +484,17 @@ public class BarsRetriever
 
                     if (otherPeak == null) {
                         // Look for an aligned "bar" portion
-                        int iStart = otherProjector.getStartPeakIndex();
+                        StaffPeak p = otherProjector.getPeaks().get(0);
+                        BarAlignment alignment = peakGraph.checkAlignment(
+                                topPeak,
+                                p,
+                                true, // Check on x
+                                false); // No check on width (some brace portions can be wide)
 
-                        for (int i = iStart - 1; i >= 0; i--) {
-                            StaffPeak p = otherProjector.getPeaks().get(i);
-                            BarAlignment alignment = peakGraph.checkAlignment(topPeak, p, true);
-
-                            if (alignment != null) {
-                                otherPeak = p;
-                                otherPeak.set(BRACE_MIDDLE);
-                                otherProjector.setBracePeak(otherPeak);
-
-                                break;
-                            }
+                        if (alignment != null) {
+                            otherPeak = p;
+                            otherPeak.set(BRACE_MIDDLE);
+                            otherProjector.setBracePeak(otherPeak);
                         }
                     }
 
@@ -836,8 +834,8 @@ public class BarsRetriever
      * <ul>
      * <li>A bracket/square defines a (bracket/square) group.
      * <li>No staff connection implies different parts.
-     * <li>Braced staves represent a single part when not connected to other staves, otherwise it is
-     * a group.
+     * <li>Braced staves represent a single part when not connected to other staves and count of
+     * braced staves is not more than 2, otherwise it is a group of separate parts.
      * </ul>
      */
     private void createParts ()
@@ -956,8 +954,11 @@ public class BarsRetriever
                                 final int lastId = pg.getLastStaffId();
                                 final Staff firstStaff = staffManager.getStaff(firstId - 1);
                                 final Staff lastStaff = staffManager.getStaff(lastId - 1);
+                                final int staffCount = lastId - firstId + 1;
 
-                                if (!botConn && !isPartConnected(firstStaff, TOP)) {
+                                if (!botConn
+                                    && !isPartConnected(firstStaff, TOP)
+                                    && (staffCount <= 2)) {
                                     // One multi-staff instrument part
                                     logger.debug(
                                             "Staff#{} end multi-staff instrument {}",
@@ -1004,34 +1005,32 @@ public class BarsRetriever
     private void deleteRelatedColumns (SystemInfo system,
                                        Collection<? extends StaffPeak> removed)
     {
-        List<BarColumn> columns = columnMap.get(system);
+        final List<BarColumn> columns = columnMap.get(system);
 
         if (columns != null) {
-            for (Iterator<BarColumn> it = columns.iterator(); it.hasNext();) {
-                BarColumn column = it.next();
+            final Set<BarColumn> columnsToRemove = new LinkedHashSet<BarColumn>();
 
-                for (StaffPeak peak : removed) {
-                    if (column.contains(peak)) {
-                        logger.debug("Deleting {}", column);
+            for (StaffPeak peak : removed) {
+                BarColumn column = peak.getColumn();
 
-                        for (StaffPeak p : column.getPeaks()) {
-                            if (p != null) {
-                                if (peak.isVip()) {
-                                    logger.info("VIP part of removed column {}", peak);
-                                }
+                if (column != null) {
+                    columnsToRemove.add(column);
+                }
+            }
 
-                                Staff staff = p.getStaff();
-                                StaffProjector projector = projectorOf(staff);
-                                projector.removePeak(p);
-                            }
-                        }
+            for (BarColumn column : columnsToRemove) {
+                logger.debug("Deleting {}", column);
 
-                        it.remove();
-
-                        break;
+                for (StaffPeak peak : column.getPeaks()) {
+                    if (peak != null) {
+                        Staff staff = peak.getStaff();
+                        StaffProjector projector = projectorOf(staff);
+                        projector.removePeak(peak);
                     }
                 }
             }
+
+            columns.removeAll(columnsToRemove);
         }
     }
 
@@ -1069,8 +1068,7 @@ public class BarsRetriever
                 bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
                 if (bracePeak != null) {
-                    ///projector.removePeak(firstPeak); // Remove fake bar peak
-                    firstPeak.set(BRACE);
+                    replacePeak(firstPeak, bracePeak);
                 }
             }
 
@@ -1107,6 +1105,10 @@ public class BarsRetriever
 
             for (int i = iStart - 1; i >= 0; i--) {
                 final StaffPeak peak = peaks.get(i);
+
+                if (peak.isBrace()) {
+                    break;
+                }
 
                 // Sufficient width?
                 if (peak.getWidth() < params.minBracketWidth) {
@@ -2133,6 +2135,43 @@ public class BarsRetriever
         for (StaffProjector projector : projectors) {
             projector.refineRightEnd();
         }
+    }
+
+    //-------------//
+    // replacePeak //
+    //-------------//
+    /**
+     * Replace a peak by another one.
+     *
+     * @param oldPeak the peak to be replaced
+     * @param newPeak the new peak
+     */
+    private void replacePeak (StaffPeak oldPeak,
+                              StaffPeak newPeak)
+    {
+        // PeakGraph
+        for (BarAlignment edge : new ArrayList<BarAlignment>(peakGraph.incomingEdgesOf(oldPeak))) {
+            StaffPeak source = peakGraph.getEdgeSource(edge);
+            peakGraph.addEdge(source, newPeak, edge);
+        }
+
+        for (BarAlignment edge : new ArrayList<BarAlignment>(peakGraph.outgoingEdgesOf(oldPeak))) {
+            StaffPeak target = peakGraph.getEdgeTarget(edge);
+            peakGraph.addEdge(newPeak, target, edge);
+        }
+
+        // Column
+        BarColumn column = oldPeak.getColumn();
+
+        if (column != null) {
+            column.addPeak(newPeak);
+        }
+
+        // Projector
+        final Staff staff = oldPeak.getStaff();
+        final StaffProjector projector = projectorOf(staff);
+        projector.insertPeak(newPeak, oldPeak);
+        projector.removePeak(oldPeak);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

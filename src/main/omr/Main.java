@@ -17,6 +17,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
+import omr.log.LogUtil;
+
 import omr.sheet.BookManager;
 
 import omr.ui.MainGui;
@@ -275,6 +277,7 @@ public class Main
                 ///System.setProperty("java.awt.headless", "true"); //TODO: Useful?
             } else {
                 logger.debug("Running in interactive mode");
+                LogUtil.addGuiAppender();
             }
         } catch (CmdLineException ex) {
             logger.warn("Error in command line: {}", ex.getLocalizedMessage(), ex);
