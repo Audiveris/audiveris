@@ -103,7 +103,7 @@ import java.util.concurrent.Callable;
  * <dd>Saves book to specific folder (ignored if -saveAs is used)</dd>
  *
  * <dt><b>-sheets N...</b></dt>
- * <dd>Selects specific sheets (1-based)</dd>
+ * <dd>Selects specific sheets numbers and ranges (like 1-9)</dd>
  *
  * <dt><b>-step STEP</b></dt>
  * <dd>Defines a specific transcription step (to be performed on each input referenced from the
@@ -548,7 +548,7 @@ public class CLI
         Properties options;
 
         /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Selects specific sheets (1-based)", handler = IntArrayOptionHandler.class)
+        @Option(name = "-sheets", usage = "Selects specific sheets numbers and ranges (like 1-9)", handler = IntArrayOptionHandler.class)
         private ArrayList<Integer> sheets;
 
         /** Should MusicXML data be produced?. */
