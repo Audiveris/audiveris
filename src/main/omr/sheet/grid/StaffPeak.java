@@ -20,6 +20,8 @@ import static omr.sheet.grid.StaffPeak.Attribute.*;
 import omr.sig.GradeImpacts;
 import omr.sig.inter.Inter;
 
+import omr.ui.Colors;
+
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.LEFT;
 import omr.util.VerticalSide;
@@ -412,6 +414,9 @@ public class StaffPeak
     //--------//
     public void render (Graphics2D g)
     {
+        g.setColor(
+                isBrace() ? Colors.STAFF_PEAK_BRACE
+                        : (isBracket() ? Colors.STAFF_PEAK_BRACKET : Colors.STAFF_PEAK));
         g.fillRect(start, top, stop - start + 1, bottom - top + 1);
     }
 

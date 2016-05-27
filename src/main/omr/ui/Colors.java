@@ -137,7 +137,13 @@ public class Colors
     /** Current time slot */
     public static final Color SLOT_CURRENT = new Color(255, 0, 255, alpha);
 
-    /** Staff peak */
+    /** Brace staff peak */
+    public static final Color STAFF_PEAK_BRACE = new Color(0, 255, 255, 100);
+
+    /** Bracket staff peak */
+    public static final Color STAFF_PEAK_BRACKET = new Color(255, 255, 0, 180);
+
+    /** Standard staff peak */
     public static final Color STAFF_PEAK = new Color(255, 200, 0, 100);
 
     /** Tangents */

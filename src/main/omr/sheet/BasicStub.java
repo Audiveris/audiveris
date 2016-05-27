@@ -537,6 +537,7 @@ public class BasicStub
             final RunTable binaryTable = getSheet().getPicture().getTable(Picture.TableKey.BINARY);
             doReset();
             sheet = new BasicSheet(this, binaryTable);
+            sheet.createBinaryView();
             logger.info("Sheet#{} reset to BINARY.", number);
             doRedisplay();
         } catch (Throwable ex) {

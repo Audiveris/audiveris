@@ -14,9 +14,10 @@ package omr;
 import omr.step.Step;
 
 import omr.util.Dumping;
-
-import junit.framework.TestCase;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import org.kohsuke.args4j.CmdLineException;
@@ -24,12 +25,10 @@ import org.kohsuke.args4j.CmdLineException;
 import java.util.Arrays;
 
 /**
- * Unitary tests for CLI.
  *
  * @author Hervé Bitteur
  */
 public class CLITest
-        extends TestCase
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -71,6 +70,37 @@ public class CLITest
     {
         System.out.println("\n+++ printUsage");
         instance.printUsage();
+    }
+
+    @Test
+    public void testRun ()
+            throws Exception
+    {
+        System.out.println("\n+++ testRun");
+
+        String[] args = new String[]{"-run", "omr.step.RunClass"};
+        CLI.Parameters params = instance.getParameters(args);
+        new Dumping().dump(params);
+        assertNotNull("baratin", params.runClass);
+    }
+
+    @Test
+    public void testRunError ()
+            throws Exception
+    {
+        System.out.println("\n+++ testRunError");
+
+        String[] args = new String[]{"-run", "fooBar"};
+
+        try {
+            CLI.Parameters params = instance.getParameters(args);
+
+            fail();
+        } catch (CmdLineException ex) {
+            System.out.println(ex.getMessage());
+            System.out.println(ex.getLocalizedMessage());
+            assertTrue(ex.getMessage().contains("java.lang.ClassNotFoundException"));
+        }
     }
 
     @Test

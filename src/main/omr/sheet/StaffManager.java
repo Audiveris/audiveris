@@ -299,10 +299,10 @@ public class StaffManager
 
         // Intersect with system width
         SystemInfo system = staff.getSystem();
-        int left = system.getAreaEnd(LEFT);
-        int right = system.getAreaEnd(RIGHT);
+        int left = system.getAreaEnd(LEFT); // May not be known yet -> 0
+        int right = system.getAreaEnd(RIGHT); // May not be known yet -> 0
 
-        if ((left != 0) || (right != sheetWidth)) {
+        if ((left != 0) || (right != 0 && right != sheetWidth)) {
             Rectangle slice = new Rectangle(left, 0, right - left, sheetHeight);
             area.intersect(new Area(slice));
         }

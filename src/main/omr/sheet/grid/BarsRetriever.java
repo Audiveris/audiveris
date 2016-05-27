@@ -320,11 +320,17 @@ public class BarsRetriever
     {
         // Display staff peaks?
         if (ViewParameters.getInstance().isStaffPeakPainting()) {
-            g.setColor(Colors.STAFF_PEAK);
-
             for (StaffProjector projector : projectors) {
-                for (StaffPeak peak : projector.getPeaks()) {
+                final List<StaffPeak> peaks = projector.getPeaks();
+
+                for (StaffPeak peak : peaks) {
                     peak.render(g);
+                }
+
+                StaffPeak bracePeak = projector.getBracePeak();
+
+                if ((bracePeak != null) && !peaks.contains(bracePeak)) {
+                    bracePeak.render(g);
                 }
             }
         }
@@ -841,11 +847,15 @@ public class BarsRetriever
     private void createParts ()
     {
         for (SystemInfo system : sheet.getSystems()) {
+            logger.debug("createParts {}", system);
+
             final List<Staff> staves = system.getStaves();
             final List<PartGroup> allGroups = system.getPartGroups(); // All groups in this system
             final Map<Integer, PartGroup> activeGroups = new TreeMap<Integer, PartGroup>(); // Active groups
 
             for (Staff staff : staves) {
+                logger.debug("  Staff#{}", staff.getId());
+
                 final StaffProjector projector = projectorOf(staff);
                 final List<StaffPeak> peaks = projector.getPeaks();
                 final int iStart = projector.getStartPeakIndex();
@@ -863,6 +873,7 @@ public class BarsRetriever
 
                 for (int i = iStart - 1; i >= 0; i--) {
                     final StaffPeak peak = peaks.get(i);
+                    logger.debug("    {}", peak);
 
                     if (peak.isBrace()) {
                         break;
@@ -948,7 +959,7 @@ public class BarsRetriever
 
                             // Stop brace group?
                             if (bracePeak.isBraceEnd(BOTTOM)) {
-                                activeGroups.put(level, null);
+                                activeGroups.remove(level);
 
                                 final int firstId = pg.getFirstStaffId();
                                 final int lastId = pg.getLastStaffId();
@@ -968,11 +979,9 @@ public class BarsRetriever
                                     createPart(system, firstStaff, lastStaff);
                                 } else {
                                     // Braced group of separate parts
-                                    int i1 = staves.indexOf(firstStaff);
-                                    int i2 = staves.indexOf(lastStaff);
                                     logger.debug("Staff#{} stop brace {}", staff.getId(), pg);
 
-                                    for (Staff s : staves.subList(i1, i2 + 1)) {
+                                    for (Staff s : staves.subList(firstId - 1, lastId)) {
                                         createPart(system, s, s);
                                     }
                                 }
@@ -984,6 +993,20 @@ public class BarsRetriever
                             createPart(system, staff, staff);
                         }
                     }
+                }
+            }
+
+            // Check for staves not dispatched in parts (typically due to brace bottom missed)
+            List<Part> parts = system.getParts();
+            Staff latest = parts.isEmpty() ? null : parts.get(parts.size() - 1).getLastStaff();
+            int latestId = (latest == null) ? 0 : latest.getId();
+            int maxId = system.getLastStaff().getId();
+
+            if (latestId < maxId) {
+                logger.info("Completing staves {}-{}", latestId + 1, maxId);
+
+                for (Staff s : staves.subList(latestId, maxId)) {
+                    createPart(system, s, s);
                 }
             }
 
@@ -2262,8 +2285,8 @@ public class BarsRetriever
                 "Lookup height for brace end above or below staff line");
 
         private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(
-                35,
-                "Maximum mean curvature for a brace");
+                20, // 35,
+                "Maximum mean curvature radius for a brace");
 
         // For brackets ----------------------------------------------------------------------------
         //

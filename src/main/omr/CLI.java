@@ -21,6 +21,7 @@ import omr.sheet.Book;
 import omr.sheet.BookManager;
 
 import omr.step.ProcessingCancellationException;
+import omr.step.RunClass;
 import omr.step.Step;
 
 import omr.util.Dumping;
@@ -41,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -92,6 +94,9 @@ import java.util.concurrent.Callable;
  *
  * <dt><b>-printDir DIR</b></dt>
  * <dd>Prints out book to specific folder (ignored if -printAs is used)</dd>
+ *
+ * <dt><b>-run className</b></dt>
+ * <dd>Specifies a class to run on each valid sheet</dd>
  *
  * <dt><b>-save</b></dt>
  * <dd>Saves book</dd>
@@ -450,6 +455,51 @@ public class CLI
         }
     }
 
+    //--------------------//
+    // ClassOptionHandler //
+    //--------------------//
+    /**
+     * Argument handler for a class name.
+     */
+    public static class ClassOptionHandler
+            extends OptionHandler<Properties>
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public ClassOptionHandler (CmdLineParser parser,
+                                   OptionDef option,
+                                   Setter<? super Properties> setter)
+        {
+            super(parser, option, setter);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String getDefaultMetaVariable ()
+        {
+            return "qualified class name";
+        }
+
+        @Override
+        public int parseArguments (org.kohsuke.args4j.spi.Parameters params)
+                throws CmdLineException
+        {
+            String className = params.getParameter(0).trim();
+
+            if (!className.isEmpty()) {
+                try {
+                    Class runClass = Class.forName(className);
+                    FieldSetter fs = setter.asFieldSetter();
+                    fs.addValue(runClass);
+                } catch (Throwable ex) {
+                    throw new CmdLineException(owner, ex);
+                }
+            }
+
+            return 1;
+        }
+    }
+
     //-----------------------//
     // IntArrayOptionHandler //
     //-----------------------//
@@ -542,6 +592,9 @@ public class CLI
         /** Force step re-processing. */
         @Option(name = "-force", usage = "Force step reprocessing")
         boolean force;
+
+        @Option(name = "-run", usage = "Class to run on valid sheets", handler = ClassOptionHandler.class)
+        Class runClass;
 
         /** The map of application options. */
         @Option(name = "-option", usage = "Defines an application constant", handler = PropertyOptionHandler.class)
@@ -792,6 +845,18 @@ public class CLI
 
                     if (!ok) {
                         return;
+                    }
+                }
+
+                // Specific class to run?
+                if (params.runClass != null) {
+                    try {
+                        Constructor cons = params.runClass.getConstructor(
+                                new Class[]{Book.class, SortedSet.class});
+                        RunClass instance = (RunClass) cons.newInstance(book, sheetIds);
+                        instance.process();
+                    } catch (Throwable ex) {
+                        logger.warn("Error running {} {}", params.runClass, ex.toString(), ex);
                     }
                 }
 

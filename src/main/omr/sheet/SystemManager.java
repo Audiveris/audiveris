@@ -439,18 +439,14 @@ public class SystemManager
 
         for (SystemInfo system : sheet.getSystems()) {
             for (Staff staff : system.getStaves()) {
-                //TODO: is this useful?
-                staffManager.computeStaffArea(staff);
+                staffManager.computeStaffArea(staff); // Force update now that system width is known
             }
         }
 
         // Dispatch sections to relevant systems
         dispatchHorizontalSections();
         dispatchVerticalSections();
-        //
-        //        // Dispatch glyphs to relevant systems
-        //        dispatchGlyphs();
-        //
+
         // Allocate one (or several) page instances for the sheet
         allocatePages();
 
