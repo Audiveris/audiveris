@@ -524,7 +524,10 @@ public class BasicStub
     {
         doReset();
         logger.info("Sheet#{} reset as valid.", number);
-        doRedisplay();
+
+        if (OMR.gui != null) {
+            doRedisplay();
+        }
     }
 
     //---------------//
@@ -537,9 +540,12 @@ public class BasicStub
             final RunTable binaryTable = getSheet().getPicture().getTable(Picture.TableKey.BINARY);
             doReset();
             sheet = new BasicSheet(this, binaryTable);
-            sheet.createBinaryView();
             logger.info("Sheet#{} reset to BINARY.", number);
-            doRedisplay();
+
+            if (OMR.gui != null) {
+                sheet.createBinaryView();
+                doRedisplay();
+            }
         } catch (Throwable ex) {
             logger.warn("Could not reset to BINARY {}", ex.toString(), ex);
             reset();
@@ -749,17 +755,15 @@ public class BasicStub
     //-------------//
     private void doRedisplay ()
     {
-        if (OMR.gui != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
+        SwingUtilities.invokeLater(
+                new Runnable()
+        {
+            @Override
+            public void run ()
             {
-                @Override
-                public void run ()
-                {
-                    StubsController.getInstance().reDisplay(BasicStub.this);
-                }
-            });
-        }
+                StubsController.getInstance().reDisplay(BasicStub.this);
+            }
+        });
     }
 
     //---------//

@@ -846,14 +846,15 @@ public class BarsRetriever
      */
     private void createParts ()
     {
+        final List<Staff> sheetStaves = staffManager.getStaves();
+
         for (SystemInfo system : sheet.getSystems()) {
             logger.debug("createParts {}", system);
 
-            final List<Staff> staves = system.getStaves();
             final List<PartGroup> allGroups = system.getPartGroups(); // All groups in this system
             final Map<Integer, PartGroup> activeGroups = new TreeMap<Integer, PartGroup>(); // Active groups
 
-            for (Staff staff : staves) {
+            for (Staff staff : system.getStaves()) {
                 logger.debug("  Staff#{}", staff.getId());
 
                 final StaffProjector projector = projectorOf(staff);
@@ -981,7 +982,7 @@ public class BarsRetriever
                                     // Braced group of separate parts
                                     logger.debug("Staff#{} stop brace {}", staff.getId(), pg);
 
-                                    for (Staff s : staves.subList(firstId - 1, lastId)) {
+                                    for (Staff s : sheetStaves.subList(firstId - 1, lastId)) {
                                         createPart(system, s, s);
                                     }
                                 }
@@ -1005,7 +1006,7 @@ public class BarsRetriever
             if (latestId < maxId) {
                 logger.info("Completing staves {}-{}", latestId + 1, maxId);
 
-                for (Staff s : staves.subList(latestId, maxId)) {
+                for (Staff s : sheetStaves.subList(latestId, maxId)) {
                     createPart(system, s, s);
                 }
             }
