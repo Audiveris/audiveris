@@ -133,14 +133,9 @@ public class BarFilamentFactory
         }
 
         // If this does not increase thickness beyond core, it's OK
-        // Otherwise, this is limited to rather long section only
         Rectangle oSct = VERTICAL.oriented(section.getBounds());
 
-        if (core.union(oSct).height <= core.height) {
-            return true;
-        }
-
-        return oSct.width >= params.minCoreSectionLength;
+        return core.union(oSct).height <= core.height;
     }
 
     //----------------//
@@ -151,6 +146,8 @@ public class BarFilamentFactory
                                  Collection<Section> source)
     {
         final List<Section> sections = new ArrayList<Section>(source);
+        sections.removeAll(fil.getMembers());
+
         boolean expanding;
 
         do {
@@ -221,13 +218,13 @@ public class BarFilamentFactory
     private static final class Constants
             extends ConstantSet
     {
-
         //~ Instance fields ------------------------------------------------------------------------
-//
-//        private final Constant.Boolean registerEachAndEveryGlyph = new Constant.Boolean(
-//                false,
-//                "(Debug) should we register each and every filament built?");
-//
+
+        //
+        //        private final Constant.Boolean registerEachAndEveryGlyph = new Constant.Boolean(
+        //                false,
+        //                "(Debug) should we register each and every filament built?");
+        //
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");

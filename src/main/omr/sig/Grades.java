@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sig;
 
-import omr.math.Combinations;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,51 +48,6 @@ public class Grades
         return value;
     }
 
-    //
-    //    //------------//
-    //    // contextual //
-    //    //------------//
-    //    /**
-    //     * Compute the contextual probability of an inter when supported
-    //     * by a partner through a supporting relation with 'ratio' value.
-    //     *
-    //     * @param inter the intrinsic grade of the inter
-    //     * @param partner the intrinsic grade of a supporting partner
-    //     * @param ratio  the ratio of supporting relation
-    //     * @return the resulting contextual probability for inter
-    //     */
-    //    public static double contextual (double inter,
-    //                                     double partner,
-    //                                     double ratio)
-    //    {
-    //        return (partner * support(inter, ratio)) + ((1 - partner) * inter);
-    //    }
-    //
-    //    //------------//
-    //    // contextual //
-    //    //------------//
-    //    /**
-    //     * Compute the contextual probability of an inter when supported by two partners.
-    //     *
-    //     * @param inter  the intrinsic grade of the target
-    //     * @param partner1 intrinsic grade of partner #1
-    //     * @param ratio1  ratio of supporting partner #1
-    //     * @param partner2 intrinsic grade of partner #2
-    //     * @param ratio2  ratio of supporting partner #2
-    //     * @return the resulting contextual probability for target
-    //     */
-    //    public static double contextual (double inter,
-    //                                     double partner1,
-    //                                     double ratio1,
-    //                                     double partner2,
-    //                                     double ratio2)
-    //    {
-    //        return (partner1 * partner2 * support(inter, ratio1 * ratio2))
-    //               + ((1 - partner1) * partner2 * support(inter, ratio2))
-    //               + (partner1 * (1 - partner2) * support(inter, ratio1))
-    //               + ((1 - partner1) * (1 - partner2) * inter);
-    //    }
-    //
     //------------//
     // contextual //
     //------------//
@@ -115,44 +68,14 @@ public class Grades
         assert partners != null : "Null sources array";
         assert ratios.length == partners.length : "Arrays of different lengths";
 
-        // Define all combinations
-        final int n = partners.length; // Nb of supporting partners
-        final boolean[][] bools = Combinations.getVectors(n);
+        double contrib = 0;
 
-        // Sum over all combinations
-        double total = 0;
-
-        for (boolean[] vector : bools) {
-            double prob = 1;
-            Double w = null;
-
-            for (int i = 0; i < n; i++) {
-                if (vector[i]) {
-                    prob *= partners[i];
-
-                    if (w != null) {
-                        w *= ratios[i];
-                    } else {
-                        w = ratios[i];
-                    }
-                } else {
-                    prob *= (1 - partners[i]);
-                }
-            }
-
-            double value = (w != null) ? support(inter, w) : inter;
-            double line = prob * value;
-
-            //            System.out.printf(
-            //                    "line: %.2f [prob:%.2f value:%.2f]%n",
-            //                    line,
-            //                    prob,
-            //                    value);
-            total += line;
+        for (int i = 0; i < partners.length; i++) {
+            contrib += (partners[i] * (ratios[i] - 1));
         }
 
-        //        System.out.println();
-        //        System.out.printf("total: %.2f%n", total);
+        double total = support(inter, 1 + contrib);
+
         return total;
     }
 

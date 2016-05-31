@@ -149,10 +149,10 @@ public class PeakGraph
 
         watch.start("findAllAlignments");
         findAllAlignments(); // Find all peak alignments across staves
-
-        watch.start("alignGroups");
-        alignGroups(); // Rectify alignments between groups of peaks
-
+//
+//        watch.start("alignGroups");
+//        alignGroups(); // Rectify alignments between groups of peaks
+//
         watch.start("splitMergedGroups");
         splitMergedGroups(); // Split thick peaks that result from merged peaks
 
@@ -272,64 +272,65 @@ public class PeakGraph
             }
         }
     }
-
-    //-------------//
-    // alignGroups //
-    //-------------//
-    /**
-     * For groups of peaks of identical size between two staves, make sure alignments
-     * are consistent with each peak position within the group.
-     */
-    private void alignGroups ()
-    {
-        List<List<StaffPeak>> groups1 = null;
-
-        for (StaffProjector projector : projectors) {
-            final List<List<StaffPeak>> groups2 = getGroupsOf(projector);
-
-            if (groups1 != null) {
-                int i2Min = 0;
-
-                for (int i1 = 0; i1 < groups1.size(); i1++) {
-                    final List<StaffPeak> g1 = groups1.get(i1);
-                    final double start1 = g1.get(0).getDeskewedCenter().getX();
-                    final double stop1 = g1.get(g1.size() - 1).getDeskewedCenter().getX();
-
-                    for (int i2 = i2Min; i2 < groups2.size(); i2++) {
-                        final List<StaffPeak> g2 = groups2.get(i2);
-                        final List<StaffPeak> partners = getAlignedPeaks(g2.get(0), TOP);
-                        partners.retainAll(g1);
-
-                        if (!partners.isEmpty()) {
-                            // We have some alignment, check the pair of groups
-                            if (g1.size() == g2.size()) {
-                                alignGroupPair(g1, g2);
-                            }
-                        } else {
-                            // Speed up a bit
-                            final double start2 = g2.get(0).getDeskewedCenter().getX();
-
-                            if (start2 > (stop1 + params.maxAlignmentDx)) {
-                                break;
-                            }
-
-                            final double stop2 = g2.get(g2.size() - 1).getDeskewedCenter().getX();
-
-                            if ((stop2 + params.maxAlignmentDx) < start1) {
-                                i2Min = i1 + 1;
-                            }
-                        }
-                    }
-                }
-            }
-
-            groups1 = groups2;
-        }
-    }
-
+//
+//    //-------------//
+//    // alignGroups //
+//    //-------------//
+//    /**
+//     * For groups of peaks of identical size between two staves, make sure alignments
+//     * are consistent with each peak position within the group.
+//     */
+//    private void alignGroups ()
+//    {
+//        List<List<StaffPeak>> groups1 = null;
+//
+//        for (StaffProjector projector : projectors) {
+//            final List<List<StaffPeak>> groups2 = getGroupsOf(projector);
+//
+//            if (groups1 != null) {
+//                int i2Min = 0;
+//
+//                for (int i1 = 0; i1 < groups1.size(); i1++) {
+//                    final List<StaffPeak> g1 = groups1.get(i1);
+//                    final double start1 = g1.get(0).getDeskewedCenter().getX();
+//                    final double stop1 = g1.get(g1.size() - 1).getDeskewedCenter().getX();
+//
+//                    for (int i2 = i2Min; i2 < groups2.size(); i2++) {
+//                        final List<StaffPeak> g2 = groups2.get(i2);
+//                        final List<StaffPeak> partners = getAlignedPeaks(g2.get(0), TOP);
+//                        partners.retainAll(g1);
+//
+//                        if (!partners.isEmpty()) {
+//                            // We have some alignment, check the pair of groups
+//                            if (g1.size() == g2.size()) {
+//                                alignGroupPair(g1, g2);
+//                            }
+//                        } else {
+//                            // Speed up a bit
+//                            final double start2 = g2.get(0).getDeskewedCenter().getX();
+//
+//                            if (start2 > (stop1 + params.maxAlignmentDx)) {
+//                                break;
+//                            }
+//
+//                            final double stop2 = g2.get(g2.size() - 1).getDeskewedCenter().getX();
+//
+//                            if ((stop2 + params.maxAlignmentDx) < start1) {
+//                                i2Min = i1 + 1;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            groups1 = groups2;
+//        }
+//    }
+//
     //----------------//
     // buildBarSticks //
     //----------------//
+
     /**
      * Build the underlying stick of every peak.
      * <p>
@@ -1101,13 +1102,13 @@ public class PeakGraph
 
             if (inDegreeOf(peak) > 1) {
                 List<BarAlignment> edges = new ArrayList<BarAlignment>(incomingEdgesOf(peak));
-                edges.remove(BarAlignment.bestOf(edges));
+                edges.remove(BarAlignment.bestOf(edges, TOP));
                 toRemove.addAll(edges);
             }
 
             if (outDegreeOf(peak) > 1) {
                 List<BarAlignment> edges = new ArrayList<BarAlignment>(outgoingEdgesOf(peak));
-                edges.remove(BarAlignment.bestOf(edges));
+                edges.remove(BarAlignment.bestOf(edges, BOTTOM));
                 toRemove.addAll(edges);
             }
         }

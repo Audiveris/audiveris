@@ -81,23 +81,30 @@ public class BarAlignment
      * Report the best (connection or alignment) among the provided collection.
      *
      * @param alignments the collection to filter
+     * @param side       which side of alignment to consider
      * @return the best one, or null if collection is empty
      */
-    public static BarAlignment bestOf (Collection<? extends BarAlignment> alignments)
+    public static BarAlignment bestOf (Collection<? extends BarAlignment> alignments,
+                                       VerticalSide side)
     {
         BarAlignment best = null;
+        double bestCtxGrade = 0;
 
         for (final BarAlignment align : alignments) {
+            final StaffPeak partner = (side == VerticalSide.TOP) ? align.topPeak : align.bottomPeak;
+            final double ctxGrade = align.getGrade() * partner.getImpacts().getGrade();
+
             if (best == null) {
                 best = align;
+                bestCtxGrade = ctxGrade;
             } else if (best instanceof BarConnection) {
-                if (align instanceof BarConnection && (align.getGrade() > best.getGrade())) {
+                if (align instanceof BarConnection && (ctxGrade > bestCtxGrade)) {
                     best = align;
+                    bestCtxGrade = ctxGrade;
                 }
-            } else if (align instanceof BarConnection) {
+            } else if (align instanceof BarConnection || (ctxGrade > bestCtxGrade)) {
                 best = align;
-            } else if (Math.abs(align.dx) <= Math.abs(best.dx)) {
-                best = align;
+                bestCtxGrade = ctxGrade;
             }
         }
 

@@ -369,8 +369,7 @@ public class StaffProjector
 
         // Look for a suitable peak
         if (!peaks.isEmpty()) {
-            StaffPeak peak = null;
-            peak = peaks.get(peaks.size() - 1);
+            StaffPeak peak = peaks.get(peaks.size() - 1);
 
             if (peak != null) {
                 // Check side position of peak wrt staff, it must be external
