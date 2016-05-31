@@ -13,6 +13,8 @@ package omr.sheet.ui;
 
 import omr.OMR;
 
+import omr.sheet.Book;
+import omr.sheet.BookManager;
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
 
@@ -29,6 +31,7 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -76,10 +79,13 @@ public class ExtractionMenu
             throws IOException
     {
         // Let the user select an output file
-        File file = UIUtil.fileChooser(
+        final Book book = sheet.getStub().getBook();
+        final Path bookPath = BookManager.getDefaultBookPath(book);
+        final Path bookFolder = bookPath.getParent();
+        final File file = UIUtil.fileChooser(
                 true,
                 OMR.gui.getFrame(),
-                new File(Picture.getDefaultExtractionDirectory(), sheet.getId() + "-ext.png"),
+                new File(bookFolder.toFile(), sheet.getId() + "-ext.png"),
                 new OmrFileFilter(".png images", new String[]{".png"}));
 
         if (file == null) {

@@ -346,11 +346,11 @@ public class BookManager
                 book.getRadix() + OMR.PDF_EXTENSION);
     }
 
-    //-------------------------//
+    //----------------------//
     // getDefaultBookFolder //
-    //-------------------------//
+    //----------------------//
     /**
-     * Report the folder where books books are kept by default.
+     * Report the folder where books are kept by default.
      *
      * @return the default folder
      */
@@ -359,9 +359,9 @@ public class BookManager
         return constants.defaultBookFolder.getValue();
     }
 
-    //-----------------------//
+    //--------------------//
     // getDefaultBookPath //
-    //-----------------------//
+    //--------------------//
     /**
      * Report the file path to which the book should be saved.
      *

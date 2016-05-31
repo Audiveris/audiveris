@@ -1247,6 +1247,20 @@ public class BarsRetriever
             if (startColumn != null) {
                 logger.debug("{} startColumn: {}", system, startColumn);
 
+                // Check that this column is not too far right into staff
+                StaffPeak[] startPeaks = startColumn.getPeaks();
+
+                for (StaffPeak peak : startPeaks) {
+                    Staff staff = peak.getStaff();
+                    double xLeft = staff.getAbscissa(LEFT);
+
+                    if ((peak.getStart() - xLeft) > params.maxLinesLeftToStartBar) {
+                        logger.info("start {} too far inside staff#{}", peak, staff.getId());
+
+                        return;
+                    }
+                }
+
                 // Use start column as left limit
                 for (StaffPeak peak : startColumn.getPeaks()) {
                     Staff staff = peak.getStaff();
@@ -1684,6 +1698,12 @@ public class BarsRetriever
         final StaffPeak bracePeak = projector.findBracePeak(minLeft, maxRight);
 
         if (bracePeak == null) {
+            return null;
+        }
+
+        if (bracePeak.getWidth() > params.maxBraceWidth) {
+            logger.info("too wide bracePeak {}", bracePeak);
+
             return null;
         }
 
@@ -2225,13 +2245,12 @@ public class BarsRetriever
                 "Minimum difference between THIN/THICK width values");
 
         private final Scale.Fraction maxBarExtension = new Scale.Fraction(
-                1.0, //0.5, TODO: should be larger for start column & before
-                // And should not ruin a whole connected column!!!
+                1.0,
                 "Maximum extension for a barline above or below staff line");
 
-        private final Scale.Fraction maxBarToLinesLeftEnd = new Scale.Fraction(
+        private final Scale.Fraction maxLinesLeftToStartBar = new Scale.Fraction(
                 0.15,
-                "Maximum dx between bar and left end of staff lines");
+                "Maximum dx between left end of staff lines and start bar");
 
         private final Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
                 0.75,
@@ -2333,7 +2352,7 @@ public class BarsRetriever
 
         final double maxBarExtension;
 
-        final int maxBarToLinesLeftEnd;
+        final int maxLinesLeftToStartBar;
 
         final int maxDoubleBarGap;
 
@@ -2386,7 +2405,7 @@ public class BarsRetriever
             largeSystemStaffCount = constants.largeSystemStaffCount.getValue();
             minNormedDeltaWidth = constants.minThinThickDelta.getValue();
             maxBarExtension = scale.toPixels(constants.maxBarExtension);
-            maxBarToLinesLeftEnd = scale.toPixels(constants.maxBarToLinesLeftEnd);
+            maxLinesLeftToStartBar = scale.toPixels(constants.maxLinesLeftToStartBar);
             maxDoubleBarGap = scale.toPixels(constants.maxDoubleBarGap);
             maxBraceBarGap = scale.toPixels(constants.maxBraceBarGap);
             minMeasureWidth = scale.toPixels(constants.minMeasureWidth);
