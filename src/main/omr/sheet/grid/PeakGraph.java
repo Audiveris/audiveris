@@ -22,7 +22,6 @@ import omr.lag.Section;
 
 import omr.math.AreaUtil;
 import omr.math.GeoPath;
-
 import static omr.run.Orientation.HORIZONTAL;
 
 import omr.sheet.Picture;
@@ -33,21 +32,17 @@ import omr.sheet.Staff;
 import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
-
 import static omr.sheet.grid.StaffPeak.Attribute.BRACE;
 
 import omr.step.StepException;
 
 import omr.util.Dumping;
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
-
 import omr.util.Navigable;
 import omr.util.StopWatch;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.BOTTOM;
 import static omr.util.VerticalSide.TOP;
 
@@ -150,7 +145,7 @@ public class PeakGraph
         buildBarSticks(); // Build core filament for each peak
 
         watch.start("detectCurvedPeaks");
-        detectCurvedPeaks(); // Flag any peak that looks like a curved entity (too weak filter!)
+        detectCurvedPeaks(); // Flag any peak that looks like a curved entity (very weak filter!)
 
         watch.start("findAllAlignments");
         findAllAlignments(); // Find all peak alignments across staves
@@ -417,7 +412,7 @@ public class PeakGraph
             && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
             BarConnection connection = new BarConnection(alignment);
 
-            if (vip) {
+            if (logger.isDebugEnabled() || vip) {
                 logger.info("VIP {}", connection);
             }
 
@@ -438,8 +433,13 @@ public class PeakGraph
      * Check whether the provided peak is candidate for a split.
      * <p>
      * The peak must not be part of a group.
-     * It must be aligned with 2 partners above or 2 partners below, which would be compatible
+     * It must be "aligned" with 2 partners above or 2 partners below, which would be compatible
      * with this peak, in terms of width and span.
+     * <p>
+     * The problem with a thick/thin in one staff and a thick in the other staff is that there may
+     * be no "alignment" between thin to thick, simply because of width difference.
+     * Hence we cannot rely only on "established" alignments, but have to consider a kind of "group
+     * to group" alignment.
      *
      * @param peak the peak to check
      * @return the map of partners, above & below, empty if not candidate
@@ -459,83 +459,79 @@ public class PeakGraph
         }
 
         for (VerticalSide side : VerticalSide.values()) {
-            int degree = (side == TOP) ? inDegreeOf(peak) : outDegreeOf(peak);
+            List<StaffPeak> partners = groupOf(getAlignedPeaks(peak, side));
 
-            if (degree > 1) {
-                List<StaffPeak> partners = getAlignedPeaks(peak, side);
+            if (partners.size() != 2) {
+                continue; // We can accommodate only 2 partners
+            }
 
-                if (partners.size() > 2) {
-                    continue; // We can accommodate only 2 partners
-                }
+            final StaffPeak p1 = partners.get(0);
+            final StaffPeak p2 = partners.get(partners.size() - 1);
+            final int maxWidth = Math.max(p1.getWidth(), p2.getWidth());
 
-                final StaffPeak p1 = partners.get(0);
-                final StaffPeak p2 = partners.get(partners.size() - 1);
-                final int maxWidth = Math.max(p1.getWidth(), p2.getWidth());
+            if (peak.getWidth() <= (maxWidth + 2)) {
+                continue;
+            }
 
-                if (peak.getWidth() <= (maxWidth + 2)) {
-                    continue;
-                }
+            // Check gap between partners
+            final int gap = p2.getStart() - p1.getStop() + 1;
 
-                // Check gap between partners
-                final int gap = p2.getStart() - p1.getStop() + 1;
+            if (gap > params.maxCloseGap) {
+                continue;
+            }
 
-                if (gap > params.maxCloseGap) {
-                    continue;
-                }
+            int width = peak.getWidth();
 
-                int width = peak.getWidth();
+            // Total width for partners
+            int total = totalWidth(partners);
 
-                // Total width for partners
-                int total = totalWidth(partners);
+            // Span width for partners
+            int span = p2.getStop() - p1.getStart() + 1;
 
-                // Span width for partners
-                int span = p2.getStop() - p1.getStart() + 1;
+            // Width difference ratio
+            int dTotal = Math.abs(total - width);
+            double rTotal = dTotal / (double) Math.max(total, width);
+            int dSpan = Math.abs(span - width);
+            double rSpan = dSpan / (double) Math.max(span, width);
+            double minRatio = Math.min(rTotal, rSpan);
 
-                // Width difference ratio
-                int dTotal = Math.abs(total - width);
-                double rTotal = dTotal / (double) Math.max(total, width);
-                int dSpan = Math.abs(span - width);
-                double rSpan = dSpan / (double) Math.max(span, width);
-                double minRatio = Math.min(rTotal, rSpan);
+            // TODO: check that rSpan is acceptable !!!!! (not 60% !!!)
+            if (minRatio <= params.maxWidthRatio) {
+                final Scale scale = sheet.getScale();
 
-                // TODO: check that rSpan is acceptable !!!!! (not 60% !!!)
-                if (minRatio <= params.maxWidthRatio) {
-                    final Scale scale = sheet.getScale();
+                if (logger.isDebugEnabled()) {
+                    logger.info(
+                            String.format(
+                                    "%s width:%d %s dTotal:%dpx/%.2f(%d%%) dSpan:%dpx/%.2f(%d%%)",
+                                    peak.toString(),
+                                    width,
+                                    side.toString(),
+                                    dTotal,
+                                    scale.pixelsToFrac(dTotal),
+                                    (int) (rTotal * 100),
+                                    dSpan,
+                                    scale.pixelsToFrac(dSpan),
+                                    (int) (rSpan * 100)));
 
-                    if (logger.isDebugEnabled()) {
-                        logger.info(
-                                String.format(
-                                        "%s width:%d %s dTotal:%dpx/%.2f(%d%%) dSpan:%dpx/%.2f(%d%%)",
-                                        peak.toString(),
-                                        width,
-                                        side.toString(),
-                                        dTotal,
-                                        scale.pixelsToFrac(dTotal),
-                                        (int) (rTotal * 100),
-                                        dSpan,
-                                        scale.pixelsToFrac(dSpan),
-                                        (int) (rSpan * 100)));
-
-                        for (StaffPeak partner : partners) {
-                            logger.info("   {} width:{} ", partner, partner.getWidth());
-                        }
+                    for (StaffPeak partner : partners) {
+                        logger.info("   {} width:{} ", partner, partner.getWidth());
                     }
-
-                    // Check whether split would make sense
-                    int w1 = p1.getWidth();
-                    int w2 = p2.getWidth();
-                    double ratio = (double) w1 / (w1 + w2);
-                    int mid = peak.getStart() + (int) Math.rint(peak.getWidth() * ratio);
-
-                    if ((mid <= (peak.getStart() + 1)) || (mid >= (peak.getStop() - 1))) {
-                        logger.debug("split of {} not feasible", peak);
-
-                        continue; // Give up the split
-                    }
-
-                    // OK, let's go for a split
-                    map.put(side, partners);
                 }
+
+                // Check whether split would make sense
+                int w1 = p1.getWidth();
+                int w2 = p2.getWidth();
+                double ratio = (double) w1 / (w1 + w2);
+                int mid = peak.getStart() + (int) Math.rint(peak.getWidth() * ratio);
+
+                if ((mid <= (peak.getStart() + 1)) || (mid >= (peak.getStop() - 1))) {
+                    logger.debug("split of {} not feasible", peak);
+
+                    continue; // Give up the split
+                }
+
+                // OK, let's go for a split
+                map.put(side, partners);
             }
         }
 
@@ -976,12 +972,24 @@ public class PeakGraph
 
         // Connections are ordered per top staff then per abscissa.
         for (BarConnection connection : getConnections()) {
+            logger.debug("{}", connection);
+
             int top = connection.topPeak.getStaff().getId();
             int bottom = connection.bottomPeak.getStaff().getId();
 
             if (systemTops[top - 1] == null) {
-                // First connection ever between the 2 staves
                 systemTops[top - 1] = top;
+            }
+
+            if (systemTops[bottom - 1] == null) {
+                // First connection ever between the 2 staves
+                // Check it is not located too far on right after staff left abscissa
+                final int xOffset = connection.bottomPeak.getStart()
+                                    - connection.bottomPeak.getStaff().getAbscissa(LEFT);
+
+                if (xOffset > params.maxFirstConnectionXOffset) {
+                    continue;
+                }
             }
 
             systemTops[bottom - 1] = systemTops[top - 1];
@@ -1017,6 +1025,10 @@ public class PeakGraph
      */
     private List<StaffPeak> groupOf (List<StaffPeak> peaks)
     {
+        if (peaks.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        }
+
         final StaffPeak first = peaks.get(0);
         final List<StaffPeak> all = projectorOf(first.getStaff()).getPeaks(); // All peaks in staff
         final int i1 = all.indexOf(first);
@@ -1303,8 +1315,8 @@ public class PeakGraph
                 "Minimum grade for a true connection");
 
         private final Scale.Fraction minBarCurvature = new Scale.Fraction(
-                15,
-                "Minimum mean curvature radius for a bar line (rather than a brace)");
+                10,
+                "Minimum mean curvature radius for a bar line");
 
         private final Constant.Ratio maxWidthRatio = new Constant.Ratio(
                 0.3,
@@ -1319,8 +1331,12 @@ public class PeakGraph
                 "Lookup height for bracket end above or below staff line");
 
         private final Scale.Fraction maxCloseGap = new Scale.Fraction(
-                0.5,
+                0.4,
                 "Max horizontal gap between two close members of a double bar");
+
+        private final Scale.Fraction maxFirstConnectionXOffset = new Scale.Fraction(
+                2.0,
+                "Max horizontal offset between staff start and first connection");
     }
 
     //------------//
@@ -1350,6 +1366,8 @@ public class PeakGraph
 
         final int maxCloseGap;
 
+        final int maxFirstConnectionXOffset;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -1368,6 +1386,7 @@ public class PeakGraph
             maxTotalDiffRatio = constants.maxTotalDiffRatio.getValue();
             bracketLookupExtension = scale.toPixels(constants.bracketLookupExtension);
             maxCloseGap = scale.toPixels(constants.maxCloseGap);
+            maxFirstConnectionXOffset = scale.toPixels(constants.maxFirstConnectionXOffset);
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);

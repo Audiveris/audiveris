@@ -1081,7 +1081,7 @@ public class StaffProjector
                 "Abscissa margin for refining peak sides");
 
         private final Scale.Fraction minDerivative = new Scale.Fraction(
-                0.625,
+                0.5,
                 "Minimum absolute derivative for peak side");
 
         private final Scale.Fraction barThreshold = new Scale.Fraction(
@@ -1093,7 +1093,7 @@ public class StaffProjector
                 "Minimum cumul value to detect brace peak");
 
         private final Scale.Fraction gapThreshold = new Scale.Fraction(
-                0.75,
+                0.85,
                 "Maximum vertical gap length in a bar");
 
         private final Scale.Fraction chunkThreshold = new Scale.Fraction(
