@@ -68,6 +68,9 @@ public class LineCluster
     /** Id for debug. */
     private final String id;
 
+    /** Typical interline. */
+    private final int interline;
+
     /** Scaling information. */
     private final Scale scale;
 
@@ -90,10 +93,12 @@ public class LineCluster
     /**
      * Creates a new LineCluster object.
      *
-     * @param scale the scaling information
-     * @param seed  the first filament of the cluster
+     * @param scale     the global scaling information
+     * @param interline precise interline for this cluster
+     * @param seed      the first filament of the cluster
      */
     public LineCluster (Scale scale,
+                        int interline,
                         StaffFilament seed)
     {
         if (logger.isDebugEnabled() || seed.isVip()) {
@@ -105,7 +110,9 @@ public class LineCluster
         }
 
         this.scale = scale;
-        this.id = "C" + seed.getId();
+        this.interline = interline;
+
+        id = "C" + seed.getId();
 
         lines = new TreeMap<Integer, StaffFilament>();
 
@@ -214,7 +221,7 @@ public class LineCluster
      */
     public int getInterline ()
     {
-        return scale.getInterline();
+        return interline;
     }
 
     //-------------//
@@ -521,7 +528,7 @@ public class LineCluster
         StringBuilder sb = new StringBuilder("Cluster#");
         sb.append(getId());
 
-        sb.append("{interline:").append(getInterline());
+        sb.append("{interline:").append(interline);
 
         sb.append(" size:").append(getSize());
 

@@ -149,15 +149,15 @@ public class PeakGraph
 
         watch.start("findAllAlignments");
         findAllAlignments(); // Find all peak alignments across staves
-//
-//        watch.start("alignGroups");
-//        alignGroups(); // Rectify alignments between groups of peaks
-//
-        watch.start("splitMergedGroups");
-        splitMergedGroups(); // Split thick peaks that result from merged peaks
+        //
+        //        watch.start("alignGroups");
+        //        alignGroups(); // Rectify alignments between groups of peaks
 
         watch.start("findConnections");
         findConnections(); // Find all concrete connections across staves
+
+        watch.start("splitMergedGroups");
+        splitMergedGroups(); // Split thick peaks that result from merged peaks
 
         watch.start("purgeAlignments");
         purgeAlignments(); // Purge conflicting connections & alignments
@@ -238,99 +238,64 @@ public class PeakGraph
         return constants.maxAlignmentDx;
     }
 
-    //----------------//
-    // alignGroupPair //
-    //----------------//
-    /**
-     * Given two (roughly) aligned groups, of identical size, make sure their individual
-     * alignments are OK.
-     *
-     * @param g1 group in top staff
-     * @param g2 group in bottom staff
-     */
-    private void alignGroupPair (List<StaffPeak> g1,
-                                 List<StaffPeak> g2)
-    {
-        logger.debug("alignGroupPair");
-        logger.debug("      top:{}", g1);
-        logger.debug("   bottom:{}", g2);
-
-        for (int i = 0; i < g1.size(); i++) {
-            StaffPeak p1 = g1.get(i);
-            StaffPeak p2 = g2.get(i);
-
-            for (BarAlignment align : new ArrayList<BarAlignment>(outgoingEdgesOf(p1))) {
-                if (getEdgeTarget(align) != p2) {
-                    removeEdge(align);
-                }
-            }
-
-            for (BarAlignment align : new ArrayList<BarAlignment>(incomingEdgesOf(p2))) {
-                if (getEdgeSource(align) != p1) {
-                    removeEdge(align);
-                }
-            }
-        }
-    }
-//
-//    //-------------//
-//    // alignGroups //
-//    //-------------//
-//    /**
-//     * For groups of peaks of identical size between two staves, make sure alignments
-//     * are consistent with each peak position within the group.
-//     */
-//    private void alignGroups ()
-//    {
-//        List<List<StaffPeak>> groups1 = null;
-//
-//        for (StaffProjector projector : projectors) {
-//            final List<List<StaffPeak>> groups2 = getGroupsOf(projector);
-//
-//            if (groups1 != null) {
-//                int i2Min = 0;
-//
-//                for (int i1 = 0; i1 < groups1.size(); i1++) {
-//                    final List<StaffPeak> g1 = groups1.get(i1);
-//                    final double start1 = g1.get(0).getDeskewedCenter().getX();
-//                    final double stop1 = g1.get(g1.size() - 1).getDeskewedCenter().getX();
-//
-//                    for (int i2 = i2Min; i2 < groups2.size(); i2++) {
-//                        final List<StaffPeak> g2 = groups2.get(i2);
-//                        final List<StaffPeak> partners = getAlignedPeaks(g2.get(0), TOP);
-//                        partners.retainAll(g1);
-//
-//                        if (!partners.isEmpty()) {
-//                            // We have some alignment, check the pair of groups
-//                            if (g1.size() == g2.size()) {
-//                                alignGroupPair(g1, g2);
-//                            }
-//                        } else {
-//                            // Speed up a bit
-//                            final double start2 = g2.get(0).getDeskewedCenter().getX();
-//
-//                            if (start2 > (stop1 + params.maxAlignmentDx)) {
-//                                break;
-//                            }
-//
-//                            final double stop2 = g2.get(g2.size() - 1).getDeskewedCenter().getX();
-//
-//                            if ((stop2 + params.maxAlignmentDx) < start1) {
-//                                i2Min = i1 + 1;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            groups1 = groups2;
-//        }
-//    }
-//
+    //
+    //    //-------------//
+    //    // alignGroups //
+    //    //-------------//
+    //    /**
+    //     * For groups of peaks of identical size between two staves, make sure alignments
+    //     * are consistent with each peak position within the group.
+    //     */
+    //    private void alignGroups ()
+    //    {
+    //        List<List<StaffPeak>> groups1 = null;
+    //
+    //        for (StaffProjector projector : projectors) {
+    //            final List<List<StaffPeak>> groups2 = getGroupsOf(projector);
+    //
+    //            if (groups1 != null) {
+    //                int i2Min = 0;
+    //
+    //                for (int i1 = 0; i1 < groups1.size(); i1++) {
+    //                    final List<StaffPeak> g1 = groups1.get(i1);
+    //                    final double start1 = g1.get(0).getDeskewedCenter().getX();
+    //                    final double stop1 = g1.get(g1.size() - 1).getDeskewedCenter().getX();
+    //
+    //                    for (int i2 = i2Min; i2 < groups2.size(); i2++) {
+    //                        final List<StaffPeak> g2 = groups2.get(i2);
+    //                        final List<StaffPeak> partners = getConnectedPeaks(g2.get(0), TOP);
+    //                        partners.retainAll(g1);
+    //
+    //                        if (!partners.isEmpty()) {
+    //                            // We have some alignment, check the pair of groups
+    //                            if (g1.size() == g2.size()) {
+    //                                pruneGroupPair(g1, g2);
+    //                            }
+    //                        } else {
+    //                            // Speed up a bit
+    //                            final double start2 = g2.get(0).getDeskewedCenter().getX();
+    //
+    //                            if (start2 > (stop1 + params.maxAlignmentDx)) {
+    //                                break;
+    //                            }
+    //
+    //                            final double stop2 = g2.get(g2.size() - 1).getDeskewedCenter().getX();
+    //
+    //                            if ((stop2 + params.maxAlignmentDx) < start1) {
+    //                                i2Min = i1 + 1;
+    //                            }
+    //                        }
+    //                    }
+    //                }
+    //            }
+    //
+    //            groups1 = groups2;
+    //        }
+    //    }
+    //
     //----------------//
     // buildBarSticks //
     //----------------//
-
     /**
      * Build the underlying stick of every peak.
      * <p>
@@ -417,6 +382,11 @@ public class PeakGraph
                 logger.info("VIP {}", connection);
             }
 
+            StaffPeak source = getEdgeSource(alignment);
+            StaffPeak target = getEdgeTarget(alignment);
+            removeEdge(alignment);
+            addEdge(source, target, connection);
+
             return connection;
         }
 
@@ -433,7 +403,9 @@ public class PeakGraph
     /**
      * Check whether the provided peak is candidate for a split.
      * <p>
-     * The peak must not be part of a group.
+     * The peak must not be part of a group and it must have a connection with partners.
+     * This is meant to limit such split to real cases.
+     * <p>
      * It must be "aligned" with 2 partners above or 2 partners below, which would be compatible
      * with this peak, in terms of width and span.
      * <p>
@@ -460,7 +432,7 @@ public class PeakGraph
         }
 
         for (VerticalSide side : VerticalSide.values()) {
-            List<StaffPeak> partners = groupOf(getAlignedPeaks(peak, side));
+            List<StaffPeak> partners = groupOf(getConnectedPeaks(peak, side));
 
             if (partners.size() != 2) {
                 continue; // We can accommodate only 2 partners
@@ -563,19 +535,12 @@ public class PeakGraph
                 p,
                 params.bracketLookupExtension,
                 allSections);
+
+        if (filament == null) {
+            return null;
+        }
+
         p.setFilament(filament);
-        p.computeDeskewedCenter(sheet.getSkew());
-        projector.insertPeak(p, peak);
-        findAlignmentsOf(p);
-        impacted.add(p);
-
-        for (BarAlignment edge : incomingEdgesOf(p)) {
-            impacted.add(getEdgeSource(edge));
-        }
-
-        for (BarAlignment edge : outgoingEdgesOf(p)) {
-            impacted.add(getEdgeTarget(edge));
-        }
 
         return p;
     }
@@ -663,16 +628,56 @@ public class PeakGraph
      *
      * @param peak       the reference peak
      * @param staffAbove the staff above to be browsed for alignment with peak
+     * @return the collection of alignments created
      */
-    private void findAlignmentsAbove (StaffPeak peak,
-                                      Staff staffAbove)
+    private List<BarAlignment> findAlignmentsAbove (StaffPeak peak,
+                                                    Staff staffAbove)
     {
+        List<BarAlignment> alignments = new ArrayList<BarAlignment>();
+
         for (StaffPeak peakAbove : projectorOf(staffAbove).getPeaks()) {
             BarAlignment alignment = checkAlignment(peakAbove, peak, true, true);
 
             if (alignment != null) {
                 ///logger.debug("{}", alignment);
                 addEdge(peakAbove, peak, alignment);
+                alignments.add(alignment);
+            }
+        }
+
+        return alignments;
+    }
+
+    //--------------------------------//
+    // findAlignmentsAndConnectionsOf //
+    //--------------------------------//
+    private void findAlignmentsAndConnectionsOf (StaffPeak peak)
+    {
+        final Staff staff = peak.getStaff();
+
+        // Above
+        final List<Staff> stavesAbove = staffManager.vertNeighbors(staff, TOP);
+
+        if (!stavesAbove.isEmpty() && (stavesAbove.get(0).isShort() == staff.isShort())) {
+            for (Staff staffAbove : stavesAbove) {
+                List<BarAlignment> alignments = findAlignmentsAbove(peak, staffAbove);
+
+                for (BarAlignment alignment : alignments) {
+                    checkConnection(alignment);
+                }
+            }
+        }
+
+        // Below
+        final List<Staff> stavesBelow = staffManager.vertNeighbors(staff, BOTTOM);
+
+        if (!stavesBelow.isEmpty() && (stavesBelow.get(0).isShort() == staff.isShort())) {
+            for (Staff staffBelow : stavesBelow) {
+                List<BarAlignment> alignments = findAlignmentsBelow(peak, staffBelow);
+
+                for (BarAlignment alignment : alignments) {
+                    checkConnection(alignment);
+                }
             }
         }
     }
@@ -686,46 +691,24 @@ public class PeakGraph
      *
      * @param peak       the reference peak
      * @param staffBelow the staff below to be browsed for alignment with peak
+     * @return the collection of alignments created
      */
-    private void findAlignmentsBelow (StaffPeak peak,
-                                      Staff staffBelow)
+    private List<BarAlignment> findAlignmentsBelow (StaffPeak peak,
+                                                    Staff staffBelow)
     {
+        List<BarAlignment> alignments = new ArrayList<BarAlignment>();
+
         for (StaffPeak peakBelow : projectorOf(staffBelow).getPeaks()) {
             BarAlignment alignment = checkAlignment(peak, peakBelow, true, true);
 
             if (alignment != null) {
                 logger.debug("{}", alignment);
                 addEdge(peak, peakBelow, alignment);
-            }
-        }
-    }
-
-    //------------------//
-    // findAlignmentsOf //
-    //------------------//
-    private void findAlignmentsOf (StaffPeak peak)
-    {
-        final Staff staff = peak.getStaff();
-
-        // Above
-        final List<Staff> stavesAbove = staffManager.vertNeighbors(staff, TOP);
-
-        if (!stavesAbove.isEmpty() && (stavesAbove.get(0).isShort() == staff.isShort())) {
-            for (Staff staffAbove : stavesAbove) {
-                findAlignmentsAbove(peak, staffAbove);
+                alignments.add(alignment);
             }
         }
 
-        // Below
-        final List<Staff> stavesBelow = staffManager.vertNeighbors(staff, BOTTOM);
-
-        // Make sure there are other staves on this side and they are "short-wise compatible"
-        // with current staff
-        if (!stavesBelow.isEmpty() && (stavesBelow.get(0).isShort() == staff.isShort())) {
-            for (Staff staffBelow : stavesBelow) {
-                findAlignmentsBelow(peak, staffBelow);
-            }
-        }
+        return alignments;
     }
 
     //-------------------//
@@ -783,30 +766,23 @@ public class PeakGraph
         // Check among the alignments for peaks connected across staves
         for (BarAlignment alignment : new ArrayList<BarAlignment>(edgeSet())) {
             // Look for concrete connection
-            BarConnection connection = checkConnection(alignment);
-
-            if (connection != null) {
-                StaffPeak source = getEdgeSource(alignment);
-                StaffPeak target = getEdgeTarget(alignment);
-                removeEdge(alignment);
-                addEdge(source, target, connection);
-            }
+            checkConnection(alignment);
         }
     }
 
-    //-----------------//
-    // getAlignedPeaks //
-    //-----------------//
+    //-------------------//
+    // getConnectedPeaks //
+    //-------------------//
     /**
-     * Report the peaks aligned with the provided peak in the next staff on desired
+     * Report the peaks connected with the provided peak in the next staff on desired
      * direction.
      *
      * @param peak the provided peaks
      * @param side which staff to browse
-     * @return the sequence of aligned peaks, perhaps empty
+     * @return the sequence of connected peaks, perhaps empty
      */
-    private List<StaffPeak> getAlignedPeaks (StaffPeak peak,
-                                             VerticalSide side)
+    private List<StaffPeak> getConnectedPeaks (StaffPeak peak,
+                                               VerticalSide side)
     {
         int degree = (side == TOP) ? inDegreeOf(peak) : outDegreeOf(peak);
 
@@ -816,7 +792,9 @@ public class PeakGraph
                     peak);
 
             for (BarAlignment edge : edges) {
-                others.add((side == TOP) ? getEdgeSource(edge) : getEdgeTarget(edge));
+                if (edge instanceof BarConnection) {
+                    others.add((side == TOP) ? getEdgeSource(edge) : getEdgeTarget(edge));
+                }
             }
 
             return new ArrayList<StaffPeak>(others);
@@ -1075,6 +1053,41 @@ public class PeakGraph
         return projectors.get(staff.getId() - 1);
     }
 
+    //----------------//
+    // pruneGroupPair //
+    //----------------//
+    /**
+     * Given two (roughly) aligned groups, of identical size, make sure their individual
+     * connections are OK.
+     *
+     * @param g1 group in top staff
+     * @param g2 group in bottom staff
+     */
+    private void pruneGroupPair (List<StaffPeak> g1,
+                                 List<StaffPeak> g2)
+    {
+        logger.debug("groupPair");
+        logger.debug("      top:{}", g1);
+        logger.debug("   bottom:{}", g2);
+
+        for (int i = 0; i < g1.size(); i++) {
+            StaffPeak p1 = g1.get(i);
+            StaffPeak p2 = g2.get(i);
+
+            for (BarAlignment align : new ArrayList<BarAlignment>(outgoingEdgesOf(p1))) {
+                if (getEdgeTarget(align) != p2) {
+                    removeEdge(align);
+                }
+            }
+
+            for (BarAlignment align : new ArrayList<BarAlignment>(incomingEdgesOf(p2))) {
+                if (getEdgeSource(align) != p1) {
+                    removeEdge(align);
+                }
+            }
+        }
+    }
+
     //-----------------//
     // purgeAlignments //
     //-----------------//
@@ -1234,16 +1247,36 @@ public class PeakGraph
             }
         }
 
-        // Split old peak into 2 new sub-peaks
-        int mid = peak.getStart() + (int) Math.rint(peak.getWidth() * splitRatio);
-        StaffPeak p1 = createSubPeak(peak, mid, impacted, LEFT);
-        StaffPeak p2 = createSubPeak(peak, mid, impacted, RIGHT);
-
-        // This is the end...
-        projectorOf(peak.getStaff()).removePeak(peak);
         impacted.remove(peak);
 
-        // Re-align peak group
+        // Split old peak into 2 new sub-peaks
+        int mid = peak.getStart() + (int) Math.rint(peak.getWidth() * splitRatio);
+        StaffPeak p1 = createSubPeak(peak, mid, impacted, LEFT); // May fail
+        StaffPeak p2 = createSubPeak(peak, mid, impacted, RIGHT); // May fail
+
+        if ((p1 == null) || (p2 == null)) {
+            return false;
+        }
+
+        final Staff staff = peak.getStaff();
+        final StaffProjector projector = projectorOf(staff);
+
+        for (StaffPeak p : new StaffPeak[]{p1, p2}) {
+            p.computeDeskewedCenter(sheet.getSkew());
+            projector.insertPeak(p, peak);
+            findAlignmentsAndConnectionsOf(p);
+            impacted.add(p);
+
+            for (BarAlignment edge : incomingEdgesOf(p)) {
+                impacted.add(getEdgeSource(edge));
+            }
+
+            for (BarAlignment edge : outgoingEdgesOf(p)) {
+                impacted.add(getEdgeTarget(edge));
+            }
+        }
+
+        // Purge connections within peak groups
         final List<StaffPeak> newPeaks = Arrays.asList(p1, p2);
 
         for (Entry<VerticalSide, List<StaffPeak>> entry : map.entrySet()) {
@@ -1251,13 +1284,16 @@ public class PeakGraph
             List<StaffPeak> partners = entry.getValue();
 
             if (side == TOP) {
-                alignGroupPair(partners, newPeaks);
+                pruneGroupPair(partners, newPeaks);
             } else {
-                alignGroupPair(newPeaks, partners);
+                pruneGroupPair(newPeaks, partners);
             }
         }
 
         logger.info("Split {} into {} and {}", peak, p1, p2);
+
+        // This is the end...
+        projector.removePeak(peak);
 
         return true;
     }

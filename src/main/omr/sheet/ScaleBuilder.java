@@ -43,22 +43,22 @@ import java.util.List;
  * Class {@code ScaleBuilder} computes the global scale of a given sheet by processing
  * the image vertical runs.
  * Adding the most frequent foreground run length to the most frequent background run length,
- * gives the average interline value.
- * Instead of a posteriori addition, we can analyze the total length of two runs in sequence.
+ * would give the average interline value.
+ * Instead of a posteriori addition, we analyze the total length of two combined runs in sequence.
  * <p>
  * A second foreground peak usually gives the average beam thickness.
- * And similarly, a second background peak may indicate a series of staves
- * with a different interline than the main series.</p>
+ * And similarly, a second combined peak may indicate a series of staves with a different interline
+ * than the main series.</p>
  * <p>
  * Internally, additional validity checks are performed:<ol>
- * <li>Method {@link #checkStaves} looks at foreground and background peak populations.
+ * <li>Method {@link #checkStaves} looks at foreground and combined peak populations.
  * <p>
  * If these counts are below quorum values (see constants.quorumRatio),
  * we can suspect that the page does not contain regularly spaced staff lines.
  * </p></li>
- * <li>Method {@link #checkResolution} looks at foreground and background peak keys.
+ * <li>Method {@link #checkResolution} looks at foreground and combined peak keys.
  * <p>
- * If we have not been able to retrieve the main run length for background or for foreground, then
+ * If we have not been able to retrieve the main foreground and combined peaks, then
  * we suspect a wrong image format. In that case, the safe action is to stop the processing, by
  * throwing a StepException.
  * If the main interline value is below a certain threshold (see constants.minResolution), then we
@@ -98,10 +98,13 @@ public class ScaleBuilder
     private IntegerHistogram backHisto;
 
     /** Histogram on vertical pairs of runs. */
-    private IntegerHistogram bothHisto;
+    private IntegerHistogram combinedHisto;
 
     /** Absolute population percentage for validating an extremum. */
     private final double quorumRatio = constants.quorumRatio.getValue();
+
+    /** Absolute population percentage for validating a second extremum. */
+    private final double secondQuorumRatio = constants.secondQuorumRatio.getValue();
 
     /** Most frequent length of vertical foreground runs found. */
     private PeakEntry<Double> forePeak;
@@ -109,30 +112,24 @@ public class ScaleBuilder
     /** Most frequent length of vertical background runs found. */
     private PeakEntry<Double> backPeak;
 
-    /** Most frequent length of vertical runs pair found. */
-    private PeakEntry<Double> bothPeak;
+    /** Most frequent length of vertical combined runs found. */
+    private PeakEntry<Double> combinedPeak;
 
     /** Second frequent length of vertical foreground runs found, if any. */
     private MaxEntry<Integer> beamEntry;
 
-    /** Second frequent length of vertical background runs found, if any. */
-    private PeakEntry<Double> secondBackPeak;
-
-    /** True when this instance is meant only to display graphs. */
-    private final boolean dummy;
+    /** Second frequent length of vertical combined runs found, if any. */
+    private PeakEntry<Double> combinedPeak2;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Constructor to enable scale computation on a given sheet.
      *
      * @param sheet the sheet at hand
-     * @param dummy true when instance is created only to display graphs
      */
-    public ScaleBuilder (Sheet sheet,
-                         boolean dummy)
+    public ScaleBuilder (Sheet sheet)
     {
         this.sheet = sheet;
-        this.dummy = dummy;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -224,11 +221,11 @@ public class ScaleBuilder
             throw new StepException("Missing black peak");
         }
 
-        if (backPeak == null) {
-            throw new StepException("Missing white peak");
+        if (combinedPeak == null) {
+            throw new StepException("Missing combined peak");
         }
 
-        int interline = (int) (forePeak.getKey().best + backPeak.getKey().best);
+        int interline = (int) Math.rint(combinedPeak.getKey().best);
 
         if (interline == 0) {
             sheet.getStub().decideOnRemoval(
@@ -261,7 +258,7 @@ public class ScaleBuilder
 
         if ((forePeak == null) || (forePeak.getValue() < quorumRatio)) {
             error = "No significant black lines found.";
-        } else if ((backPeak == null) || (backPeak.getValue() < quorumRatio)) {
+        } else if ((combinedPeak == null) || (combinedPeak.getValue() < quorumRatio)) {
             error = "No regularly spaced lines found.";
         }
 
@@ -305,10 +302,10 @@ public class ScaleBuilder
     //------------------//
     private Scale.Range computeInterline ()
     {
-        if (bothPeak != null) {
-            int min = (int) Math.rint(bothPeak.getKey().first);
-            int best = (int) Math.rint(bothPeak.getKey().best);
-            int max = (int) Math.rint(bothPeak.getKey().second);
+        if (combinedPeak != null) {
+            int min = (int) Math.rint(combinedPeak.getKey().first);
+            int best = (int) Math.rint(combinedPeak.getKey().best);
+            int max = (int) Math.rint(combinedPeak.getKey().second);
 
             return new Scale.Range(min, best, max);
         } else {
@@ -344,10 +341,10 @@ public class ScaleBuilder
     //------------------------//
     private Scale.Range computeSecondInterline ()
     {
-        if (secondBackPeak != null) {
-            int min = (int) Math.rint(forePeak.getKey().first + secondBackPeak.getKey().first);
-            int best = (int) Math.rint(forePeak.getKey().best + secondBackPeak.getKey().best);
-            int max = (int) Math.rint(forePeak.getKey().second + secondBackPeak.getKey().second);
+        if (combinedPeak2 != null) {
+            int min = (int) Math.rint(combinedPeak2.getKey().first);
+            int best = (int) Math.rint(combinedPeak2.getKey().best);
+            int max = (int) Math.rint(combinedPeak2.getKey().second);
 
             return new Scale.Range(min, best, max);
         } else {
@@ -362,44 +359,57 @@ public class ScaleBuilder
             throws StepException
     {
         StringBuilder sb = new StringBuilder();
+
         // Foreground peak
         forePeak = foreHisto.getPeak(quorumRatio, constants.foreSpreadRatio.getValue(), 0);
         sb.append("fore:").append(forePeak);
 
-        // Pair peak
-        bothPeak = bothHisto.getPeak(quorumRatio, constants.bothSpreadRatio.getValue(), 0);
-
         // Background peak
         backPeak = backHisto.getPeak(quorumRatio, constants.backSpreadRatio.getValue(), 0);
+        sb.append(" back:").append(backPeak);
 
-        // Second background peak?
-        secondBackPeak = backHisto.getPeak(quorumRatio, constants.backSpreadRatio.getValue(), 1);
+        // Combined peak
+        combinedPeak = combinedHisto.getPeak(
+                quorumRatio,
+                constants.combinedSpreadRatio.getValue(),
+                0);
 
-        if (secondBackPeak != null) {
-            // Check whether we should merge with first foreground peak
-            // Test: Delta between peaks <= line thickness
-            Histogram.Peak<Double> p1 = backPeak.getKey();
-            Histogram.Peak<Double> p2 = secondBackPeak.getKey();
+        // Second combined peak?
+        combinedPeak2 = combinedHisto.getPeak(
+                secondQuorumRatio,
+                constants.combinedSpreadRatio.getValue(),
+                1);
 
-            if (Math.abs(p1.best - p2.best) <= forePeak.getKey().best) {
-                backPeak = new PeakEntry(
+        if (combinedPeak2 != null) {
+            // Check whether we should merge with first combined peak
+            // Test: Delta between peaks < line thickness
+            Histogram.Peak<Double> p1 = combinedPeak.getKey();
+            Histogram.Peak<Double> p2 = combinedPeak2.getKey();
+
+            if (Math.abs(p1.best - p2.best) < forePeak.getKey().best) {
+                combinedPeak = new PeakEntry(
                         new Histogram.Peak<Double>(
                                 Math.min(p1.first, p2.first),
                                 (p1.best + p2.best) / 2,
                                 Math.max(p1.second, p2.second)),
-                        (backPeak.getValue() + secondBackPeak.getValue()) / 2);
-                secondBackPeak = null;
-                logger.info("Merged two close background peaks");
-            } else if (p2.best > (p1.best * constants.maxSecondRatio.getValue())) {
-                logger.info("Second background peak too large {}, ignored", p2.best);
-                secondBackPeak = null;
+                        (combinedPeak.getValue() + combinedPeak2.getValue()) / 2);
+                combinedPeak2 = null;
+                logger.info("Merged two close combined peaks");
+            } else {
+                double min = Math.min(p1.best, p2.best);
+                double max = Math.max(p1.best, p2.best);
+
+                if ((max / min) > constants.maxSecondRatio.getValue()) {
+                    logger.info("Second combined peak too different {}, ignored", p2.best);
+                    combinedPeak2 = null;
+                }
             }
         }
 
-        sb.append(" back:").append(backPeak);
+        sb.append(" combined:").append(combinedPeak);
 
-        if (secondBackPeak != null) {
-            sb.append(" secondBack:").append(secondBackPeak);
+        if (combinedPeak2 != null) {
+            sb.append(" combined2:").append(combinedPeak2);
         }
 
         // Second foreground peak (beam)?
@@ -447,6 +457,10 @@ public class ScaleBuilder
                 0.1,
                 "Absolute ratio of total pixels for peak acceptance");
 
+        private final Constant.Ratio secondQuorumRatio = new Constant.Ratio(
+                0.05,
+                "Absolute ratio of total pixels for second peak acceptance");
+
         private final Constant.Ratio foreSpreadRatio = new Constant.Ratio(
                 0.15,
                 "Relative ratio of best count for foreground spread reading");
@@ -455,9 +469,9 @@ public class ScaleBuilder
                 0.3,
                 "Relative ratio of best count for background spread reading");
 
-        private final Constant.Ratio bothSpreadRatio = new Constant.Ratio(
-                0.2,
-                "Relative ratio of best count for both spread reading");
+        private final Constant.Ratio combinedSpreadRatio = new Constant.Ratio(
+                0.4,
+                "Relative ratio of best count for combined spread reading");
 
         private final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
                 2.5,
@@ -465,7 +479,7 @@ public class ScaleBuilder
 
         private final Constant.Ratio maxSecondRatio = new Constant.Ratio(
                 2.0,
-                "Maximum ratio between second and first background peak");
+                "Maximum ratio between second and first combined peak");
 
         private final Constant.Ratio beamAsBackRatio = new Constant.Ratio(
                 0.75,
@@ -488,7 +502,7 @@ public class ScaleBuilder
 
         private final int[] back; // (white) background runs
 
-        private final int[] both; // Pairs of runs (back+fore and fore+back)
+        private final int[] combined; // Pairs of runs (back+fore and fore+back)
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -501,12 +515,12 @@ public class ScaleBuilder
             // Allocate histogram counters
             fore = new int[hMax + 2];
             back = new int[hMax + 2];
-            both = new int[hMax + 2];
+            combined = new int[hMax + 2];
 
             // Useful?
             Arrays.fill(fore, 0);
             Arrays.fill(back, 0);
-            Arrays.fill(both, 0);
+            Arrays.fill(combined, 0);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -518,40 +532,24 @@ public class ScaleBuilder
         {
             int upper = (int) Math.min(
                     fore.length,
-                    ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
+                    (backPeak != null) ? (backPeak.getKey().best * 2) : 20);
             Scale scale = sheet.getScale();
             String xLabel = "Lengths - " + ((scale != null) ? scale : "*no scale*");
 
             try {
                 new HistogramPlotter(
                         sheet,
-                        "vertical both",
-                        both,
-                        bothHisto,
-                        bothPeak,
-                        null,
-                        upper).plot(
-                        new Point(0, 0),
-                        xLabel,
-                        constants.bothSpreadRatio.getValue(),
-                        quorumRatio);
-            } catch (Throwable ex) {
-                logger.warn("Error in plotting both", ex);
-            }
-
-            try {
-                new HistogramPlotter(
-                        sheet,
                         "vertical black",
+                        xLabel,
                         fore,
                         foreHisto,
                         forePeak,
                         null,
                         upper).plot(
-                        new Point(20, 20),
-                        xLabel,
+                        new Point(0, 0),
                         constants.foreSpreadRatio.getValue(),
-                        quorumRatio);
+                        quorumRatio,
+                        null);
             } catch (Throwable ex) {
                 logger.warn("Error in plotting black", ex);
             }
@@ -560,17 +558,36 @@ public class ScaleBuilder
                 new HistogramPlotter(
                         sheet,
                         "vertical white",
+                        xLabel,
                         back,
                         backHisto,
                         backPeak,
-                        secondBackPeak,
+                        null,
                         upper).plot(
-                        new Point(40, 40),
-                        xLabel,
+                        new Point(20, 20),
                         constants.backSpreadRatio.getValue(),
-                        quorumRatio);
+                        quorumRatio,
+                        secondQuorumRatio);
             } catch (Throwable ex) {
                 logger.warn("Error in plotting white", ex);
+            }
+
+            try {
+                new HistogramPlotter(
+                        sheet,
+                        "vertical combined",
+                        xLabel,
+                        combined,
+                        combinedHisto,
+                        combinedPeak,
+                        combinedPeak2,
+                        upper).plot(
+                        new Point(40, 40),
+                        constants.combinedSpreadRatio.getValue(),
+                        quorumRatio,
+                        secondQuorumRatio);
+            } catch (Throwable ex) {
+                logger.warn("Error in plotting both", ex);
             }
         }
 
@@ -603,7 +620,7 @@ public class ScaleBuilder
                             lastBackLength = backLength;
 
                             if (lastForeLength != 0) {
-                                both[lastForeLength + lastBackLength]++;
+                                combined[lastForeLength + lastBackLength]++;
                             }
                         } else {
                             lastForeLength = 0;
@@ -619,7 +636,7 @@ public class ScaleBuilder
                         lastForeLength = foreLength;
 
                         if (lastBackLength != 0) {
-                            both[lastForeLength + lastBackLength]++;
+                            combined[lastForeLength + lastBackLength]++;
                         }
                     } else {
                         lastForeLength = 0;
@@ -638,7 +655,7 @@ public class ScaleBuilder
                         lastBackLength = backLength;
 
                         if (lastForeLength != 0) {
-                            both[lastForeLength + lastBackLength]++;
+                            combined[lastForeLength + lastBackLength]++;
                         }
                     }
                 }
@@ -652,7 +669,7 @@ public class ScaleBuilder
             // Create foreground & background histograms
             foreHisto = createHistogram(fore);
             backHisto = createHistogram(back);
-            bothHisto = createHistogram(both);
+            combinedHisto = createHistogram(combined);
         }
 
         //-----------------//

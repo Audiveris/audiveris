@@ -146,8 +146,14 @@ public class ClustersRetriever
     /** Related scale */
     private final Scale scale;
 
+    /** Minimum interline */
+    private final int minInterline;
+
     /** Desired interline */
     private final int interline;
+
+    /** Maximum interline */
+    private final int maxInterline;
 
     /** Scale-dependent constants */
     private final Parameters params;
@@ -187,19 +193,25 @@ public class ClustersRetriever
      * Creates a new ClustersRetriever object, for a given staff
      * interline.
      *
-     * @param sheet     the sheet to process
-     * @param filaments the current collection of filaments
-     * @param interline the precise interline to be processed
-     * @param combColor color to be used for combs display
+     * @param sheet        the sheet to process
+     * @param filaments    the current collection of filaments
+     * @param minInterline minimum interline value
+     * @param interline    the precise interline to be processed
+     * @param maxInterline maximum interline value
+     * @param combColor    color to be used for combs display
      */
     public ClustersRetriever (Sheet sheet,
                               List<StaffFilament> filaments,
+                              int minInterline,
                               int interline,
+                              int maxInterline,
                               Color combColor)
     {
         this.sheet = sheet;
         this.filaments = filaments;
+        this.minInterline = minInterline;
         this.interline = interline;
+        this.maxInterline = maxInterline;
         this.combColor = combColor;
 
         skew = sheet.getSkew();
@@ -465,12 +477,32 @@ public class ClustersRetriever
             fil = (StaffFilament) fil.getAncestor();
 
             if ((fil.getCluster() == null) && !fil.getCombs().isEmpty()) {
-                LineCluster cluster = new LineCluster(scale, fil);
+                LineCluster cluster = new LineCluster(scale, interline, fil);
                 clusters.add(cluster);
             }
         }
 
         removeMergedClusters();
+    }
+
+    //-----------------------------//
+    // destroyInconsistentClusters //
+    //-----------------------------//
+    /**
+     * Destroy any cluster with non-consistent lines lengths.
+     */
+    private void destroyInconsistentClusters ()
+    {
+        for (Iterator<LineCluster> it = clusters.iterator(); it.hasNext();) {
+            LineCluster cluster = it.next();
+
+            if (!isConsistent(cluster)) {
+                logger.info("Destroying non-consistent {}", cluster);
+
+                cluster.destroy();
+                it.remove();
+            }
+        }
     }
 
     //----------------------------//
@@ -670,6 +702,38 @@ public class ClustersRetriever
         }
 
         removeMergedFilaments();
+    }
+
+    //--------------//
+    // isConsistent //
+    //--------------//
+    /**
+     * Check whether the provided cluster has raw lines of rather similar length.
+     * When this method is called, clusters have already been merged horizontally.
+     *
+     * @param cluster the cluster to check
+     * @return true if OK
+     */
+    private boolean isConsistent (LineCluster cluster)
+    {
+        int minLg = Integer.MAX_VALUE;
+        int maxLg = Integer.MIN_VALUE;
+
+        for (StaffFilament sFil : cluster.getLines()) {
+            int lg = sFil.getLength(HORIZONTAL);
+            minLg = Math.min(minLg, lg);
+            maxLg = Math.max(maxLg, lg);
+        }
+
+        double diffRatio = (maxLg - minLg) / (double) minLg;
+
+        if (diffRatio > constants.maxClusterDiffLengthRatio.getValue()) {
+            logger.debug("diff length ratio: {} for {}", diffRatio, cluster);
+
+            return false;
+        }
+
+        return true;
     }
 
     //-------------------//
@@ -880,6 +944,9 @@ public class ClustersRetriever
         // Merge clusters horizontally, when relevant
         mergeClusterPairs();
 
+        // Discard clusters with inconsistent lines lengths
+        destroyInconsistentClusters();
+
         // Aggregate filaments left over when possible (second)
         expandClusters();
 
@@ -904,10 +971,10 @@ public class ClustersRetriever
     private void retrieveCombs ()
     {
         /** Minimum acceptable delta y */
-        int dMin = scale.getMinInterline();
+        int dMin = minInterline;
 
         /** Maximum acceptable delta y */
-        int dMax = scale.getMaxInterline();
+        int dMax = maxInterline;
 
         // For better efficiency: in doubt, avoid inserting a comb
         if ((dMax - dMin) > 3) {
@@ -1073,6 +1140,10 @@ public class ClustersRetriever
         private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
                 0.2,
                 "Minimum cluster true length (as ratio of median true length)");
+
+        private final Constant.Ratio maxClusterDiffLengthRatio = new Constant.Ratio(
+                0.5,
+                "Maximum ratio of difference in length within raw lines of a cluster");
     }
 
     //------//

@@ -74,8 +74,7 @@ public class ScaleStep
     public void doit (Sheet sheet)
             throws StepException
     {
-        ScaleBuilder builder = new ScaleBuilder(sheet, false);
-        Scale scale = builder.retrieveScale();
+        Scale scale = new ScaleBuilder(sheet).retrieveScale();
 
         logger.info("{}", scale);
 

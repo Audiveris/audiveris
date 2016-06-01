@@ -190,10 +190,11 @@ public class StemScaler
         BufferedImage img = buf.getBufferedImage();
         StemsCleaner eraser = new StemsCleaner(buf, img.createGraphics(), sheet);
         eraser.eraseShapes(
-                Arrays.asList(Shape.THICK_BARLINE,
-                              Shape.THICK_CONNECTOR,
-                              Shape.THIN_BARLINE,
-                              Shape.THIN_CONNECTOR));
+                Arrays.asList(
+                        Shape.THICK_BARLINE,
+                        Shape.THICK_CONNECTOR,
+                        Shape.THIN_BARLINE,
+                        Shape.THIN_CONNECTOR));
         buf = new ByteProcessor(img);
         buf.threshold(127); // Binarize
 
@@ -299,11 +300,15 @@ public class StemScaler
         //-----------//
         public void writePlot ()
         {
-            new HistogramPlotter(sheet, "horizontal black", fore, histo, peak, null, maxFore).plot(
-                    new Point(80, 80),
+            new HistogramPlotter(
+                    sheet,
+                    "horizontal black",
                     "Stem thickness",
-                    spreadRatio,
-                    quorumRatio);
+                    fore,
+                    histo,
+                    peak,
+                    null,
+                    maxFore).plot(new Point(80, 80), spreadRatio, quorumRatio, null);
         }
 
         //-----------------//

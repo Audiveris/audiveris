@@ -117,9 +117,6 @@ public class Scale
         this(interline, -1);
     }
 
-    //-------//
-    // Scale //
-    //-------//
     /**
      * Create a scale entity, meant for a staff.
      *
@@ -132,15 +129,13 @@ public class Scale
         this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), null, null);
     }
 
-    //-------//
-    // Scale //
-    //-------//
     /**
      * Create a scale entity, meant for a whole sheet.
      *
      * @param lineRange            range of line thickness
      * @param interlineRange       range of interline
      * @param secondInterlineRange range of secondInterline
+     * @param beamScale            beam scale information
      */
     public Scale (Range lineRange,
                   Range interlineRange,
@@ -153,9 +148,6 @@ public class Scale
         this.beamScale = beamScale;
     }
 
-    //-------//
-    // Scale //
-    //-------//
     /** No-arg constructor, needed by JAXB. */
     private Scale ()
     {

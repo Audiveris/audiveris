@@ -1299,7 +1299,8 @@ public class BarsRetriever
     private double extensionOf (StaffPeak peak,
                                 VerticalSide side)
     {
-        final Rectangle box = peak.getFilament().getBounds();
+        final Filament fil = peak.getFilament();
+        final Rectangle box = fil.getBounds();
         final double halfLine = scale.getMaxFore() / 2.0;
 
         if (side == TOP) {
@@ -2311,7 +2312,7 @@ public class BarsRetriever
         // For brackets ----------------------------------------------------------------------------
         //
         private final Scale.Fraction minBracketWidth = new Scale.Fraction(
-                0.4,
+                0.25,
                 "Minimum width for a bracket peak");
 
         private final Scale.Fraction maxBracketExtension = new Scale.Fraction(

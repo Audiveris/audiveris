@@ -51,7 +51,7 @@ public class Colors
     public static final Color ENTITY = Color.BLACK;
 
     /** Past successful entities (such as staff lines) */
-    public static final Color ENTITY_MINOR = new Color(192, 192, 192);
+    public static final Color ENTITY_MINOR = Color.GRAY;
 
     /** Virtual entities */
     public static final Color ENTITY_VIRTUAL = Color.LIGHT_GRAY;

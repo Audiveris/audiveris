@@ -911,7 +911,7 @@ public class BookActions
 
         if (stub != null) {
             if (stub.isDone(Step.BINARY)) {
-                new ScaleBuilder(stub.getSheet(), true).displayChart();
+                new ScaleBuilder(stub.getSheet()).displayChart();
             } else {
                 logger.warn("Cannot display scale plot, for lack of scale data");
             }

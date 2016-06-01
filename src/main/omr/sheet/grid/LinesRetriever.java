@@ -335,7 +335,6 @@ public class LinesRetriever
     {
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
         final Color oldColor = g.getColor();
-        g.setColor(Colors.ENTITY_MINOR);
 
         // Combs stuff?
         if (constants.showCombs.isSet()) {
@@ -358,6 +357,7 @@ public class LinesRetriever
 
             final boolean showPoints = Staff.showDefiningPoints();
             final double pointWidth = scale.toPixelsDouble(Staff.getDefiningPointSize());
+            g.setColor(Colors.ENTITY_MINOR);
 
             for (Filament filament : allFils) {
                 filament.renderLine(g, showPoints, pointWidth);
@@ -440,7 +440,9 @@ public class LinesRetriever
             clustersRetriever = new ClustersRetriever(
                     sheet,
                     filaments,
+                    scale.getMinInterline(),
                     scale.getInterline(),
+                    scale.getMaxInterline(),
                     Colors.COMB);
             watch.start("clustersRetriever");
 
@@ -456,7 +458,9 @@ public class LinesRetriever
                 secondClustersRetriever = new ClustersRetriever(
                         sheet,
                         secondFilaments,
+                        scale.getMinSecondInterline(),
                         secondInterline,
+                        scale.getMaxSecondInterline(),
                         Colors.COMB_MINOR);
                 watch.start("secondClustersRetriever");
                 discardedFilaments = secondClustersRetriever.buildInfo();
@@ -495,8 +499,13 @@ public class LinesRetriever
         List<LineCluster> allClusters = new ArrayList<LineCluster>();
         allClusters.addAll(clustersRetriever.getClusters());
 
+        Integer smallInterline = null;
+
         if (secondClustersRetriever != null) {
             allClusters.addAll(secondClustersRetriever.getClusters());
+            smallInterline = Math.min(
+                    clustersRetriever.getInterline(),
+                    secondClustersRetriever.getInterline());
         }
 
         Collections.sort(allClusters, clustersRetriever.byLayout);
@@ -534,6 +543,11 @@ public class LinesRetriever
                     new Scale(cluster.getInterline(), scale.getMainFore()),
                     infos);
             staffManager.addStaff(staff);
+
+            // Flag small staff if any (smaller height than others)
+            if ((smallInterline != null) && (smallInterline == cluster.getInterline())) {
+                staff.setSmall();
+            }
         }
 
         // Flag short staves (side by side) if any

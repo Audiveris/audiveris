@@ -37,13 +37,10 @@ import omr.ui.util.AttachmentHolder;
 import omr.ui.util.BasicAttachmentHolder;
 
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Jaxb;
 import omr.util.Navigable;
 import omr.util.VerticalSide;
-
 import static omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -141,8 +138,12 @@ public class Staff
     private int right;
 
     /** Flag for short staff. (With a neighbor staff on left or right side) */
-    @XmlAttribute
+    @XmlAttribute(name = "short")
     private Boolean isShort;
+
+    /** Flag for small staff. (height lower than others) */
+    @XmlAttribute(name = "small")
+    private Boolean isSmall;
 
     /** Sequence of staff lines. (from top to bottom) */
     @XmlElement(name = "line")
@@ -1023,6 +1024,19 @@ public class Staff
         return (isShort != null) && (isShort == true);
     }
 
+    //---------//
+    // isSmall //
+    //---------//
+    /**
+     * Report whether the staff has a small height compared with others.
+     *
+     * @return the isSmall
+     */
+    public boolean isSmall ()
+    {
+        return (isSmall != null) && (isSmall == true);
+    }
+
     //-----------------//
     // pitchPositionOf //
     //-----------------//
@@ -1223,6 +1237,7 @@ public class Staff
     public void setArea (Area area)
     {
         this.area = area;
+
         ///addAttachment("staff-area-" + id, area);
     }
 
@@ -1302,6 +1317,17 @@ public class Staff
         isShort = true;
     }
 
+    //----------//
+    // setSmall //
+    //----------//
+    /**
+     * Flag this staff as a "small" one.
+     */
+    public void setSmall ()
+    {
+        isSmall = true;
+    }
+
     //-----------//
     // setSystem //
     //-----------//
@@ -1364,6 +1390,10 @@ public class Staff
 
         if (isShort()) {
             sb.append(" SHORT");
+        }
+
+        if (isSmall()) {
+            sb.append(" SMALL");
         }
 
         sb.append(" left:").append(left);
