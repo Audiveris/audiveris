@@ -1312,7 +1312,7 @@ public class LinesRetriever
 
         private final Constant.Double maxSlopeDiff = new Constant.Double(
                 "radians",
-                0.05,
+                0.025,
                 "Maximum delta slope between filament and sheet");
 
         private final Constant.Double minSlope = new Constant.Double(
