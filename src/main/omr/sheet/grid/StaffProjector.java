@@ -178,6 +178,58 @@ public class StaffProjector
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // checkLinesRoot //
+    //----------------//
+    /**
+     * Check for presence of lines roots right before first bar.
+     * <p>
+     * We cannot rely on current lines definition, since they are based only on significant chunks.
+     * Hence we use staff projection which, when no brace is present, should be below lines
+     * threshold for some abscissa range.
+     * <p>
+     * If not, this means some portion of lines is present, hence the (group of) peaks found are not
+     * bars (but perhaps peaks of C-Clef) so there is no start bar and staff left abscissa must be
+     * defined by lines roots.
+     *
+     * @return true if lines root portion was detected
+     */
+    public boolean checkLinesRoot ()
+    {
+        if (getBracePeak() != null) {
+            return false;
+        }
+
+        final StaffPeak firstPeak = peaks.get(0);
+
+        // There must be a significant blank right before first peak
+        Blank blank = selectBlank(LEFT, firstPeak.getStart(), params.minSmallBlankWidth);
+
+        if (blank != null) {
+            int gap = firstPeak.getStart() - 1 - blank.stop;
+
+            if (gap > params.maxExtremaLength) {
+                // Significant root portion found, so unset start peak and define true line start.
+                int iStart = getStartPeakIndex();
+
+                if (iStart != -1) {
+                    peaks.get(iStart).unset(Attribute.STAFF_LEFT_END);
+                }
+
+                staff.setAbscissa(LEFT, blank.stop + 1);
+
+                return true;
+            } else {
+                // No significant root portion found, so peak really defines staff end.
+                return false;
+            }
+        } else {
+            logger.warn("Staff#{} no clear end on LEFT", staff.getId());
+
+            return true;
+        }
+    }
+
     //---------------//
     // findBracePeak //
     //---------------//
@@ -362,7 +414,7 @@ public class StaffProjector
      */
     public void refineRightEnd ()
     {
-        final int linesEnd = staff.getAbscissa(RIGHT); // As defined by end of long staff lines
+        final int linesEnd = staff.getAbscissa(RIGHT); // As defined by end of long staff sections
         int staffEnd = linesEnd;
         StaffPeak endPeak = null;
         Integer peakEnd = null;
@@ -384,7 +436,7 @@ public class StaffProjector
             }
         }
 
-        // Continue and stop at first small blank region (or bracket) encountered if any.
+        // Continue and stop at first small blank region encountered if any.
         // Then keep the additional line chunk if long enough.
         // If not, use peak mid as staff end.
         Blank blank = selectBlank(RIGHT, staffEnd, params.minSmallBlankWidth);
@@ -393,7 +445,7 @@ public class StaffProjector
             int x = blank.start - 1;
 
             if (endPeak != null) {
-                if ((x - peakEnd) > params.maxBarToLinesRightEnd) {
+                if ((x - peakEnd) > params.maxExtremaLength) {
                     // We have significant line chunks beyond bar, hence peak is not the limit
                     logger.debug(
                             "Staff#{} RIGHT set at blank {} (vs {})",
@@ -795,7 +847,7 @@ public class StaffProjector
     // findAllBlanks //
     //---------------//
     /**
-     * Look for all "blank" regions without staff lines.
+     * Look for all "blank" regions (without staff lines).
      */
     private void findAllBlanks ()
     {
@@ -1059,6 +1111,54 @@ public class StaffProjector
         }
     }
 
+    //-------//
+    // Blank //
+    //-------//
+    /**
+     * An abscissa region where no staff lines are detected and thus indicates possible
+     * end of staff.
+     */
+    private static class Blank
+            implements Comparable<Blank>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** First abscissa in region. */
+        private final int start;
+
+        /** Last abscissa in region. */
+        private final int stop;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Blank (int start,
+                      int stop)
+        {
+            this.start = start;
+            this.stop = stop;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public int compareTo (Blank that)
+        {
+            return Integer.compare(this.start, that.start);
+        }
+
+        public int getWidth ()
+        {
+            return stop - start + 1;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Blank(").append(start).append("-").append(stop).append(")");
+
+            return sb.toString();
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -1113,57 +1213,9 @@ public class StaffProjector
 
         private final Scale.Fraction maxBarWidth = new Scale.Fraction(1.5, "Maximum bar width");
 
-        private final Scale.Fraction maxBarToLinesRightEnd = new Scale.Fraction(
+        private final Scale.Fraction maxExtremaLength = new Scale.Fraction(
                 0.15,
-                "Maximum dx between bar and right end of staff lines");
-    }
-
-    //-------//
-    // Blank //
-    //-------//
-    /**
-     * An abscissa region where no staff lines are detected and thus indicates possible
-     * end of staff.
-     */
-    private static class Blank
-            implements Comparable<Blank>
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** First abscissa in region. */
-        private final int start;
-
-        /** Last abscissa in region. */
-        private final int stop;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Blank (int start,
-                      int stop)
-        {
-            this.start = start;
-            this.stop = stop;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int compareTo (Blank that)
-        {
-            return Integer.compare(this.start, that.start);
-        }
-
-        public int getWidth ()
-        {
-            return stop - start + 1;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Blank(").append(start).append("-").append(stop).append(")");
-
-            return sb.toString();
-        }
+                "Maximum length between ending bar and actual lines end (left or right)");
     }
 
     //------------//
@@ -1193,7 +1245,7 @@ public class StaffProjector
 
         final int maxBarWidth;
 
-        final int maxBarToLinesRightEnd;
+        final int maxExtremaLength;
 
         // Following threshold values depend on actual line height within this staff
         int linesThreshold;
@@ -1215,7 +1267,7 @@ public class StaffProjector
             minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
             maxBarWidth = scale.toPixels(constants.maxBarWidth);
-            maxBarToLinesRightEnd = scale.toPixels(constants.maxBarToLinesRightEnd);
+            maxExtremaLength = scale.toPixels(constants.maxExtremaLength);
         }
     }
 

@@ -225,33 +225,6 @@ public class SystemInfo
         freeGlyphs.add((BasicGlyph) glyph);
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the IDs of the system collection.
-     *
-     * @param systems the collection of systems
-     * @return the string built
-     */
-    public static String toString (Collection<SystemInfo> systems)
-    {
-        if (systems == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(" systems[");
-
-        for (SystemInfo system : systems) {
-            sb.append("#").append(system.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
     //---------//
     // addPart //
     //---------//
@@ -500,6 +473,33 @@ public class SystemInfo
         }
 
         return null;
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the IDs of the system collection.
+     *
+     * @param systems the collection of systems
+     * @return the string built
+     */
+    public static String toString (Collection<SystemInfo> systems)
+    {
+        if (systems == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#").append(system.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
     }
 
     //------------------//
@@ -1136,6 +1136,19 @@ public class SystemInfo
     public boolean isIndented ()
     {
         return indented != null;
+    }
+
+    //--------------//
+    // isMultiStaff //
+    //--------------//
+    /**
+     * Report whether the system contains several staves.
+     *
+     * @return true if multi-staff
+     */
+    public boolean isMultiStaff ()
+    {
+        return staves.size() > 1;
     }
 
     //-----------------//

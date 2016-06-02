@@ -401,6 +401,14 @@ public class StaffPeak
         return attrs.contains(attr);
     }
 
+    //------------//
+    // isStaffEnd //
+    //------------//
+    public boolean isStaffEnd (HorizontalSide side)
+    {
+        return isSet((side == LEFT) ? STAFF_LEFT_END : STAFF_RIGHT_END);
+    }
+
     //-------//
     // isVip //
     //-------//
@@ -431,14 +439,6 @@ public class StaffPeak
     public final void set (Attribute attr)
     {
         attrs.add(attr);
-    }
-
-    //------------//
-    // isStaffEnd //
-    //------------//
-    public boolean isStaffEnd (HorizontalSide side)
-    {
-        return isSet((side == LEFT) ? STAFF_LEFT_END : STAFF_RIGHT_END);
     }
 
     //---------------//
@@ -530,6 +530,19 @@ public class StaffPeak
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-------//
+    // unset //
+    //-------//
+    /**
+     * Un-set the provided attribute to this instance.
+     *
+     * @param attr provided attribute
+     */
+    public final void unset (Attribute attr)
+    {
+        attrs.remove(attr);
     }
 
     //-----------//

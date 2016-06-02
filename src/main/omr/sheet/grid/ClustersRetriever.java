@@ -18,9 +18,9 @@ import omr.glyph.Symbol.Group;
 import omr.glyph.dynamic.Compounds;
 
 import omr.math.GeoUtil;
-import omr.math.Histogram;
 
 import omr.run.Orientation;
+
 import static omr.run.Orientation.*;
 
 import omr.sheet.Scale;
@@ -237,14 +237,15 @@ public class ClustersRetriever
         retrieveCombs();
 
         // Remember the most popular comb length
-        retrievePopularSize();
-
+        ///retrievePopularSize();
+        //
         // Check relevance
-        if ((popSize < 4) || (popSize > 6)) {
-            logger.info("Giving up spurious line comb size: {}", popSize);
-
-            return discardedFilaments;
-        }
+        //        if ((popSize < 4) || (popSize > 6)) {
+        //            logger.info("Giving up spurious line comb size: {}", popSize);
+        //
+        //            return discardedFilaments;
+        //        }
+        popSize = 5; // Imposed!
 
         // Interconnect filaments via the network of combs
         followCombsNetwork();
@@ -1062,30 +1063,32 @@ public class ClustersRetriever
         return list;
     }
 
-    //---------------------//
-    // retrievePopularSize //
-    //---------------------//
-    /**
-     * Retrieve the most popular size (line count) among all combs.
-     */
-    private void retrievePopularSize ()
-    {
-        // Build histogram of combs lengths
-        Histogram<Integer> histo = new Histogram<Integer>();
-
-        for (List<FilamentComb> list : colCombs.values()) {
-            for (FilamentComb comb : list) {
-                histo.increaseCount(comb.getCount(), comb.getCount());
-            }
-        }
-
-        // Use the most popular length
-        // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
-        popSize = histo.getMaxBucket();
-
-        logger.debug("Popular line comb: {} histo:{}", popSize, histo.dataString());
-    }
-
+    //
+    //    //---------------------//
+    //    // retrievePopularSize //
+    //    //---------------------//
+    //    /**
+    //     * Retrieve the most popular size (line count) among all combs.
+    //     */
+    //    private void retrievePopularSize ()
+    //    {
+    //        // Build histogram of combs lengths
+    //        Histogram<Integer> histo = new Histogram<Integer>();
+    //
+    //        for (List<FilamentComb> list : colCombs.values()) {
+    //            for (FilamentComb comb : list) {
+    //                histo.increaseCount(comb.getCount(), comb.getCount());
+    //            }
+    //        }
+    //
+    //        // Use the most popular length
+    //        // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
+    //        //TODO: NO: simply pickup the most popular size WITHIN 4..6 !!! avoid 2!
+    //        popSize = histo.getMaxBucket();
+    //
+    //        logger.debug("Popular line comb: {} histo:{}", popSize, histo.dataString());
+    //    }
+    //
     //--------------//
     // trimClusters //
     //--------------//

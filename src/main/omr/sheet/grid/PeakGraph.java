@@ -551,7 +551,7 @@ public class PeakGraph
     /**
      * Build SystemInfo for each detected system.
      *
-     * @param systems starting staves
+     * @param systemTops systems starting staves
      * @return the sequence of systems
      */
     private List<SystemInfo> createSystems (Integer[] systemTops)
