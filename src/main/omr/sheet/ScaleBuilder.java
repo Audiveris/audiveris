@@ -157,10 +157,9 @@ public class ScaleBuilder
     // retrieveScale //
     //---------------//
     /**
-     * Retrieve the global scale values by processing the provided
-     * picture runs, make decisions about the validity of current
-     * picture as a music page and store the results as a {@link Scale}
-     * instance in the related sheet.
+     * Retrieve the global scale values by processing the provided picture runs,
+     * make decisions about the validity of current picture as a music page and store
+     * the results as a {@link Scale} instance in the related sheet.
      *
      * @return scale data for the sheet
      * @throws StepException if processing must stop for this sheet.
@@ -183,6 +182,9 @@ public class ScaleBuilder
                     picture.getWidth(),
                     picture.getHeight());
 
+            // Check we have enough foregroung material
+            checkForeground(wholeVertTable);
+
             // Retrieve the various histograms peaks
             retrieveVertPeaks();
 
@@ -202,6 +204,32 @@ public class ScaleBuilder
             if (constants.printWatch.isSet()) {
                 watch.print();
             }
+        }
+    }
+
+    //-----------------//
+    // checkForeground //
+    //-----------------//
+    /**
+     * Check we have a significant number of foreground pixels WRT image size,
+     * otherwise the sheet is mostly blank and contains no music.
+     *
+     * @throws StepException if processing must stop on this sheet
+     */
+    private void checkForeground (RunTable wholeVertTable)
+            throws StepException
+    {
+        int foreCount = vertHistoKeeper.getForePixelsCount();
+        int size = wholeVertTable.getWidth() * wholeVertTable.getHeight();
+        double foreRatio = (double) foreCount / size;
+        logger.debug("foreRatio: {}", foreRatio);
+
+        if (foreRatio < constants.minForeRatio.getValue()) {
+            sheet.getStub().decideOnRemoval(
+                    sheet.getId() + LINE_SEPARATOR + "Too few foreground pixels: "
+                    + String.format("%.4f%%", 100 * foreRatio) + LINE_SEPARATOR
+                    + "This sheet is almost blank.",
+                    false);
         }
     }
 
@@ -486,6 +514,10 @@ public class ScaleBuilder
         private final Constant.Ratio beamAsBackRatio = new Constant.Ratio(
                 0.75,
                 "Default beam height defined as ratio of background peak");
+
+        private final Constant.Ratio minForeRatio = new Constant.Ratio(
+                0.001,
+                "Minimum ratio of foreground pixels in image");
     }
 
     //-----------------//
@@ -504,7 +536,7 @@ public class ScaleBuilder
 
         private final int[] back; // (white) background runs
 
-        private final int[] combined; // Pairs of runs (back+fore and fore+back)
+        private final int[] combined; // Pairs of runs (fore+back when followed by other fore)
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -526,7 +558,100 @@ public class ScaleBuilder
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        //
+        //-----------------//
+        // buildHistograms //
+        //-----------------//
+        public void buildHistograms (RunTable wholeVertTable,
+                                     int width,
+                                     int height)
+        {
+            // Upper bounds for run lengths
+            final int maxBack = height / 4;
+            final int maxFore = height / 16;
+
+            for (int x = 0; x < width; x++) {
+                int yLast = 0; // Ordinate of first pixel not yet processed
+                int lastBackLength = 0; // Length of last valid background run
+                int lastForeLength = 0; // Length of last valid foreground run
+
+                for (Iterator<Run> it = wholeVertTable.iterator(x); it.hasNext();) {
+                    Run run = it.next();
+                    int y = run.getStart();
+
+                    if (y > yLast) {
+                        // Process the background run before this run
+                        int backLength = y - yLast;
+
+                        if (backLength <= maxBack) {
+                            back[backLength]++;
+                            lastBackLength = backLength;
+
+                            if (lastForeLength != 0) {
+                                // For 'combined', we need F, B, F sequence
+                                // Combined is defined as [----]
+                                combined[lastForeLength + lastBackLength]++; // F + B (... F)
+                            }
+                        } else {
+                            lastForeLength = 0;
+                            lastBackLength = 0;
+                        }
+                    }
+
+                    // Process this foreground run
+                    int foreLength = run.getLength();
+
+                    if (foreLength <= maxFore) {
+                        fore[foreLength]++;
+                        lastForeLength = foreLength;
+                    } else {
+                        lastForeLength = 0;
+                        lastBackLength = 0;
+                    }
+
+                    yLast = y + foreLength;
+                }
+
+                // Process a last background run, if any
+                if (yLast < height) {
+                    int backLength = height - yLast;
+
+                    if (backLength <= maxBack) {
+                        back[backLength]++;
+                        lastBackLength = backLength;
+                    }
+                }
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("fore values: {}", Arrays.toString(fore));
+                logger.debug("back values: {}", Arrays.toString(back));
+            }
+
+            // Create foreground & background histograms
+            foreHisto = createHistogram(fore);
+            backHisto = createHistogram(back);
+            combinedHisto = createHistogram(combined);
+        }
+
+        //--------------------//
+        // getForePixelsCount //
+        //--------------------//
+        /**
+         * Report the total number of pixels as cumulated by (valid) foreground runs.
+         *
+         * @return total number of (relevant) black pixels
+         */
+        public int getForePixelsCount ()
+        {
+            int total = 0;
+
+            for (int i = 0; i < fore.length; i++) {
+                total += (i * fore[i]);
+            }
+
+            return total;
+        }
+
         //-----------//
         // writePlot //
         //-----------//
@@ -589,89 +714,8 @@ public class ScaleBuilder
                         quorumRatio,
                         secondQuorumRatio);
             } catch (Throwable ex) {
-                logger.warn("Error in plotting both", ex);
+                logger.warn("Error in plotting combined", ex);
             }
-        }
-
-        //-----------------//
-        // buildHistograms //
-        //-----------------//
-        private void buildHistograms (RunTable wholeVertTable,
-                                      int width,
-                                      int height)
-        {
-            // Upper bounds for run lengths
-            final int maxBack = height / 4;
-            final int maxFore = height / 16;
-
-            for (int x = 0; x < width; x++) {
-                int yLast = 0; // Ordinate of first pixel not yet processed
-                int lastBackLength = 0; // Length of last valid background run
-                int lastForeLength = 0; // Length of last valid foreground run
-
-                for (Iterator<Run> it = wholeVertTable.iterator(x); it.hasNext();) {
-                    Run run = it.next();
-                    int y = run.getStart();
-
-                    if (y > yLast) {
-                        // Process the background run before this run
-                        int backLength = y - yLast;
-
-                        if (backLength <= maxBack) {
-                            back[backLength]++;
-                            lastBackLength = backLength;
-
-                            if (lastForeLength != 0) {
-                                combined[lastForeLength + lastBackLength]++;
-                            }
-                        } else {
-                            lastForeLength = 0;
-                            lastBackLength = 0;
-                        }
-                    }
-
-                    // Process this foreground run
-                    int foreLength = run.getLength();
-
-                    if (foreLength <= maxFore) {
-                        fore[foreLength]++;
-                        lastForeLength = foreLength;
-
-                        if (lastBackLength != 0) {
-                            combined[lastForeLength + lastBackLength]++;
-                        }
-                    } else {
-                        lastForeLength = 0;
-                        lastBackLength = 0;
-                    }
-
-                    yLast = y + foreLength;
-                }
-
-                // Process a last background run, if any
-                if (yLast < height) {
-                    int backLength = height - yLast;
-
-                    if (backLength <= maxBack) {
-                        back[backLength]++;
-                        lastBackLength = backLength;
-
-                        if (lastForeLength != 0) {
-                            combined[lastForeLength + lastBackLength]++;
-                        }
-                    }
-                }
-            }
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("fore values: {}", Arrays.toString(fore));
-                logger.debug("back values: {}", Arrays.toString(back));
-            }
-
-            // Create foreground & background histograms
-            foreHisto = createHistogram(fore);
-            backHisto = createHistogram(back);
-            combinedHisto = createHistogram(combined);
         }
 
         //-----------------//
