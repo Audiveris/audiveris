@@ -978,11 +978,6 @@ public class StaffProjector
                 bestDer = der;
                 bestX = x;
             }
-
-            // Check we are still higher than chunk level
-            if (val < params.chunkThreshold) {
-                break;
-            }
         }
 
         bestDer = Math.abs(bestDer);

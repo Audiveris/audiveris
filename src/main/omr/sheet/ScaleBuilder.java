@@ -374,34 +374,36 @@ public class ScaleBuilder
                 constants.combinedSpreadRatio.getValue(),
                 0);
 
-        // Second combined peak?
-        combinedPeak2 = combinedHisto.getPeak(
-                secondQuorumRatio,
-                constants.combinedSpreadRatio.getValue(),
-                1);
+        if (combinedPeak != null) {
+            // Second combined peak?
+            combinedPeak2 = combinedHisto.getPeak(
+                    secondQuorumRatio,
+                    constants.combinedSpreadRatio.getValue(),
+                    1);
 
-        if (combinedPeak2 != null) {
-            // Check whether we should merge with first combined peak
-            // Test: Delta between peaks < line thickness
-            Histogram.Peak<Double> p1 = combinedPeak.getKey();
-            Histogram.Peak<Double> p2 = combinedPeak2.getKey();
+            if (combinedPeak2 != null) {
+                // Check whether we should merge with first combined peak
+                // Test: Delta between peaks < line thickness
+                Histogram.Peak<Double> p1 = combinedPeak.getKey();
+                Histogram.Peak<Double> p2 = combinedPeak2.getKey();
 
-            if (Math.abs(p1.best - p2.best) < forePeak.getKey().best) {
-                combinedPeak = new PeakEntry(
-                        new Histogram.Peak<Double>(
-                                Math.min(p1.first, p2.first),
-                                (p1.best + p2.best) / 2,
-                                Math.max(p1.second, p2.second)),
-                        (combinedPeak.getValue() + combinedPeak2.getValue()) / 2);
-                combinedPeak2 = null;
-                logger.info("Merged two close combined peaks");
-            } else {
-                double min = Math.min(p1.best, p2.best);
-                double max = Math.max(p1.best, p2.best);
-
-                if ((max / min) > constants.maxSecondRatio.getValue()) {
-                    logger.info("Second combined peak too different {}, ignored", p2.best);
+                if (Math.abs(p1.best - p2.best) < forePeak.getKey().best) {
+                    combinedPeak = new PeakEntry(
+                            new Histogram.Peak<Double>(
+                                    Math.min(p1.first, p2.first),
+                                    (p1.best + p2.best) / 2,
+                                    Math.max(p1.second, p2.second)),
+                            (combinedPeak.getValue() + combinedPeak2.getValue()) / 2);
                     combinedPeak2 = null;
+                    logger.info("Merged two close combined peaks");
+                } else {
+                    double min = Math.min(p1.best, p2.best);
+                    double max = Math.max(p1.best, p2.best);
+
+                    if ((max / min) > constants.maxSecondRatio.getValue()) {
+                        logger.info("Second combined peak too different {}, ignored", p2.best);
+                        combinedPeak2 = null;
+                    }
                 }
             }
         }

@@ -416,7 +416,7 @@ public class CLI
         {
             // Check source does exist
             if (!Files.exists(path)) {
-                String msg = "Could not find file " + path;
+                String msg = "Could not find file \"" + path + "\"";
                 logger.warn(msg);
                 throw new RuntimeException(msg);
             }
@@ -747,7 +747,7 @@ public class CLI
         @Override
         public String toString ()
         {
-            return "Book " + path;
+            return "Book \"" + path + "\"";
         }
 
         @Override
@@ -777,7 +777,7 @@ public class CLI
         @Override
         public String toString ()
         {
-            return "Input " + path;
+            return "Input \"" + path + "\"";
         }
 
         @Override
@@ -926,7 +926,7 @@ public class CLI
         @Override
         public String toString ()
         {
-            return "Script " + path;
+            return "Script \"" + path + "\"";
         }
 
         @Override
