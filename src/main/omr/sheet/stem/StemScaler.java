@@ -18,15 +18,14 @@ import omr.glyph.Shape;
 
 import omr.image.ImageUtil;
 
-import omr.math.Histogram.PeakEntry;
 import omr.math.IntegerHistogram;
+import omr.math.Range;
 
 import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
-import omr.sheet.HistogramPlotter;
 import omr.sheet.PageCleaner;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
@@ -82,13 +81,7 @@ public class StemScaler
     private IntegerHistogram histo;
 
     /** Most frequent length of horizontal foreground runs found, if any. */
-    private PeakEntry<Double> peak;
-
-    /** Absolute population percentage for validating an extremum. */
-    private final double quorumRatio = constants.quorumRatio.getValue();
-
-    /** Relative population percentage for reading spread. */
-    private final double spreadRatio = constants.spreadRatio.getValue();
+    private Range peak;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -161,14 +154,18 @@ public class StemScaler
     //-------------//
     private StemScale computeStem ()
     {
-        peak = histo.getPeak(quorumRatio, spreadRatio, 0);
+        List<Range> stemPeaks = histo.getHiLoPeaks();
+
+        if (!stemPeaks.isEmpty()) {
+            peak = stemPeaks.get(0);
+        }
 
         final int mainStem;
         final int maxStem;
 
         if (peak != null) {
-            mainStem = (int) Math.rint(peak.getKey().best);
-            maxStem = (int) Math.rint(peak.getKey().second);
+            mainStem = (int) Math.rint(peak.main);
+            maxStem = (int) Math.rint(peak.max);
         } else {
             Scale scale = sheet.getScale();
             double ratio = constants.stemAsForeRatio.getValue();
@@ -206,25 +203,6 @@ public class StemScaler
         return buf;
     }
 
-    //--------------//
-    // retrievePeak //
-    //--------------//
-    private void retrievePeak ()
-    {
-        peak = histo.getPeak(quorumRatio, spreadRatio, 0);
-
-        //        List<Histogram.PeakEntry<Integer>> horiMaxima = histo.getPreciseMaxima();
-        //
-        //        if (!horiMaxima.isEmpty()) {
-        //            Histogram.MaxEntry<Integer> max = horiMaxima.get(0);
-        //
-        //            if (max.getValue() >= constants.quorumRatio.getValue()) {
-        //                stemPeak = max;
-        //                logger.debug("stem: {}", stemPeak);
-        //            }
-        //        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -250,13 +228,17 @@ public class StemScaler
                 2.0,
                 "Margin erased above & below system header area");
 
-        private final Constant.Ratio quorumRatio = new Constant.Ratio(
+        private final Constant.Ratio minCountRatio = new Constant.Ratio(
                 0.1,
                 "Absolute ratio of total pixels for peak acceptance");
 
-        private final Constant.Ratio spreadRatio = new Constant.Ratio(
-                0.30,
-                "Relative ratio of best count for stem spread reading");
+        private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(
+                0.05,
+                "Absolute ratio of total pixels for strong derivative");
+
+        private final Constant.Ratio minGainRatio = new Constant.Ratio(
+                0.1,
+                "Minimum ratio of peak runs for stem peak extension");
 
         private final Constant.Ratio stemAsForeRatio = new Constant.Ratio(
                 1.0,
@@ -273,10 +255,8 @@ public class StemScaler
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final int[] fore; // (black) foreground runs
-
         // We are not interested of horizontal runs longer than this value
-        private final int maxFore = 20;
+        private final int maxBlack = 20;
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -286,11 +266,12 @@ public class StemScaler
          */
         public HistoKeeper (int wMax)
         {
-            // Allocate histogram counters
-            fore = new int[wMax + 2];
-
-            // Useful?
-            Arrays.fill(fore, 0);
+            histo = new IntegerHistogram(
+                    "stem",
+                    wMax,
+                    constants.minGainRatio.getValue(),
+                    constants.minCountRatio.getValue(),
+                    constants.minDerivativeRatio.getValue());
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -300,15 +281,9 @@ public class StemScaler
         //-----------//
         public void writePlot ()
         {
-            new HistogramPlotter(
-                    sheet,
-                    "horizontal black",
-                    "Stem thickness",
-                    fore,
-                    histo,
-                    peak,
-                    null,
-                    maxFore).plot(new Point(80, 80), spreadRatio, quorumRatio, null);
+            final String title = sheet.getId() + " " + histo.name;
+            histo.new Plotter(title, "Stem thickness", peak, null, maxBlack).plot(
+                    new Point(80, 80));
         }
 
         //-----------------//
@@ -319,37 +294,17 @@ public class StemScaler
         {
             for (int y = 0; y < height; y++) {
                 for (Iterator<Run> it = horiTable.iterator(y); it.hasNext();) {
-                    Run run = it.next();
+                    final int blackLength = it.next().getLength();
 
-                    // Process this foreground run
-                    int foreLength = run.getLength();
-
-                    if (foreLength <= maxFore) {
-                        fore[foreLength]++;
+                    if (blackLength <= maxBlack) {
+                        histo.increaseCount(blackLength, 1);
                     }
                 }
             }
 
             if (logger.isDebugEnabled()) {
-                logger.debug("fore values: {}", Arrays.toString(fore));
+                histo.print(System.out);
             }
-
-            // Create foreground histogram
-            histo = createHistogram(fore);
-        }
-
-        //-----------------//
-        // createHistogram //
-        //-----------------//
-        private IntegerHistogram createHistogram (int[] vals)
-        {
-            IntegerHistogram histo = new IntegerHistogram();
-
-            for (int i = 0; i < vals.length; i++) {
-                histo.increaseCount(i, vals[i]);
-            }
-
-            return histo;
         }
     }
 

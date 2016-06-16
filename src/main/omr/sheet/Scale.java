@@ -13,6 +13,8 @@ package omr.sheet;
 
 import omr.constant.Constant;
 
+import omr.math.Range;
+
 import omr.util.DoubleValue;
 import omr.util.Jaxb;
 
@@ -518,11 +520,11 @@ public class Scale
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
 
-        sb.append("line: ").append(lineRange);
-        sb.append(" interline: ").append(interlineRange);
+        sb.append("line").append(lineRange);
+        sb.append(" interline").append(interlineRange);
 
         if (secondInterlineRange != null) {
-            sb.append(" secondInterline: ").append(secondInterlineRange);
+            sb.append(" interline2").append(secondInterlineRange);
         }
 
         if (beamScale != null) {
@@ -668,8 +670,8 @@ public class Scale
         public String toString ()
         {
             StringBuilder sb = new StringBuilder("beam");
-            sb.append('{');
-            sb.append("main:").append(main);
+            sb.append('(');
+            sb.append(main);
 
             if (extra != null) {
                 sb.append(" extra");
@@ -680,7 +682,7 @@ public class Scale
                 sb.append(" gapSigma:").append(distanceSigma);
             }
 
-            sb.append('}');
+            sb.append(')');
 
             return sb.toString();
         }
@@ -791,55 +793,6 @@ public class Scale
         protected DoubleValue decode (java.lang.String str)
         {
             return new DoubleValue(java.lang.Double.valueOf(str));
-        }
-    }
-
-    //-------//
-    // Range //
-    //-------//
-    /**
-     * Handles a range of values using a (min, main, max) triplet.
-     */
-    @XmlAccessorType(XmlAccessType.NONE)
-    @XmlRootElement(name = "range")
-    public static class Range
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Value at beginning of range. */
-        @XmlAttribute
-        public final int min;
-
-        /** Value at highest point in range. */
-        @XmlAttribute
-        public final int main;
-
-        /** Value at end of range. */
-        @XmlAttribute
-        public final int max;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Range (int min,
-                      int main,
-                      int max)
-        {
-            this.min = min;
-            this.main = main;
-            this.max = max;
-        }
-
-        public Range ()
-        {
-            this.min = 0;
-            this.main = 0;
-            this.max = 0;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return "(" + min + "," + main + "," + max + ")";
         }
     }
 

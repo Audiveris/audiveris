@@ -1,10 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package omr.math;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 
 import java.io.PrintStream;
@@ -43,7 +38,7 @@ public class IntegerHistogramTest
 
     private IntegerHistogram createHistogram ()
     {
-        histo = new IntegerHistogram();
+        histo = new IntegerHistogram("test", 20, 0.05, 0.10, 0.05);
         histo.increaseCount(1, 1250);
         histo.increaseCount(2, 1400);
         histo.increaseCount(3, 2000);

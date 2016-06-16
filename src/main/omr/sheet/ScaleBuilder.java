@@ -16,10 +16,8 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.math.Histogram;
-import omr.math.Histogram.MaxEntry;
-import omr.math.Histogram.PeakEntry;
 import omr.math.IntegerHistogram;
+import omr.math.Range;
 
 import omr.run.Run;
 import omr.run.RunTable;
@@ -29,41 +27,35 @@ import omr.sheet.Scale.BeamScale;
 import omr.step.StepException;
 
 import omr.util.Navigable;
-import omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 /**
  * Class {@code ScaleBuilder} computes the global scale of a given sheet by processing
  * the image vertical runs.
- * Adding the most frequent foreground run length to the most frequent background run length,
- * would give the average interline value.
- * Instead of a posteriori addition, we analyze the total length of two combined runs in sequence.
  * <p>
- * A second foreground peak usually gives the average beam thickness.
- * And similarly, a second combined peak may indicate a series of staves with a different interline
+ * Adding the most frequent black run length to the most frequent white run length,
+ * would give the average interline value.
+ * Instead of a posteriori addition, we analyze the total length of two combo runs in sequence.
+ * <p>
+ * A second black peak usually gives the average beam thickness.
+ * And similarly, a second combo peak may indicate a series of staves with a different interline
  * than the main series.</p>
  * <p>
  * Internally, additional validity checks are performed:<ol>
- * <li>Method {@link #checkStaves} looks at foreground and combined peak populations.
- * <p>
- * If these counts are below quorum values (see constants.quorumRatio),
- * we can suspect that the page does not contain regularly spaced staff lines.
- * </p></li>
- * <li>Method {@link #checkResolution} looks at foreground and combined peak keys.
- * <p>
- * If we have not been able to retrieve the main foreground and combined peaks, then
- * we suspect a wrong image format. In that case, the safe action is to stop the processing, by
- * throwing a StepException.
+ * <li>If we cannot retrieve black peak, we decide that the sheet does not contain significant
+ * lines.</li>
+ * <li>If we cannot retrieve combo peak, we decide that the sheet does not contain regularly spaced
+ * staff lines.</li>
+ * <li>Method {@link #checkResolution} looks at combo peak.
  * If the main interline value is below a certain threshold (see constants.minResolution), then we
  * suspect that the picture is not a music sheet (it may rather be an image, a page of text, etc).
- * </p></li>
+ * </li>
  * </ol>
  * <p>
  * If we have doubts about the page at hand and if this page is part of a multi-page score, we
@@ -88,38 +80,29 @@ public class ScaleBuilder
     @Navigable(false)
     private final Sheet sheet;
 
+    /** Whole vertical run table. */
+    private RunTable binary;
+
     /** Keeper of vertical run length histograms, for foreground & background. */
-    private VertHistoKeeper vertHistoKeeper;
+    private HistoKeeper histoKeeper;
 
-    /** Histogram on vertical foreground runs. */
-    private IntegerHistogram foreHisto;
+    /** Histogram on vertical black runs. */
+    private IntegerHistogram blackHisto;
 
-    /** Histogram on vertical background runs. */
-    private IntegerHistogram backHisto;
+    /** Histogram on vertical pairs of runs (black+white and white+black). */
+    private IntegerHistogram comboHisto;
 
-    /** Histogram on vertical pairs of runs. */
-    private IntegerHistogram combinedHisto;
-
-    /** Absolute population percentage for validating an extremum. */
-    private final double quorumRatio = constants.quorumRatio.getValue();
-
-    /** Absolute population percentage for validating a second extremum. */
-    private final double secondQuorumRatio = constants.secondQuorumRatio.getValue();
-
-    /** Most frequent length of vertical foreground runs found. */
-    private PeakEntry<Double> forePeak;
-
-    /** Most frequent length of vertical background runs found. */
-    private PeakEntry<Double> backPeak;
+    /** Most frequent length of vertical black runs found. */
+    private Range blackPeak;
 
     /** Most frequent length of vertical combined runs found. */
-    private PeakEntry<Double> combinedPeak;
-
-    /** Second frequent length of vertical foreground runs found, if any. */
-    private MaxEntry<Integer> beamEntry;
+    private Range comboPeak;
 
     /** Second frequent length of vertical combined runs found, if any. */
-    private PeakEntry<Double> combinedPeak2;
+    private Range comboPeak2;
+
+    /** Main beam thickness found, if any. */
+    private Integer beamKey;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -141,15 +124,15 @@ public class ScaleBuilder
      */
     public void displayChart ()
     {
-        if (vertHistoKeeper == null) {
+        if (histoKeeper == null) {
             try {
                 retrieveScale();
             } catch (StepException ignored) {
             }
         }
 
-        if (vertHistoKeeper != null) {
-            vertHistoKeeper.writePlot();
+        if (histoKeeper != null) {
+            histoKeeper.writePlot();
         }
     }
 
@@ -157,7 +140,7 @@ public class ScaleBuilder
     // retrieveScale //
     //---------------//
     /**
-     * Retrieve the global scale values by processing the provided picture runs,
+     * Retrieve the global scale counts by processing the provided picture runs,
      * make decisions about the validity of current picture as a music page and store
      * the results as a {@link Scale} instance in the related sheet.
      *
@@ -167,70 +150,22 @@ public class ScaleBuilder
     public Scale retrieveScale ()
             throws StepException
     {
-        StopWatch watch = new StopWatch("Scale builder for " + sheet.getId());
+        binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+        histoKeeper = new HistoKeeper();
 
-        try {
-            Picture picture = sheet.getPicture();
+        histoKeeper.buildBlacks();
+        histoKeeper.retrieveLinePeak(); // -> blackPeak (or StepException thrown)
 
-            // Build the two histograms
-            watch.start("Vertical histograms");
+        histoKeeper.buildCombos();
+        histoKeeper.retrieveInterlinePeaks(); // -> comboPeak (or StepException thrown), comboPeak2?
 
-            RunTable wholeVertTable = picture.getTable(Picture.TableKey.BINARY);
-            vertHistoKeeper = new VertHistoKeeper(picture.getHeight() - 1);
-            vertHistoKeeper.buildHistograms(
-                    wholeVertTable,
-                    picture.getWidth(),
-                    picture.getHeight());
+        histoKeeper.retrieveBeamKey(); // -> beamKey?
 
-            // Check we have enough foregroung material
-            checkForeground(wholeVertTable);
+        // Check we have acceptable resolution.  If not, throw StepException
+        checkResolution();
 
-            // Retrieve the various histograms peaks
-            retrieveVertPeaks();
-
-            // Check this page looks like music staves. If not, throw StepException
-            checkStaves();
-
-            // Check we have acceptable resolution.  If not, throw StepException
-            checkResolution();
-
-            // Here, we keep going on with scale data
-            return new Scale(
-                    computeLine(),
-                    computeInterline(),
-                    computeSecondInterline(),
-                    computeBeam());
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
-
-    //-----------------//
-    // checkForeground //
-    //-----------------//
-    /**
-     * Check we have a significant number of foreground pixels WRT image size,
-     * otherwise the sheet is mostly blank and contains no music.
-     *
-     * @throws StepException if processing must stop on this sheet
-     */
-    private void checkForeground (RunTable wholeVertTable)
-            throws StepException
-    {
-        int foreCount = vertHistoKeeper.getForePixelsCount();
-        int size = wholeVertTable.getWidth() * wholeVertTable.getHeight();
-        double foreRatio = (double) foreCount / size;
-        logger.debug("foreRatio: {}", foreRatio);
-
-        if (foreRatio < constants.minForeRatio.getValue()) {
-            sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR + "Too few foreground pixels: "
-                    + String.format("%.4f%%", 100 * foreRatio) + LINE_SEPARATOR
-                    + "This sheet is almost blank.",
-                    false);
-        }
+        // Here, we keep going on with scale data
+        return new Scale(blackPeak, comboPeak, comboPeak2, computeBeam());
     }
 
     //-----------------//
@@ -245,15 +180,7 @@ public class ScaleBuilder
     private void checkResolution ()
             throws StepException
     {
-        if (forePeak == null) {
-            throw new StepException("Missing black peak");
-        }
-
-        if (combinedPeak == null) {
-            throw new StepException("Missing combined peak");
-        }
-
-        int interline = (int) Math.rint(combinedPeak.getKey().best);
+        int interline = comboPeak.main;
 
         if (interline == 0) {
             sheet.getStub().decideOnRemoval(
@@ -270,52 +197,25 @@ public class ScaleBuilder
     }
 
     //-------------//
-    // checkStaves //
-    //-------------//
-    /**
-     * Check we have foreground and background run peaks, with
-     * significant percentage of runs population, otherwise we are not
-     * looking at staves and the picture represents something else.
-     *
-     * @throws StepException if processing must stop on this sheet
-     */
-    private void checkStaves ()
-            throws StepException
-    {
-        String error = null;
-
-        if ((forePeak == null) || (forePeak.getValue() < quorumRatio)) {
-            error = "No significant black lines found.";
-        } else if ((combinedPeak == null) || (combinedPeak.getValue() < quorumRatio)) {
-            error = "No regularly spaced lines found.";
-        }
-
-        if (error != null) {
-            sheet.getStub().decideOnRemoval(
-                    sheet.getId() + LINE_SEPARATOR + error + LINE_SEPARATOR
-                    + "This sheet does not seem to contain staff lines.",
-                    false);
-        }
-    }
-
-    //-------------//
     // computeBeam //
     //-------------//
     /**
      * Report the beam scale information for the sheet.
+     * We use the retrieved beam key if any, otherwise we extrapolate a probable beam height as a
+     * ratio of main white length.
      *
      * @return the beam scale
      */
     private BeamScale computeBeam ()
     {
-        if (beamEntry != null) {
-            return new BeamScale(beamEntry.getKey(), false);
+        if (beamKey != null) {
+            return new BeamScale(beamKey, false);
         }
 
-        if (backPeak != null) {
+        if (comboPeak != null) {
             final int guess = (int) Math.rint(
-                    constants.beamAsBackRatio.getValue() * backPeak.getKey().best);
-            logger.info("No beam peak found, guessed value {}", guess);
+                    constants.beamAsWhiteRatio.getValue() * (comboPeak.main - blackPeak.main));
+            logger.info("No beam key found, guessed value {}", guess);
 
             return new BeamScale(guess, true);
         }
@@ -323,146 +223,6 @@ public class ScaleBuilder
         logger.warn("No global scale information available");
 
         return null;
-    }
-
-    //------------------//
-    // computeInterline //
-    //------------------//
-    private Scale.Range computeInterline ()
-    {
-        if (combinedPeak != null) {
-            int min = (int) Math.rint(combinedPeak.getKey().first);
-            int best = (int) Math.rint(combinedPeak.getKey().best);
-            int max = (int) Math.rint(combinedPeak.getKey().second);
-
-            return new Scale.Range(min, best, max);
-        } else {
-            return null;
-        }
-    }
-
-    //-------------//
-    // computeLine //
-    //-------------//
-    /**
-     * Compute the range for line thickness.
-     * The computation of line max is key for the rest of the application,
-     * since it governs the threshold between horizontal and vertical lags.
-     *
-     * @return the line range
-     */
-    private Scale.Range computeLine ()
-    {
-        if (forePeak != null) {
-            int min = (int) Math.rint(forePeak.getKey().first);
-            int best = (int) Math.rint(forePeak.getKey().best);
-            int max = (int) Math.ceil(forePeak.getKey().second);
-
-            return new Scale.Range(min, best, max);
-        } else {
-            return null;
-        }
-    }
-
-    //------------------------//
-    // computeSecondInterline //
-    //------------------------//
-    private Scale.Range computeSecondInterline ()
-    {
-        if (combinedPeak2 != null) {
-            int min = (int) Math.rint(combinedPeak2.getKey().first);
-            int best = (int) Math.rint(combinedPeak2.getKey().best);
-            int max = (int) Math.rint(combinedPeak2.getKey().second);
-
-            return new Scale.Range(min, best, max);
-        } else {
-            return null;
-        }
-    }
-
-    //-------------------//
-    // retrieveVertPeaks //
-    //-------------------//
-    private void retrieveVertPeaks ()
-            throws StepException
-    {
-        StringBuilder sb = new StringBuilder();
-
-        // Foreground peak
-        forePeak = foreHisto.getPeak(quorumRatio, constants.foreSpreadRatio.getValue(), 0);
-        sb.append("fore:").append(forePeak);
-
-        // Background peak
-        backPeak = backHisto.getPeak(quorumRatio, constants.backSpreadRatio.getValue(), 0);
-        sb.append(" back:").append(backPeak);
-
-        // Combined peak
-        combinedPeak = combinedHisto.getPeak(
-                quorumRatio,
-                constants.combinedSpreadRatio.getValue(),
-                0);
-
-        if (combinedPeak != null) {
-            // Second combined peak?
-            combinedPeak2 = combinedHisto.getPeak(
-                    secondQuorumRatio,
-                    constants.combinedSpreadRatio.getValue(),
-                    1);
-
-            if (combinedPeak2 != null) {
-                // Check whether we should merge with first combined peak
-                // Test: Delta between peaks < line thickness
-                Histogram.Peak<Double> p1 = combinedPeak.getKey();
-                Histogram.Peak<Double> p2 = combinedPeak2.getKey();
-
-                if (Math.abs(p1.best - p2.best) < forePeak.getKey().best) {
-                    combinedPeak = new PeakEntry(
-                            new Histogram.Peak<Double>(
-                                    Math.min(p1.first, p2.first),
-                                    (p1.best + p2.best) / 2,
-                                    Math.max(p1.second, p2.second)),
-                            (combinedPeak.getValue() + combinedPeak2.getValue()) / 2);
-                    combinedPeak2 = null;
-                    logger.info("Merged two close combined peaks");
-                } else {
-                    double min = Math.min(p1.best, p2.best);
-                    double max = Math.max(p1.best, p2.best);
-
-                    if ((max / min) > constants.maxSecondRatio.getValue()) {
-                        logger.info("Second combined peak too different {}, ignored", p2.best);
-                        combinedPeak2 = null;
-                    }
-                }
-            }
-        }
-
-        sb.append(" combined:").append(combinedPeak);
-
-        if (combinedPeak2 != null) {
-            sb.append(" combined2:").append(combinedPeak2);
-        }
-
-        // Second foreground peak (beam)?
-        if ((forePeak != null) && (backPeak != null)) {
-            // Take most frequent local max for which key (beam thickness) is
-            // larger than about twice the mean line thickness and smaller than
-            // mean white gap between staff lines.
-            List<MaxEntry<Integer>> foreMaxima = foreHisto.getPreciseMaxima();
-            double minBeamLineRatio = constants.minBeamLineRatio.getValue();
-            double minHeight = minBeamLineRatio * forePeak.getKey().best;
-            double maxHeight = backPeak.getKey().best;
-
-            for (MaxEntry<Integer> max : foreMaxima) {
-                if ((max.getKey() >= minHeight) && (max.getKey() <= maxHeight)) {
-                    beamEntry = max;
-                    sb.append(" beam:").append(beamEntry);
-
-                    break;
-                }
-            }
-        }
-
-        logger.debug(sb.toString());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -474,34 +234,22 @@ public class ScaleBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print the StopWatch on scale computation?");
-
         private final Constant.Integer minResolution = new Constant.Integer(
                 "Pixels",
                 11,
                 "Minimum resolution, expressed as number of pixels per interline");
 
-        private final Constant.Ratio quorumRatio = new Constant.Ratio(
+        private final Constant.Ratio minCountRatio = new Constant.Ratio(
                 0.1,
-                "Absolute ratio of total pixels for peak acceptance");
+                "Ratio of total runs for peak acceptance");
 
-        private final Constant.Ratio secondQuorumRatio = new Constant.Ratio(
+        private final Constant.Ratio minGainRatio = new Constant.Ratio(
                 0.05,
-                "Absolute ratio of total pixels for second peak acceptance");
+                "Minimum ratio of peak runs for peak extension");
 
-        private final Constant.Ratio foreSpreadRatio = new Constant.Ratio(
-                0.15,
-                "Relative ratio of best count for foreground spread reading");
-
-        private final Constant.Ratio backSpreadRatio = new Constant.Ratio(
-                0.3,
-                "Relative ratio of best count for background spread reading");
-
-        private final Constant.Ratio combinedSpreadRatio = new Constant.Ratio(
-                0.4,
-                "Relative ratio of best count for combined spread reading");
+        private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(
+                0.05,
+                "Ratio of total runs for derivative acceptance");
 
         private final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
                 2.5,
@@ -511,145 +259,223 @@ public class ScaleBuilder
                 2.0,
                 "Maximum ratio between second and first combined peak");
 
-        private final Constant.Ratio beamAsBackRatio = new Constant.Ratio(
+        private final Constant.Ratio beamAsWhiteRatio = new Constant.Ratio(
                 0.75,
                 "Default beam height defined as ratio of background peak");
 
-        private final Constant.Ratio minForeRatio = new Constant.Ratio(
+        private final Constant.Ratio minBlackRatio = new Constant.Ratio(
                 0.001,
                 "Minimum ratio of foreground pixels in image");
     }
 
-    //-----------------//
-    // VertHistoKeeper //
-    //-----------------//
+    //-------------//
+    // HistoKeeper //
+    //-------------//
     /**
      * This class builds the precise vertical foreground and background run lengths,
      * it retrieves the various peaks and is able to display a chart on the related
      * populations.
      */
-    private class VertHistoKeeper
+    private class HistoKeeper
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final int[] fore; // (black) foreground runs
+        // Upper bounds for run lengths (assuming sheet height >= staff height)
+        final int maxWhite;
 
-        private final int[] back; // (white) background runs
-
-        private final int[] combined; // Pairs of runs (fore+back when followed by other fore)
+        final int maxBlack;
 
         //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Create an instance of histoKeeper.
-         *
-         * @param hMax the maximum possible run length value
-         */
-        public VertHistoKeeper (int hMax)
+        public HistoKeeper ()
         {
-            // Allocate histogram counters
-            fore = new int[hMax + 2];
-            back = new int[hMax + 2];
-            combined = new int[hMax + 2];
+            maxBlack = binary.getHeight() / 16;
+            maxWhite = binary.getHeight() / 4;
+            logger.debug(
+                    "maxBlack:{}, maxWhite:{}, maxCombo:{}",
+                    maxBlack,
+                    maxWhite,
+                    maxBlack + maxWhite);
 
-            // Useful?
-            Arrays.fill(fore, 0);
-            Arrays.fill(back, 0);
-            Arrays.fill(combined, 0);
+            // Allocate histograms
+            blackHisto = new IntegerHistogram(
+                    "black",
+                    maxBlack,
+                    constants.minGainRatio.getValue(),
+                    constants.minCountRatio.getValue(),
+                    constants.minDerivativeRatio.getValue());
+            comboHisto = new IntegerHistogram(
+                    "combo",
+                    maxBlack + maxWhite,
+                    constants.minGainRatio.getValue(),
+                    null,
+                    constants.minDerivativeRatio.getValue());
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        //-----------------//
-        // buildHistograms //
-        //-----------------//
-        public void buildHistograms (RunTable wholeVertTable,
-                                     int width,
-                                     int height)
+        //-------------//
+        // buildBlacks //
+        //-------------//
+        /**
+         * Populate the black histogram.
+         */
+        public void buildBlacks ()
         {
-            // Upper bounds for run lengths
-            final int maxBack = height / 4;
-            final int maxFore = height / 16;
+            for (int x = 0, width = binary.getWidth(); x < width; x++) {
+                for (Iterator<Run> it = binary.iterator(x); it.hasNext();) {
+                    int black = it.next().getLength();
 
-            for (int x = 0; x < width; x++) {
-                int yLast = 0; // Ordinate of first pixel not yet processed
-                int lastBackLength = 0; // Length of last valid background run
-                int lastForeLength = 0; // Length of last valid foreground run
-
-                for (Iterator<Run> it = wholeVertTable.iterator(x); it.hasNext();) {
-                    Run run = it.next();
-                    int y = run.getStart();
-
-                    if (y > yLast) {
-                        // Process the background run before this run
-                        int backLength = y - yLast;
-
-                        if (backLength <= maxBack) {
-                            back[backLength]++;
-                            lastBackLength = backLength;
-
-                            if (lastForeLength != 0) {
-                                // For 'combined', we need F, B, F sequence
-                                // Combined is defined as [----]
-                                combined[lastForeLength + lastBackLength]++; // F + B (... F)
-                            }
-                        } else {
-                            lastForeLength = 0;
-                            lastBackLength = 0;
-                        }
-                    }
-
-                    // Process this foreground run
-                    int foreLength = run.getLength();
-
-                    if (foreLength <= maxFore) {
-                        fore[foreLength]++;
-                        lastForeLength = foreLength;
-                    } else {
-                        lastForeLength = 0;
-                        lastBackLength = 0;
-                    }
-
-                    yLast = y + foreLength;
-                }
-
-                // Process a last background run, if any
-                if (yLast < height) {
-                    int backLength = height - yLast;
-
-                    if (backLength <= maxBack) {
-                        back[backLength]++;
-                        lastBackLength = backLength;
+                    if (black <= maxBlack) {
+                        blackHisto.increaseCount(black, 1);
                     }
                 }
             }
 
             if (logger.isDebugEnabled()) {
-                logger.debug("fore values: {}", Arrays.toString(fore));
-                logger.debug("back values: {}", Arrays.toString(back));
+                blackHisto.print(System.out);
             }
-
-            // Create foreground & background histograms
-            foreHisto = createHistogram(fore);
-            backHisto = createHistogram(back);
-            combinedHisto = createHistogram(combined);
         }
 
-        //--------------------//
-        // getForePixelsCount //
-        //--------------------//
+        //-------------//
+        // buildCombos //
+        //-------------//
         /**
-         * Report the total number of pixels as cumulated by (valid) foreground runs.
-         *
-         * @return total number of (relevant) black pixels
+         * Populate the combo histogram.
          */
-        public int getForePixelsCount ()
+        public void buildCombos ()
         {
-            int total = 0;
+            for (int x = 0, width = binary.getWidth(); x < width; x++) {
+                int yLast = 0; // Ordinate of first pixel not yet processed
+                int lastBlack = 0; // Length of last valid black run
 
-            for (int i = 0; i < fore.length; i++) {
-                total += (i * fore[i]);
+                for (Iterator<Run> it = binary.iterator(x); it.hasNext();) {
+                    Run run = it.next();
+                    final int y = run.getStart();
+                    final int black = run.getLength();
+
+                    if ((black < blackPeak.min) || (black > blackPeak.max)) {
+                        lastBlack = 0;
+                    } else {
+                        if (y > yLast) {
+                            // Process the white run before this black run
+                            int white = y - yLast;
+
+                            // A white run between valid black runs?: B1, W, B2
+                            // Combo 1 is defined as B1 + W, that is [-----]
+                            // Combo 2 is defined as W + B2, that is     [-----]
+                            // combo1 + combo2 = 2 * (1/2 * B1 + W + 1/2 * B2) = 2 * combo
+                            if ((white <= maxWhite) && (lastBlack != 0)) {
+                                comboHisto.increaseCount(lastBlack + white, 1); // B1 + W
+                                comboHisto.increaseCount(white + black, 1); // W + B2
+                            }
+                        }
+
+                        lastBlack = black;
+                    }
+
+                    yLast = y + black;
+                }
             }
 
-            return total;
+            if (logger.isDebugEnabled()) {
+                comboHisto.print(System.out);
+            }
+        }
+
+        //-----------------//
+        // retrieveBeamKey //
+        //-----------------//
+        /**
+         * Try to retrieve a suitable beam key.
+         * <p>
+         * Take most frequent black local max for which key (beam thickness) is larger than about
+         * twice the main line thickness and smaller than mean white gap between staff lines.
+         */
+        public void retrieveBeamKey ()
+        {
+            double minBeamLineRatio = constants.minBeamLineRatio.getValue();
+            int minHeight = (int) Math.floor(minBeamLineRatio * blackPeak.main);
+            int maxHeight = comboPeak.main - blackPeak.main;
+
+            List<Integer> localMaxima = blackHisto.getLocalMaxima(minHeight - 1, maxHeight + 1);
+
+            for (int local : localMaxima) {
+                if ((local >= minHeight) && (local <= maxHeight)) {
+                    beamKey = local;
+
+                    break;
+                }
+            }
+        }
+
+        //------------------------//
+        // retrieveInterlinePeaks //
+        //------------------------//
+        /**
+         * Retrieve combo peak for interline (and interline2 if any).
+         */
+        public void retrieveInterlinePeaks ()
+                throws StepException
+        {
+            // Combo peak(s)
+            List<Range> comboPeaks = comboHisto.getHiLoPeaks();
+
+            if (comboPeaks.isEmpty()) {
+                throw new StepException("No regularly spaced lines found");
+            }
+
+            // First combo peak
+            comboPeak = comboPeaks.get(0);
+            logger.debug("comboPeak: {}", comboPeak);
+
+            // Second combo peak?
+            if (comboPeaks.size() > 1) {
+                comboPeak2 = comboPeaks.get(1);
+
+                Range p1 = comboPeak;
+                Range p2 = comboPeak2;
+
+                // If delta between the two combo peaks is too small, we merge them
+                if (Math.abs(p1.main - p2.main) < blackPeak.main) {
+                    logger.info("Merging two close combo peaks {} & {}", comboPeak, comboPeak2);
+                    comboPeak = new Range(
+                            Math.min(p1.min, p2.min),
+                            (p1.main + p2.main) / 2,
+                            Math.max(p1.max, p2.max));
+                    comboPeak2 = null;
+                } else {
+                    // If delta between the two combo peaks is too large, we ignore the second
+                    double min = Math.min(p1.main, p2.main);
+                    double max = Math.max(p1.main, p2.main);
+
+                    if ((max / min) > constants.maxSecondRatio.getValue()) {
+                        logger.info("Second combo peak too different {}, ignored", p2);
+                        comboPeak2 = null;
+                    }
+                }
+            }
+        }
+
+        //------------------//
+        // retrieveLinePeak //
+        //------------------//
+        /**
+         * Retrieve black peak for line thickness.
+         */
+        public void retrieveLinePeak ()
+                throws StepException
+        {
+            // Check we have enough foreground material. If not, throw StepException
+            checkBlack();
+
+            // Black peaks
+            List<Range> blackPeaks = blackHisto.getHiLoPeaks();
+
+            if (blackPeaks.isEmpty()) {
+                throw new StepException("No significant black lines found");
+            }
+
+            blackPeak = blackPeaks.get(0);
+            logger.debug("blackPeak: {}", blackPeak);
         }
 
         //-----------//
@@ -658,78 +484,52 @@ public class ScaleBuilder
         public void writePlot ()
         {
             int upper = (int) Math.min(
-                    fore.length,
-                    (backPeak != null) ? (backPeak.getKey().best * 2) : 20);
+                    blackHisto.getMaxKey(),
+                    (comboPeak != null) ? ((comboPeak.main * 3) / 2) : 20);
             Scale scale = sheet.getScale();
-            String xLabel = "Lengths - " + ((scale != null) ? scale : "*no scale*");
+            String xLabel = "Lengths - " + ((scale != null) ? scale : "NO_SCALE");
 
             try {
-                new HistogramPlotter(
-                        sheet,
-                        "vertical black",
-                        xLabel,
-                        fore,
-                        foreHisto,
-                        forePeak,
-                        null,
-                        upper).plot(
-                        new Point(0, 0),
-                        constants.foreSpreadRatio.getValue(),
-                        quorumRatio,
-                        null);
+                final String title = sheet.getId() + " " + blackHisto.name;
+                blackHisto.new Plotter(title, xLabel, blackPeak, null, upper).plot(
+                        new Point(20, 20));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting black", ex);
             }
 
             try {
-                new HistogramPlotter(
-                        sheet,
-                        "vertical white",
-                        xLabel,
-                        back,
-                        backHisto,
-                        backPeak,
-                        null,
-                        upper).plot(
-                        new Point(20, 20),
-                        constants.backSpreadRatio.getValue(),
-                        quorumRatio,
-                        secondQuorumRatio);
+                final String title = sheet.getId() + " " + comboHisto.name;
+                comboHisto.new Plotter(title, xLabel, comboPeak, comboPeak2, upper).plot(
+                        new Point(80, 80));
             } catch (Throwable ex) {
-                logger.warn("Error in plotting white", ex);
-            }
-
-            try {
-                new HistogramPlotter(
-                        sheet,
-                        "vertical combined",
-                        xLabel,
-                        combined,
-                        combinedHisto,
-                        combinedPeak,
-                        combinedPeak2,
-                        upper).plot(
-                        new Point(40, 40),
-                        constants.combinedSpreadRatio.getValue(),
-                        quorumRatio,
-                        secondQuorumRatio);
-            } catch (Throwable ex) {
-                logger.warn("Error in plotting combined", ex);
+                logger.warn("Error in plotting combo", ex);
             }
         }
 
-        //-----------------//
-        // createHistogram //
-        //-----------------//
-        private IntegerHistogram createHistogram (int[] vals)
+        //------------//
+        // checkBlack //
+        //------------//
+        /**
+         * Check we have a significant number of black pixels WRT image size,
+         * otherwise the sheet is mostly blank and contains no music.
+         *
+         * @throws StepException if processing must stop on this sheet
+         */
+        private void checkBlack ()
+                throws StepException
         {
-            IntegerHistogram histo = new IntegerHistogram();
+            int blackCount = blackHisto.getWeight();
+            int size = binary.getWidth() * binary.getHeight();
+            double blackRatio = (double) blackCount / size;
+            logger.debug("blackRatio: {}", blackRatio);
 
-            for (int i = 0; i < vals.length; i++) {
-                histo.increaseCount(i, vals[i]);
+            if (blackRatio < constants.minBlackRatio.getValue()) {
+                sheet.getStub().decideOnRemoval(
+                        sheet.getId() + LINE_SEPARATOR + "Too few black pixels: "
+                        + String.format("%.4f%%", 100 * blackRatio) + LINE_SEPARATOR
+                        + "This sheet is almost blank.",
+                        false);
             }
-
-            return histo;
         }
     }
 }

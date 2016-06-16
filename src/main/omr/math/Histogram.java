@@ -27,7 +27,7 @@ import java.util.TreeMap;
  * Class {@code Histogram} is an histogram implementation which handles integer counts
  * in buckets, the buckets identities being values of type K.
  *
- * @param <K> the precise type for histogram buckets
+ * @param <K> the precise number type for histogram buckets
  *
  * @author Hervé Bitteur
  */
@@ -83,23 +83,10 @@ public class Histogram<K extends Number>
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new Histogram object, with no pre-defined range of buckets
+     * Creates a new Histogram object, with no pre-defined range of buckets.
      */
     public Histogram ()
     {
-    }
-
-    /**
-     * Creates a new Histogram object, with pre-definition of the bucket range
-     *
-     * @param first the first bucket of the foreseen range
-     * @param last  the last bucket of the foreseen range
-     */
-    public Histogram (K first,
-                      K last)
-    {
-        map.put(first, 0);
-        map.put(last, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -184,9 +171,9 @@ public class Histogram<K extends Number>
         }
     }
 
-    //----------//
-    // getPeaks //
-    //----------//
+    //----------------//
+    // getDoublePeaks //
+    //----------------//
     /**
      * Report the sequence of bucket peaks whose count is equal to or
      * greater than the specified minCount value.
@@ -216,17 +203,15 @@ public class Histogram<K extends Number>
                     stop = start = entry.getKey();
                     isAbove = true;
                 }
-            } else {
-                if (isAbove) { // Above -> Below
-                    peaks.add(
-                            new PeakEntry<Double>(
-                                    createDoublePeak(start, best, stop, minCount),
-                                    (double) bestCount / totalCount));
-                    stop = start = best = null;
-                    bestCount = null;
-                    isAbove = false;
-                } else { // Below -> Below
-                }
+            } else if (isAbove) { // Above -> Below
+                peaks.add(
+                        new PeakEntry<Double>(
+                                createDoublePeak(start, best, stop, minCount),
+                                (double) bestCount / totalCount));
+                stop = start = best = null;
+                bestCount = null;
+                isAbove = false;
+            } else { // Below -> Below
             }
         }
 
@@ -387,74 +372,75 @@ public class Histogram<K extends Number>
         return peak;
     }
 
-    //----------//
-    // getPeaks //
-    //----------//
-    /**
-     * Report the sequence of bucket peaks whose count is equal to or greater
-     * than the specified minCount value
-     *
-     * @param minCount the desired minimum count value
-     * @param absolute if true, absolute counts values are reported in peaks,
-     *                 otherwise relative counts to total histogram are used
-     * @param sorted   if true, the reported sequence is sorted by decreasing
-     *                 count value, otherwise it is reported as naturally found along K data.
-     * @return the (perhaps empty but not null) sequence of peaks of buckets
-     */
-    public List<PeakEntry<K>> getPeaks (int minCount,
-                                        boolean absolute,
-                                        boolean sorted)
-    {
-        final List<PeakEntry<K>> peaks = new ArrayList<PeakEntry<K>>();
-        K start = null;
-        K stop = null;
-        K best = null;
-        Integer bestCount = null;
-        boolean isAbove = false;
-
-        for (Entry<K, Integer> entry : map.entrySet()) {
-            if (entry.getValue() >= minCount) {
-                if ((bestCount == null) || (bestCount < entry.getValue())) {
-                    best = entry.getKey();
-                    bestCount = entry.getValue();
-                }
-
-                if (isAbove) { // Above -> Above
-                    stop = entry.getKey();
-                } else { // Below -> Above
-                    stop = start = entry.getKey();
-                    isAbove = true;
-                }
-            } else {
-                if (isAbove) { // Above -> Below
-                    peaks.add(
-                            new PeakEntry<K>(
-                                    new Peak<K>(start, best, stop),
-                                    absolute ? bestCount : ((double) bestCount / totalCount)));
-                    stop = start = best = null;
-                    bestCount = null;
-                    isAbove = false;
-                } else { // Below -> Below
-                }
-            }
-        }
-
-        // Last range
-        if (isAbove) {
-            peaks.add(
-                    new PeakEntry<K>(
-                            new Peak<K>(start, best, stop),
-                            absolute ? bestCount : ((double) bestCount / totalCount)));
-        }
-
-        // Sort by decreasing count values?
-        if (sorted) {
-            Collections.sort(peaks, reversePeakComparator);
-        }
-
-        return peaks;
-    }
-
+    //
+    //    //----------//
+    //    // getPeaks //
+    //    //----------//
+    //    /**
+    //     * Report the sequence of bucket peaks whose count is equal to or greater
+    //     * than the specified minCount value
+    //     *
+    //     * @param minCount the desired minimum count value
+    //     * @param absolute if true, absolute counts values are reported in peaks,
+    //     *                 otherwise relative counts to total histogram are used
+    //     * @param sorted   if true, the reported sequence is sorted by decreasing
+    //     *                 count value, otherwise it is reported as naturally found along K data.
+    //     * @return the (perhaps empty but not null) sequence of peaks of buckets
+    //     */
+    //    public List<PeakEntry<K>> getPeaks (int minCount,
+    //                                        boolean absolute,
+    //                                        boolean sorted)
+    //    {
+    //        final List<PeakEntry<K>> peaks = new ArrayList<PeakEntry<K>>();
+    //        K start = null;
+    //        K stop = null;
+    //        K best = null;
+    //        Integer bestCount = null;
+    //        boolean isAbove = false;
+    //
+    //        for (Entry<K, Integer> entry : map.entrySet()) {
+    //            if (entry.getValue() >= minCount) {
+    //                if ((bestCount == null) || (bestCount < entry.getValue())) {
+    //                    best = entry.getKey();
+    //                    bestCount = entry.getValue();
+    //                }
+    //
+    //                if (isAbove) { // Above -> Above
+    //                    stop = entry.getKey();
+    //                } else { // Below -> Above
+    //                    stop = start = entry.getKey();
+    //                    isAbove = true;
+    //                }
+    //            } else {
+    //                if (isAbove) { // Above -> Below
+    //                    peaks.add(
+    //                            new PeakEntry<K>(
+    //                                    new Peak<K>(start, best, stop),
+    //                                    absolute ? bestCount : ((double) bestCount / totalCount)));
+    //                    stop = start = best = null;
+    //                    bestCount = null;
+    //                    isAbove = false;
+    //                } else { // Below -> Below
+    //                }
+    //            }
+    //        }
+    //
+    //        // Last range
+    //        if (isAbove) {
+    //            peaks.add(
+    //                    new PeakEntry<K>(
+    //                            new Peak<K>(start, best, stop),
+    //                            absolute ? bestCount : ((double) bestCount / totalCount)));
+    //        }
+    //
+    //        // Sort by decreasing count values?
+    //        if (sorted) {
+    //            Collections.sort(peaks, reversePeakComparator);
+    //        }
+    //
+    //        return peaks;
+    //    }
+    //
     //----------------//
     // getQuorumValue //
     //----------------//
@@ -745,13 +731,13 @@ public class Histogram<K extends Number>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Value at beginning of range */
+        /** Key at beginning of range. */
         public final K first;
 
-        /** Value at highest point in range */
+        /** Key at highest count in range. */
         public final K best;
 
-        /** Value at end of range */
+        /** Key at end of range. */
         public final K second;
 
         //~ Constructors ---------------------------------------------------------------------------
@@ -768,8 +754,11 @@ public class Histogram<K extends Number>
         @Override
         public String toString ()
         {
-            return "(" + first.floatValue() + "," + best.floatValue() + "," + second.floatValue()
-                   + ")";
+            return String.format(
+                    "(%.1f,%.1f,%.1f)",
+                    first.floatValue(),
+                    best.floatValue(),
+                    second.floatValue());
         }
     }
 

@@ -6,6 +6,7 @@ src/**/*.jpg
 src/**/*.pdf
 dev/material/*.jpg
 dev/material/tasks-graph.pdf
+dev/material/scale
 
 .hgignore
 *.exe
