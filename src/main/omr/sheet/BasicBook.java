@@ -424,13 +424,28 @@ public class BasicBook
                     }
 
                     // Allocate one tab per stub, beginning by focusStub if any
+                    Integer focusIndex = null;
+
                     if (focusStub != null) {
                         controller.addAssembly(focusStub.getAssembly(), null);
+                        focusIndex = controller.getIndex(focusStub);
+
+                        if (focusIndex == -1) {
+                            focusIndex = null; // Safer
+                        }
                     }
 
                     for (SheetStub stub : stubs) {
-                        if (stub != focusStub) {
-                            controller.addAssembly(stub.getAssembly(), stub.getNumber() - 1);
+                        if (focusIndex == null) {
+                            controller.addAssembly(stub.getAssembly(), null);
+                        } else if (stub != focusStub) {
+                            if (stub.getNumber() < focusStub.getNumber()) {
+                                controller.addAssembly(
+                                        stub.getAssembly(),
+                                        controller.getLastIndex());
+                            } else {
+                                controller.addAssembly(stub.getAssembly(), null);
+                            }
                         }
                     }
 

@@ -53,6 +53,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -348,6 +349,33 @@ public class StubsController
         return stubsPane;
     }
 
+    //----------//
+    // getIndex //
+    //----------//
+    /**
+     * Report the index in stubsPane of the provided stub.
+     *
+     * @param stub
+     * @return the stub index in stubsPane
+     */
+    public Integer getIndex (SheetStub stub)
+    {
+        return stubsPane.indexOfComponent(stub.getAssembly().getComponent());
+    }
+
+    //--------------//
+    // getLastIndex //
+    //--------------//
+    /**
+     * Report the index of last tab.
+     *
+     * @return the index of last tab
+     */
+    public int getLastIndex ()
+    {
+        return stubsPane.getTabCount() - 1;
+    }
+
     //-----------------//
     // getSelectedStub //
     //-----------------//
@@ -361,6 +389,27 @@ public class StubsController
         StubEvent stubEvent = (StubEvent) stubService.getLastEvent(StubEvent.class);
 
         return (stubEvent != null) ? stubEvent.getData() : null;
+    }
+
+    //--------------//
+    // invokeSelect //
+    //--------------//
+    /**
+     * Delegate to EDT the selection of provided stub.
+     *
+     * @param stub the stub to select
+     */
+    public static void invokeSelect (final SheetStub stub)
+    {
+        SwingUtilities.invokeLater(
+                new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                StubsController.getInstance().selectAssembly(stub);
+            }
+        });
     }
 
     //---------//
@@ -412,6 +461,37 @@ public class StubsController
                 }
             }
         }
+    }
+
+    //-----------//
+    // reDisplay //
+    //-----------//
+    public void reDisplay (final SheetStub stub)
+    {
+        Callable<Void> task = new Callable<Void>()
+        {
+            @Override
+            public Void call ()
+                    throws Exception
+            {
+                try {
+                    LogUtil.start(stub);
+
+                    // Check whether we should run early steps on the sheet
+                    checkStubStatus(stub);
+
+                    // Tell the selected assembly that it now has the focus
+                    stub.getAssembly().assemblySelected();
+
+                    return null;
+                } finally {
+                    LogUtil.stopStub();
+                }
+            }
+        };
+
+        // Since we are on Swing EDT, use asynchronous processing
+        OmrExecutors.getCachedLowExecutor().submit(task);
     }
 
     //---------//
@@ -565,38 +645,6 @@ public class StubsController
 
             reDisplay(stub);
         }
-    }
-
-    //-----------//
-    // reDisplay //
-    //-----------//
-    public void reDisplay (final SheetStub stub)
-    {
-
-        Callable<Void> task = new Callable<Void>()
-        {
-            @Override
-            public Void call ()
-                    throws Exception
-            {
-                try {
-                    LogUtil.start(stub);
-
-                    // Check whether we should run early steps on the sheet
-                    checkStubStatus(stub);
-
-                    // Tell the selected assembly that it now has the focus
-                    stub.getAssembly().assemblySelected();
-
-                    return null;
-                } finally {
-                    LogUtil.stopStub();
-                }
-            }
-        };
-
-        // Since we are on Swing EDT, use asynchronous processing
-        OmrExecutors.getCachedLowExecutor().submit(task);
     }
 
     //-----------//

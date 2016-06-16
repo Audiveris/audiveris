@@ -200,16 +200,7 @@ public class BasicStub
         logger.warn(msg.replaceAll(LINE_SEPARATOR, " "));
 
         if (OMR.gui != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    // Make sheet visible to the user
-                    StubsController.getInstance().selectAssembly(BasicStub.this);
-                }
-            });
+            StubsController.invokeSelect(this);
         }
 
         if ((OMR.gui == null)

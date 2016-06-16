@@ -136,8 +136,7 @@ public class SheetAssembly
     // addBoard //
     //----------//
     /**
-     * Add a board into the BoardsPane corresponding to the provided
-     * view tab title.
+     * Add a board into the BoardsPane corresponding to the provided view tab title.
      *
      * @param tab   the tab of the targeted view
      * @param board the board to add dynamically

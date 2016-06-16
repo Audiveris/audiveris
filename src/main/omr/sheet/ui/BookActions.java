@@ -1602,6 +1602,13 @@ public class BookActions
                     Book book = OMR.engine.loadBook(path);
                     LogUtil.start(book);
                     book.createStubsTabs(null); // Tabs are now accessible
+
+                    // Focus on first valid stub in book, if any
+                    SheetStub firstValid = book.getFirstValidStub();
+
+                    if (firstValid != null) {
+                        StubsController.invokeSelect(firstValid);
+                    }
                 } finally {
                     LogUtil.stopBook();
                 }
@@ -1645,6 +1652,13 @@ public class BookActions
                     LogUtil.start(book);
                     book.createStubs(null);
                     book.createStubsTabs(null); // Tabs are now accessible
+
+                    // Focus on first valid stub in book, if any
+                    SheetStub firstValid = book.getFirstValidStub();
+
+                    if (firstValid != null) {
+                        StubsController.invokeSelect(firstValid);
+                    }
                 } catch (Exception ex) {
                     logger.warn("Error opening path " + path + " " + ex, ex);
                 } finally {
