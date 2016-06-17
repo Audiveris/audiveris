@@ -126,6 +126,7 @@ public class IntegerHistogram
     //--------------//
     /**
      * Retrieve peaks based on derivative HiLos.
+     * A peak can extend from HiLo.min -1 to HiLo.max, unless there is a HiLo or even a peak nearby.
      *
      * @return the (perhaps empty but not null) collection of peaks, sorted by decreasing count
      */
@@ -144,37 +145,25 @@ public class IntegerHistogram
         for (Range hilo : decreasing) {
             int i = hilos.indexOf(hilo);
 
-            final int kMin;
+            ///int kMin = Math.max(hilo.min - 2, 1);
+            int kMin = Math.max(hilo.min - 1, 1);
 
-            if (i == 0) {
-                kMin = 1;
-            } else {
+            if (i > 0) {
                 Range prevHiLo = hilos.get(i - 1);
                 Range prevPeak = hiloToPeak.get(prevHiLo);
-
-                if (prevPeak != null) {
-                    kMin = prevPeak.max + 1;
-                } else {
-                    kMin = prevHiLo.max + 1;
-                }
+                kMin = Math.max(kMin, (prevPeak != null) ? (prevPeak.max + 1) : (prevHiLo.max + 1));
             }
 
-            final int kMax;
+            ///int kMax = Math.min(hilo.max + 1, counts.length - 1);
+            int kMax = hilo.max;
 
-            if (i == (hilos.size() - 1)) {
-                kMax = counts.length - 1;
-            } else {
-                Range nextHiLo = hilos.get(i + 1);
-                Range nextPeak = hiloToPeak.get(nextHiLo);
-
-                if (nextPeak != null) {
-                    kMax = nextPeak.min - 1;
-                } else {
-                    kMax = nextHiLo.min - 1;
-                }
-            }
-
-            Range peak = createPeak(kMin, hilo.min, hilo.max, kMax);
+            //
+            //            if (i < (hilos.size() - 1)) {
+            //                Range nextHiLo = hilos.get(i + 1);
+            //                Range nextPeak = hiloToPeak.get(nextHiLo);
+            //                kMax = Math.min(kMax, (nextPeak != null) ? (nextPeak.min - 1) : (nextHiLo.min - 1));
+            //            }
+            Range peak = createPeak(kMin, hilo.main, kMax);
             hiloToPeak.put(hilo, peak);
             peaks.add(peak);
         }
@@ -315,18 +304,15 @@ public class IntegerHistogram
     /**
      * Create a peak from a key range.
      *
-     * @param kMin  minimum acceptable key
-     * @param start beginning of key range
-     * @param stop  end of key range
-     * @param kMax  maximum acceptable key
+     * @param kMin minimum acceptable key
+     * @param main key at highest count
+     * @param kMax maximum acceptable key
      * @return the created peak
      */
     private Range createPeak (int kMin,
-                              int start,
-                              int stop,
+                              int main,
                               int kMax)
     {
-        final int main = mainOf(start, stop);
         int total = counts[main];
         int lower = main;
         int upper = main;
@@ -653,9 +639,8 @@ public class IntegerHistogram
 
         private void plotCounts ()
         {
-            String pc = (int) (minGainRatio * 100) + "%";
             String str = (peak == null) ? "NO_PEAK"
-                    : (pc + "Main:" + peak.main
+                    : ("Main:" + peak.main
                        + ((secondPeak != null) ? (" & " + secondPeak.main) : ""));
             XYSeries valueSeries = new XYSeries(str);
 
@@ -663,7 +648,7 @@ public class IntegerHistogram
                 valueSeries.add(i, counts[i]);
             }
 
-            add(valueSeries, Color.GREEN, false);
+            add(valueSeries, Color.RED, false);
         }
 
         private void plotDerivatives ()
@@ -697,7 +682,7 @@ public class IntegerHistogram
             XYSeries series = new XYSeries(pc + "Count");
             series.add(1, threshold);
             series.add(upper, threshold);
-            add(series, Color.GREEN, false);
+            add(series, Color.RED, false);
         }
 
         private void plotMinDerivatives ()
@@ -727,13 +712,14 @@ public class IntegerHistogram
         private void plotPeak (Range peak)
         {
             final TreeMap<Integer, Double> thresholds = replay(peak);
-            XYSeries peakSeries = new XYSeries("Peak");
+            final String pc = (int) (minGainRatio * 100) + "%";
+            XYSeries peakSeries = new XYSeries(pc + "Peak");
 
             for (Entry<Integer, Double> entry : thresholds.entrySet()) {
                 peakSeries.add(entry.getKey(), entry.getValue());
             }
 
-            add(peakSeries, Color.RED, false);
+            add(peakSeries, Color.YELLOW, false);
         }
 
         private void plotZero ()
@@ -777,46 +763,3 @@ public class IntegerHistogram
         }
     }
 }
-//    //---------------//
-//    // getCountPeaks //
-//    //---------------//
-//    /**
-//     * Retrieve peaks based on a count threshold.
-//     *
-//     * @return the (perhaps empty but not null) collection of peaks, sorted by decreasing count
-//     */
-//    public List<Range> getCountPeaks ()
-//    {
-//        final int minCount = getQuorumValue(minCountRatio);
-//        final int kMin = 1;
-//        final int kMax = counts.length - 1;
-//        final List<Range> peaks = new ArrayList<Range>();
-//        int start = 0;
-//        boolean isAbove = false;
-//
-//        for (int key = kMin; key <= kMax; key++) {
-//            final int count = counts[key];
-//
-//            if (count >= minCount) {
-//                if (start == 0) {
-//                    start = key;
-//                }
-//
-//                if (isAbove) { // Above -> Above
-//                } else { // Below -> Above
-//                    isAbove = true;
-//                }
-//            } else if (isAbove) { // Above -> Below
-//
-//                int stop = key - 1;
-//                peaks.add(createPeak(kMin, start, stop, kMax));
-//                start = 0;
-//                isAbove = false;
-//            } else { // Below -> Below
-//            }
-//        }
-//
-//        Collections.sort(peaks, byReverseMain);
-//
-//        return peaks;
-//    }

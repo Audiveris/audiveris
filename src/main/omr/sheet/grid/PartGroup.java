@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sheet.grid;
 
+import java.util.Comparator;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -24,8 +26,20 @@ import javax.xml.bind.annotation.XmlElement;
 @XmlAccessorType(XmlAccessType.NONE)
 public class PartGroup
 {
-    //~ Enumerations -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** To compare groups by their first staff ID. */
+    public static Comparator<PartGroup> byFirstId = new Comparator<PartGroup>()
+    {
+        @Override
+        public int compare (PartGroup pg1,
+                            PartGroup pg2)
+        {
+            return Integer.compare(pg1.firstStaffId, pg2.firstStaffId);
+        }
+    };
+
+    //~ Enumerations -------------------------------------------------------------------------------
     public static enum Symbol
     {
         //~ Enumeration constant initializers ------------------------------------------------------
@@ -156,6 +170,16 @@ public class PartGroup
     public boolean isBarline ()
     {
         return barline;
+    }
+
+    /**
+     * Report whether this group is based on a brace symbol.
+     *
+     * @return true if brace-based
+     */
+    public boolean isBrace ()
+    {
+        return symbol == Symbol.brace;
     }
 
     /**

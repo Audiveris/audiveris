@@ -20,7 +20,6 @@ import omr.glyph.dynamic.Compounds;
 import omr.math.GeoUtil;
 
 import omr.run.Orientation;
-
 import static omr.run.Orientation.*;
 
 import omr.sheet.Scale;
@@ -229,9 +228,10 @@ public class ClustersRetriever
     /**
      * Organize the filaments into clusters as possible.
      *
+     * @param checkConsistency true if cluster consistency must be checked
      * @return the filaments that could not be clustered
      */
-    public List<StaffFilament> buildInfo ()
+    public List<StaffFilament> buildInfo (boolean checkConsistency)
     {
         // Retrieve all vertical combs gathering filaments
         retrieveCombs();
@@ -251,7 +251,7 @@ public class ClustersRetriever
         followCombsNetwork();
 
         // Retrieve clusters
-        retrieveClusters();
+        retrieveClusters(checkConsistency);
 
         logger.info(
                 "Retrieved line clusters: {} of size: {} with interline: {}",
@@ -726,7 +726,8 @@ public class ClustersRetriever
             maxLg = Math.max(maxLg, lg);
         }
 
-        double diffRatio = (maxLg - minLg) / (double) minLg;
+        final double meanLg = (minLg + maxLg) / 2.0;
+        final double diffRatio = (maxLg - minLg) / meanLg;
 
         if (diffRatio > constants.maxClusterDiffLengthRatio.getValue()) {
             logger.debug("diff length ratio: {} for {}", diffRatio, cluster);
@@ -924,8 +925,10 @@ public class ClustersRetriever
     /**
      * Connect filaments via the combs they are involved in,
      * and come up with clusters of lines.
+     *
+     * @param checkConsistency true for checking consistency
      */
-    private void retrieveClusters ()
+    private void retrieveClusters (boolean checkConsistency)
     {
         // Create clusters recursively out of filements
         createClusters();
@@ -946,7 +949,9 @@ public class ClustersRetriever
         mergeClusterPairs();
 
         // Discard clusters with inconsistent lines lengths
-        destroyInconsistentClusters();
+        if (checkConsistency) {
+            destroyInconsistentClusters();
+        }
 
         // Aggregate filaments left over when possible (second)
         expandClusters();
@@ -972,18 +977,13 @@ public class ClustersRetriever
     private void retrieveCombs ()
     {
         /** Minimum acceptable delta y */
-        int dMin = minInterline;
+        final int dMin = minInterline;
 
         /** Maximum acceptable delta y */
-        int dMax = maxInterline;
-
-        // For better efficiency: in doubt, avoid inserting a comb
-        if ((dMax - dMin) > 3) {
-            dMin++;
-        }
+        final int dMax = maxInterline + params.combMaxMargin;
 
         /** Number of vertical samples to collect */
-        int sampleCount = -1 + (int) Math.rint((double) pictureWidth / params.samplingDx);
+        final int sampleCount = -1 + (int) Math.rint((double) pictureWidth / params.samplingDx);
 
         /** Exact columns abscissae */
         colX = new int[sampleCount + 1];
@@ -1140,6 +1140,10 @@ public class ClustersRetriever
                 2,
                 "Rough margin around cluster ordinate");
 
+        private final Scale.Fraction combMaxMargin = new Scale.Fraction(
+                0.1,
+                "Comb margin on top of max interline");
+
         private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
                 0.2,
                 "Minimum cluster true length (as ratio of median true length)");
@@ -1212,6 +1216,8 @@ public class ClustersRetriever
 
         final int clusterYMargin;
 
+        final int combMaxMargin;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -1227,6 +1233,7 @@ public class ClustersRetriever
             maxMergeDy = scale.toPixels(constants.maxMergeDy);
             maxMergeCenterDy = scale.toPixels(constants.maxMergeCenterDy);
             clusterYMargin = scale.toPixels(constants.clusterYMargin);
+            combMaxMargin = scale.toPixels(constants.combMaxMargin);
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);

@@ -446,11 +446,10 @@ public class LinesRetriever
                     Colors.COMB);
             watch.start("clustersRetriever");
 
-            discardedFilaments = clustersRetriever.buildInfo();
+            Integer secondInterline = scale.getSecondInterline();
+            discardedFilaments = clustersRetriever.buildInfo(secondInterline != null);
 
             // Check for a second interline
-            Integer secondInterline = scale.getSecondInterline();
-
             if ((secondInterline != null) && !discardedFilaments.isEmpty()) {
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Entities.byId);
@@ -463,7 +462,7 @@ public class LinesRetriever
                         scale.getMaxSecondInterline(),
                         Colors.COMB_MINOR);
                 watch.start("secondClustersRetriever");
-                discardedFilaments = secondClustersRetriever.buildInfo();
+                discardedFilaments = secondClustersRetriever.buildInfo(false);
             }
 
             if (logger.isDebugEnabled()) {
