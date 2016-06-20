@@ -85,7 +85,7 @@ public class BraceInter
                 try {
                     final Staff staff1 = system.getClosestStaff(new Point(xRight, box.y));
                     final Staff staff2 = system.getClosestStaff(
-                            new Point(xRight, box.y + box.height));
+                            new Point(xRight, box.y + box.height - 1));
                     final int y1 = staff1.getFirstLine().yAt(xRight);
                     final int y2 = staff2.getLastLine().yAt(xRight);
                     bounds = new Rectangle(box.x, y1, box.width, y2 - y1 + 1);

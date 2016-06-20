@@ -201,33 +201,43 @@ public class StaffProjector
             return false;
         }
 
-        final StaffPeak firstPeak = peaks.get(0);
+        if (peaks.isEmpty()) {
+            return false;
+        }
 
-        // There must be a significant blank right before first peak
-        Blank blank = selectBlank(LEFT, firstPeak.getStart(), params.minSmallBlankWidth);
+        try {
+            final StaffPeak firstPeak = peaks.get(0);
 
-        if (blank != null) {
-            int gap = firstPeak.getStart() - 1 - blank.stop;
+            // There must be a significant blank right before first peak
+            Blank blank = selectBlank(LEFT, firstPeak.getStart(), params.minSmallBlankWidth);
 
-            if (gap > params.maxExtremaLength) {
-                // Significant root portion found, so unset start peak and define true line start.
-                int iStart = getStartPeakIndex();
+            if (blank != null) {
+                int gap = firstPeak.getStart() - 1 - blank.stop;
 
-                if (iStart != -1) {
-                    peaks.get(iStart).unset(Attribute.STAFF_LEFT_END);
+                if (gap > params.maxExtremaLength) {
+                    // Significant root portion found, so unset start peak and define true line start.
+                    int iStart = getStartPeakIndex();
+
+                    if (iStart != -1) {
+                        peaks.get(iStart).unset(Attribute.STAFF_LEFT_END);
+                    }
+
+                    staff.setAbscissa(LEFT, blank.stop + 1);
+
+                    return true;
+                } else {
+                    // No significant root portion found, so peak really defines staff end.
+                    return false;
                 }
-
-                staff.setAbscissa(LEFT, blank.stop + 1);
+            } else {
+                logger.warn("Staff#{} no clear end on LEFT", staff.getId());
 
                 return true;
-            } else {
-                // No significant root portion found, so peak really defines staff end.
-                return false;
             }
-        } else {
-            logger.warn("Staff#{} no clear end on LEFT", staff.getId());
+        } catch (Exception ex) {
+            logger.warn("Error in checkLinesRoot on staff#{} {}", staff.getId(), ex.toString(), ex);
 
-            return true;
+            return false;
         }
     }
 
@@ -274,6 +284,11 @@ public class StaffProjector
             } else if (braceStop != -1) {
                 return createBracePeak(braceStart, braceStop, maxRight);
             }
+        }
+
+        // Brace peak on going (stuck on left side of image)?
+        if (braceStart >= 0) {
+            return createBracePeak(braceStart, braceStop, maxRight);
         }
 
         return null;
@@ -709,7 +724,7 @@ public class StaffProjector
                                        int rawStop,
                                        int maxRight)
     {
-        // Extend left abscissa until a blank (no-staff) is reached
+        // Extend left abscissa until a blank (no-staff) or image left side is reached
         Blank leftBlank = null;
 
         for (Blank blank : allBlanks) {
@@ -720,22 +735,23 @@ public class StaffProjector
             leftBlank = blank;
         }
 
-        if (leftBlank == null) {
-            return null;
-        }
-
-        int start = leftBlank.stop;
+        int start = (leftBlank != null) ? leftBlank.stop : rawStart;
         int val = projection.getValue(start);
-        int nextVal = projection.getValue(start - 1);
 
-        while (nextVal < val) {
-            start = start - 1;
-            val = nextVal;
-            nextVal = projection.getValue(start - 1);
+        for (int x = start - 1; x >= 0; x--) {
+            int nextVal = projection.getValue(x);
+
+            if (nextVal < val) {
+                val = nextVal;
+                start = x;
+            } else {
+                break;
+            }
         }
 
         // Perhaps there is no real blank between brace and bar, so use lowest point in valley
         int bestVal = Integer.MAX_VALUE;
+
         int stop = -1;
 
         for (int x = rawStop; x <= maxRight; x++) {
@@ -752,11 +768,15 @@ public class StaffProjector
         }
 
         final int xMid = (start + stop) / 2;
+
         final int yTop = staff.getFirstLine().yAt(xMid);
+
         final int yBottom = staff.getLastLine().yAt(xMid);
 
         StaffPeak brace = new StaffPeak(staff, yTop, yBottom, start, stop, null);
+
         brace.set(Attribute.BRACE);
+
         brace.computeDeskewedCenter(sheet.getSkew());
 
         return brace;
@@ -850,7 +870,7 @@ public class StaffProjector
     // findAllBlanks //
     //---------------//
     /**
-     * Look for all "blank" regions (without staff lines).
+     * Look for all "blank" regions (regions without staff lines).
      */
     private void findAllBlanks ()
     {
@@ -942,6 +962,26 @@ public class StaffProjector
         logger.debug("Staff#{} peaks:{}", staff.getId(), peaks);
     }
 
+    //----------//
+    // isOnSide //
+    //----------//
+    /**
+     * Check whether the provided blank is on specified staff side.
+     *
+     * @param blank the blank to check
+     * @param side  the desired horizontal side of the staff
+     * @return true if OK
+     */
+    private boolean isOnSide (Blank blank,
+                              HorizontalSide side)
+    {
+        final int dir = (side == LEFT) ? (-1) : 1;
+        final int mid = (blank.start + blank.stop) / 2;
+        final int start = staff.getAbscissa(side);
+
+        return (dir * (mid - start)) > 0;
+    }
+
     //----------------//
     // refinePeakSide //
     //----------------//
@@ -1021,16 +1061,9 @@ public class StaffProjector
 
         for (int ir = rInit; ir != rBreak; ir += dir) {
             Blank blank = allBlanks.get(ir);
-            int mid = (blank.start + blank.stop) / 2;
 
-            // Make sure we are on desired side of the staff
-            if ((dir * (mid - start)) > 0) {
-                int width = blank.getWidth();
-
-                // Stop on first significant blank
-                if (width >= minWidth) {
-                    return blank;
-                }
+            if (isOnSide(blank, side) && (blank.getWidth() >= minWidth)) {
+                return blank;
             }
         }
 
@@ -1045,16 +1078,17 @@ public class StaffProjector
      */
     private void selectEndingBlanks ()
     {
+        if (allBlanks.isEmpty()) {
+            return;
+        }
+
         for (HorizontalSide side : HorizontalSide.values()) {
             // Look for the first really wide blank encountered
             Blank blank = selectBlank(side, staff.getAbscissa(side), params.minWideBlankWidth);
 
-            if (blank == null) {
-                // No wide blank has been found, simply pick up the one farthest from staff
-                blank = (side == LEFT) ? allBlanks.get(0) : allBlanks.get(allBlanks.size() - 1);
+            if (blank != null) {
+                endingBlanks.put(side, blank);
             }
-
-            endingBlanks.put(side, blank);
         }
 
         logger.debug("Staff#{} endingBlanks:{}", staff.getId(), endingBlanks);

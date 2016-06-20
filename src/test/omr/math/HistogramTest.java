@@ -37,8 +37,6 @@ public class HistogramTest
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private IntegerHistogram histo;
-
     private Set<Integer> keySet;
 
     private Set<Integer> valueSet;
@@ -332,7 +330,7 @@ public class HistogramTest
 
     private Histogram<Integer> createHistogram ()
     {
-        histo = new IntegerHistogram();
+        Histogram histo = new Histogram();
         histo.increaseCount(3, 2);
         histo.increaseCount(4, 10);
         histo.increaseCount(5, 12);

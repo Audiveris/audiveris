@@ -1124,7 +1124,7 @@ public class BarsRetriever
                 // Look for brace portion on left of first peak
                 final StaffPeak firstPeak = peaks.get(0);
                 int maxRight = firstPeak.getStart() - 1;
-                int minLeft = maxRight - params.maxBraceWidth;
+                int minLeft = Math.max(0, maxRight - params.maxBraceWidth);
                 StaffPeak bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
                 if ((bracePeak == null) && (iStart >= 1)) {
@@ -2332,7 +2332,7 @@ public class BarsRetriever
     // verifyLinesRoot //
     //-----------------//
     /**
-     * Make sure that there is no staff line portion right before first bar or bracket.
+     * Make sure that there is no staff line portion just before first bar or bracket.
      * <p>
      * This may occur only on 1-staff systems.
      */
