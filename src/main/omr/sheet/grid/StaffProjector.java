@@ -256,7 +256,26 @@ public class StaffProjector
     {
         final int minValue = params.braceThreshold;
         final Blank leftBlank = endingBlanks.get(LEFT);
-        final int xMin = Math.max(minLeft, (leftBlank != null) ? leftBlank.stop : 0);
+        final int xMin;
+
+        if (leftBlank != null) {
+            if ((leftBlank.stop + 2) >= maxRight) { // +2 to cope with blank-peak gap
+                // Large blank just before bar, look even farther on left
+                maxRight = leftBlank.start - 1;
+
+                Blank prevBlank = selectBlank(LEFT, maxRight, params.minWideBlankWidth);
+
+                if (prevBlank != null) {
+                    xMin = prevBlank.stop;
+                } else {
+                    xMin = minLeft;
+                }
+            } else {
+                xMin = Math.max(minLeft, leftBlank.stop);
+            }
+        } else {
+            xMin = Math.max(minLeft, 0);
+        }
 
         int braceStop = -1;
         int braceStart = -1;
@@ -962,26 +981,6 @@ public class StaffProjector
         logger.debug("Staff#{} peaks:{}", staff.getId(), peaks);
     }
 
-    //----------//
-    // isOnSide //
-    //----------//
-    /**
-     * Check whether the provided blank is on specified staff side.
-     *
-     * @param blank the blank to check
-     * @param side  the desired horizontal side of the staff
-     * @return true if OK
-     */
-    private boolean isOnSide (Blank blank,
-                              HorizontalSide side)
-    {
-        final int dir = (side == LEFT) ? (-1) : 1;
-        final int mid = (blank.start + blank.stop) / 2;
-        final int start = staff.getAbscissa(side);
-
-        return (dir * (mid - start)) > 0;
-    }
-
     //----------------//
     // refinePeakSide //
     //----------------//
@@ -1061,9 +1060,16 @@ public class StaffProjector
 
         for (int ir = rInit; ir != rBreak; ir += dir) {
             Blank blank = allBlanks.get(ir);
+            int mid = (blank.start + blank.stop) / 2;
 
-            if (isOnSide(blank, side) && (blank.getWidth() >= minWidth)) {
-                return blank;
+            // Make sure we are on desired side of the staff
+            if ((dir * (mid - start)) > 0) {
+                int width = blank.getWidth();
+
+                // Stop on first significant blank
+                if (width >= minWidth) {
+                    return blank;
+                }
             }
         }
 

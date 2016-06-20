@@ -1124,14 +1124,16 @@ public class BarsRetriever
                 // Look for brace portion on left of first peak
                 final StaffPeak firstPeak = peaks.get(0);
                 int maxRight = firstPeak.getStart() - 1;
-                int minLeft = Math.max(0, maxRight - params.maxBraceWidth);
+                int minLeft = Math.max(
+                        0,
+                        maxRight - (params.maxBracePeakWidth + params.maxBraceBarGap));
                 StaffPeak bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
                 if ((bracePeak == null) && (iStart >= 1)) {
                     // First peak could itself be a brace portion (mistaken for a bar)
                     final StaffPeak secondPeak = peaks.get(1);
                     maxRight = secondPeak.getStart() - 1;
-                    minLeft = maxRight - params.maxBraceWidth;
+                    minLeft = maxRight - (params.maxBracePeakWidth + params.maxBraceBarGap);
                     bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
                     if (bracePeak != null) {
@@ -1799,7 +1801,7 @@ public class BarsRetriever
             return null;
         }
 
-        if (bracePeak.getWidth() > params.maxBraceWidth) {
+        if (bracePeak.getWidth() > params.maxBracePeakWidth) {
             logger.info("too wide bracePeak {}", bracePeak);
 
             return null;
@@ -2387,10 +2389,6 @@ public class BarsRetriever
                 0.75,
                 "Max horizontal gap between two members of a double bar");
 
-        private final Scale.Fraction maxBraceBarGap = new Scale.Fraction(
-                1.5,
-                "Max horizontal gap between a brace peak and next bar");
-
         private final Scale.Fraction minMeasureWidth = new Scale.Fraction(
                 2.0,
                 "Minimum width for a measure");
@@ -2425,18 +2423,22 @@ public class BarsRetriever
 
         private final Scale.Fraction maxBraceThickness = new Scale.Fraction(
                 1.0,
-                "Maximum thickness of a brace");
+                "Maximum thickness of a brace (for sections)");
 
-        private final Scale.Fraction maxBraceWidth = new Scale.Fraction(
+        private final Scale.Fraction maxBracePeakWidth = new Scale.Fraction(
                 3.0,
-                "Maximum width of a brace");
+                "Maximum width of a brace peak");
+
+        private final Scale.Fraction maxBraceBarGap = new Scale.Fraction(
+                2.0,
+                "Max horizontal gap between a brace peak and next bar");
 
         private final Scale.Fraction braceLookupExtension = new Scale.Fraction(
-                1.0,
+                0.5,
                 "Lookup height for brace end above or below staff line");
 
         private final Scale.Fraction maxBraceCurvature = new Scale.Fraction(
-                20, // 35,
+                20,
                 "Maximum mean curvature radius for a brace");
 
         // For brackets ----------------------------------------------------------------------------
@@ -2487,8 +2489,6 @@ public class BarsRetriever
 
         final int maxDoubleBarGap;
 
-        final int maxBraceBarGap;
-
         final int minMeasureWidth;
 
         final int minPeak1WidthForCClef;
@@ -2505,7 +2505,9 @@ public class BarsRetriever
 
         final int maxBraceThickness;
 
-        final int maxBraceWidth;
+        final int maxBracePeakWidth;
+
+        final int maxBraceBarGap;
 
         final int braceLookupExtension;
 
@@ -2538,7 +2540,6 @@ public class BarsRetriever
             maxBarExtension = scale.toPixels(constants.maxBarExtension);
             maxLinesLeftToStartBar = scale.toPixels(constants.maxLinesLeftToStartBar);
             maxDoubleBarGap = scale.toPixels(constants.maxDoubleBarGap);
-            maxBraceBarGap = scale.toPixels(constants.maxBraceBarGap);
             minMeasureWidth = scale.toPixels(constants.minMeasureWidth);
 
             cClefTail = scale.toPixels(constants.cClefTail);
@@ -2549,7 +2550,8 @@ public class BarsRetriever
             braceSegmentLength = scale.toPixels(constants.braceSegmentLength);
             minBracePortionHeight = scale.toPixels(constants.minBracePortionHeight);
             maxBraceThickness = scale.toPixels(constants.maxBraceThickness);
-            maxBraceWidth = scale.toPixels(constants.maxBraceWidth);
+            maxBracePeakWidth = scale.toPixels(constants.maxBracePeakWidth);
+            maxBraceBarGap = scale.toPixels(constants.maxBraceBarGap);
             braceLookupExtension = scale.toPixels(constants.braceLookupExtension);
             maxBraceCurvature = scale.toPixels(constants.maxBraceCurvature);
 

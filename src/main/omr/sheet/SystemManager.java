@@ -705,7 +705,7 @@ public class SystemManager
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction minShift = new Scale.Fraction(
-                4.0,
+                3.0,
                 "Minimum shift to detect a system indentation");
     }
 }
