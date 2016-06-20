@@ -288,7 +288,7 @@ public class TargetBuilder
                     // Enforce perfect staff interline
                     TargetLine targetLine = new TargetLine(
                             line,
-                            targetStaff.top + (staff.getSpecificScale().getInterline() * lineIdx),
+                            targetStaff.top + (staff.getSpecificInterline() * lineIdx),
                             targetStaff);
                     allTargetLines.add(targetLine);
                     targetStaff.lines.add(targetLine);

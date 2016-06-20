@@ -17,11 +17,8 @@ import omr.constant.ConstantSet;
 import omr.math.GeoPath;
 import omr.math.GeoUtil;
 import omr.math.LineUtil;
-
 import static omr.math.LineUtil.*;
-
 import omr.math.PointUtil;
-
 import static omr.math.PointUtil.*;
 
 import omr.sheet.Scale;
@@ -43,9 +40,7 @@ import omr.sig.relation.SlurHeadRelation;
 
 import omr.util.Dumping;
 import omr.util.HorizontalSide;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -56,9 +51,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-
 import static java.lang.Math.abs;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -70,10 +63,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.abs;
-import static java.lang.Math.abs;
 
 /**
  * Class {@code SlursLinker} works at sheet level, to handle the connections between

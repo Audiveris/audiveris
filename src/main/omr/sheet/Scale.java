@@ -87,23 +87,23 @@ public class Scale
             Scale.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Line thickness range. */
+    /** Line thickness scale. */
     @XmlElement(name = "line")
-    private final Range lineRange;
+    private final LineScale lineScale;
 
-    /** Main interline range. */
+    /** Main interline scale. */
     @XmlElement(name = "interline")
-    private final Range interlineRange;
+    private final InterlineScale interlineScale;
 
-    /** Second interline range, if any. */
+    /** Second interline scale, if any. */
     @XmlElement(name = "second-interline")
-    private final Range secondInterlineRange;
+    private final InterlineScale interlineScale2;
 
-    /** Beam information. */
+    /** Beam scale. */
     @XmlElement(name = "beam")
     private final BeamScale beamScale;
 
-    /** Stem information. */
+    /** Stem scale. */
     @XmlElement(name = "stem")
     private StemScale stemScale;
 
@@ -128,25 +128,25 @@ public class Scale
     public Scale (int interline,
                   int mainFore)
     {
-        this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), null, null);
+        this(new LineScale(-1, mainFore, -1), new InterlineScale(-1, interline, -1), null, null);
     }
 
     /**
      * Create a scale entity, meant for a whole sheet.
      *
-     * @param lineRange            range of line thickness
-     * @param interlineRange       range of interline
-     * @param secondInterlineRange range of secondInterline
-     * @param beamScale            beam scale information
+     * @param lineScale       scale of line thickness
+     * @param interlineScale  scale of interline
+     * @param interlineScale2 scale of second interline, perhaps null
+     * @param beamScale       beam scale information
      */
-    public Scale (Range lineRange,
-                  Range interlineRange,
-                  Range secondInterlineRange,
+    public Scale (LineScale lineScale,
+                  InterlineScale interlineScale,
+                  InterlineScale interlineScale2,
                   BeamScale beamScale)
     {
-        this.lineRange = lineRange;
-        this.interlineRange = interlineRange;
-        this.secondInterlineRange = secondInterlineRange;
+        this.lineScale = lineScale;
+        this.interlineScale = interlineScale;
+        this.interlineScale2 = interlineScale2;
         this.beamScale = beamScale;
     }
 
@@ -157,20 +157,6 @@ public class Scale
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // fracToPixels //
-    //--------------//
-    /**
-     * Convert a fraction of interline to a number of pixels.
-     *
-     * @param val the fraction value
-     * @return the (double) number of pixels
-     */
-    public double fracToPixels (double val)
-    {
-        return interlineRange.main * val;
-    }
-
     //---------------------//
     // getBeamMeanDistance //
     //---------------------//
@@ -217,7 +203,47 @@ public class Scale
      */
     public int getInterline ()
     {
-        return interlineRange.main;
+        return interlineScale.main;
+    }
+
+    //---------------//
+    // getInterline2 //
+    //---------------//
+    /**
+     * Report the second interline value this scale is based upon.
+     *
+     * @return the second number if any of pixels (black + white) from one line
+     *         to the other, otherwise null.
+     */
+    public Integer getInterline2 ()
+    {
+        if (interlineScale2 != null) {
+            return interlineScale2.main;
+        } else {
+            return null;
+        }
+    }
+
+    //-------------------//
+    // getInterlineScale //
+    //-------------------//
+    /**
+     * @return the interlineScale
+     */
+    public InterlineScale getInterlineScale ()
+    {
+        return interlineScale;
+    }
+
+    //--------------------//
+    // getInterlineScale2 //
+    //--------------------//
+    /**
+     * @return the secondInterlineScale
+     */
+    public InterlineScale getInterlineScale2 ()
+    {
+        return interlineScale2;
     }
 
     //-------------//
@@ -230,7 +256,7 @@ public class Scale
      */
     public int getMainFore ()
     {
-        return lineRange.main;
+        return lineScale.main;
     }
 
     //------------//
@@ -243,7 +269,7 @@ public class Scale
      */
     public int getMaxFore ()
     {
-        return lineRange.max;
+        return lineScale.max;
     }
 
     //-----------------//
@@ -256,7 +282,7 @@ public class Scale
      */
     public int getMaxInterline ()
     {
-        return interlineRange.max;
+        return interlineScale.max;
     }
 
     //-----------------------//
@@ -269,8 +295,8 @@ public class Scale
      */
     public Integer getMaxSecondInterline ()
     {
-        if (secondInterlineRange != null) {
-            return secondInterlineRange.max;
+        if (interlineScale2 != null) {
+            return interlineScale2.max;
         } else {
             return null;
         }
@@ -297,39 +323,21 @@ public class Scale
      */
     public int getMinInterline ()
     {
-        return interlineRange.min;
+        return interlineScale.min;
     }
 
-    //-----------------------//
-    // getMinSecondInterline //
-    //-----------------------//
+    //------------------//
+    // getMinInterline2 //
+    //------------------//
     /**
      * Report the minimum second interline (using standard percentile).
      *
      * @return the minSecondInterline if any, otherwise null
      */
-    public Integer getMinSecondInterline ()
+    public Integer getMinInterline2 ()
     {
-        if (secondInterlineRange != null) {
-            return secondInterlineRange.min;
-        } else {
-            return null;
-        }
-    }
-
-    //--------------------//
-    // getSecondInterline //
-    //--------------------//
-    /**
-     * Report the second interline value this scale is based upon.
-     *
-     * @return the second number if any of pixels (black + white) from one line
-     *         to the other, otherwise null.
-     */
-    public Integer getSecondInterline ()
-    {
-        if (secondInterlineRange != null) {
-            return secondInterlineRange.main;
+        if (interlineScale2 != null) {
+            return interlineScale2.min;
         } else {
             return null;
         }
@@ -369,7 +377,7 @@ public class Scale
      */
     public double pixelsToAreaFrac (double pixels)
     {
-        return pixels / (interlineRange.main * interlineRange.main);
+        return pixels / (interlineScale.main * interlineScale.main);
     }
 
     //--------------//
@@ -385,7 +393,7 @@ public class Scale
      */
     public double pixelsToFrac (double pixels)
     {
-        return pixels / interlineRange.main;
+        return pixels / interlineScale.main;
     }
 
     //------------------//
@@ -401,7 +409,7 @@ public class Scale
      */
     public double pixelsToLineFrac (double pixels)
     {
-        return pixels / lineRange.main;
+        return pixels / lineScale.main;
     }
 
     //-----------------//
@@ -474,7 +482,7 @@ public class Scale
      */
     public int toPixels (AreaFraction areaFrac)
     {
-        return (int) Math.rint(interlineRange.main * interlineRange.main * areaFrac.getValue());
+        return (int) Math.rint(interlineScale.main * interlineScale.main * areaFrac.getValue());
     }
 
     //----------------//
@@ -508,7 +516,7 @@ public class Scale
      */
     public double toPixelsDouble (LineFraction lineFrac)
     {
-        return (double) lineRange.main * lineFrac.getWrappedValue().doubleValue();
+        return (double) lineScale.main * lineFrac.getWrappedValue().doubleValue();
     }
 
     //----------//
@@ -520,11 +528,11 @@ public class Scale
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
 
-        sb.append("line").append(lineRange);
-        sb.append(" interline").append(interlineRange);
+        sb.append("line").append(lineScale);
+        sb.append(" interline").append(interlineScale);
 
-        if (secondInterlineRange != null) {
-            sb.append(" interline2").append(secondInterlineRange);
+        if (interlineScale2 != null) {
+            sb.append(" interline2").append(interlineScale2);
         }
 
         if (beamScale != null) {
@@ -538,6 +546,20 @@ public class Scale
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //--------------//
+    // fracToPixels //
+    //--------------//
+    /**
+     * Convert a fraction of interline to a number of pixels.
+     *
+     * @param val the fraction value
+     * @return the (double) number of pixels
+     */
+    private double fracToPixels (double val)
+    {
+        return interlineScale.main * val;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -746,6 +768,71 @@ public class Scale
         }
     }
 
+    //----------------//
+    // InterlineScale //
+    //----------------//
+    public static class InterlineScale
+            extends Range
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public InterlineScale (Range range)
+        {
+            this(range.min, range.main, range.max);
+        }
+
+        public InterlineScale (int min,
+                               int main,
+                               int max)
+        {
+            super(min, main, max);
+        }
+
+        /** Meant for JAXB. */
+        protected InterlineScale ()
+        {
+            this(0, 0, 0);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public static int toPixels (int interline,
+                                    Fraction frac)
+        {
+            return (int) Math.rint(toPixelsDouble(interline, frac));
+        }
+
+        /**
+         * Compute the number of pixels that corresponds to the fraction of interline
+         * provided, according to the scale.
+         *
+         * @param frac a measure based on interline (1 = one interline)
+         * @return the actual number of pixels with the current scale
+         */
+        public int toPixels (Fraction frac)
+        {
+            return toPixels(main, frac);
+        }
+
+        public static double toPixelsDouble (int interline,
+                                             Fraction frac)
+        {
+            return interline * frac.getWrappedValue().doubleValue();
+        }
+
+        /**
+         * Convenient method, working directly on a constant of interline fraction.
+         * Same as toPixels, but the result is a double instead of a rounded integer.
+         *
+         * @param frac the interline fraction constant
+         * @return the equivalent in number of pixels
+         * @see #toPixels
+         */
+        public double toPixelsDouble (Fraction frac)
+        {
+            return toPixelsDouble(main, frac);
+        }
+    }
+
     //--------------//
     // LineFraction //
     //--------------//
@@ -793,6 +880,59 @@ public class Scale
         protected DoubleValue decode (java.lang.String str)
         {
             return new DoubleValue(java.lang.Double.valueOf(str));
+        }
+    }
+
+    //-----------//
+    // LineScale //
+    //-----------//
+    public static class LineScale
+            extends Range
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public LineScale (Range range)
+        {
+            this(range.min, range.main, range.max);
+        }
+
+        public LineScale (int min,
+                          int main,
+                          int max)
+        {
+            super(min, main, max);
+        }
+
+        /** Meant for JAXB. */
+        protected LineScale ()
+        {
+            this(0, 0, 0);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Compute the number of pixels that corresponds to the fraction of line
+         * thickness provided, according to the scale.
+         *
+         * @param lineFrac a measure based on line thickness (1 = one line height)
+         * @return the actual number of pixels with the current scale
+         */
+        public int toPixels (LineFraction lineFrac)
+        {
+            return (int) Math.rint(toPixelsDouble(lineFrac));
+        }
+
+        /**
+         * Convenient method, working directly on a constant of line fraction.
+         * Same as toPixels, but the result is a double instead of a rounded integer.
+         *
+         * @param lineFrac the line fraction constant
+         * @return the equivalent in number of pixels
+         * @see #toPixels
+         */
+        public double toPixelsDouble (LineFraction lineFrac)
+        {
+            return (double) main * lineFrac.getWrappedValue().doubleValue();
         }
     }
 

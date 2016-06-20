@@ -23,6 +23,7 @@ import omr.run.Orientation;
 import static omr.run.Orientation.*;
 
 import omr.sheet.Scale;
+import omr.sheet.Scale.InterlineScale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
 
@@ -145,14 +146,8 @@ public class ClustersRetriever
     /** Related scale */
     private final Scale scale;
 
-    /** Minimum interline */
-    private final int minInterline;
-
-    /** Desired interline */
-    private final int interline;
-
-    /** Maximum interline */
-    private final int maxInterline;
+    /** Interline scale for these clusters. */
+    private final InterlineScale interlineScale;
 
     /** Scale-dependent constants */
     private final Parameters params;
@@ -192,25 +187,19 @@ public class ClustersRetriever
      * Creates a new ClustersRetriever object, for a given staff
      * interline.
      *
-     * @param sheet        the sheet to process
-     * @param filaments    the current collection of filaments
-     * @param minInterline minimum interline value
-     * @param interline    the precise interline to be processed
-     * @param maxInterline maximum interline value
-     * @param combColor    color to be used for combs display
+     * @param sheet          the sheet to process
+     * @param filaments      the current collection of filaments
+     * @param interlineScale interline scaling info
+     * @param combColor      color to be used for combs display
      */
     public ClustersRetriever (Sheet sheet,
                               List<StaffFilament> filaments,
-                              int minInterline,
-                              int interline,
-                              int maxInterline,
+                              InterlineScale interlineScale,
                               Color combColor)
     {
         this.sheet = sheet;
         this.filaments = filaments;
-        this.minInterline = minInterline;
-        this.interline = interline;
-        this.maxInterline = maxInterline;
+        this.interlineScale = interlineScale;
         this.combColor = combColor;
 
         skew = sheet.getSkew();
@@ -257,7 +246,7 @@ public class ClustersRetriever
                 "Retrieved line clusters: {} of size: {} with interline: {}",
                 clusters.size(),
                 popSize,
-                interline);
+                interlineScale);
 
         return discardedFilaments;
     }
@@ -286,7 +275,7 @@ public class ClustersRetriever
      */
     public int getInterline ()
     {
-        return interline;
+        return interlineScale.main;
     }
 
     //-------------//
@@ -375,8 +364,7 @@ public class ClustersRetriever
      *
      * @param one      first cluster
      * @param two      second cluster
-     * @param deltaPos output: the delta in positions between these clusters
-     *                 if the test has succeeded
+     * @param deltaPos output: delta in positions between these clusters if the test has succeeded
      * @return true if successful
      */
     private boolean canMerge (LineCluster one,
@@ -403,8 +391,8 @@ public class ClustersRetriever
             final int xMid = (maxLeft + minRight) / 2;
             final double slope = sheet.getSkew().getSlope();
             dist = bestMatch(
-                    ordinatesOf(one.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
-                    ordinatesOf(two.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
+                    ordinatesOf(one.getPointsAt(xMid, params.maxExpandDx, slope)),
+                    ordinatesOf(two.getPointsAt(xMid, params.maxExpandDx, slope)),
                     deltaPos);
         } else if (gap > params.maxMergeDx) {
             logger.debug("Gap too wide between {} & {}", one, two);
@@ -478,7 +466,7 @@ public class ClustersRetriever
             fil = (StaffFilament) fil.getAncestor();
 
             if ((fil.getCluster() == null) && !fil.getCombs().isEmpty()) {
-                LineCluster cluster = new LineCluster(scale, interline, fil);
+                LineCluster cluster = new LineCluster(scale, interlineScale, fil);
                 clusters.add(cluster);
             }
         }
@@ -593,11 +581,7 @@ public class ClustersRetriever
 
             if (clusterBox.contains(middle)) {
                 // Check if this filament matches a cluster line
-                List<Point2D> points = cluster.getPointsAt(
-                        middle.x,
-                        params.maxExpandDx,
-                        interline,
-                        slope);
+                List<Point2D> points = cluster.getPointsAt(middle.x, params.maxExpandDx, slope);
 
                 for (Point2D point : points) {
                     // Check vertical distance, if point is available
@@ -977,10 +961,10 @@ public class ClustersRetriever
     private void retrieveCombs ()
     {
         /** Minimum acceptable delta y */
-        final int dMin = minInterline;
+        final int dMin = interlineScale.min;
 
         /** Maximum acceptable delta y */
-        final int dMax = maxInterline + params.combMaxMargin;
+        final int dMax = interlineScale.max + params.combMaxMargin;
 
         /** Number of vertical samples to collect */
         final int sampleCount = -1 + (int) Math.rint((double) pictureWidth / params.samplingDx);

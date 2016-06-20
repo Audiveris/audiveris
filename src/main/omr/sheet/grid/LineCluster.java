@@ -21,6 +21,7 @@ import omr.math.GeoUtil;
 import omr.run.Orientation;
 
 import omr.sheet.Scale;
+import omr.sheet.Scale.InterlineScale;
 
 import omr.util.Vip;
 
@@ -69,7 +70,7 @@ public class LineCluster
     private final String id;
 
     /** Typical interline. */
-    private final int interline;
+    private final InterlineScale interlineScale;
 
     /** Scaling information. */
     private final Scale scale;
@@ -93,12 +94,12 @@ public class LineCluster
     /**
      * Creates a new LineCluster object.
      *
-     * @param scale     the global scaling information
-     * @param interline precise interline for this cluster
-     * @param seed      the first filament of the cluster
+     * @param scale          the global scaling information
+     * @param interlineScale precise interline scale for this cluster
+     * @param seed           the first filament of the cluster
      */
     public LineCluster (Scale scale,
-                        int interline,
+                        InterlineScale interlineScale,
                         StaffFilament seed)
     {
         if (logger.isDebugEnabled() || seed.isVip()) {
@@ -110,7 +111,7 @@ public class LineCluster
         }
 
         this.scale = scale;
-        this.interline = interline;
+        this.interlineScale = interlineScale;
 
         id = "C" + seed.getId();
 
@@ -221,7 +222,7 @@ public class LineCluster
      */
     public int getInterline ()
     {
-        return interline;
+        return interlineScale.main;
     }
 
     //-------------//
@@ -255,20 +256,16 @@ public class LineCluster
     // getPointsAt //
     //-------------//
     /**
-     * Report the sequence of points that correspond to a provided
-     * abscissa.
+     * Report the sequence of points that correspond to a provided abscissa.
      *
      * @param x           the provided abscissa
      * @param xMargin     maximum abscissa margin for horizontal extrapolation
-     * @param interline   the standard interline value, used for vertical
-     *                    extrapolations
      * @param globalSlope global slope of the sheet
      * @return the sequence of cluster points, from top to bottom, with perhaps
      *         some holes indicated by null values
      */
     public List<Point2D> getPointsAt (double x,
                                       int xMargin,
-                                      int interline,
                                       double globalSlope)
     {
         SortedMap<Integer, Point2D> points = new TreeMap<Integer, Point2D>();
@@ -321,9 +318,9 @@ public class LineCluster
             if ((prevPos != null) && (nextPos != null)) {
                 y = prevVal + (((pos - prevPos) * (nextVal - prevVal)) / (nextPos - prevPos));
             } else if ((prevPos != null) && ((pos - prevPos) == 1)) {
-                y = prevVal + interline;
+                y = prevVal + interlineScale.main;
             } else if ((nextPos != null) && ((nextPos - pos) == 1)) {
-                y = nextVal - interline;
+                y = nextVal - interlineScale.main;
             } else {
                 // Extrapolate horizontally on a short distance
                 StaffFilament line = lines.get(pos);
@@ -528,7 +525,7 @@ public class LineCluster
         StringBuilder sb = new StringBuilder("Cluster#");
         sb.append(getId());
 
-        sb.append("{interline:").append(interline);
+        sb.append("{interline:").append(interlineScale);
 
         sb.append(" size:").append(getSize());
 

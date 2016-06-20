@@ -17,7 +17,10 @@ import omr.glyph.Glyph;
 
 import omr.math.GeoUtil;
 
+import omr.sheet.Scale.InterlineScale;
+
 import omr.sig.inter.AbstractBeamInter;
+import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractInterVisitor;
 import omr.sig.inter.BarConnectorInter;
@@ -25,7 +28,6 @@ import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BraceInter;
 import omr.sig.inter.BracketConnectorInter;
 import omr.sig.inter.BracketInter;
-import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.EndingInter;
 import omr.sig.inter.Inter;
@@ -51,9 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
-
 import static java.awt.BasicStroke.*;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -351,7 +351,7 @@ public abstract class PageCleaner
                                       Scale.Fraction yMargin)
     {
         for (Staff staff : system.getStaves()) {
-            int dy = staff.getSpecificScale().toPixels(yMargin);
+            int dy = InterlineScale.toPixels(staff.getSpecificInterline(), yMargin);
             int left = staff.getHeaderStart();
             int right = staff.getHeaderStop();
             int top = staff.getFirstLine().yAt(right) - dy;

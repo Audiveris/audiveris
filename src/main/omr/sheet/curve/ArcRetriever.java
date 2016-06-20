@@ -24,9 +24,7 @@ import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
-
 import static omr.sheet.curve.Skeleton.*;
-
 import omr.sheet.grid.LineInfo;
 
 import omr.util.Dumping;
@@ -36,19 +34,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
-
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
-
 import java.util.Collections;
 import java.util.List;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 /**
  * Class {@code ArcRetriever} retrieves all arcs and store the interesting ones in
@@ -595,22 +587,20 @@ public class ArcRetriever
 
                     return; // Stop the arc
                 }
-            } else {
-                if (longRunPart) {
-                    // We have detected the end of the long run part
-                    logger.debug("End of long run part {} before x:{} y:{}", arc, cx, cy);
+            } else if (longRunPart) {
+                // We have detected the end of the long run part
+                logger.debug("End of long run part {} before x:{} y:{}", arc, cx, cy);
 
-                    // Insert a junction point and shorten the points sequence accordingly
-                    Point vp = arc.getEnd(reverse);
+                // Insert a junction point and shorten the points sequence accordingly
+                Point vp = arc.getEnd(reverse);
 
-                    if (vp != null) {
-                        skeleton.setPixel(vp.x, vp.y, JUNCTION);
-                        arc.setJunction(vp, reverse);
-                        arc.getPoints().remove(reverse ? 0 : (arc.getPoints().size() - 1));
-                    }
-
-                    return; // Stop the arc
+                if (vp != null) {
+                    skeleton.setPixel(vp.x, vp.y, JUNCTION);
+                    arc.setJunction(vp, reverse);
+                    arc.getPoints().remove(reverse ? 0 : (arc.getPoints().size() - 1));
                 }
+
+                return; // Stop the arc
             }
 
             addPoint(arc, cx, cy, reverse);

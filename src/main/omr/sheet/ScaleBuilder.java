@@ -23,6 +23,8 @@ import omr.run.Run;
 import omr.run.RunTable;
 
 import omr.sheet.Scale.BeamScale;
+import omr.sheet.Scale.InterlineScale;
+import omr.sheet.Scale.LineScale;
 
 import omr.step.StepException;
 
@@ -165,7 +167,11 @@ public class ScaleBuilder
         checkResolution();
 
         // Here, we keep going on with scale data
-        return new Scale(blackPeak, comboPeak, comboPeak2, computeBeam());
+        return new Scale(
+                new LineScale(blackPeak),
+                new InterlineScale(comboPeak),
+                (comboPeak2 != null) ? new InterlineScale(comboPeak2) : null,
+                computeBeam());
     }
 
     //-----------------//

@@ -440,13 +440,11 @@ public class LinesRetriever
             clustersRetriever = new ClustersRetriever(
                     sheet,
                     filaments,
-                    scale.getMinInterline(),
-                    scale.getInterline(),
-                    scale.getMaxInterline(),
+                    scale.getInterlineScale(),
                     Colors.COMB);
             watch.start("clustersRetriever");
 
-            Integer secondInterline = scale.getSecondInterline();
+            Integer secondInterline = scale.getInterline2();
             discardedFilaments = clustersRetriever.buildInfo(secondInterline != null);
 
             // Check for a second interline
@@ -457,9 +455,7 @@ public class LinesRetriever
                 secondClustersRetriever = new ClustersRetriever(
                         sheet,
                         secondFilaments,
-                        scale.getMinSecondInterline(),
-                        secondInterline,
-                        scale.getMaxSecondInterline(),
+                        scale.getInterlineScale2(),
                         Colors.COMB_MINOR);
                 watch.start("secondClustersRetriever");
                 discardedFilaments = secondClustersRetriever.buildInfo(false);
@@ -535,12 +531,7 @@ public class LinesRetriever
                 infos.add((LineInfo) line);
             }
 
-            Staff staff = new Staff(
-                    ++staffId,
-                    left,
-                    right,
-                    new Scale(cluster.getInterline(), scale.getMainFore()),
-                    infos);
+            Staff staff = new Staff(++staffId, left, right, cluster.getInterline(), infos);
             staffManager.addStaff(staff);
 
             // Flag small staff if any (smaller height than others)

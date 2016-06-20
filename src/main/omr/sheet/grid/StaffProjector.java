@@ -20,6 +20,7 @@ import omr.math.Projection;
 
 import omr.sheet.Picture;
 import omr.sheet.Scale;
+import omr.sheet.Scale.InterlineScale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.grid.StaffPeak.Attribute;
@@ -174,7 +175,7 @@ public class StaffProjector
         pixelFilter = picture.getSource(Picture.SourceKey.BINARY);
 
         scale = sheet.getScale();
-        params = new Parameters(scale);
+        params = new Parameters(scale, staff.getSpecificInterline());
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -651,7 +652,9 @@ public class StaffProjector
         params.blankThreshold = (int) Math.rint(
                 constants.blankThreshold.getValue() * lineThickness);
         params.chunkThreshold = (4 * scale.getMaxFore())
-                                + scale.toPixels(constants.chunkThreshold);
+                                + InterlineScale.toPixels(
+                        staff.getSpecificInterline(),
+                        constants.chunkThreshold);
         logger.debug(
                 "Staff#{} linesThreshold:{} chunkThreshold:{}",
                 staff.getId(),
@@ -1228,12 +1231,6 @@ public class StaffProjector
 
         final int minDerivative;
 
-        final int barThreshold;
-
-        final int braceThreshold;
-
-        final int gapThreshold;
-
         final int minWideBlankWidth;
 
         final int minSmallBlankWidth;
@@ -1242,7 +1239,14 @@ public class StaffProjector
 
         final int maxExtremaLength;
 
-        // Following threshold values depend on actual line height within this staff
+        // Following thresholds depend of staff (specific?) interline scale
+        final int barThreshold;
+
+        final int braceThreshold;
+
+        final int gapThreshold;
+
+        // Following thresholds depend on actual line height within this staff
         int linesThreshold;
 
         int blankThreshold;
@@ -1250,19 +1254,22 @@ public class StaffProjector
         int chunkThreshold;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        public Parameters (Scale scale,
+                           int specificInterline)
         {
             staffAbscissaMargin = scale.toPixels(constants.staffAbscissaMargin);
             barChunkDx = scale.toPixels(constants.barChunkDx);
             barRefineDx = scale.toPixels(constants.barRefineDx);
             minDerivative = scale.toPixels(constants.minDerivative);
-            barThreshold = scale.toPixels(constants.barThreshold);
-            braceThreshold = scale.toPixels(constants.braceThreshold);
-            gapThreshold = scale.toPixels(constants.gapThreshold);
             minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
             maxBarWidth = scale.toPixels(constants.maxBarWidth);
             maxExtremaLength = scale.toPixels(constants.maxExtremaLength);
+
+            // Use specific interline value
+            barThreshold = InterlineScale.toPixels(specificInterline, constants.barThreshold);
+            braceThreshold = InterlineScale.toPixels(specificInterline, constants.braceThreshold);
+            gapThreshold = InterlineScale.toPixels(specificInterline, constants.gapThreshold);
         }
     }
 

@@ -224,8 +224,7 @@ public class NoteHeadsBuilder
         for (Staff staff : system.getStaves()) {
             logger.debug("Staff #{}", staff.getId());
 
-            final int interline = staff.getSpecificScale().getInterline();
-            catalog = TemplateFactory.getInstance().getCatalog(interline);
+            catalog = TemplateFactory.getInstance().getCatalog(staff.getSpecificInterline());
 
             List<Inter> ch = new ArrayList<Inter>(); // Created Heads for this staff
 

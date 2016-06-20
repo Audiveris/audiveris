@@ -187,18 +187,20 @@ public class Staff
      * given entity may be contained by several staff areas when it is located in the inter-staff
      * gutter.
      * There is no need to be very precise, but a staff line cannot belong to several staff areas.
-     * Horizontally, the area is extended half way to the next staff if any, otherwise to the limit
-     * of the page.
-     * Vertically, the area is extended to the first encountered line (exclusive) of the next staff
-     * if any, otherwise to the limit of the page.
+     * <ul>
+     * <li>Horizontally, the area is extended half way to the side staff if any, otherwise to the
+     * limit of the page.
+     * <li>Vertically, the area is extended to the first encountered line (exclusive) of the next
+     * staff if any, otherwise to the limit of the page.
+     * </ul>
      */
     private Area area;
 
     /**
-     * Scale specific to this staff. [not used for the time being]
-     * (since different staves in a page may exhibit different scales)
+     * Interline specific to this staff.
+     * (since different staves in a page may exhibit different interline values)
      */
-    private final Scale specificScale;
+    private int specificInterline;
 
     /** Containing system. */
     @Navigable(false)
@@ -211,22 +213,22 @@ public class Staff
     /**
      * Create info about a staff, with its contained staff lines.
      *
-     * @param id            the id of the staff
-     * @param left          abscissa of the left side
-     * @param right         abscissa of the right side
-     * @param specificScale specific scale detected for this staff
-     * @param lines         the sequence of contained staff lines
+     * @param id                the id of the staff
+     * @param left              abscissa of the left side
+     * @param right             abscissa of the right side
+     * @param specificInterline specific interline detected for this staff
+     * @param lines             the sequence of contained staff lines
      */
     public Staff (int id,
                   double left,
                   double right,
-                  Scale specificScale,
+                  int specificInterline,
                   List<LineInfo> lines)
     {
         this.id = id;
         this.left = (int) Math.rint(left);
         this.right = (int) Math.rint(right);
-        this.specificScale = specificScale;
+        this.specificInterline = specificInterline;
         this.lines = lines;
     }
 
@@ -237,7 +239,6 @@ public class Staff
     {
         this.id = 0;
         this.lines = null;
-        this.specificScale = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -320,6 +321,17 @@ public class Staff
     public void afterReload ()
     {
         try {
+            // Specific interline for this staff
+            Scale scale = system.getSheet().getScale();
+
+            if (scale.getInterline2() == null) {
+                specificInterline = scale.getInterline(); // Same interline for all staves
+            } else {
+                int smallInterline = Math.min(scale.getInterline(), scale.getInterline2());
+                int largeInterline = Math.max(scale.getInterline(), scale.getInterline2());
+                specificInterline = isSmall() ? smallInterline : largeInterline;
+            }
+
             for (AbstractNoteInter note : notes) {
                 note.setStaff(this);
             }
@@ -504,7 +516,6 @@ public class Staff
             return null;
         }
 
-        int interline = specificScale.getInterline();
         Rectangle2D searchBox;
 
         if (rawPitch < 0) {
@@ -519,10 +530,10 @@ public class Staff
 
         //searchBox.grow(interline, interline);
         searchBox.setRect(
-                searchBox.getX() - interline,
-                searchBox.getY() - interline,
-                searchBox.getWidth() + (2 * interline),
-                searchBox.getHeight() + (2 * interline));
+                searchBox.getX() - specificInterline,
+                searchBox.getY() - specificInterline,
+                searchBox.getWidth() + (2 * specificInterline),
+                searchBox.getHeight() + (2 * specificInterline));
 
         // Browse all staff ledgers
         Set<IndexedLedger> foundLedgers = new HashSet<IndexedLedger>();
@@ -728,7 +739,7 @@ public class Staff
      */
     public int getHeight ()
     {
-        return getSpecificScale().getInterline() * (lines.size() - 1);
+        return specificInterline * (lines.size() - 1);
     }
 
     //-------//
@@ -880,7 +891,7 @@ public class Staff
     {
         Population dys = new Population();
 
-        int dx = specificScale.getInterline();
+        int dx = system.getSheet().getScale().getInterline(); // No need for precise sampling value
         int xMin = getAbscissa(LEFT);
         int xMax = getAbscissa(RIGHT);
 
@@ -929,7 +940,7 @@ public class Staff
             if (bestLedger != null) {
                 Point2D center = bestLedger.ledger.getGlyph().getCenter();
                 int ledgerPitch = getLedgerPitchPosition(bestLedger.index);
-                double deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.getInterline();
+                double deltaPitch = (2.0 * (point.getY() - center.getY())) / specificInterline;
                 pitch = ledgerPitch + deltaPitch;
             }
         }
@@ -958,25 +969,18 @@ public class Staff
         return sideBars.get(side);
     }
 
-    //------------------//
-    // getSpecificScale //
-    //------------------//
+    //----------------------//
+    // getSpecificInterline //
+    //----------------------//
     /**
-     * Report the <b>specific</b> staff scale, which may have a
-     * different interline value than the page average.
+     * Report the <b>specific</b> staff interline value, which may have a different
+     * value than the sheet main interline value.
      *
      * @return the staff scale
      */
-    public Scale getSpecificScale ()
+    public int getSpecificInterline ()
     {
-        if (specificScale != null) {
-            // Return the specific scale of this staff
-            return specificScale;
-        } else {
-            // Return the scale of the sheet
-            //logger.warn("No specific scale available");
-            return system.getSheet().getScale();
-        }
+        return specificInterline;
     }
 
     //-----------//
@@ -1207,7 +1211,7 @@ public class Staff
     //-----------//
     public Staff replicate ()
     {
-        Staff replicate = new Staff(0, left, right, null, null);
+        Staff replicate = new Staff(0, left, right, specificInterline, null);
 
         return replicate;
     }
