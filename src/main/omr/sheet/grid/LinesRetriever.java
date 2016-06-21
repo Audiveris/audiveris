@@ -1127,6 +1127,10 @@ public class LinesRetriever
         final List<Filament> toRemove = new ArrayList<Filament>();
 
         for (StaffFilament fil : filaments) {
+            if (fil.isVip()) {
+                logger.info("running purgeSlopedFilaments for {}", fil);
+            }
+
             Point2D start = fil.getStartPoint();
             Point2D stop = fil.getStopPoint();
 
@@ -1302,7 +1306,7 @@ public class LinesRetriever
 
         private final Constant.Double maxSlopeDiff = new Constant.Double(
                 "radians",
-                0.025,
+                0.02,
                 "Maximum delta slope between filament and sheet");
 
         private final Constant.Double minSlope = new Constant.Double(
