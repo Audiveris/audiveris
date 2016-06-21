@@ -815,7 +815,7 @@ public class StaffProjector
                                   final int rawStop)
     {
         final int minValue = params.barThreshold;
-        final int totalHeight = 4 * scale.getInterline();
+        final int totalHeight = 4 * staff.getSpecificInterline();
         final double valueRange = totalHeight - minValue;
 
         // Compute precise start & stop abscissae
@@ -1395,7 +1395,7 @@ public class StaffProjector
             {
                 // Theoretical staff height (assuming a 5-line staff)
                 XYSeries heightSeries = new XYSeries("StaffHeight");
-                int totalHeight = 4 * scale.getInterline();
+                int totalHeight = 4 * staff.getSpecificInterline();
                 heightSeries.add(xMin, totalHeight);
                 heightSeries.add(xMax, totalHeight);
                 add(heightSeries, Color.BLACK, true);

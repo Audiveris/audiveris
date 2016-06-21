@@ -254,7 +254,7 @@ public class ScaleBuilder
                 "Minimum ratio of peak runs for peak extension");
 
         private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(
-                0.04,
+                0.03,
                 "Ratio of total runs for derivative acceptance");
 
         private final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
@@ -489,9 +489,25 @@ public class ScaleBuilder
         //-----------//
         public void writePlot ()
         {
-            int upper = (int) Math.min(
-                    blackHisto.getMaxKey(),
-                    (comboPeak != null) ? ((comboPeak.main * 3) / 2) : 20);
+            // Determine a suitable upper value for x
+            int upper;
+
+            if (blackPeak != null) {
+                upper = blackPeak.max;
+            } else {
+                upper = 30;
+            }
+
+            if (comboPeak != null) {
+                upper = Math.max(upper, comboPeak.max);
+            }
+
+            if (comboPeak2 != null) {
+                upper = Math.max(upper, comboPeak2.max);
+            }
+
+            upper = (upper * 5) / 4; // Add some margin
+
             Scale scale = sheet.getScale();
             String xLabel = "Lengths - " + ((scale != null) ? scale : "NO_SCALE");
 

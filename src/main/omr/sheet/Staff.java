@@ -1483,11 +1483,13 @@ public class Staff
             }
         }
 
-        for (BarlineInter bar : bars) {
-            bar.setStaff(this);
-        }
+        if (bars != null) {
+            for (BarlineInter bar : bars) {
+                bar.setStaff(this);
+            }
 
-        retrieveSideBars();
+            retrieveSideBars();
+        }
 
         //
         //        // Oops: this won't work because notes are IDREF's !!!
