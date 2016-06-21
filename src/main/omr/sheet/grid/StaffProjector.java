@@ -324,6 +324,23 @@ public class StaffProjector
         return bracePeak;
     }
 
+    //-------------//
+    // getLastPeak //
+    //-------------//
+    /**
+     * Report the last peak in peaks sequence
+     *
+     * @return last peak or null
+     */
+    public StaffPeak getLastPeak ()
+    {
+        if (peaks.isEmpty()) {
+            return null;
+        }
+
+        return peaks.get(peaks.size() - 1);
+    }
+
     //----------//
     // getPeaks //
     //----------//

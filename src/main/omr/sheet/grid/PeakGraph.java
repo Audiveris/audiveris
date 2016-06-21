@@ -238,6 +238,33 @@ public class PeakGraph
         return constants.maxAlignmentDx;
     }
 
+    //-------------------//
+    // areRightConnected //
+    //-------------------//
+    /**
+     * Report whether the two provided staves are connected on their last peak.
+     *
+     * @param top    top staff
+     * @param bottom bottom staff
+     * @return true if right connected
+     */
+    private boolean areRightConnected (Staff top,
+                                       Staff bottom)
+    {
+        StaffPeak p1 = projectorOf(top).getLastPeak();
+        StaffPeak p2 = projectorOf(bottom).getLastPeak();
+
+        if ((p1 != null) && (p2 != null)) {
+            BarAlignment align = this.getEdge(p1, p2);
+
+            if (align instanceof BarConnection) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //
     //    //-------------//
     //    // alignGroups //
@@ -953,8 +980,10 @@ public class PeakGraph
         for (BarConnection connection : getConnections()) {
             logger.debug("{}", connection);
 
-            int top = connection.topPeak.getStaff().getId();
-            int bottom = connection.bottomPeak.getStaff().getId();
+            final StaffPeak p1 = connection.topPeak;
+            final StaffPeak p2 = connection.bottomPeak;
+            final int top = p1.getStaff().getId();
+            final int bottom = p2.getStaff().getId();
 
             if (systemTops[top - 1] == null) {
                 systemTops[top - 1] = top;
@@ -963,11 +992,15 @@ public class PeakGraph
             if (systemTops[bottom - 1] == null) {
                 // First connection ever between the 2 staves
                 // Check it is not located too far on right after staff left abscissa
-                final int xOffset = connection.bottomPeak.getStart()
-                                    - connection.bottomPeak.getStaff().getAbscissa(LEFT);
+                // TODO: What if very first connection is missing but we have more on right?
+                // Answer: check connection on staff right side as a second chance...
+                final int xOffset = p2.getStart() - p2.getStaff().getAbscissa(LEFT);
 
                 if (xOffset > params.maxFirstConnectionXOffset) {
-                    continue;
+                    if ((p2 == projectorOf(p2.getStaff()).getLastPeak())
+                        || !areRightConnected(p1.getStaff(), p2.getStaff())) {
+                        continue;
+                    }
                 }
             }
 
