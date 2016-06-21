@@ -517,7 +517,15 @@ public class BasicStub
         logger.info("Sheet#{} reset as valid.", number);
 
         if (OMR.gui != null) {
-            doRedisplay();
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    StubsController.getInstance().reDisplay(BasicStub.this);
+                }
+            });
         }
     }
 
@@ -534,8 +542,16 @@ public class BasicStub
             logger.info("Sheet#{} reset to BINARY.", number);
 
             if (OMR.gui != null) {
-                sheet.createBinaryView();
-                doRedisplay();
+                SwingUtilities.invokeLater(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        sheet.createBinaryView();
+                        StubsController.getInstance().reDisplay(BasicStub.this);
+                    }
+                });
             }
         } catch (Throwable ex) {
             logger.warn("Could not reset to BINARY {}", ex.toString(), ex);
@@ -739,22 +755,6 @@ public class BasicStub
             setCurrentStep(null);
             StepMonitoring.notifyStep(this, step); // Stop monitoring
         }
-    }
-
-    //-------------//
-    // doRedisplay //
-    //-------------//
-    private void doRedisplay ()
-    {
-        SwingUtilities.invokeLater(
-                new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                StubsController.getInstance().reDisplay(BasicStub.this);
-            }
-        });
     }
 
     //---------//

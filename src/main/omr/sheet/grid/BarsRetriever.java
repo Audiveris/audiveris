@@ -1955,10 +1955,11 @@ public class BarsRetriever
      * <ul>
      * <li>At the very beginning of staff with no initial bar line, with only a short chunk of staff
      * lines, so that first peak is not a staff end.</li>
-     * <li>After a bar line, provided this bar line is not part of a thin + thick + thin group.
-     * For this case the horizontal gap between bar line and start of C-clef must be larger than
+     * <li>After a barline, provided this barline is not part of a thin + thick + thin group.
+     * For this case the horizontal gap between barline and start of C-clef must be larger than
      * maximum multi-bar gap.</li>
      * </ul>
+     * Additional check is made for lack of connection above & below, including for tail peaks.
      */
     private void purgeCClefs ()
     {
@@ -1967,93 +1968,115 @@ public class BarsRetriever
             final List<StaffPeak> peaks = projector.getPeaks();
             final int staffStart = staff.getAbscissa(LEFT);
             int measureStart = staffStart;
+            final List<StaffPeak> tails = new ArrayList<StaffPeak>();
 
             for (int i = 0; i < peaks.size(); i++) {
-                StaffPeak peak = peaks.get(i);
+                final StaffPeak p1 = peaks.get(i);
 
-                if (peak.getStart() <= measureStart) {
+                if (p1.getStart() <= measureStart) {
                     continue;
                 }
 
                 // Look for a rather thick first peak
-                if (!peak.isStaffEnd(LEFT)
-                    && !peak.isStaffEnd(RIGHT)
-                    && !(peak.isBrace())
-                    && !peak.isBracket()
-                    && (peak.getWidth() >= params.minPeak1WidthForCClef)) {
+                if (!p1.isStaffEnd(LEFT)
+                    && !p1.isStaffEnd(RIGHT)
+                    && !(p1.isBrace())
+                    && !p1.isBracket()
+                    && (p1.getWidth() >= params.minPeak1WidthForCClef)) {
                     // Check gap is larger than multi-bar gap but smaller than measure
-                    int gap = peak.getStart() - measureStart;
+                    int gap = p1.getStart() - measureStart;
 
                     // Gap is not relevant for first measure, thanks to !peak.isStaffEnd() test
                     int minGap = (measureStart == staffStart) ? 0 : params.maxDoubleBarGap;
 
                     if ((gap > minGap)
                         && (gap < params.minMeasureWidth)
-                        && !isConnected(peak, TOP)
-                        && !isConnected(peak, BOTTOM)) {
-                        if (logger.isDebugEnabled() || peak.isVip()) {
-                            logger.info("VIP Got a C-Clef peak1 at {}", peak);
+                        && !isConnected(p1, TOP)
+                        && !isConnected(p1, BOTTOM)) {
+                        if (logger.isDebugEnabled() || p1.isVip()) {
+                            logger.info("VIP perhaps a C-Clef peak1 at {}", p1);
+                        } else {
+                            logger.debug("perhaps a C-Clef peak1 at {}", p1);
                         }
-
-                        final List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
-                        peak.set(CCLEF_ONE);
-                        toRemove.add(peak);
 
                         // Look for a rather thin second peak right after the first
                         if ((i + 1) < peaks.size()) {
-                            final StaffPeak peak2 = peaks.get(i + 1);
-                            int gap2 = peak2.getStart() - peak.getStop() - 1;
+                            final StaffPeak p2 = peaks.get(i + 1);
+                            int gap2 = p2.getStart() - p1.getStop() - 1;
 
-                            if ((peak2.getWidth() <= params.maxPeak2WidthForCClef)
+                            if ((p2.getWidth() <= params.maxPeak2WidthForCClef)
                                 && (gap2 <= params.maxDoubleBarGap)
-                                && !isConnected(peak2, TOP)
-                                && !isConnected(peak2, BOTTOM)) {
-                                if (logger.isDebugEnabled() || peak.isVip() || peak2.isVip()) {
-                                    logger.info("VIP Got a C-Clef peak2 at {}", peak2);
-                                }
+                                && !isConnected(p2, TOP)
+                                && !isConnected(p2, BOTTOM)) {
+                                boolean cancelled = false;
+                                tails.clear();
 
-                                peak2.set(CCLEF_TWO);
-                                toRemove.add(peak2);
-                                logger.debug("Staff#{} purging C-Clef {}", staff.getId(), toRemove);
-                                i++; // Don't re-browse this peak
+                                if (logger.isDebugEnabled() || p1.isVip() || p2.isVip()) {
+                                    logger.info("VIP perhaps a C-Clef peak2 at {}", p2);
+                                } else {
+                                    logger.debug("perhaps C-Clef peak2 {}", p2);
+                                }
 
                                 // Avoid false peaks before the end of C-Clef has been passed
                                 if ((i + 1) < peaks.size()) {
-                                    int mid2 = (peak2.getStart() + peak2.getStop()) / 2;
+                                    int mid2 = (p2.getStart() + p2.getStop()) / 2;
                                     int xBreak = mid2 + params.cClefTail;
 
-                                    for (StaffPeak otherPeak : peaks.subList(i + 1, peaks.size())) {
-                                        int otherMid = (otherPeak.getStart() + otherPeak.getStop()) / 2;
+                                    for (StaffPeak tp : peaks.subList(i + 1, peaks.size())) {
+                                        int otherMid = (tp.getStart() + tp.getStop()) / 2;
 
                                         if (otherMid < xBreak) {
-                                            if (logger.isDebugEnabled() || otherPeak.isVip()) {
-                                                logger.info(
-                                                        "VIP Staff#{} purging tail of C-Clef {}",
-                                                        staff.getId(),
-                                                        otherPeak);
-                                            }
+                                            if (isConnected(tp, TOP) || isConnected(tp, BOTTOM)) {
+                                                cancelled = true; // Cancel everything
 
-                                            otherPeak.set(CCLEF_TAIL);
-                                            toRemove.add(otherPeak);
-                                            i++; // Don't re-browse this peak
+                                                break;
+                                            } else {
+                                                if (logger.isDebugEnabled() || tp.isVip()) {
+                                                    logger.info(
+                                                            "VIP perhaps tail of C-Clef {}",
+                                                            staff.getId(),
+                                                            tp);
+                                                }
+
+                                                tails.add(tp);
+                                            }
                                         } else {
                                             break;
                                         }
                                     }
                                 }
+
+                                if (!cancelled) {
+                                    p1.set(CCLEF_ONE);
+                                    p2.set(CCLEF_TWO);
+
+                                    for (StaffPeak t : tails) {
+                                        t.set(CCLEF_TAIL);
+                                    }
+
+                                    final List<StaffPeak> toRemove = new ArrayList<StaffPeak>();
+                                    toRemove.add(p1);
+                                    toRemove.add(p2);
+                                    toRemove.addAll(tails);
+
+                                    if (logger.isDebugEnabled() || p1.isVip() || p2.isVip()) {
+                                        logger.info("VIP C-Clef peaks {}", toRemove);
+                                    } else {
+                                        logger.debug("C-Clef peaks {}", toRemove);
+                                    }
+
+                                    projector.removePeaks(toRemove);
+                                    deleteRelatedColumns(staff.getSystem(), toRemove);
+
+                                    i += (1 + tails.size()); // Don't rebrowse C-Clef peaks
+                                }
                             }
                         }
-
-                        if (!toRemove.isEmpty()) {
-                            logger.debug("Staff#{} C-Clef peaks {}", staff.getId(), toRemove);
-                            projector.removePeaks(toRemove);
-                            deleteRelatedColumns(staff.getSystem(), toRemove);
-                        }
                     } else {
-                        measureStart = peak.getStop() + 1;
+                        measureStart = p1.getStop() + 1;
                     }
                 } else {
-                    measureStart = peak.getStop() + 1;
+                    measureStart = p1.getStop() + 1;
                 }
             }
         }
