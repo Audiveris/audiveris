@@ -154,14 +154,14 @@ public class FilamentComb
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
 
-        sb.append(" col:").append(col);
+        sb.append("col:").append(col);
 
         sb.append(" ").append(filaments.size());
 
         for (int i = 0; i < filaments.size(); i++) {
             StaffFilament fil = (StaffFilament) filaments.get(i).getAncestor();
             double y = ys.get(i);
-            sb.append(" F#").append(fil.getId()).append("@").append((float) y);
+            sb.append(String.format(" F#%d@y:%.0f", fil.getId(), y));
         }
 
         sb.append("}");

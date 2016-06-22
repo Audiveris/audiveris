@@ -220,11 +220,6 @@ public class BarFilamentFactory
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        //
-        //        private final Constant.Boolean registerEachAndEveryGlyph = new Constant.Boolean(
-        //                false,
-        //                "(Debug) should we register each and every filament built?");
-        //
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");

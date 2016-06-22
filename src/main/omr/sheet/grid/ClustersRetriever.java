@@ -225,15 +225,6 @@ public class ClustersRetriever
         // Retrieve all vertical combs gathering filaments
         retrieveCombs();
 
-        // Remember the most popular comb length
-        ///retrievePopularSize();
-        //
-        // Check relevance
-        //        if ((popSize < 4) || (popSize > 6)) {
-        //            logger.info("Giving up spurious line comb size: {}", popSize);
-        //
-        //            return discardedFilaments;
-        //        }
         popSize = 5; // Imposed!
 
         // Interconnect filaments via the network of combs
@@ -653,8 +644,7 @@ public class ClustersRetriever
     // followCombsNetwork //
     //--------------------//
     /**
-     * Use the network of combs and filaments to interconnect filaments
-     * via common combs.
+     * Use the network of combs and filaments to interconnect filaments via common combs.
      */
     private void followCombsNetwork ()
     {
@@ -991,7 +981,7 @@ public class ClustersRetriever
 
             for (FilY fily : filys) {
                 if (prevFily != null) {
-                    int dy = (int) Math.rint(fily.y - prevFily.y);
+                    final int dy = (int) Math.rint(fily.y - prevFily.y);
 
                     if ((dy >= dMin) && (dy <= dMax)) {
                         if (comb == null) {

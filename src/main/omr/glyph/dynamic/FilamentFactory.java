@@ -18,6 +18,7 @@ import omr.lag.Section;
 
 import omr.math.GeoUtil;
 import omr.math.Line;
+import omr.math.LineUtil;
 import omr.math.PointsCollector;
 
 import omr.run.Orientation;
@@ -303,9 +304,6 @@ public class FilamentFactory<F extends Filament>
             watch.start("expandFilaments");
             expandFilaments(Arrays.asList(fil), source);
 
-            //
-            //            // (Re)register filament with its (final) signature
-            //            return reRegisterFilaments(Arrays.asList(fil)).get(0);
             return fil;
         } catch (Exception ex) {
             logger.warn("FilamentsFactory cannot retrieveLineFilament", ex);
@@ -594,24 +592,24 @@ public class FilamentFactory<F extends Filament>
                 }
             } else {
                 // No overlap, it's a true gap
-                Point2D start;
-                Point2D stop;
+                Point2D gapStart;
+                Point2D gapStop;
 
                 if (oneStart.getX() < twoStart.getX()) {
                     // one - two
-                    start = oneStop;
-                    stop = twoStart;
+                    gapStart = oneStop;
+                    gapStop = twoStart;
                 } else {
                     // two - one
-                    start = twoStop;
-                    stop = oneStart;
+                    gapStart = twoStop;
+                    gapStop = oneStart;
                 }
 
                 // Compute position gap, taking thickness into account
                 double oneThickness = one.getWeight() / one.getLength(orientation);
                 double twoThickness = two.getWeight() / two.getLength(orientation);
                 int posMargin = (int) Math.rint(Math.max(oneThickness, twoThickness) / 2);
-                double posGap = Math.abs(stop.getY() - start.getY()) - posMargin;
+                double posGap = Math.abs(gapStop.getY() - gapStart.getY()) - posMargin;
 
                 if (posGap > params.maxPosGap) {
                     if (logger.isDebugEnabled() || areVips) {
@@ -625,7 +623,7 @@ public class FilamentFactory<F extends Filament>
                     return false;
                 }
 
-                // Check slope (relevant only for significant dy)
+                // Check gap slope (relevant only for significant dy)
                 if (posGap > params.maxPosGapForSlope) {
                     double gapSlope = posGap / coordGap;
 
@@ -640,6 +638,29 @@ public class FilamentFactory<F extends Filament>
 
                         return false;
                     }
+                }
+            }
+
+            // Check slope compatibility for filaments of significant lengths
+            double oneLength = oneStop.getX() - oneStart.getX() + 1;
+            double twoLength = twoStop.getX() - twoStart.getX() + 1;
+
+            if ((oneLength >= params.minLengthForDeltaSlope)
+                && (twoLength >= params.minLengthForDeltaSlope)) {
+                double oneSlope = LineUtil.getSlope(oneStart, oneStop);
+                double twoSlope = LineUtil.getSlope(twoStart, twoStop);
+                double deltaSlope = Math.abs(twoSlope - oneSlope);
+
+                if (deltaSlope > params.maxDeltaSlope) {
+                    if (logger.isDebugEnabled() || areVips) {
+                        logger.info(
+                                "{}DeltaSlope too high: {} vs {}",
+                                vips,
+                                (float) deltaSlope,
+                                params.maxDeltaSlope);
+                    }
+
+                    return false;
                 }
             }
 
@@ -689,11 +710,6 @@ public class FilamentFactory<F extends Filament>
                 fil.addSection(section);
                 setProcessed(section);
 
-                //
-                //                if (constants.registerEachAndEveryGlyph.isSet()) {
-                //                    //Not really useful, even harmful if section is null
-                //                    return nest.registerGlyph(fil);
-                //                }
                 index.register(fil);
             }
 
@@ -971,37 +987,12 @@ public class FilamentFactory<F extends Filament>
         }
 
         if (!fil.getMembers().isEmpty()) {
-            //            if (constants.registerEachAndEveryGlyph.isSet()) {
-            //                return nest.registerGlyph(fil); // Not really useful, but eases debug
-            //            } else {
-            //                return fil;
-            //            }
             return fil;
         } else {
             return null;
         }
     }
 
-    //
-    //    //---------------------//
-    //    // reRegisterFilaments //
-    //    //---------------------//
-    //    private List<Filament> reRegisterFilaments (List<Filament> filaments)
-    //    {
-    //        List<Filament> updated = new ArrayList<Filament>(filaments.size());
-    //
-    //        for (Filament fil : filaments) {
-    //            //            if (fil.isVip()) {
-    //            //                logger.warn("About to re-register {}", fil);
-    //            //            }
-    //            Filament regGlyph = nest.registerGlyph(fil); // Really useful
-    //            regGlyph.linkAllSections();
-    //            updated.add(regGlyph);
-    //        }
-    //
-    //        return updated;
-    //    }
-    //
     //-----------------------//
     // removeMergedFilaments //
     //-----------------------//
@@ -1065,6 +1056,10 @@ public class FilamentFactory<F extends Filament>
                 1.7,
                 "Maximum thickness ratio for consistent merge");
 
+        private final Constant.Ratio maxDeltaSlope = new Constant.Ratio(
+                0.01,
+                "Maximum slope difference between long filaments");
+
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         //
@@ -1106,6 +1101,10 @@ public class FilamentFactory<F extends Filament>
         private final Scale.Fraction maxInvolvingLength = new Scale.Fraction(
                 2,
                 "Maximum filament length to apply thickness test");
+
+        private final Scale.Fraction minLengthForDeltaSlope = new Scale.Fraction(
+                10,
+                "Minimum filament length to apply delta slope test");
     }
 
     //----------------//
@@ -1193,6 +1192,10 @@ public class FilamentFactory<F extends Filament>
         /** Probe width */
         public int probeWidth;
 
+        public int minLengthForDeltaSlope;
+
+        public double maxDeltaSlope;
+
         //~ Methods --------------------------------------------------------------------------------
         public void dump (String title)
         {
@@ -1215,6 +1218,9 @@ public class FilamentFactory<F extends Filament>
             setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
             setMaxGapSlope(constants.maxGapSlope.getValue());
             setMinSectionAspect(constants.minSectionAspect.getValue());
+
+            minLengthForDeltaSlope = scale.toPixels(constants.minLengthForDeltaSlope);
+            maxDeltaSlope = constants.maxDeltaSlope.getValue();
 
             probeWidth = scale.toPixels(Filament.getProbeWidth());
 
