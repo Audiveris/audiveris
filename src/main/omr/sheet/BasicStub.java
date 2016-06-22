@@ -194,6 +194,7 @@ public class BasicStub
             throws StepException
     {
         if (dummy) {
+            invalidate();
             throw new StepException("Dummy decision");
         }
 

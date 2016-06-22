@@ -170,6 +170,7 @@ public class PeakGraph
 
         if (mgr.getSystems().isEmpty()) {
             logger.warn("No system found");
+            sheet.getStub().invalidate();
             throw new StepException("No system found");
         }
 

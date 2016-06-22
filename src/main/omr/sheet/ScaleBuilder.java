@@ -426,6 +426,7 @@ public class ScaleBuilder
             List<Range> comboPeaks = comboHisto.getHiLoPeaks();
 
             if (comboPeaks.isEmpty()) {
+                sheet.getStub().invalidate();
                 throw new StepException("No regularly spaced lines found");
             }
 
@@ -477,6 +478,7 @@ public class ScaleBuilder
             List<Range> blackPeaks = blackHisto.getHiLoPeaks();
 
             if (blackPeaks.isEmpty()) {
+                sheet.getStub().invalidate();
                 throw new StepException("No significant black lines found");
             }
 
