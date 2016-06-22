@@ -594,7 +594,7 @@ public class Picture
             return null;
         }
 
-        final RunTable table = tableHolder.getData(sheet);
+        final RunTable table = tableHolder.getData(sheet.getStub());
 
         return table;
     }
@@ -749,7 +749,7 @@ public class Picture
     public final void setTable (TableKey key,
                                 RunTable table)
     {
-        RunTableHolder tableHolder = new RunTableHolder(key + ".xml");
+        RunTableHolder tableHolder = new RunTableHolder(key);
         tableHolder.setData(table);
         tables.put(key, tableHolder);
 
@@ -790,7 +790,7 @@ public class Picture
                     Marshaller m = JAXBContext.newInstance(RunTable.class).createMarshaller();
                     m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-                    RunTable table = holder.getData(sheet);
+                    RunTable table = holder.getData(sheet.getStub());
                     m.marshal(table, os);
                     os.close();
                     holder.setModified(false);

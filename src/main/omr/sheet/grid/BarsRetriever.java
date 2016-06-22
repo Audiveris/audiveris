@@ -1123,7 +1123,7 @@ public class BarsRetriever
 
                 // Look for brace portion on left of first peak
                 final StaffPeak firstPeak = peaks.get(0);
-                int maxRight = firstPeak.getStart() - 1;
+                int maxRight = firstPeak.getStart() - 1 - params.braceBarNeutralGap;
                 int minLeft = Math.max(
                         0,
                         maxRight - (params.maxBracePeakWidth + params.maxBraceBarGap));
@@ -1132,7 +1132,7 @@ public class BarsRetriever
                 if ((bracePeak == null) && (iStart >= 1)) {
                     // First peak could itself be a brace portion (mistaken for a bar)
                     final StaffPeak secondPeak = peaks.get(1);
-                    maxRight = secondPeak.getStart() - 1;
+                    maxRight = secondPeak.getStart() - 1 - params.braceBarNeutralGap;
                     minLeft = maxRight - (params.maxBracePeakWidth + params.maxBraceBarGap);
                     bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
@@ -2456,6 +2456,10 @@ public class BarsRetriever
                 2.0,
                 "Max horizontal gap between a brace peak and next bar");
 
+        private final Scale.Fraction braceBarNeutralGap = new Scale.Fraction(
+                0.1,
+                "Horizontal neutral area between a brace and next bar");
+
         private final Scale.Fraction braceLookupExtension = new Scale.Fraction(
                 0.5,
                 "Lookup height for brace end above or below staff line");
@@ -2532,6 +2536,8 @@ public class BarsRetriever
 
         final int maxBraceBarGap;
 
+        final int braceBarNeutralGap;
+
         final int braceLookupExtension;
 
         final int maxBraceCurvature;
@@ -2575,6 +2581,7 @@ public class BarsRetriever
             maxBraceThickness = scale.toPixels(constants.maxBraceThickness);
             maxBracePeakWidth = scale.toPixels(constants.maxBracePeakWidth);
             maxBraceBarGap = scale.toPixels(constants.maxBraceBarGap);
+            braceBarNeutralGap = scale.toPixels(constants.braceBarNeutralGap);
             braceLookupExtension = scale.toPixels(constants.braceLookupExtension);
             maxBraceCurvature = scale.toPixels(constants.maxBraceCurvature);
 

@@ -23,6 +23,8 @@ import omr.image.FilterDescriptor;
 import omr.log.LogUtil;
 
 import omr.run.RunTable;
+
+import omr.sheet.Picture.TableKey;
 import static omr.sheet.Sheet.INTERNALS_RADIX;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.StubsController;
@@ -537,7 +539,19 @@ public class BasicStub
     public void resetToBinary ()
     {
         try {
-            final RunTable binaryTable = getSheet().getPicture().getTable(Picture.TableKey.BINARY);
+            // Avoid loading sheet just to reset to binary:
+            // If sheet is available, use its picture.gettable()
+            // Otherwise, load it directly from binary.xml on disk
+            final RunTable binaryTable;
+
+            if (hasSheet()) {
+                logger.debug("Getting BINARY from sheet");
+                binaryTable = getSheet().getPicture().getTable(TableKey.BINARY);
+            } else {
+                logger.debug("Loading BINARY from disk");
+                binaryTable = new RunTableHolder(TableKey.BINARY).getData(this);
+            }
+
             doReset();
             sheet = new BasicSheet(this, binaryTable);
             logger.info("Sheet#{} reset to BINARY.", number);

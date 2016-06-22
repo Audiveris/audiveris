@@ -13,6 +13,8 @@ package omr.sheet;
 
 import omr.run.RunTable;
 
+import omr.sheet.Picture.TableKey;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,13 +58,14 @@ public class RunTableHolder
     /**
      * Creates a new {@code RunTableHolder} object.
      *
-     * @param pathString path to file on disk
+     * @param key table key
      */
-    public RunTableHolder (String pathString)
+    public RunTableHolder (TableKey key)
     {
-        this.pathString = pathString;
+        this.pathString = key + ".xml";
     }
 
+    /** No-arg constructor needed for JAXB. */
     private RunTableHolder ()
     {
         this.pathString = null;
@@ -75,14 +78,12 @@ public class RunTableHolder
     /**
      * Return the handled data.
      *
-     * @param sheet the containing sheet instance
+     * @param stub the related stub instance
      * @return the data, ready to use
      */
-    public RunTable getData (Sheet sheet)
+    public RunTable getData (SheetStub stub)
     {
         if (data == null) {
-            final SheetStub stub = sheet.getStub();
-
             try {
                 stub.getBook().getLock().lock();
 
