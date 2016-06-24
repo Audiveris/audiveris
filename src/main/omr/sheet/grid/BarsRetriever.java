@@ -505,13 +505,11 @@ public class BarsRetriever
                         if (otherPeak == null) {
                             // Look for an aligned "bar" portion
                             StaffPeak p = otherProjector.getPeaks().get(0);
-                            BarAlignment alignment = peakGraph.checkAlignment(
-                                    topPeak,
-                                    p,
-                                    true, // Check on x
-                                    false); // No check on width (some brace portions can be wide)
 
-                            if (alignment != null) {
+                            // No check on width (some brace portions can be wide)
+                            boolean aligned = peakGraph.checkBraceAlignment(topPeak, p);
+
+                            if (aligned) {
                                 otherPeak = p;
                                 otherPeak.set(BRACE_MIDDLE);
                                 otherProjector.setBracePeak(otherPeak);
@@ -591,8 +589,6 @@ public class BarsRetriever
         }
 
         // Try to aggregate chains into full-size columns
-        final double maxDx = sheet.getScale().toPixelsDouble(peakGraph.getMaxAlignmentDx());
-
         for (SystemInfo system : sheet.getSystems()) {
             List<BarColumn> columns = columnMap.get(system);
 
@@ -606,13 +602,15 @@ public class BarsRetriever
                 for (Chain chain : chains) {
                     BarColumn column = null;
 
+                    // Can this chain join the last column?
                     if (!columns.isEmpty()) {
                         column = columns.get(columns.size() - 1);
 
-                        // Check dx and peak indices
+                        // Check slope and peak indices
                         double dx = chain.first().getDeskewedAbscissa() - column.getXDsk();
 
-                        if ((Math.abs(dx) > maxDx) || !column.canInclude(chain)) {
+                        //TODO: this is to be improved!
+                        if ((Math.abs(dx) > params.maxColumnDx) || !column.canInclude(chain)) {
                             column = null;
                         }
                     }
@@ -2416,6 +2414,10 @@ public class BarsRetriever
                 2.0,
                 "Minimum width for a measure");
 
+        private final Scale.Fraction maxColumnDx = new Scale.Fraction(
+                0.75,
+                "Maximum abscissa shift within a column");
+
         // For C-clefs -----------------------------------------------------------------------------
         //
         private final Scale.Fraction minPeak1WidthForCClef = new Scale.Fraction(
@@ -2556,6 +2558,8 @@ public class BarsRetriever
 
         final int serifMinWeight;
 
+        final int maxColumnDx;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -2592,6 +2596,8 @@ public class BarsRetriever
             serifRoiHeight = scale.toPixels(constants.serifRoiHeight);
             serifThickness = scale.toPixels(constants.serifThickness);
             serifMinWeight = scale.toPixels(constants.serifMinWeight);
+
+            maxColumnDx = scale.toPixels(constants.maxColumnDx); // TODO: improve this
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);

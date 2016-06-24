@@ -1223,7 +1223,7 @@ public class StaffProjector
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction staffAbscissaMargin = new Scale.Fraction(
-                10,
+                15,
                 "Abscissa margin for checks around staff");
 
         private final Scale.Fraction barChunkDx = new Scale.Fraction(

@@ -43,7 +43,7 @@ public class BarConnection
      */
     public BarConnection (BarAlignment align)
     {
-        super(align.topPeak, align.bottomPeak, align.dx, align.dWidth, align.getImpacts());
+        super(align.topPeak, align.bottomPeak, align.slope, align.dWidth, align.getImpacts());
     }
 
     //~ Methods ------------------------------------------------------------------------------------

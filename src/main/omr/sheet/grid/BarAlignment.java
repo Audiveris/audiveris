@@ -36,10 +36,10 @@ public class BarAlignment
     /** Bar peak in the lower staff. */
     protected final StaffPeak bottomPeak;
 
-    /** (Normalized) abscissa shift of de-skewed bottom peak vs de-skewed top peak. */
-    protected final double dx;
+    /** Slope of alignment from de-skewed bottom peak to de-skewed top peak. */
+    protected final double slope;
 
-    /** (Normalized) delta width of bottom peak vs top peak. */
+    /** Delta width of bottom peak vs top peak. */
     protected final double dWidth;
 
     /** Alignment quality. */
@@ -54,19 +54,19 @@ public class BarAlignment
      *
      * @param topPeak    peak in the upper staff
      * @param bottomPeak peak in the lower staff
-     * @param dx         bottomPeak.x - topPeak.x (de-skewed & normalized)
-     * @param dWidth     bottomPeak.width - topPeak.width (normalized)
+     * @param slope      best slope of alignment of left and right sides of peaks
+     * @param dWidth     bottomPeak.width - topPeak.width
      * @param impacts    the alignment quality
      */
     public BarAlignment (StaffPeak topPeak,
                          StaffPeak bottomPeak,
-                         double dx,
+                         double slope,
                          double dWidth,
                          GradeImpacts impacts)
     {
         this.topPeak = topPeak;
         this.bottomPeak = bottomPeak;
-        this.dx = dx;
+        this.slope = slope;
         this.dWidth = dWidth;
         this.impacts = impacts;
 
@@ -216,7 +216,7 @@ public class BarAlignment
     {
         StringBuilder sb = new StringBuilder();
         sb.append(topPeak).append(" ").append(bottomPeak).append(
-                String.format(" dx:%.0f dw:%.0f", dx, dWidth));
+                String.format(" slope:%.2f dw:%.0f", slope, dWidth));
 
         return sb.toString();
     }

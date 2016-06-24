@@ -22,6 +22,7 @@ import omr.lag.Section;
 
 import omr.math.AreaUtil;
 import omr.math.GeoPath;
+import omr.math.LineUtil;
 import static omr.run.Orientation.HORIZONTAL;
 
 import omr.sheet.Picture;
@@ -192,16 +193,72 @@ public class PeakGraph
      * <p>
      * We check vertical alignment, taking sheet slope into account.
      *
-     * @param topPeak       peak in top staff
-     * @param botPeak       peak in bottom staff
-     * @param stickAbscissa true for dx check, false for no check
-     * @param stickWidth    true for dWidth check, false for no check
+     * @param topPeak    peak in top staff
+     * @param botPeak    peak in bottom staff
+     * @param checkSlope true for slope check, false for no check
+     * @param checkWidth true for dWidth check, false for no check
      * @return the BarAlignment or null
      */
     public BarAlignment checkAlignment (StaffPeak topPeak,
                                         StaffPeak botPeak,
-                                        boolean stickAbscissa,
-                                        boolean stickWidth)
+                                        boolean checkSlope,
+                                        boolean checkWidth)
+    {
+        final Skew skew = sheet.getSkew();
+        final int topMid = (topPeak.getStart() + topPeak.getStop()) / 2;
+        final Point2D topDsk = skew.deskewed(new Point(topMid, topPeak.getOrdinate(BOTTOM)));
+        final double topDskX = topDsk.getX();
+        final int botMid = (botPeak.getStart() + botPeak.getStop()) / 2;
+        final Point2D botDsk = skew.deskewed(new Point(botMid, botPeak.getOrdinate(TOP)));
+        final double botDskX = botDsk.getX();
+
+        // Slopes on left and on right, take the smallest
+        Point2D topLeftDsk = skew.deskewed(
+                new Point(topPeak.getStart(), topPeak.getOrdinate(BOTTOM)));
+        Point2D botLeftDsk = skew.deskewed(
+                new Point(botPeak.getStart(), botPeak.getOrdinate(TOP)));
+        Point2D topRightDsk = skew.deskewed(
+                new Point(topPeak.getStop(), topPeak.getOrdinate(BOTTOM)));
+        Point2D botRightDsk = skew.deskewed(
+                new Point(botPeak.getStop(), botPeak.getOrdinate(TOP)));
+        final double leftSlope = LineUtil.getInvertedSlope(topLeftDsk, botLeftDsk);
+        final double rightSlope = LineUtil.getInvertedSlope(topRightDsk, botRightDsk);
+        final double minSlope = Math.min(Math.abs(leftSlope), Math.abs(rightSlope));
+
+        if (checkSlope && (minSlope > params.maxAlignmentSlope)) {
+            return null;
+        }
+
+        // Width consistency
+        final double dWidth = botPeak.getWidth() - topPeak.getWidth();
+
+        if (checkWidth && (Math.abs(dWidth) > params.maxAlignmentDeltaWidth)) {
+            return null;
+        }
+
+        final double alignImpact = 1 - (Math.abs(minSlope) / params.maxAlignmentSlope);
+        final double widthImpact = 1 - (Math.abs(dWidth) / params.maxAlignmentDeltaWidth);
+
+        return new BarAlignment(
+                topPeak,
+                botPeak,
+                minSlope,
+                dWidth,
+                new BarAlignment.Impacts(alignImpact, widthImpact));
+    }
+
+    //---------------------//
+    // checkBraceAlignment //
+    //---------------------//
+    /**
+     * A rudimentary check of alignment between two candidate brace peaks.
+     *
+     * @param topPeak peak in top staff
+     * @param botPeak peak in bottom staff
+     * @return true if OK
+     */
+    public boolean checkBraceAlignment (StaffPeak topPeak,
+                                        StaffPeak botPeak)
     {
         final Skew skew = sheet.getSkew();
         final int topMid = (topPeak.getStart() + topPeak.getStop()) / 2;
@@ -210,33 +267,7 @@ public class PeakGraph
         final double botDsk = skew.deskewed(new Point(botMid, botPeak.getOrdinate(TOP))).getX();
         final double dx = botDsk - topDsk;
 
-        if (stickAbscissa && (Math.abs(dx) > params.maxAlignmentDx)) {
-            return null;
-        }
-
-        final double dWidth = botPeak.getWidth() - topPeak.getWidth();
-
-        if (stickWidth && (Math.abs(dWidth) > params.maxAlignmentDeltaWidth)) {
-            return null;
-        }
-
-        final double alignImpact = 1 - (Math.abs(dx) / params.maxAlignmentDx);
-        final double widthImpact = 1 - (Math.abs(dWidth) / params.maxAlignmentDeltaWidth);
-
-        return new BarAlignment(
-                topPeak,
-                botPeak,
-                dx,
-                dWidth,
-                new BarAlignment.Impacts(alignImpact, widthImpact));
-    }
-
-    //-------------------//
-    // getMaxAlignmentDx //
-    //-------------------//
-    public Scale.Fraction getMaxAlignmentDx ()
-    {
-        return constants.maxAlignmentDx;
+        return Math.abs(dx) <= params.maxAlignmentBraceDx;
     }
 
     //-------------------//
@@ -303,13 +334,13 @@ public class PeakGraph
     //                            // Speed up a bit
     //                            final double start2 = g2.get(0).getDeskewedCenter().getX();
     //
-    //                            if (start2 > (stop1 + params.maxAlignmentDx)) {
+    //                            if (start2 > (stop1 + params.maxAlignmentSlope)) {
     //                                break;
     //                            }
     //
     //                            final double stop2 = g2.get(g2.size() - 1).getDeskewedCenter().getX();
     //
-    //                            if ((stop2 + params.maxAlignmentDx) < start1) {
+    //                            if ((stop2 + params.maxAlignmentSlope) < start1) {
     //                                i2Min = i1 + 1;
     //                            }
     //                        }
@@ -1365,13 +1396,17 @@ public class PeakGraph
                 false,
                 "Should we print out the stop watch?");
 
-        private final Scale.Fraction maxAlignmentDx = new Scale.Fraction(
-                0.75,
-                "Max abscissa shift for bar alignment");
+        private final Constant.Ratio maxAlignmentSlope = new Constant.Ratio(
+                0.02,
+                "Max slope for bar alignment");
 
         private final Scale.Fraction maxAlignmentDeltaWidth = new Scale.Fraction(
                 0.6,
                 "Max delta width for bar alignment");
+
+        private final Scale.Fraction maxAlignmentBraceDx = new Scale.Fraction(
+                0.75,
+                "Max abscissa shift for brace alignment");
 
         private final Scale.Fraction maxConnectionGap = new Scale.Fraction(
                 2.0,
@@ -1417,9 +1452,11 @@ public class PeakGraph
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final int maxAlignmentDx;
+        final double maxAlignmentSlope;
 
         final int maxAlignmentDeltaWidth;
+
+        final int maxAlignmentBraceDx;
 
         final int minBarCurvature;
 
@@ -1447,8 +1484,9 @@ public class PeakGraph
          */
         public Parameters (Scale scale)
         {
-            maxAlignmentDx = scale.toPixels(constants.maxAlignmentDx);
+            maxAlignmentSlope = constants.maxAlignmentSlope.getValue();
             maxAlignmentDeltaWidth = scale.toPixels(constants.maxAlignmentDeltaWidth);
+            maxAlignmentBraceDx = scale.toPixels(constants.maxAlignmentBraceDx);
             minBarCurvature = scale.toPixels(constants.minBarCurvature);
             maxConnectionGap = scale.toPixels(constants.maxConnectionGap);
             maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();

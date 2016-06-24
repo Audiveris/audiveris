@@ -720,6 +720,10 @@ public class ClustersRetriever
      */
     private void mergeClusterPairs ()
     {
+        if (clusters.isEmpty()) {
+            return;
+        }
+
         // Sort clusters according to their ordinate in page
         Collections.sort(clusters, byOrdinate);
 
@@ -951,7 +955,7 @@ public class ClustersRetriever
     private void retrieveCombs ()
     {
         /** Minimum acceptable delta y */
-        final int dMin = interlineScale.min;
+        final int dMin = interlineScale.min - params.combMinMargin;
 
         /** Maximum acceptable delta y */
         final int dMax = interlineScale.max + params.combMaxMargin;
@@ -1114,9 +1118,13 @@ public class ClustersRetriever
                 2,
                 "Rough margin around cluster ordinate");
 
+        private final Scale.Fraction combMinMargin = new Scale.Fraction(
+                0.0,
+                "Comb margin below minimum interline (use with caution)");
+
         private final Scale.Fraction combMaxMargin = new Scale.Fraction(
-                0.1,
-                "Comb margin on top of max interline");
+                0.0,
+                "Comb margin above maximum interline (use with caution)");
 
         private final Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
                 0.2,
@@ -1190,6 +1198,8 @@ public class ClustersRetriever
 
         final int clusterYMargin;
 
+        final int combMinMargin;
+
         final int combMaxMargin;
 
         //~ Constructors ---------------------------------------------------------------------------
@@ -1207,6 +1217,7 @@ public class ClustersRetriever
             maxMergeDy = scale.toPixels(constants.maxMergeDy);
             maxMergeCenterDy = scale.toPixels(constants.maxMergeCenterDy);
             clusterYMargin = scale.toPixels(constants.clusterYMargin);
+            combMinMargin = scale.toPixels(constants.combMinMargin);
             combMaxMargin = scale.toPixels(constants.combMaxMargin);
 
             if (logger.isDebugEnabled()) {
