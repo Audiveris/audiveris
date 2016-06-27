@@ -204,13 +204,11 @@ public class PeakGraph
                                         boolean checkSlope,
                                         boolean checkWidth)
     {
+        if (topPeak.isVip() && botPeak.isVip()) {
+            logger.info("VIP running checkAlignment for {} & {}", topPeak, botPeak);
+        }
+
         final Skew skew = sheet.getSkew();
-        final int topMid = (topPeak.getStart() + topPeak.getStop()) / 2;
-        final Point2D topDsk = skew.deskewed(new Point(topMid, topPeak.getOrdinate(BOTTOM)));
-        final double topDskX = topDsk.getX();
-        final int botMid = (botPeak.getStart() + botPeak.getStop()) / 2;
-        final Point2D botDsk = skew.deskewed(new Point(botMid, botPeak.getOrdinate(TOP)));
-        final double botDskX = botDsk.getX();
 
         // Slopes on left and on right, take the smallest
         Point2D topLeftDsk = skew.deskewed(
@@ -226,6 +224,10 @@ public class PeakGraph
         final double minSlope = Math.min(Math.abs(leftSlope), Math.abs(rightSlope));
 
         if (checkSlope && (minSlope > params.maxAlignmentSlope)) {
+            if (topPeak.isVip() && botPeak.isVip()) {
+                logger.info("VIP large slope {} between {} & {}", minSlope, topPeak, botPeak);
+            }
+
             return null;
         }
 
@@ -1397,7 +1399,7 @@ public class PeakGraph
                 "Should we print out the stop watch?");
 
         private final Constant.Ratio maxAlignmentSlope = new Constant.Ratio(
-                0.02,
+                0.04,
                 "Max slope for bar alignment");
 
         private final Scale.Fraction maxAlignmentDeltaWidth = new Scale.Fraction(
