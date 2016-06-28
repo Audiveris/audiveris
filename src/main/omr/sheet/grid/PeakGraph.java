@@ -208,20 +208,16 @@ public class PeakGraph
             logger.info("VIP running checkAlignment for {} & {}", topPeak, botPeak);
         }
 
-        final Skew skew = sheet.getSkew();
+        final double sheetVertSlope = -sheet.getSkew().getSlope();
 
         // Slopes on left and on right, take the smallest
-        Point2D topLeftDsk = skew.deskewed(
-                new Point(topPeak.getStart(), topPeak.getOrdinate(BOTTOM)));
-        Point2D botLeftDsk = skew.deskewed(
-                new Point(botPeak.getStart(), botPeak.getOrdinate(TOP)));
-        Point2D topRightDsk = skew.deskewed(
-                new Point(topPeak.getStop(), topPeak.getOrdinate(BOTTOM)));
-        Point2D botRightDsk = skew.deskewed(
-                new Point(botPeak.getStop(), botPeak.getOrdinate(TOP)));
-        final double leftSlope = LineUtil.getInvertedSlope(topLeftDsk, botLeftDsk);
-        final double rightSlope = LineUtil.getInvertedSlope(topRightDsk, botRightDsk);
-        final double minSlope = Math.min(Math.abs(leftSlope), Math.abs(rightSlope));
+        double y1 = topPeak.getOrdinate(BOTTOM);
+        double y2 = botPeak.getOrdinate(TOP);
+        double lSlope = LineUtil.getInvertedSlope(topPeak.getStart(), y1, botPeak.getStart(), y2);
+        double diffLeft = Math.abs(lSlope - sheetVertSlope);
+        double rSlope = LineUtil.getInvertedSlope(topPeak.getStop(), y1, botPeak.getStop(), y2);
+        double diffRight = Math.abs(rSlope - sheetVertSlope);
+        double minSlope = Math.min(diffLeft, diffRight);
 
         if (checkSlope && (minSlope > params.maxAlignmentSlope)) {
             if (topPeak.isVip() && botPeak.isVip()) {
@@ -1399,7 +1395,7 @@ public class PeakGraph
                 "Should we print out the stop watch?");
 
         private final Constant.Ratio maxAlignmentSlope = new Constant.Ratio(
-                0.04,
+                0.06, //0.04,
                 "Max slope for bar alignment");
 
         private final Scale.Fraction maxAlignmentDeltaWidth = new Scale.Fraction(

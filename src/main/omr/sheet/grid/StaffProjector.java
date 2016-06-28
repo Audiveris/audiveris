@@ -1317,13 +1317,13 @@ public class StaffProjector
             staffAbscissaMargin = scale.toPixels(constants.staffAbscissaMargin);
             barChunkDx = scale.toPixels(constants.barChunkDx);
             barRefineDx = scale.toPixels(constants.barRefineDx);
-            minDerivative = scale.toPixels(constants.minDerivative);
             minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
             maxBarWidth = scale.toPixels(constants.maxBarWidth);
             maxExtremaLength = scale.toPixels(constants.maxExtremaLength);
 
             // Use specific interline value
+            minDerivative = InterlineScale.toPixels(specificInterline, constants.minDerivative);
             barThreshold = InterlineScale.toPixels(specificInterline, constants.barThreshold);
             braceThreshold = InterlineScale.toPixels(specificInterline, constants.braceThreshold);
             gapThreshold = InterlineScale.toPixels(specificInterline, constants.gapThreshold);
