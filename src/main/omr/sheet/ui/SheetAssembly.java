@@ -49,6 +49,7 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -141,15 +142,31 @@ public class SheetAssembly
      * @param tab   the tab of the targeted view
      * @param board the board to add dynamically
      */
-    public void addBoard (SheetTab tab,
-                          Board board)
+    public void addBoard (final SheetTab tab,
+                          final Board board)
     {
-        JScrollPane pane = getPane(tab.label);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        addBoard(tab, board);
+                    }
+                });
+            } catch (Exception ex) {
+                logger.warn("invokeAndWait error", ex);
+            }
+        } else {
+            JScrollPane pane = getPane(tab.label);
 
-        if (pane != null) {
-            ViewTab viewTab = tabs.get(pane);
-            ///logger.warn("Adding " + board + " to " + title);
-            viewTab.boardsPane.addBoard(board);
+            if (pane != null) {
+                ViewTab viewTab = tabs.get(pane);
+                ///logger.warn("Adding " + board + " to " + title);
+                viewTab.boardsPane.addBoard(board);
+            }
         }
     }
 
@@ -180,42 +197,59 @@ public class SheetAssembly
      * @param sv         the view on the sheet
      * @param boardsPane the board pane associated to the tab
      */
-    public void addViewTab (String label,
-                            ScrollView sv,
-                            BoardsPane boardsPane)
+    public void addViewTab (final String label,
+                            final ScrollView sv,
+                            final BoardsPane boardsPane)
     {
-        JScrollPane scroll = sv.getComponent();
-        UIUtil.suppressBorders(scroll);
-
-        if (boardsPane != null) {
-            boardsPane.setName(label);
-        }
-
-        logger.debug(
-                "addViewTab begin {} boardsPane={} comp=@{}",
-                label,
-                boardsPane,
-                Integer.toHexString(scroll.hashCode()));
-
-        // Remove any existing viewTab with the same label
-        for (ViewTab t : tabs.values()) {
-            if (t.title.equals(label)) {
-                t.remove();
-
-                break;
+        ///checkEDT();
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        addViewTab(label, sv, boardsPane);
+                    }
+                });
+            } catch (Exception ex) {
+                logger.warn("invokeAndWait error", ex);
             }
+        } else {
+            JScrollPane scroll = sv.getComponent();
+            UIUtil.suppressBorders(scroll);
+
+            if (boardsPane != null) {
+                boardsPane.setName(label);
+            }
+
+            logger.debug(
+                    "addViewTab begin {} boardsPane={} comp=@{}",
+                    label,
+                    boardsPane,
+                    Integer.toHexString(scroll.hashCode()));
+
+            // Remove any existing viewTab with the same label
+            for (ViewTab t : tabs.values()) {
+                if (t.title.equals(label)) {
+                    t.remove();
+
+                    break;
+                }
+            }
+
+            // Register the component
+            tabs.put(scroll, new ViewTab(label, boardsPane, sv));
+
+            // Actually insert the related Swing tab (at proper index?)
+            viewsPane.addTab(label, scroll);
+
+            // Select this new tab
+            viewsPane.setSelectedComponent(scroll);
+
+            logger.debug("addViewTab end {} boardsPane={}", label, boardsPane);
         }
-
-        // Register the component
-        tabs.put(scroll, new ViewTab(label, boardsPane, sv));
-
-        // Actually insert the related Swing tab (at proper index?)
-        viewsPane.addTab(label, scroll);
-
-        // Select this new tab
-        viewsPane.setSelectedComponent(scroll);
-
-        logger.debug("addViewTab end {} boardsPane={}", label, boardsPane);
     }
 
     //------------------//
@@ -285,6 +319,8 @@ public class SheetAssembly
      */
     public JScrollPane getPane (String title)
     {
+        checkEDT();
+
         for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
             if (viewsPane.getTitleAt(i).equals(title)) {
                 return (JScrollPane) viewsPane.getComponentAt(i);
@@ -346,6 +382,8 @@ public class SheetAssembly
     public void renameTab (String oldName,
                            String newName)
     {
+        checkEDT();
+
         for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
             if (viewsPane.getTitleAt(i).equals(oldName)) {
                 viewsPane.setTitleAt(i, newName);
@@ -363,15 +401,31 @@ public class SheetAssembly
      */
     public void reset ()
     {
-        close();
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        reset();
+                    }
+                });
+            } catch (Exception ex) {
+                logger.warn("invokeAndWait error", ex);
+            }
+        } else {
+            close();
 
-        for (ViewTab tab : new ArrayList<ViewTab>(tabs.values())) {
-            tab.remove();
+            for (ViewTab tab : new ArrayList<ViewTab>(tabs.values())) {
+                tab.remove();
+            }
+
+            tabs.clear();
+
+            previousTab = null;
         }
-
-        tabs.clear();
-
-        previousTab = null;
     }
 
     //---------------//
@@ -384,6 +438,8 @@ public class SheetAssembly
      */
     public void selectViewTab (SheetTab tab)
     {
+        checkEDT();
+
         for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
             if (viewsPane.getTitleAt(i).equals(tab.label)) {
                 viewsPane.setSelectedIndex(i);
@@ -440,6 +496,17 @@ public class SheetAssembly
         previousTab = currentTab;
     }
 
+    //----------//
+    // checkEDT // TO BE REMOVED ASAP
+    //----------//
+    private void checkEDT ()
+    {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            logger.error("SheetAssembly. Swing not called from EDT");
+            new Throwable("SheetAssembly. Swing not called from EDT").printStackTrace();
+        }
+    }
+
     //--------------//
     // defineLayout //
     //--------------//
@@ -448,6 +515,7 @@ public class SheetAssembly
      */
     private void defineLayout ()
     {
+        ///checkEDT();
         component.setLayout(new BorderLayout());
         component.setNoInsets();
         component.add(slider, BorderLayout.WEST);
@@ -471,6 +539,8 @@ public class SheetAssembly
      */
     private void displayBoards ()
     {
+        checkEDT();
+
         // Make sure the view tab is ready
         JScrollPane comp = (JScrollPane) viewsPane.getSelectedComponent();
 
@@ -494,6 +564,8 @@ public class SheetAssembly
      */
     private ViewTab getCurrentViewTab ()
     {
+        checkEDT();
+
         JScrollPane comp = (JScrollPane) viewsPane.getSelectedComponent();
 
         if (comp != null) {
@@ -577,6 +649,8 @@ public class SheetAssembly
          */
         public void remove ()
         {
+            checkEDT();
+
             RubberPanel rubberPanel = scrollView.getView();
             rubberPanel.unsetZoom(zoom);
             rubberPanel.unsetRubber(rubber);

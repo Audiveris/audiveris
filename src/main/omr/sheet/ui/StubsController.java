@@ -195,6 +195,8 @@ public class StubsController
     public void addAssembly (SheetAssembly assembly,
                              Integer index)
     {
+        checkEDT();
+
         SheetStub stub = assembly.getStub();
         logger.debug("addAssembly for {}", stub);
 
@@ -216,6 +218,8 @@ public class StubsController
      */
     public void adjustStubTabs (Book book)
     {
+        checkEDT();
+
         SheetStub firstDisplayed = null;
 
         for (SheetStub stub : book.getStubs()) {
@@ -268,6 +272,8 @@ public class StubsController
      */
     public void displayAllStubs (Book book)
     {
+        checkEDT();
+
         final List<SheetStub> stubs = book.getStubs();
 
         // Do we have a pivot?
@@ -346,6 +352,8 @@ public class StubsController
      */
     public JComponent getComponent ()
     {
+        checkEDT();
+
         return stubsPane;
     }
 
@@ -360,6 +368,8 @@ public class StubsController
      */
     public Integer getIndex (SheetStub stub)
     {
+        checkEDT();
+
         return stubsPane.indexOfComponent(stub.getAssembly().getComponent());
     }
 
@@ -373,6 +383,8 @@ public class StubsController
      */
     public int getLastIndex ()
     {
+        checkEDT();
+
         return stubsPane.getTabCount() - 1;
     }
 
@@ -401,15 +413,23 @@ public class StubsController
      */
     public static void invokeSelect (final SheetStub stub)
     {
-        SwingUtilities.invokeLater(
-                new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                StubsController.getInstance().selectAssembly(stub);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        invokeSelect(stub);
+                    }
+                });
+            } catch (Exception ex) {
+                logger.warn("invokeAndWait error", ex);
             }
-        });
+        } else {
+            StubsController.getInstance().selectAssembly(stub);
+        }
     }
 
     //---------//
@@ -421,15 +441,31 @@ public class StubsController
      * @param stub  sheet at hand
      * @param color color for sheet tab
      */
-    public void markTab (SheetStub stub,
-                         Color color)
+    public void markTab (final SheetStub stub,
+                         final Color color)
     {
-        logger.debug("mark {} with {}", stub, color);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        markTab(stub, color);
+                    }
+                });
+            } catch (Exception ex) {
+                logger.warn("invokeAndWait error", ex);
+            }
+        } else {
+            logger.debug("mark {} with {}", stub, color);
 
-        int tabIndex = stubsPane.indexOfComponent(stub.getAssembly().getComponent());
+            int tabIndex = stubsPane.indexOfComponent(stub.getAssembly().getComponent());
 
-        if (tabIndex != -1) {
-            stubsPane.setForegroundAt(tabIndex, color);
+            if (tabIndex != -1) {
+                stubsPane.setForegroundAt(tabIndex, color);
+            }
         }
     }
 
@@ -480,8 +516,16 @@ public class StubsController
                     // Check whether we should run early steps on the sheet
                     checkStubStatus(stub);
 
-                    // Tell the selected assembly that it now has the focus
-                    stub.getAssembly().assemblySelected();
+                    SwingUtilities.invokeAndWait(
+                            new Runnable()
+                    {
+                        @Override
+                        public void run ()
+                        {
+                            // Tell the selected assembly that it now has the focus
+                            stub.getAssembly().assemblySelected();
+                        }
+                    });
 
                     return null;
                 } finally {
@@ -516,6 +560,8 @@ public class StubsController
      */
     public void removeAssembly (SheetStub stub)
     {
+        checkEDT();
+
         SheetAssembly assembly = stub.getAssembly();
         int tabIndex = stubsPane.indexOfComponent(assembly.getComponent());
 
@@ -547,6 +593,7 @@ public class StubsController
      */
     public void selectAssembly (SheetStub stub)
     {
+        checkEDT();
         logger.debug("selectAssembly for {}", stub);
 
         if (stub == getSelectedStub()) {
@@ -578,6 +625,8 @@ public class StubsController
      */
     public void selectOtherBook (Book currentBook)
     {
+        checkEDT();
+
         SheetStub currentStub = getCurrentStub();
 
         if (currentStub == null) {
@@ -624,6 +673,8 @@ public class StubsController
     @Override
     public void stateChanged (ChangeEvent e)
     {
+        checkEDT();
+
         // Did user select a new stub?
         JComponent component = (JComponent) stubsPane.getSelectedComponent();
 
@@ -692,6 +743,8 @@ public class StubsController
      */
     public void updateFirstStubTitle (Book book)
     {
+        checkEDT();
+
         final int tabIndex = getFirstDisplayedStubIndex(book);
 
         if (tabIndex != -1) {
@@ -722,6 +775,8 @@ public class StubsController
      */
     private void bindKeys ()
     {
+        checkEDT();
+
         final InputMap inputMap = stubsPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         final ActionMap actionMap = stubsPane.getActionMap();
 
@@ -736,6 +791,17 @@ public class StubsController
 
         inputMap.put(KeyStroke.getKeyStroke("control END"), "CtrlEndAction");
         actionMap.put("CtrlEndAction", new CtrlEndAction());
+    }
+
+    //----------//
+    // checkEDT // TO BE REMOVED ASAP
+    //----------//
+    private void checkEDT ()
+    {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            logger.error("StubsController. Swing not called from EDT");
+            new Throwable("StubsController. Swing not called from EDT").printStackTrace();
+        }
     }
 
     //-----------------//
@@ -823,6 +889,8 @@ public class StubsController
      */
     private int getFirstDisplayedStubIndex (Book book)
     {
+        checkEDT();
+
         for (SheetStub stub : book.getStubs()) {
             final JComponent component = stub.getAssembly().getComponent();
             final int tabIndex = stubsPane.indexOfComponent(component);
@@ -846,6 +914,8 @@ public class StubsController
      */
     private SheetStub getStubAt (int tabIndex)
     {
+        checkEDT();
+
         JComponent component = (JComponent) stubsPane.getComponentAt(tabIndex);
 
         return stubsMap.get(component);
@@ -863,6 +933,7 @@ public class StubsController
     private void insertAssembly (SheetStub stub,
                                  int index)
     {
+        checkEDT();
         stubsPane.insertTab(
                 defineTitleFor(stub, null),
                 null,
@@ -900,6 +971,8 @@ public class StubsController
         @Override
         public void actionPerformed (ActionEvent e)
         {
+            checkEDT();
+
             int count = stubsPane.getComponentCount();
 
             if (count > 0) {
@@ -919,6 +992,8 @@ public class StubsController
         @Override
         public void actionPerformed (ActionEvent e)
         {
+            checkEDT();
+
             if (stubsPane.getComponentCount() > 0) {
                 stubsPane.setSelectedIndex(0);
             }
@@ -936,6 +1011,8 @@ public class StubsController
         @Override
         public void actionPerformed (ActionEvent e)
         {
+            checkEDT();
+
             int tabIndex = stubsPane.getSelectedIndex();
 
             if (tabIndex < (stubsPane.getComponentCount() - 1)) {
@@ -955,6 +1032,8 @@ public class StubsController
         @Override
         public void actionPerformed (ActionEvent e)
         {
+            checkEDT();
+
             int tabIndex = stubsPane.getSelectedIndex();
 
             if (tabIndex > 0) {
