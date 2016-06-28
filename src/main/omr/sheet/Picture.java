@@ -238,6 +238,7 @@ public class Picture
         this.width = 0;
         this.height = 0;
         this.levelService = null;
+        logger.debug("Picture unmarshalled by JAXB");
     }
 
     //~ Methods ------------------------------------------------------------------------------------

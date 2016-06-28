@@ -81,7 +81,7 @@ public abstract class LineUtil
      */
     public static double getInvertedSlope (Line2D line)
     {
-        return (line.getX2() - line.getX1()) / (line.getY2() - line.getY1());
+        return getInvertedSlope(line.getX1(), line.getY1(), line.getX2(), line.getY2());
     }
 
     //------------------//
@@ -98,7 +98,28 @@ public abstract class LineUtil
     public static double getInvertedSlope (Point2D start,
                                            Point2D stop)
     {
-        return (stop.getX() - start.getX()) / (stop.getY() - start.getY());
+        return getInvertedSlope(start.getX(), start.getY(), stop.getX(), stop.getY());
+    }
+
+    //------------------//
+    // getInvertedSlope //
+    //------------------//
+    /**
+     * Report the inverted slope of line defined by two provided points.
+     * Line is expected not to be horizontal
+     *
+     * @param x1 start abscissa
+     * @param y1 start ordinate
+     * @param x2 stop abscissa
+     * @param y2 stop ordinate
+     * @return tangent of angle with vertical
+     */
+    public static double getInvertedSlope (double x1,
+                                           double y1,
+                                           double x2,
+                                           double y2)
+    {
+        return (x2 - x1) / (y2 - y1);
     }
 
     //----------//

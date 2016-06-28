@@ -148,24 +148,6 @@ public class BasicLag
         return orientation.isVertical();
     }
 
-    //----------------//
-    // removeSections //
-    //----------------//
-    @Override
-    public void removeSections (Collection<Section> sections)
-    {
-        for (Section section : sections) {
-            remove(section);
-
-            // Remove the related runs from the underlying runTable
-            int pos = section.getFirstPos();
-
-            for (Run run : section.getRuns()) {
-                runTable.removeRun(pos++, run);
-            }
-        }
-    }
-
     //--------//
     // remove //
     //--------//
@@ -173,6 +155,29 @@ public class BasicLag
     public void remove (Section section)
     {
         super.remove(section); // Removal from index
+    }
+
+    //----------------//
+    // removeSections //
+    //----------------//
+    @Override
+    public void removeSections (Collection<Section> sections)
+    {
+        for (Section section : sections) {
+            // Make sure the section has not already been removed
+            if (getEntity(section.getId()) == null) {
+                logger.info("Section {} already removed", section);
+            } else {
+                // Remove the related runs from the underlying runTable
+                int pos = section.getFirstPos();
+
+                for (Run run : section.getRuns()) {
+                    runTable.removeRun(pos++, run);
+                }
+
+                remove(section);
+            }
+        }
     }
 
     //-------//

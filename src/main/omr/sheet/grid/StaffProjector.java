@@ -488,40 +488,35 @@ public class StaffProjector
             }
         }
 
-        // Continue and stop at first small blank region encountered if any.
+        // Continue and stop at first small blank region encountered or image limit.
         // Then keep the additional line chunk if long enough.
         // If not, use peak mid as staff end.
-        Blank blank = selectBlank(RIGHT, staffEnd, params.minSmallBlankWidth);
+        final Blank blank = selectBlank(RIGHT, staffEnd, params.minSmallBlankWidth);
+        final int xMax = (blank != null) ? blank.start - 1 : sheet.getWidth() - 1;
 
-        if (blank != null) {
-            int x = blank.start - 1;
-
-            if (endPeak != null) {
-                if ((x - peakEnd) > params.maxExtremaLength) {
-                    // We have significant line chunks beyond bar, hence peak is not the limit
-                    logger.debug(
-                            "Staff#{} RIGHT set at blank {} (vs {})",
-                            staff.getId(),
-                            x,
-                            linesEnd);
-                    staff.setAbscissa(RIGHT, x);
-                } else {
-                    // No significant line chunks, ignore them and stay with peak as the limit
-                    final int peakMid = (endPeak.getStart() + endPeak.getStop()) / 2;
-                    logger.debug(
-                            "Staff#{} RIGHT set at peak {} (vs {})",
-                            staff.getId(),
-                            peakMid,
-                            linesEnd);
-                    staff.setAbscissa(RIGHT, peakMid);
-                    endPeak.setStaffEnd(RIGHT);
-                }
+        if (endPeak != null) {
+            if ((xMax - peakEnd) > params.maxExtremaLength) {
+                // We have significant line chunks beyond bar, hence peak is not the limit
+                logger.debug(
+                        "Staff#{} RIGHT set at blank {} (vs {})",
+                        staff.getId(),
+                        xMax,
+                        linesEnd);
+                staff.setAbscissa(RIGHT, xMax);
             } else {
-                logger.debug("Staff#{} RIGHT set at blank {} (vs {})", staff.getId(), x, linesEnd);
-                staff.setAbscissa(RIGHT, x);
+                // No significant line chunks, ignore them and stay with peak as the limit
+                final int peakMid = (endPeak.getStart() + endPeak.getStop()) / 2;
+                logger.debug(
+                        "Staff#{} RIGHT set at peak {} (vs {})",
+                        staff.getId(),
+                        peakMid,
+                        linesEnd);
+                staff.setAbscissa(RIGHT, peakMid);
+                endPeak.setStaffEnd(RIGHT);
             }
         } else {
-            logger.warn("Staff#{} no clear end on RIGHT", staff.getId());
+            logger.debug("Staff#{} RIGHT set at blank {} (vs {})", staff.getId(), xMax, linesEnd);
+            staff.setAbscissa(RIGHT, xMax);
         }
     }
 
@@ -985,7 +980,7 @@ public class StaffProjector
             }
         }
 
-        // Finish ongoing peak if any (this is very unlikely...)
+        // Finish ongoing peak if any (case of a peak stuck to right side of image)
         if (start != -1) {
             StaffPeak peak = createPeak(start, stop);
 
@@ -1030,7 +1025,6 @@ public class StaffProjector
         Integer bestX = null; // Abscissa at best derivative
 
         for (int x = x1; (dir * (x2 - x)) >= 0; x += dir) {
-            final int val = projection.getValue(x);
             final int der = projection.getDerivative(x);
 
             if ((dir * (bestDer - der)) > 0) {
@@ -1047,6 +1041,19 @@ public class StaffProjector
 
             return new PeakSide(x, derImpact);
         } else {
+            // Perhaps we have reached image border?
+            int border = (dir > 0) ? (sheet.getWidth() - 1) : 0;
+
+            if (x2 == border) {
+                final int der = projection.getValue(border);
+
+                if (der >= params.minDerivative) {
+                    double derImpact = (double) der / (params.barThreshold - params.minDerivative);
+
+                    return new PeakSide(border, derImpact);
+                }
+            }
+
             return null; // Invalid
         }
     }
