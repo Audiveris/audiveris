@@ -1249,7 +1249,7 @@ public class StaffProjector
                 "Abscissa margin for refining peak sides");
 
         private final Scale.Fraction minDerivative = new Scale.Fraction(
-                0.5,
+                0.4,
                 "Minimum absolute derivative for peak side");
 
         private final Scale.Fraction barThreshold = new Scale.Fraction(
