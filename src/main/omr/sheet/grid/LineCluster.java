@@ -261,13 +261,14 @@ public class LineCluster
      * @param x           the provided abscissa
      * @param xMargin     maximum abscissa margin for horizontal extrapolation
      * @param globalSlope global slope of the sheet
-     * @return the sequence of cluster points, from top to bottom, with perhaps
-     *         some holes indicated by null values
+     * @return the sequence of cluster points, from top to bottom, with perhaps some holes indicated
+     *         by null values
      */
     public List<Point2D> getPointsAt (double x,
                                       int xMargin,
                                       double globalSlope)
     {
+        // Populate points (and holes)
         SortedMap<Integer, Point2D> points = new TreeMap<Integer, Point2D>();
         List<Integer> holes = new ArrayList<Integer>();
 
@@ -282,54 +283,33 @@ public class LineCluster
             }
         }
 
-        // Interpolate or extrapolate the missing values if any
+        // Try to fill holes by extrapolation
         for (int pos : holes) {
-            Integer prevPos = null;
-            Double prevVal = null;
-
-            for (int p = pos - 1; p >= lines.firstKey(); p--) {
-                Point2D pt = points.get(p);
-
-                if (pt != null) {
-                    prevPos = p;
-                    prevVal = pt.getY();
-
-                    break;
-                }
-            }
-
-            Integer nextPos = null;
-            Double nextVal = null;
-
-            for (int p = pos + 1; p <= lines.lastKey(); p++) {
-                Point2D pt = points.get(p);
-
-                if (pt != null) {
-                    nextPos = p;
-                    nextVal = pt.getY();
-
-                    break;
-                }
-            }
-
+            final StaffFilament line = lines.get(pos);
+            final Point2D end = (x <= line.getStartPoint().getX()) ? line.getStartPoint()
+                    : line.getStopPoint();
+            final double endX = end.getX();
             Double y = null;
 
-            // Interpolate vertically
-            if ((prevPos != null) && (nextPos != null)) {
-                y = prevVal + (((pos - prevPos) * (nextVal - prevVal)) / (nextPos - prevPos));
-            } else if ((prevPos != null) && ((pos - prevPos) == 1)) {
-                y = prevVal + interlineScale.main;
-            } else if ((nextPos != null) && ((nextPos - pos) == 1)) {
-                y = nextVal - interlineScale.main;
-            } else {
-                // Extrapolate horizontally on a short distance
-                StaffFilament line = lines.get(pos);
-                Point2D point = (x <= line.getStartPoint().getX()) ? line.getStartPoint()
-                        : line.getStopPoint();
-                double dx = x - point.getX();
+            // Try to extrapolate vertically from previous or next line only
+            for (int dir : new int[]{-1, 1}) {
+                final StaffFilament otherLine = lines.get(pos + dir);
+
+                if ((otherLine != null)
+                    && otherLine.isWithinRange(x)
+                    && otherLine.isWithinRange(endX)) {
+                    y = otherLine.yAt(x) + (line.yAt(endX) - otherLine.yAt(endX));
+
+                    break;
+                }
+            }
+
+            if (y == null) {
+                // Try to extrapolate horizontally on a short distance only
+                double dx = x - endX;
 
                 if (Math.abs(dx) <= xMargin) {
-                    y = point.getY() + (dx * globalSlope);
+                    y = end.getY() + (dx * globalSlope);
                 }
             }
 
@@ -717,7 +697,7 @@ public class LineCluster
      * Report an evaluation of how this filament is filled by sections.
      * (sections are naturally ordered by abscissa, then ordinate, then id)
      *
-     * @return how solid this filament is
+     * @return the actual length covered by sections
      */
     private int lineTrueLength (Filament line)
     {

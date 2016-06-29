@@ -207,7 +207,7 @@ public class ClustersRetriever
         scale = sheet.getScale();
         colCombs = new TreeMap<Integer, List<FilamentComb>>();
 
-        params = new Parameters(scale);
+        params = new Parameters(scale, interlineScale);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -1206,19 +1206,23 @@ public class ClustersRetriever
         /**
          * Creates a new Parameters object.
          *
-         * @param scale the scaling factor
+         * @param scale          the sheet global scaling factor
+         * @param interlineScale the scaling for these clusters
          */
-        public Parameters (Scale scale)
+        public Parameters (Scale scale,
+                           InterlineScale interlineScale)
         {
             samplingDx = scale.toPixels(constants.samplingDx);
             maxExpandDx = scale.toPixels(constants.maxExpandDx);
-            maxExpandDy = scale.toPixels(constants.maxExpandDy);
             maxMergeDx = scale.toPixels(constants.maxMergeDx);
-            maxMergeDy = scale.toPixels(constants.maxMergeDy);
-            maxMergeCenterDy = scale.toPixels(constants.maxMergeCenterDy);
-            clusterYMargin = scale.toPixels(constants.clusterYMargin);
-            combMinMargin = scale.toPixels(constants.combMinMargin);
-            combMaxMargin = scale.toPixels(constants.combMaxMargin);
+
+            // Specific interline scaling
+            maxExpandDy = interlineScale.toPixels(constants.maxExpandDy);
+            maxMergeDy = interlineScale.toPixels(constants.maxMergeDy);
+            maxMergeCenterDy = interlineScale.toPixels(constants.maxMergeCenterDy);
+            clusterYMargin = interlineScale.toPixels(constants.clusterYMargin);
+            combMinMargin = interlineScale.toPixels(constants.combMinMargin);
+            combMaxMargin = interlineScale.toPixels(constants.combMaxMargin);
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);

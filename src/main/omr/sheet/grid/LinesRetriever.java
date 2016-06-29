@@ -259,7 +259,7 @@ public class LinesRetriever
             watch.start("include discarded filaments");
             includeDiscardedFilaments();
 
-            // Add intermediate points where needed
+            // Add intermediate points where needed (1)
             watch.start("fillHoles");
             fillHoles();
 
@@ -281,7 +281,7 @@ public class LinesRetriever
             watch.start("polishCurvatures");
             polishCurvatures();
 
-            // Add intermediate points where needed
+            // Add intermediate points where needed (2)
             watch.start("fillHoles");
             fillHoles();
 
@@ -289,7 +289,7 @@ public class LinesRetriever
             watch.start("includeStickers");
             includeStickers(); // This may delete intermediate points
 
-            // Add intermediate points where needed
+            // Add intermediate points where needed (3)
             watch.start("fillHoles");
             fillHoles();
         } finally {
@@ -1163,8 +1163,9 @@ public class LinesRetriever
      * end ordinate using staff mean slope at end of concrete line.
      * Otherwise, we have to use a staff pattern and find its best vertical fit.
      *
-     * @param staff the staff to process
-     * @param side  left or right side
+     * @param staff  the staff to process
+     * @param meanDy actual mean interline for the staff
+     * @param side   left or right side
      * @return the sequence of end points, from top to bottom
      */
     private List<Point2D> retrieveEndPoints (Staff staff,
@@ -1186,7 +1187,7 @@ public class LinesRetriever
             double dx = staffX - linePt.getX();
             double dxAbs = Math.abs(dx);
 
-            if (Math.abs(dx) <= params.maxEndingDx) {
+            if (dxAbs <= params.maxEndingDx) {
                 double y = linePt.getY() + (dx * slope);
                 endings[i] = new Point2D.Double(staffX, y);
                 tops.includeValue(y - (i * meanDy));

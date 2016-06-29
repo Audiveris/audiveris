@@ -688,7 +688,7 @@ public class IntegerHistogram
         private void plotMinDerivatives ()
         {
             int threshold = getQuorumValue(minDerivativeRatio);
-            String pc = (int) (minDerivativeRatio * 100) + "%";
+            String pc = String.format("%.1f%%", minDerivativeRatio * 100);
             int kMin = 1;
             int kMax = upper;
 

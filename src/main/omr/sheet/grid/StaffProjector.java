@@ -214,7 +214,7 @@ public class StaffProjector
             if (blank != null) {
                 int gap = firstPeak.getStart() - 1 - blank.stop;
 
-                if (gap > params.maxExtremaLength) {
+                if (gap > params.maxLeftExtremum) {
                     // Significant root portion found, so unset start peak and define true line start.
                     int iStart = getStartPeakIndex();
 
@@ -495,7 +495,7 @@ public class StaffProjector
         final int xMax = (blank != null) ? blank.start - 1 : sheet.getWidth() - 1;
 
         if (endPeak != null) {
-            if ((xMax - peakEnd) > params.maxExtremaLength) {
+            if ((xMax - peakEnd) > params.maxRightExtremum) {
                 // We have significant line chunks beyond bar, hence peak is not the limit
                 logger.debug(
                         "Staff#{} RIGHT set at blank {} (vs {})",
@@ -1275,9 +1275,13 @@ public class StaffProjector
 
         private final Scale.Fraction maxBarWidth = new Scale.Fraction(1.5, "Maximum bar width");
 
-        private final Scale.Fraction maxExtremaLength = new Scale.Fraction(
+        private final Scale.Fraction maxLeftExtremum = new Scale.Fraction(
                 0.15,
-                "Maximum length between ending bar and actual lines end (left or right)");
+                "Maximum length between actual lines left end and left ending bar");
+
+        private final Scale.Fraction maxRightExtremum = new Scale.Fraction(
+                0.3,
+                "Maximum length between right ending bar and actual lines right end");
     }
 
     //------------//
@@ -1301,7 +1305,9 @@ public class StaffProjector
 
         final int maxBarWidth;
 
-        final int maxExtremaLength;
+        final int maxLeftExtremum;
+
+        final int maxRightExtremum;
 
         // Following thresholds depend of staff (specific?) interline scale
         final int barThreshold;
@@ -1327,7 +1333,8 @@ public class StaffProjector
             minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
             maxBarWidth = scale.toPixels(constants.maxBarWidth);
-            maxExtremaLength = scale.toPixels(constants.maxExtremaLength);
+            maxLeftExtremum = scale.toPixels(constants.maxLeftExtremum);
+            maxRightExtremum = scale.toPixels(constants.maxRightExtremum);
 
             // Use specific interline value
             minDerivative = InterlineScale.toPixels(specificInterline, constants.minDerivative);

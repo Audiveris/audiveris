@@ -254,7 +254,7 @@ public class ScaleBuilder
                 "Minimum ratio of peak runs for peak extension");
 
         private final Constant.Ratio minDerivativeRatio = new Constant.Ratio(
-                0.03,
+                0.025,
                 "Ratio of total runs for derivative acceptance");
 
         private final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
