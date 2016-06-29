@@ -276,6 +276,9 @@ public class BarsRetriever
         watch.start("detectBracketMiddles");
         detectBracketMiddles(); // Detect middle portions of brackets
 
+        watch.start("purgeLeftPeaks");
+        purgeLeftPeaks(); // Purge peaks on left of staff (if not brace or bracket)
+
         watch.start("purgeUnalignedBars");
         purgeUnalignedBars(); // On multi-staff systems, purge unaligned bars
 
@@ -1306,18 +1309,29 @@ public class BarsRetriever
             }
 
             if (startColumn != null) {
-                logger.debug("{} startColumn: {}", system, startColumn);
+                logger.debug("{} candidate startColumn: {}", system, startColumn);
 
-                // Check that this column is not too far right into staff
                 StaffPeak[] startPeaks = startColumn.getPeaks();
 
                 for (StaffPeak peak : startPeaks) {
                     Staff staff = peak.getStaff();
-                    double xLeft = staff.getAbscissa(LEFT);
+                    int xLeft = staff.getAbscissa(LEFT); // Based on long line chunks only
 
+                    // Check column is not too far right into staff
                     if ((peak.getStart() - xLeft) > params.maxLinesLeftToStartBar) {
                         if (peak.isVip() || logger.isDebugEnabled()) {
                             logger.info("start {} too far inside staff#{}", peak, staff.getId());
+                        }
+
+                        continue SystemLoop;
+                    }
+
+                    // Check column is not too far left of lines (using projection)
+                    StaffProjector projector = projectorOf(staff);
+
+                    if (projector.hasStandardBlank(peak.getStop(), xLeft)) {
+                        if (peak.isVip() || logger.isDebugEnabled()) {
+                            logger.info("start {} too far ahead of staff#{}", peak, staff.getId());
                         }
 
                         continue SystemLoop;
@@ -2155,6 +2169,44 @@ public class BarsRetriever
                     final StaffPeak peak = peaks.get(i);
 
                     if (peak.getStop() < bracePeak.getStart()) {
+                        if (peak.isVip()) {
+                            logger.info("VIP removing left {}", peak);
+                        }
+
+                        toRemove.add(peak);
+                    }
+                }
+
+                if (!toRemove.isEmpty()) {
+                    logger.debug("Staff#{} removing lefts {}", staff.getId(), toRemove);
+                    projector.removePeaks(toRemove);
+                    deleteRelatedColumns(system, toRemove);
+                }
+            }
+        }
+    }
+
+    //----------------//
+    // purgeLeftPeaks //
+    //----------------//
+    /**
+     * Any peak located before staff start (be it start column or non-bar lines start),
+     * and which is neither a bracket nor a brace, is purged.
+     */
+    private void purgeLeftPeaks ()
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            for (Staff staff : system.getStaves()) {
+                final StaffProjector projector = projectorOf(staff);
+                final Set<StaffPeak> toRemove = new LinkedHashSet<StaffPeak>();
+                final int xLeft = staff.getAbscissa(LEFT);
+
+                for (StaffPeak peak : projector.getPeaks()) {
+                    if (peak.getStart() > xLeft) {
+                        break;
+                    }
+
+                    if (!peak.isStaffEnd(LEFT) && !peak.isBrace() && !peak.isBracket()) {
                         if (peak.isVip()) {
                             logger.info("VIP removing left {}", peak);
                         }

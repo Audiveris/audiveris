@@ -185,59 +185,43 @@ public class StaffProjector
     /**
      * Check for presence of lines roots right before first bar.
      * <p>
-     * We cannot rely on current lines definition, since they are based only on significant chunks.
+     * We cannot rely on current lines definition, since they are based only on long chunks.
      * Hence we use staff projection which, when no brace is present, should be below lines
      * threshold for some abscissa range.
      * <p>
      * If not, this means some portion of lines is present, hence the (group of) peaks found are not
      * bars (but perhaps peaks of C-Clef) so there is no start bar and staff left abscissa must be
      * defined by lines roots.
-     *
-     * @return true if lines root portion was detected
      */
-    public boolean checkLinesRoot ()
+    public void checkLinesRoot ()
     {
-        if (getBracePeak() != null) {
-            return false;
-        }
-
-        if (peaks.isEmpty()) {
-            return false;
+        if (getBracePeak() != null || peaks.isEmpty()) {
+            return;
         }
 
         try {
-            final StaffPeak firstPeak = peaks.get(0);
+            final int iStart = getStartPeakIndex();
 
-            // There must be a significant blank right before first peak
-            Blank blank = selectBlank(LEFT, firstPeak.getStart(), params.minSmallBlankWidth);
+            if (iStart != -1) {
+                final StaffPeak firstPeak = peaks.get(0);
 
-            if (blank != null) {
-                int gap = firstPeak.getStart() - 1 - blank.stop;
+                // There must be a significant blank just before first peak
+                Blank blank = selectBlank(LEFT, firstPeak.getStart(), params.minSmallBlankWidth);
 
-                if (gap > params.maxLeftExtremum) {
-                    // Significant root portion found, so unset start peak and define true line start.
-                    int iStart = getStartPeakIndex();
+                if (blank != null) {
+                    int gap = firstPeak.getStart() - 1 - blank.stop;
 
-                    if (iStart != -1) {
+                    if (gap > params.maxLeftExtremum) {
+                        // Root portion found, so unset start peak and define true line start.
                         peaks.get(iStart).unset(Attribute.STAFF_LEFT_END);
+                        staff.setAbscissa(LEFT, blank.stop + 1);
                     }
-
-                    staff.setAbscissa(LEFT, blank.stop + 1);
-
-                    return true;
                 } else {
-                    // No significant root portion found, so peak really defines staff end.
-                    return false;
+                    logger.warn("Staff#{} no clear end on LEFT", staff.getId());
                 }
-            } else {
-                logger.warn("Staff#{} no clear end on LEFT", staff.getId());
-
-                return true;
             }
         } catch (Exception ex) {
             logger.warn("Error in checkLinesRoot on staff#{} {}", staff.getId(), ex.toString(), ex);
-
-            return false;
         }
     }
 
@@ -386,6 +370,29 @@ public class StaffProjector
         return -1;
     }
 
+    //------------------//
+    // hasStandardBlank //
+    //------------------//
+    /**
+     * Check whether there is a blank of at least standard width, within the provided
+     * abscissa range.
+     *
+     * @param start range start
+     * @param stop  range stop
+     * @return true if standard blank was found
+     */
+    public boolean hasStandardBlank (int start,
+                                     int stop)
+    {
+        if (stop <= start) {
+            return false;
+        }
+
+        Blank blank = selectBlank(RIGHT, start, params.minStandardBlankWidth);
+
+        return (blank != null) && (blank.start <= stop);
+    }
+
     //------------//
     // insertPeak //
     //------------//
@@ -492,7 +499,7 @@ public class StaffProjector
         // Then keep the additional line chunk if long enough.
         // If not, use peak mid as staff end.
         final Blank blank = selectBlank(RIGHT, staffEnd, params.minSmallBlankWidth);
-        final int xMax = (blank != null) ? blank.start - 1 : sheet.getWidth() - 1;
+        final int xMax = (blank != null) ? (blank.start - 1) : (sheet.getWidth() - 1);
 
         if (endPeak != null) {
             if ((xMax - peakEnd) > params.maxRightExtremum) {
@@ -1265,13 +1272,17 @@ public class StaffProjector
                 2.5,
                 "Maximum cumul value (in LineFraction) to detect no-line regions");
 
+        private final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
+                0.1,
+                "Minimum width for a small blank region (right of lines)");
+
+        private final Scale.Fraction minStandardBlankWidth = new Scale.Fraction(
+                1.0,
+                "Minimum width for a standard blank region (left of lines)");
+
         private final Scale.Fraction minWideBlankWidth = new Scale.Fraction(
                 2.0,
                 "Minimum width for a wide blank region (to limit peaks search)");
-
-        private final Scale.Fraction minSmallBlankWidth = new Scale.Fraction(
-                0.1,
-                "Minimum width for a small blank region (to end a staff side)");
 
         private final Scale.Fraction maxBarWidth = new Scale.Fraction(1.5, "Maximum bar width");
 
@@ -1299,9 +1310,11 @@ public class StaffProjector
 
         final int minDerivative;
 
-        final int minWideBlankWidth;
-
         final int minSmallBlankWidth;
+
+        final int minStandardBlankWidth;
+
+        final int minWideBlankWidth;
 
         final int maxBarWidth;
 
@@ -1330,8 +1343,9 @@ public class StaffProjector
             staffAbscissaMargin = scale.toPixels(constants.staffAbscissaMargin);
             barChunkDx = scale.toPixels(constants.barChunkDx);
             barRefineDx = scale.toPixels(constants.barRefineDx);
-            minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             minSmallBlankWidth = scale.toPixels(constants.minSmallBlankWidth);
+            minStandardBlankWidth = scale.toPixels(constants.minStandardBlankWidth);
+            minWideBlankWidth = scale.toPixels(constants.minWideBlankWidth);
             maxBarWidth = scale.toPixels(constants.maxBarWidth);
             maxLeftExtremum = scale.toPixels(constants.maxLeftExtremum);
             maxRightExtremum = scale.toPixels(constants.maxRightExtremum);
