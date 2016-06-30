@@ -195,8 +195,6 @@ public class StubsController
     public void addAssembly (SheetAssembly assembly,
                              Integer index)
     {
-        checkEDT();
-
         SheetStub stub = assembly.getStub();
         logger.debug("addAssembly for {}", stub);
 
@@ -218,8 +216,6 @@ public class StubsController
      */
     public void adjustStubTabs (Book book)
     {
-        checkEDT();
-
         SheetStub firstDisplayed = null;
 
         for (SheetStub stub : book.getStubs()) {
@@ -272,8 +268,6 @@ public class StubsController
      */
     public void displayAllStubs (Book book)
     {
-        checkEDT();
-
         final List<SheetStub> stubs = book.getStubs();
 
         // Do we have a pivot?
@@ -352,8 +346,6 @@ public class StubsController
      */
     public JComponent getComponent ()
     {
-        checkEDT();
-
         return stubsPane;
     }
 
@@ -368,8 +360,6 @@ public class StubsController
      */
     public Integer getIndex (SheetStub stub)
     {
-        checkEDT();
-
         return stubsPane.indexOfComponent(stub.getAssembly().getComponent());
     }
 
@@ -383,8 +373,6 @@ public class StubsController
      */
     public int getLastIndex ()
     {
-        checkEDT();
-
         return stubsPane.getTabCount() - 1;
     }
 
@@ -560,8 +548,6 @@ public class StubsController
      */
     public void removeAssembly (SheetStub stub)
     {
-        checkEDT();
-
         SheetAssembly assembly = stub.getAssembly();
         int tabIndex = stubsPane.indexOfComponent(assembly.getComponent());
 
@@ -593,7 +579,6 @@ public class StubsController
      */
     public void selectAssembly (SheetStub stub)
     {
-        checkEDT();
         logger.debug("selectAssembly for {}", stub);
 
         if (stub == getSelectedStub()) {
@@ -623,39 +608,53 @@ public class StubsController
      *
      * @param currentBook the book about to close
      */
-    public void selectOtherBook (Book currentBook)
+    public void selectOtherBook (final Book currentBook)
     {
-        checkEDT();
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        selectOtherBook(currentBook);
+                    }
+                });
+            } catch (Exception ex) {
+                logger.warn("invokeAndWait error", ex);
+            }
+        } else {
+            SheetStub currentStub = getCurrentStub();
 
-        SheetStub currentStub = getCurrentStub();
-
-        if (currentStub == null) {
-            return;
-        }
-
-        int currentIndex = stubsPane.getSelectedIndex();
-
-        // Look for a suitable stub on right
-        for (int index = currentIndex + 1; index < stubsPane.getTabCount(); index++) {
-            JComponent component = (JComponent) stubsPane.getComponentAt(index);
-            SheetStub stub = stubsMap.get(component);
-
-            if ((stub.getBook() != currentBook) && stub.hasSheet()) {
-                stubsPane.setSelectedIndex(index);
-
+            if (currentStub == null) {
                 return;
             }
-        }
 
-        // Not found on right, so look for a suitable stub on left
-        for (int index = currentIndex - 1; index >= 0; index--) {
-            JComponent component = (JComponent) stubsPane.getComponentAt(index);
-            SheetStub stub = stubsMap.get(component);
+            int currentIndex = stubsPane.getSelectedIndex();
 
-            if ((stub.getBook() != currentBook) && stub.hasSheet()) {
-                stubsPane.setSelectedIndex(index);
+            // Look for a suitable stub on right
+            for (int index = currentIndex + 1; index < stubsPane.getTabCount(); index++) {
+                JComponent component = (JComponent) stubsPane.getComponentAt(index);
+                SheetStub stub = stubsMap.get(component);
 
-                return;
+                if ((stub.getBook() != currentBook) && stub.hasSheet()) {
+                    stubsPane.setSelectedIndex(index);
+
+                    return;
+                }
+            }
+
+            // Not found on right, so look for a suitable stub on left
+            for (int index = currentIndex - 1; index >= 0; index--) {
+                JComponent component = (JComponent) stubsPane.getComponentAt(index);
+                SheetStub stub = stubsMap.get(component);
+
+                if ((stub.getBook() != currentBook) && stub.hasSheet()) {
+                    stubsPane.setSelectedIndex(index);
+
+                    return;
+                }
             }
         }
     }
@@ -673,8 +672,6 @@ public class StubsController
     @Override
     public void stateChanged (ChangeEvent e)
     {
-        checkEDT();
-
         // Did user select a new stub?
         JComponent component = (JComponent) stubsPane.getSelectedComponent();
 
@@ -743,8 +740,6 @@ public class StubsController
      */
     public void updateFirstStubTitle (Book book)
     {
-        checkEDT();
-
         final int tabIndex = getFirstDisplayedStubIndex(book);
 
         if (tabIndex != -1) {
@@ -775,8 +770,6 @@ public class StubsController
      */
     private void bindKeys ()
     {
-        checkEDT();
-
         final InputMap inputMap = stubsPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         final ActionMap actionMap = stubsPane.getActionMap();
 
@@ -791,17 +784,6 @@ public class StubsController
 
         inputMap.put(KeyStroke.getKeyStroke("control END"), "CtrlEndAction");
         actionMap.put("CtrlEndAction", new CtrlEndAction());
-    }
-
-    //----------//
-    // checkEDT // TO BE REMOVED ASAP
-    //----------//
-    private void checkEDT ()
-    {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            logger.error("StubsController. Swing not called from EDT");
-            new Throwable("StubsController. Swing not called from EDT").printStackTrace();
-        }
     }
 
     //-----------------//
@@ -889,8 +871,6 @@ public class StubsController
      */
     private int getFirstDisplayedStubIndex (Book book)
     {
-        checkEDT();
-
         for (SheetStub stub : book.getStubs()) {
             final JComponent component = stub.getAssembly().getComponent();
             final int tabIndex = stubsPane.indexOfComponent(component);
@@ -914,8 +894,6 @@ public class StubsController
      */
     private SheetStub getStubAt (int tabIndex)
     {
-        checkEDT();
-
         JComponent component = (JComponent) stubsPane.getComponentAt(tabIndex);
 
         return stubsMap.get(component);
@@ -933,7 +911,6 @@ public class StubsController
     private void insertAssembly (SheetStub stub,
                                  int index)
     {
-        checkEDT();
         stubsPane.insertTab(
                 defineTitleFor(stub, null),
                 null,
@@ -971,8 +948,6 @@ public class StubsController
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            checkEDT();
-
             int count = stubsPane.getComponentCount();
 
             if (count > 0) {
@@ -992,8 +967,6 @@ public class StubsController
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            checkEDT();
-
             if (stubsPane.getComponentCount() > 0) {
                 stubsPane.setSelectedIndex(0);
             }
@@ -1011,8 +984,6 @@ public class StubsController
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            checkEDT();
-
             int tabIndex = stubsPane.getSelectedIndex();
 
             if (tabIndex < (stubsPane.getComponentCount() - 1)) {
@@ -1032,8 +1003,6 @@ public class StubsController
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            checkEDT();
-
             int tabIndex = stubsPane.getSelectedIndex();
 
             if (tabIndex > 0) {

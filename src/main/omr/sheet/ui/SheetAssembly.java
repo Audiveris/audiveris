@@ -201,7 +201,6 @@ public class SheetAssembly
                             final ScrollView sv,
                             final BoardsPane boardsPane)
     {
-        ///checkEDT();
         if (!SwingUtilities.isEventDispatchThread()) {
             try {
                 SwingUtilities.invokeAndWait(
@@ -319,8 +318,6 @@ public class SheetAssembly
      */
     public JScrollPane getPane (String title)
     {
-        checkEDT();
-
         for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
             if (viewsPane.getTitleAt(i).equals(title)) {
                 return (JScrollPane) viewsPane.getComponentAt(i);
@@ -382,8 +379,6 @@ public class SheetAssembly
     public void renameTab (String oldName,
                            String newName)
     {
-        checkEDT();
-
         for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
             if (viewsPane.getTitleAt(i).equals(oldName)) {
                 viewsPane.setTitleAt(i, newName);
@@ -438,8 +433,6 @@ public class SheetAssembly
      */
     public void selectViewTab (SheetTab tab)
     {
-        checkEDT();
-
         for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
             if (viewsPane.getTitleAt(i).equals(tab.label)) {
                 viewsPane.setSelectedIndex(i);
@@ -496,17 +489,6 @@ public class SheetAssembly
         previousTab = currentTab;
     }
 
-    //----------//
-    // checkEDT // TO BE REMOVED ASAP
-    //----------//
-    private void checkEDT ()
-    {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            logger.error("SheetAssembly. Swing not called from EDT");
-            new Throwable("SheetAssembly. Swing not called from EDT").printStackTrace();
-        }
-    }
-
     //--------------//
     // defineLayout //
     //--------------//
@@ -515,7 +497,6 @@ public class SheetAssembly
      */
     private void defineLayout ()
     {
-        ///checkEDT();
         component.setLayout(new BorderLayout());
         component.setNoInsets();
         component.add(slider, BorderLayout.WEST);
@@ -539,8 +520,6 @@ public class SheetAssembly
      */
     private void displayBoards ()
     {
-        checkEDT();
-
         // Make sure the view tab is ready
         JScrollPane comp = (JScrollPane) viewsPane.getSelectedComponent();
 
@@ -564,8 +543,6 @@ public class SheetAssembly
      */
     private ViewTab getCurrentViewTab ()
     {
-        checkEDT();
-
         JScrollPane comp = (JScrollPane) viewsPane.getSelectedComponent();
 
         if (comp != null) {
@@ -649,8 +626,6 @@ public class SheetAssembly
          */
         public void remove ()
         {
-            checkEDT();
-
             RubberPanel rubberPanel = scrollView.getView();
             rubberPanel.unsetZoom(zoom);
             rubberPanel.unsetRubber(rubber);

@@ -167,8 +167,6 @@ public class HeaderBuilder
     /**
      * Computes the starting abscissa for each staff header area, typically the point
      * right after the right-most bar line of the starting bar group.
-     * TODO: could this be a more general routine in StaffInfo?
-     * TODO: could there be a BarGroup structure that directly gathers bar lines?
      *
      * @return measureStart at beginning of staff
      */
