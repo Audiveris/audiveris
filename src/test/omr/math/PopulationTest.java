@@ -135,21 +135,11 @@ public class PopulationTest
 
         assertEquals("Check mean value.", val, p.getMeanValue());
 
-        try {
-            double sd = p.getStandardDeviation();
-            fail(
-                    "Exception should be raised"
-                    + " when retrieving standard deviation of a singleton");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
+        double var = p.getVariance();
+        assertEquals("Check variance.", 0.0, var);
 
-        try {
-            double v = p.getVariance();
-            fail("Exception should be raised" + " when retrieving variance of a singleton");
-        } catch (Exception expected) {
-            checkException(expected);
-        }
+        double std = p.getStandardDeviation();
+        assertEquals("Check standard deviation.", 0.0, std);
 
         p.excludeValue(val);
         assertEquals("Population should contain no value.", 0, p.getCardinality());

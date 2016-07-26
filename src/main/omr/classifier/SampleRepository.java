@@ -322,11 +322,13 @@ public class SampleRepository
      * If a sheet name is provided but no sheet image, we allocate a sheet with the provided name.
      * Note that this is not reliable.
      *
-     * @param name  name of containing sheet, non-null if image is null
-     * @param image sheet binary image, if any, strongly recommended
-     * @return the found or created sheet, where samples can be added to
+     * @param name     name of containing sheet, non-null if image is null
+     * @param longName an optional longer name, if any
+     * @param image    sheet binary image, if any, strongly recommended
+     * @return the found or created sheet, where samples can be added to. Non null.
      */
     public SampleSheet findSheet (String name,
+                                  String longName,
                                   RunTable image)
     {
         if ((name == null) || ((name.isEmpty()) && (image == null))) {
@@ -353,10 +355,9 @@ public class SampleRepository
                             final RunTable rt = RunTable.unmarshal(file);
 
                             if ((rt != null) && rt.equals(image)) {
-                                if (!desc.isAlias(name)) {
-                                    logger.info("Identical image for {} and {}", name, desc);
-                                    desc.addAlias(name);
-                                }
+                                // We have found the image
+                                desc.addAlias(name);
+                                desc.addAlias(longName);
 
                                 sheet = idMap.get(desc.id);
                                 sheet.setImage(rt);
@@ -375,6 +376,8 @@ public class SampleRepository
                     // Allocate a brand new descriptor
                     int id = sheetContainer.getNewId();
                     Descriptor desc = new Descriptor(id, hash, name);
+                    desc.addAlias(longName);
+
                     sheetContainer.addDescriptor(desc);
 
                     // Allocate a brand new sheet
@@ -389,11 +392,14 @@ public class SampleRepository
             Descriptor desc = sheetContainer.getDescriptor(name);
 
             if (desc != null) {
+                desc.addAlias(longName);
+
                 return idMap.get(desc.id);
             } else {
                 // Allocate a brand new descriptor
                 int id = sheetContainer.getNewId();
                 desc = new Descriptor(id, null, name);
+                desc.addAlias(longName);
                 sheetContainer.addDescriptor(desc);
 
                 // Allocate a brand new sheet
@@ -471,7 +477,7 @@ public class SampleRepository
             return sampleSheet.getSamples(shape);
         }
 
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     //-----------//
@@ -497,7 +503,7 @@ public class SampleRepository
             return sampleSheet.getShapes();
         }
 
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     //--------------------//
@@ -615,7 +621,7 @@ public class SampleRepository
             watch.start("loadSamples");
             loadSamples(samplesRoot);
 
-            if (withBinaries) {
+            if (withBinaries && Files.exists(IMAGES_FILE)) {
                 watch.start("open images.zip");
 
                 final Path imagesRoot = Zip.openFileSystem(IMAGES_FILE);

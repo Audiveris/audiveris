@@ -94,24 +94,30 @@ public class SampleMenu
     {
         shape = Sample.getRecordableShape(shape);
 
-        Sample sample = new Sample(glyph, sheet.getInterline(), shape);
+        final Sample sample = new Sample(glyph, sheet.getInterline(), shape);
         logger.debug("addSample {}", sample);
 
-        SampleRepository repository = SampleRepository.getInstance();
+        final SampleRepository repository = SampleRepository.getInstance();
 
         if (!repository.isLoaded()) {
             repository.loadRepository(false);
         }
 
+        // Handle long name if any
         final Book book = sheet.getStub().getBook();
-        String name = FileUtil.getNameSansExtension(book.getInputPath());
+        String longSheetName = null;
 
-        if (book.isMultiSheet()) {
-            name = name + "#" + sheet.getStub().getNumber();
+        if (book.getAlias() != null) {
+            longSheetName = FileUtil.getNameSansExtension(book.getInputPath());
+
+            if (book.isMultiSheet()) {
+                longSheetName = longSheetName + "#" + sheet.getStub().getNumber();
+            }
         }
 
-        SampleSheet sampleSheet = repository.findSheet(
-                name,
+        final SampleSheet sampleSheet = repository.findSheet(
+                sheet.getId(),
+                longSheetName,
                 sheet.getPicture().getTable(Picture.TableKey.BINARY));
 
         repository.addSample(sample, sampleSheet);

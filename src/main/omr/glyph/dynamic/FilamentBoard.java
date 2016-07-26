@@ -32,7 +32,7 @@ public class FilamentBoard
      * @param service  filament service
      * @param selected true for pre-selected
      */
-    public FilamentBoard (EntityService service,
+    public FilamentBoard (EntityService<Filament> service,
                           boolean selected)
     {
         super(Board.FILAMENT, service, selected);

@@ -186,7 +186,7 @@ public class NaturalSplineTest
             NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
             fail("Exception should be raised when no points are defined");
             System.out.println(spline.toString());
-        } catch (IllegalArgumentException expected) {
+        } catch (NullPointerException expected) {
             checkException(expected);
         }
     }

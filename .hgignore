@@ -7,8 +7,10 @@ src/**/*.pdf
 dev/material/*.jpg
 dev/material/tasks-graph.pdf
 dev/material/scale
+dev/material/classifier
 
 .hgignore
+.gradle/*
 *.exe
 *.lnk
 *.log
@@ -27,10 +29,8 @@ data/scripts/*
 data/temp/*
 data/train/core/*
 data/www/docs/api
-manifest.mf
 nbproject/configs/*
 private/*
-resources/*
 target/*
 \.orig\..*$
 \.orig$

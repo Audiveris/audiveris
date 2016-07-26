@@ -332,7 +332,7 @@ public abstract class TimeBuilder
             super(stack.getSystem());
 
             this.stack = stack;
-            this.timeSet = new HashSet(timeSet);
+            this.timeSet = new HashSet<Inter>(timeSet);
         }
 
         //~ Methods --------------------------------------------------------------------------------

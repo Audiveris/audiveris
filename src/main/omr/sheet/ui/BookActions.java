@@ -446,7 +446,16 @@ public class BookActions
     {
         Book book = StubsController.getCurrentBook();
 
-        return new CloseBookTask(book);
+        if ((book != null) && checkStored(book)) {
+            // Pre-select the suitable "next" book tab
+            // BINGO should not do this (we are not on EDT). Don't use a task!
+            StubsController.getInstance().selectOtherBook(book);
+
+            // Now close the book (+ related tab)
+            return new CloseBookTask(book);
+        }
+
+        return null;
     }
 
     //------------------//
@@ -1911,15 +1920,7 @@ public class BookActions
         {
             try {
                 LogUtil.start(book);
-
-                if (checkStored(book)) {
-                    // Pre-select the suitable "next" book tab
-                    StubsController.getInstance().selectOtherBook(book);
-
-                    // Now close the book (+ related tab)
-                    LogUtil.start(book);
-                    book.close();
-                }
+                book.close();
             } finally {
                 LogUtil.stopBook();
             }

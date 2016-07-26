@@ -48,14 +48,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.SwingUtilities;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -68,9 +67,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement
-@XmlType(propOrder = {
-    "lastId", "entities"}
-)
 public class GlyphIndex
         implements EntityIndex<Glyph>
 {
@@ -96,8 +92,6 @@ public class GlyphIndex
     //----------------
     /**
      * See annotated get/set methods:
-     * {@link #getPrefix()}
-     * {@link #getLastIdValue()}
      * {@link #getEntities()}
      */
     //
@@ -127,6 +121,9 @@ public class GlyphIndex
     //----------------//
     public final void initTransients (Sheet sheet)
     {
+        // ID generator
+        weakIndex.setIdGenerator(sheet.getPersistentIdGenerator());
+
         // Declared VIP IDs?
         List<Integer> vipIds = IntUtil.parseInts(constants.vipGlyphs.getValue());
 
@@ -233,7 +230,6 @@ public class GlyphIndex
         return weakIndex.getIdBefore(id);
     }
 
-    @XmlAttribute(name = "last-id")
     @Override
     public int getLastId ()
     {
@@ -276,6 +272,7 @@ public class GlyphIndex
      *
      * @return the current glyph list, or null
      */
+    @SuppressWarnings("unchecked")
     public List<Glyph> getSelectedGlyphList ()
     {
         return (List<Glyph>) glyphService.getSelection(EntityListEvent.class);
@@ -379,7 +376,7 @@ public class GlyphIndex
                 public void run ()
                 {
                     glyphService.publish(
-                            new EntityListEvent(
+                            new EntityListEvent<Glyph>(
                                     this,
                                     SelectionHint.ENTITY_INIT,
                                     MouseMovement.PRESSING,
@@ -587,6 +584,11 @@ public class GlyphIndex
         protected boolean isValid (WeakGlyph weak)
         {
             return (weak != null) && (weak.get() != null);
+        }
+
+        void setIdGenerator (AtomicInteger lastId)
+        {
+            this.lastId = lastId;
         }
     }
 

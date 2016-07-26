@@ -15,11 +15,9 @@ import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import static omr.classifier.ui.Trainer.Task.Activity.*;
 
-import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.ui.Colors;
-import omr.ui.field.LIntegerField;
 import omr.ui.field.LLabel;
 import omr.ui.util.Panel;
 
@@ -31,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Observable;
@@ -49,8 +46,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code SelectionPanel} handles a user panel to select samples from
- * repository, either the whole population or a core set of samples.
+ * Class {@code SelectionPanel} handles a user panel to select samples from repository.
  * This class is a dedicated companion of {@link Trainer}.
  *
  * @author Hervé Bitteur
@@ -65,46 +61,38 @@ class SelectionPanel
     private static final Logger logger = LoggerFactory.getLogger(SelectionPanel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Reference of network panel companion (TBI) */
+    /** Reference of network panel companion. (TBI) */
     private TrainingPanel trainingPanel;
 
-    /** Swing component */
+    /** Swing component. */
     private final Panel component;
 
-    /** Current activity */
+    /** Current activity. */
     private final Trainer.Task task;
 
-    /** Underlying repository of samples */
+    /** Underlying repository of samples. */
     private final SampleRepository repository = SampleRepository.getInstance();
 
-    /** For asynchronous execution of the sample selection */
+    /** For asynchronous execution of the sample selection. */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    /** Visual progression of the selection */
+    /** Visual progression of the selection. */
     private final JProgressBar progressBar = new JProgressBar();
 
     /** To dump the current selection of samples used for training/validation */
     private final DumpAction dumpAction = new DumpAction();
 
-    /** To refresh the application WRT the training material on disk */
+    /** To refresh the application WRT the training material. */
     private final RefreshAction refreshAction = new RefreshAction();
 
-    /** To select a core out of whole base */
+    /** To select repository samples. */
     private final SelectAction selectAction = new SelectAction();
 
     /** Counter on loaded samples */
     private int nbLoaded;
 
-    /** Input/output on maximum number of samples with same shape. */
-    private final LIntegerField similar = new LIntegerField(
-            "Max Similar",
-            "Max number of similar shapes");
-
     /** Displayed counter on existing samples. */
     private final LLabel totalSamples = new LLabel("Total:", "Total number of samples");
-
-    /** Displayed counter on loaded samples. */
-    private final LLabel nbLoadedSamples = new LLabel("Loaded:", "Number of samples loaded so far");
 
     /** Displayed counter on selected samples. */
     private final LLabel nbSelectedSamples = new LLabel(
@@ -115,11 +103,9 @@ class SelectionPanel
     /**
      * Creates a new SelectionPanel object.
      *
-     * @param task          the common training task object
-     * @param standardWidth standard width to be used for fields & buttons
+     * @param task the common training task object
      */
-    public SelectionPanel (Trainer.Task task,
-                           String standardWidth)
+    public SelectionPanel (Trainer.Task task)
     {
         this.task = task;
         task.addObserver(this);
@@ -134,46 +120,12 @@ class SelectionPanel
 
         displayParams();
 
-        defineLayout(standardWidth);
+        defineLayout();
 
         repository.addListener(this);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // getBase //
-    //---------//
-    /**
-     * Retrieve the selected collection of samples
-     *
-     * @param whole indicate whether the whole population is to be selected, or just the core
-     * @return the collection of selected samples
-     */
-    public List<Sample> getBase (boolean whole)
-    {
-        nbLoaded = 0;
-        progressBar.setValue(nbLoaded);
-
-        if (whole) {
-            if (!repository.isLoaded()) {
-                repository.loadRepository(true);
-            }
-
-            List<Sample> samples = repository.getAllSamples();
-
-            if (samples.isEmpty()) {
-                repository.loadRepository(false);
-                samples = repository.getAllSamples();
-                setTotalSamples(samples.size());
-            }
-
-            return samples;
-        } else {
-            ///return repository.getCoreBase(this);
-            return defineCore();
-        }
-    }
-
     //--------------//
     // getComponent //
     //--------------//
@@ -187,13 +139,49 @@ class SelectionPanel
         return component;
     }
 
+    //----------------//
+    // getTestSamples //
+    //----------------//
+    /**
+     * Retrieve the samples selected for validation.
+     *
+     * @return the collection of selected samples
+     */
+    public List<Sample> getTestSamples ()
+    {
+        return getTrainSamples(); // TODO: separate train vs test collections...
+    }
+
+    //-----------------//
+    // getTrainSamples //
+    //-----------------//
+    /**
+     * Retrieve the samples selected for training.
+     *
+     * @return the collection of selected samples
+     */
+    public List<Sample> getTrainSamples ()
+    {
+        if (!repository.isLoaded()) {
+            progressBar.setValue(0);
+            repository.loadRepository(true);
+        }
+
+        List<Sample> samples = repository.getAllSamples();
+        nbLoaded = samples.size();
+        setTotalSamples(nbLoaded);
+        setSelectedSamples(nbLoaded);
+        progressBar.setValue(nbLoaded);
+
+        return samples;
+    }
+
     //--------------//
     // loadedSample //
     //--------------//
     @Override
     public void loadedSample (Sample sample)
     {
-        nbLoadedSamples.setText(Integer.toString(++nbLoaded));
         progressBar.setValue(nbLoaded);
     }
 
@@ -244,18 +232,7 @@ class SelectionPanel
     public void update (Observable obs,
                         Object unused)
     {
-        switch (task.getActivity()) {
-        case INACTIVE:
-            selectAction.setEnabled(true);
-
-            break;
-
-        case SELECTING:
-        case TRAINING:
-            selectAction.setEnabled(false);
-
-            break;
-        }
+        selectAction.setEnabled(task.getActivity() == INACTIVE);
     }
 
     //------------------//
@@ -266,89 +243,19 @@ class SelectionPanel
         this.trainingPanel = trainingPanel;
     }
 
-    //------------//
-    // defineCore //
-    //------------//
-    private List<Sample> defineCore ()
-    {
-        //        // What for ? TODO
-        //        inputParams();
-        //
-        //        // Train bayesian on them
-        //        WekaClassifier bayesian = WekaClassifier.getInstance();
-        //        List<Sample> samples = getBase(true); // use whole
-        //
-        //        // Quickly train the regression evaluator (on the whole base)
-        //        bayesian.train(samples, null, StartingMode.SCRATCH);
-        //
-        //        // Measure all samples for each shape
-        //        Map<Shape, List<GradedSample>> palmares = new HashMap<Shape, List<GradedSample>>();
-        //
-        //        for (Sample sample : samples) {
-        //            if (sample != null) {
-        //                try {
-        //                    Shape shape = sample.getShape();
-        //                    double grade = bayesian.measureDistance(
-        //                            sample,
-        //                            sample.getInterline(),
-        //                            shape);
-        //                    List<GradedSample> shapeGradedSamples = palmares.get(shape);
-        //
-        //                    if (shapeGradedSamples == null) {
-        //                        palmares.put(shape, shapeGradedSamples = new ArrayList<GradedSample>());
-        //                    }
-        //
-        //                    shapeGradedSamples.add(new GradedSample(sample, grade));
-        //                } catch (Exception ex) {
-        //                    logger.warn("Cannot evaluate {}", sample);
-        //                }
-        //            }
-        //        }
-        //
-        //        // Set of chosen shapes
-        //        final Set<GradedSample> set = new HashSet<GradedSample>();
-        //        final int maxSimilar = similar.getValue();
-        //
-        //        // Sort the palmares, shape by shape, by (decreasing) grade
-        //        for (List<GradedSample> shapeGradedSamples : palmares.values()) {
-        //            Collections.sort(shapeGradedSamples, GradedSample.reverseGradeComparator);
-        //
-        //            // Take a sample equally distributed on instances of this shape
-        //            final int size = shapeGradedSamples.size();
-        //            final float delta = ((float) (size - 1)) / (maxSimilar - 1);
-        //
-        //            for (int i = 0; i < maxSimilar; i++) {
-        //                int idx = Math.min(size - 1, Math.round(i * delta));
-        //                GradedSample ng = shapeGradedSamples.get(idx);
-        //
-        //                if (ng.sample.getShape().isTrainable()) {
-        //                    set.add(ng);
-        //                }
-        //            }
-        //        }
-        //
-        //        // Build the core base
-        //        List<Sample> base = new ArrayList<Sample>(set.size());
-        //
-        //        for (GradedSample gs : set) {
-        //            base.add(gs.sample);
-        //        }
-        //
-        //        ///repository.setCoreBase(base);
-        //        setSelectedSamples(base.size());
-        //
-        //        return base;
-        return Collections.EMPTY_LIST;
-    }
-
     //--------------//
     // defineLayout //
     //--------------//
-    private void defineLayout (String standardWidth)
+    private void defineLayout ()
     {
         progressBar.setForeground(Colors.PROGRESS_BAR);
 
-        FormLayout layout = Panel.makeFormLayout(3, 4, "", standardWidth, standardWidth);
+        FormLayout layout = Panel.makeFormLayout(
+                3,
+                4,
+                "",
+                Trainer.LABEL_WIDTH,
+                Trainer.FIELD_WIDTH);
         PanelBuilder builder = new PanelBuilder(layout, component);
         CellConstraints cst = new CellConstraints();
 
@@ -358,22 +265,17 @@ class SelectionPanel
         builder.add(progressBar, cst.xyw(9, r, 7));
 
         r += 2; // ----------------------------
-        builder.add(new JButton(dumpAction), cst.xy(3, r));
-        builder.add(new JButton(refreshAction), cst.xy(5, r));
-
-        builder.add(similar.getLabel(), cst.xy(9, r));
-        builder.add(similar.getField(), cst.xy(11, r));
+        //        builder.add(new JButton(dumpAction), cst.xy(3, r));
+        //        builder.add(new JButton(refreshAction), cst.xy(5, r));
+        //
 
         builder.add(totalSamples.getLabel(), cst.xy(13, r));
         builder.add(totalSamples.getField(), cst.xy(15, r));
 
         r += 2; // ----------------------------
         builder.add(new JButton(selectAction), cst.xy(3, r));
-        builder.add(nbSelectedSamples.getLabel(), cst.xy(9, r));
-        builder.add(nbSelectedSamples.getField(), cst.xy(11, r));
-
-        builder.add(nbLoadedSamples.getLabel(), cst.xy(13, r));
-        builder.add(nbLoadedSamples.getField(), cst.xy(15, r));
+        builder.add(nbSelectedSamples.getLabel(), cst.xy(13, r));
+        builder.add(nbSelectedSamples.getField(), cst.xy(15, r));
     }
 
     //---------------//
@@ -381,7 +283,7 @@ class SelectionPanel
     //---------------//
     private void displayParams ()
     {
-        similar.setValue(constants.maxSimilar.getValue());
+        ///similar.setValue(constants.maxSimilar.getValue());
     }
 
     //-------------//
@@ -389,7 +291,7 @@ class SelectionPanel
     //-------------//
     private void inputParams ()
     {
-        constants.maxSimilar.setValue(similar.getValue());
+        ///constants.maxSimilar.setValue(similar.getValue());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -399,12 +301,55 @@ class SelectionPanel
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        //        private final Constant.Integer maxSimilar = new Constant.Integer(
+        //                "Glyphs",
+        //                10,
+        //                "Absolute maximum number of instances for the same shape" + " used in training");
+    }
 
-        private final Constant.Integer maxSimilar = new Constant.Integer(
-                "Glyphs",
-                10,
-                "Absolute maximum number of instances for the same shape" + " used in training");
+    //------------//
+    // DumpAction //
+    //------------//
+    private class DumpAction
+            extends AbstractAction
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public DumpAction ()
+        {
+            super("Dump");
+            putValue(Action.SHORT_DESCRIPTION, "Dump the current sample selection");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            logger.warn("Not implemented");
+
+            //            List<String> gNames = getTrainSamples(trainingPanel.useWhole());
+            //            System.out.println(
+            //                    "Content of " + (trainingPanel.useWhole() ? "whole" : "core") + " population ("
+            //                    + gNames.size() + "):");
+            //            Collections.sort(gNames, SampleRepository.shapeComparator);
+            //
+            //            int sampleNb = 0;
+            //            String prevName = null;
+            //
+            //            for (String gName : gNames) {
+            //                if (prevName != null) {
+            //                    if (!SampleRepository.shapeNameOf(gName).equals(prevName)) {
+            //                        System.out.println(String.format("%4d %s", sampleNb, prevName));
+            //                        sampleNb = 1;
+            //                    }
+            //                }
+            //
+            //                sampleNb++;
+            //                prevName = SampleRepository.shapeNameOf(gName);
+            //            }
+            //
+            //            System.out.println(String.format("%4d %s", sampleNb, prevName));
+        }
     }
 
     //--------------//
@@ -446,49 +391,6 @@ class SelectionPanel
         public String toString ()
         {
             return "GradedSample{" + sample + " " + grade + "}";
-        }
-    }
-
-    //------------//
-    // DumpAction //
-    //------------//
-    private class DumpAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public DumpAction ()
-        {
-            super("Dump");
-            putValue(Action.SHORT_DESCRIPTION, "Dump the current sample selection");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            //            List<String> gNames = getBase(trainingPanel.useWhole());
-            //            System.out.println(
-            //                    "Content of " + (trainingPanel.useWhole() ? "whole" : "core") + " population ("
-            //                    + gNames.size() + "):");
-            //            Collections.sort(gNames, SampleRepository.shapeComparator);
-            //
-            //            int sampleNb = 0;
-            //            String prevName = null;
-            //
-            //            for (String gName : gNames) {
-            //                if (prevName != null) {
-            //                    if (!SampleRepository.shapeNameOf(gName).equals(prevName)) {
-            //                        System.out.println(String.format("%4d %s", sampleNb, prevName));
-            //                        sampleNb = 1;
-            //                    }
-            //                }
-            //
-            //                sampleNb++;
-            //                prevName = SampleRepository.shapeNameOf(gName);
-            //            }
-            //
-            //            System.out.println(String.format("%4d %s", sampleNb, prevName));
         }
     }
 
@@ -542,8 +444,8 @@ class SelectionPanel
 
         public SelectAction ()
         {
-            super("Select Core");
-            putValue(Action.SHORT_DESCRIPTION, "Build core selection out of whole sample base");
+            super("Select");
+            putValue(Action.SHORT_DESCRIPTION, "Build samples selection");
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -556,10 +458,10 @@ class SelectionPanel
                 @Override
                 public void run ()
                 {
-                    task.setActivity(SELECTING);
+                    task.setActivity(SELECTION);
 
-                    // Define Core from Whole
-                    defineCore();
+                    getTrainSamples();
+
                     ///repository.storeCoreBase();
                     task.setActivity(INACTIVE);
                 }

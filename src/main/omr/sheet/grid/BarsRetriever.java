@@ -567,7 +567,8 @@ public class BarsRetriever
      */
     private void buildColumns ()
     {
-        ConnectivityInspector inspector = new ConnectivityInspector(peakGraph);
+        ConnectivityInspector<StaffPeak, BarAlignment> inspector = new ConnectivityInspector<StaffPeak, BarAlignment>(
+                peakGraph);
         List<Set<StaffPeak>> sets = inspector.connectedSets();
         logger.debug("sets: {}", sets.size());
 

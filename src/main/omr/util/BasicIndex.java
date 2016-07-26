@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright � Herv� Bitteur and others 2000-2016. All rights reserved.
+//  Copyright ? Herv? Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
@@ -45,7 +44,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * @param <E> precise type for indexed entities
  *
- * @author Hervé Bitteur
+ * @author HervÃ© Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement
@@ -65,11 +64,6 @@ public class BasicIndex<E extends Entity>
     // Persistent data
     //----------------
     //
-    /** Global id used to uniquely identify an entity instance. */
-    @XmlAttribute(name = "last-id")
-    @XmlJavaTypeAdapter(Jaxb.AtomicIntegerAdapter.class)
-    protected final AtomicInteger lastId = new AtomicInteger(0);
-
     /** Collection of all entities registered in this index, sorted on ID. */
     @XmlElement(name = "entities")
     @XmlJavaTypeAdapter(Adapter.class)
@@ -78,6 +72,9 @@ public class BasicIndex<E extends Entity>
     // Transient data
     //---------------
     //
+    /** Global id used to uniquely identify an entity instance. */
+    protected AtomicInteger lastId;
+
     /** Selection service, if any. */
     protected EntityService<E> entityService;
 
@@ -90,10 +87,21 @@ public class BasicIndex<E extends Entity>
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicIndex} object.
+     *
+     * @param lastId provided ID generator, perhaps null
      */
-    public BasicIndex ()
+    public BasicIndex (AtomicInteger lastId)
     {
-        values = entities.values();
+        this();
+        this.lastId = lastId;
+    }
+
+    /**
+     * Creates a new {@code BasicIndex} object.
+     */
+    protected BasicIndex ()
+    {
+        values = entities.values(); // Useful for debugging only
     }
 
     //~ Methods ------------------------------------------------------------------------------------

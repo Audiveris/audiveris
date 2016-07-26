@@ -14,6 +14,7 @@ package omr.ui;
 import omr.OMR;
 import omr.WellKnowns;
 
+import omr.classifier.SampleRepository;
 import omr.classifier.ui.SampleVerifier;
 import omr.classifier.ui.Trainer;
 
@@ -23,6 +24,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.ui.ShapeColorChooser;
 
 import omr.ui.symbol.SymbolRipper;
+import omr.ui.util.CursorController;
 import omr.ui.util.WebBrowser;
 
 import omr.util.Memory;
@@ -53,6 +55,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -63,7 +67,6 @@ import javax.swing.JTextField;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.JTextComponent;
-import omr.classifier.SampleRepository;
 
 /**
  * Class {@code GuiActions} gathers general actions triggered from the main GUI.
@@ -237,7 +240,30 @@ public class GuiActions
     @Action
     public void launchTrainer (ActionEvent e)
     {
-        Trainer.launch();
+        CursorController.launchWithDelayedMessage(
+                "Launching trainer...",
+                new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                Trainer.launch();
+            }
+        });
+    }
+
+    //-------------//
+    // saveSamples //
+    //-------------//
+    /**
+     * Action that saves the sample repository
+     *
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void saveSamples (ActionEvent e)
+    {
+        SampleRepository.getInstance().checkForSave();
     }
 
     //--------------------//
@@ -362,20 +388,6 @@ public class GuiActions
     {
     }
 
-    //-------------//
-    // saveSamples //
-    //-------------//
-    /**
-     * Action that saves the sample repository
-     *
-     * @param e the event which triggered this action
-     */
-    @Action
-    public void saveSamples (ActionEvent e)
-    {
-        SampleRepository.getInstance().checkForSave();
-    }
-
     //---------------//
     // verifySamples //
     //---------------//
@@ -388,7 +400,16 @@ public class GuiActions
     @Action
     public void verifySamples (ActionEvent e)
     {
-        SampleVerifier.getInstance().setVisible();
+        CursorController.launchWithDelayedMessage(
+                "Launching sample verifier...",
+                new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                SampleVerifier.getInstance().setVisible();
+            }
+        });
     }
 
     //--------------//
@@ -660,11 +681,25 @@ public class GuiActions
     private static class OptionsTask
             extends Task<Options, Void>
     {
-        //~ Constructors ---------------------------------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
+        final Timer timer = new Timer();
+
+        //~ Constructors ---------------------------------------------------------------------------
         public OptionsTask ()
         {
             super(OMR.gui.getApplication());
+
+            timer.schedule(
+                    new TimerTask()
+            {
+                @Override
+                public void run ()
+                {
+                    logger.info("Building options window...");
+                }
+            },
+                    CursorController.delay);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -677,6 +712,12 @@ public class GuiActions
             }
 
             return options;
+        }
+
+        @Override
+        protected void finished ()
+        {
+            timer.cancel();
         }
 
         @Override

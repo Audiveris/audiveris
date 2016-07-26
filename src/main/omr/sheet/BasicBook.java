@@ -1533,7 +1533,7 @@ public class BasicBook
                                  Path bookPath)
     {
         if (version == null) {
-            version = ProgramId.VERSION;
+            version = ProgramId.PROGRAM_VERSION;
         }
 
         if (nameSansExt != null) {

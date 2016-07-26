@@ -750,6 +750,7 @@ public class ShapeChecker
             addChecker(this, shapes.toArray(new Shape[0]));
         }
 
+        @SuppressWarnings({"unchecked", "varargs"})
         public Checker (String name,
                         Collection<Shape>... shapes)
         {

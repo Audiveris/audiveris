@@ -6,4 +6,6 @@
 <!--    <action domain="DEBUG" section="60" class="omr.ui.GuiActions" method="launchSymbolRipper"/>-->
     <action domain="DEBUG" section="50" class="omr.ui.GuiActions" method="clearLog" button="javax.swing.JButton"/>
     <action domain="DEBUG" section="70" class="omr.sheet.ui.BookActions"  method="dumpEventServices"/>
+<!--    <action domain="DEBUG" section="35" class="omr.Debug" method="saveTrainingData"/>-->
+<!--    <action domain="DEBUG" section="35" class="omr.Debug" method="trainAndSave"/>-->
 </actions>

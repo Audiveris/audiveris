@@ -150,7 +150,7 @@ public class PartBarline
             return list;
         }
 
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     //----------//

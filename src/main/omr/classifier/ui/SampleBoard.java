@@ -13,6 +13,9 @@ package omr.classifier.ui;
 
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
+import omr.classifier.SampleSheet;
+import omr.classifier.SheetContainer.Descriptor;
+import omr.classifier.ui.SampleVerifier.SampleController;
 
 import omr.constant.ConstantSet;
 
@@ -23,6 +26,7 @@ import omr.ui.EntityBoard;
 import omr.ui.PixelCount;
 import omr.ui.field.LLabel;
 import omr.ui.selection.EntityListEvent;
+import omr.ui.selection.EntityService;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.UserEvent;
 import omr.ui.util.Panel;
@@ -41,9 +45,6 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
-import omr.classifier.SampleSheet;
-import omr.classifier.SheetContainer.Descriptor;
-import omr.classifier.ui.SampleVerifier.SampleController;
 
 /**
  * Class {@code SampleBoard} defines a UI board for {@link Sample} entities.
@@ -100,7 +101,14 @@ public class SampleBoard
      */
     public SampleBoard (SampleController controller)
     {
-        super(Board.SAMPLE, controller.getGlyphService(), true, false, false, true, IdOption.ID_LABEL);
+        super(
+                Board.SAMPLE,
+                (EntityService<Sample>) controller.getGlyphService(),
+                true,
+                false,
+                false,
+                true,
+                IdOption.ID_LABEL);
         this.controller = controller;
 
         // Force a constant dimension for the shapeIcon field, despite variation in size of the icon
@@ -240,6 +248,7 @@ public class SampleBoard
             Descriptor desc = repository.getSheetDescriptor(sample);
             final String sh = desc.toString();
             sheetName.setText(sh);
+            sheetName.getField().setToolTipText(desc.getAliasesString());
             removeAction.setEnabled(!SampleSheet.isSymbols(desc.id));
             assignAction.setEnabled(!SampleSheet.isSymbols(desc.id));
         } else {
@@ -248,10 +257,10 @@ public class SampleBoard
             width.setText("");
             height.setText("");
             sheetName.setText("");
+            sheetName.getField().setToolTipText(null);
             removeAction.setEnabled(false);
             assignAction.setEnabled(false);
         }
-
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

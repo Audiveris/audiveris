@@ -69,7 +69,7 @@ public abstract class AbstractChordInter
     private static final Logger logger = LoggerFactory.getLogger(
             AbstractChordInter.class);
 
-    private static final List<AbstractBeamInter> NO_BEAM = Collections.EMPTY_LIST;
+    private static final List<AbstractBeamInter> NO_BEAM = Collections.emptyList();
 
     /**
      * Compare two notes of the same chord, ordered by increasing distance from chord

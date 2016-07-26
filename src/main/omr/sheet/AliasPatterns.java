@@ -83,12 +83,20 @@ public class AliasPatterns
         return null;
     }
 
+    //------------------//
+    // useAliasPatterns //
+    //------------------//
+    public static boolean useAliasPatterns ()
+    {
+        return constants.useAliasPatterns.isSet();
+    }
+
     //-------------------//
     // loadAliasPatterns //
     //-------------------//
     private List<Pattern> loadAliasPatterns ()
     {
-        if (constants.useAliasPatterns.isSet()) {
+        if (useAliasPatterns()) {
             try {
                 // Retrieve the raw strings
                 URL url = WellKnowns.CONFIG_FOLDER.resolve("alias-patterns.xml").toUri()

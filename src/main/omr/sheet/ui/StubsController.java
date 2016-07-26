@@ -813,14 +813,19 @@ public class StubsController
                     stub.reachStep(earlyStep, false);
                 }
 
+                final Sheet sheet;
+
                 if (!stub.hasSheet()) {
                     // Stub just loaded from book file, load & display the related sheet
                     logger.debug("get & display sheet for {}", stub);
-
-                    final Sheet sheet = stub.getSheet();
+                    sheet = stub.getSheet();
                     markTab(stub, Colors.SHEET_OK);
-                    sheet.displayMainTabs();
+                } else {
+                    logger.debug("{} already has sheet", stub);
+                    sheet = stub.getSheet();
                 }
+
+                sheet.displayMainTabs();
             } finally {
                 logger.debug("checkStubStatus releasing lock on {}", stub);
                 stub.getLock().unlock();

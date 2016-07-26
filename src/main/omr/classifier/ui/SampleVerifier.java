@@ -15,9 +15,7 @@ import omr.classifier.NeuralClassifier;
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import omr.classifier.SampleRepository.AdditionEvent;
-
 import static omr.classifier.SampleRepository.STANDARD_INTERLINE;
-
 import omr.classifier.SheetContainer.Descriptor;
 
 import omr.glyph.Glyph;
@@ -57,6 +55,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -80,14 +80,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-
 import static javax.swing.JSplitPane.HORIZONTAL_SPLIT;
 import static javax.swing.JSplitPane.VERTICAL_SPLIT;
-
 import javax.swing.ListCellRenderer;
-
 import static javax.swing.ListSelectionModel.SINGLE_SELECTION;
-
 import javax.swing.Scrollable;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -180,9 +176,7 @@ public class SampleVerifier
         SampleController controller = new SampleController(sampleService);
         boardsPane = new BoardsPane(
                 new SampleBoard(controller),
-                new EvaluationBoard(NeuralClassifier.getInstance(), controller, true)
-        //                , new EvaluationBoard(WekaClassifier.getInstance(), controller, true)
-        );
+                new EvaluationBoard(NeuralClassifier.getInstance(), controller, true));
 
         // Stay informed of repository dynamic updates
         repository.addListener(this);
@@ -526,7 +520,7 @@ public class SampleVerifier
 
         private final ScrollablePanel scrollablePanel = new ScrollablePanel();
 
-        /** Selection listener to avoid multi-selections across all lists in the panel. */
+        /** Specific listener to avoid multi-selections across all lists in the panel. */
         private final ListSelectionListener selectionListener = new ListSelectionListener()
         {
             @Override
@@ -1014,7 +1008,7 @@ public class SampleVerifier
             super(shape + " (" + samples.size() + ")");
             setLayout(new BorderLayout());
 
-            list = new JList(samples.toArray(new Sample[samples.size()]));
+            list = new JList<Sample>(samples.toArray(new Sample[samples.size()]));
             list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
             list.setVisibleRowCount(0);
             list.setSelectionMode(SINGLE_SELECTION);
@@ -1022,6 +1016,28 @@ public class SampleVerifier
 
             // One renderer for all samples of same shape
             list.setCellRenderer(new SampleRenderer(maxDimensionOf(samples)));
+
+            // Specific left/right keys to go through the whole list (and not only the current row)
+            list.addKeyListener(
+                    new KeyAdapter()
+            {
+                @Override
+                public void keyPressed (KeyEvent ke)
+                {
+                    final int size = list.getModel().getSize();
+                    final int index = list.getSelectedIndex();
+
+                    if ((ke.getKeyCode() == KeyEvent.VK_LEFT) && (index > 0)) {
+                        ke.consume();
+                        list.setSelectedIndex(index - 1);
+                    }
+
+                    if ((ke.getKeyCode() == KeyEvent.VK_RIGHT) && (index < (size - 1))) {
+                        ke.consume();
+                        list.setSelectedIndex(index + 1);
+                    }
+                }
+            });
 
             add(list, BorderLayout.CENTER);
         }

@@ -4,7 +4,7 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright � Herv� Bitteur and others 2000-2016. All rights reserved.
+//  Copyright ? Herv? Bitteur and others 2000-2016. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //------------------------------------------------------------------------------------------------//
@@ -32,7 +32,7 @@ public interface EntityIndex<E extends Entity>
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Export the whole unmodifiable collection of entities in the nest, sorted on ID.
+     * Export the whole unmodifiable collection of entities in the index, sorted on ID.
      *
      * @return the collection of entities
      */

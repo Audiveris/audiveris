@@ -127,7 +127,7 @@ public class TimeValue
     @Override
     public String toString ()
     {
-        if (shape != null) {
+        if (shape == Shape.COMMON_TIME || shape == Shape.CUT_TIME) {
             return shape.toString();
         }
 

@@ -26,11 +26,6 @@ public abstract class Grades
 
     private static final Constants constants = new Constants();
 
-    // Maximum values
-    //---------------
-    /** <b>Maximum</b> grade for a glyph before being merged in a compound */
-    public static final double compoundPartMaxGrade = constants.compoundPartMaxGrade.getValue();
-
     // Minimum values
     //---------------
     /** Minimum grade for a bass clef glyph */
@@ -100,10 +95,6 @@ public abstract class Grades
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
-
-        private final Evaluation.Grade compoundPartMaxGrade = new Evaluation.Grade(
-                0.90,
-                "*MAXIMUM* grade for a suitable compound part");
 
         //----------------------------------------------------------------------
         // Minimum values (please keep them sorted by decreasing value)

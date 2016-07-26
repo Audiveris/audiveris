@@ -44,7 +44,7 @@ public class InstancesWatcher<E>
      */
     public synchronized void addRef (E ref)
     {
-        actives.add(new WeakReference(ref));
+        actives.add(new WeakReference<E>(ref));
     }
 
     /**

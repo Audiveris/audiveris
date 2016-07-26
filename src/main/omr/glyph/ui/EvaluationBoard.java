@@ -390,7 +390,7 @@ public class EvaluationBoard
                 }
 
                 grade.setVisible(true);
-                grade.setText(String.format("%.2f", Math.log(eval.grade)));
+                grade.setText(String.format("%.3f", Math.log(eval.grade)));
             } else {
                 grade.setVisible(false);
                 comp.setVisible(false);

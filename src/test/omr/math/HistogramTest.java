@@ -330,7 +330,7 @@ public class HistogramTest
 
     private Histogram<Integer> createHistogram ()
     {
-        Histogram histo = new Histogram();
+        Histogram<Integer> histo = new Histogram<Integer>();
         histo.increaseCount(3, 2);
         histo.increaseCount(4, 10);
         histo.increaseCount(5, 12);
@@ -349,7 +349,7 @@ public class HistogramTest
 
     private Histogram<Integer> createHistogram (int... vals)
     {
-        Histogram histo = new Histogram();
+        Histogram<Integer> histo = new Histogram<Integer>();
 
         for (int i = 0; i < vals.length; i++) {
             histo.increaseCount(i, vals[i]);

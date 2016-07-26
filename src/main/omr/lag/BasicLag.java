@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Class {@code BasicLag} is a basic implementation of {@link Lag} interface.
@@ -59,6 +60,7 @@ public class BasicLag
     public BasicLag (String name,
                      Orientation orientation)
     {
+        super(new AtomicInteger(0));
         this.name = name;
         this.orientation = orientation;
 

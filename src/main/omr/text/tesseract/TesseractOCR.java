@@ -25,15 +25,16 @@ import omr.text.TextWord;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static tesseract.TessBridge.*;
-import tesseract.TessBridge.TessBaseAPI.SegmentationMode;
+
+import org.bytedeco.javacpp.tesseract;
+import org.bytedeco.javacpp.tesseract.TessBaseAPI;
+import org.bytedeco.javacpp.tesseract.StringGenericVector;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -98,11 +99,22 @@ public class TesseractOCR
     public Set<String> getLanguages ()
     {
         if (isAvailable()) {
-            try {
-                String[] langs = TessBaseAPI.getInstalledLanguages(
-                        WellKnowns.OCR_FOLDER.toString());
+            TreeSet<String> set = new TreeSet<>();
 
-                return new TreeSet<String>(Arrays.asList(langs));
+            try {
+                TessBaseAPI api = new TessBaseAPI();
+
+                if (api.Init(WellKnowns.OCR_FOLDER.toString(), "eng") == 0) {
+                    StringGenericVector languages = new StringGenericVector();
+                    api.GetAvailableLanguagesAsVector(languages);
+
+                    while (!languages.empty()) {
+                        set.add(languages.pop_back().string().getString());
+                    }
+                } else {
+                    logger.warn("Error in loading Tesseract languages");
+                }
+                return set;
             } catch (Throwable ex) {
                 logger.warn("Error in loading Tesseract languages", ex);
                 throw new UnavailableOcrException();
@@ -202,15 +214,15 @@ public class TesseractOCR
      * @param layoutMode the desired OCR layout mode
      * @return the corresponding Tesseract segmentation mode
      */
-    private SegmentationMode getMode (LayoutMode layoutMode)
+    private int getMode (LayoutMode layoutMode)
     {
         switch (layoutMode) {
         case MULTI_BLOCK:
-            return SegmentationMode.AUTO;
+            return tesseract.PSM_AUTO;
 
         default:
         case SINGLE_BLOCK:
-            return SegmentationMode.SINGLE_BLOCK;
+            return tesseract.PSM_SINGLE_BLOCK;
         }
     }
 

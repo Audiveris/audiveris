@@ -12,6 +12,8 @@
 package omr.math;
 
 import omr.util.BaseTestCase;
+import org.junit.Test;
+
 import static junit.framework.Assert.*;
 import static java.lang.Math.*;
 
@@ -25,6 +27,12 @@ public class BasicLineCheck
         extends BaseTestCase
 {
     //~ Methods ------------------------------------------------------------------------------------
+
+    @Test
+    public void testPlaceHolder ()
+    {
+        System.out.println("BaseTestCase. testPlaceHolder");
+    }
 
     public static void checkDistanceOf (BasicLine l)
     {

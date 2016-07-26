@@ -793,7 +793,7 @@ public class BasicStub
     //----------------//
     private SortedSet<Step> getNeededSteps (Step target)
     {
-        SortedSet<Step> neededSteps = new TreeSet();
+        SortedSet<Step> neededSteps = new TreeSet<Step>();
 
         // Add all needed steps
         for (Step step : EnumSet.range(Step.first(), target)) {

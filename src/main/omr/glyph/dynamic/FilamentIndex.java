@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.SwingUtilities;
 
@@ -68,6 +69,8 @@ public class FilamentIndex
      */
     public FilamentIndex (Sheet sheet)
     {
+        super(new AtomicInteger(0));
+
         this.sheet = sheet;
 
         // Declared VIP IDs?
@@ -147,7 +150,7 @@ public class FilamentIndex
                 public void run ()
                 {
                     entityService.publish(
-                            new EntityListEvent(
+                            new EntityListEvent<Filament>(
                                     this,
                                     SelectionHint.ENTITY_INIT,
                                     MouseMovement.PRESSING,

@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.classifier;
 
-import omr.constant.ConstantSet;
-
 /**
  * Class {@code GlyphClassifier} hides the actual classifier in use.
  *
@@ -20,11 +18,8 @@ import omr.constant.ConstantSet;
  */
 public class GlyphClassifier
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Report the classifier instance in use.
      *
@@ -32,28 +27,6 @@ public class GlyphClassifier
      */
     public static Classifier getInstance ()
     {
-        switch (constants.defaultKind.getValue()) {
-        case NEURAL:
-            return NeuralClassifier.getInstance();
-
-        case BAYESIAN:
-            return WekaClassifier.getInstance();
-        }
-
-        return null;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final ClassifierKind.Constant defaultKind = new ClassifierKind.Constant(
-                ClassifierKind.NEURAL,
-                "Default kind of glyph classifier (NEURAL or BAYESIAN)");
+        return NeuralClassifier.getInstance();
     }
 }

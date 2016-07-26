@@ -13,7 +13,7 @@ Predefined MDC keys:
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
-            <pattern>%-5level %caller{1} [%X{BOOK}%X{SHEET}] %msg%n%ex</pattern>
+            <pattern>%-5level %caller{1} [%X{BOOK}%X{SHEET}] [%thread] %msg%n%ex</pattern>
             <!--            <pattern>%-5level %msg%n %ex</pattern>-->
         </encoder>
     </appender>
@@ -22,23 +22,25 @@ Predefined MDC keys:
         <append>true</append>
         <file>${user.home}/audiveris-${bySecond}.log</file>
         <encoder>
-            <pattern>%date %level \(%file:%line\) [%X{BOOK}%X{SHEET}] %msg%n%ex</pattern>
+            <pattern>%date %-5level [%-18thread] [%X{BOOK}%X{SHEET}] %25file:%-4line | %msg%n%ex</pattern>
+<!--            <pattern>%date %level \(%file:%line\) [%X{BOOK}%X{SHEET}] %msg%n%ex</pattern>-->
         </encoder>
     </appender>
-    
-    <appender name="GUI" class="omr.log.LogGuiAppender"> 
-    </appender>
 
+    <!-- GUI appender is dynamically allocated & appended only when not running in batch -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
-        <appender-ref ref="GUI" />
     </root>
     
     <!-- Define DEBUG loggers here below: -->
-    <!--    <logger name="omr.CLI" level="DEBUG"/>-->
-    <!--    <logger name="omr.sheet.grid.BarsRetriever" level="DEBUG"/>-->
-    <!--    <logger name="omr.sheet.grid.StaffProjector" level="DEBUG"/>-->
+<!--        <logger name="omr.CLI" level="DEBUG"/>-->
+<!--        <logger name="omr.sheet.ScaleBuilder" level="DEBUG"/>-->
+<!--        <logger name="omr.sheet.BasicStub" level="DEBUG"/>-->
+<!--        <logger name="omr.sheet.ui.StubsController" level="DEBUG"/>-->
+<!--        <logger name="omr.sheet.grid.PeakGraph" level="DEBUG"/>-->
+<!--        <logger name="omr.sheet.grid.BarsRetriever" level="DEBUG"/>-->
+<!--        <logger name="omr.sheet.grid.StaffProjector" level="DEBUG"/>-->
     <!--    <logger name="omr.glyph.GlyphCluster" level="DEBUG"/>-->
     <!--    <logger name="omr.glyph.dynamic.StickFactory" level="DEBUG"/>-->
     <!--    <logger name="omr.sheet.rhythm.Voices" level="DEBUG"/>-->
@@ -73,7 +75,6 @@ Predefined MDC keys:
     <!--    <logger name="omr.ui.selection.SelectionService" level="DEBUG"/>-->
     <!--    <logger name="omr.sheet.picture.Ghostscript" level="DEBUG"/>-->
     <!--    <logger name="omr.sheet.ui.SheetAssembly" level="DEBUG"/>-->
-    <!--    <logger name="omr.sheet.ui.StubsController" level="DEBUG"/>-->
     <!--    <logger name="omr.step.Stepping" level="DEBUG"/>-->
     <!--    <logger name="omr.step.StepMonitor" level="DEBUG"/>-->
     <!--    <logger name="omr.script.Script" level="DEBUG"/>-->

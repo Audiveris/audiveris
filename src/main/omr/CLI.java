@@ -669,7 +669,7 @@ public class CLI
                 return null;
             }
 
-            return new TreeSet(sheets);
+            return new TreeSet<Integer>(sheets);
         }
     }
 

@@ -84,7 +84,7 @@ public class GlyphBoard
                        boolean useSpinners,
                        boolean selected)
     {
-        super(Board.GLYPH, controller.getGlyphService(), selected);
+        super(Board.GLYPH, (EntityService<Glyph>) controller.getGlyphService(), selected);
 
         this.controller = controller;
 

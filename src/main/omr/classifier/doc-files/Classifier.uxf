@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="13.3">
+  <help_text>//Uncomment the following line to change the fontsize:
+        //fontsize=14
+
+        //Welcome to UMLet!
+
+        // *Double-click on UML elements to add them to the diagram.
+        // *Edit element properties by modifying the text in this panel.
+        // *Edit the files in the 'palettes' directory to store your own element palettes.
+        // *Press Del or Backspace to remove elements from the diagram.
+        // *Hold down Ctrl key to select multiple elements.
+        // *Press c to copy the UML diagram to the system clipboard.
+        // * This text will be stored with each diagram. Feel free to use the area for notes.
+    </help_text>
+  <zoom_level>9</zoom_level>
+  <element>
+    <type>com.baselet.element.old.element.Database</type>
+    <coordinates>
+      <x>261</x>
+      <y>351</y>
+      <w>108</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>*model.zip*
+configuration.json
+coefficients.bin</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>27</x>
+      <y>18</y>
+      <w>180</w>
+      <h>99</h>
+    </coordinates>
+    <panel_attributes>*/Classifier/*
+bg=#ffffff
+--
+Condition
+--
+evaluate(glyph, conditions)
+isBigEnough(glyph)
+getNaturalEvaluations(glyph)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>27</x>
+      <y>153</y>
+      <w>180</w>
+      <h>81</h>
+    </coordinates>
+    <panel_attributes>*AbstractClassifier*
+bg=#aaffaa
+--
+glyphChecker
+--
+evaluate(glyph, conditions)
+isBigEnough(glyph)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>108</x>
+      <y>108</y>
+      <w>27</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;.</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>27</x>
+      <y>270</y>
+      <w>180</w>
+      <h>153</h>
+    </coordinates>
+    <panel_attributes>*NeuralClassifier*
+bg=#ff6666
+--
+model
+norms
+iterations
+learningRate
+--
+getNaturalEvaluations(glyph)
+load()
+train()
+store()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>108</x>
+      <y>225</y>
+      <w>27</w>
+      <h>63</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Database</type>
+    <coordinates>
+      <x>261</x>
+      <y>270</y>
+      <w>108</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>*norms.zip*
+means.bin
+stds.bin</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>207</x>
+      <y>378</y>
+      <w>63</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=[&lt;]-[&gt;]</panel_attributes>
+    <additional_attributes>10.0;10.0;51.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>207</x>
+      <y>297</y>
+      <w>63</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=[&lt;]-[&gt;]</panel_attributes>
+    <additional_attributes>10.0;10.0;51.0;10.0</additional_attributes>
+  </element>
+</diagram>

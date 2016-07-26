@@ -314,7 +314,7 @@ public abstract class Voices
             }
         }
 
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
     }
 
     //-----------//

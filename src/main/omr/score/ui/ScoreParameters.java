@@ -450,7 +450,7 @@ public class ScoreParameters
          * Use a ComboBox for boolean, since current status is more readable
          * than a plain CheckBox
          */
-        private final JComboBox<Boolean> box = new JComboBox(
+        private final JComboBox<Boolean> box = new JComboBox<Boolean>(
                 new Boolean[]{Boolean.FALSE, Boolean.TRUE});
 
         private final JLabel label;

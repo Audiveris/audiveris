@@ -24,6 +24,8 @@ import omr.image.ImageFormatException;
 import omr.lag.LagManager;
 import omr.lag.Lags;
 
+import omr.run.RunTable;
+
 import omr.score.Page;
 import omr.score.Score;
 import omr.score.ScoreExporter;
@@ -55,6 +57,7 @@ import omr.ui.util.WeakItemRenderer;
 
 import omr.util.Dumping;
 import omr.util.FileUtil;
+import omr.util.Jaxb;
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -76,6 +79,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -87,7 +91,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import omr.run.RunTable;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code BasicSheet} is our implementation of {@link Sheet} interface.
@@ -130,6 +134,11 @@ public class BasicSheet
     // Persistent data
     //----------------
     //
+    /** Global id used to uniquely identify a persistent entity instance. */
+    @XmlElement(name = "last-persistent-id")
+    @XmlJavaTypeAdapter(Jaxb.AtomicIntegerAdapter.class)
+    private final AtomicInteger lastPersistentId = new AtomicInteger(0);
+
     /** The related picture. */
     @XmlElement(name = "picture")
     private Picture picture;
@@ -151,10 +160,6 @@ public class BasicSheet
     //TODO: handle persistency
     private final Map<Inter, List<CrossExclusion>> crossExclusions = new HashMap<Inter, List<CrossExclusion>>();
 
-    /** Inter index for all systems in this sheet. */
-    @XmlElement(name = "inter-index")
-    private InterIndex interIndex;
-
     /** Global glyph index. */
     @XmlElement(name = "glyph-index")
     private GlyphIndex glyphIndex;
@@ -165,6 +170,9 @@ public class BasicSheet
     /** Corresponding sheet stub. */
     @Navigable(false)
     private SheetStub stub;
+
+    /** Inter index for all systems in this sheet. */
+    private InterIndex interIndex;
 
     /** Staves. */
     private StaffManager staffManager;
@@ -202,7 +210,23 @@ public class BasicSheet
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a new {@code Sheet} instance within a book.
+     * Creates a new {@code BasicSheet} object with a binary table.
+     *
+     * @param stub        the related sheet stub
+     * @param binaryTable the binary table, if any
+     */
+    public BasicSheet (SheetStub stub,
+                       RunTable binaryTable)
+    {
+        this(stub);
+
+        if (binaryTable != null) {
+            setBinary(binaryTable);
+        }
+    }
+
+    /**
+     * Create a new {@code Sheet} instance with an image.
      *
      * @param stub  the related sheet stub
      * @param image the already loaded image, if any
@@ -212,21 +236,19 @@ public class BasicSheet
                        BufferedImage image)
             throws StepException
     {
-        Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
-
-        glyphIndex = new GlyphIndex();
-
-        initTransients(stub);
-
-        interIndex = new InterIndex(this);
+        this(stub);
 
         if (image != null) {
             setImage(image);
         }
     }
 
-    public BasicSheet (SheetStub stub,
-                       RunTable binaryTable)
+    /**
+     * Create a new {@code Sheet} instance within a book.
+     *
+     * @param stub the related sheet stub
+     */
+    private BasicSheet (SheetStub stub)
     {
         Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
 
@@ -234,11 +256,8 @@ public class BasicSheet
 
         initTransients(stub);
 
-        interIndex = new InterIndex(this);
-
-        if (binaryTable != null) {
-            setBinary(binaryTable);
-        }
+        interIndex = new InterIndex();
+        interIndex.initTransients(this);
     }
 
     /**
@@ -297,6 +316,8 @@ public class BasicSheet
                 systemManager.dispatchVerticalSections();
             }
 
+            interIndex = new InterIndex();
+
             for (SystemInfo system : getSystems()) {
                 // Forward reload request down system hierarchy
                 system.afterReload();
@@ -307,6 +328,24 @@ public class BasicSheet
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
+    }
+
+    //------------------//
+    // createBinaryView //
+    //------------------//
+    /**
+     * Create and display the binary view.
+     */
+    public void createBinaryView ()
+    {
+        locationService.subscribeStrongly(LocationEvent.class, picture);
+
+        // Display sheet picture
+        PictureView pictureView = new PictureView(this);
+        stub.getAssembly().addViewTab(
+                SheetTab.BINARY_TAB,
+                pictureView,
+                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
 
     //-------------------//
@@ -323,24 +362,6 @@ public class BasicSheet
         PictureView pictureView = new PictureView(this);
         stub.getAssembly().addViewTab(
                 SheetTab.PICTURE_TAB,
-                pictureView,
-                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
-    }
-
-    //------------------//
-    // createBinaryView //
-    //------------------//
-    /**
-     * Create and display the picture view.
-     */
-    public void createBinaryView ()
-    {
-        locationService.subscribeStrongly(LocationEvent.class, picture);
-
-        // Display sheet picture
-        PictureView pictureView = new PictureView(this);
-        stub.getAssembly().addViewTab(
-                SheetTab.BINARY_TAB,
                 pictureView,
                 new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
@@ -625,6 +646,15 @@ public class BasicSheet
         return pages;
     }
 
+    //--------------------------//
+    // getPersistentIdGenerator //
+    //--------------------------//
+    @Override
+    public AtomicInteger getPersistentIdGenerator ()
+    {
+        return lastPersistentId;
+    }
+
     //------------//
     // getPicture //
     //------------//
@@ -691,26 +721,6 @@ public class BasicSheet
         } catch (Throwable ex) {
             logger.warn("Error loading image", ex);
         }
-    }
-
-    //-----------//
-    // setBinary //
-    //-----------//
-    private void setBinary (RunTable binaryTable)
-    {
-        try {
-            picture = new Picture(this, binaryTable);
-
-            if (OMR.gui != null) {
-                createBinaryView();
-            }
-
-            done(Step.LOAD);
-            done(Step.BINARY);
-        } finally {
-
-        }
-
     }
 
     //---------//
@@ -929,9 +939,6 @@ public class BasicSheet
         Unmarshaller um = getJaxbContext().createUnmarshaller();
 
         ///um.setListener(new Jaxb.UnmarshalLogger());
-        SheetIdResolver resolver = new SheetIdResolver();
-        um.setProperty(SheetIdResolver.getPropertyName(), resolver);
-
         BasicSheet sheet = (BasicSheet) um.unmarshal(in);
         logger.debug("Sheet unmarshalled");
 
@@ -1021,7 +1028,10 @@ public class BasicSheet
         symbolsController = new SymbolsController(model);
     }
 
-    /** Sheet 1-based number within book. (it duplicates stub number for clarity in XML) */
+    //-----------//
+    // getNumber //
+    //-----------//
+    /** Sheet 1-based number within book. */
     @XmlAttribute(name = "number")
     private int getNumber ()
     {
@@ -1128,6 +1138,24 @@ public class BasicSheet
         staffManager = new StaffManager(this);
 
         lagManager = new LagManager(this);
+    }
+
+    //-----------//
+    // setBinary //
+    //-----------//
+    private void setBinary (RunTable binaryTable)
+    {
+        try {
+            picture = new Picture(this, binaryTable);
+
+            if (OMR.gui != null) {
+                createBinaryView();
+            }
+
+            done(Step.LOAD);
+            done(Step.BINARY);
+        } finally {
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

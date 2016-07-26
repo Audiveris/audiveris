@@ -355,6 +355,7 @@ public class HeaderBuilder
             String clefString = (clef != null)
                     ? (clefShape
                        + ((clefShape == Shape.C_CLEF) ? (" " + clef.getKind()) : "")) : null;
+
             // Draw the zero reference line
             {
                 final int xMin = staff.getHeaderStart();

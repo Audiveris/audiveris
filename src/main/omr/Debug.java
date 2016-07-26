@@ -11,6 +11,11 @@
 // </editor-fold>
 package omr;
 
+import omr.classifier.NeuralClassifier;
+import omr.classifier.Sample;
+import omr.classifier.SampleRepository;
+import omr.classifier.ShapeDescription;
+
 import omr.image.TemplateFactory;
 
 import omr.sheet.Picture;
@@ -25,10 +30,15 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Convenient class meant to temporarily inject some debugging.
@@ -57,7 +67,7 @@ public class Debug
     {
         SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub != null && stub.hasSheet()) {
+        if ((stub != null) && stub.hasSheet()) {
             Picture picture = stub.getSheet().getPicture();
 
             if (picture != null) {
@@ -134,21 +144,94 @@ public class Debug
 
         logger.info("Done.");
     }
+
+    //------------------//
+    // saveTrainingData //
+    //------------------//
+    /**
+     * Generate a file (format csv) to be used by deep learning software,
+     * with the training data.
+     *
+     * @param e unused
+     */
+    @Action
+    public void saveTrainingData (ActionEvent e)
+            throws FileNotFoundException
+    {
+        Path path = WellKnowns.EVAL_FOLDER.resolve(
+                "samples-" + ShapeDescription.getName() + ".csv");
+        OutputStream os = new FileOutputStream(path.toFile());
+        final PrintWriter out = getPrintWriter(os);
+
+        SampleRepository repository = SampleRepository.getInstance();
+
+        if (!repository.isLoaded()) {
+            repository.loadRepository(true);
+        }
+
+        List<Sample> samples = repository.getAllSamples();
+        logger.info("Samples: {}", samples.size());
+
+        for (Sample sample : samples) {
+            double[] ins = ShapeDescription.features(sample, sample.getInterline());
+
+            for (double in : ins) {
+                out.print((float) in);
+                out.print(",");
+            }
+
+            ///out.println(sample.getShape().getPhysicalShape());
+            out.println(sample.getShape().getPhysicalShape().ordinal());
+        }
+
+        out.flush();
+        out.close();
+        logger.info("Classifier data saved in " + path.toAbsolutePath());
+    }
+
+    //--------------//
+    // trainAndSave //
+    //--------------//
+    /**
+     *
+     *
+     * @param e unused
+     */
+    @Action
+    public void trainAndSave (ActionEvent e)
+            throws FileNotFoundException, IOException
+    {
+        Path modelPath = WellKnowns.EVAL_FOLDER.resolve(NeuralClassifier.MODEL_FILE_NAME);
+        Files.deleteIfExists(modelPath);
+        Path normsPath = WellKnowns.EVAL_FOLDER.resolve(NeuralClassifier.NORMS_FILE_NAME);
+        Files.deleteIfExists(normsPath);
+
+        SampleRepository repository = SampleRepository.getInstance();
+
+        if (!repository.isLoaded()) {
+            repository.loadRepository(true);
+        }
+
+        List<Sample> samples = repository.getAllSamples();
+        logger.info("Samples: {}", samples.size());
+
+        NeuralClassifier classifier = NeuralClassifier.getInstance();
+        classifier.train(samples, null);
+        classifier.store();
+    }
+
     //----------------//
     // getPrintWriter //
     //----------------//
-
-    private static PrintWriter getPrintWriter (Path path)
+    private static PrintWriter getPrintWriter (OutputStream os)
     {
         try {
             final BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(
-                            new FileOutputStream(path.toFile()),
-                            WellKnowns.FILE_ENCODING));
+                    new OutputStreamWriter(os, WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
         } catch (Exception ex) {
-            System.err.println("Error creating " + path + ex);
+            logger.warn("Error creating PrintWriter " + ex, ex);
 
             return null;
         }

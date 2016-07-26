@@ -29,6 +29,9 @@ public abstract class ShapeDescription
             = new ShapeDescriptorMix() //
             ;
 
+    /** Number of features used. */
+    public static final int FEATURE_COUNT = length();
+
     //~ Constructors -------------------------------------------------------------------------------
     private ShapeDescription ()
     {

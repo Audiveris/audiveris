@@ -197,7 +197,11 @@ public class StaffBarline
             }
         }
 
-        return (fermatas != null) ? fermatas : Collections.EMPTY_SET;
+        if (fermatas != null) {
+            return fermatas;
+        }
+
+        return Collections.emptySet();
     }
 
     //------------//

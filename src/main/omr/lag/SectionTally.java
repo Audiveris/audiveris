@@ -77,7 +77,7 @@ public class SectionTally<S extends Section>
         final int iStart = starts[pos];
 
         if (iStart == -1) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         int iNextStart = list.size();

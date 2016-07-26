@@ -348,7 +348,7 @@ public class SampleSheet
             return samples;
         }
 
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     //------------------//

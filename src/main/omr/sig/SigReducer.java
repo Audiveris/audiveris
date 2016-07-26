@@ -108,7 +108,7 @@ public class SigReducer
     private static final Logger logger = LoggerFactory.getLogger(SigReducer.class);
 
     /** Shapes for which overlap detection is (currently) disabled. */
-    private static final EnumSet disabledShapes = EnumSet.copyOf(
+    private static final EnumSet<Shape> disabledShapes = EnumSet.copyOf(
             Arrays.asList(Shape.LEDGER, Shape.CRESCENDO, Shape.DIMINUENDO));
 
     /** Predicate for non-disabled overlap. */
@@ -124,10 +124,10 @@ public class SigReducer
     };
 
     /** Shapes that can overlap with a beam. */
-    private static final EnumSet beamCompShapes = EnumSet.copyOf(CoreBarlines);
+    private static final EnumSet<Shape> beamCompShapes = EnumSet.copyOf(CoreBarlines);
 
     /** Shapes that can overlap with a slur. */
-    private static final EnumSet slurCompShapes = EnumSet.noneOf(Shape.class);
+    private static final EnumSet<Shape> slurCompShapes = EnumSet.noneOf(Shape.class);
 
     static {
         slurCompShapes.addAll(Alterations.getShapes());
@@ -136,7 +136,7 @@ public class SigReducer
     }
 
     /** Shapes that can overlap with a stem. */
-    private static final EnumSet stemCompShapes = EnumSet.copyOf(
+    private static final EnumSet<Shape> stemCompShapes = EnumSet.copyOf(
             Arrays.asList(Shape.SLUR, Shape.CRESCENDO, Shape.DIMINUENDO));
 
     //~ Enumerations -------------------------------------------------------------------------------
@@ -360,10 +360,10 @@ public class SigReducer
 
             for (int ic = 0; ic < (headClasses.size() - 1); ic++) {
                 Class c1 = headClasses.get(ic);
-                Set set1 = heads.get(c1);
+                Set<Inter> set1 = heads.get(c1);
 
                 for (Class c2 : headClasses.subList(ic + 1, headClasses.size())) {
-                    Set set2 = heads.get(c2);
+                    Set<Inter> set2 = heads.get(c2);
                     exclude(set1, set2);
                 }
             }
@@ -373,10 +373,10 @@ public class SigReducer
 
             for (int ic = 0; ic < (beamSizes.size() - 1); ic++) {
                 Size c1 = beamSizes.get(ic);
-                Set set1 = beams.get(c1);
+                Set<Inter> set1 = beams.get(c1);
 
                 for (Size c2 : beamSizes.subList(ic + 1, beamSizes.size())) {
-                    Set set2 = beams.get(c2);
+                    Set<Inter> set2 = beams.get(c2);
                     exclude(set1, set2);
                 }
             }
@@ -389,7 +389,7 @@ public class SigReducer
                 if (size == Size.SMALL) {
                     // Small beams exclude standard heads
                     for (Class classe : new Class[]{BlackHeadInter.class, VoidHeadInter.class}) {
-                        Set headSet = heads.get(classe);
+                        Set<Inter> headSet = heads.get(classe);
 
                         if (headSet != null) {
                             exclude(beamSet, headSet);
@@ -1556,7 +1556,7 @@ public class SigReducer
             return sig.deleteWeakInters();
         }
 
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     //-------------------//
@@ -1610,7 +1610,7 @@ public class SigReducer
 
         public Set<Inter> checkSlurs ()
         {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         public void prolog ()

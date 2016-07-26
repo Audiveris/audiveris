@@ -76,12 +76,12 @@ public class AudiverisTest
             "-batch", "-step", "EXPORT", "-input", "data/examples/batuque.png",
             "data/examples/allegretto.png"
         };
-        System.out.println("firstCall to Audiveris.main()");
-        logger.info("firstCall to Audiveris.main()");
-        Audiveris.main(args1);
-        System.out.println("secondCall to Audiveris.main()");
-        logger.info("secondCall to Audiveris.main()");
-        Audiveris.main(args2);
-        System.out.println("finished");
+//        System.out.println("firstCall to Audiveris.main()");
+//        logger.info("firstCall to Audiveris.main()");
+//        Audiveris.main(args1);
+//        System.out.println("secondCall to Audiveris.main()");
+//        logger.info("secondCall to Audiveris.main()");
+//        Audiveris.main(args2);
+//        System.out.println("finished");
     }
 }

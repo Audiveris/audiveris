@@ -20,6 +20,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
 import omr.glyph.GlyphFactory;
+import omr.glyph.GlyphIndex;
 import omr.glyph.GlyphLink;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
@@ -163,7 +164,8 @@ public class ClefBuilder
 
         // Formalize glyphs relationships in a global graph
         SimpleGraph<Glyph, GlyphLink> globalGraph = Glyphs.buildLinks(parts, params.maxPartGap);
-        List<Set<Glyph>> sets = new ConnectivityInspector(globalGraph).connectedSets();
+        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(
+                globalGraph).connectedSets();
         logger.debug("Staff#{} sets: {}", staff.getId(), sets.size());
 
         // Best inter per clef kind
@@ -277,8 +279,13 @@ public class ClefBuilder
         // Keep only interesting parts
         purgeParts(parts, rect);
 
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+
         for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
-            li.set(sheet.getGlyphIndex().registerOriginal(li.next()));
+            final Glyph part = li.next();
+            Glyph glyph = glyphIndex.registerOriginal(part);
+            system.addFreeGlyph(glyph);
+            li.set(glyph);
         }
 
         logger.debug("Clef parts: {}", parts.size());

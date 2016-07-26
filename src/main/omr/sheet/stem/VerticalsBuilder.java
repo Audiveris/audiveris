@@ -226,8 +226,6 @@ public class VerticalsBuilder
         logger.debug("S#{} searching verticals on {} sticks", system.getId(), sticks.size());
 
         for (StraightFilament stick : sticks) {
-            //            stick = system.addFreeGlyph(stick);
-            //
             if (stick.isVip()) {
                 logger.info("VIP checkVerticals for {} in system#{}", stick, system.getId());
             }
@@ -398,27 +396,6 @@ public class VerticalsBuilder
             }
         }
 
-        //
-        //        // Use filament factory with straight lines as default
-        //        final FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(
-        //                scale,
-        //                sheet.getFilamentIndex(),
-        //                VERTICAL,
-        //                StraightFilament.class);
-        //
-        //        // Adjust factory parameters
-        //        factory.setMaxThickness(sheet.getScale().getMaxStem());
-        //        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
-        //        factory.setMaxOverlapSpace(constants.maxOverlapSpace);
-        //        factory.setMaxCoordGap(constants.maxCoordGap);
-        //
-        //        if (system.getId() == 1) {
-        //            factory.dump("VerticalsBuilder factory");
-        //        }
-        //
-        //        // Retrieve candidates
-        //        return factory.retrieveFilaments(sections);
-        //
         final StickFactory factory = new StickFactory(
                 Orientation.VERTICAL,
                 system,

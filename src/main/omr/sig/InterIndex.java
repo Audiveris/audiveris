@@ -29,7 +29,6 @@ import omr.ui.selection.SelectionHint;
 
 import omr.util.BasicIndex;
 import omr.util.IntUtil;
-import omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,12 +37,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code InterIndex} keeps an index of all Inter instances registered
@@ -51,9 +44,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * @author Hervé Bitteur
  */
-@XmlRootElement(name = "inter-index")
-@XmlJavaTypeAdapter(InterIndex.Adapter.class)
-@XmlAccessorType(XmlAccessType.NONE)
 public class InterIndex
         extends BasicIndex<Inter>
 {
@@ -63,28 +53,11 @@ public class InterIndex
 
     private static final Logger logger = LoggerFactory.getLogger(InterIndex.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Related sheet. */
-    @Navigable(false)
-    private Sheet sheet;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new InterManager object.
-     *
-     * @param sheet the related sheet
      */
-    public InterIndex (Sheet sheet)
-    {
-        this();
-
-        initTransients(sheet);
-    }
-
-    /**
-     * No-arg constructor meant for JAXB.
-     */
-    private InterIndex ()
+    public InterIndex ()
     {
     }
 
@@ -100,7 +73,8 @@ public class InterIndex
      */
     public final void initTransients (Sheet sheet)
     {
-        this.sheet = sheet;
+        // Use sheet ID generator
+        lastId = sheet.getPersistentIdGenerator();
 
         // Declared VIP IDs?
         List<Integer> vipIds = IntUtil.parseInts(constants.vipInters.getValue());
@@ -110,7 +84,7 @@ public class InterIndex
             setVipIds(vipIds);
         }
 
-        // Collect inters from all SIGs
+        // Browse inters from all SIGs to set VIPs
         for (SystemInfo system : sheet.getSystems()) {
             SIGraph sig = system.getSig();
 
@@ -158,7 +132,7 @@ public class InterIndex
                 public void run ()
                 {
                     interService.publish(
-                            new EntityListEvent(
+                            new EntityListEvent<Inter>(
                                     this,
                                     SelectionHint.ENTITY_INIT,
                                     MouseMovement.PRESSING,
@@ -169,54 +143,6 @@ public class InterIndex
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Adapter //
-    //---------//
-    public static class Adapter
-            extends XmlAdapter<InterIndexValue, InterIndex>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public InterIndexValue marshal (InterIndex index)
-                throws Exception
-        {
-            return new InterIndexValue(index.getLastId());
-        }
-
-        @Override
-        public InterIndex unmarshal (InterIndexValue shell)
-                throws Exception
-        {
-            InterIndex index = new InterIndex();
-            index.setLastId(shell.lastIdValue);
-
-            return index;
-        }
-    }
-
-    //-----------------//
-    // InterIndexValue //
-    //-----------------//
-    @XmlRootElement(name = "inter-index")
-    public static class InterIndexValue
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlAttribute(name = "last-id")
-        private int lastIdValue;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public InterIndexValue ()
-        {
-        }
-
-        public InterIndexValue (int lastIdValue)
-        {
-            this.lastIdValue = lastIdValue;
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//

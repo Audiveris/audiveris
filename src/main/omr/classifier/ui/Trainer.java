@@ -38,8 +38,6 @@ import java.util.Locale;
 import java.util.Observable;
 
 import javax.swing.JFrame;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code Trainer} handles a User Interface dedicated to the
@@ -69,8 +67,11 @@ public class Trainer
     /** Stand-alone run (vs part of Audiveris). */
     private static boolean standAlone = false;
 
-    /** Standard width for fields/buttons in DLUs */
-    private static final String standardWidth = "50dlu";
+    /** Standard width for labels in DLUs. */
+    static final String LABEL_WIDTH = "50dlu";
+
+    /** Standard width for fields/buttons in DLUs. */
+    static final String FIELD_WIDTH = "30dlu";
 
     /** An adapter triggered on window closing */
     private static final WindowAdapter windowCloser = new WindowAdapter()
@@ -94,23 +95,13 @@ public class Trainer
     private final SelectionPanel selectionPanel;
 
     /** Panel for Neural network training */
-    private final NeuralPanel networkPanel;
+    private final TrainingPanel trainingPanel;
 
     /** Panel for Neural network validation */
     private final ValidationPanel validationPanel;
-//
-//    /** Panel for Bayesian "training" */
-//    private final TrainingPanel bayesianPanel;
-//
-//    /** Panel for Bayesian validation */
-//    private final ValidationPanel bayesianValidationPanel;
-//
 
-    /** Current task */
-    private final Task task = new Task();
-
-    /** Frame title */
-    private String frameTitle;
+    /** Current task. */
+    final Task task = new Task();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -119,21 +110,14 @@ public class Trainer
     public Trainer ()
     {
         // Create the 5 companions
-        selectionPanel = new SelectionPanel(task, standardWidth);
-        networkPanel = new NeuralPanel(task, standardWidth, selectionPanel);
-        selectionPanel.setTrainingPanel(networkPanel);
+        selectionPanel = new SelectionPanel(task);
+        trainingPanel = new TrainingPanel(task, selectionPanel);
+        selectionPanel.setTrainingPanel(trainingPanel);
         validationPanel = new ValidationPanel(
                 task,
-                standardWidth,
                 NeuralClassifier.getInstance(),
                 selectionPanel);
-//        bayesianPanel = new BayesianPanel(task, standardWidth, selectionPanel);
-//        bayesianValidationPanel = new ValidationPanel(
-//                task,
-//                standardWidth,
-//                WekaClassifier.getInstance(),
-//                selectionPanel);
-//
+
         // Initial state
         task.setActivity(Task.Activity.INACTIVE);
 
@@ -265,65 +249,36 @@ public class Trainer
          * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
          * |-------------------------------------------------------------|
          * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . Neural classifier . . . . . . . . . . . . . . . . . . . . |
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . . . . Training. . . . . . . . . . . . . . . . . . . . . . |
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . . . . Validation. . . . . . . . . . . . . . . . . . . . . |
+         * | . Training. . . . . . . . . . . . . . . . . . . . . . . . . |
          * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
          * |-------------------------------------------------------------|
          * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . Bayesian classifier . . . . . . . . . . . . . . . . . . . |
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . . . . Training. . . . . . . . . . . . . . . . . . . . . . |
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . . . . Validation. . . . . . . . . . . . . . . . . . . . . |
+         * | . Validation. . . . . . . . . . . . . . . . . . . . . . . . |
          * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
          * +=============================================================+
          */
         final String panelInterline = Panel.getPanelInterline();
         FormLayout layout = new FormLayout(
                 "pref",
-                "pref," + panelInterline + "," + "pref," + panelInterline + "," + "pref,"
-                + panelInterline + "," + "pref," + panelInterline + "," + "pref");
+                "pref," + panelInterline + "," + "pref," + panelInterline + "," + "pref");
 
         CellConstraints cst = new CellConstraints();
         PanelBuilder builder = new PanelBuilder(layout, new Panel());
 
-        ///builder.setDefaultDialogBorder();
         int r = 1; // --------------------------------
         builder.add(selectionPanel.getComponent(), cst.xy(1, r));
 
         r += 2; // --------------------------------
-        builder.add(networkPanel.getComponent(), cst.xy(1, r));
+        builder.add(trainingPanel.getComponent(), cst.xy(1, r));
 
         r += 2; // --------------------------------
         builder.add(validationPanel.getComponent(), cst.xy(1, r));
-//
-//        r += 2; // --------------------------------
-//        builder.add(bayesianPanel.getComponent(), cst.xy(1, r));
-//
-//        r += 2; // --------------------------------
-//        builder.add(bayesianValidationPanel.getComponent(), cst.xy(1, r));
-//
+
         frame.add(builder.getPanel());
 
         // Resource injection
         ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
         resource.injectComponents(frame);
-
-        // Listener on remaining error
-        frameTitle = frame.getTitle();
-        networkPanel.setErrorListener(
-                new ChangeListener()
-        {
-            @Override
-            public void stateChanged (ChangeEvent e)
-            {
-                frame.setTitle(
-                        String.format("%.5f - %s", networkPanel.getBestError(), frameTitle));
-            }
-        });
 
         return frame;
     }
@@ -350,17 +305,18 @@ public class Trainer
             //~ Enumeration constant initializers --------------------------------------------------
 
             /** No ongoing activity */
+            /** No ongoing activity */
             INACTIVE,
-            /** Selecting
-             * glyph to build a population for training */
-            SELECTING,
-            /** Using the
-             * population to train the classifier */
-            TRAINING;
+            /** Selecting samples */
+            SELECTION,
+            /** Training on samples */
+            TRAINING,
+            /** Validating classifier */
+            VALIDATION;
         }
 
         //~ Instance fields ------------------------------------------------------------------------
-        /** Current activity */
+        /** Current activity. */
         private Activity activity = Activity.INACTIVE;
 
         //~ Methods --------------------------------------------------------------------------------

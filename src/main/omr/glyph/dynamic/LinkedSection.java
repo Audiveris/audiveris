@@ -329,7 +329,7 @@ public class LinkedSection
     public List<LinkedSection> getSources ()
     {
         if (sources == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return sources;
@@ -358,7 +358,7 @@ public class LinkedSection
     public List<LinkedSection> getTargets ()
     {
         if (targets == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return targets;

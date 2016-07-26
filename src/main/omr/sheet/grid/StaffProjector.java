@@ -165,7 +165,7 @@ public class StaffProjector
      */
     public StaffProjector (Sheet sheet,
                            Staff staff,
-                           Graph peakGraph)
+                           PeakGraph peakGraph)
     {
         this.sheet = sheet;
         this.staff = staff;

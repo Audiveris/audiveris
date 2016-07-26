@@ -274,7 +274,8 @@ public class SymbolsBuilder
     private void processClusters (SimpleGraph<Glyph, GlyphLink> systemGraph)
     {
         // Retrieve all the clusters of glyphs (sets of connected glyphs)
-        ConnectivityInspector inspector = new ConnectivityInspector(systemGraph);
+        ConnectivityInspector<Glyph, GlyphLink> inspector = new ConnectivityInspector<Glyph, GlyphLink>(
+                systemGraph);
         List<Set<Glyph>> sets = inspector.connectedSets();
         logger.debug("sets: {}", sets.size());
 

@@ -857,7 +857,7 @@ public class PeakGraph
             return new ArrayList<StaffPeak>(others);
         }
 
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     //----------------//
@@ -1068,7 +1068,7 @@ public class PeakGraph
     private List<StaffPeak> groupOf (List<StaffPeak> peaks)
     {
         if (peaks.isEmpty()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         final StaffPeak first = peaks.get(0);

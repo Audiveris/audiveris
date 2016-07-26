@@ -15,6 +15,8 @@ import omr.Main;
 import omr.OMR;
 import omr.WellKnowns;
 
+import omr.classifier.NeuralClassifier;
+
 import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
@@ -30,9 +32,11 @@ import omr.score.PartwiseBuilder;
 import omr.sheet.Book;
 import omr.sheet.SheetStub;
 import omr.sheet.ui.BookActions;
+import omr.sheet.ui.SheetResultPainter;
 import omr.sheet.ui.StubsController;
 
 import omr.step.ui.StepMenu;
+import omr.step.ui.StepMonitoring;
 
 import omr.ui.action.ActionManager;
 import omr.ui.action.Actions;
@@ -43,6 +47,7 @@ import omr.ui.symbol.MusicFont;
 import omr.ui.util.ModelessOptionPane;
 import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;
+import omr.ui.util.UIUtil;
 
 import omr.util.OmrExecutors;
 import omr.util.WeakPropertyChangeListener;
@@ -76,9 +81,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
-import omr.sheet.ui.SheetResultPainter;
-import omr.step.ui.StepMonitoring;
-import omr.ui.util.UIUtil;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for displaying a
@@ -421,6 +423,7 @@ public class MainGui
 
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.isSet()) {
+            NeuralClassifier.preload();
             JaiLoader.preload();
             PartwiseBuilder.preload();
         }
@@ -631,6 +634,7 @@ public class MainGui
         gauges.add(SheetResultPainter.getVoicePanel(), BorderLayout.WEST);
         gauges.add(StepMonitoring.createMonitor().getComponent(), BorderLayout.CENTER);
         gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
+
         // Outer bar = menu | gauges
         JMenuBar outerBar = new JMenuBar();
         outerBar.setLayout(new GridLayout(1, 0));

@@ -226,6 +226,15 @@ public class BookManager
         return aliasPatterns.getAlias(name);
     }
 
+    //-------------//
+    // getAllBooks //
+    //-------------//
+    @Override
+    public List<Book> getAllBooks ()
+    {
+        return Collections.unmodifiableList(books);
+    }
+
     //----------------------//
     // getDefaultBaseFolder //
     //----------------------//
@@ -237,6 +246,56 @@ public class BookManager
     public static String getDefaultBaseFolder ()
     {
         return constants.defaultBaseFolder.getValue();
+    }
+
+    //----------------------//
+    // getDefaultBookFolder //
+    //----------------------//
+    /**
+     * Report the folder where books are kept by default.
+     *
+     * @return the default folder
+     */
+    public static String getDefaultBookFolder ()
+    {
+        return constants.defaultBookFolder.getValue();
+    }
+
+    //--------------------//
+    // getDefaultBookPath //
+    //--------------------//
+    /**
+     * Report the file path to which the book should be saved.
+     *
+     * @param book the book to store
+     * @return the default book path for save
+     */
+    public static Path getDefaultBookPath (Book book)
+    {
+        // If book already has a target, use it
+        if (book.getBookPath() != null) {
+            return book.getBookPath();
+        }
+
+        if (constants.useSeparateBookFolders.isSet()) {
+            // Define target based on base + book folder and book name
+            Path folder = Paths.get(getDefaultBaseFolder(), book.getRadix());
+
+            try {
+                if (!Files.exists(folder)) {
+                    Files.createDirectories(folder);
+                }
+
+                return folder.resolve(book.getRadix() + OMR.BOOK_EXTENSION);
+            } catch (IOException ex) {
+                logger.warn("Cannot create {}", folder, ex);
+
+                return null;
+            }
+        } else {
+            // Define target based on global folder and book name
+            return Paths.get(getDefaultBookFolder(), book.getRadix() + OMR.BOOK_EXTENSION);
+        }
     }
 
     //------------------------//
@@ -346,56 +405,6 @@ public class BookManager
                 book.getRadix() + OMR.PDF_EXTENSION);
     }
 
-    //----------------------//
-    // getDefaultBookFolder //
-    //----------------------//
-    /**
-     * Report the folder where books are kept by default.
-     *
-     * @return the default folder
-     */
-    public static String getDefaultBookFolder ()
-    {
-        return constants.defaultBookFolder.getValue();
-    }
-
-    //--------------------//
-    // getDefaultBookPath //
-    //--------------------//
-    /**
-     * Report the file path to which the book should be saved.
-     *
-     * @param book the book to store
-     * @return the default book path for save
-     */
-    public static Path getDefaultBookPath (Book book)
-    {
-        // If book already has a target, use it
-        if (book.getBookPath() != null) {
-            return book.getBookPath();
-        }
-
-        if (constants.useSeparateBookFolders.isSet()) {
-            // Define target based on base + book folder and book name
-            Path folder = Paths.get(getDefaultBaseFolder(), book.getRadix());
-
-            try {
-                if (!Files.exists(folder)) {
-                    Files.createDirectories(folder);
-                }
-
-                return folder.resolve(book.getRadix() + OMR.BOOK_EXTENSION);
-            } catch (IOException ex) {
-                logger.warn("Cannot create {}", folder, ex);
-
-                return null;
-            }
-        } else {
-            // Define target based on global folder and book name
-            return Paths.get(getDefaultBookFolder(), book.getRadix() + OMR.BOOK_EXTENSION);
-        }
-    }
-
     //------------------------//
     // getDefaultScriptFolder //
     //------------------------//
@@ -444,7 +453,6 @@ public class BookManager
             // Define target based on global folder and book name
             return Paths.get(getDefaultScriptFolder(), book.getRadix() + OMR.BOOK_EXTENSION);
         }
-
     }
 
     //--------------------//
@@ -462,27 +470,6 @@ public class BookManager
                 : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION);
     }
 
-    //-----------------//
-    // getInputHistory //
-    //-----------------//
-    /**
-     * Get access to the list of previous inputs.
-     *
-     * @return the history set of input files
-     */
-    public PathHistory getInputHistory ()
-    {
-        if (inputHistory == null) {
-            inputHistory = new PathHistory(
-                    "Input History",
-                    constants.inputHistory,
-                    constants.defaultInputFolder,
-                    constants.historySize.getValue());
-        }
-
-        return inputHistory;
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -495,19 +482,30 @@ public class BookManager
     {
         if (INSTANCE == null) {
             INSTANCE = new BookManager();
-
         }
 
         return INSTANCE;
     }
 
-    //-------------//
-    // getAllBooks //
-    //-------------//
-    @Override
-    public List<Book> getAllBooks ()
+    //----------------//
+    // getBookHistory //
+    //----------------//
+    /**
+     * Get access to the list of previous books.
+     *
+     * @return the history set of book files
+     */
+    public PathHistory getBookHistory ()
     {
-        return Collections.unmodifiableList(books);
+        if (bookHistory == null) {
+            bookHistory = new PathHistory(
+                    "Book History",
+                    constants.bookHistory,
+                    constants.defaultBookFolder,
+                    constants.historySize.getValue());
+        }
+
+        return bookHistory;
     }
 
     //------------------//
@@ -544,33 +542,6 @@ public class BookManager
         return getInstance().books.size() > 1;
     }
 
-    //-----------//
-    // loadInput //
-    //-----------//
-    @Override
-    public Book loadInput (Path path)
-    {
-        final Book book = new BasicBook(path);
-
-        // Alias?
-        if (constants.useAliasPatterns.isSet()) {
-            final String nameSansExt = FileUtil.getNameSansExtension(path);
-            String alias = getAlias(nameSansExt);
-
-            if (alias != null) {
-                book.setAlias(alias);
-                logger.info("Found alias: {} for {}", alias, nameSansExt);
-            }
-        }
-
-        book.setModified(true);
-        addBook(book);
-
-        getInputHistory().add(path); // Insert in input history
-
-        return book;
-    }
-
     //----------//
     // loadBook //
     //----------//
@@ -584,6 +555,33 @@ public class BookManager
 
             getBookHistory().add(bookPath); // Insert in book history
         }
+
+        return book;
+    }
+
+    //-----------//
+    // loadInput //
+    //-----------//
+    @Override
+    public Book loadInput (Path path)
+    {
+        final Book book = new BasicBook(path);
+
+        // Alias?
+        if (AliasPatterns.useAliasPatterns()) {
+            final String nameSansExt = FileUtil.getNameSansExtension(path);
+            String alias = getAlias(nameSansExt);
+
+            if (alias != null) {
+                book.setAlias(alias);
+                logger.info("Found alias: {} for {}", alias, nameSansExt);
+            }
+        }
+
+        book.setModified(true);
+        addBook(book);
+
+        getInputHistory().add(path); // Insert in input history
 
         return book;
     }
@@ -614,6 +612,14 @@ public class BookManager
         return books.remove(book);
     }
 
+    //----------------------//
+    // setDefaultBookFolder //
+    //----------------------//
+    public static void setDefaultBookFolder (String value)
+    {
+        constants.defaultBookFolder.setValue(value);
+    }
+
     //------------------------//
     // setDefaultExportFolder //
     //------------------------//
@@ -628,14 +634,6 @@ public class BookManager
     public static void setDefaultPrintFolder (String value)
     {
         constants.defaultPrintFolder.setValue(value);
-    }
-
-    //-------------------------//
-    // setDefaultBookFolder //
-    //-------------------------//
-    public static void setDefaultBookFolder (String value)
-    {
-        constants.defaultBookFolder.setValue(value);
     }
 
     //------------------------//
@@ -675,25 +673,25 @@ public class BookManager
         return constants.defaultSigned.isSet();
     }
 
-    //-------------------//
-    // getBookHistory //
-    //-------------------//
+    //-----------------//
+    // getInputHistory //
+    //-----------------//
     /**
-     * Get access to the list of previous books.
+     * Get access to the list of previous inputs.
      *
-     * @return the history set of book files
+     * @return the history set of input files
      */
-    public PathHistory getBookHistory ()
+    public PathHistory getInputHistory ()
     {
-        if (bookHistory == null) {
-            bookHistory = new PathHistory(
-                    "Book History",
-                    constants.bookHistory,
-                    constants.defaultBookFolder,
+        if (inputHistory == null) {
+            inputHistory = new PathHistory(
+                    "Input History",
+                    constants.inputHistory,
+                    constants.defaultInputFolder,
                     constants.historySize.getValue());
         }
 
-        return bookHistory;
+        return inputHistory;
     }
 
     //---------//
@@ -745,10 +743,6 @@ public class BookManager
         private final Constant.Boolean useCompression = new Constant.Boolean(
                 true,
                 "Should we compress the MusicXML output?");
-
-        private final Constant.Boolean useAliasPatterns = new Constant.Boolean(
-                true,
-                "Should we apply alias patterns on input names?");
 
         private final Constant.Boolean useSeparateBookFolders = new Constant.Boolean(
                 true,

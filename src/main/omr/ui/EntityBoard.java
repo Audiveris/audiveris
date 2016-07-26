@@ -106,7 +106,7 @@ public class EntityBoard<E extends Entity>
      * @param selected      true for pre-selected, false for collapsed
      */
     public EntityBoard (Desc desc,
-                        EntityService entityService,
+                        EntityService<E> entityService,
                         boolean selected)
     {
         this(desc, entityService, selected, true, true, true, IdOption.ID_SPINNER);
@@ -124,7 +124,7 @@ public class EntityBoard<E extends Entity>
      * @param idOption      option for ID
      */
     public EntityBoard (Desc desc,
-                        EntityService entityService,
+                        EntityService<E> entityService,
                         boolean selected,
                         boolean useCount,
                         boolean useVip,
@@ -283,6 +283,7 @@ public class EntityBoard<E extends Entity>
     //-------------------//
     // getSelectedEntity //
     //-------------------//
+    @SuppressWarnings("unchecked")
     protected E getSelectedEntity ()
     {
         final List<E> list = (List<E>) getSelectionService().getSelection(EntityListEvent.class);
@@ -411,9 +412,9 @@ public class EntityBoard<E extends Entity>
      * @param index the underlying entity index
      * @return the spinner built
      */
-    private JSpinner makeIdSpinner (EntityIndex index)
+    private JSpinner makeIdSpinner (EntityIndex<E> index)
     {
-        JSpinner spinner = new JSpinner(new SpinnerIdModel(index));
+        JSpinner spinner = new JSpinner(new SpinnerIdModel<E>(index));
         spinner.setValue(0); // Initial value before listener is set!
         spinner.addChangeListener(this);
         spinner.setLocale(Locale.ENGLISH);

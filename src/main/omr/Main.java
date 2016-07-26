@@ -121,8 +121,7 @@ public class Main
         showEnvironment();
 
         // Native libs
-        loadNativeLibraries();
-
+        //loadNativeLibraries();
         // Engine
         OMR.engine = BookManager.getInstance();
 

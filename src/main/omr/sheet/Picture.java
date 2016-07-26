@@ -570,7 +570,7 @@ public class Picture
 
             if (src != null) {
                 // Store in cache
-                sources.put(key, new WeakReference(src));
+                sources.put(key, new WeakReference<ByteProcessor>(src));
                 logger.debug("{} source built as {}", key, src);
             }
         }

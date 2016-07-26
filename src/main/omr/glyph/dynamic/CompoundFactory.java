@@ -129,7 +129,8 @@ public class CompoundFactory
         }
 
         // Retrieve all the clusters of sections (sets of touching sections)
-        ConnectivityInspector inspector = new ConnectivityInspector(graph);
+        ConnectivityInspector<Section, Touching> inspector = new ConnectivityInspector<Section, Touching>(
+                graph);
         List<Set<Section>> sets = inspector.connectedSets();
         logger.debug("sets: {}", sets.size());
 

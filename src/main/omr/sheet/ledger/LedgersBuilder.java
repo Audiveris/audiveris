@@ -217,7 +217,7 @@ public class LedgersBuilder
      * @param stick the candidate
      * @return the proper check suite to apply
      */
-    public CheckSuite selectSuite (Filament stick)
+    public CheckSuite<StickContext> selectSuite (Filament stick)
     {
         return (stick.getLength(HORIZONTAL) <= scale.toPixels(constants.maxShortLength))
                 ? shortSuite : longSuite;
@@ -287,46 +287,6 @@ public class LedgersBuilder
      */
     private List<StraightFilament> getCandidateFilaments (List<Section> sections)
     {
-        //        // Use filament factory
-        //        FilamentFactory<StraightFilament> factory = new FilamentFactory<StraightFilament>(
-        //                scale,
-        //                sheet.getFilamentIndex(),
-        //                HORIZONTAL,
-        //                StraightFilament.class);
-        //
-        //        // Adjust factory parameters
-        //        final int maxThickness = Math.min(
-        //                scale.toPixels(constants.maxThicknessHigh),
-        //                scale.toPixels(constants.maxThicknessHigh2));
-        //        factory.setMaxThickness(maxThickness);
-        //        factory.setMinCoreSectionLength(constants.minCoreSectionLength);
-        //        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
-        //        factory.setMaxCoordGap(constants.maxCoordGap);
-        //        factory.setMaxPosGap(constants.maxPosGap);
-        //        factory.setMaxOverlapSpace(constants.maxOverlapSpace);
-        //
-        //        if (system.getId() == 1) {
-        //            factory.dump("LedgersBuilder factory");
-        //        }
-        //
-        //        for (Section section : sections) {
-        //            //TODO: this may prevent the processing of systems in parallel!???
-        //            section.setCompound(null); // Needed for sections "shared" by two systems!
-        //        }
-        //
-        //        List<StraightFilament> filaments = factory.retrieveFilaments(sections);
-        //
-        //        // Purge candidates that overlap good beams
-        //        purgeBeamOverlaps(filaments);
-        //
-        //        // TODO: Aggregate 1-pixel high horizontal sections if stuck on filament
-        //        //
-        //        // This is only meant to show them in a specific color
-        //        for (Filament fil : filaments) {
-        //            fil.addGroup(Group.LEDGER_CANDIDATE);
-        //        }
-        //
-        //
         final Predicate<Section> predicate = new Predicate<Section>()
         {
             @Override
@@ -567,7 +527,7 @@ public class LedgersBuilder
             final double yTarget = yRef + (Integer.signum(index) * scale.getInterline());
 
             // Choose which suite to apply
-            CheckSuite suite = selectSuite(stick);
+            CheckSuite<StickContext> suite = selectSuite(stick);
 
             GradeImpacts impacts = suite.getImpacts(new StickContext(stick, yTarget));
 

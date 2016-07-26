@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import static java.util.Collections.EMPTY_LIST;
 import java.util.HashMap;
 import java.util.List;
 
@@ -34,8 +35,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import static java.util.Collections.EMPTY_LIST;
 
 /**
  * Class {@code SheetContainer} contains descriptions of sample sheets, notably their
@@ -163,7 +162,7 @@ public class SheetContainer
         List<Descriptor> list = hashMap.get(hash);
 
         if (list == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         return Collections.unmodifiableList(list);
@@ -401,7 +400,8 @@ public class SheetContainer
         //~ Methods --------------------------------------------------------------------------------
         public void addAlias (String alias)
         {
-            if (!isAlias(alias)) {
+            if ((alias != null) && !isAlias(alias)) {
+                logger.info("Added alias {} to {}", alias, this);
                 aliases.add(alias);
             }
         }
@@ -410,6 +410,30 @@ public class SheetContainer
         public int compareTo (Descriptor other)
         {
             return Integer.compare(id, other.id);
+        }
+
+        public List<String> getAliases ()
+        {
+            return aliases;
+        }
+
+        public String getAliasesString ()
+        {
+            if (aliases.isEmpty()) {
+                return null;
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            for (String alias : aliases) {
+                if (sb.length() > 0) {
+                    sb.append(",");
+                }
+
+                sb.append(alias);
+            }
+
+            return sb.toString();
         }
 
         public boolean isAlias (String str)

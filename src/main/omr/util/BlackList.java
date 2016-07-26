@@ -142,7 +142,7 @@ public class BlackList
      * @param filter potential filter, or null
      * @return an array of filtered legal File instances
      */
-    public Path[] listFiles (Filter filter)
+    public Path[] listFiles (Filter<Path> filter)
     {
         logger.debug("Retrieving legal slots in directory {}", dir);
 

@@ -11,23 +11,27 @@
 // </editor-fold>
 package omr.classifier.ui;
 
-import omr.classifier.AbstractClassifier;
-import omr.classifier.AbstractClassifier.StartingMode;
+import omr.classifier.NeuralClassifier;
 import omr.classifier.Sample;
-import omr.classifier.SampleRepository;
-
 import static omr.classifier.ui.Trainer.Task.Activity.*;
 
-import omr.glyph.Shape;
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
 
+import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
 import omr.ui.Colors;
+import omr.ui.field.LDoubleField;
+import omr.ui.field.LIntegerField;
+import omr.ui.field.LLabel;
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import org.deeplearning4j.nn.api.Model;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,13 +44,13 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
-import javax.swing.JRadioButton;
-import javax.swing.SwingWorker;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 /**
  * Class {@code TrainingPanel} is a panel dedicated to the training of a classifier.
@@ -57,38 +61,30 @@ import javax.swing.SwingWorker;
  *
  * @author Hervé Bitteur
  */
-abstract class TrainingPanel
-        implements AbstractClassifier.Monitor, Observer
+class TrainingPanel
+        implements NeuralClassifier.Monitor, Observer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TrainingPanel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The swing component */
+    /** The swing component. */
     protected final Panel component;
 
-    /** Current activity (selecting the population, or training the engine on
-     * the selected population */
+    /** Current activity (selecting population, or training engine on selection. */
     protected final Trainer.Task task;
 
-    /** User action to launch the training */
+    /** User action to launch the training. */
     protected TrainAction trainAction;
 
-    /** The underlying engine to be trained */
-    protected AbstractClassifier engine;
+    /** The underlying engine to be trained. */
+    protected NeuralClassifier engine;
 
-    /** User progress bar to visualize the training process */
+    /** User progress bar to visualize the training process. */
     protected JProgressBar progressBar = new JProgressBar();
-
-    /** Common JGoodies constraints for this class and its subclass if any */
-    protected CellConstraints cst = new CellConstraints();
-
-    /** Common JGoodies builder for this class and its subclass if any */
-    protected PanelBuilder builder;
-
-    /** Repository of known samples */
-    private final SampleRepository repository = SampleRepository.getInstance();
 
     /**
      * Flag to indicate that the whole population of recorded samples (and not
@@ -102,49 +98,67 @@ abstract class TrainingPanel
     /** Display of cardinality of core population */
     private final JLabel coreNumber = new JLabel();
 
-    /** UI panel dealing with repository selection */
+    /** UI panel dealing with samples selection. */
     private final SelectionPanel selectionPanel;
 
-    /** Max index for progress bar. */
-    private int indexMax;
+    /** Input field for Learning rate of the neural network. */
+    private final LDoubleField learningRate = new LDoubleField(
+            "Learning Rate",
+            "Learning rate of the neural network",
+            "%.2f");
+
+    /** Input field for Maximum number of iterations to perform. */
+    private final LIntegerField maxIterations = new LIntegerField(
+            "Max Iterations",
+            "Maximum number of iterations to perform");
+
+    /** Output for Number of iterations performed so far. */
+    private final LLabel trainIndex = new LLabel(
+            "Last Iteration:",
+            "Number of iterations performed so far");
+
+    /** Output for score on last iteration. */
+    private final LLabel trainScore = new LLabel("Last Score:", "Score on last iteration");
+
+    /** Current iteration count. */
+    private long iterCount;
+
+    /* Useful? */
+    private boolean invoked;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TrainingPanel object.
      *
      * @param task           the current training task
-     * @param standardWidth  standard width for fields & buttons
-     * @param engine         the underlying engine to train
      * @param selectionPanel user panel for samples selection
-     * @param totalRows      total number of display rows, interlines not counted
      */
     public TrainingPanel (Trainer.Task task,
-                          String standardWidth,
-                          AbstractClassifier engine,
-                          SelectionPanel selectionPanel,
-                          int totalRows)
+                          SelectionPanel selectionPanel)
     {
-        this.engine = engine;
+        this.engine = NeuralClassifier.getInstance();
         this.task = task;
         this.selectionPanel = selectionPanel;
 
         component = new Panel();
         component.setNoInsets();
 
-        FormLayout layout = Panel.makeFormLayout(totalRows, 4, "", standardWidth, standardWidth);
+        task.addObserver(this);
 
-        builder = new PanelBuilder(layout, component);
+        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke("ENTER"),
+                "readParams");
+        component.getActionMap().put("readParams", new TrainingPanel.ParamAction());
+
+        trainAction = new TrainAction("Train");
 
         defineLayout();
+
+        engine.setListeners(this);
+        displayParams();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Override
-    public void epochEnded (int epochIndex,
-                            double mse)
-    {
-    }
-
     //--------------//
     // getComponent //
     //--------------//
@@ -159,8 +173,48 @@ abstract class TrainingPanel
     }
 
     @Override
-    public void sampleProcessed (final Sample sample)
+    public void invoke ()
     {
+        invoked = true;
+    }
+
+    @Override
+    public boolean invoked ()
+    {
+        return invoked;
+    }
+
+    @Override
+    public void iterationDone (Model model,
+                               int iteration)
+    {
+        iterCount++;
+
+        if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
+            invoke();
+
+            final double result = model.score();
+            final int count = (int) iterCount;
+            logger.info("Score at iteration " + count + " is " + result);
+
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                // This part is run on swing thread
+                @Override
+                public void run ()
+                {
+                    // Update current values
+                    trainIndex.setText(Integer.toString(count));
+                    trainScore.setText(String.format("%.4f", result));
+
+                    // Update progress bar ?
+                    progressBar.setValue(count);
+
+                    component.repaint();
+                }
+            });
+        }
     }
 
     //--------//
@@ -177,18 +231,7 @@ abstract class TrainingPanel
     public void update (Observable obs,
                         Object unused)
     {
-        switch (task.getActivity()) {
-        case INACTIVE:
-            trainAction.setEnabled(true);
-
-            break;
-
-        case SELECTING:
-        case TRAINING:
-            trainAction.setEnabled(false);
-
-            break;
-        }
+        trainAction.setEnabled(task.getActivity() == INACTIVE);
     }
 
     //----------//
@@ -249,69 +292,71 @@ abstract class TrainingPanel
     // defineLayout //
     //--------------//
     /**
-     * Define the common part of the layout, each subclass being able to augment
-     * this layout from its constructor
+     * Define the layout.
      */
     private void defineLayout ()
     {
         progressBar.setForeground(Colors.PROGRESS_BAR);
 
-        // Buttons to select just the core samples, or the whole population
-        CoreAction coreAction = new CoreAction();
-        JRadioButton coreButton = new JRadioButton(coreAction);
-        WholeAction wholeAction = new WholeAction();
-        JRadioButton wholeButton = new JRadioButton(wholeAction);
-
-        // Group the radio buttons.
-        ButtonGroup group = new ButtonGroup();
-        group.add(wholeButton);
-        wholeButton.setToolTipText("Use the whole sample base for any action");
-        group.add(coreButton);
-        coreButton.setToolTipText("Use only the core sample base for any action");
-        wholeButton.setSelected(true);
+        FormLayout layout = Panel.makeFormLayout(
+                3,
+                4,
+                "",
+                Trainer.LABEL_WIDTH,
+                Trainer.FIELD_WIDTH);
+        PanelBuilder builder = new PanelBuilder(layout, component);
+        CellConstraints cst = new CellConstraints();
 
         // Evaluator Title & Progress Bar
         int r = 1; // ----------------------------
-        String title = engine.getName() + " classifier";
+        String title = "Training";
         builder.addSeparator(title, cst.xyw(1, r, 7));
         builder.add(progressBar, cst.xyw(9, r, 7));
 
         r += 2; // ----------------------------
-        builder.add(wholeButton, cst.xy(3, r));
-        builder.add(wholeNumber, cst.xy(5, r));
+
+        builder.add(wholeNumber, cst.xy(5, r)); // ???????????????
+
+        builder.add(maxIterations.getLabel(), cst.xy(9, r));
+        builder.add(maxIterations.getField(), cst.xy(11, r));
+
+        builder.add(learningRate.getLabel(), cst.xy(13, r));
+        builder.add(learningRate.getField(), cst.xy(15, r));
 
         r += 2; // ----------------------------
-        builder.add(coreButton, cst.xy(3, r));
-        builder.add(coreNumber, cst.xy(5, r));
 
-        //
-        //        // Initialize with population cardinalities
-        //        coreAction.actionPerformed(null);
-        //        wholeAction.actionPerformed(null);
+        JButton trainButton = new JButton(trainAction);
+        trainButton.setToolTipText("Train the classifier from scratch");
+        builder.add(trainButton, cst.xy(3, r));
+
+        builder.add(trainIndex.getLabel(), cst.xy(9, r));
+        builder.add(trainIndex.getField(), cst.xy(11, r));
+
+        builder.add(trainScore.getLabel(), cst.xy(13, r));
+        builder.add(trainScore.getField(), cst.xy(15, r));
+    }
+
+    //---------------//
+    // displayParams //
+    //---------------//
+    private void displayParams ()
+    {
+        maxIterations.setValue(NeuralClassifier.getMaxIterations());
+        learningRate.setValue(engine.getLearningRate());
+    }
+
+    //-------------//
+    // inputParams //
+    //-------------//
+    private void inputParams ()
+    {
+        engine.setMaxIterations(maxIterations.getValue());
+        engine.setLearningRate(learningRate.getValue());
+
+        progressBar.setMaximum(maxIterations.getValue());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //------------//
-    // DumpAction //
-    //------------//
-    protected class DumpAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public DumpAction ()
-        {
-            super("Dump");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            engine.dump();
-        }
-    }
-
     //-------------//
     // TrainAction //
     //-------------//
@@ -319,9 +364,6 @@ abstract class TrainingPanel
             extends AbstractAction
     {
         //~ Instance fields ------------------------------------------------------------------------
-
-        // Specific training starting mode
-        protected StartingMode mode = StartingMode.SCRATCH;
 
         protected boolean confirmationRequired = true;
 
@@ -339,7 +381,7 @@ abstract class TrainingPanel
             if (confirmationRequired) {
                 int answer = JOptionPane.showConfirmDialog(
                         component,
-                        "Confirm retrain " + engine.getName() + " from scratch?");
+                        "Confirm retrain Neural Network from scratch?");
 
                 if (answer != JOptionPane.YES_OPTION) {
                     return;
@@ -353,7 +395,20 @@ abstract class TrainingPanel
                 @Override
                 public void run ()
                 {
-                    train();
+                    task.setActivity(TRAINING);
+
+                    List<Sample> samples = selectionPanel.getTrainSamples();
+                    progressBar.setMaximum(NeuralClassifier.getMaxIterations());
+                    progressBar.setValue(0);
+
+                    // Check that all trainable shapes (and only those ones) are
+                    // present in the training population
+                    checkPopulation(samples);
+
+                    // Train on the data set
+                    engine.train(samples, TrainingPanel.this);
+
+                    task.setActivity(INACTIVE);
                 }
             }
 
@@ -361,109 +416,80 @@ abstract class TrainingPanel
             worker.setPriority(Thread.MIN_PRIORITY);
             worker.start();
         }
-
-        //-------//
-        // train //
-        //-------//
-        public void train ()
-        {
-            task.setActivity(TRAINING);
-
-            List<Sample> samples = selectionPanel.getBase(useWhole);
-            progressBar.setValue(0);
-            progressBar.setMaximum(indexMax);
-
-            // Check that all trainable shapes (and only those ones) are
-            // present in the training population
-            checkPopulation(samples);
-
-            engine.train(samples, TrainingPanel.this, mode);
-
-            task.setActivity(INACTIVE);
-        }
     }
 
-    //------------//
-    // CoreAction //
-    //------------//
-    private class CoreAction
-            extends AbstractAction
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final SwingWorker<Integer, Object> worker = new SwingWorker<Integer, Object>()
-        {
-            @Override
-            public void done ()
-            {
-                try {
-                    coreNumber.setText("" + get());
-                } catch (Exception ex) {
-                    logger.warn("Error while loading core base", ex);
-                }
-            }
-
-            @Override
-            protected Integer doInBackground ()
-            {
-                return selectionPanel.getBase(false).size();
-            }
-        };
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public CoreAction ()
-        {
-            super("Core");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            useWhole = false;
-            worker.execute();
-        }
+        private final Constant.Integer listenerPeriod = new Constant.Integer(
+                "period",
+                50,
+                "Iteration period between listener calls");
     }
 
     //-------------//
-    // WholeAction //
+    // ParamAction //
     //-------------//
-    private class WholeAction
+    private class ParamAction
             extends AbstractAction
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final SwingWorker<Integer, Object> worker = new SwingWorker<Integer, Object>()
-        {
-            @Override
-            public void done ()
-            {
-                try {
-                    wholeNumber.setText("" + get());
-                } catch (Exception ex) {
-                    logger.warn("Error while loading whole base", ex);
-                }
-            }
-
-            @Override
-            protected Integer doInBackground ()
-            {
-                return selectionPanel.getBase(true).size();
-            }
-        };
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public WholeAction ()
-        {
-            super("Whole");
-        }
-
         //~ Methods --------------------------------------------------------------------------------
+
+        // Purpose is just to read and remember the data from the various input fields.
+        // Triggered when user presses Enter in one of these fields.
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            useWhole = true;
-            worker.execute();
+            inputParams();
+            displayParams();
         }
     }
 }
+//
+//    //------------//
+//    // CoreAction //
+//    //------------//
+//    private class CoreAction
+//            extends AbstractAction
+//    {
+//        //~ Instance fields ------------------------------------------------------------------------
+//
+//        final SwingWorker<Integer, Object> worker = new SwingWorker<Integer, Object>()
+//        {
+//            @Override
+//            public void done ()
+//            {
+//                try {
+//                    coreNumber.setText("" + get());
+//                } catch (Exception ex) {
+//                    logger.warn("Error while loading core base", ex);
+//                }
+//            }
+//
+//            @Override
+//            protected Integer doInBackground ()
+//            {
+//                return selectionPanel.getTrainSamples(false).size();
+//            }
+//        };
+//
+//        //~ Constructors ---------------------------------------------------------------------------
+//        public CoreAction ()
+//        {
+//            super("Core");
+//        }
+//
+//        //~ Methods --------------------------------------------------------------------------------
+//        @Override
+//        public void actionPerformed (ActionEvent e)
+//        {
+//            useWhole = false;
+//            worker.execute();
+//        }
+//    }
+//

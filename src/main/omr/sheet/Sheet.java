@@ -35,6 +35,7 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -166,6 +167,13 @@ public interface Sheet
      * @return the lag Manager
      */
     LagManager getLagManager ();
+
+    /**
+     * Access to the generator of persistent IDs for this sheet.
+     *
+     * @return the ID generator
+     */
+    AtomicInteger getPersistentIdGenerator ();
 
     /**
      * In non batch mode, give access to sheet location service.

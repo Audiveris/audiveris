@@ -120,53 +120,23 @@ public abstract class KeyEvent
     public static class Space
             extends KeyEvent
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Current area weight at beginning of space. */
-        private final int weight;
-
-        private boolean wide;
-
         //~ Constructors ---------------------------------------------------------------------------
+
         public Space (int start,
-                      int stop,
-                      int weight)
+                      int stop)
         {
             super(start, stop);
-            this.weight = weight;
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        public void setWide ()
-        {
-            wide = true;
-        }
-
         @Override
         public String toString ()
         {
             StringBuilder sb = new StringBuilder();
 
-            if (wide) {
-                sb.append("Wide");
-            }
-
-            sb.append("Space(").append(start).append("-").append(stop).append(")/").append(weight);
+            sb.append("Space(").append(start).append("-").append(stop).append(")");
 
             return sb.toString();
-        }
-
-        int getWeight ()
-        {
-            return weight;
-        }
-
-        /**
-         * @return the wide value
-         */
-        boolean isWide ()
-        {
-            return wide;
         }
     }
 }

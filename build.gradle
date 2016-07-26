@@ -1,0 +1,199 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = '1.7'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+ext.programName    = 'Audiveris'
+ext.programVersion = '5.0'
+ext.companyName    = "$programName Ltd."
+ext.companyId      = "${programName}Ltd"
+
+// this code is required in order to adapt values of os.name and os.arch to the
+// conventions used by Javacpp's dependencies
+ext.targetOSName   = System.getProperty('os.name').toLowerCase()\
+                     .startsWith('mac os x') ? 'macosx' :\
+                     System.getProperty('os.name').split(' ')[0].toLowerCase()
+ext.targetOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86",
+                      "amd64":"x86_64", "x86-64":"x86_64", "x86_64":"x86_64"]\
+                     [System.getProperty('os.arch').toLowerCase()]
+
+if (!hasProperty('mainClass')) {
+    ext.mainClass = ext.programName
+}
+
+mainClassName = ext.programName
+
+// Useful for turning on deprecation warnings
+// Just uncomment the appropriate option
+allprojects {
+    tasks.withType(JavaCompile) {
+        //options.compilerArgs << "-Xlint:deprecation"
+        //options.compilerArgs << "-Xlint:unchecked"
+    }
+}
+
+run {
+    minHeapSize = '512m'
+    maxHeapSize = '1g'
+}
+
+// workaround for making Javacpp-presets work with Gradle,
+// see https://github.com/bytedeco/javacv/issues/432
+configurations {
+    all*.exclude group: 'org.bytedeco', module: 'javacpp-presets'
+}
+
+repositories {
+    maven {
+        name = 'Apache Repository' // HB: for openblas. Why does it need to be first in list?
+        url = 'https://repo.maven.apache.org/maven2'
+    }
+    mavenLocal()
+    jcenter()
+    maven {
+        name = 'JBoss repository' // required to obtain non-free JAI
+        url = 'https://repository.jboss.org/nexus/content/repositories/thirdparty-releases'
+    }
+    maven {
+        name = 'MyGrid Repository'
+        url = 'http://www.mygrid.org.uk/maven/repository'
+    }
+    //flatDir(dirs: 'dev/externals') // for libraries not in any other repository
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main'
+        }
+        resources {
+            srcDir 'src/main'
+            srcDir 'dev/icons'
+        }
+    }
+    test {
+        java {
+            srcDir 'src/test'
+        }
+    }
+}
+
+dependencies {
+    compile(
+        [group: 'args4j', name: 'args4j', version: '2.0.29'],
+        [group: 'org.jdesktop.bsaf', name: 'bsaf', version: '1.9.2'],
+        [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'],
+        [group: 'net.jcip', name: 'jcip-annotations', version: '1.0'],
+        [group: 'org.bushe', name: 'eventbus', version: '1.4'],
+        [group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'],
+        [group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.9.0'],
+        [group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.7.0'],
+        [group: 'javax.media', name: 'jai-core', version: '1.1.3'],
+        [group: 'net.imagej', name: 'ij', version: '1.48r'],
+        [group: 'de.intarsys.opensource', name: 'jPodRenderer', version: '5.5.1'],
+        [group: 'com.audiveris', name: 'proxymusic', version: '3.0.1'],
+        [group: 'org.jgrapht', name: 'jgrapht-core', version: '0.9.0'],
+        [group: 'org.jfree', name: 'jfreechart', version: '1.0.14'],
+        [group: 'com.itextpdf', name: 'itextpdf', version: '5.0.6'],
+        [group: 'nz.ac.waikato.cms.weka', name: 'weka-stable', version: '3.6.12'],
+        [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
+        [group: 'org.bytedeco', name: 'javacpp', version: '1.2'],
+        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.2'],
+        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.2'],
+        [group: 'net.java.dev.jai-imageio', name: 'jai-imageio-core-standalone', version: '1.2-pre-dr-b04-2014-09-13'],
+        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: '0.4.0'],
+        [group: 'org.nd4j', name: 'nd4j-native', version: '0.4.0'],
+        [group: 'org.nd4j', name: 'nd4j-native', version: '0.4.0', classifier: "${project.ext.targetOSName}-${project.ext.targetOSArch}" + '-openblas'],
+        [group: 'org.nd4j', name: 'nd4j-native', version: '0.4.0', classifier: "${project.ext.targetOSName}-${project.ext.targetOSArch}"]
+    )
+
+    runtime(
+        ["org.bytedeco.javacpp-presets:leptonica:1.73-1.2:${project.ext.targetOSName}-${project.ext.targetOSArch}"],
+        ["org.bytedeco.javacpp-presets:tesseract:3.04.01-1.2:${project.ext.targetOSName}-${project.ext.targetOSArch}"]
+    )
+
+    testCompile(
+        [group: 'junit', name: 'junit', version: '4.10'],
+        [group: 'org.jgrapht', name: 'jgrapht-core', version: '0.9.0'],
+        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '0.9.0']
+    )
+}
+
+jar {
+    // override default output archive name
+    archiveName = "audiveris.jar"
+    
+    exclude ("**/doc-files/**")
+
+    destinationDir = file('build/jar')
+
+    // copy resources into the destination jar
+    from(file('res')) {
+        into 'res'
+    }
+
+    manifest {
+        attributes 'Built-By': project.ext.companyName
+        attributes 'Specification-Title': project.ext.programName
+        attributes 'Specification-Vendor': project.ext.companyName
+        attributes 'Specification-Version': project.ext.programVersion
+        attributes 'Implementation-Version': "${project.ext.programVersion}"//.${project.ext.programRevision}"
+    }
+}
+
+// create several dynamic tasks querying Mercurial for various infos
+// and setting up appropriate properties
+['revision' : 'rev', 'build' : 'node|short'].each { dict ->
+    task "hg_$dict.key"(type:Exec) {
+        commandLine "hg log -r tip --template '{$dict.value}'".split(' ')
+        standardOutput = new ByteArrayOutputStream()
+    
+        doLast {
+            project.ext."program${dict.key.capitalize()}" = standardOutput.toString().replaceAll("'", '')
+        }
+    }
+}
+
+task generateProgramId(dependsOn: [hg_build, hg_revision]) << {
+    project.ext.outputDir = file("$buildDir/generated-src/omr")
+    print "${project.ext.targetOSName}-${project.ext.targetOSArch}\n"
+
+    def className = "ProgramId"
+    outputDir.exists() || outputDir.mkdirs()
+    def gSrc = new File(outputDir, "${className}.java")
+    gSrc.write("package omr;\n\n")
+    gSrc.append("import java.lang.String;\n\n")
+    gSrc.append("/**\n * Class {@code $className} provides full program identification.\n")
+    gSrc.append(" * This code has been automatically generated by Gradle.\n */\n")
+    gSrc.append("public class $className {")
+    
+    ["company_name", "company_id", "program_name", "program_version",\
+        "program_revision", "program_build"].each { str ->
+        def strParts = str.split("_")
+        def propName = strParts[0] + strParts[1].capitalize()
+        gSrc.append("\n    /** Precise ${strParts[0]} ${strParts[1]}: {@value} */")
+        gSrc.append("\n    public static final String ${str.toUpperCase()} = \"${project.ext."$propName"}\";\n")
+    }
+    
+    gSrc.append("}\n")
+}
+
+compileJava.dependsOn("generateProgramId")
+sourceSets { 
+    main { 
+        java {
+            srcDir { "$buildDir/generated-src/omr" }
+        }
+    }
+}
+
+javadoc {
+    doFirst {
+        copy {
+            from "src/main/java/omr"
+            into "$buildDir/docs/javadoc/omr"
+            include ("*/doc-files/**")
+        }
+    }
+}
