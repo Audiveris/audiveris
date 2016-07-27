@@ -23,6 +23,7 @@ import de.intarsys.pdf.parser.COSLoadException;
 import de.intarsys.pdf.pd.PDDocument;
 import de.intarsys.pdf.pd.PDPage;
 import de.intarsys.pdf.platform.cwt.rendering.CSPlatformRenderer;
+import de.intarsys.pdf.tools.kernel.PDFGeometryTools;
 import de.intarsys.tools.locator.FileLocator;
 
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -385,14 +387,27 @@ public abstract class ImageLoading
                 throws IOException
         {
             checkId(id);
-
-            PDPage page = doc.getPageTree().getPageAt(id - 1);
-            Rectangle2D rect = page.getCropBox().toNormalizedRectangle();
+            
+            // desired scale = pdfResolution / default PDF resolution
             float scale = constants.pdfResolution.getValue() / 72.0f;
 
+            // obtain relevant page parameters
+            PDPage page = doc.getPageTree().getPageAt(id - 1);
+            Rectangle2D rect = page.getCropBox().toNormalizedRectangle();            
+            int rotation = page.getRotate();
+            logger.debug("Page #{} rotation: {}°", id, rotation);
+
+            // swap width and height according with the rotation angle
+            AffineTransform pageTransform = new AffineTransform();
+            PDFGeometryTools.adjustTransform(pageTransform, rotation, rect);
+            Point2D newDims = new Point2D.Double(rect.getWidth(), rect.getHeight());
+            pageTransform.deltaTransform(newDims, newDims);
+            double pageWidth = Math.abs(newDims.getX());
+            double pageHeight = Math.abs(newDims.getY());
+
             BufferedImage image = new BufferedImage(
-                    Math.abs((int) (rect.getWidth() * scale)),
-                    Math.abs((int) (rect.getHeight() * scale)),
+                    (int) (pageWidth * scale),
+                    (int) (pageHeight * scale),
                     BufferedImage.TYPE_BYTE_GRAY);
 
             Graphics2D g2 = (Graphics2D) image.getGraphics();
@@ -419,7 +434,9 @@ public abstract class ImageLoading
             IGraphicsContext gctx = new CwtAwtGraphicsContext(g2);
             AffineTransform transform = gctx.getTransform();
             transform.scale(scale, -scale);
-            transform.translate(-rect.getMinX(), -rect.getMaxY());
+            transform.translate(0.0, -pageHeight);
+            transform.concatenate(pageTransform);
+            
             gctx.setTransform(transform);
             gctx.setBackgroundColor(Color.WHITE);
             gctx.fill(rect);
