@@ -820,7 +820,7 @@ public class NeuralClassifier
         ZipEntry entry;
 
         while ((entry = zis.getNextEntry()) != null) {
-            logger.info("zis entry: {}", entry);
+            logger.debug("zis entry: {}", entry);
 
             switch (entry.getName()) {
             case "configuration.json":
@@ -865,7 +865,7 @@ public class NeuralClassifier
             zis.closeEntry();
         }
 
-        logger.info("zis closed.");
+        logger.debug("zis closed.");
         zis.close();
 
         if (gotConfig && gotCoefficients) {

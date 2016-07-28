@@ -74,7 +74,7 @@ public abstract class Compounds
      * @param coord       the desired coordinate
      * @param orientation the desired orientation reference
      * @param scale       global scale
-     * @param section     section contributing to the resulting thickness
+     * @param section     section contributing to the resulting thickness, perhaps null
      * @param compounds   compound instances contributing to the resulting thickness
      * @return the thickness measured, expressed in number of pixels.
      */

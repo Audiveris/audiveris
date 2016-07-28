@@ -317,7 +317,7 @@ public class ClustersRetriever
         bestDelta.value = null;
 
         for (int delta = deltaMin; delta <= deltaMax; delta++) {
-            int distSum = 0;
+            double distSum = 0.0;
             int count = 0;
 
             for (int oneIdx = 0; oneIdx < one.length; oneIdx++) {
@@ -335,7 +335,7 @@ public class ClustersRetriever
             }
 
             if (count > 0) {
-                double dist = (double) distSum / count;
+                double dist = distSum / count;
 
                 if (dist < bestDist) {
                     bestDist = dist;
@@ -362,6 +362,10 @@ public class ClustersRetriever
                               LineCluster two,
                               Wrapper<Integer> deltaPos)
     {
+        if (one.isVip() && two.isVip()) {
+            logger.info("VIP canMerge run on {} & {}", one, two);
+        }
+
         final Rectangle oneBox = one.getBounds();
         final Rectangle twoBox = two.getBounds();
 
@@ -377,19 +381,30 @@ public class ClustersRetriever
 
         logger.debug("gap:{}", gap);
 
+        if (gap > params.maxMergeDx) {
+            logger.debug("Gap {} too wide between {} & {}", gap, one, two);
+
+            return false;
+        }
+
         if (gap <= 0) {
-            // Overlap: use middle of common part
+            // Overlap: measure vertical distances at middle abscissa of common part
             final int xMid = (maxLeft + minRight) / 2;
             final double slope = sheet.getSkew().getSlope();
             dist = bestMatch(
                     ordinatesOf(one.getPointsAt(xMid, params.maxExpandDx, slope)),
                     ordinatesOf(two.getPointsAt(xMid, params.maxExpandDx, slope)),
                     deltaPos);
-        } else if (gap > params.maxMergeDx) {
-            logger.debug("Gap too wide between {} & {}", one, two);
+
+            if (dist <= params.maxMergeDy) {
+                // Check there is no collision on common lines
+                return checkCollision(one, two, deltaPos.value);
+            }
 
             return false;
-        } else if (oneLeft < twoLeft) { // Case one --- two
+        }
+
+        if (oneLeft < twoLeft) { // Case one --- two
             dist = bestMatch(ordinatesOf(one.getStops()), ordinatesOf(two.getStarts()), deltaPos);
         } else { // Case two --- one
             dist = bestMatch(ordinatesOf(one.getStarts()), ordinatesOf(two.getStops()), deltaPos);
@@ -399,6 +414,53 @@ public class ClustersRetriever
         logger.debug("canMerge dist: {} one:{} two:{}", dist, one, two);
 
         return dist <= params.maxMergeDy;
+    }
+
+    //----------------//
+    // checkCollision //
+    //----------------//
+    /**
+     * Check whether the two provided overlapping clusters do not collide on their
+     * common line(s).
+     *
+     * @param one   one cluster
+     * @param two   another cluster
+     * @param delta delta line index
+     * @return true if OK
+     */
+    private boolean checkCollision (LineCluster one,
+                                    LineCluster two,
+                                    int delta)
+    {
+        final List<StaffFilament> oneLines = new ArrayList<StaffFilament>(one.getLines());
+        final List<StaffFilament> twoLines = new ArrayList<StaffFilament>(two.getLines());
+
+        for (int i1 = 0; i1 < oneLines.size(); i1++) {
+            final StaffFilament f1 = oneLines.get(i1);
+            final Rectangle r1 = f1.getBounds();
+            final int i2 = i1 + delta;
+
+            if ((i2 >= 0) && (i2 < twoLines.size())) {
+                // We have a common line
+                final StaffFilament f2 = twoLines.get(i2);
+                final Rectangle r2 = f2.getBounds();
+                final int overlap = GeoUtil.xOverlap(r1, r2);
+
+                if (overlap >= 0) {
+                    // Check resulting thickness at middle of range
+                    final int mid = Math.max(r1.x, r2.x) + (overlap / 2);
+                    double thickness = Compounds.getThicknessAt(mid, HORIZONTAL, scale, f1, f2);
+
+                    if (thickness > scale.getMaxFore()) {
+                        logger.debug("Cluster collision {} between {} & {}", thickness, one, two);
+
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true; // No collision detected
     }
 
     //-------------------------//

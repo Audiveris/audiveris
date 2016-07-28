@@ -254,9 +254,6 @@ public class FilamentFactory<F extends Filament>
             watch.start("mergeFilaments #2");
             mergeFilaments(filaments);
 
-            //
-            //            // Re-register every filament with its (updated) signature
-            //            return reRegisterFilaments(filaments);
             return filaments;
         } catch (Exception ex) {
             logger.warn("FilamentsFactory cannot retrieveFilaments", ex);
