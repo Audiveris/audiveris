@@ -36,6 +36,7 @@ import omr.score.TimeValue;
 
 import omr.sheet.Picture;
 import omr.sheet.Scale;
+import omr.sheet.Scale.InterlineScale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
@@ -88,7 +89,7 @@ import java.util.TreeMap;
  * as 4/4 or C) from a staff.
  * <p>
  * Subclass {@link HeaderTimeBuilder} is used at the beginning of a staff (in staff header) while
- * subclass {@link BasicTimeBuilder} is used further down the staff.
+ * subclass {@link BasicTimeBuilder} is used farther down the staff.
  *
  * @author Hervé Bitteur
  */
@@ -170,7 +171,8 @@ public abstract class TimeBuilder
         system = staff.getSystem();
         sig = system.getSig();
         scale = system.getSheet().getScale();
-        params = column.params;
+
+        params = new Parameters(scale, staff.getSpecificInterline());
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -319,6 +321,9 @@ public abstract class TimeBuilder
         /** Relevant time symbols found in stack. */
         private final Set<Inter> timeSet;
 
+        /** Maximum abscissa shift between de-skewed time items in stack. */
+        private final int maxDxOffset;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new {@code BasicColumn} object.
@@ -333,6 +338,8 @@ public abstract class TimeBuilder
 
             this.stack = stack;
             this.timeSet = new HashSet<Inter>(timeSet);
+
+            maxDxOffset = stack.getSystem().getSheet().getScale().toPixels(constants.maxDxOffset);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -415,7 +422,7 @@ public abstract class TimeBuilder
                         boolean found = false;
 
                         for (Line line : lines) {
-                            if (Math.abs(line.getOffset() - xOffset) <= params.maxDxOffset) {
+                            if (Math.abs(line.getOffset() - xOffset) <= maxDxOffset) {
                                 line.addItem(item);
                                 found = true;
 
@@ -1167,9 +1174,6 @@ public abstract class TimeBuilder
         /** Containing system. */
         protected final SystemInfo system;
 
-        /** Scale-dependent parameters. */
-        protected final Parameters params;
-
         /** Best time value found, if any. */
         protected TimeValue bestTime;
 
@@ -1181,7 +1185,6 @@ public abstract class TimeBuilder
         public Column (SystemInfo system)
         {
             this.system = system;
-            params = new Parameters(system.getSheet().getScale());
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -1421,21 +1424,31 @@ public abstract class TimeBuilder
     //------------//
     // Parameters //
     //------------//
+    /**
+     * Some parameters depend on global sheet scale but some depend on staff specific
+     * scale when the sheet contains staves on different sizes (small and large).
+     */
     protected static class Parameters
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        // Sheet scale dependent
+        //----------------------
+        //
         final int roiWidth;
 
+        final int maxFirstSpaceWidth;
+
+        final int maxInnerSpace;
+
+        // Staff scale dependent
+        //----------------------
+        //
         final int yMargin;
 
         final int maxTimeWidth;
 
         final int maxHalvesDx;
-
-        final int maxDxOffset;
-
-        final int minTimeWidth;
 
         final double maxPartGap;
 
@@ -1445,28 +1458,23 @@ public abstract class TimeBuilder
 
         final int maxSpaceCumul;
 
-        final int minFirstSpaceWidth;
-
-        final int maxFirstSpaceWidth;
-
-        final int maxInnerSpace;
-
         //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        public Parameters (Scale scale,
+                           int specific)
         {
+            // Use sheet global interline value
             roiWidth = scale.toPixels(constants.roiWidth);
-            yMargin = scale.toPixels(constants.yMargin);
-            maxTimeWidth = scale.toPixels(constants.maxTimeWidth);
-            minTimeWidth = scale.toPixels(constants.minTimeWidth);
-            maxHalvesDx = scale.toPixels(constants.maxHalvesDx);
-            maxDxOffset = scale.toPixels(constants.maxDxOffset);
-            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
-            minWholeTimeWeight = scale.toPixels(constants.minWholeTimeWeight);
-            minHalfTimeWeight = scale.toPixels(constants.minHalfTimeWeight);
-            maxSpaceCumul = scale.toPixels(constants.maxSpaceCumul);
-            minFirstSpaceWidth = scale.toPixels(constants.minFirstSpaceWidth);
             maxFirstSpaceWidth = scale.toPixels(constants.maxFirstSpaceWidth);
             maxInnerSpace = scale.toPixels(constants.maxInnerSpace);
+
+            // Use staff specific interline value
+            yMargin = InterlineScale.toPixels(specific, constants.yMargin);
+            maxTimeWidth = InterlineScale.toPixels(specific, constants.maxTimeWidth);
+            maxHalvesDx = InterlineScale.toPixels(specific, constants.maxHalvesDx);
+            maxPartGap = InterlineScale.toPixels(specific, constants.maxPartGap);
+            minWholeTimeWeight = InterlineScale.toPixels(specific, constants.minWholeTimeWeight);
+            minHalfTimeWeight = InterlineScale.toPixels(specific, constants.minHalfTimeWeight);
+            maxSpaceCumul = InterlineScale.toPixels(specific, constants.maxSpaceCumul);
         }
     }
 
@@ -1489,10 +1497,6 @@ public abstract class TimeBuilder
         private final Scale.Fraction maxTimeWidth = new Scale.Fraction(
                 2.0,
                 "Maximum width for a time signature");
-
-        private final Scale.Fraction minTimeWidth = new Scale.Fraction(
-                1.2,
-                "Minimum width for a time signature");
 
         private final Scale.Fraction maxHalvesDx = new Scale.Fraction(
                 1,
@@ -1517,10 +1521,6 @@ public abstract class TimeBuilder
         private final Scale.Fraction maxSpaceCumul = new Scale.Fraction(
                 0.4,
                 "Maximum cumul value in space");
-
-        private final Scale.Fraction minFirstSpaceWidth = new Scale.Fraction(
-                0.2,
-                "Minimum initial space before time signature");
 
         // Beware: A too small value might miss the whole time-sig
         private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
@@ -1598,7 +1598,9 @@ public abstract class TimeBuilder
 
             final Sheet sheet = system.getSheet();
             Evaluation[] evals = GlyphClassifier.getInstance()
-                    .getNaturalEvaluations(glyph, sheet.getInterline());
+                    .getNaturalEvaluations(
+                            glyph,
+                            staff.getSpecificInterline());
 
             for (Shape shape : halfShapes) {
                 Evaluation eval = evals[shape.ordinal()];
@@ -1697,7 +1699,9 @@ public abstract class TimeBuilder
 
             final Sheet sheet = system.getSheet();
             Evaluation[] evals = GlyphClassifier.getInstance()
-                    .getNaturalEvaluations(glyph, sheet.getInterline());
+                    .getNaturalEvaluations(
+                            glyph,
+                            staff.getSpecificInterline());
 
             for (Shape shape : wholeShapes) {
                 Evaluation eval = evals[shape.ordinal()];

@@ -616,10 +616,28 @@ public class MainGui
 
                     if (itemName.equals("inputHistory")) {
                         ba.getInputHistoryMenu().populate((JMenu) item, BookActions.class);
-                    } else if (itemName.equals("bookHistory")) {
-                        ba.getBookHistoryMenu().populate((JMenu) item, BookActions.class);
                     } else if (itemName.equals("scriptHistory")) {
                         ba.getScriptHistoryMenu().populate((JMenu) item, BookActions.class);
+                    }
+                }
+            }
+        }
+
+        // Specific history sub-menus in bookMenu
+        JMenu bookMenu = mgr.getMenu(Actions.Domain.BOOK.name());
+        mgr.injectMenu(Actions.Domain.BOOK.name(), bookMenu);
+
+        for (int i = 0, itemCount = bookMenu.getItemCount(); i < itemCount; i++) {
+            final JMenuItem item = bookMenu.getItem(i);
+
+            if (item != null) {
+                final String itemName = item.getName();
+
+                if (itemName != null) {
+                    BookActions ba = BookActions.getInstance();
+
+                    if (itemName.equals("bookHistory")) {
+                        ba.getBookHistoryMenu().populate((JMenu) item, BookActions.class);
                     }
                 }
             }

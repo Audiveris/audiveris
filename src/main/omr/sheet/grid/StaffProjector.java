@@ -195,7 +195,7 @@ public class StaffProjector
      */
     public void checkLinesRoot ()
     {
-        if (getBracePeak() != null || peaks.isEmpty()) {
+        if ((getBracePeak() != null) || peaks.isEmpty()) {
             return;
         }
 
@@ -1308,8 +1308,6 @@ public class StaffProjector
 
         final int barRefineDx;
 
-        final int minDerivative;
-
         final int minSmallBlankWidth;
 
         final int minStandardBlankWidth;
@@ -1323,6 +1321,8 @@ public class StaffProjector
         final int maxRightExtremum;
 
         // Following thresholds depend of staff (specific?) interline scale
+        final int minDerivative;
+
         final int barThreshold;
 
         final int braceThreshold;
@@ -1338,8 +1338,9 @@ public class StaffProjector
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale,
-                           int specificInterline)
+                           int specific)
         {
+            // Use sheet global interline value
             staffAbscissaMargin = scale.toPixels(constants.staffAbscissaMargin);
             barChunkDx = scale.toPixels(constants.barChunkDx);
             barRefineDx = scale.toPixels(constants.barRefineDx);
@@ -1350,11 +1351,11 @@ public class StaffProjector
             maxLeftExtremum = scale.toPixels(constants.maxLeftExtremum);
             maxRightExtremum = scale.toPixels(constants.maxRightExtremum);
 
-            // Use specific interline value
-            minDerivative = InterlineScale.toPixels(specificInterline, constants.minDerivative);
-            barThreshold = InterlineScale.toPixels(specificInterline, constants.barThreshold);
-            braceThreshold = InterlineScale.toPixels(specificInterline, constants.braceThreshold);
-            gapThreshold = InterlineScale.toPixels(specificInterline, constants.gapThreshold);
+            // Use staff specific interline value
+            minDerivative = InterlineScale.toPixels(specific, constants.minDerivative);
+            barThreshold = InterlineScale.toPixels(specific, constants.barThreshold);
+            braceThreshold = InterlineScale.toPixels(specific, constants.braceThreshold);
+            gapThreshold = InterlineScale.toPixels(specific, constants.gapThreshold);
         }
     }
 

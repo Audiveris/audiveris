@@ -197,13 +197,35 @@ public class Scale
     // getInterline //
     //--------------//
     /**
-     * Report the interline value this scale is based upon.
+     * Report the main interline value this scale is based upon.
      *
      * @return the number of pixels (black + white) from one line to the other.
      */
     public int getInterline ()
     {
         return interlineScale.main;
+    }
+
+    //--------------//
+    // getInterline //
+    //--------------//
+    /**
+     * Report the main interline value within the small or large family
+     *
+     * @param small true for small family, false for large family
+     * @return the smaller interline or null
+     */
+    public int getInterline (boolean small)
+    {
+        if (interlineScale2 == null) {
+            return interlineScale.main;
+        }
+
+        if (small) {
+            return Math.min(interlineScale2.main, interlineScale.main);
+        } else {
+            return Math.max(interlineScale2.main, interlineScale.main);
+        }
     }
 
     //---------------//
@@ -482,7 +504,7 @@ public class Scale
      */
     public int toPixels (AreaFraction areaFrac)
     {
-        return (int) Math.rint(interlineScale.main * interlineScale.main * areaFrac.getValue());
+        return InterlineScale.toPixels(interlineScale.main, areaFrac);
     }
 
     //----------------//
@@ -799,6 +821,20 @@ public class Scale
                                     Fraction frac)
         {
             return (int) Math.rint(toPixelsDouble(interline, frac));
+        }
+
+        /**
+         * Compute the squared-normalized number of pixels, according to the provided
+         * interline.
+         *
+         * @param interline provided interline value
+         * @param areaFrac  a measure based on interline (1 = one interline square)
+         * @return the actual squared number of pixels with the current scale
+         */
+        public static int toPixels (int interline,
+                                    AreaFraction areaFrac)
+        {
+            return (int) Math.rint(interline * interline * areaFrac.getValue());
         }
 
         /**

@@ -98,11 +98,11 @@ public class SigPainter
     /** Clip rectangle. */
     private final Rectangle clip;
 
-    /** Global scale. */
-    private final Scale scale;
+    /** Music font for large staves. */
+    private final MusicFont musicFontLarge;
 
-    /** Music font properly scaled. */
-    private final MusicFont musicFont;
+    /** Music font for small staves, if any. */
+    private final MusicFont musicFontSmall;
 
     /** Global stroke for staff lines. */
     private final Stroke lineStroke;
@@ -126,10 +126,17 @@ public class SigPainter
     {
         this.g = (Graphics2D) g;
         this.clip = g.getClipBounds();
-        this.scale = scale;
 
-        // Determine proper font
-        musicFont = (scale != null) ? MusicFont.getFont(scale.getInterline()) : null;
+        // Determine proper music fonts
+        if (scale == null) {
+            musicFontLarge = musicFontSmall = null;
+        } else if (scale.getInterline2() == null) {
+            musicFontLarge = MusicFont.getFont(scale.getInterline());
+            musicFontSmall = null;
+        } else {
+            musicFontLarge = MusicFont.getFont(scale.getInterline(false));
+            musicFontSmall = MusicFont.getFont(scale.getInterline(true));
+        }
 
         // Determine staff lines parameters
         lineStroke = new BasicStroke(
@@ -201,7 +208,8 @@ public class SigPainter
             ShapeSymbol symbol = Symbols.getSymbol(flag.getShape());
 
             if (symbol != null) {
-                symbol.paintSymbol(g, musicFont, location, Alignment.MIDDLE_LEFT);
+                final MusicFont font = getMusicFont(flag.getStaff());
+                symbol.paintSymbol(g, font, location, Alignment.MIDDLE_LEFT);
             } else {
                 logger.error("No symbol to paint {}", flag);
             }
@@ -249,8 +257,9 @@ public class SigPainter
         final Rectangle box = brace.getBounds();
         final Point center = GeoUtil.centerOf(box);
         final Dimension halfDim = new Dimension(box.width, box.height / 2);
-        OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim), center, BOTTOM_CENTER);
-        OmrFont.paint(g, musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim), center, TOP_CENTER);
+        final MusicFont font = getMusicFont(false);
+        OmrFont.paint(g, font.layout(SYMBOL_BRACE_UPPER_HALF, halfDim), center, BOTTOM_CENTER);
+        OmrFont.paint(g, font.layout(SYMBOL_BRACE_LOWER_HALF, halfDim), center, TOP_CENTER);
     }
 
     //-------//
@@ -283,13 +292,14 @@ public class SigPainter
         final Dimension dim = new Dimension(
                 (int) Math.rint(widthRatio * width),
                 (int) Math.rint(heightRatio * width));
+        final MusicFont font = getMusicFont(false);
 
         Integer top = null;
 
         if ((kind == BracketInter.BracketKind.TOP) || (kind == BracketInter.BracketKind.BOTH)) {
             // Draw upper symbol part
             final Point left = new Point(box.x, glyphBox.y + (int) Math.rint(barRatio * width));
-            OmrFont.paint(g, musicFont.layout(SYMBOL_BRACKET_UPPER_SERIF, dim), left, BOTTOM_LEFT);
+            OmrFont.paint(g, font.layout(SYMBOL_BRACKET_UPPER_SERIF, dim), left, BOTTOM_LEFT);
             top = left.y;
         }
 
@@ -300,7 +310,7 @@ public class SigPainter
             final Point left = new Point(
                     box.x,
                     (glyphBox.y + glyphBox.height) - (int) Math.rint(barRatio * width));
-            OmrFont.paint(g, musicFont.layout(SYMBOL_BRACKET_LOWER_SERIF, dim), left, TOP_LEFT);
+            OmrFont.paint(g, font.layout(SYMBOL_BRACKET_LOWER_SERIF, dim), left, TOP_LEFT);
             bottom = left.y;
         }
 
@@ -378,15 +388,13 @@ public class SigPainter
             return;
         }
 
+        final ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         setColor(inter);
 
-        ///Glyph glyph = inter.getGlyph();
-        ///Point center = (glyph != null) ? glyph.getCentroid() : GeoUtil.centerOf(inter.getBounds());
-        ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-
         if (symbol != null) {
-            Point center = GeoUtil.centerOf(inter.getBounds());
-            symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+            final MusicFont font = getMusicFont(inter.getStaff());
+            final Point center = GeoUtil.centerOf(inter.getBounds());
+            symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
         } else {
             logger.error("No symbol to paint {}", inter);
         }
@@ -398,6 +406,7 @@ public class SigPainter
     @Override
     public void visit (KeyAlterInter inter)
     {
+        final MusicFont font = getMusicFont(inter.getStaff());
         setColor(inter);
 
         Point center = GeoUtil.centerOf(inter.getBounds());
@@ -410,11 +419,11 @@ public class SigPainter
         ShapeSymbol symbol = Symbols.getSymbol(shape);
 
         if (shape == Shape.SHARP) {
-            symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+            symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
         } else {
-            Dimension dim = symbol.getDimension(musicFont);
+            Dimension dim = symbol.getDimension(font);
             center.y += dim.width;
-            symbol.paintSymbol(g, musicFont, center, Alignment.BOTTOM_CENTER);
+            symbol.paintSymbol(g, font, center, Alignment.BOTTOM_CENTER);
         }
     }
 
@@ -525,6 +534,34 @@ public class SigPainter
     public void visit (WordInter word)
     {
         // Nothing, painting is handled from sentence
+    }
+
+    //--------------//
+    // getMusicFont //
+    //--------------//
+    /**
+     * Select proper size of music font, according to related staff size.
+     *
+     * @param small true for small staff
+     * @return selected music font
+     */
+    protected MusicFont getMusicFont (boolean small)
+    {
+        return small ? musicFontSmall : musicFontLarge;
+    }
+
+    //--------------//
+    // getMusicFont //
+    //--------------//
+    /**
+     * Select proper size of music font, according to related staff size.
+     *
+     * @param staff related staff
+     * @return selected music font
+     */
+    protected MusicFont getMusicFont (Staff staff)
+    {
+        return getMusicFont((staff != null) ? staff.isSmall() : false);
     }
 
     //-------//

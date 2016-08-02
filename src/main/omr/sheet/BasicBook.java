@@ -124,6 +124,10 @@ public class BasicBook
     @XmlAttribute(name = "software-version")
     private String version;
 
+    /** Related Audiveris revision. */
+    @XmlAttribute(name = "software-revision")
+    private String revision;
+
     /** Sub books, if any. */
     @XmlElement(name = "sub-books")
     private final List<Book> subBooks;
@@ -1534,6 +1538,10 @@ public class BasicBook
     {
         if (version == null) {
             version = ProgramId.PROGRAM_VERSION;
+        }
+
+        if (revision == null) {
+            revision = ProgramId.PROGRAM_REVISION;
         }
 
         if (nameSansExt != null) {
