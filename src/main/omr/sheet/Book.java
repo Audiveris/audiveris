@@ -54,7 +54,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #setOffset}</li>
  * <li>{@link #getInputPath}</li>
  * <li>{@link #getRadix}</li>
- * <li>{@link #getLogPrefix}</li>
  * <li>{@link #close}</li>
  * <li>{@link #isClosing}</li>
  * <li>{@link #setClosing}</li>

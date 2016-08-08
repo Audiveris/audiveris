@@ -48,7 +48,6 @@ import javax.swing.JFrame;
  * <li>The selection in repository of known glyphs ({@link SelectionPanel})
  * <li>The training of the neural network classifier ({@link TrainingPanel})
  * <li>The validation of the neural network classifier ({@link ValidationPanel})
- * <li>The training of the bayesian classifier ({@link BayesianPanel})
  * </ol>
  * This class can be launched as a stand-alone program.
  *

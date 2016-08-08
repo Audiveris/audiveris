@@ -11,10 +11,12 @@ dev/material/classifier
 
 .hgignore
 .gradle/*
+.nb-gradle/*
 *.exe
 *.lnk
 *.log
 *.mf
+*.orig
 build/*
 dist/*
 audiveris.bat

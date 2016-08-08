@@ -672,6 +672,7 @@ public class KeyBuilder
         int maxSpaceCumul = params.maxSpaceCumul;
         int spaceStart = -1; // Space start abscissa
         int spaceStop = -1; // Space stop abscissa
+        boolean valleyHit = false;
 
         // Peak parameters
         int peakStart = -1; // Peak start abscissa
@@ -683,6 +684,10 @@ public class KeyBuilder
 
             // For peak
             if (cumul >= params.minPeakCumul) {
+                if (!valleyHit) {
+                    continue;
+                }
+
                 if (spaceStart != -1) {
                     // End of space
                     if (!createSpace(spaceStart, spaceStop)) {
@@ -698,6 +703,8 @@ public class KeyBuilder
 
                 peakStop = x;
                 peakHeight = Math.max(peakHeight, cumul);
+            } else if (!valleyHit) {
+                valleyHit = true;
             } else {
                 if (peakStart != -1) {
                     // End of peak

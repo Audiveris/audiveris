@@ -1,7 +1,7 @@
 /**
  * Package dedicated to the retrieval of sheet grid of systems.
  * <p>
- * <b>Main components:
+ * <b>Main components</b>:
  * <p>
  * <img src="doc-files/grid.png" />
  * <p>

@@ -250,15 +250,13 @@ public class ClefBuilder
      */
     private List<Glyph> getParts ()
     {
-        final int interline = scale.getInterline();
-
         // Rectangular ROI (within sheet image)
         int areaTop = Math.max(
                 0,
-                staff.getFirstLine().yAt(range.browseStart) - (3 * interline));
+                staff.getFirstLine().yAt(range.browseStart) - params.aboveStaff);
         int areaBottom = Math.min(
                 sheet.getHeight() - 1,
-                staff.getLastLine().yAt(range.browseStart) + (3 * interline));
+                staff.getLastLine().yAt(range.browseStart) + params.belowStaff);
         Rectangle rect = new Rectangle(
                 range.browseStart,
                 areaTop,
@@ -432,6 +430,10 @@ public class ClefBuilder
 
         final int maxClefEnd;
 
+        final int aboveStaff;
+
+        final int belowStaff;
+
         final int beltMargin;
 
         final int xCoreMargin;
@@ -450,6 +452,8 @@ public class ClefBuilder
         public Parameters (Scale scale)
         {
             maxClefEnd = scale.toPixels(constants.maxClefEnd);
+            aboveStaff = scale.toPixels(constants.aboveStaff);
+            belowStaff = scale.toPixels(constants.belowStaff);
             beltMargin = scale.toPixels(constants.beltMargin);
             xCoreMargin = scale.toPixels(constants.xCoreMargin);
             yCoreMargin = scale.toPixels(constants.yCoreMargin);
@@ -538,6 +542,14 @@ public class ClefBuilder
         private final Scale.Fraction maxClefEnd = new Scale.Fraction(
                 4.5,
                 "Maximum x distance from measure start to end of clef");
+
+        private final Scale.Fraction aboveStaff = new Scale.Fraction(
+                3.0,
+                "Top of lookup area above stave");
+
+        private final Scale.Fraction belowStaff = new Scale.Fraction(
+                3.25,
+                "Bottom of lookup area below stave");
 
         private final Scale.Fraction beltMargin = new Scale.Fraction(
                 0.15,
