@@ -13,7 +13,11 @@ Predefined MDC keys:
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
-            <pattern>%-5level %caller{1} [%X{BOOK}%X{SHEET}] [%thread] %msg%n%ex</pattern>
+<!--            <pattern>%-5level %caller{1} [%X{BOOK}%X{SHEET}] [%thread] %msg%n%ex</pattern>-->
+<!--            <pattern>%-5level [%X{BOOK}%X{SHEET}] %25file:%-4line | %msg%n%ex</pattern>-->
+            <pattern>%-5level [%X{BOOK}%X{SHEET}] %25replace(%file){'\.java$',''} %-4line | %msg%n%ex</pattern>
+<!--            <pattern>%-5level [%X{BOOK}%X{SHEET}] at \(%file:%line\)| %msg%n%ex</pattern>-->
+<!--            <pattern>%-5level [%X{BOOK}%X{SHEET}] D:/soft/audiveris-ng/src/main/%replace(%class){'\.','/'}.java:%line  |%n %msg%n%ex</pattern>-->
             <!--            <pattern>%-5level %msg%n %ex</pattern>-->
         </encoder>
     </appender>
@@ -62,7 +66,7 @@ Predefined MDC keys:
     <!--    <logger name="omr.sheet.grid.BarsRetriever" level="DEBUG"/>-->
     <!--    <logger name="omr.sheet.CktBuilder" level="DEBUG"/>-->
     <!--    <logger name="omr.sheet.header.ClefBuilder" level="DEBUG"/>-->
-    <!--    <logger name="omr.sheet.KeyBuilder" level="DEBUG"/>-->
+<!--        <logger name="omr.sheet.header.KeyBuilder" level="DEBUG"/>-->
     <!--    <logger name="omr.sheet.header.TimeBuilder" level="DEBUG"/>-->
     <!--    <logger name="omr.sig.SIGraph" level="DEBUG"/>-->
     <!--    <logger name="omr.step.Stepping" level="DEBUG"/>-->

@@ -4,9 +4,19 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2016. All rights reserved.
-//  This software is released under the GNU General Public License.
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify it under the terms of the
+//  GNU Affero General Public License as published by the Free Software Foundation, either version
+//  3 of the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+//  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//  See the GNU Affero General Public License for more details.
+//
+//  You should have received a copy of the GNU Affero General Public License along with this
+//  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
@@ -59,12 +69,12 @@ public class ZoomTest
 
         ldf.getField().addActionListener(
                 new ActionListener()
-                {
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        zoom.setRatio(ldf.getValue());
-                    }
-                });
+        {
+            public void actionPerformed (ActionEvent e)
+            {
+                zoom.setRatio(ldf.getValue());
+            }
+        });
 
         LogSlider slider = new LogSlider(2, 5, LogSlider.HORIZONTAL, -5, 5, 0);
         slider.setSnapToTicks(false);
@@ -73,12 +83,12 @@ public class ZoomTest
 
         zoom.addChangeListener(
                 new ChangeListener()
-                {
-                    public void stateChanged (ChangeEvent e)
-                    {
-                        ldf.setValue(zoom.getRatio());
-                    }
-                });
+        {
+            public void stateChanged (ChangeEvent e)
+            {
+                ldf.setValue(zoom.getRatio());
+            }
+        });
 
         zoom.setSlider(slider);
 

@@ -4,9 +4,19 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright (C) Brenton Partridge 2007-2008.   4
-//  This software is released under the GNU General Public License.
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify it under the terms of the
+//  GNU Affero General Public License as published by the Free Software Foundation, either version
+//  3 of the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+//  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//  See the GNU Affero General Public License for more details.
+//
+//  You should have received a copy of the GNU Affero General Public License along with this
+//  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
@@ -387,13 +397,13 @@ public abstract class ImageLoading
                 throws IOException
         {
             checkId(id);
-            
+
             // desired scale = pdfResolution / default PDF resolution
             float scale = constants.pdfResolution.getValue() / 72.0f;
 
             // obtain relevant page parameters
             PDPage page = doc.getPageTree().getPageAt(id - 1);
-            Rectangle2D rect = page.getCropBox().toNormalizedRectangle();            
+            Rectangle2D rect = page.getCropBox().toNormalizedRectangle();
             int rotation = page.getRotate();
             logger.debug("Page #{} rotation: {}°", id, rotation);
 
@@ -436,7 +446,7 @@ public abstract class ImageLoading
             transform.scale(scale, -scale);
             transform.translate(0.0, -pageHeight);
             transform.concatenate(pageTransform);
-            
+
             gctx.setTransform(transform);
             gctx.setBackgroundColor(Color.WHITE);
             gctx.fill(rect);

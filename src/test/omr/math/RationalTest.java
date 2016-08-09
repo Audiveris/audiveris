@@ -4,9 +4,19 @@
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2016. All rights reserved.
-//  This software is released under the GNU General Public License.
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//
+//  Copyright © Hervé Bitteur and others 2000-2016. All rights reserved.
+//
+//  This program is free software: you can redistribute it and/or modify it under the terms of the
+//  GNU Affero General Public License as published by the Free Software Foundation, either version
+//  3 of the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+//  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//  See the GNU Affero General Public License for more details.
+//
+//  You should have received a copy of the GNU Affero General Public License along with this
+//  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
@@ -117,8 +127,8 @@ public class RationalTest
         System.out.println("gcd");
 
         Rational[] vals = new Rational[]{new Rational(2, 3), new Rational(1, 4), new Rational(
-            5,
-            6)};
+                                         5,
+                                         6)};
         Rational expResult = new Rational(1, 12);
         Rational result = Rational.gcd(vals);
         assertEquals(expResult, result);
