@@ -1545,8 +1545,7 @@ public class KeyBuilder
             for (Staff staff : system.getStaves()) {
                 int measureStart = staff.getHeaderStart();
                 int clefStop = staff.getClefStop();
-                int browseStart = (clefStop != 0) ? ((clefStop + staff.getHeaderStop()) / 2)
-                        : staff.getHeaderStop();
+                int browseStart = (clefStop != 0) ? (clefStop + 1) : staff.getHeaderStop();
 
                 builders.put(
                         staff,

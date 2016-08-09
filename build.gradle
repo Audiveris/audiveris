@@ -45,11 +45,6 @@ configurations {
 }
 
 repositories {
-    maven {
-        name = 'Apache Repository' // HB: for openblas. Why does it need to be first in list?
-        url = 'https://repo.maven.apache.org/maven2'
-    }
-    mavenLocal()
     jcenter()
     maven {
         name = 'JBoss repository' // required to obtain non-free JAI
@@ -59,6 +54,7 @@ repositories {
         name = 'MyGrid Repository'
         url = 'http://www.mygrid.org.uk/maven/repository'
     }
+    mavenLocal()
     //flatDir(dirs: 'dev/externals') // for libraries not in any other repository
 }
 
@@ -101,10 +97,9 @@ dependencies {
         [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.2'],
         [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.2'],
         [group: 'net.java.dev.jai-imageio', name: 'jai-imageio-core-standalone', version: '1.2-pre-dr-b04-2014-09-13'],
-        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: '0.4.0'],
-        [group: 'org.nd4j', name: 'nd4j-native', version: '0.4.0'],
-        [group: 'org.nd4j', name: 'nd4j-native', version: '0.4.0', classifier: "${project.ext.targetOSName}-${project.ext.targetOSArch}" + '-openblas'],
-        [group: 'org.nd4j', name: 'nd4j-native', version: '0.4.0', classifier: "${project.ext.targetOSName}-${project.ext.targetOSArch}"]
+        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: '0.5.0'],
+        [group: 'org.nd4j', name: 'nd4j-native', version: '0.5.0'],
+        [group: 'org.nd4j', name: 'nd4j-native', version: '0.5.0', classifier: "${project.ext.targetOSName}-${project.ext.targetOSArch}"]
     )
 
     runtime(

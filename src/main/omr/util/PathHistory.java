@@ -17,6 +17,9 @@ import omr.constant.Constant;
 
 import omr.ui.view.HistoryMenu;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.event.ActionListener;
 import java.nio.file.Path;
 
@@ -31,8 +34,11 @@ import javax.swing.SwingUtilities;
  */
 public class PathHistory
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(PathHistory.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying list of names. */
     private final NameSet nameSet;
 
@@ -68,7 +74,7 @@ public class PathHistory
     {
         nameSet.add(path.toAbsolutePath().toString());
 
-        Path parent = path.getParent();
+        Path parent = path.toAbsolutePath().getParent();
         folderConstant.setValue(parent.toAbsolutePath().toString());
 
         if (OMR.gui != null) {

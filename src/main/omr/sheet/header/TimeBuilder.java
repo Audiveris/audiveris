@@ -1616,7 +1616,11 @@ public abstract class TimeBuilder
                     Inter bestInter = bestMap.get(shape);
 
                     if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        bestMap.put(shape, TimeNumberInter.create(glyph, shape, grade, staff));
+                        TimeNumberInter inter = TimeNumberInter.create(glyph, shape, grade, staff);
+
+                        if (inter != null) {
+                            bestMap.put(shape, inter);
+                        }
                     }
                 }
             }
