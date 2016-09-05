@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
@@ -114,17 +115,17 @@ public abstract class AbstractChordInter
      * Sequence of chord notes (one or several heads or just a single rest),
      * kept ordered bottom-up.
      */
+    /** Attached stem if any. */
+    @XmlIDREF
+    @XmlAttribute(name = "stem")
+    protected StemInter stem;
+
     @XmlList
     @XmlIDREF
     @XmlElement(name = "notes")
     protected final List<AbstractNoteInter> notes = new ArrayList<AbstractNoteInter>();
 
-    /** Attached stem if any. */
-    @XmlIDREF
-    @XmlElement(name = "stem")
-    protected StemInter stem;
-
-    /** Sequence of beams this chord is linked to, kept ordered from tail to head. */
+    /** Sequence of beams if any this chord is linked to, kept ordered from tail to head. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "beams")
@@ -681,8 +682,8 @@ public abstract class AbstractChordInter
 
             for (Relation rel : rels) {
                 SlurInter slur = (SlurInter) sig.getOppositeInter(note, rel);
-                AbstractHeadInter leftNote = slur.getHead(HorizontalSide.LEFT);
-                AbstractHeadInter rightNote = slur.getHead(HorizontalSide.RIGHT);
+                HeadInter leftNote = slur.getHead(HorizontalSide.LEFT);
+                HeadInter rightNote = slur.getHead(HorizontalSide.RIGHT);
 
                 if (slur.isTie() && (leftNote == note) && (rightNote != null)) {
                     tied.add(rightNote.getChord());

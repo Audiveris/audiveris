@@ -27,11 +27,11 @@ import omr.score.StaffPosition;
 import omr.sheet.rhythm.Measure;
 import omr.sheet.rhythm.Voice;
 
+import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.KeyInter;
 import omr.sig.inter.LyricLineInter;
 import omr.sig.inter.SlurInter;
-import omr.sig.inter.AbstractTimeInter;
 
 import omr.step.PageStep;
 
@@ -112,17 +112,21 @@ public class Part
     // Persistent data
     //----------------
     //
-    /** Staves in this part. */
-    @XmlElement(name = "staff")
-    private final List<Staff> staves = new ArrayList<Staff>();
-
-    /** Id of this part within the system, starting at -1 or +1. */
+    /** Id of this part within the system, or set as logical part ID. */
     @XmlAttribute
     private int id;
 
     /** Name, if any, that faces this system part. */
     @XmlAttribute
     private String name;
+
+    /** Indicate a dummy physical part. */
+    @XmlAttribute
+    private Boolean dummy;
+
+    /** Staves in this part. */
+    @XmlElement(name = "staff")
+    private final List<Staff> staves = new ArrayList<Staff>();
 
     /** Starting barline, if any. (the others are linked to measures) */
     @XmlElement(name = "left-barline")
@@ -143,9 +147,6 @@ public class Part
     // Transient data
     //---------------
     //
-    /** Flag to indicate this system part is just a placeholder. */
-    private boolean dummy;
-
     /** The containing system. */
     @Navigable(false)
     private SystemInfo system;
@@ -459,6 +460,19 @@ public class Part
     }
 
     //----------------//
+    // getLeftBarline //
+    //----------------//
+    /**
+     * Get the barline that starts the part.
+     *
+     * @return barline the starting bar line (which may be null)
+     */
+    public PartBarline getLeftBarline ()
+    {
+        return leftBarline;
+    }
+
+    //----------------//
     // getLogicalPart //
     //----------------//
     public LogicalPart getLogicalPart ()
@@ -647,19 +661,6 @@ public class Part
         return StaffPosition.WITHIN_STAVES;
     }
 
-    //----------------//
-    // getLeftBarline //
-    //----------------//
-    /**
-     * Get the barline that starts the part.
-     *
-     * @return barline the starting bar line (which may be null)
-     */
-    public PartBarline getLeftBarline ()
-    {
-        return leftBarline;
-    }
-
     //-----------//
     // getStaves //
     //-----------//
@@ -681,7 +682,7 @@ public class Part
     //---------//
     public boolean isDummy ()
     {
-        return dummy;
+        return dummy != null && dummy;
     }
 
     //-----------------//
@@ -704,7 +705,7 @@ public class Part
     //----------//
     public void setDummy ()
     {
-        dummy = true;
+        dummy = Boolean.TRUE;
     }
 
     //-------//
@@ -718,6 +719,19 @@ public class Part
     public void setId (int id)
     {
         this.id = id;
+    }
+
+    //----------------//
+    // setLeftBarline //
+    //----------------//
+    /**
+     * Set the barline that starts the part.
+     *
+     * @param leftBarline the starting barline
+     */
+    public void setLeftBarline (PartBarline leftBarline)
+    {
+        this.leftBarline = leftBarline;
     }
 
     //----------------//
@@ -737,19 +751,6 @@ public class Part
     public void setName (String name)
     {
         this.name = name;
-    }
-
-    //----------------//
-    // setLeftBarline //
-    //----------------//
-    /**
-     * Set the barline that starts the part.
-     *
-     * @param leftBarline the starting barline
-     */
-    public void setLeftBarline (PartBarline leftBarline)
-    {
-        this.leftBarline = leftBarline;
     }
 
     //-----------//
@@ -792,7 +793,7 @@ public class Part
         StringBuilder sb = new StringBuilder();
         sb.append("{Part#").append(id);
 
-        if (dummy) {
+        if (isDummy()) {
             sb.append(" dummy");
         }
 

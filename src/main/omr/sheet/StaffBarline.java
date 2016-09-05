@@ -85,8 +85,8 @@ public class StaffBarline
 
     /** Abscissa-ordered sequence of physical barlines. */
     @XmlList
-    @XmlValue
     @XmlIDREF
+    @XmlValue
     private final ArrayList<BarlineInter> bars = new ArrayList<BarlineInter>();
 
     //~ Constructors -------------------------------------------------------------------------------

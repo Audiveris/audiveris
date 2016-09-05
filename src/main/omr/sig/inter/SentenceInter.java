@@ -23,6 +23,8 @@ package omr.sig.inter;
 
 import omr.glyph.Shape;
 
+import omr.sheet.SystemInfo;
+
 import omr.text.FontInfo;
 import omr.text.TextLine;
 import omr.text.TextRole;
@@ -43,9 +45,9 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import omr.sheet.SystemInfo;
 
 /**
  * Class {@code SentenceInter} represents a full sentence of words.
@@ -81,9 +83,14 @@ public class SentenceInter
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** Sequence of sentence words. */
+    @XmlList
     @XmlIDREF
-    @XmlElement(name = "word")
+    @XmlElement(name = "words")
     protected final List<WordInter> words;
 
     /** Average font for the sentence. */
@@ -178,6 +185,33 @@ public class SentenceInter
     public void addMember (Inter member)
     {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    //-------------//
+    // assignStaff //
+    //-------------//
+    public void assignStaff (SystemInfo system)
+    {
+        if (staff != null) {
+            return;
+        }
+
+        final Point loc = getLocation();
+
+        if (role != TextRole.ChordName) {
+            staff = system.getStaffAtOrAbove(loc);
+        }
+
+        if (staff == null) {
+            staff = system.getStaffAtOrBelow(loc);
+        }
+
+        if (staff != null) {
+            for (Inter wInter : getMembers()) {
+                WordInter wordInter = (WordInter) wInter;
+                wordInter.setStaff(staff);
+            }
+        }
     }
 
     //-----------//
@@ -350,32 +384,5 @@ public class SentenceInter
         sb.append(' ').append(role);
 
         return sb.toString();
-    }
-
-    //-------------//
-    // assignStaff //
-    //-------------//
-    public void assignStaff (SystemInfo system)
-    {
-        if (staff != null) {
-            return;
-        }
-
-        final Point loc = getLocation();
-
-        if (role != TextRole.ChordName) {
-            staff = system.getStaffAtOrAbove(loc);
-        }
-
-        if (staff == null) {
-            staff = system.getStaffAtOrBelow(loc);
-        }
-
-        if (staff != null) {
-            for (Inter wInter : getMembers()) {
-                WordInter wordInter = (WordInter) wInter;
-                wordInter.setStaff(staff);
-            }
-        }
     }
 }

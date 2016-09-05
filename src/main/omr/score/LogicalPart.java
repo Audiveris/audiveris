@@ -33,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Class {@code LogicalPart} describes a part at score or page level.
@@ -75,11 +74,11 @@ public class LogicalPart
     private String name;
 
     /** Abbreviation for this part, if any. */
-    @XmlElement
+    @XmlAttribute
     private String abbreviation;
 
     /** Instrument MIDI program, if any. */
-    @XmlElement(name = "midi-program")
+    @XmlAttribute(name = "midi-program")
     private Integer midiProgram;
 
     //~ Constructors -------------------------------------------------------------------------------

@@ -145,7 +145,7 @@ public class BasicSheet
     //----------------
     //
     /** Global id used to uniquely identify a persistent entity instance. */
-    @XmlElement(name = "last-persistent-id")
+    @XmlAttribute(name = "last-persistent-id")
     @XmlJavaTypeAdapter(Jaxb.AtomicIntegerAdapter.class)
     private final AtomicInteger lastPersistentId = new AtomicInteger(0);
 
@@ -317,6 +317,9 @@ public class BasicSheet
     public void afterReload (SheetStub stub)
     {
         try {
+            // Predefined StaffHolder's are no longer useful
+            Staff.StaffHolder.clearStaffHolders();
+
             // Complete sheet initialization
             initTransients(stub);
 

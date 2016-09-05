@@ -50,7 +50,6 @@ import omr.sheet.ui.StubsController;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractNoteInter;
 import static omr.sig.inter.AbstractNoteInter.QUARTER_DURATION;
 import omr.sig.inter.AbstractTimeInter;
@@ -61,6 +60,7 @@ import omr.sig.inter.DynamicsInter;
 import omr.sig.inter.EndingInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.HeadChordInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.KeyInter;
 import omr.sig.inter.LyricItemInter;
@@ -681,7 +681,7 @@ public class PartwiseBuilder
         for (Inter interNote : chord.getNotes()) {
             for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
                 SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
-                AbstractHeadInter head = slur.getHead(HorizontalSide.LEFT);
+                HeadInter head = slur.getHead(HorizontalSide.LEFT);
 
                 if ((head != null) && head.getShape().isSmall()) {
                     return (SmallChordInter) head.getChord();
@@ -1790,7 +1790,7 @@ public class PartwiseBuilder
                 pitch.setOctave(note.getOctave());
 
                 // Alter?
-                AbstractHeadInter head = (AbstractHeadInter) note;
+                HeadInter head = (HeadInter) note;
                 Key key = current.keys.get(staff.getIndexInPart());
                 Integer fifths = (key != null) ? key.getFifths().intValue() : null;
                 int alter = head.getAlter(fifths);
@@ -1909,7 +1909,7 @@ public class PartwiseBuilder
 
             if (!note.getShape().isRest()) {
                 // Accidental ?
-                AbstractHeadInter head = (AbstractHeadInter) note;
+                HeadInter head = (HeadInter) note;
                 AlterInter alter = head.getAccidental();
 
                 if (alter != null) {

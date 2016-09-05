@@ -45,7 +45,7 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
-    public void visit (AbstractHeadInter inter)
+    public void visit (HeadInter inter)
     {
         // Void by default
     }

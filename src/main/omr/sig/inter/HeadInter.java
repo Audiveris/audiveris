@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                A b s t r a c t H e a d I n t e r                               //
+//                                        H e a d I n t e r                                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -46,7 +46,7 @@ import omr.sheet.rhythm.Slot;
 
 import omr.sig.BasicImpacts;
 import omr.sig.GradeImpacts;
-import omr.sig.relation.AccidHeadRelation;
+import omr.sig.relation.AlterHeadRelation;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
 
@@ -65,41 +65,51 @@ import java.util.ListIterator;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AbstractHeadInter} is the base class for notes heads, that is
- * all notes, including whole and breve, but not rests.
+ * Class {@code HeadInter} represents a note head, that is any head shape including
+ * whole and breve, but not a rest.
  * <p>
  * These rather round-shaped symbols are retrieved via template-matching technique.
  *
  * @author Hervé Bitteur
  */
+@XmlRootElement(name = "head")
 @XmlAccessorType(XmlAccessType.NONE)
-public abstract class AbstractHeadInter
+public class HeadInter
         extends AbstractNoteInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractHeadInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeadInter.class);
 
     private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** Absolute location of head template pivot. */
     @XmlElement
-    protected final Point pivot;
+    private final Point pivot;
 
     /** Relative pivot position WRT head. */
-    @XmlElement
-    protected final Anchor anchor;
+    @XmlAttribute
+    private final Anchor anchor;
 
+    // Transient data
+    //---------------
+    //
     /** Shape template descriptor. */
-    protected ShapeDescriptor descriptor;
+    private ShapeDescriptor descriptor;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code AbstractTemplateNoteInter} object.
+     * Creates a new {@code HeadInter} object.
      *
      * @param pivot   the template pivot
      * @param anchor  relative pivot configuration
@@ -109,17 +119,24 @@ public abstract class AbstractHeadInter
      * @param staff   the related staff
      * @param pitch   the note pitch
      */
-    public AbstractHeadInter (Point pivot,
-                              Anchor anchor,
-                              Rectangle bounds,
-                              Shape shape,
-                              GradeImpacts impacts,
-                              Staff staff,
-                              double pitch)
+    public HeadInter (Point pivot,
+                      Anchor anchor,
+                      Rectangle bounds,
+                      Shape shape,
+                      GradeImpacts impacts,
+                      Staff staff,
+                      double pitch)
     {
         super(null, bounds, shape, impacts, staff, pitch);
         this.pivot = pivot;
         this.anchor = anchor;
+    }
+
+    /** No-arg constructor needed by JAXB. */
+    private HeadInter ()
+    {
+        this.pivot = null;
+        this.anchor = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -132,6 +149,33 @@ public abstract class AbstractHeadInter
         visitor.visit(this);
     }
 
+    //-----------//
+    // duplicate //
+    //-----------//
+    public HeadInter duplicate ()
+    {
+        return duplicateAs(shape);
+    }
+
+    //-------------//
+    // duplicateAs //
+    //-------------//
+    public HeadInter duplicateAs (Shape shape)
+    {
+        HeadInter clone = new HeadInter(pivot, anchor, bounds, shape, impacts, staff, pitch);
+        clone.setGlyph(this.glyph);
+        clone.setMirror(this);
+
+        if (impacts == null) {
+            clone.setGrade(this.grade);
+        }
+
+        sig.addVertex(clone);
+        setMirror(clone);
+
+        return clone;
+    }
+
     //---------------//
     // getAccidental //
     //---------------//
@@ -142,7 +186,7 @@ public abstract class AbstractHeadInter
      */
     public AlterInter getAccidental ()
     {
-        for (Relation rel : sig.getRelations(this, AccidHeadRelation.class)) {
+        for (Relation rel : sig.getRelations(this, AlterHeadRelation.class)) {
             return (AlterInter) sig.getOppositeInter(this, rel);
         }
 
@@ -186,7 +230,7 @@ public abstract class AbstractHeadInter
                 }
 
                 for (Inter inter : chord.getNotes()) {
-                    AbstractHeadInter note = (AbstractHeadInter) inter;
+                    HeadInter note = (HeadInter) inter;
 
                     if (note == this) {
                         started = true;
@@ -289,12 +333,12 @@ public abstract class AbstractHeadInter
             throws DeletedInterException
     {
         // Specific between notes
-        if (that instanceof AbstractHeadInter) {
-            if (this.isVip() && ((AbstractHeadInter) that).isVip()) {
+        if (that instanceof HeadInter) {
+            if (this.isVip() && ((HeadInter) that).isVip()) {
                 logger.info("AbstractHeadInter checking overlaps between {} and {}", this, that);
             }
 
-            AbstractHeadInter thatHead = (AbstractHeadInter) that;
+            HeadInter thatHead = (HeadInter) that;
 
             // Check vertical distance
             if (this.getStaff() == that.getStaff()) {
@@ -463,7 +507,7 @@ public abstract class AbstractHeadInter
      *
      * @param that the other inter
      */
-    private void fixDuplicateWith (AbstractHeadInter that)
+    private void fixDuplicateWith (HeadInter that)
             throws DeletedInterException
     {
         for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {

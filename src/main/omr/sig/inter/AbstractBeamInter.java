@@ -44,6 +44,7 @@ import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
@@ -70,8 +71,12 @@ public abstract class AbstractBeamInter
             AbstractBeamInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** Beam height. */
-    @XmlElement
+    @XmlAttribute
     @XmlJavaTypeAdapter(value = Jaxb.Double1Adapter.class, type = double.class)
     private final double height;
 
@@ -79,14 +84,17 @@ public abstract class AbstractBeamInter
     @XmlElement
     private final Line2D median;
 
-    /** The containing beam group. */
-    private BeamGroup group;
-
     /** Chords that are linked by this beam. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "chords")
     private final List<AbstractChordInter> chords = new ArrayList<AbstractChordInter>();
+
+    // Transient data
+    //---------------
+    //
+    /** The containing beam group. */
+    private BeamGroup group;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

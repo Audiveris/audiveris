@@ -26,7 +26,6 @@ import java.util.Comparator;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Class {@code PartGroup} describes a group of parts.
@@ -85,11 +84,11 @@ public class PartGroup
     private int lastStaffId;
 
     /** Name. */
-    @XmlElement
+    @XmlAttribute
     private String name;
 
     /** Abbreviation. */
-    @XmlElement
+    @XmlAttribute
     private String abbreviation;
 
     //~ Constructors -------------------------------------------------------------------------------

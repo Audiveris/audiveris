@@ -284,8 +284,8 @@ public class ClefInter
      * @param pitchPosition the pitch position of the provided note
      * @return the corresponding note step
      */
-    public static AbstractHeadInter.Step noteStepOf (ClefInter clef,
-                                                     int pitchPosition)
+    public static HeadInter.Step noteStepOf (ClefInter clef,
+                                             int pitchPosition)
     {
         if (clef == null) {
             return defaultClef.noteStepOf(pitchPosition);
@@ -396,26 +396,26 @@ public class ClefInter
      * @param pitch the pitch position of the note
      * @return the corresponding note step
      */
-    private AbstractHeadInter.Step noteStepOf (int pitch)
+    private HeadInter.Step noteStepOf (int pitch)
     {
         switch (shape) {
         case G_CLEF:
         case G_CLEF_SMALL:
         case G_CLEF_8VA:
         case G_CLEF_8VB:
-            return AbstractHeadInter.Step.values()[(71 - pitch) % 7];
+            return HeadInter.Step.values()[(71 - pitch) % 7];
 
         case C_CLEF:
 
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=+2) [or other stuff]
-            return AbstractHeadInter.Step.values()[(72 - (int) Math.rint(this.pitch) - pitch) % 7];
+            return HeadInter.Step.values()[(72 - (int) Math.rint(this.pitch) - pitch) % 7];
 
         case F_CLEF:
         case F_CLEF_SMALL:
         case F_CLEF_8VA:
         case F_CLEF_8VB:
-            return AbstractHeadInter.Step.values()[(73 - pitch) % 7];
+            return HeadInter.Step.values()[(73 - pitch) % 7];
 
         case PERCUSSION_CLEF:
             return null;

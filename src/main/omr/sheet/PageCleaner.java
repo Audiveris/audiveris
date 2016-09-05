@@ -31,7 +31,7 @@ import omr.sheet.Scale.InterlineScale;
 
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.AbstractInterVisitor;
 import omr.sig.inter.BarConnectorInter;
 import omr.sig.inter.BarlineInter;
@@ -63,7 +63,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
+
 import static java.awt.BasicStroke.*;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -179,7 +181,7 @@ public abstract class PageCleaner
     }
 
     @Override
-    public void visit (AbstractHeadInter inter)
+    public void visit (HeadInter inter)
     {
         visit((Inter) inter);
     }

@@ -65,19 +65,6 @@ public class CodaInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // delete //
-    //--------//
-    @Override
-    public void delete ()
-    {
-        if (staff != null) {
-            staff.removeOtherInter(this);
-        }
-
-        super.delete();
-    }
-
     //-----------------//
     // linkWithBarline //
     //-----------------//

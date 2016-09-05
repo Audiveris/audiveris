@@ -28,7 +28,6 @@ import omr.sig.inter.BarConnectorInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BeamHookInter;
 import omr.sig.inter.BeamInter;
-import omr.sig.inter.BlackHeadInter;
 import omr.sig.inter.BraceInter;
 import omr.sig.inter.BracketConnectorInter;
 import omr.sig.inter.BracketInter;
@@ -43,6 +42,7 @@ import omr.sig.inter.FingeringInter;
 import omr.sig.inter.FlagInter;
 import omr.sig.inter.FretInter;
 import omr.sig.inter.HeadChordInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.KeyAlterInter;
 import omr.sig.inter.KeyInter;
@@ -59,23 +59,18 @@ import omr.sig.inter.SegnoInter;
 import omr.sig.inter.SentenceInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallBeamInter;
-import omr.sig.inter.SmallBlackHeadInter;
 import omr.sig.inter.SmallChordInter;
 import omr.sig.inter.SmallFlagInter;
-import omr.sig.inter.SmallVoidHeadInter;
-import omr.sig.inter.SmallWholeInter;
 import omr.sig.inter.StaccatoInter;
 import omr.sig.inter.StemInter;
 import omr.sig.inter.TimeNumberInter;
 import omr.sig.inter.TimePairInter;
 import omr.sig.inter.TimeWholeInter;
 import omr.sig.inter.TupletInter;
-import omr.sig.inter.VoidHeadInter;
 import omr.sig.inter.WedgeInter;
-import omr.sig.inter.WholeInter;
 import omr.sig.inter.WordInter;
 import omr.sig.relation.AbstractRelation;
-import omr.sig.relation.AccidHeadRelation;
+import omr.sig.relation.AlterHeadRelation;
 import omr.sig.relation.AugmentationRelation;
 import omr.sig.relation.BarConnectionRelation;
 import omr.sig.relation.BarGroupRelation;
@@ -169,7 +164,6 @@ public class SigValue
         @XmlElementRef(type = BarlineInter.class),
         @XmlElementRef(type = BeamHookInter.class),
         @XmlElementRef(type = BeamInter.class),
-        @XmlElementRef(type = BlackHeadInter.class),
         @XmlElementRef(type = BraceInter.class),
         @XmlElementRef(type = BracketConnectorInter.class),
         @XmlElementRef(type = BracketInter.class),
@@ -184,9 +178,10 @@ public class SigValue
         @XmlElementRef(type = FlagInter.class),
         @XmlElementRef(type = FretInter.class),
         @XmlElementRef(type = HeadChordInter.class),
+        @XmlElementRef(type = HeadInter.class),
         @XmlElementRef(type = KeyAlterInter.class),
         @XmlElementRef(type = KeyInter.class),
-        @XmlElementRef(type = LedgerInter.class),
+        @XmlElementRef(type = LedgerInter.class), // Cannot occur ???
         @XmlElementRef(type = LyricItemInter.class),
         @XmlElementRef(type = LyricLineInter.class),
         @XmlElementRef(type = PedalInter.class),
@@ -199,20 +194,15 @@ public class SigValue
         @XmlElementRef(type = SentenceInter.class),
         @XmlElementRef(type = SlurInter.class),
         @XmlElementRef(type = SmallBeamInter.class),
-        @XmlElementRef(type = SmallBlackHeadInter.class),
         @XmlElementRef(type = SmallChordInter.class),
         @XmlElementRef(type = SmallFlagInter.class),
-        @XmlElementRef(type = SmallVoidHeadInter.class),
-        @XmlElementRef(type = SmallWholeInter.class),
         @XmlElementRef(type = StaccatoInter.class),
         @XmlElementRef(type = StemInter.class),
         @XmlElementRef(type = TimeNumberInter.class),
         @XmlElementRef(type = TimePairInter.class),
         @XmlElementRef(type = TimeWholeInter.class),
         @XmlElementRef(type = TupletInter.class),
-        @XmlElementRef(type = VoidHeadInter.class),
         @XmlElementRef(type = WedgeInter.class),
-        @XmlElementRef(type = WholeInter.class),
         @XmlElementRef(type = WordInter.class)
     })
     private final ArrayList<AbstractInter> interDefs = new ArrayList<AbstractInter>();
@@ -377,7 +367,7 @@ public class SigValue
          * CrossExclusion is not listed here, because it must be handled outside any specific sig.
          */
         @XmlElementRefs({
-            @XmlElementRef(type = AccidHeadRelation.class),
+            @XmlElementRef(type = AlterHeadRelation.class),
             @XmlElementRef(type = AugmentationRelation.class),
             @XmlElementRef(type = BarConnectionRelation.class),
             @XmlElementRef(type = BarGroupRelation.class),

@@ -348,7 +348,7 @@ public abstract class MusicXML
      * @param step Audiveris enum step
      * @return Proxymusic enum step
      */
-    public static Step stepOf (omr.sig.inter.AbstractHeadInter.Step step)
+    public static Step stepOf (omr.sig.inter.HeadInter.Step step)
     {
         return Step.fromValue(step.toString());
     }

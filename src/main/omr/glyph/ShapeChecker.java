@@ -513,7 +513,7 @@ public class ShapeChecker
 
         new Checker(
                 "StaffGap",
-                Notes.getShapes(),
+                StemLessHeads.getShapes(),
                 Rests.getShapes(),
                 Dynamics.getShapes(),
                 Articulations.getShapes())

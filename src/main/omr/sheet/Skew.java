@@ -43,20 +43,27 @@ public class Skew
     private static final Logger logger = LoggerFactory.getLogger(Skew.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** Skew slope as measured. */
     @XmlAttribute(name = "slope")
     private final double slope;
 
-    /** Corresponding angle (in radians) */
+    // Transient data
+    //---------------
+    //
+    /** Corresponding angle (in radians). */
     private double angle;
 
-    /** Transform to de-skew */
+    /** Transform to de-skew. */
     private AffineTransform at;
 
-    /** Width of de-skewed sheet */
+    /** Width of de-skewed sheet. */
     private double deskewedWidth;
 
-    /** Height of de-skewed sheet */
+    /** Height of de-skewed sheet. */
     private double deskewedHeight;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -178,6 +185,20 @@ public class Skew
     }
 
     //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        initTransients((Sheet) parent);
+    }
+
+    //----------------//
     // initTransients //
     //----------------//
     private void initTransients (Sheet sheet)
@@ -208,19 +229,5 @@ public class Skew
         }
 
         at.translate(dx, dy);
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        initTransients((Sheet) parent);
     }
 }

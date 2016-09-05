@@ -41,7 +41,7 @@ import omr.sheet.rhythm.Measure;
 import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.SIGraph;
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.DeletedInterException;
@@ -83,7 +83,7 @@ import java.util.Set;
  * <li>a part of a repeat sign (upper or lower dot),
  * <li>a staccato sign,
  * <li>an augmentation dot (first or second dot), [TODO: Handle augmentation dot for mirrored notes]
- * <li>a part of fermata sign,
+ * <li>a part of a fermata sign,
  * <li>a dot of an ending indication, [TODO: Handle dot in ending]
  * <li>a simple text dot. [TODO: Anything to be done here?]
  * <li>or just some stain...
@@ -339,11 +339,11 @@ public class DotFactory
 
             InterLoop:
             for (Inter inter : heads) {
-                AbstractHeadInter head = (AbstractHeadInter) inter;
+                HeadInter head = (HeadInter) inter;
                 Inter mirrorInter = head.getMirror();
 
                 if ((mirrorInter != null) && heads.contains(mirrorInter)) {
-                    AbstractHeadInter mirror = (AbstractHeadInter) mirrorInter;
+                    HeadInter mirror = (HeadInter) mirrorInter;
                     Rational hDur = head.getChord().getDurationSansDotOrTuplet();
                     Rational mDur = mirror.getChord().getDurationSansDotOrTuplet();
 

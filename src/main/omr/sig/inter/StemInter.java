@@ -74,6 +74,10 @@ public class StemInter
     private static final double ANCHOR_MARGIN_RATIO = 0.67;
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** Top point. */
     @XmlElement
     private final Point2D top;
@@ -159,7 +163,7 @@ public class StemInter
                 double yAnchor = Double.MAX_VALUE;
 
                 for (Relation rel : links) {
-                    AbstractHeadInter head = (AbstractHeadInter) sig.getEdgeSource(rel);
+                    HeadInter head = (HeadInter) sig.getEdgeSource(rel);
                     Rectangle headBox = head.bounds;
                     double y = headBox.y - (ANCHOR_MARGIN_RATIO * headBox.height);
 
@@ -176,7 +180,7 @@ public class StemInter
                 double yAnchor = Double.MIN_VALUE;
 
                 for (Relation rel : links) {
-                    AbstractHeadInter head = (AbstractHeadInter) sig.getEdgeSource(rel);
+                    HeadInter head = (HeadInter) sig.getEdgeSource(rel);
                     Rectangle headBox = head.bounds;
                     double y = headBox.y + ((1 - ANCHOR_MARGIN_RATIO) * headBox.height);
 
@@ -395,10 +399,11 @@ public class StemInter
     public boolean isGraceStem ()
     {
         for (Relation rel : sig.getRelations(this, HeadStemRelation.class)) {
-            Shape shape = sig.getOppositeInter(this, rel).getShape();
+            Shape headShape = sig.getOppositeInter(this, rel).getShape();
 
             // First head tested is enough.
-            return (shape == Shape.NOTEHEAD_BLACK_SMALL) || (shape == Shape.NOTEHEAD_VOID_SMALL);
+            return (headShape == Shape.NOTEHEAD_BLACK_SMALL)
+                   || (headShape == Shape.NOTEHEAD_VOID_SMALL);
         }
 
         return false;
@@ -424,7 +429,7 @@ public class StemInter
             // Check side
             if (hsRel.getHeadSide() == side) {
                 // Check pitch
-                AbstractHeadInter head = (AbstractHeadInter) sig.getEdgeSource(rel);
+                HeadInter head = (HeadInter) sig.getEdgeSource(rel);
 
                 if (head.getIntegerPitch() == pitch) {
                     return head;

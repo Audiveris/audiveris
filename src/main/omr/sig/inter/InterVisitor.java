@@ -34,8 +34,6 @@ public interface InterVisitor
 
     void visit (AbstractFlagInter inter);
 
-    void visit (AbstractHeadInter inter);
-
     void visit (BarConnectorInter inter);
 
     void visit (BarlineInter inter);
@@ -51,6 +49,8 @@ public interface InterVisitor
     void visit (ClefInter inter);
 
     void visit (EndingInter inter);
+
+    void visit (HeadInter inter);
 
     void visit (Inter inter);
 

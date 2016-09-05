@@ -186,7 +186,7 @@ public enum Shape
     SMALL_FLAG_SLASH("Flag for slashed grace note"),
 
     //
-    // Notes -------------------------------------------------------------------
+    // StemLessHeads -----------------------------------------------------------
     //
     BREVE("Double Whole"),
     //
@@ -311,7 +311,7 @@ public enum Shape
     NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue", new Color(0xff4400)),
 
     //
-    // Notes -------------------------------------------------------------------
+    // StemLessHeads -----------------------------------------------------------
     //
     WHOLE_NOTE("Hollow node head for wholes"),
     WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),

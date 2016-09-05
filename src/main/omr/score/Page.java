@@ -30,7 +30,6 @@ import omr.sheet.rhythm.MeasureStack;
 
 import omr.sig.inter.AbstractChordInter;
 
-import omr.util.Jaxb;
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -75,15 +74,15 @@ public class Page
     private final int id;
 
     /** Does this page start a movement?. */
-    @XmlElement(name = "movement-start")
-    private Jaxb.True movementStart;
+    @XmlAttribute(name = "movement-start")
+    private Boolean movementStart;
 
     /** Number of measures counted in this page. */
-    @XmlElement(name = "measure-count")
+    @XmlAttribute(name = "measure-count")
     private Integer measureCount;
 
     /** Progression of measure id within this page. */
-    @XmlElement(name = "measure-delta-id")
+    @XmlAttribute(name = "measure-delta-id")
     private Integer measureDeltaId;
 
     /** LogicalPart list for the page. */
@@ -420,7 +419,7 @@ public class Page
      */
     public boolean isMovementStart ()
     {
-        return movementStart != null;
+        return movementStart != null && movementStart;
     }
 
     //----------------//
@@ -518,7 +517,7 @@ public class Page
      */
     public void setMovementStart (boolean movementStart)
     {
-        this.movementStart = movementStart ? Jaxb.TRUE : null;
+        this.movementStart = movementStart ? Boolean.TRUE : null;
     }
 
     //----------//

@@ -40,8 +40,8 @@ import omr.sheet.beam.BeamGroup;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.HeadChordInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallChordInter;
@@ -150,11 +150,11 @@ public class SlursLinker
 
             if (selected != null) {
                 // Make sure we do have connection to heads or slur is a legal orphan
-                Map<HorizontalSide, AbstractHeadInter> heads = new EnumMap<HorizontalSide, AbstractHeadInter>(
+                Map<HorizontalSide, HeadInter> heads = new EnumMap<HorizontalSide, HeadInter>(
                         HorizontalSide.class);
 
                 for (HorizontalSide side : HorizontalSide.values()) {
-                    AbstractHeadInter head = selected.getHead(side);
+                    HeadInter head = selected.getHead(side);
 
                     if ((head == null) && !canBeOrphan(selected, side, system)) {
                         selected.delete();
@@ -168,12 +168,12 @@ public class SlursLinker
                 // Is this a tie? (Assumption: a tie within a system does not cross a clef change)
                 // Make sure there is no forbidden chord within the abscissa range
                 // NOTA: either linked head may have a mirror head, so select proper head for tie
-                final AbstractHeadInter leftHead = heads.get(LEFT);
-                final AbstractHeadInter rightHead = heads.get(RIGHT);
+                final HeadInter leftHead = heads.get(LEFT);
+                final HeadInter rightHead = heads.get(RIGHT);
 
                 if ((leftHead != null) && (rightHead != null)) {
-                    final AbstractHeadInter leftMirror = (AbstractHeadInter) leftHead.getMirror();
-                    final AbstractHeadInter rightMirror = (AbstractHeadInter) rightHead.getMirror();
+                    final HeadInter leftMirror = (HeadInter) leftHead.getMirror();
+                    final HeadInter rightMirror = (HeadInter) rightHead.getMirror();
 
                     if ((leftHead.getIntegerPitch() == rightHead.getIntegerPitch())
                         && (leftHead.getStaff() == rightHead.getStaff())) {
@@ -560,8 +560,8 @@ public class SlursLinker
          * @param rightHead right side head
          * @return true if clear
          */
-        public boolean isSpaceClear (AbstractHeadInter leftHead,
-                                     AbstractHeadInter rightHead)
+        public boolean isSpaceClear (HeadInter leftHead,
+                                     HeadInter rightHead)
         {
             if ((leftHead == null) || (rightHead == null)) {
                 return false;
@@ -682,7 +682,7 @@ public class SlursLinker
             int expected = (side == LEFT) ? ccw : (-ccw);
 
             for (Inter hInter : chord.getNotes()) {
-                if (hInter instanceof AbstractHeadInter) {
+                if (hInter instanceof HeadInter) {
                     Point point = hInter.getCenter();
                     int pos = Line2D.relativeCCW(
                             mid.getX(),

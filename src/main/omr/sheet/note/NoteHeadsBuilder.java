@@ -56,16 +56,10 @@ import omr.sheet.grid.LineInfo;
 
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
-import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractInter;
-import omr.sig.inter.BlackHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LedgerInter;
-import omr.sig.inter.SmallBlackHeadInter;
-import omr.sig.inter.SmallVoidHeadInter;
-import omr.sig.inter.SmallWholeInter;
-import omr.sig.inter.VoidHeadInter;
-import omr.sig.inter.WholeInter;
 import omr.sig.relation.BarConnectionRelation;
 import omr.sig.relation.HeadStemRelation;
 
@@ -262,12 +256,12 @@ public class NoteHeadsBuilder
 
             for (Inter inter : ch) {
                 // Boost head shapes that don't expect stem
-                if (ShapeSet.Notes.contains(inter.getShape())) {
+                if (ShapeSet.StemLessHeads.contains(inter.getShape())) {
                     inter.increase(constants.wholeBoost.getValue());
                 }
 
                 // Keep created heads in staff
-                staff.addNote((AbstractHeadInter) inter);
+                staff.addNote((HeadInter) inter);
             }
         }
 
@@ -296,7 +290,7 @@ public class NoteHeadsBuilder
     //------------------//
     // aggregateMatches //
     //------------------//
-    private List<AbstractHeadInter> aggregateMatches (List<AbstractHeadInter> inters)
+    private List<HeadInter> aggregateMatches (List<HeadInter> inters)
     {
         // Sort by decreasing grade
         Collections.sort(inters, Inter.byReverseGrade);
@@ -305,7 +299,7 @@ public class NoteHeadsBuilder
         // Avoid duplicate locations
         List<Aggregate> aggregates = new ArrayList<Aggregate>();
 
-        for (AbstractHeadInter inter : inters) {
+        for (HeadInter inter : inters) {
             Point loc = GeoUtil.centerOf(inter.getBounds());
 
             // Check among already filtered locations for similar location
@@ -329,7 +323,7 @@ public class NoteHeadsBuilder
             aggregate.add(inter);
         }
 
-        List<AbstractHeadInter> filtered = new ArrayList<AbstractHeadInter>();
+        List<HeadInter> filtered = new ArrayList<HeadInter>();
 
         for (Aggregate ag : aggregates) {
             filtered.add(ag.getMainInter());
@@ -381,14 +375,14 @@ public class NoteHeadsBuilder
      * @param pitch  the note pitch
      * @return the inter created, if any
      */
-    private AbstractHeadInter createInter (PixelDistance loc,
-                                           Anchor anchor,
-                                           Shape shape,
-                                           Staff staff,
-                                           int pitch)
+    private HeadInter createInter (PixelDistance loc,
+                                   Anchor anchor,
+                                   Shape shape,
+                                   Staff staff,
+                                   int pitch)
     {
         final double distImpact = 1 - (loc.d / params.maxMatchingDistance);
-        final GradeImpacts impacts = new AbstractHeadInter.Impacts(distImpact);
+        final GradeImpacts impacts = new HeadInter.Impacts(distImpact);
         final double grade = impacts.getGrade();
 
         // Is grade acceptable?
@@ -400,29 +394,7 @@ public class NoteHeadsBuilder
         final Rectangle box = desc.getSymbolBoundsAt(loc.x, loc.y, anchor);
         final Point pivot = new Point(loc.x, loc.y);
 
-        switch (desc.getShape()) {
-        case NOTEHEAD_BLACK:
-            return new BlackHeadInter(pivot, anchor, box, impacts, staff, pitch);
-
-        case NOTEHEAD_BLACK_SMALL:
-            return new SmallBlackHeadInter(pivot, anchor, box, impacts, staff, pitch);
-
-        case NOTEHEAD_VOID:
-            return new VoidHeadInter(pivot, anchor, box, impacts, staff, pitch);
-
-        case NOTEHEAD_VOID_SMALL:
-            return new SmallVoidHeadInter(pivot, anchor, box, impacts, staff, pitch);
-
-        case WHOLE_NOTE:
-            return new WholeInter(pivot, anchor, box, impacts, staff, pitch);
-
-        case WHOLE_NOTE_SMALL:
-            return new SmallWholeInter(pivot, anchor, box, impacts, staff, pitch);
-        }
-
-        logger.error("No root shape for " + desc.getShape());
-
-        return null;
+        return new HeadInter(pivot, anchor, box, shape, impacts, staff, pitch);
     }
 
     //---------------------//
@@ -436,12 +408,12 @@ public class NoteHeadsBuilder
      * @param competitors all competitors, including seed-based inter instances
      * @return the filtered x-based instances
      */
-    private List<AbstractHeadInter> filterSeedConflicts (List<AbstractHeadInter> inters,
-                                                         List<Inter> competitors)
+    private List<HeadInter> filterSeedConflicts (List<HeadInter> inters,
+                                                 List<Inter> competitors)
     {
-        List<AbstractHeadInter> filtered = new ArrayList<AbstractHeadInter>();
+        List<HeadInter> filtered = new ArrayList<HeadInter>();
 
-        for (AbstractHeadInter inter : inters) {
+        for (HeadInter inter : inters) {
             if (!overlapSeed(inter, competitors)) {
                 filtered.add(inter);
             }
@@ -601,7 +573,7 @@ public class NoteHeadsBuilder
         final double xMax = box.getMaxX();
 
         for (Inter comp : competitors) {
-            if (comp instanceof AbstractHeadInter) {
+            if (comp instanceof HeadInter) {
                 continue;
             }
 
@@ -642,7 +614,7 @@ public class NoteHeadsBuilder
         final double xMax = box.getMaxX();
 
         for (Inter comp : competitors) {
-            if (!(comp instanceof AbstractHeadInter)) {
+            if (!(comp instanceof HeadInter)) {
                 continue;
             }
 
@@ -897,10 +869,10 @@ public class NoteHeadsBuilder
 
         Point point;
 
-        List<AbstractHeadInter> matches = new ArrayList<AbstractHeadInter>();
+        List<HeadInter> matches = new ArrayList<HeadInter>();
 
         //~ Methods --------------------------------------------------------------------------------
-        public void add (AbstractHeadInter inter)
+        public void add (HeadInter inter)
         {
             if (point == null) {
                 point = GeoUtil.centerOf(inter.getBounds());
@@ -909,7 +881,7 @@ public class NoteHeadsBuilder
             matches.add(inter);
         }
 
-        public AbstractHeadInter getMainInter ()
+        public HeadInter getMainInter ()
         {
             return matches.get(0);
         }
@@ -1090,7 +1062,7 @@ public class NoteHeadsBuilder
 
         private final List<LedgerAdapter> ledgers;
 
-        private List<AbstractHeadInter> inters = new ArrayList<AbstractHeadInter>();
+        private List<HeadInter> inters = new ArrayList<HeadInter>();
 
         /** Offsets tried around a given ordinate. */
         private final int[] yOffsets;
@@ -1135,7 +1107,7 @@ public class NoteHeadsBuilder
 
             {
                 // Horizontal slice to detect competitors
-                final double ratio = AbstractHeadInter.getShrinkVertRatio();
+                final double ratio = HeadInter.getShrinkVertRatio();
                 final double above = ((scale.getInterline() * (dir - ratio)) / 2);
                 final double below = ((scale.getInterline() * (dir + ratio)) / 2);
                 competitorsArea = line.getArea(above, below);
@@ -1150,7 +1122,7 @@ public class NoteHeadsBuilder
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        public List<AbstractHeadInter> lookup ()
+        public List<HeadInter> lookup ()
         {
             return useSeeds ? lookupSeeds() : lookupRange();
         }
@@ -1314,7 +1286,7 @@ public class NoteHeadsBuilder
          *
          * @return the inters created
          */
-        private List<AbstractHeadInter> lookupRange ()
+        private List<HeadInter> lookupRange ()
         {
             // Abscissa range for scan
             final int scanLeft = Math.max(
@@ -1362,7 +1334,7 @@ public class NoteHeadsBuilder
                     }
 
                     if (bestLoc != null) {
-                        AbstractHeadInter inter = createInter(
+                        HeadInter inter = createInter(
                                 bestLoc,
                                 MIDDLE_LEFT,
                                 shape,
@@ -1382,7 +1354,7 @@ public class NoteHeadsBuilder
             // Check conflict with seed-based instances
             inters = filterSeedConflicts(inters, competitors);
 
-            for (AbstractHeadInter inter : inters) {
+            for (HeadInter inter : inters) {
                 inter.retrieveGlyph(image, sheet.getInterline(), sheet.getGlyphIndex());
                 sig.addVertex(inter);
             }
@@ -1393,7 +1365,7 @@ public class NoteHeadsBuilder
         //-------------//
         // lookupSeeds //
         //-------------//
-        private List<AbstractHeadInter> lookupSeeds ()
+        private List<HeadInter> lookupSeeds ()
         {
             // Intersected seeds in the area
             final List<Glyph> seeds = getGlyphsSlice(systemSeeds, seedsArea);
@@ -1448,7 +1420,7 @@ public class NoteHeadsBuilder
                         }
 
                         if (bestLoc != null) {
-                            AbstractHeadInter inter = createInter(
+                            HeadInter inter = createInter(
                                     bestLoc,
                                     anchor,
                                     shape,
@@ -1555,7 +1527,7 @@ public class NoteHeadsBuilder
 //        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
 //            Inter left = inters.get(i);
 //            Rectangle box = left.getBounds();
-//            Rectangle2D smallBox = AbstractHeadInter.shrink(box);
+//            Rectangle2D smallBox = HeadInter.shrink(box);
 //            double xMax = smallBox.getMaxX();
 //
 //            for (Inter right : inters.subList(i + 1, inters.size())) {

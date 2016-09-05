@@ -44,7 +44,7 @@ import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.StemInter;
-import omr.sig.relation.AccidHeadRelation;
+import omr.sig.relation.AlterHeadRelation;
 import omr.sig.relation.AugmentationRelation;
 import omr.sig.relation.BeamStemRelation;
 import omr.sig.relation.ChordStaccatoRelation;
@@ -329,7 +329,7 @@ public class SheetResultPainter
                 note.accept(sigPainter);
 
                 // Paint note related stuff: alteration if any
-                for (Relation accidRel : sig.getRelations(note, AccidHeadRelation.class)) {
+                for (Relation accidRel : sig.getRelations(note, AlterHeadRelation.class)) {
                     sig.getOppositeInter(note, accidRel).accept(sigPainter);
                 }
 

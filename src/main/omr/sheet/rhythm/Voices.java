@@ -30,11 +30,12 @@ import omr.sheet.SystemInfo;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SlurInter;
 import omr.sig.relation.Relation;
 import omr.sig.relation.SlurHeadRelation;
+
 import static omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
@@ -346,7 +347,7 @@ public abstract class Voices
 
         // Is there an incoming tie on a head of this chord?
         for (Inter note : firstChord.getNotes()) {
-            if (note instanceof AbstractHeadInter) {
+            if (note instanceof HeadInter) {
                 for (Relation r : sig.getRelations(note, SlurHeadRelation.class)) {
                     SlurHeadRelation shRel = (SlurHeadRelation) r;
 
@@ -357,7 +358,7 @@ public abstract class Voices
                             SlurInter prevSlur = slurAdapter.getInitialSlur(slur);
 
                             if (prevSlur != null) {
-                                AbstractHeadInter left = prevSlur.getHead(LEFT);
+                                HeadInter left = prevSlur.getHead(LEFT);
 
                                 if (left != null) {
                                     final Voice leftVoice = left.getVoice();

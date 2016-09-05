@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ChordStaccatoRelation} represents the relation between a note-based
+ * Class {@code ChordStaccatoRelation} represents the relation between a head-based
  * chord and a staccato dot.
  *
  * @author Hervé Bitteur

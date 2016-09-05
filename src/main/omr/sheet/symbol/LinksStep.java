@@ -28,7 +28,7 @@ import omr.sheet.Part;
 import omr.sheet.SystemInfo;
 
 import omr.sig.SigReducer;
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SlurInter;
 
@@ -103,7 +103,7 @@ public class LinksStep
             Part slurPart = null;
 
             for (HorizontalSide side : HorizontalSide.values()) {
-                AbstractHeadInter head = slur.getHead(side);
+                HeadInter head = slur.getHead(side);
 
                 if (head != null) {
                     Part headPart = system.getPartOf(head.getStaff());

@@ -40,7 +40,6 @@ import omr.sheet.rhythm.MeasureStack;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractFlagInter;
-import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.AlterInter;
 import omr.sig.inter.BarlineInter;
@@ -51,6 +50,7 @@ import omr.sig.inter.DynamicsInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.FingeringInter;
 import omr.sig.inter.FretInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterMutableEnsemble;
 import omr.sig.inter.Inters;
@@ -148,7 +148,7 @@ public class SymbolFactory
         systemStems = sig.inters(Shape.STEM);
         Collections.sort(systemStems, Inter.byAbscissa);
 
-        systemHeads = sig.inters(AbstractHeadInter.class);
+        systemHeads = sig.inters(HeadInter.class);
         Collections.sort(systemHeads, Inter.byAbscissa);
 
         systemHeadChords = sig.inters(AbstractChordInter.class);
@@ -176,6 +176,7 @@ public class SymbolFactory
     {
         final Shape shape = eval.shape;
         final double grade = Inter.intrinsicRatio * eval.grade;
+
         if (glyph.isVip()) {
             logger.info("VIP glyph#{} symbol created as {}", glyph.getId(), eval.shape);
         }
@@ -214,13 +215,11 @@ public class SymbolFactory
         } else if (shape == Shape.CODA) {
             CodaInter coda = new CodaInter(glyph, grade);
             coda.setStaff(closestStaff); // Staff is OK
-            closestStaff.addOtherInter(coda);
             addSymbol(coda);
             coda.linkWithBarline();
         } else if (shape == Shape.SEGNO) {
             SegnoInter segno = new SegnoInter(glyph, grade);
             segno.setStaff(closestStaff); // Staff is OK
-            closestStaff.addOtherInter(segno);
             addSymbol(segno);
             segno.linkWithBarline();
         } else if (constants.supportFingerings.isSet() && Digits.contains(shape)) {
@@ -307,13 +306,14 @@ public class SymbolFactory
         if (inter == null) {
             return;
         }
-//
-//        Glyph glyph = inter.getGlyph();
-//
-//        if ((glyph != null) && (glyph.getId() == 0)) {
-//            sheet.getGlyphIndex().register(glyph);
-//        }
-//
+
+        //
+        //        Glyph glyph = inter.getGlyph();
+        //
+        //        if ((glyph != null) && (glyph.getId() == 0)) {
+        //            sheet.getGlyphIndex().register(glyph);
+        //        }
+        //
         sig.addVertex(inter);
     }
 
@@ -379,12 +379,6 @@ public class SymbolFactory
             // If the stack does have a validated time sig, discard overlapping stuff right now!
             if (res != -1) {
                 final Collection<AbstractTimeInter> times = column.getTimeInters().values();
-
-                // Record each time inter into its containing staff
-                for (AbstractTimeInter time : times) {
-                    time.getStaff().addOtherInter(time);
-                }
-
                 final Rectangle columnBox = Inters.getBounds(times);
                 List<Inter> neighbors = sig.inters(
                         new Predicate<Inter>()

@@ -24,6 +24,7 @@ package omr.util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.CubicCurve2D;
@@ -61,9 +62,6 @@ public abstract class Jaxb
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Jaxb.class);
-
-    /** Used for booleans. */
-    public static final True TRUE = new True();
 
     //~ Methods ------------------------------------------------------------------------------------
     //---------//
@@ -398,20 +396,6 @@ public abstract class Jaxb
         }
     }
 
-    //------//
-    // True //
-    //------//
-    public static class True
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public String toString ()
-        {
-            return "TRUE";
-        }
-    }
-
     //-----------------//
     // UnmarshalLogger //
     //-----------------//
@@ -496,6 +480,46 @@ public abstract class Jaxb
         public CubicCurve2D getCurve ()
         {
             return new CubicCurve2D.Double(x1, y1, ctrlx1, ctrly1, ctrlx2, ctrly2, x2, y2);
+        }
+    }
+
+    //-----------------//
+    // DimensionFacade //
+    //-----------------//
+    @XmlRootElement
+    private static class DimensionFacade
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlAttribute
+        public int width;
+
+        @XmlAttribute
+        public int height;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new instance of DimensionFacade.
+         */
+        public DimensionFacade ()
+        {
+        }
+
+        /**
+         * Creates a new DimensionFacade object.
+         *
+         * @param dimension the interfaced dimension
+         */
+        public DimensionFacade (Dimension dimension)
+        {
+            width = dimension.width;
+            height = dimension.height;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public Dimension getDimension ()
+        {
+            return new Dimension(width, height);
         }
     }
 

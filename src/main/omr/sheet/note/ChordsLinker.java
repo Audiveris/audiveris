@@ -28,7 +28,7 @@ import omr.sheet.rhythm.MeasureStack;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.StemInter;
 import omr.sig.relation.BeamStemRelation;
@@ -108,7 +108,7 @@ public class ChordsLinker
                 Set<Relation> hsRels = sig.getRelations(stem, HeadStemRelation.class);
 
                 for (Relation hs : hsRels) {
-                    AbstractHeadInter head = (AbstractHeadInter) sig.getOppositeInter(stem, hs);
+                    HeadInter head = (HeadInter) sig.getOppositeInter(stem, hs);
                     AbstractChordInter chord = head.getChord();
                     chord.addBeam(beam);
                     beam.addChord(chord);

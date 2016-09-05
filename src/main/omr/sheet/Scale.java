@@ -48,7 +48,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>
  * Primary informations: This data is always detected, otherwise the current page is detected as not
  * being a music page.<ul>
- * <li><b>Staff line thickness</b> (fore): main, max.</li>
+ * <li><b>Staff line thickness</b> (fore): min, main, max.</li>
  * <li><b>Staff interline</b>: min, main, max.</li>
  * </ul>
  * <p>

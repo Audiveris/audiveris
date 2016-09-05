@@ -40,7 +40,6 @@ public interface Exclusion
         //~ Enumeration constant initializers ------------------------------------------------------
 
         OVERLAP,
-        TOO_CLOSE,
         INCOMPATIBLE;
     }
 }

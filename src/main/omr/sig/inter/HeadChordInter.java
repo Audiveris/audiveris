@@ -21,6 +21,8 @@
 // </editor-fold>
 package omr.sig.inter;
 
+import omr.glyph.Shape;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,30 +80,31 @@ public class HeadChordInter
         setMirror(clone);
 
         clone.setStaff(staff);
-//
-//        clone.stem = stem.duplicate();
-//
-        // Notes (we make a deep copy of each note)
+
+        // Notes (we make a deep copy of each note head)
         for (AbstractNoteInter note : notes) {
+            HeadInter head = (HeadInter) note;
             AbstractNoteInter newHead = null;
 
-            if (note instanceof BlackHeadInter) {
-                BlackHeadInter blackHead = (BlackHeadInter) note;
-                newHead = blackHead.duplicate();
-            } else if (note instanceof VoidHeadInter) {
-                VoidHeadInter voidHead = (VoidHeadInter) note;
-                newHead = toBlack ? voidHead.duplicateAsBlack() : voidHead.duplicate();
-            } else {
+            switch (head.getShape()) {
+            case NOTEHEAD_BLACK:
+                newHead = head.duplicate();
+
+                break;
+
+            case NOTEHEAD_VOID:
+                newHead = toBlack ? head.duplicateAs(Shape.NOTEHEAD_BLACK) : head.duplicate();
+
+                break;
+
+            default:
                 logger.error("No duplication supported for {}", note);
+
+                break;
             }
 
             if (newHead != null) {
                 clone.addMember(newHead);
-//
-//                // Replicate HeadStem relations
-//                for (Relation hs : sig.getRelations(note, HeadStemRelation.class)) {
-//                    sig.addEdge(newHead, clone.stem, hs.duplicate());
-//                }
             }
         }
 
@@ -116,5 +119,4 @@ public class HeadChordInter
     {
         return "HeadChord";
     }
-
 }

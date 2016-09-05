@@ -40,8 +40,10 @@ import omr.sig.inter.Inter;
 import omr.sig.inter.TupletInter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
+
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -63,6 +65,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -131,26 +134,27 @@ public class MeasureStack
     private int right;
 
     /** Flag for special measure. */
-    @XmlElement
+    @XmlAttribute
     private Special special;
 
     /** Repeat sign on either side of the measure stack. */
-    @XmlElement
+    @XmlList
+    @XmlAttribute(name = "repeat")
     private Set<HorizontalSide> repeat;
 
-    /** Sequence of time slots within the measure, from left to right. */
-    @XmlElement(name = "slot")
-    private final List<Slot> slots = new ArrayList<Slot>();
-
     /** Theoretical measure stack duration, based on current time signature. */
-    @XmlElement(name = "expected")
+    @XmlAttribute(name = "expected")
     @XmlJavaTypeAdapter(Rational.Adapter.class)
     private Rational expectedDuration;
 
     /** Actual measure stack duration, based on durations of contained chords. */
-    @XmlElement(name = "duration")
+    @XmlAttribute(name = "duration")
     @XmlJavaTypeAdapter(Rational.Adapter.class)
     private Rational actualDuration;
+
+    /** Sequence of time slots within the measure, from left to right. */
+    @XmlElement(name = "slot")
+    private final List<Slot> slots = new ArrayList<Slot>();
 
     // Transient data
     //---------------

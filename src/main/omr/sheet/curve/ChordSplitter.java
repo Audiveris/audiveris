@@ -32,9 +32,9 @@ import omr.sheet.Sheet;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.HeadChordInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.StemInter;
@@ -218,7 +218,7 @@ public class ChordSplitter
 
                     if (shRel.getSide() == side) {
                         Inter inter = sig.getOppositeInter(slur, rel);
-                        AbstractHeadInter head = (AbstractHeadInter) inter;
+                        HeadInter head = (HeadInter) inter;
                         partition.add(head);
                         tiedHeads.add(head);
 
@@ -307,10 +307,10 @@ public class ChordSplitter
      */
     private void injectStandardHeads (Collection<AbstractNoteInter> tiedHeads)
     {
-        List<AbstractHeadInter> stdHeads = new ArrayList<AbstractHeadInter>();
+        List<HeadInter> stdHeads = new ArrayList<HeadInter>();
 
         for (Inter inter : chord.getNotes()) {
-            AbstractHeadInter head = (AbstractHeadInter) inter;
+            HeadInter head = (HeadInter) inter;
 
             if (!tiedHeads.contains(head)) {
                 stdHeads.add(head);
@@ -320,7 +320,7 @@ public class ChordSplitter
         Collections.sort(stdHeads, AbstractChordInter.noteHeadComparator);
 
         HeadLoop:
-        for (AbstractHeadInter head : stdHeads) {
+        for (HeadInter head : stdHeads) {
             final int y = head.getCenter().y;
             Integer bestDist = null;
             Partition bestPartition = null;
@@ -360,7 +360,7 @@ public class ChordSplitter
             HeadChordInter ch = new HeadChordInter(chord.getGrade());
             ch.setStem(stem);
 
-            for (AbstractHeadInter head : partition) {
+            for (HeadInter head : partition) {
                 // Switch partition heads to sub-chord
                 ch.addMember(head);
 
@@ -402,7 +402,7 @@ public class ChordSplitter
      * A consistent sequence of note heads, kept sorted from chord head location.
      */
     private static class Partition
-            extends TreeSet<AbstractHeadInter>
+            extends TreeSet<HeadInter>
             implements Comparable<Partition>
     {
         //~ Constructors ---------------------------------------------------------------------------

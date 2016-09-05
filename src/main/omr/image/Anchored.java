@@ -55,7 +55,7 @@ public interface Anchored
          */
         LEFT_STEM,
         /**
-         * X at symbol right stem, Y at low stem ordinate.
+         * X at symbol left stem, Y at low stem ordinate.
          */
         BOTTOM_LEFT_STEM,
         /**

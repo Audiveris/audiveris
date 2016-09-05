@@ -22,6 +22,7 @@
 package omr.glyph;
 
 import omr.run.Orientation;
+
 import static omr.run.Orientation.HORIZONTAL;
 
 import omr.ui.util.AttachmentHolder;
@@ -37,7 +38,7 @@ import java.util.Map;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -63,7 +64,7 @@ public abstract class AbstractSymbol
     //
     /** Assigned groups, if any. */
     @XmlList
-    @XmlElement
+    @XmlAttribute
     protected EnumSet<Group> groups = EnumSet.noneOf(Group.class);
 
     // Transient data

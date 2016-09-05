@@ -53,7 +53,7 @@ import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.ScrollImageView;
 
 import omr.sig.SIGraph;
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SentenceInter;
 import omr.sig.inter.StemInter;
@@ -427,7 +427,7 @@ public class SymbolsFilter
         // visit //
         //-------//
         @Override
-        public void visit (AbstractHeadInter inter)
+        public void visit (HeadInter inter)
         {
             final ShapeDescriptor desc = inter.getDescriptor();
             final Template tpl = desc.getTemplate();
@@ -466,7 +466,7 @@ public class SymbolsFilter
                 return ctxGrade >= 0.7; // TODO
             }
 
-            if (inter instanceof AbstractHeadInter) {
+            if (inter instanceof HeadInter) {
                 return ctxGrade >= 0.6; // TODO
             }
 

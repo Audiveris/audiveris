@@ -56,8 +56,8 @@ import omr.sheet.SystemInfo;
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
-import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.BeamInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.StemInter;
 import omr.sig.relation.BeamPortion;
@@ -1180,7 +1180,7 @@ public class StemsBuilder
              */
             private Point2D getReferencePoint ()
             {
-                AbstractHeadInter note = (AbstractHeadInter) head;
+                HeadInter note = (HeadInter) head;
                 ShapeDescriptor desc = note.getDescriptor();
                 Anchor anchor = corner.stemAnchor();
                 Point offset = desc.getOffset(anchor);

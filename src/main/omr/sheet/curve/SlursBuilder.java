@@ -38,7 +38,7 @@ import omr.sheet.grid.LineInfo;
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.SlurInter;
 import omr.sig.relation.Relation;
@@ -717,7 +717,7 @@ public class SlursBuilder
 
                 // Check on both sides of this slur
                 for (HorizontalSide side : HorizontalSide.values()) {
-                    AbstractHeadInter head = slur.getHead(side);
+                    HeadInter head = slur.getHead(side);
 
                     if (head != null) {
                         // Check this head for colliding slur links

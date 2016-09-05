@@ -147,7 +147,7 @@ public class BasicBook
     private final Path path;
 
     /** Book alias, if any. */
-    @XmlElement(name = "alias")
+    @XmlAttribute(name = "alias")
     private String alias;
 
     /** Sheet offset of image file with respect to full work, if any. */

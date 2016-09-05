@@ -114,7 +114,7 @@ public class ShapeBoard
         heights.put(ShapeSet.Keys, 220);
         heights.put(ShapeSet.NoteHeads, 40);
         heights.put(ShapeSet.Markers, 80);
-        heights.put(ShapeSet.Notes, 40);
+        heights.put(ShapeSet.StemLessHeads, 40);
         heights.put(ShapeSet.Ornaments, 80);
         heights.put(ShapeSet.Rests, 120);
         heights.put(ShapeSet.Times, 130);

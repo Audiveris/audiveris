@@ -40,7 +40,6 @@ import omr.sheet.rhythm.SystemBackup;
 
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.AbstractTimeInter;
 import omr.sig.inter.AlterInter;
@@ -48,22 +47,20 @@ import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BeamHookInter;
 import omr.sig.inter.BeamInter;
-import omr.sig.inter.BlackHeadInter;
 import omr.sig.inter.DeletedInterException;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.LedgerInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallBeamInter;
-import omr.sig.inter.SmallBlackHeadInter;
 import omr.sig.inter.StemInter;
 import omr.sig.inter.StringSymbolInter;
 import omr.sig.inter.TimeNumberInter;
 import omr.sig.inter.TupletInter;
-import omr.sig.inter.VoidHeadInter;
 import omr.sig.inter.WordInter;
 import omr.sig.relation.AbstractConnection;
-import omr.sig.relation.AccidHeadRelation;
+import omr.sig.relation.AlterHeadRelation;
 import omr.sig.relation.AugmentationRelation;
 import omr.sig.relation.BeamHeadRelation;
 import omr.sig.relation.BeamPortion;
@@ -315,14 +312,20 @@ public class SigReducer
     //---------------//
     /**
      * Analyze consistency of note heads & beams attached to a (good) stem.
+     * <ul>
+     * <li>All (standard) black, all (standard) void, all small black or all small void.
+     * <li>All (standard) beams or all small beams.
+     * <li>(standard) beams with (standard) heads only.
+     * <li>Small beams with small heads only.
+     * </ul>
      */
     private void analyzeChords ()
     {
         // All stems of the sig
         List<Inter> stems = sig.inters(Shape.STEM);
 
-        // Heads organized by class (black, void, and small versions)
-        Map<Class, Set<Inter>> heads = new HashMap<Class, Set<Inter>>();
+        // Heads organized by shape (black, void, and small versions)
+        Map<Shape, Set<Inter>> heads = new HashMap<Shape, Set<Inter>>();
 
         // Beams organized by size (standard vs small versions)
         Map<Size, Set<Inter>> beams = new EnumMap<Size, Set<Inter>>(Size.class);
@@ -344,11 +347,11 @@ public class SigReducer
             for (Relation rel : sig.edgesOf(stem)) {
                 if (rel instanceof HeadStemRelation) {
                     Inter head = sig.getEdgeSource(rel);
-                    Class classe = head.getClass();
-                    Set<Inter> set = heads.get(classe);
+                    Shape shape = head.getShape();
+                    Set<Inter> set = heads.get(shape);
 
                     if (set == null) {
-                        heads.put(classe, set = new HashSet<Inter>());
+                        heads.put(shape, set = new HashSet<Inter>());
                     }
 
                     set.add(head);
@@ -365,14 +368,14 @@ public class SigReducer
                 }
             }
 
-            // Mutual head exclusion based on head class
-            List<Class> headClasses = new ArrayList<Class>(heads.keySet());
+            // Mutual head exclusion based on head shape
+            List<Shape> headShapes = new ArrayList<Shape>(heads.keySet());
 
-            for (int ic = 0; ic < (headClasses.size() - 1); ic++) {
-                Class c1 = headClasses.get(ic);
+            for (int ic = 0; ic < (headShapes.size() - 1); ic++) {
+                Shape c1 = headShapes.get(ic);
                 Set<Inter> set1 = heads.get(c1);
 
-                for (Class c2 : headClasses.subList(ic + 1, headClasses.size())) {
+                for (Shape c2 : headShapes.subList(ic + 1, headShapes.size())) {
                     Set<Inter> set2 = heads.get(c2);
                     exclude(set1, set2);
                 }
@@ -398,16 +401,16 @@ public class SigReducer
 
                 if (size == Size.SMALL) {
                     // Small beams exclude standard heads
-                    for (Class classe : new Class[]{BlackHeadInter.class, VoidHeadInter.class}) {
-                        Set<Inter> headSet = heads.get(classe);
+                    for (Shape shape : new Shape[]{Shape.NOTEHEAD_BLACK, Shape.NOTEHEAD_VOID}) {
+                        Set<Inter> headSet = heads.get(shape);
 
                         if (headSet != null) {
                             exclude(beamSet, headSet);
                         }
                     }
 
-                    // Small beams support small heads
-                    Set<Inter> smallHeadSet = heads.get(SmallBlackHeadInter.class);
+                    // Small beams support small black heads
+                    Set<Inter> smallHeadSet = heads.get(Shape.NOTEHEAD_BLACK_SMALL);
 
                     if (smallHeadSet != null) {
                         for (Inter smallBeam : beamSet) {
@@ -431,14 +434,14 @@ public class SigReducer
                     }
                 } else {
                     // Standard beams exclude small heads
-                    Set<Inter> smallHeadSet = heads.get(SmallBlackHeadInter.class);
+                    Set<Inter> smallHeadSet = heads.get(Shape.NOTEHEAD_BLACK_SMALL);
 
                     if (smallHeadSet != null) {
                         exclude(beamSet, smallHeadSet);
                     }
 
                     // Standard beams support black heads (not void)
-                    Set<Inter> blackHeadSet = heads.get(BlackHeadInter.class);
+                    Set<Inter> blackHeadSet = heads.get(Shape.NOTEHEAD_BLACK);
 
                     if (blackHeadSet != null) {
                         for (Inter beam : beamSet) {
@@ -639,7 +642,7 @@ public class SigReducer
             final AlterInter alter = (AlterInter) inter;
 
             // Check whether the double-alter is connected to a note head
-            if (!sig.hasRelation(alter, AccidHeadRelation.class)) {
+            if (!sig.hasRelation(alter, AlterHeadRelation.class)) {
                 if (alter.isVip() || logger.isDebugEnabled()) {
                     logger.info("VIP deleting {} lacking note head", alter);
                 }
@@ -703,7 +706,7 @@ public class SigReducer
             }
 
             // Pitch of the note head
-            int pitch = ((AbstractHeadInter) head).getIntegerPitch();
+            int pitch = ((HeadInter) head).getIntegerPitch();
 
             // Target side and target pitches of other head
             // Look for presence of head on other side with target pitch
@@ -800,7 +803,7 @@ public class SigReducer
     {
         // All system note heads, sorted by abscissa
         List<Inter> allHeads = sig.inters(
-                ShapeSet.shapesOf(ShapeSet.NoteHeads.getShapes(), ShapeSet.Notes.getShapes()));
+                ShapeSet.shapesOf(ShapeSet.NoteHeads.getShapes(), ShapeSet.StemLessHeads.getShapes()));
         Collections.sort(allHeads, Inter.byAbscissa);
 
         final List<LedgerInter> toDelete = new ArrayList<LedgerInter>();
@@ -1222,10 +1225,9 @@ public class SigReducer
                           Inter right)
     {
         // Special overlap case between a stem and a standard-size note head
-        if ((left instanceof StemInter && right instanceof AbstractHeadInter
+        if ((left instanceof StemInter && right instanceof HeadInter
              && !right.getShape().isSmall())
-            || (right instanceof StemInter && left instanceof AbstractHeadInter
-                && !left.getShape().isSmall())) {
+            || (right instanceof StemInter && left instanceof HeadInter && !left.getShape().isSmall())) {
             return;
         }
 
@@ -1316,7 +1318,7 @@ public class SigReducer
         final List<Inter> heads = sig.intersectedInters(allHeads, GeoOrder.BY_ABSCISSA, ledgerBox);
 
         for (Inter inter : heads) {
-            final AbstractHeadInter head = (AbstractHeadInter) inter;
+            final HeadInter head = (HeadInter) inter;
             final int notePitch = head.getIntegerPitch();
 
             if ((notePitch == ledgerPitch) || (notePitch == nextPitch)) {
@@ -1354,7 +1356,7 @@ public class SigReducer
 
             for (Relation rel : links) {
                 // Retrieve the stem portion for this Head -> Stem link
-                AbstractHeadInter head = (AbstractHeadInter) sig.getEdgeSource(rel);
+                HeadInter head = (HeadInter) sig.getEdgeSource(rel);
                 HeadStemRelation link = (HeadStemRelation) rel;
                 StemPortion portion = link.getStemPortion(head, stemLine, scale);
                 HorizontalSide headSide = link.getHeadSide();

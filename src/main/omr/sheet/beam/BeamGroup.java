@@ -108,7 +108,7 @@ public class BeamGroup
     private final HashSet<AbstractBeamInter> beams = new HashSet<AbstractBeamInter>();
 
     /** Indicates a beam group that is linked to more than one staff. */
-    @XmlElement(name = "multi-staff")
+    @XmlAttribute(name = "multi-staff")
     private Boolean multiStaff;
 
     // Transient data
@@ -668,7 +668,7 @@ public class BeamGroup
         }
 
         if (staves.size() > 1) {
-            multiStaff = true;
+            multiStaff = Boolean.TRUE;
         }
     }
 

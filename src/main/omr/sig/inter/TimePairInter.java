@@ -52,7 +52,6 @@ public class TimePairInter
     // Persistent data
     //----------------
     //
-    //@XmlIDREF
     @XmlElement(name = "item")
     private List<TimeNumberInter> members;
 

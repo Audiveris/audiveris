@@ -31,10 +31,11 @@ import omr.math.GeoOrder;
 import static omr.math.GeoOrder.*;
 
 import omr.sheet.Staff;
+import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
 import omr.sheet.header.StaffHeader;
 
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.StemInter;
@@ -187,6 +188,13 @@ public class SIGraph
                         logger.warn("Ensemble already set for member {}", member);
                     }
                 }
+            }
+
+            // Link inters to their related staff
+            final StaffManager mgr = system.getSheet().getStaffManager();
+
+            for (Inter inter : vertexSet()) {
+                Staff.StaffHolder.checkStaffHolder(inter, mgr);
             }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
@@ -419,7 +427,7 @@ public class SIGraph
         Collections.sort(inters, Inter.byReverseGrade);
 
         final int n = inters.size();
-        final List<Inter> stems = (focus instanceof AbstractHeadInter) ? stemsOf(inters) : null;
+        final List<Inter> stems = (focus instanceof HeadInter) ? stemsOf(inters) : null;
         final List<List<Inter>> result = new ArrayList<List<Inter>>();
 
         // Map inter -> concurrents of inter (that appear later within the provided list)
@@ -447,7 +455,7 @@ public class SIGraph
             // multiple stems for a head are correctly filtered out.
             // We assume that the various stems are potential partners of the focused head
             // and thus all stems are concurrent of one another
-            if (focus instanceof AbstractHeadInter && inter instanceof StemInter) {
+            if (focus instanceof HeadInter && inter instanceof StemInter) {
                 // Flag all other stems, if any, as concurrents of this one
                 for (Inter stem : stems) {
                     int ic = inters.indexOf(stem);

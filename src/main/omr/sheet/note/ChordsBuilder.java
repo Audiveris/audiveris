@@ -31,16 +31,14 @@ import omr.sheet.rhythm.Measure;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
-import omr.sig.inter.BlackHeadInter;
 import omr.sig.inter.HeadChordInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.RestChordInter;
 import omr.sig.inter.RestInter;
 import omr.sig.inter.SmallChordInter;
 import omr.sig.inter.StemInter;
-import omr.sig.inter.VoidHeadInter;
-import omr.sig.relation.AccidHeadRelation;
+import omr.sig.relation.AlterHeadRelation;
 import omr.sig.relation.AugmentationRelation;
 import omr.sig.relation.BeamHeadRelation;
 import omr.sig.relation.BeamStemRelation;
@@ -132,15 +130,15 @@ public class ChordsBuilder
             List<AbstractChordInter> stemChords = new ArrayList<AbstractChordInter>();
 
             for (Staff staff : part.getStaves()) {
-                List<Inter> heads = sig.inters(staff, AbstractHeadInter.class); // Heads in staff
+                List<Inter> heads = sig.inters(staff, HeadInter.class); // Heads in staff
                 Collections.sort(heads, Inter.byCenterAbscissa);
                 logger.debug("Staff#{} heads:{}", staff.getId(), heads.size());
 
                 // Isolated heads (instances of WholeInter or SmallWholeInter) found so far in staff
-                List<AbstractHeadInter> wholeHeads = new ArrayList<AbstractHeadInter>();
+                List<HeadInter> wholeHeads = new ArrayList<HeadInter>();
 
                 for (Inter inter : heads) {
-                    AbstractHeadInter head = (AbstractHeadInter) inter;
+                    HeadInter head = (HeadInter) inter;
 
                     // Look for connected stems
                     List<Relation> rels = new ArrayList<Relation>(
@@ -151,7 +149,7 @@ public class ChordsBuilder
                     }
 
                     if (!rels.isEmpty()) {
-                        AbstractHeadInter mirrorHead = null;
+                        HeadInter mirrorHead = null;
 
                         for (Relation rel : rels) {
                             StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
@@ -234,12 +232,12 @@ public class ChordsBuilder
      *
      * @param wholeHeads the provided list of whole heads (no stem) in current staff
      */
-    private void detectWholeVerticals (List<AbstractHeadInter> wholeHeads)
+    private void detectWholeVerticals (List<HeadInter> wholeHeads)
     {
         Collections.sort(wholeHeads, Inter.byCenterOrdinate);
 
         for (int i = 0, iBreak = wholeHeads.size(); i < iBreak; i++) {
-            final AbstractHeadInter h1 = wholeHeads.get(i);
+            final HeadInter h1 = wholeHeads.get(i);
             HeadChordInter chord = (HeadChordInter) h1.getEnsemble();
 
             if (chord != null) {
@@ -254,7 +252,7 @@ public class ChordsBuilder
 
             int p1 = (int) Math.rint(h1.getPitch());
 
-            for (AbstractHeadInter h2 : wholeHeads.subList(i + 1, iBreak)) {
+            for (HeadInter h2 : wholeHeads.subList(i + 1, iBreak)) {
                 final int p2 = (int) Math.rint(h2.getPitch());
 
                 if (p2 > (p1 + 2)) {
@@ -301,21 +299,15 @@ public class ChordsBuilder
      * @param rightStem the stem on right
      * @return the duplicated head (for the "right" side)
      */
-    private AbstractHeadInter duplicateHead (AbstractHeadInter head,
-                                             StemInter rightStem)
+    private HeadInter duplicateHead (HeadInter head,
+                                     StemInter rightStem)
     {
         // Handle inters
-        final AbstractHeadInter leftHead = head;
-        final AbstractHeadInter rightHead;
+        final HeadInter leftHead = head;
+        final HeadInter rightHead;
 
-        if (leftHead instanceof BlackHeadInter) {
-            rightHead = ((BlackHeadInter) leftHead).duplicate();
-        } else if (leftHead instanceof VoidHeadInter) {
-            // TODO: perhaps void -> black when flag/beam involved
-            rightHead = ((VoidHeadInter) leftHead).duplicate();
-        } else {
-            throw new IllegalArgumentException("Head not duplicable yet: " + head);
-        }
+        // TODO: perhaps duplicate void -> black when flag/beam involved
+        rightHead = leftHead.duplicate();
 
         // Handle relations as well
         Set<Relation> supports = sig.getRelations(leftHead, Support.class);
@@ -349,7 +341,7 @@ public class ChordsBuilder
                 //                SlurInter slur = (SlurInter) sig.getOppositeInter(leftHead, rel);
                 //                HorizontalSide side = ((SlurHeadRelation) rel).getSide();
                 //                sig.addEdge(slur, rightHead, new SlurHeadRelation(side));
-            } else if (rel instanceof AccidHeadRelation) {
+            } else if (rel instanceof AlterHeadRelation) {
                 // TODO
             } else if (rel instanceof AugmentationRelation) {
                 // TODO: to which head(s) does the dot apply?

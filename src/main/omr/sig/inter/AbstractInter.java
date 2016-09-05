@@ -60,7 +60,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -86,14 +85,14 @@ public abstract class AbstractInter
     // Persistent data
     //----------------
     //
+    /** The assigned shape. */
+    @XmlAttribute
+    protected Shape shape;
+
     /** The underlying glyph, if any. */
     @XmlIDREF
     @XmlAttribute(name = "glyph")
     protected Glyph glyph;
-
-    /** The assigned shape. */
-    @XmlAttribute
-    protected Shape shape;
 
     /** The quality of this interpretation. */
     @XmlAttribute
@@ -106,19 +105,21 @@ public abstract class AbstractInter
     protected AbstractInter mirror;
 
     /** Frozen flag, if any. */
-    @XmlElement(name = "frozen")
-    private Jaxb.True frozen;
+    @XmlAttribute(name = "frozen")
+    private Boolean frozen;
+
+    /** The contextual grade of this interpretation, if any. */
+    @XmlAttribute(name = "ctx-grade")
+    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
+    protected Double ctxGrade;
+
+    /** Related staff, if any. Marshalled via its ID */
+    @Navigable(false)
+    protected Staff staff;
 
     // Transient data
     //---------------
     //
-    /** The contextual grade of this interpretation, if any. */
-    protected Double ctxGrade;
-
-    /** Related staff, if any. */
-    @Navigable(false)
-    protected Staff staff;
-
     /** Related part, if any. */
     @Navigable(false)
     protected Part part;
@@ -324,7 +325,7 @@ public abstract class AbstractInter
     @Override
     public void freeze ()
     {
-        frozen = Jaxb.TRUE;
+        frozen = Boolean.TRUE;
 
         // Freeze members if any
         if (this instanceof InterEnsemble) {
@@ -667,7 +668,7 @@ public abstract class AbstractInter
     @Override
     public boolean isFrozen ()
     {
-        return frozen != null;
+        return frozen != null && frozen;
     }
 
     //--------//
@@ -976,6 +977,41 @@ public abstract class AbstractInter
     protected void setArea (Area area)
     {
         this.area = area;
+    }
+
+    //------------//
+    // getStaffId //
+    //------------//
+    /**
+     * Meant for JAXB.
+     *
+     * @return the ID of related staff.
+     */
+    @SuppressWarnings("unused")
+    @XmlAttribute(name = "staff")
+    private Integer getStaffId ()
+    {
+        if (staff == null) {
+            return null;
+        }
+
+        return staff.getId();
+    }
+
+    //------------//
+    // getStaffId //
+    //------------//
+    /**
+     * Meant for JAXB.
+     *
+     * @param id the ID of related staff, if any.
+     */
+    @SuppressWarnings("unused")
+    private void setStaffId (Integer id)
+    {
+        if (id != null) {
+            setStaff(Staff.StaffHolder.getStaffHolder(id));
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

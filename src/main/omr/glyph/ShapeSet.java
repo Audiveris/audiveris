@@ -320,7 +320,7 @@ public class ShapeSet
             new Color(0x888888),
             shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK, CAESURA, FERMATA, FERMATA_BELOW));
 
-    public static final ShapeSet Notes = new ShapeSet(
+    public static final ShapeSet StemLessHeads = new ShapeSet(
             BREVE,
             new Color(0xff66cc),
             shapesOf(BREVE, WHOLE_NOTE, WHOLE_NOTE_SMALL));

@@ -29,7 +29,7 @@ import omr.math.Rational;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.AugmentationDotInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.Inters;
@@ -422,7 +422,7 @@ public class StackTuner
                     Inter augInter = sig.getOppositeInter(dot, rel);
 
                     // If the augmented entity is a note head, it's OK
-                    if (augInter instanceof AbstractHeadInter) {
+                    if (augInter instanceof HeadInter) {
                         augFound = true;
 
                         break;

@@ -393,7 +393,7 @@ public class ShapeDescriptor
                 (sym.y + (0.5 * (sym.height - 1))) / height);
 
         // WHOLE_NOTE & WHOLE_NOTE_SMALL are not concerned further
-        if (ShapeSet.Notes.contains(template.getShape())) {
+        if (ShapeSet.StemLessHeads.contains(template.getShape())) {
             return;
         }
 

@@ -31,6 +31,7 @@ data/scripts/*
 data/temp/*
 data/train/core/*
 data/www/docs/api
+data/www/docs/guides
 nbproject/configs/*
 private/*
 target/*

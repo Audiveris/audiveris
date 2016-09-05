@@ -441,6 +441,10 @@ public class Rational
         public String marshal (Rational val)
                 throws Exception
         {
+            if (val == null) {
+                return null;
+            }
+
             return val.toString();
         }
 

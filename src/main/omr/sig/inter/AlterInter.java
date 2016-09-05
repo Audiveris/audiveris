@@ -34,7 +34,7 @@ import omr.sheet.Staff;
 import omr.sheet.rhythm.Voice;
 
 import omr.sig.GradeImpacts;
-import omr.sig.relation.AccidHeadRelation;
+import omr.sig.relation.AlterHeadRelation;
 import omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -193,8 +193,8 @@ public class AlterInter
     {
         // Look for notes nearby on the right side of accidental
         final Scale scale = sig.getSystem().getSheet().getScale();
-        final int xGapMax = scale.toPixels(AccidHeadRelation.getXOutGapMaximum());
-        final int yGapMax = scale.toPixels(AccidHeadRelation.getYGapMaximum());
+        final int xGapMax = scale.toPixels(AlterHeadRelation.getXOutGapMaximum());
+        final int yGapMax = scale.toPixels(AlterHeadRelation.getYGapMaximum());
 
         // Accid ref point is on accid right side and precise y depends on accid shape
         Rectangle accidBox = getBounds();
@@ -211,7 +211,7 @@ public class AlterInter
                 logger.info("accid {} glyph#{} notes:{}", this, getGlyph().getId(), notes);
             }
 
-            AccidHeadRelation bestRel = null;
+            AlterHeadRelation bestRel = null;
             Inter bestNote = null;
             double bestYGap = Double.MAX_VALUE;
 
@@ -221,7 +221,7 @@ public class AlterInter
                 Point notePt = note.getCenterLeft();
                 double xGap = notePt.x - accidPt.x;
                 double yGap = Math.abs(notePt.y - accidPt.y);
-                AccidHeadRelation rel = new AccidHeadRelation();
+                AlterHeadRelation rel = new AlterHeadRelation();
                 rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
@@ -262,7 +262,7 @@ public class AlterInter
     @Override
     public Voice getVoice ()
     {
-        for (Relation rel : sig.getRelations(this, AccidHeadRelation.class)) {
+        for (Relation rel : sig.getRelations(this, AlterHeadRelation.class)) {
             return sig.getOppositeInter(this, rel).getVoice();
         }
 

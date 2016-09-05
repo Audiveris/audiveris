@@ -36,11 +36,9 @@ import omr.sheet.grid.StaffFilament;
 import omr.sheet.header.StaffHeader;
 import omr.sheet.note.NotePosition;
 
-import omr.sig.inter.AbstractInter;
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.Inter;
-import omr.sig.inter.InterEnsemble;
 import omr.sig.inter.LedgerInter;
 
 import omr.ui.util.AttachmentHolder;
@@ -73,10 +71,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -176,10 +174,6 @@ public class Staff
     @XmlElementRef
     private LinkedHashSet<AbstractNoteInter> notes = new LinkedHashSet<AbstractNoteInter>();
 
-    /** Other staff-related inters. Containment is needed for their staff info to persist. */
-    @XmlElementRef
-    private final List<AbstractInter> others = new ArrayList<AbstractInter>();
-
     // Transient data
     //---------------
     //
@@ -251,6 +245,17 @@ public class Staff
         this.lines = null;
     }
 
+    /**
+     * Meant for a staff holder only.
+     *
+     * @param id the staff id to remember
+     */
+    private Staff (int id)
+    {
+        this.id = id;
+        this.lines = null;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //
     //---------------//
@@ -316,15 +321,6 @@ public class Staff
         notes.add(note);
     }
 
-    //---------------//
-    // addOtherInter //
-    //---------------//
-    public void addOtherInter (AbstractInter inter)
-    {
-        Objects.requireNonNull(inter, "Cannot add other null inter");
-        others.add(inter);
-    }
-
     //-------------//
     // afterReload //
     //-------------//
@@ -340,14 +336,6 @@ public class Staff
                 int smallInterline = Math.min(scale.getInterline(), scale.getInterline2());
                 int largeInterline = Math.max(scale.getInterline(), scale.getInterline2());
                 specificInterline = isSmall() ? smallInterline : largeInterline;
-            }
-
-            for (AbstractNoteInter note : notes) {
-                note.setStaff(this);
-            }
-
-            for (AbstractInter other : others) {
-                other.setStaff(this);
             }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
@@ -636,24 +624,6 @@ public class Staff
         return sum / (slopes.size() - 2);
     }
 
-    //--------------------//
-    // getLedgerLineIndex //
-    //--------------------//
-    /**
-     * Compute staff-based line index, based on provided pitch position
-     *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
-     */
-    public static int getLedgerLineIndex (double pitchPosition)
-    {
-        if (pitchPosition > 0) {
-            return (int) Math.rint(pitchPosition / 2) - 2;
-        } else {
-            return (int) Math.rint(pitchPosition / 2) + 2;
-        }
-    }
-
     //------------------------//
     // getLedgerPitchPosition //
     //------------------------//
@@ -679,14 +649,6 @@ public class Staff
         } else {
             return -4 + (2 * lineIndex);
         }
-    }
-
-    //--------------------//
-    // showDefiningPoints //
-    //--------------------//
-    public static Boolean showDefiningPoints ()
-    {
-        return constants.showDefiningPoints.isSet();
     }
 
     //--------------//
@@ -805,6 +767,24 @@ public class Staff
     public LineInfo getLastLine ()
     {
         return lines.get(lines.size() - 1);
+    }
+
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
+    /**
+     * Compute staff-based line index, based on provided pitch position
+     *
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
+     */
+    public static int getLedgerLineIndex (double pitchPosition)
+    {
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
+        } else {
+            return (int) Math.rint(pitchPosition / 2) + 2;
+        }
     }
 
     //--------------//
@@ -1163,14 +1143,6 @@ public class Staff
         return notes.remove(note);
     }
 
-    //------------------//
-    // removeOtherInter //
-    //------------------//
-    public void removeOtherInter (AbstractInter inter)
-    {
-        others.remove(inter);
-    }
-
     //--------//
     // render //
     //--------//
@@ -1362,6 +1334,14 @@ public class Staff
         header.timeRange.valid = true;
     }
 
+    //--------------------//
+    // showDefiningPoints //
+    //--------------------//
+    public static Boolean showDefiningPoints ()
+    {
+        return constants.showDefiningPoints.isSet();
+    }
+
     //---------------//
     // simplifyLines //
     //---------------//
@@ -1463,54 +1443,13 @@ public class Staff
     /**
      * Called after all the properties (except IDREF) are unmarshalled for this object,
      * but before this object is set to the parent object.
-     * We use this call-back method to re-assign staff to contained inters.
      */
     @SuppressWarnings("unused")
     private void afterUnmarshal (Unmarshaller um,
                                  Object parent)
     {
-        if (header != null) {
-            if (header.clef != null) {
-                header.clef.setStaff(this);
-            }
-
-            if (header.key != null) {
-                header.key.setStaff(this);
-
-                for (Inter alter : header.key.getMembers()) {
-                    alter.setStaff(this);
-                }
-            }
-
-            if (header.time != null) {
-                header.time.setStaff(this);
-
-                if (header.time instanceof InterEnsemble) {
-                    for (Inter member : ((InterEnsemble) header.time).getMembers()) {
-                        member.setStaff(this);
-                    }
-                }
-            }
-        }
-
         if (bars != null) {
-            for (BarlineInter bar : bars) {
-                bar.setStaff(this);
-            }
-
             retrieveSideBars();
-        }
-
-        //
-        //        // Oops: this won't work because notes are IDREF's !!!
-        //        for (AbstractNoteInter note : notes) {
-        //            note.setStaff(this);
-        //        }
-        //
-        for (List<LedgerInter> ledgerSet : ledgerMap.values()) {
-            for (LedgerInter ledger : ledgerSet) {
-                ledger.setStaff(this);
-            }
         }
     }
 
@@ -1582,6 +1521,73 @@ public class Staff
         {
             this.ledger = ledger;
             this.index = index;
+        }
+    }
+
+    //-------------//
+    // StaffHolder //
+    //-------------//
+    /**
+     * Meant to be a placeholder for Staff while performing JAXB unmarshalling.
+     * It is a dummy staff, whose temporary purpose is just to record the staff ID.
+     */
+    public static class StaffHolder
+            extends Staff
+    {
+        //~ Static fields/initializers -------------------------------------------------------------
+
+        /** Predefined place holders. */
+        private static ConcurrentHashMap<Integer, StaffHolder> holders = new ConcurrentHashMap<Integer, StaffHolder>();
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create a place holder
+         *
+         * @param id staff ID to remember
+         */
+        public StaffHolder (int id)
+        {
+            super(id);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Check provided inter, to replace staff holder with proper staff instance.
+         *
+         * @param inter the inter instance to check
+         * @param mgr   sheet staff manager
+         */
+        public static void checkStaffHolder (Inter inter,
+                                             StaffManager mgr)
+        {
+            Staff staff = inter.getStaff();
+
+            if (staff instanceof StaffHolder) {
+                inter.setStaff(mgr.getStaff(staff.getId() - 1));
+            }
+        }
+
+        /** Delete all the predefined place holders. */
+        public static void clearStaffHolders ()
+        {
+            holders.clear();
+        }
+
+        /**
+         * Get a place holder with proper ID.
+         *
+         * @param id specific staff ID
+         * @return a (predefined) place holder with proper ID
+         */
+        public static StaffHolder getStaffHolder (int id)
+        {
+            StaffHolder holder = StaffHolder.holders.get(id);
+
+            if (holder == null) {
+                holders.put(id, holder = new StaffHolder(id));
+            }
+
+            return holder;
         }
     }
 

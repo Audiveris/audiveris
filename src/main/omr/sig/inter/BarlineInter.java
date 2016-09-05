@@ -34,7 +34,7 @@ import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -51,7 +51,7 @@ public class BarlineInter
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Does this bar line define a staff side?. */
-    @XmlElement(name = "staff-end")
+    @XmlAttribute(name = "staff-end")
     private HorizontalSide staffEnd;
 
     //~ Constructors -------------------------------------------------------------------------------

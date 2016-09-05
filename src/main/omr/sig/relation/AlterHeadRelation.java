@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                A c c i d H e a d R e l a t i o n                               //
+//                                A l t e r H e a d R e l a t i o n                               //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -32,20 +32,20 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AccidHeadRelation} represents the relation support between an accidental
+ * Class {@code AlterHeadRelation} represents the relation support between an accidental
  * alteration (sharp, flat, natural, double-sharp, double-flat) and a note head.
  *
  * @author Hervé Bitteur
  */
-@XmlRootElement(name = "accid-head")
-public class AccidHeadRelation
+@XmlRootElement(name = "alter-head")
+public class AlterHeadRelation
         extends AbstractConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(AccidHeadRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(AlterHeadRelation.class);
 
     private static final double[] IN_WEIGHTS = new double[]{
         constants.xInWeight.getValue(),

@@ -44,7 +44,6 @@ import omr.sig.inter.SentenceInter;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
-import omr.util.Jaxb;
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -116,11 +115,10 @@ public class SystemInfo
     private final int id;
 
     /** Indentation flag. */
-    @XmlElement(name = "indented")
-    private Jaxb.True indented;
+    @XmlAttribute(name = "indented")
+    private Boolean indented;
 
     /** Measure stacks in this system. */
-    ///@XmlElementWrapper(name = "stacks")
     @XmlElement(name = "stack")
     private final List<MeasureStack> stacks = new ArrayList<MeasureStack>();
 
@@ -1145,7 +1143,7 @@ public class SystemInfo
      */
     public boolean isIndented ()
     {
-        return indented != null;
+        return (indented != null) && indented;
     }
 
     //--------------//
@@ -1220,7 +1218,7 @@ public class SystemInfo
      */
     public void setIndented (boolean indented)
     {
-        this.indented = indented ? Jaxb.TRUE : null;
+        this.indented = indented ? Boolean.TRUE : null;
     }
 
     //-------------//

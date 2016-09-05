@@ -29,7 +29,7 @@ import omr.sheet.rhythm.Voice;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.DynamicsInter;
 import omr.sig.inter.FermataInter;
 import omr.sig.inter.Inter;
@@ -170,7 +170,7 @@ public class SymbolsLinker
             for (Inter interNote : smallChord.getNotes()) {
                 for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
                     SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
-                    AbstractHeadInter head = slur.getHead(HorizontalSide.RIGHT);
+                    HeadInter head = slur.getHead(HorizontalSide.RIGHT);
 
                     if (head != null) {
                         Voice voice = head.getVoice();

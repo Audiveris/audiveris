@@ -35,7 +35,6 @@ import omr.sig.SIGraph;
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
 import omr.sig.inter.AbstractFlagInter;
-import omr.sig.inter.AbstractHeadInter;
 import omr.sig.inter.BarConnectorInter;
 import omr.sig.inter.BarlineInter;
 import omr.sig.inter.BraceInter;
@@ -43,6 +42,7 @@ import omr.sig.inter.BracketConnectorInter;
 import omr.sig.inter.BracketInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.EndingInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterVisitor;
 import omr.sig.inter.KeyAlterInter;
@@ -201,6 +201,15 @@ public class SigPainter
     // visit //
     //-------//
     @Override
+    public void visit (AbstractChordInter inter)
+    {
+        // Nothing: let note & stem be painted on their own
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
     public void visit (AbstractFlagInter flag)
     {
         setColor(flag);
@@ -224,16 +233,6 @@ public class SigPainter
                 logger.error("No symbol to paint {}", flag);
             }
         }
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (AbstractHeadInter head)
-    {
-        // Consider it as a plain inter
-        visit((Inter) head);
     }
 
     //-------//
@@ -383,9 +382,10 @@ public class SigPainter
     // visit //
     //-------//
     @Override
-    public void visit (AbstractChordInter inter)
+    public void visit (HeadInter head)
     {
-        // Nothing: let note & stem be painted on their own
+        // Consider it as a plain inter
+        visit((Inter) head);
     }
 
     //-------//

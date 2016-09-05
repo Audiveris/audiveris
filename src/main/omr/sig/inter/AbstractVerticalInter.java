@@ -37,6 +37,7 @@ import java.awt.geom.Path2D;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -53,11 +54,11 @@ public abstract class AbstractVerticalInter
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Line width. */
-    @XmlElement
+    @XmlAttribute
     @XmlJavaTypeAdapter(value = Jaxb.Double1Adapter.class, type = double.class)
     protected final double width;
 
-    /** Median line, perhaps not fully straight. */
+    /** Median line. */
     @XmlElement
     protected final Line2D median;
 

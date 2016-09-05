@@ -173,8 +173,8 @@ public class SlurInter
     private boolean above;
 
     /** Is this a tie?. (rather than a plain slur) */
-    @XmlElement
-    private Jaxb.True tie;
+    @XmlAttribute
+    private Boolean tie;
 
     /** The precise Bézier curve. */
     @XmlElement
@@ -183,12 +183,12 @@ public class SlurInter
 
     /** Extension slur on left, if any (within the same sheet). */
     @XmlIDREF
-    @XmlElement(name = "left-extension")
+    @XmlAttribute(name = "left-extension")
     private SlurInter leftExtension;
 
     /** Extension slur on right, if any (within the same sheet). */
     @XmlIDREF
-    @XmlElement(name = "right-extension")
+    @XmlAttribute(name = "right-extension")
     private SlurInter rightExtension;
 
     // Transient data
@@ -331,13 +331,13 @@ public class SlurInter
      * @param side the desired side
      * @return the connected head on this side, if any
      */
-    public AbstractHeadInter getHead (HorizontalSide side)
+    public HeadInter getHead (HorizontalSide side)
     {
         for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
             SlurHeadRelation shRel = (SlurHeadRelation) rel;
 
             if (shRel.getSide() == side) {
-                return (AbstractHeadInter) sig.getOppositeInter(this, rel);
+                return (HeadInter) sig.getOppositeInter(this, rel);
             }
         }
 
@@ -373,7 +373,7 @@ public class SlurInter
      */
     public boolean isTie ()
     {
-        return tie != null;
+        return tie != null && tie;
     }
 
     //--------------//
@@ -405,7 +405,7 @@ public class SlurInter
      */
     public void setTie ()
     {
-        tie = Jaxb.TRUE;
+        tie = Boolean.TRUE;
     }
 
     //------------------//
@@ -422,8 +422,8 @@ public class SlurInter
             SlurHeadRelation shRel = (SlurHeadRelation) rel;
 
             if (shRel.getSide() == side) {
-                AbstractHeadInter head = (AbstractHeadInter) sig.getOppositeInter(this, rel);
-                AbstractHeadInter mirrorHead = (AbstractHeadInter) head.getMirror();
+                HeadInter head = (HeadInter) sig.getOppositeInter(this, rel);
+                HeadInter mirrorHead = (HeadInter) head.getMirror();
 
                 if (mirrorHead != null) {
                     sig.removeEdge(rel);
@@ -446,8 +446,8 @@ public class SlurInter
      * @param n2 the other note
      * @return true if the notes are equivalent.
      */
-    private static boolean haveSameHeight (AbstractHeadInter n1,
-                                           AbstractHeadInter n2)
+    private static boolean haveSameHeight (HeadInter n1,
+                                           HeadInter n2)
     {
         return (n1 != null) && (n2 != null) && (n1.getStep() == n2.getStep())
                && (n1.getOctave() == n2.getOctave());

@@ -46,7 +46,6 @@ import omr.step.ui.StepMonitoring;
 
 import omr.ui.Colors;
 
-import omr.util.Jaxb;
 import omr.util.LiveParam;
 import omr.util.Memory;
 import omr.util.Navigable;
@@ -113,8 +112,8 @@ public class BasicStub
     private final EnumSet<Step> doneSteps = EnumSet.noneOf(Step.class);
 
     /** Indicate a sheet that contains no music. */
-    @XmlElement
-    private Jaxb.True invalid;
+    @XmlAttribute
+    private Boolean invalid;
 
     // Transient data
     //---------------
@@ -418,7 +417,7 @@ public class BasicStub
     @Override
     public void invalidate ()
     {
-        invalid = Jaxb.TRUE;
+        invalid = Boolean.TRUE;
         setModified(true);
 
         if (OMR.gui != null) {
@@ -452,7 +451,7 @@ public class BasicStub
     @Override
     public boolean isValid ()
     {
-        return invalid == null;
+        return (invalid == null) || !invalid;
     }
 
     //-----------//

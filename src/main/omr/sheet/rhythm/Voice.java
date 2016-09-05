@@ -32,7 +32,7 @@ import static omr.sheet.rhythm.Voice.Status.BEGIN;
 
 import omr.sig.inter.AbstractBeamInter;
 import omr.sig.inter.AbstractChordInter;
-import omr.sig.inter.AbstractHeadInter;
+import omr.sig.inter.HeadInter;
 import omr.sig.inter.RestChordInter;
 
 import omr.util.Navigable;
@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -91,7 +90,7 @@ public class Voice
      * wholeRestChord of this voice, and the slots table is left empty.
      */
     @XmlIDREF
-    @XmlElement(name = "whole-rest-chord", type = RestChordInter.class)
+    @XmlAttribute(name = "whole-rest-chord")
     private RestChordInter wholeRestChord;
 
     /**
@@ -102,7 +101,7 @@ public class Voice
      * active.
      */
     @XmlElement
-    private final SortedMap<Integer, SlotVoice> slots = new TreeMap<Integer, SlotVoice>();
+    private TreeMap<Integer, SlotVoice> slots;
 
     // Transient data
     //---------------
@@ -169,7 +168,7 @@ public class Voice
             // Set chord voices
             if (isWhole()) {
                 wholeRestChord.setVoice(this);
-            } else {
+            } else if (slots != null) {
                 for (SlotVoice info : slots.values()) {
                     if (info.status == BEGIN) {
                         info.chord.assignVoice(this);
@@ -223,21 +222,23 @@ public class Voice
             } else {
                 Rational timeCounter = Rational.ZERO;
 
-                for (SlotVoice info : slots.values()) {
-                    if (info.status == Status.BEGIN) {
-                        AbstractChordInter chord = info.chord;
-                        Slot slot = chord.getSlot();
+                if (slots != null) {
+                    for (SlotVoice info : slots.values()) {
+                        if (info.status == Status.BEGIN) {
+                            AbstractChordInter chord = info.chord;
+                            Slot slot = chord.getSlot();
 
-                        // Need a forward before this chord ?
-                        if (timeCounter.compareTo(slot.getTimeOffset()) < 0) {
-                            insertForward(
-                                    slot.getTimeOffset().minus(timeCounter),
-                                    Mark.Position.BEFORE,
-                                    chord);
-                            timeCounter = slot.getTimeOffset();
+                            // Need a forward before this chord ?
+                            if (timeCounter.compareTo(slot.getTimeOffset()) < 0) {
+                                insertForward(
+                                        slot.getTimeOffset().minus(timeCounter),
+                                        Mark.Position.BEFORE,
+                                        chord);
+                                timeCounter = slot.getTimeOffset();
+                            }
+
+                            timeCounter = timeCounter.plus(chord.getDuration());
                         }
-
-                        timeCounter = timeCounter.plus(chord.getDuration());
                     }
                 }
 
@@ -273,15 +274,17 @@ public class Voice
     {
         AbstractChordInter prevChord = null;
 
-        for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
-            if (slot.getId() == entry.getKey()) {
-                break;
-            }
+        if (slots != null) {
+            for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
+                if (slot.getId() == entry.getKey()) {
+                    break;
+                }
 
-            SlotVoice info = entry.getValue();
+                SlotVoice info = entry.getValue();
 
-            if (info != null) {
-                prevChord = info.chord;
+                if (info != null) {
+                    prevChord = info.chord;
+                }
             }
         }
 
@@ -327,8 +330,10 @@ public class Voice
         if (isWhole()) {
             return wholeRestChord;
         } else {
-            for (SlotVoice info : slots.values()) {
-                return info.chord;
+            if (slots != null) {
+                for (SlotVoice info : slots.values()) {
+                    return info.chord;
+                }
             }
 
             return null;
@@ -368,32 +373,34 @@ public class Voice
             // Start time of last note in group, if any
             Rational groupLastTime = null;
 
-            for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
-                SlotVoice info = entry.getValue();
+            if (slots != null) {
+                for (Map.Entry<Integer, SlotVoice> entry : slots.entrySet()) {
+                    SlotVoice info = entry.getValue();
 
-                if (info.status == Voice.Status.BEGIN) {
-                    AbstractChordInter chord = info.chord;
+                    if (info.status == Voice.Status.BEGIN) {
+                        AbstractChordInter chord = info.chord;
 
-                    // Skip the remaining parts of beam group, including embraced rests
-                    if ((groupLastTime != null)
-                        && (chord.getTimeOffset().compareTo(groupLastTime) <= 0)) {
-                        continue;
-                    }
+                        // Skip the remaining parts of beam group, including embraced rests
+                        if ((groupLastTime != null)
+                            && (chord.getTimeOffset().compareTo(groupLastTime) <= 0)) {
+                            continue;
+                        }
 
-                    BeamGroup group = chord.getBeamGroup();
+                        BeamGroup group = chord.getBeamGroup();
 
-                    if (group == null) {
-                        // Isolated chord
-                        durations.add(chord.getDuration());
-                    } else {
-                        // Starting a new group
-                        durations.add(group.getDuration());
-                        groupLastTime = group.getLastChord().getTimeOffset();
-                    }
+                        if (group == null) {
+                            // Isolated chord
+                            durations.add(chord.getDuration());
+                        } else {
+                            // Starting a new group
+                            durations.add(group.getDuration());
+                            groupLastTime = group.getLastChord().getTimeOffset();
+                        }
 
-                    if (timeOffset == null) {
-                        Slot slot = measure.getStack().getSlots().get(entry.getKey() - 1);
-                        timeOffset = slot.getTimeOffset();
+                        if (timeOffset == null) {
+                            Slot slot = measure.getStack().getSlots().get(entry.getKey() - 1);
+                            timeOffset = slot.getTimeOffset();
+                        }
                     }
                 }
             }
@@ -482,8 +489,10 @@ public class Voice
         } else {
             AbstractChordInter lastChord = null;
 
-            for (SlotVoice info : slots.values()) {
-                lastChord = info.chord;
+            if (slots != null) {
+                for (SlotVoice info : slots.values()) {
+                    lastChord = info.chord;
+                }
             }
 
             return lastChord;
@@ -540,7 +549,7 @@ public class Voice
 
         if (isWhole()) {
             rests.add(wholeRestChord);
-        } else {
+        } else if (slots != null) {
             for (SlotVoice info : slots.values()) {
                 if (info.status == Status.BEGIN) {
                     AbstractChordInter chord = info.chord;
@@ -566,7 +575,11 @@ public class Voice
      */
     public SlotVoice getSlotInfo (Slot slot)
     {
-        return slots.get(slot.getId());
+        if (slots != null) {
+            return slots.get(slot.getId());
+        }
+
+        return null;
     }
 
     //----------------//
@@ -614,7 +627,7 @@ public class Voice
      */
     public boolean isFree (Slot slot)
     {
-        return ((getWholeChord() == null) && (slots.get(slot.getId()) == null));
+        return ((getWholeChord() == null) && (slots != null) && (slots.get(slot.getId()) == null));
     }
 
     //------------//
@@ -631,7 +644,7 @@ public class Voice
             SlotVoice info = getSlotInfo(slot);
 
             if ((info != null) && (info.status == Status.BEGIN)) {
-                if (info.chord.getNotes().get(0) instanceof AbstractHeadInter) {
+                if (info.chord.getNotes().get(0) instanceof HeadInter) {
                     return false;
                 }
             }
@@ -683,6 +696,10 @@ public class Voice
             logger.error("You cannot insert a slot in a whole-only voice");
 
             return;
+        }
+
+        if (slots == null) {
+            slots = new TreeMap<Integer, SlotVoice>();
         }
 
         slots.put(slot.getId(), chordInfo);
