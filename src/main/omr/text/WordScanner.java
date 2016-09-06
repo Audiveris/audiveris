@@ -165,9 +165,10 @@ public abstract class WordScanner
      */
     protected String getNextWord ()
     {
-        StringBuilder WordSb = new StringBuilder();
+        final StringBuilder WordSb = new StringBuilder();
+        final int contentLength = content.length();
 
-        for (strIndex += 1; strIndex < content.length(); strIndex++) {
+        for (strIndex += 1; strIndex < contentLength; strIndex++) {
             String charValue = content.substring(strIndex, strIndex + 1);
 
             // Position in sequence of TextChar instances

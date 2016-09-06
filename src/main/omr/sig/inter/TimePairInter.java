@@ -52,7 +52,7 @@ public class TimePairInter
     // Persistent data
     //----------------
     //
-    @XmlElement(name = "item")
+    @XmlElement(name = "number")
     private List<TimeNumberInter> members;
 
     //~ Constructors -------------------------------------------------------------------------------

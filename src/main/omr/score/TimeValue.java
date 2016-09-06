@@ -22,14 +22,20 @@
 package omr.score;
 
 import omr.glyph.Shape;
-import omr.glyph.ShapeSet;
-
-import omr.sig.inter.AbstractTimeInter;
 
 import java.util.Objects;
 
 /**
- * Class {@code TimeValue} represents a class of time signatures.
+ * Class {@code TimeValue} represents a class of <b>equivalent</b> time signatures that
+ * can be checked in a system column of time-signatures.
+ * <ul>
+ * <li>"C" (COMMON_TIME) and 4/4 (either whole "4/4" or pair "4","4") are NOT equivalent, because
+ * we can't have one in a staff and the other in another staff within the same column.
+ * <li>CUT_TIME and 2/2 (either whole "2/2" or pair "2","2") are NOT equivalent (similar as above).
+ * <li>But "2/4" (whole specificShape) is equivalent to pair of shapes ("2","4"), because the way
+ * shapes
+ * were segmented by time builder software does not matter.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -37,48 +43,28 @@ public class TimeValue
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Assigned shape if any: COMMON_TIME, CUT_TIME, predefined combo or null. */
-    public final Shape shape;
+    /** Specific specificShape if any: COMMON_TIME or CUT_TIME, otherwise null. */
+    public final Shape specificShape;
 
     /** Time rational value. (6/8, 3/4, etc) */
     public final TimeRational timeRational;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TimeValue} object from a whole time shape
-     *
-     * @param shape the specific whole shape (COMMON_TIME or CUT_TIME or predefined combo)
-     */
-    public TimeValue (Shape shape)
-    {
-        this(shape, AbstractTimeInter.rationalOf(shape));
-    }
-
-    /**
-     * Creates a new {@code TimeValue} object from a time rational value
-     *
-     * @param timeRational the exact time rational value (6/8 != 3/4)
-     */
-    public TimeValue (TimeRational timeRational)
-    {
-        this(null, timeRational);
-    }
-
-    /**
      * Creates a new {@code TimeValue} object.
      *
-     * @param shape        the specific whole shape if any
-     * @param timeRational the exact time rational value (6/8 != 3/4)
+     * @param specificShape the specific whole specificShape (COMMON_TIME or CUT_TIME) or null!
+     * @param timeRational  the exact time rational value (6/8 != 3/4)
      */
-    private TimeValue (Shape shape,
-                       TimeRational timeRational)
+    public TimeValue (Shape specificShape,
+                      TimeRational timeRational)
     {
-        if ((shape == null) && (timeRational == null)) {
+        if ((specificShape == null) && (timeRational == null)) {
             throw new IllegalArgumentException(
-                    "Expected non-null shape or non-null timeRational for TimeValue");
+                    "Expected non-null specific shape or non-null timeRational for TimeValue");
         }
 
-        this.shape = shape;
+        this.specificShape = specificShape;
         this.timeRational = timeRational;
     }
 
@@ -104,19 +90,8 @@ public class TimeValue
             return false;
         }
 
-        // Check shape identity
-        if (this.shape == that.shape) {
-            return true;
-        }
-
-        // Example of 4/4 time rational value. We can have 3 shape values:
-        // - null (provided by pair num & den)
-        // - COMMON_TIME
-        // - TIME_FOUR_FOUR
-        // COMMON_TIME and TIME_FOUR_FOUR are different
-        // but null shape and TIME_FOUR_FOUR are OK
-        return !ShapeSet.SingleWholeTimes.contains(this.shape)
-               && !ShapeSet.SingleWholeTimes.contains(that.shape);
+        // Check specificShape identity
+        return (this.specificShape == that.specificShape);
     }
 
     //----------//
@@ -137,8 +112,8 @@ public class TimeValue
     @Override
     public String toString ()
     {
-        if (shape == Shape.COMMON_TIME || shape == Shape.CUT_TIME) {
-            return shape.toString();
+        if (specificShape == Shape.COMMON_TIME || specificShape == Shape.CUT_TIME) {
+            return specificShape.toString();
         }
 
         return timeRational.toString();

@@ -220,7 +220,6 @@ public abstract class TimeBuilder
     {
         timeInter = bestTimeInter;
 
-        // Store time ending abscissa for this staff
         if (bestTimeInter != null) {
             bestTimeInter.setStaff(staff);
 
@@ -248,7 +247,7 @@ public abstract class TimeBuilder
      * This accounts for other WholeTimeInter instances and to all TimeNumberInter instances
      * that do not correspond to chosen num/den.
      *
-     * @param chosenTime the time value chosen for this staff (TODO: useless?)
+     * @param chosenTime the time value chosen for this staff
      */
     protected abstract void discardOtherMaterial (TimeValue chosenTime);
 
@@ -511,7 +510,7 @@ public abstract class TimeBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        protected void discardOtherMaterial (TimeValue bestTime)
+        protected void discardOtherMaterial (TimeValue chosenTime)
         {
             // Wholes
             for (Inter inter : wholes) {
@@ -794,10 +793,10 @@ public abstract class TimeBuilder
         @Override
         protected void discardOtherMaterial (TimeValue chosenTime)
         {
-            if (chosenTime.shape != null) {
-                // Discard other wholes
+            if (chosenTime.specificShape != null) {
+                // COMMON_TIME or CUT_TIME, so discard other wholes
                 for (Inter inter : adapters.get(WHOLE).bestMap.values()) {
-                    if (inter.getShape() != chosenTime.shape) {
+                    if (inter.getShape() != chosenTime.specificShape) {
                         inter.delete();
                     }
                 }
@@ -806,8 +805,14 @@ public abstract class TimeBuilder
                 sig.deleteInters(adapters.get(NUM).bestMap.values());
                 sig.deleteInters(adapters.get(DEN).bestMap.values());
             } else {
-                // Discard all wholes
-                sig.deleteInters(adapters.get(WHOLE).bestMap.values());
+                // Discard wholes if time rational is different
+                for (Inter inter : adapters.get(WHOLE).bestMap.values()) {
+                    TimeWholeInter time = (TimeWholeInter) inter;
+
+                    if (!time.getValue().equals(chosenTime)) {
+                        inter.delete();
+                    }
+                }
 
                 // Discard num's different from chosen num
                 for (Inter inter : adapters.get(NUM).bestMap.values()) {
@@ -1278,9 +1283,7 @@ public abstract class TimeBuilder
          * <li>The best system-based TimeValue is then chosen as THE time signature for this
          * system column. </li>
          * <li>All staff non compatible AbstractTimeInter instances are destroyed and the member
-         * numbers that don't belong to the chosen AbstractTimeInter are destroyed.
-         * (TODO: perhaps removed from SIG but saved apart and restored if ever a new TimeValue
-         * is chosen based on measure intrinsic rhythm data?)</li>
+         * numbers that don't belong to the chosen AbstractTimeInter are destroyed.</li>
          * </ol>
          *
          * @return true if OK, false otherwise

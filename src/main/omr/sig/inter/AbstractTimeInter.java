@@ -267,7 +267,12 @@ public abstract class AbstractTimeInter
      */
     public TimeValue getValue ()
     {
-        return new TimeValue(timeRational);
+        if (ShapeSet.SingleWholeTimes.contains(shape)) {
+            // COMMON_TIME or CUT_TIME only
+            return new TimeValue(shape, timeRational);
+        } else {
+            return new TimeValue(null, timeRational);
+        }
     }
 
     //-------------//

@@ -26,7 +26,6 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
 import omr.score.TimeRational;
-import omr.score.TimeValue;
 
 import omr.sheet.Staff;
 
@@ -114,15 +113,6 @@ public class TimeWholeInter
                 center.y - (dim.height / 2),
                 dim.width,
                 dim.height);
-    }
-
-    //----------//
-    // getValue //
-    //----------//
-    @Override
-    public TimeValue getValue ()
-    {
-        return new TimeValue(shape);
     }
 
     //-----------//

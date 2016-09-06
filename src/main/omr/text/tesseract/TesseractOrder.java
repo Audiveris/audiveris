@@ -64,6 +64,9 @@ public class TesseractOrder
 
     private static final Logger logger = LoggerFactory.getLogger(TesseractOrder.class);
 
+    /** To specify UTF-8 encoding. */
+    private static final String UTF8 = "UTF-8";
+
     /** To avoid repetitive warnings if OCR binding failed */
     private static boolean userWarned;
 
@@ -344,7 +347,7 @@ public class TesseractOrder
 
                     word = new TextWord(
                             BoundingBox(it, RIL_WORD),
-                            it.GetUTF8Text(RIL_WORD).getString(),
+                            it.GetUTF8Text(RIL_WORD).getString(UTF8),
                             Baseline(it, RIL_WORD),
                             it.Confidence(RIL_WORD) / 100.0,
                             fontInfo,
@@ -365,7 +368,7 @@ public class TesseractOrder
 
                 // Char/symbol to be processed
                 word.addChar(
-                        new TextChar(BoundingBox(it, RIL_SYMBOL), it.GetUTF8Text(RIL_SYMBOL).getString()));
+                        new TextChar(BoundingBox(it, RIL_SYMBOL), it.GetUTF8Text(RIL_SYMBOL).getString(UTF8)));
             } while (it.Next(nextLevel));
 
             return lines;
