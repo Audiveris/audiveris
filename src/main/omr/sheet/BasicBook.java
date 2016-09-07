@@ -35,7 +35,7 @@ import omr.log.LogUtil;
 import omr.run.RunTable;
 
 import omr.score.OpusExporter;
-import omr.score.Page;
+import omr.score.PageRef;
 import omr.score.Score;
 import omr.score.ScoreExporter;
 import omr.score.ScoreReduction;
@@ -251,30 +251,6 @@ public class BasicBook
     @Override
     public void buildScores ()
     {
-        scores.clear();
-
-        // Current score
-        Score currentScore = null;
-
-        // Group all sheets pages into scores
-        for (SheetStub stub : getValidStubs()) {
-            Sheet sheet = stub.getSheet();
-
-            for (Page page : sheet.getPages()) {
-                if (page.isMovementStart()) {
-                    scores.add(currentScore = new Score());
-                    currentScore.setBook(this);
-                    currentScore.setId(scores.size());
-                } else if (currentScore == null) {
-                    scores.add(currentScore = new Score());
-                    currentScore.setBook(this);
-                    currentScore.setId(scores.size());
-                }
-
-                currentScore.addPage(page);
-            }
-        }
-
         for (Score score : scores) {
             // Merges pages into their containing movement score (connecting the parts across pages)
             // TODO: this may need the addition of dummy parts in some pages
@@ -370,6 +346,37 @@ public class BasicBook
             logger.info("Book file system closed.");
         } catch (Exception ex) {
             logger.warn("Could not close book file system " + ex, ex);
+        }
+    }
+
+    //--------------//
+    // createScores //
+    //--------------//
+    @Override
+    public synchronized void createScores (SheetStub currentStub)
+    {
+        scores.clear(); // ????
+
+        Score currentScore = null; // Current score
+
+        // Group all sheets pages into scores
+        for (SheetStub stub : stubs) {
+            // An invalid or not-yet-processed stub triggers a score break
+            if (!stub.isValid()
+                || (!stub.isDone(Step.GRID)
+                    && ((stub != currentStub) || (stub.getCurrentStep() != Step.GRID)))) {
+                currentScore = null;
+            } else {
+                for (PageRef pageRef : stub.getPageRefs()) {
+                    if ((currentScore == null) || pageRef.isMovementStart()) {
+                        scores.add(currentScore = new Score());
+                        currentScore.setBook(this);
+                        currentScore.setId(scores.size());
+                    }
+
+                    currentScore.addPageRef(stub, pageRef);
+                }
+            }
         }
     }
 
@@ -842,6 +849,15 @@ public class BasicBook
         return false;
     }
 
+    //--------------//
+    // isMultiSheet //
+    //--------------//
+    @Override
+    public boolean isMultiSheet ()
+    {
+        return stubs.size() > 1;
+    }
+
     //----------//
     // loadBook //
     //----------//
@@ -951,15 +967,6 @@ public class BasicBook
         }
 
         return null;
-    }
-
-    //--------------//
-    // isMultiSheet //
-    //--------------//
-    @Override
-    public boolean isMultiSheet ()
-    {
-        return stubs.size() > 1;
     }
 
     //--------------//

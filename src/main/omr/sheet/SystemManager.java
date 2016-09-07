@@ -32,6 +32,7 @@ import omr.math.GeoPath;
 import omr.math.ReversePathIterator;
 
 import omr.score.Page;
+import omr.score.PageRef;
 
 import omr.sig.relation.CrossExclusion;
 
@@ -553,6 +554,7 @@ public class SystemManager
      */
     private void allocatePages ()
     {
+        final SheetStub stub = sheet.getStub();
         Page page = null;
 
         // Look at left indentation of (deskewed) systems
@@ -577,9 +579,11 @@ public class SystemManager
                                 1 + sheet.getPages().size(),
                                 (systId == 1) ? null : systId));
                 page.setMovementStart(true);
+                stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), true, null));
             } else if (page == null) {
                 // Start first page in sheet
                 sheet.addPage(page = new Page(sheet, 1 + sheet.getPages().size(), null));
+                stub.addPageRef(new PageRef(stub.getNumber(), page.getId(), false, null));
             }
 
             system.setPage(page);

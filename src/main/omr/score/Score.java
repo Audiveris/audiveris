@@ -79,9 +79,9 @@ public class Score
     @XmlElement(name = "logical-part")
     private List<LogicalPart> logicalParts;
 
-    /** Pages references. */
+    /** Pages links. */
     @XmlElement(name = "page")
-    private final List<PageRef> pageRefs = new ArrayList<PageRef>();
+    private final List<PageLink> pageLinks = new ArrayList<PageLink>();
 
     // Transient data
     //---------------
@@ -89,6 +89,9 @@ public class Score
     /** Containing book. */
     @Navigable(false)
     private Book book;
+
+    /** Page references. */
+    private ArrayList<PageRef> pageRefs;
 
     /** Referenced pages. */
     private ArrayList<Page> pages;
@@ -156,12 +159,28 @@ public class Score
     public void addPage (Page page)
     {
         getPages().add(page);
-        pageRefs.add(
-                new PageRef(
-                        page.getSheet().getStub().getNumber(),
-                        page.getId(),
-                        page.getMeasureDeltaId()));
+        //        pageRefs.add(
+        //                new PageRef(
+        //                        page.getSheet().getStub().getNumber(),
+        //                        page.getId(),
+        //                        page.getDeltaMeasureId(),
+        //                        page.isMovementStart())
+        //        );
         page.setScore(this);
+    }
+
+    //------------//
+    // addPageRef //
+    //------------//
+    public void addPageRef (SheetStub stub,
+                            PageRef pageRef)
+    {
+        if (pageRefs == null) {
+            pageRefs = new ArrayList<PageRef>();
+        }
+
+        pageRefs.add(pageRef);
+        pageLinks.add(new PageLink(stub.getNumber(), pageRef.getId()));
     }
 
     //-------//
@@ -259,7 +278,7 @@ public class Score
                 return offset;
             }
 
-            offset += pageRef.deltaMeasureId;
+            offset += pageRef.getDeltaMeasureId();
         }
 
         return offset;
@@ -378,7 +397,7 @@ public class Score
         final PageRef pageRef = getPageRef(sheetNumber);
 
         if (pageRef != null) {
-            return pageRef.localPageId;
+            return pageRef.getId();
         }
 
         return null;
@@ -398,7 +417,7 @@ public class Score
         final List<SheetStub> bookStubs = book.getStubs();
 
         for (PageRef ref : pageRefs) {
-            pageStubs.add(bookStubs.get(ref.sheetNumber - 1));
+            pageStubs.add(bookStubs.get(ref.getSheetNumber() - 1));
         }
 
         return pageStubs;
@@ -494,7 +513,7 @@ public class Score
         PageRef pageRef = getPageRef(page);
 
         if (pageRef != null) {
-            pageRef.deltaMeasureId = deltaMeasureId;
+            pageRef.setDeltaMeasureId(deltaMeasureId);
         }
     }
 
@@ -545,6 +564,22 @@ public class Score
     }
 
     //-----------------//
+    // afterUnmarshal //
+    //-----------------//
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller u,
+                                 Object parent)
+    {
+        // Populate pageRefs
+        pageRefs = new ArrayList<PageRef>();
+
+        for (PageLink pageLink : pageLinks) {
+            SheetStub stub = book.getStub(pageLink.sheetNumber);
+            pageRefs.add(stub.getPageRefs().get(pageLink.sheetPageId - 1));
+        }
+    }
+
+    //-----------------//
     // beforeUnmarshal //
     //-----------------//
     @SuppressWarnings("unused")
@@ -559,9 +594,9 @@ public class Score
     //---------//
     private Page getPage (PageRef ref)
     {
-        Sheet sheet = book.getStubs().get(ref.sheetNumber - 1).getSheet();
+        Sheet sheet = book.getStubs().get(ref.getSheetNumber() - 1).getSheet();
 
-        return sheet.getPages().get(ref.localPageId - 1);
+        return sheet.getPages().get(ref.getId() - 1);
     }
 
     //------------//
@@ -570,7 +605,7 @@ public class Score
     private PageRef getPageRef (int sheetNumber)
     {
         for (PageRef pageRef : pageRefs) {
-            if (pageRef.sheetNumber == sheetNumber) {
+            if (pageRef.getSheetNumber() == sheetNumber) {
                 return pageRef;
             }
         }
@@ -588,7 +623,7 @@ public class Score
         final int sheetNumber = page.getSheet().getStub().getNumber();
 
         for (PageRef pageRef : pageRefs) {
-            if (pageRef.sheetNumber == sheetNumber) {
+            if (pageRef.getSheetNumber() == sheetNumber) {
                 return pageRef;
             }
         }
@@ -618,44 +653,40 @@ public class Score
                 "Default Volume in 0..127 range");
     }
 
-    //---------//
-    // PageRef //
-    //---------//
-    private static class PageRef
+    //----------//
+    // PageLink //
+    //----------//
+    private static class PageLink
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         @XmlAttribute(name = "sheet-number")
-        public int sheetNumber;
+        public final int sheetNumber;
 
-        @XmlAttribute(name = "local-page-id")
-        public int localPageId;
-
-        @XmlAttribute(name = "delta-measure-id")
-        public int deltaMeasureId;
+        @XmlAttribute(name = "sheet-page-id")
+        public final int sheetPageId;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public PageRef (int sheetNumber,
-                        int localPageId,
-                        int deltaMeasureId)
+        public PageLink (int sheetNumber,
+                         int sheetPageId)
         {
             this.sheetNumber = sheetNumber;
-            this.localPageId = localPageId;
-            this.deltaMeasureId = deltaMeasureId;
+            this.sheetPageId = sheetPageId;
         }
 
-        private PageRef ()
+        private PageLink ()
         {
+            this.sheetNumber = 0;
+            this.sheetPageId = 0;
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("PageRef{");
+            StringBuilder sb = new StringBuilder("PageLink{");
             sb.append("sheetNumber:").append(sheetNumber);
-            sb.append(" localPageId:").append(localPageId);
-            sb.append(" deltaMeasureId:").append(deltaMeasureId);
+            sb.append(" sheetPageId:").append(sheetPageId);
             sb.append('}');
 
             return sb.toString();

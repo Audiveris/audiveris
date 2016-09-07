@@ -99,7 +99,7 @@ public class MeasureFixer
         page.computeMeasureCount();
 
         // Remember the delta of measure ids in this page
-        page.setMeasureDeltaId(page.getLastSystem().getLastMeasureStack().getIdValue());
+        page.setDeltaMeasureId(page.getLastSystem().getLastMeasureStack().getIdValue());
     }
 
     //---------------//

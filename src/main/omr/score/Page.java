@@ -82,8 +82,8 @@ public class Page
     private Integer measureCount;
 
     /** Progression of measure id within this page. */
-    @XmlAttribute(name = "measure-delta-id")
-    private Integer measureDeltaId;
+    @XmlAttribute(name = "delta-measure-id")
+    private Integer deltaMeasureId;
 
     /** LogicalPart list for the page. */
     @XmlElement(name = "logical-part")
@@ -349,9 +349,9 @@ public class Page
      *
      * @return the deltaMeasureId
      */
-    public Integer getMeasureDeltaId ()
+    public Integer getDeltaMeasureId ()
     {
-        return measureDeltaId;
+        return deltaMeasureId;
     }
 
     //---------------------//
@@ -445,7 +445,7 @@ public class Page
         }
 
         // Very temporary raw values
-        setMeasureDeltaId(systemOffset);
+        setDeltaMeasureId(systemOffset);
         computeMeasureCount();
     }
 
@@ -498,14 +498,14 @@ public class Page
     /**
      * Assign the progression of measure IDs within this page.
      *
-     * @param measureDeltaId the measureDeltaId to set
+     * @param deltaMeasureId the deltaMeasureId to set
      */
-    public void setMeasureDeltaId (Integer measureDeltaId)
+    public void setDeltaMeasureId (Integer deltaMeasureId)
     {
-        this.measureDeltaId = measureDeltaId;
+        this.deltaMeasureId = deltaMeasureId;
 
         if (score != null) {
-            score.setDeltaMeasureId(this, measureDeltaId);
+            score.setDeltaMeasureId(this, deltaMeasureId);
         }
     }
 

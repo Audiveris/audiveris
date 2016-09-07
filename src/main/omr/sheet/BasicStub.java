@@ -34,6 +34,8 @@ import omr.log.LogUtil;
 
 import omr.run.RunTable;
 
+import omr.score.PageRef;
+
 import omr.sheet.Picture.TableKey;
 import static omr.sheet.Sheet.INTERNALS_RADIX;
 import omr.sheet.ui.SheetAssembly;
@@ -61,7 +63,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -106,14 +110,18 @@ public class BasicStub
     @XmlAttribute(name = "number")
     private final int number;
 
+    /** Indicate a sheet that contains no music. */
+    @XmlAttribute
+    private Boolean invalid;
+
     /** All steps already performed on this sheet. */
     @XmlList
     @XmlElement(name = "steps")
     private final EnumSet<Step> doneSteps = EnumSet.noneOf(Step.class);
 
-    /** Indicate a sheet that contains no music. */
-    @XmlAttribute
-    private Boolean invalid;
+    /** Pages references. */
+    @XmlElement(name = "page")
+    private final List<PageRef> pageRefs = new ArrayList<PageRef>();
 
     // Transient data
     //---------------
@@ -167,6 +175,15 @@ public class BasicStub
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // addPageRef //
+    //------------//
+    @Override
+    public void addPageRef (PageRef pageRef)
+    {
+        pageRefs.add(pageRef);
+    }
+
     //------//
     // done //
     //------//
@@ -332,6 +349,18 @@ public class BasicStub
     public int getNumber ()
     {
         return number;
+    }
+
+    //-------------//
+    // getPageRefs //
+    //-------------//
+    /**
+     * @return the pageRefs
+     */
+    @Override
+    public List<PageRef> getPageRefs ()
+    {
+        return pageRefs;
     }
 
     //----------//

@@ -2504,15 +2504,15 @@ public class PartwiseBuilder
     {
         logger.debug("Processing {}", stub);
 
-        final Integer localPageId = score.getSheetPageId(stub.getNumber());
+        final Integer sheetPageId = score.getSheetPageId(stub.getNumber());
 
         // This should never occur if processStub() is called only on score relevant stubs
-        if (localPageId == null) {
+        if (sheetPageId == null) {
             return;
         }
 
         final Sheet sheet = stub.getSheet();
-        final Page page = sheet.getPages().get(localPageId - 1);
+        final Page page = sheet.getPages().get(sheetPageId - 1);
 
         source.encodePage(page, scorePartwise);
 

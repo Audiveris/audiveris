@@ -23,6 +23,8 @@ package omr.sheet;
 
 import omr.image.FilterDescriptor;
 
+import omr.score.PageRef;
+
 import omr.sheet.ui.SheetAssembly;
 
 import omr.step.Step;
@@ -30,6 +32,7 @@ import omr.step.StepException;
 
 import omr.util.LiveParam;
 
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -45,6 +48,13 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public interface SheetStub
 {
     //~ Methods ------------------------------------------------------------------------------------
+
+    /**
+     * Add a page reference to this stub.
+     *
+     * @param pageRef the page reference
+     */
+    void addPageRef (PageRef pageRef);
 
     /**
      * Close this stub, and remove it from the containing book.
@@ -132,6 +142,13 @@ public interface SheetStub
      * @return the sheet index number (1-based) in containing book
      */
     int getNumber ();
+
+    /**
+     * Report the stub sequence of page references.
+     *
+     * @return the page refs
+     */
+    List<PageRef> getPageRefs ();
 
     /**
      * Make sure the sheet material is in memory.

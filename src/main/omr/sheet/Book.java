@@ -134,6 +134,12 @@ public interface Book
      */
     void close ();
 
+    /** Gather sheet pages into scores.
+     *
+     * @param stub current stub
+     */
+    void createScores (SheetStub stub);
+
     /**
      * Create as many sheet stubs as there are images in the input image file.
      * A created stub is nearly empty, the related image will have to be loaded later.
