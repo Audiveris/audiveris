@@ -23,6 +23,7 @@ package omr.sheet;
 
 import omr.OMR;
 
+import omr.glyph.Glyph;
 import omr.glyph.GlyphIndex;
 import omr.glyph.SymbolsModel;
 import omr.glyph.dynamic.FilamentIndex;
@@ -170,8 +171,9 @@ public class BasicSheet
     //TODO: handle persistency
     private final Map<Inter, List<CrossExclusion>> crossExclusions = new HashMap<Inter, List<CrossExclusion>>();
 
-    /** Global glyph index. */
-    @XmlElement(name = "glyph-index")
+    /** Global glyph index.
+     * See annotated get/set methods: {@link #getGlyphIndexContent()}
+     */
     private GlyphIndex glyphIndex;
 
     // Transient data
@@ -419,7 +421,11 @@ public class BasicSheet
     @Override
     public void displayDataTab ()
     {
-        symbolsEditor = new SymbolsEditor(this, getSymbolsController());
+        try {
+            symbolsEditor = new SymbolsEditor(this, getSymbolsController());
+        } catch (Throwable ex) {
+            logger.warn("Error in displayDataTab " + ex, ex);
+        }
     }
 
     //-----------------//
@@ -1083,6 +1089,26 @@ public class BasicSheet
         }
     }
 
+    //----------------------//
+    // getGlyphIndexContent //
+    //----------------------//
+    /**
+     * Mean for JAXB marshalling only.
+     *
+     * @return collection of glyphs from glyphIndex.weakIndex
+     */
+    @SuppressWarnings("unchecked")
+    @XmlElement(name = "glyph-index")
+    @XmlJavaTypeAdapter(GlyphListAdapter.class)
+    private ArrayList<Glyph> getGlyphIndexContent ()
+    {
+        if (glyphIndex == null) {
+            return null;
+        }
+
+        return glyphIndex.getEntities();
+    }
+
     //----------------//
     // initTransients //
     //----------------//
@@ -1111,7 +1137,7 @@ public class BasicSheet
         }
 
         if (glyphIndex != null) {
-            ((GlyphIndex) glyphIndex).initTransients(this);
+            glyphIndex.initTransients(this);
         }
 
         for (Page page : pages) {
@@ -1171,6 +1197,20 @@ public class BasicSheet
         }
     }
 
+    //----------------------//
+    // setGlyphIndexContent //
+    //----------------------//
+    /**
+     * Meant for JAXB unmarshalling only.
+     *
+     * @param glyphs collection of glyphs to feed to the glyphIndex.weakIndex
+     */
+    @SuppressWarnings("unchecked")
+    private void setGlyphIndexContent (ArrayList<Glyph> glyphs)
+    {
+        getGlyphIndex().setEntities(glyphs);
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
@@ -1193,6 +1233,50 @@ public class BasicSheet
         public Sheet unmarshal (BasicSheet s)
         {
             return s;
+        }
+    }
+
+    //-----------//
+    // GlyphList // For glyphIndex (un)marshalling
+    //-----------//
+    private static class GlyphList
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlElement(name = "glyph")
+        public ArrayList<Glyph> glyphs;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public GlyphList ()
+        {
+        }
+
+        public GlyphList (ArrayList<Glyph> glyphs)
+        {
+            this.glyphs = glyphs;
+        }
+    }
+
+    //------------------//
+    // GlyphListAdapter // For glyphIndex (un)marshalling
+    //------------------//
+    private static class GlyphListAdapter
+            extends XmlAdapter<GlyphList, ArrayList<Glyph>>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public GlyphList marshal (ArrayList<Glyph> glyphs)
+                throws Exception
+        {
+            return new GlyphList(glyphs);
+        }
+
+        @Override
+        public ArrayList<Glyph> unmarshal (GlyphList list)
+                throws Exception
+        {
+            return list.glyphs;
         }
     }
 }

@@ -504,19 +504,6 @@ public class Score
         this.book = book;
     }
 
-    //-------------------//
-    // setDeltaMeasureId //
-    //-------------------//
-    public void setDeltaMeasureId (Page page,
-                                   Integer deltaMeasureId)
-    {
-        PageRef pageRef = getPageRef(page);
-
-        if (pageRef != null) {
-            pageRef.setDeltaMeasureId(deltaMeasureId);
-        }
-    }
-
     //-------//
     // setId //
     //-------//

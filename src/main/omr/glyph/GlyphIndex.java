@@ -63,10 +63,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code GlyphIndex} implements an index of (weak references to) Glyph instances.
@@ -192,8 +189,6 @@ public class GlyphIndex
     // getEntities //
     //-------------//
     @Override
-    @XmlElement(name = "entities")
-    @XmlJavaTypeAdapter(Adapter.class)
     public ArrayList<Glyph> getEntities ()
     {
         Collection<WeakGlyph> weaks = weakIndex.getEntities();
@@ -482,8 +477,7 @@ public class GlyphIndex
     //-------------//
     // setEntities //
     //-------------//
-    @SuppressWarnings("unchecked")
-    protected void setEntities (ArrayList<Glyph> glyphs)
+    public void setEntities (ArrayList<Glyph> glyphs)
     {
         for (Glyph glyph : glyphs) {
             WeakGlyph weak = new WeakGlyph(glyph);
@@ -530,50 +524,6 @@ public class GlyphIndex
         private final Constant.String vipGlyphs = new Constant.String(
                 "",
                 "(Debug) Comma-separated values of VIP glyphs IDs");
-    }
-
-    //---------//
-    // Adapter //
-    //---------//
-    private static class Adapter
-            extends XmlAdapter<GlyphList, ArrayList<Glyph>>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public GlyphList marshal (ArrayList<Glyph> glyphs)
-                throws Exception
-        {
-            return new GlyphList(glyphs);
-        }
-
-        @Override
-        public ArrayList<Glyph> unmarshal (GlyphList list)
-                throws Exception
-        {
-            return list.glyphs;
-        }
-    }
-
-    //-----------//
-    // GlyphList //
-    //-----------//
-    private static class GlyphList
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlElement(name = "glyph")
-        public ArrayList<Glyph> glyphs;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public GlyphList ()
-        {
-        }
-
-        public GlyphList (ArrayList<Glyph> glyphs)
-        {
-            this.glyphs = glyphs;
-        }
     }
 
     //----------------//

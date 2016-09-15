@@ -25,6 +25,7 @@ import omr.math.Rational;
 
 import omr.sheet.Part;
 import omr.sheet.Sheet;
+import omr.sheet.SheetStub;
 import omr.sheet.SystemInfo;
 import omr.sheet.rhythm.MeasureStack;
 
@@ -209,6 +210,19 @@ public class Page
         logger.info("{}", msg.toString());
     }
 
+    //-------------------//
+    // getMeasureDeltaId //
+    //-------------------//
+    /**
+     * Report the progression of measure IDs within this page.
+     *
+     * @return the deltaMeasureId
+     */
+    public Integer getDeltaMeasureId ()
+    {
+        return deltaMeasureId;
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -341,19 +355,6 @@ public class Page
         return measureCount;
     }
 
-    //-------------------//
-    // getMeasureDeltaId //
-    //-------------------//
-    /**
-     * Report the progression of measure IDs within this page.
-     *
-     * @return the deltaMeasureId
-     */
-    public Integer getDeltaMeasureId ()
-    {
-        return deltaMeasureId;
-    }
-
     //---------------------//
     // getPrecedingInScore //
     //---------------------//
@@ -419,7 +420,7 @@ public class Page
      */
     public boolean isMovementStart ()
     {
-        return movementStart != null && movementStart;
+        return (movementStart != null) && movementStart;
     }
 
     //----------------//
@@ -457,6 +458,23 @@ public class Page
         durationDivisor = null;
     }
 
+    //-------------------//
+    // setDeltaMeasureId //
+    //-------------------//
+    /**
+     * Assign the progression of measure IDs within this page.
+     *
+     * @param deltaMeasureId the deltaMeasureId to set
+     */
+    public void setDeltaMeasureId (Integer deltaMeasureId)
+    {
+        this.deltaMeasureId = deltaMeasureId;
+
+        SheetStub stub = sheet.getStub();
+        PageRef pageRef = stub.getPageRefs().get(id - 1);
+        pageRef.setDeltaMeasureId(deltaMeasureId);
+    }
+
     //------------------//
     // setFirstSystemId //
     //------------------//
@@ -490,23 +508,6 @@ public class Page
     public void setLogicalParts (List<LogicalPart> logicalParts)
     {
         this.logicalParts = logicalParts;
-    }
-
-    //-------------------//
-    // setDeltaMeasureId //
-    //-------------------//
-    /**
-     * Assign the progression of measure IDs within this page.
-     *
-     * @param deltaMeasureId the deltaMeasureId to set
-     */
-    public void setDeltaMeasureId (Integer deltaMeasureId)
-    {
-        this.deltaMeasureId = deltaMeasureId;
-
-        if (score != null) {
-            score.setDeltaMeasureId(this, deltaMeasureId);
-        }
     }
 
     //------------------//
