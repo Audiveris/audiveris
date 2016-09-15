@@ -24,6 +24,7 @@ package omr.sig.inter;
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -39,6 +40,7 @@ public class PluckingInter
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Letter for the finger. (p, i, m, a) */
+    @XmlAttribute
     private final char letter;
 
     //~ Constructors -------------------------------------------------------------------------------

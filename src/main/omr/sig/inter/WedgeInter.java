@@ -71,7 +71,7 @@ public class WedgeInter
      * @param l1      precise first line
      * @param l2      precise second line
      * @param bounds  bounding bounds
-     * @param shape   CRESCENDO or DECRESCENDO
+     * @param shape   CRESCENDO or DIMINUENDO
      * @param impacts assignments details
      */
     public WedgeInter (Line2D l1,

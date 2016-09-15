@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import omr.sheet.Part;
 import omr.sheet.Staff;
@@ -108,7 +107,7 @@ public class LyricItemInter
     private ItemKind itemKind;
 
     /** Characteristics of the lyrics syllable, if any. */
-    @XmlElement(name = "syllabic")
+    @XmlAttribute(name = "syllabic")
     private SyllabicType syllabicType;
 
     //~ Constructors -------------------------------------------------------------------------------
