@@ -38,6 +38,9 @@ public class FontInfo
     /** A default FontInfo instance when we absolutely need one. */
     public static final FontInfo DEFAULT = createDefault(36);
 
+    /** Separator in memo between attributes (if any) and point size. */
+    private static final char SEPARATOR = '-';
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** True if bold. */
     public final boolean isBold;
@@ -64,10 +67,6 @@ public class FontInfo
     public final String fontName;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------//
-    // FontInfo //
-    //----------//
     /**
      * Creates a new FontInfo object.
      *
@@ -99,6 +98,26 @@ public class FontInfo
         this.fontName = fontName;
     }
 
+    /**
+     * Create a new {@code FontInfo} from another one and a specific point size.
+     *
+     * @param org       the original font info
+     * @param pointSize the specific point size
+     */
+    public FontInfo (FontInfo org,
+                     int pointSize)
+    {
+        this(
+                org.isBold,
+                org.isItalic,
+                org.isUnderlined,
+                org.isMonospace,
+                org.isSerif,
+                org.isSmallcaps,
+                pointSize,
+                org.fontName);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //
     //---------------//
@@ -120,13 +139,9 @@ public class FontInfo
     //--------//
     public static FontInfo decode (String str)
     {
-        int dash = str.indexOf('-');
-
-        if (dash == -1) {
-            throw new IllegalArgumentException("Illegal font mnemo: " + str);
-        }
-
-        int size = Integer.decode(str.substring(dash + 1));
+        final int sep = str.indexOf(SEPARATOR);
+        final String sizeStr = (sep != -1) ? str.substring(sep + 1) : str;
+        final int size = Integer.decode(sizeStr);
 
         return new FontInfo(
                 str.indexOf('B') != -1,
@@ -144,6 +159,10 @@ public class FontInfo
     //----------//
     /**
      * Report a very short description of font characteristics.
+     * <p>
+     * Format is "BS-45" or "53".
+     * Separator (-) is present only if there is at least one attribute.
+     * This is to avoid "-53" which would look like a negative value.
      *
      * @return a short description
      */
@@ -175,7 +194,11 @@ public class FontInfo
             sb.append('C');
         }
 
-        sb.append('-').append(pointsize);
+        if (sb.length() > 0) {
+            sb.append(SEPARATOR);
+        }
+
+        sb.append(pointsize);
 
         return sb.toString();
     }

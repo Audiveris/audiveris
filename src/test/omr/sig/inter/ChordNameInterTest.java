@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    C h o r d I n f o T e s t                                   //
+//                               C h o r d N a m e I n t e r T e s t                              //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,14 +19,14 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package omr.score.entity;
+package omr.sig.inter;
 
 /**
  * Unitary tests of ChordNameInter.
  *
  * @author Hervé Bitteur
  */
-public class ChordInfoTest
+public class ChordNameInterTest
 {
 //    //~ Static fields/initializers -----------------------------------------------------------------
 //

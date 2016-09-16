@@ -111,28 +111,6 @@ public class LyricItemInter
     private SyllabicType syllabicType;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //    /** The containing lyrics line. */
-    //    private LyricLineInter lyricsLine;
-    //
-    //    /**
-    //     * The carried text for this item.
-    //     * (only a part of the containing sentence, as opposed to other texts)
-    //     */
-    //    private final String content;
-    //
-    //    /** The exact corresponding word. */
-    //    private final TextWord word;
-    //
-    //    /** Width of the item. */
-    //    private final int width;
-    //
-    //    /** The glyph which contributed to this lyrics item. */
-    //    private final Glyph seed;
-    //
-    //    /** Mapped note/chord, if any. */
-    //    private OldChord mappedChord;
-    //
     /**
      * Creates a new LyricItemInter object.
      *

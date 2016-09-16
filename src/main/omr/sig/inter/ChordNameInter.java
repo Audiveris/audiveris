@@ -37,6 +37,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -52,13 +56,15 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "chord-name")
 public class ChordNameInter
         extends WordInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(ChordNameInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ChordNameInter.class);
 
     /** Unicode value for <b>flat</b> sign: {@value}. */
     public static final String FLAT = "\u266D";
@@ -182,15 +188,19 @@ public class ChordNameInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Root. */
+    @XmlElement
     private final Pitch root;
 
     /** Kind. */
+    @XmlElement
     private final Kind kind;
 
     /** Bass, if any. */
+    @XmlElement
     private final Pitch bass;
 
     /** Degrees, if any. */
+    @XmlElement(name = "degree")
     private final List<Degree> degrees;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -267,6 +277,13 @@ public class ChordNameInter
     //--------//
     // create //
     //--------//
+    /**
+     * From a line of words assumed to be chord names, create a sentence of
+     * ChordNameInter instances.
+     *
+     * @param line the sequence of chord name words
+     * @return created sentence of created ChordNameInter instances
+     */
     public static SentenceInter create (TextLine line)
     {
         List<WordInter> wordInters = new ArrayList<WordInter>();
@@ -536,28 +553,32 @@ public class ChordNameInter
         //~ Instance fields ------------------------------------------------------------------------
         //
         /** nth value of the degree, wrt the chord root. */
+        @XmlAttribute
         public final int value;
 
         /** Alteration, if any. */
-        public final int alter;
+        @XmlAttribute
+        public final Integer alter;
 
         /** Which operation is performed. */
+        @XmlAttribute
         public final DegreeType type;
 
         /** Specific text display for degree operation, if any. */
+        @XmlAttribute
         public final String text;
 
         //~ Constructors ---------------------------------------------------------------------------
         //
         public Degree (int value,
-                       int alter,
+                       Integer alter,
                        DegreeType type)
         {
             this(value, alter, type, "");
         }
 
         public Degree (int value,
-                       int alter,
+                       Integer alter,
                        DegreeType type,
                        String text)
         {
@@ -606,8 +627,8 @@ public class ChordNameInter
                 }
 
                 // Deg alter
-                String altStr = getGroup(matcher, DEG_ALTER);
-                final int alter = Alter.toAlter(altStr);
+                final String altStr = getGroup(matcher, DEG_ALTER);
+                final Integer alter = (altStr != null) ? Alter.toAlter(altStr) : null;
 
                 degrees.add(new Degree(deg, alter, type, ""));
             }
@@ -689,45 +710,58 @@ public class ChordNameInter
         //~ Instance fields ------------------------------------------------------------------------
         //
         /** Precise type of kind. (subset of the 33 Music XML values) */
+        @XmlAttribute
         public final Type type;
 
-        /** Flag to signal parenthesis, if any. */
-        public final boolean paren;
+        /** Flag to signal parentheses, if any. */
+        @XmlAttribute
+        public final Boolean parentheses;
 
         /** Flag to signal use of symbol, if any. */
-        public final boolean symbol;
+        @XmlAttribute
+        public final Boolean symbol;
 
         /** Exact display text for the chord kind. (For example min vs m) */
+        @XmlAttribute
         public final String text;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Kind (Type type)
         {
-            this(type, "", false, false);
+            this(type, "", null, null);
         }
 
         public Kind (Type type,
                      String text)
         {
-            this(type, text, false, false);
+            this(type, text, null, null);
         }
 
         public Kind (Type type,
                      String text,
-                     boolean symbol)
+                     Boolean symbol)
         {
-            this(type, text, symbol, false);
+            this(type, text, symbol, null);
         }
 
         public Kind (Type type,
                      String text,
-                     boolean symbol,
-                     boolean paren)
+                     Boolean symbol,
+                     Boolean parentheses)
         {
             this.type = type;
-            this.paren = paren;
+            this.parentheses = parentheses;
             this.text = text;
             this.symbol = symbol;
+        }
+
+        // For JAXB
+        private Kind ()
+        {
+            this.type = null;
+            this.parentheses = null;
+            this.symbol = null;
+            this.text = null;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -743,11 +777,11 @@ public class ChordNameInter
                 sb.append(" '").append(text).append("'");
             }
 
-            if (paren) {
+            if ((parentheses != null) && parentheses) {
                 sb.append(" parens");
             }
 
-            if (symbol) {
+            if ((symbol != null) && symbol) {
                 sb.append(" symbol");
             }
 
@@ -770,17 +804,17 @@ public class ChordNameInter
             String kindStr = getGroup(matcher, KIND);
 
             String parStr = getGroup(matcher, PARS);
-            boolean paren = !parStr.isEmpty();
+            Boolean parentheses = (!parStr.isEmpty()) ? Boolean.TRUE : null;
 
             // Check for suspended first
             String susStr = getGroup(matcher, SUS);
 
             switch (susStr.toLowerCase()) {
             case "sus2":
-                return new Kind(SUSPENDED_SECOND, kindStr, false, paren);
+                return new Kind(SUSPENDED_SECOND, kindStr, null, parentheses);
 
             case "sus4":
-                return new Kind(SUSPENDED_FOURTH, kindStr, false, paren);
+                return new Kind(SUSPENDED_FOURTH, kindStr, null, parentheses);
 
             case "": // Fall through
 
@@ -798,11 +832,11 @@ public class ChordNameInter
             }
 
             // Use of symbol?
-            boolean symbol = getGroup(matcher, MAJ).equals(DELTA)
-                             || getGroup(matcher, MIN).equals("-")
-                             || getGroup(matcher, AUG).equals("+");
+            Boolean symbol = (getGroup(matcher, MAJ).equals(DELTA)
+                              || getGroup(matcher, MIN).equals("-")
+                              || getGroup(matcher, AUG).equals("+")) ? Boolean.TRUE : null;
 
-            return (type != null) ? new Kind(type, kindStr, symbol, paren) : null;
+            return (type != null) ? new Kind(type, kindStr, symbol, parentheses) : null;
         }
 
         /**
@@ -897,14 +931,17 @@ public class ChordNameInter
     /**
      * General handling of pitch information, used by root and bass.
      */
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class Pitch
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Related step. */
+        @XmlAttribute
         public final AbstractNoteInter.Step step;
 
         /** Alteration, if any. */
+        @XmlAttribute
         public final Integer alter;
 
         //~ Constructors ---------------------------------------------------------------------------
@@ -918,6 +955,13 @@ public class ChordNameInter
         public Pitch (AbstractNoteInter.Step step)
         {
             this(step, 0);
+        }
+
+        // For JAXB
+        private Pitch ()
+        {
+            this.step = null;
+            this.alter = null;
         }
 
         //~ Methods --------------------------------------------------------------------------------

@@ -125,6 +125,9 @@ public class TextWord
     /**
      * Creates a new TextWord object, with all OCR information.
      * TextChar instances are meant to be added later, as detailed information
+     * <p>
+     * FontInfo data is directly copied from OCR, however its pointSize is often too low, varying
+     * around -10% or -20%, so we have to refine this value, based on word bounds.
      *
      * @param bounds     Bounding box
      * @param value      UTF-8 content for this word
@@ -142,7 +145,9 @@ public class TextWord
     {
         super(bounds, value, baseline, confidence);
         this.textLine = textLine;
-        this.fontInfo = fontInfo;
+
+        final float size = TextFont.computeFontSize(value, fontInfo, bounds.getSize());
+        this.fontInfo = new FontInfo(fontInfo, (int) Math.rint(size));
     }
 
     //~ Methods ------------------------------------------------------------------------------------

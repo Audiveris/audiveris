@@ -53,7 +53,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Class {@code SentenceInter} represents a full sentence of words.
  * <p>
  * This class is used for any text role other than Lyrics (Title, Direction, Number, PartName,
- * Creator et al, Rights, ChordName, UnknownRole)
+ * Creator et al, Rights, ChordName, UnknownRole).
+ * <p>
  * For Lyrics role , the specific subclass {@link LyricLineInter} is used.
  *
  * @author Hervé Bitteur
@@ -242,7 +243,7 @@ public class SentenceInter
     // getExportedFontSize //
     //---------------------//
     /**
-     * Report the font size to be exported for this text
+     * Report the font size to be exported (to MusicXML) for this text.
      *
      * @return the exported font size
      */
