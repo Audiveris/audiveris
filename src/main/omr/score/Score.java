@@ -550,9 +550,9 @@ public class Score
         return "{Score " + id + "}";
     }
 
-    //-----------------//
+    //----------------//
     // afterUnmarshal //
-    //-----------------//
+    //----------------//
     @SuppressWarnings("unused")
     private void afterUnmarshal (Unmarshaller u,
                                  Object parent)

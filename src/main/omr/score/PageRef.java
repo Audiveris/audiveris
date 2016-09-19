@@ -21,6 +21,9 @@
 // </editor-fold>
 package omr.score;
 
+import omr.sheet.SheetStub;
+
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -143,5 +146,16 @@ public class PageRef
         sb.append('}');
 
         return sb.toString();
+    }
+
+    //-----------------//
+    // beforeUnmarshal //
+    //-----------------//
+    @SuppressWarnings("unused")
+    private void beforeUnmarshal (Unmarshaller u,
+                                  Object parent)
+    {
+        SheetStub stub = (SheetStub) parent;
+        sheetNumber = stub.getNumber();
     }
 }
