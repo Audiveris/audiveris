@@ -31,20 +31,20 @@ import omr.util.StopWatch;
 import omr.util.WrappedBoolean;
 import omr.util.XmlUtil;
 
-import com.audiveris.proxymusic.Credit;
-import com.audiveris.proxymusic.Instrument;
-import com.audiveris.proxymusic.MidiInstrument;
-import com.audiveris.proxymusic.Note;
-import com.audiveris.proxymusic.PartList;
-import com.audiveris.proxymusic.Print;
-import com.audiveris.proxymusic.ScoreInstrument;
-import com.audiveris.proxymusic.ScorePart;
-import com.audiveris.proxymusic.ScorePartwise;
-import com.audiveris.proxymusic.ScorePartwise.Part;
-import com.audiveris.proxymusic.ScorePartwise.Part.Measure;
-import com.audiveris.proxymusic.YesNo;
-import com.audiveris.proxymusic.util.Marshalling;
-import com.audiveris.proxymusic.util.Marshalling.MarshallingException;
+import org.audiveris.proxymusic.Credit;
+import org.audiveris.proxymusic.Instrument;
+import org.audiveris.proxymusic.MidiInstrument;
+import org.audiveris.proxymusic.Note;
+import org.audiveris.proxymusic.PartList;
+import org.audiveris.proxymusic.Print;
+import org.audiveris.proxymusic.ScoreInstrument;
+import org.audiveris.proxymusic.ScorePart;
+import org.audiveris.proxymusic.ScorePartwise;
+import org.audiveris.proxymusic.ScorePartwise.Part;
+import org.audiveris.proxymusic.ScorePartwise.Part.Measure;
+import org.audiveris.proxymusic.YesNo;
+import org.audiveris.proxymusic.util.Marshalling;
+import org.audiveris.proxymusic.util.Marshalling.MarshallingException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +142,7 @@ public class ScoreXmlReduction
     private final Map<Integer, Status> statuses;
 
     /** Factory for proxymusic entities */
-    private final com.audiveris.proxymusic.ObjectFactory factory = new com.audiveris.proxymusic.ObjectFactory();
+    private final org.audiveris.proxymusic.ObjectFactory factory = new org.audiveris.proxymusic.ObjectFactory();
 
     /** Global connection of parts */
     private PartConnection connection;
@@ -544,7 +544,7 @@ public class ScoreXmlReduction
 
             ScorePart spr = (ScorePart) entry.getKey().getUnderlyingObject();
 
-            for (com.audiveris.proxymusic.ScoreInstrument si : spr.getScoreInstrument()) {
+            for (org.audiveris.proxymusic.ScoreInstrument si : spr.getScoreInstrument()) {
                 logger.debug("-- final inst: {} {}", si.getId(), si.getInstrumentName());
             }
 
@@ -553,7 +553,7 @@ public class ScoreXmlReduction
 
                 ScorePart sp = (ScorePart) candidate.getUnderlyingObject();
 
-                for (com.audiveris.proxymusic.ScoreInstrument si : sp.getScoreInstrument()) {
+                for (org.audiveris.proxymusic.ScoreInstrument si : sp.getScoreInstrument()) {
                     logger.debug("-- instrument: {} {}", si.getId(), si.getInstrumentName());
                 }
             }

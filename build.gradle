@@ -88,7 +88,7 @@ dependencies {
         [group: 'javax.media', name: 'jai-core', version: '1.1.3'],
         [group: 'net.imagej', name: 'ij', version: '1.48r'],
         [group: 'de.intarsys.opensource', name: 'jPodRenderer', version: '5.5.1'],
-        [group: 'com.audiveris', name: 'proxymusic', version: '3.0.1'],
+        [group: 'org.audiveris', name: 'proxymusic', version: '3.0.1'],
         [group: 'org.jgrapht', name: 'jgrapht-core', version: '0.9.0'],
         [group: 'org.jfree', name: 'jfreechart', version: '1.0.14'],
         [group: 'com.itextpdf', name: 'itextpdf', version: '5.0.6'],

@@ -25,13 +25,13 @@ import omr.OMR;
 
 import omr.sheet.Book;
 
-import com.audiveris.proxymusic.ScorePartwise;
-import com.audiveris.proxymusic.mxl.Mxl;
-import com.audiveris.proxymusic.mxl.RootFile;
-import com.audiveris.proxymusic.opus.ObjectFactory;
-import com.audiveris.proxymusic.opus.Opus;
-import com.audiveris.proxymusic.opus.YesNo;
-import com.audiveris.proxymusic.util.Marshalling;
+import org.audiveris.proxymusic.ScorePartwise;
+import org.audiveris.proxymusic.mxl.Mxl;
+import org.audiveris.proxymusic.mxl.RootFile;
+import org.audiveris.proxymusic.opus.ObjectFactory;
+import org.audiveris.proxymusic.opus.Opus;
+import org.audiveris.proxymusic.opus.YesNo;
+import org.audiveris.proxymusic.util.Marshalling;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +132,7 @@ public class OpusExporter
             String entryName = rootName
                                + (multi ? (".mvt" + score.getId()) : "")
                                + OMR.SCORE_EXTENSION;
-            com.audiveris.proxymusic.opus.Score oScore = opusFactory.createScore();
+            org.audiveris.proxymusic.opus.Score oScore = opusFactory.createScore();
             oScore.setHref(entryName);
             oScore.setNewPage(YesNo.YES);
             opus.getOpusOrOpusLinkOrScore().add(oScore);

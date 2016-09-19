@@ -23,11 +23,11 @@ package omr.score;
 
 import omr.sheet.SystemInfo;
 
-import com.audiveris.proxymusic.Identification;
-import com.audiveris.proxymusic.Miscellaneous;
-import com.audiveris.proxymusic.MiscellaneousField;
-import com.audiveris.proxymusic.ObjectFactory;
-import com.audiveris.proxymusic.ScorePartwise;
+import org.audiveris.proxymusic.Identification;
+import org.audiveris.proxymusic.Miscellaneous;
+import org.audiveris.proxymusic.MiscellaneousField;
+import org.audiveris.proxymusic.ObjectFactory;
+import org.audiveris.proxymusic.ScorePartwise;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
