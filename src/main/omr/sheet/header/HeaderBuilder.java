@@ -326,7 +326,7 @@ public class HeaderBuilder
 
             chart = ChartFactory.createXYLineChart(
                     title.toString(), // Title
-                    "Abscissae " + sheet.getScale(), // X-Axis label
+                    "Abscissae - staff interline:" + staff.getSpecificInterline(), // X-Axis label
                     "Counts", // Y-Axis label
                     dataset, // Dataset
                     PlotOrientation.VERTICAL, // orientation

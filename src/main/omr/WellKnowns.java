@@ -213,6 +213,11 @@ public abstract class WellKnowns
         disableDirectDraw();
     }
 
+    static {
+        /** Disable use of JAI native MediaLib, by default. */
+        disableMediaLib();
+    }
+
     //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
     private WellKnowns ()
@@ -249,7 +254,6 @@ public abstract class WellKnowns
         }
     }
 
-    //
     //-------------------//
     // disableDirectDraw //
     //-------------------//
@@ -264,6 +268,20 @@ public abstract class WellKnowns
         // Respect user setting if any
         if (System.getProperty(KEY) == null) {
             System.setProperty(KEY, "false");
+        }
+    }
+
+    //-----------------//
+    // disableMediaLib //
+    //-----------------//
+    private static void disableMediaLib ()
+    {
+        // Avoid "Could not find mediaLib accelerator wrapper classes. Continuing in pure Java mode"
+        final String KEY = "com.sun.media.jai.disableMediaLib";
+
+        // Respect user setting if any
+        if (System.getProperty(KEY) == null) {
+            System.setProperty(KEY, "true");
         }
     }
 

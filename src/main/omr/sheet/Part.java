@@ -34,9 +34,7 @@ import omr.sig.inter.LyricLineInter;
 import omr.sig.inter.SlurInter;
 
 import omr.step.PageStep;
-
 import static omr.util.HorizontalSide.*;
-
 import omr.util.Navigable;
 import omr.util.Predicate;
 
@@ -211,6 +209,10 @@ public class Part
             for (Measure measure : measures) {
                 measure.afterReload();
             }
+
+            for (SlurInter slur : slurs) {
+                slur.setPart(this);
+            }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
@@ -222,6 +224,8 @@ public class Part
     /**
      * Try to connect the orphan slurs at the beginning of this part
      * with the orphan slurs at the end of the provided preceding part.
+     * <p>
+     * Ending orphan slurs that cannot connect are deleted.
      *
      * @param precedingPart the part to connect to, in the preceding system,
      *                      [perhaps the last system of the preceding page]
@@ -682,7 +686,7 @@ public class Part
     //---------//
     public boolean isDummy ()
     {
-        return dummy != null && dummy;
+        return (dummy != null) && dummy;
     }
 
     //-----------------//
@@ -698,6 +702,20 @@ public class Part
                 it.remove();
             }
         }
+    }
+
+    //------------//
+    // removeSLur //
+    //------------//
+    /**
+     * Remove a slur from part collection.
+     *
+     * @param slur the slur to remove
+     * @return true if actually removed, false if not found
+     */
+    public boolean removeSlur (SlurInter slur)
+    {
+        return slurs.remove(slur);
     }
 
     //----------//

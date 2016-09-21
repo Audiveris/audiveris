@@ -674,8 +674,12 @@ public class IntegerHistogram
 
         private void plotHilos ()
         {
+            int rank = 0;
+
             for (Range hilo : hilos) {
-                XYSeries hiloSeries = new XYSeries("HiLo");
+                rank++;
+                String suffix = (hilos.size() > 1) ? "#" + rank : "";
+                XYSeries hiloSeries = new XYSeries("HiLo" + suffix);
 
                 for (int key = hilo.min; key <= hilo.max; key++) {
                     hiloSeries.add(key, getDerivative(key));

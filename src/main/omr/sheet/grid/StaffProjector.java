@@ -1384,7 +1384,7 @@ public class StaffProjector
         // Chart
         final JFreeChart chart = ChartFactory.createXYLineChart(
                 sheet.getId() + " staff#" + getStaff().getId(), // Title
-                "Abscissae", // X-Axis label
+                "Abscissae - staff interline:" + staff.getSpecificInterline(), // X-Axis label
                 "Counts", // Y-Axis label
                 dataset, // Dataset
                 PlotOrientation.VERTICAL, // orientation,

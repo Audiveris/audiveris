@@ -732,8 +732,8 @@ public class Scale
             }
 
             if (distanceMean != null) {
-                sb.append(" gapMean:").append(distanceMean);
-                sb.append(" gapSigma:").append(distanceSigma);
+                sb.append(String.format(" gapMean:%.1f", distanceMean));
+                sb.append(String.format(" gapStd:%.1f", distanceSigma));
             }
 
             sb.append(')');
@@ -1057,11 +1057,11 @@ public class Scale
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-            sb.append('{');
-            sb.append("main:").append(main);
+            StringBuilder sb = new StringBuilder("stem");
+            sb.append('(');
+            sb.append(main);
             sb.append(" max:").append(max);
-            sb.append('}');
+            sb.append(')');
 
             return sb.toString();
         }

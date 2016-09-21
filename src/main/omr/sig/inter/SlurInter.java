@@ -148,10 +148,11 @@ public class SlurInter
                 MeasureStack stack = system.getMeasureStackAt(end);
 
                 if (stack == system.getFirstMeasureStack()) {
-                    // Check slur ends in first measure half
+                    // Check slur ends in first measure half (excluding header area)
                     Staff staff = system.getClosestStaff(end);
                     Measure measure = stack.getMeasureAt(staff);
-                    int middle = measure.getAbscissa(LEFT, staff) + (measure.getWidth() / 2);
+                    int middle = (staff.getHeaderStop() + measure.getAbscissa(LEFT, staff)
+                                  + measure.getWidth()) / 2;
 
                     if (end.getX() < middle) {
                         return true;
@@ -273,6 +274,25 @@ public class SlurInter
         logger.debug("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
     }
 
+    //--------//
+    // delete //
+    //--------//
+    /**
+     * Since a slur instance is held by its containing part, make sure part
+     * slurs collection is updated.
+     *
+     * @see #undelete()
+     */
+    @Override
+    public void delete ()
+    {
+        if (part != null) {
+            part.removeSlur(this);
+        }
+
+        super.delete();
+    }
+
     //----------//
     // getCurve //
     //----------//
@@ -373,7 +393,7 @@ public class SlurInter
      */
     public boolean isTie ()
     {
-        return tie != null && tie;
+        return (tie != null) && tie;
     }
 
     //--------------//

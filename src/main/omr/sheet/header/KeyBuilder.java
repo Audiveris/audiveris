@@ -1304,7 +1304,7 @@ public class KeyBuilder
         boolean stem = hasStem(rect, staffFreeSource, params.coreStemLength, params.minBlackRatio);
 
         if (!stem) {
-            logger.info("Staff#{} {} no stem", staff.getId(), peak);
+            logger.debug("Staff#{} {} no stem", staff.getId(), peak);
         }
 
         return stem;
