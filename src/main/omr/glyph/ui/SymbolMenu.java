@@ -52,6 +52,8 @@ import javax.swing.JMenuItem;
 /**
  * Class {@code SymbolMenu} defines the menu which is linked to the current selection of
  * one or several glyphs.
+ * <p>
+ * <b>THIS MENU IS CURRENTLY DISABLED</b>
  *
  * @author Hervé Bitteur
  */
@@ -118,14 +120,6 @@ public class SymbolMenu
 
         if (glyphs != null) {
             for (Glyph glyph : glyphs) {
-                //                if (glyph.isKnown()) {
-                //                    knownNb++;
-                //
-                //                    if (glyph.getShape() == Shape.STEM) {
-                //                        stemNb++;
-                //                    }
-                //                }
-                //
                 if (glyph.isVirtual()) {
                     virtualNb++;
                 }

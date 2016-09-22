@@ -25,7 +25,7 @@ import omr.log.LogUtil;
 
 import omr.run.RunTable;
 
-import omr.score.ui.PageMenu;
+import omr.score.ui.SheetPopupMenu;
 import omr.score.ui.PaintingParameters;
 
 import omr.sheet.Picture;
@@ -45,8 +45,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
+
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
+
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -73,7 +75,7 @@ public class PictureView
     private final Sheet sheet;
 
     /** Pop-up page menu. */
-    private final PageMenu pageMenu;
+    private final SheetPopupMenu pageMenu;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -99,7 +101,7 @@ public class PictureView
         // Insert view
         setView(view);
 
-        pageMenu = new PageMenu(sheet);
+        pageMenu = new SheetPopupMenu(sheet);
         pageMenu.addMenu(new ExtractionMenu(sheet));
     }
 

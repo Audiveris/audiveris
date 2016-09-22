@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        P a g e M e n u                                         //
+//                                  S h e e t P o p u p M e n u                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -35,15 +35,15 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 /**
- * Class {@code PageMenu} is a general page pop-up menu meant to host sub-menus.
+ * Class {@code SheetPopupMenu} is a general sheet pop-up menu meant to host sub-menus.
  *
  * @author Hervé Bitteur
  */
-public class PageMenu
+public class SheetPopupMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(PageMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetPopupMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
@@ -54,11 +54,11 @@ public class PageMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new BasicPageMenu object.
+     * Creates a new {@code SheetPopupMenu} object.
      *
      * @param sheet the related sheet
      */
-    public PageMenu (Sheet sheet)
+    public SheetPopupMenu (Sheet sheet)
     {
         this.sheet = sheet;
     }
@@ -68,7 +68,7 @@ public class PageMenu
     // addMenu //
     //---------//
     /**
-     * Add a menu to the page popup
+     * Add a menu to the sheet popup
      *
      * @param menu the menu to add
      */

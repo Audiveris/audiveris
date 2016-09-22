@@ -62,7 +62,7 @@ import javax.swing.JMenuItem;
  * @author Hervé Bitteur
  */
 public class EditorMenu
-        extends PageMenu
+        extends SheetPopupMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -100,10 +100,11 @@ public class EditorMenu
     @Override
     public boolean updateMenu (Rectangle rect)
     {
-        // Update symbol menu (which is a specific case)
-        int symbolNb = symbolMenu.updateMenu(sheet.getGlyphIndex().getSelectedGlyphList());
-        symbolMenu.getMenu().setVisible(symbolNb > 0);
-
+        if (symbolMenu != null) {
+            // Update symbol menu (which is a specific case)
+            int symbolNb = symbolMenu.updateMenu(sheet.getGlyphIndex().getSelectedGlyphList());
+            symbolMenu.getMenu().setVisible(symbolNb > 0);
+        }
         return super.updateMenu(rect);
     }
 
@@ -117,7 +118,7 @@ public class EditorMenu
         addMenu(new MeasureMenu());
         addMenu(new SlotMenu());
         ///addMenu(new ChordMenu());
-        addMenu(symbolMenu);
+        ///addMenu(symbolMenu);
         addMenu(new StaffMenu());
         addMenu(new ExtractionMenu(sheet));
     }
