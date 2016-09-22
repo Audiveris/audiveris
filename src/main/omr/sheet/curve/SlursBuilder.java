@@ -925,42 +925,54 @@ public class SlursBuilder
                 continue;
             }
 
-            // Check straightness & incidence angle
-            final Model model = slur.getSideModel(reverse);
-            double incidence = 0;
+            // Delete slur ending as a STAFF_ARC
+            Arc endPart = slur.getPartAt(end);
 
-            if (model instanceof CircleModel) {
-                // Do not accept slur ending as a STAFF_ARC
-                Arc endPart = slur.getPartAt(end);
+            if ((endPart != null) && (endPart.getShape() == STAFF_ARC)) {
+                logger.debug("{} ending as staff line", slur);
+                toDelete.add(inter);
 
-                if ((endPart != null) && (endPart.getShape() == STAFF_ARC)) {
-                    logger.debug("{} ending as staff line", slur);
-                    toDelete.add(inter);
-
-                    continue;
-                }
-
-                CircleModel circleModel = (CircleModel) model;
-                double radius = circleModel.getCircle().getRadius();
-
-                if (Double.isInfinite(radius)) {
-                    List<Point> pts = slur.getSidePoints(reverse);
-                    Point p1 = reverse ? pts.get(pts.size() - 1) : pts.get(0);
-                    Point p2 = reverse ? pts.get(0) : pts.get(pts.size() - 1);
-                    double dx = Math.abs(p2.x - p1.x);
-
-                    if (dx < 1) {
-                        continue; // dx < 1 pixel, so the segment is vertical (angle is 90 degrees)
-                    }
-
-                    double dy = Math.abs(p2.y - p1.y);
-                    incidence = Math.atan(dy / dx);
-                } else {
-                    incidence = model.getAngle(reverse) - ((model.ccw() * PI) / 2);
-                }
-            } else if (model instanceof LineModel) {
-                incidence = model.getAngle(reverse);
+                continue;
             }
+
+            // Check straightness & incidence angle
+//            final Model model = slur.getSideModel(reverse);
+//
+//            if (model instanceof CircleModel) {
+//
+//                CircleModel circleModel = (CircleModel) model;
+//                double radius = circleModel.getCircle().getRadius();
+//
+//                if (Double.isInfinite(radius)) {
+//                    List<Point> pts = slur.getSidePoints(reverse);
+//                    Point p1 = reverse ? pts.get(pts.size() - 1) : pts.get(0);
+//                    Point p2 = reverse ? pts.get(0) : pts.get(pts.size() - 1);
+//                    double dx = Math.abs(p2.x - p1.x);
+//
+//                    if (dx < 1) {
+//                        continue; // dx < 1 pixel, so the segment is vertical (angle is 90 degrees)
+//                    }
+//
+//                    double dy = Math.abs(p2.y - p1.y);
+//                    incidence = Math.atan(dy / dx);
+//                } else {
+//                    incidence = model.getAngle(reverse) - ((model.ccw() * PI) / 2);
+//                }
+//            } else if (model instanceof LineModel) {
+//                incidence = model.getAngle(reverse);
+//            }
+            // Check incidence of last points before slur end
+            List<Point> pts = slur.getSidePoints(reverse, params.tangentLength);
+            Point p1 = reverse ? pts.get(pts.size() - 1) : pts.get(0);
+            Point p2 = reverse ? pts.get(0) : pts.get(pts.size() - 1);
+            double dx = Math.abs(p2.x - p1.x);
+
+            if (dx < 1) {
+                continue; // dx < 1 pixel, so the segment is vertical (angle is 90 degrees)
+            }
+
+            double dy = Math.abs(p2.y - p1.y);
+            double incidence = Math.atan(dy / dx);
 
             // Check incidence
             if (abs(incidence) > params.maxIncidence) {
@@ -1046,6 +1058,10 @@ public class SlursBuilder
                 2,
                 "Length checked for extension arc");
 
+        private final Scale.Fraction tangentLength = new Scale.Fraction(
+                0.5,
+                "Length for checking staff line tangency");
+
         private final Scale.Fraction sideModelLength = new Scale.Fraction(
                 6,
                 "Length for side osculatory model");
@@ -1095,7 +1111,7 @@ public class SlursBuilder
                 "High minimum angle (in degrees) between slur and vertical");
 
         private final Constant.Ratio quorumRatio = new Constant.Ratio(
-                0.75,
+                0.5, //0.75,
                 "Minimum length expressed as ratio of longest in clump");
 
         private final Scale.Fraction minProjection = new Scale.Fraction(
@@ -1118,6 +1134,8 @@ public class SlursBuilder
         //~ Instance fields ------------------------------------------------------------------------
 
         final double similarRadiusRatio;
+
+        final int tangentLength;
 
         final int sideLength;
 
@@ -1170,6 +1188,7 @@ public class SlursBuilder
         public Parameters (Scale scale)
         {
             similarRadiusRatio = constants.similarRadiusRatio.getValue();
+            tangentLength = scale.toPixels(constants.tangentLength);
             sideLength = scale.toPixels(constants.sideModelLength);
             arcCheckLength = scale.toPixels(constants.arcCheckLength);
             arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);

@@ -337,12 +337,28 @@ public class SlurInfo
      */
     public List<Point> getSidePoints (boolean reverse)
     {
-        if (points.size() <= sideLength) {
+        return getSidePoints(reverse, sideLength);
+    }
+
+    //---------------//
+    // getSidePoints //
+    //---------------//
+    /**
+     * Build the sequence of points needed to define a side model.
+     *
+     * @param reverse desired side
+     * @param length  desired max number of points
+     * @return the sequence of defining points
+     */
+    public List<Point> getSidePoints (boolean reverse,
+                                      int length)
+    {
+        if (points.size() <= length) {
             return points;
         } else if (reverse) {
-            return points.subList(0, sideLength);
+            return points.subList(0, length);
         } else {
-            return points.subList(points.size() - sideLength, points.size());
+            return points.subList(points.size() - length, points.size());
         }
     }
 

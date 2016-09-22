@@ -111,6 +111,7 @@ public class LinksStep
                     if (slurPart == null) {
                         slurPart = headPart;
                         slurPart.addSlur(slur);
+                        slur.setPart(slurPart);
                     } else if (slurPart != headPart) {
                         logger.warn("Slur crosses parts " + slur);
                     }
