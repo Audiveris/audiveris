@@ -24,27 +24,20 @@ package omr.sheet.symbol;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.sheet.Part;
+import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.sig.SigReducer;
-import omr.sig.inter.HeadInter;
-import omr.sig.inter.Inter;
-import omr.sig.inter.SlurInter;
 
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;
 
-import omr.util.HorizontalSide;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 /**
  * Class {@code LinksStep} implements <b>LINKS</b> step, which assigns relations between
- * certain symbols and make a final reduction.
+ * certain symbols and makes a final reduction.
  *
  * @author Hervé Bitteur
  */
@@ -77,7 +70,6 @@ public class LinksStep
         new SymbolsLinker(system).process();
         new SigReducer(system, false).reduceLinks();
 
-        dispatchSlursToParts(system);
         new InterCleaner(system).purgeContainers();
 
         // Remove all free glyphs?
@@ -86,38 +78,17 @@ public class LinksStep
         }
     }
 
-    //----------------------//
-    // dispatchSlursToParts //
-    //----------------------//
-    /**
-     * Dispatch any slur to its containing part.
-     *
-     * @param system the system to process
-     */
-    private void dispatchSlursToParts (SystemInfo system)
+    //----------//
+    // doEpilog //
+    //----------//
+    @Override
+    protected void doEpilog (Sheet sheet,
+                             Void context)
+            throws StepException
     {
-        final List<Inter> slurs = system.getSig().inters(SlurInter.class);
+        super.doEpilog(sheet, context); //To change body of generated methods, choose Tools | Templates.
 
-        for (Inter inter : slurs) {
-            SlurInter slur = (SlurInter) inter;
-            Part slurPart = null;
-
-            for (HorizontalSide side : HorizontalSide.values()) {
-                HeadInter head = slur.getHead(side);
-
-                if (head != null) {
-                    Part headPart = system.getPartOf(head.getStaff());
-
-                    if (slurPart == null) {
-                        slurPart = headPart;
-                        slurPart.addSlur(slur);
-                        slur.setPart(slurPart);
-                    } else if (slurPart != headPart) {
-                        logger.warn("Slur crosses parts " + slur);
-                    }
-                }
-            }
-        }
+        // Handle inters conflicts across systems
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

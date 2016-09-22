@@ -620,7 +620,7 @@ public class PartwiseBuilder
         } else if (isFirst.measure) {
             return measure.getPart().getLeftBarline();
         } else {
-            final Measure prevMeasure = measure.getPreviousSibling();
+            final Measure prevMeasure = measure.getPrecedingInSystem();
 
             if (prevMeasure != null) {
                 if (!prevMeasure.isDummy()) {

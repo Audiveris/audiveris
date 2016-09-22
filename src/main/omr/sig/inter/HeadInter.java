@@ -49,8 +49,10 @@ import omr.sig.GradeImpacts;
 import omr.sig.relation.AlterHeadRelation;
 import omr.sig.relation.HeadStemRelation;
 import omr.sig.relation.Relation;
+import omr.sig.relation.SlurHeadRelation;
 
 import omr.util.ByteUtil;
+import omr.util.HorizontalSide;
 
 import ij.process.ByteProcessor;
 
@@ -199,7 +201,7 @@ public class HeadInter
     /**
      * Report the actual alteration of this note, taking into account the accidental of
      * this note if any, the accidental of previous note with same step within the same
-     * measure, and finally the current key signature.
+     * measure, a tie from previous measure and finally the current key signature.
      *
      * @param fifths fifths value for current key signature
      * @return the actual alteration
@@ -242,6 +244,35 @@ public class HeadInter
                         }
                     }
                 }
+            }
+        }
+
+        // Look for tie from previous measure (same system or previous system)
+        for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
+            SlurInter slur = (SlurInter) sig.getOppositeInter(this, rel);
+
+            if (slur.isTie() && (slur.getHead(HorizontalSide.RIGHT) == this)) {
+                // Is the starting head in same system?
+                HeadInter startHead = slur.getHead(HorizontalSide.LEFT);
+
+                if (startHead != null) {
+                    // Use start head alter
+                    return startHead.getAlter(fifths);
+                }
+
+                // Use slur extension to look into previous system
+                SlurInter prevSlur = slur.getExtension(HorizontalSide.LEFT);
+
+                if (prevSlur != null) {
+                    startHead = prevSlur.getHead(HorizontalSide.LEFT);
+
+                    if (startHead != null) {
+                        // Use start head alter
+                        return startHead.getAlter(fifths);
+                    }
+                }
+
+                // TODO: Here we should look in previous sheet/page...
             }
         }
 

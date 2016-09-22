@@ -51,6 +51,7 @@ import omr.sig.inter.DeletedInterException;
 import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.InterEnsemble;
+import omr.sig.inter.KeyAlterInter;
 import omr.sig.inter.LedgerInter;
 import omr.sig.inter.SlurInter;
 import omr.sig.inter.SmallBeamInter;
@@ -785,6 +786,43 @@ public class SigReducer
                 }
 
                 inter.delete();
+            }
+        }
+
+        return modifs;
+    }
+
+    //---------------------//
+    // checkIsolatedAlters //
+    //---------------------//
+    /**
+     * Perform checks on isolated alterations.
+     * <p>
+     * They are discarded is there is no relation with a nearby head (or turn sign?).
+     * TODO: rework this when stand-along key signatures are supported.
+     *
+     * @return the count of modifications done
+     */
+    private int checkIsolatedAlters ()
+    {
+        int modifs = 0;
+        final List<Inter> alters = sig.inters(ShapeSet.Alterations.getShapes());
+
+        for (Inter inter : alters) {
+            if (inter instanceof KeyAlterInter) {
+                continue; // Don't consider alters within a key-sig
+            }
+
+            final AlterInter alter = (AlterInter) inter;
+
+            // Check whether the alter is connected to a note head
+            if (!sig.hasRelation(alter, AlterHeadRelation.class)) {
+                if (alter.isVip() || logger.isDebugEnabled()) {
+                    logger.info("VIP deleting {} lacking note head", alter);
+                }
+
+                alter.delete();
+                modifs++;
             }
         }
 
@@ -1679,6 +1717,17 @@ public class SigReducer
             extends Adapter
     {
         //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public int checkConsistencies ()
+        {
+            int modifs = 0;
+
+            modifs += checkIsolatedAlters();
+            deleted.addAll(updateAndPurge());
+
+            return modifs;
+        }
 
         @Override
         public void checkFrozens ()

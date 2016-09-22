@@ -505,7 +505,7 @@ public class Measure
         // Look in preceding measures, within the same system/part, within the same staff
         Measure measure = this;
 
-        while ((measure = measure.getPreviousSibling()) != null) {
+        while ((measure = measure.getPrecedingInSystem()) != null) {
             clef = measure.getLastMeasureClef(staff);
 
             if (clef != null) {
@@ -762,7 +762,7 @@ public class Measure
     public Measure getPrecedingInPage ()
     {
         // Look in current part
-        Measure prevMeasure = getPreviousSibling();
+        Measure prevMeasure = getPrecedingInSystem();
 
         if (prevMeasure != null) {
             return prevMeasure;
@@ -777,15 +777,15 @@ public class Measure
         }
     }
 
-    //--------------------//
-    // getPreviousSibling //
-    //--------------------//
+    //----------------------//
+    // getPrecedingInSystem //
+    //----------------------//
     /**
-     * Return the preceding measure within the same part.
+     * Return the preceding measure within the same system.
      *
-     * @return previous sibling measure in part, or null
+     * @return previous sibling measure in system, or null
      */
-    public Measure getPreviousSibling ()
+    public Measure getPrecedingInSystem ()
     {
         int index = part.getMeasures().indexOf(this);
 

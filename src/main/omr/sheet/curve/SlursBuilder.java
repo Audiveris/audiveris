@@ -26,13 +26,12 @@ import omr.constant.ConstantSet;
 
 import omr.math.Circle;
 
+import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
-
 import static omr.sheet.curve.ArcShape.STAFF_ARC;
-
 import omr.sheet.grid.LineInfo;
 
 import omr.sig.GradeImpacts;
@@ -61,10 +60,11 @@ import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-
 import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.lang.Math.toRadians;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -74,10 +74,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 /**
  * Class {@code SlursBuilder} builds all slur curves from a sheet skeleton.
@@ -165,6 +161,9 @@ public class SlursBuilder
 
             logger.info("Slurs: {}", pageSlurs.size());
             logger.debug("Slur maxClumpSize: {}", maxClumpSize);
+
+            // Dispatch slurs to their containing parts
+            dispatchToParts();
         } catch (Throwable ex) {
             logger.warn("Error in SlursBuilder: " + ex, ex);
         }
@@ -648,6 +647,40 @@ public class SlursBuilder
         }
     }
 
+    //-----------------//
+    // dispatchToParts //
+    //-----------------//
+    /**
+     * Dispatch each slur to its containing part.
+     */
+    private void dispatchToParts ()
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            final List<Inter> slurs = system.getSig().inters(SlurInter.class);
+
+            for (Inter inter : slurs) {
+                SlurInter slur = (SlurInter) inter;
+                Part slurPart = null;
+
+                for (HorizontalSide side : HorizontalSide.values()) {
+                    HeadInter head = slur.getHead(side);
+
+                    if (head != null) {
+                        Part headPart = system.getPartOf(head.getStaff());
+
+                        if (slurPart == null) {
+                            slurPart = headPart;
+                            slurPart.addSlur(slur);
+                            slur.setPart(slurPart);
+                        } else if (slurPart != headPart) {
+                            logger.warn("Slur crosses parts " + slur);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -936,31 +969,31 @@ public class SlursBuilder
             }
 
             // Check straightness & incidence angle
-//            final Model model = slur.getSideModel(reverse);
-//
-//            if (model instanceof CircleModel) {
-//
-//                CircleModel circleModel = (CircleModel) model;
-//                double radius = circleModel.getCircle().getRadius();
-//
-//                if (Double.isInfinite(radius)) {
-//                    List<Point> pts = slur.getSidePoints(reverse);
-//                    Point p1 = reverse ? pts.get(pts.size() - 1) : pts.get(0);
-//                    Point p2 = reverse ? pts.get(0) : pts.get(pts.size() - 1);
-//                    double dx = Math.abs(p2.x - p1.x);
-//
-//                    if (dx < 1) {
-//                        continue; // dx < 1 pixel, so the segment is vertical (angle is 90 degrees)
-//                    }
-//
-//                    double dy = Math.abs(p2.y - p1.y);
-//                    incidence = Math.atan(dy / dx);
-//                } else {
-//                    incidence = model.getAngle(reverse) - ((model.ccw() * PI) / 2);
-//                }
-//            } else if (model instanceof LineModel) {
-//                incidence = model.getAngle(reverse);
-//            }
+            //            final Model model = slur.getSideModel(reverse);
+            //
+            //            if (model instanceof CircleModel) {
+            //
+            //                CircleModel circleModel = (CircleModel) model;
+            //                double radius = circleModel.getCircle().getRadius();
+            //
+            //                if (Double.isInfinite(radius)) {
+            //                    List<Point> pts = slur.getSidePoints(reverse);
+            //                    Point p1 = reverse ? pts.get(pts.size() - 1) : pts.get(0);
+            //                    Point p2 = reverse ? pts.get(0) : pts.get(pts.size() - 1);
+            //                    double dx = Math.abs(p2.x - p1.x);
+            //
+            //                    if (dx < 1) {
+            //                        continue; // dx < 1 pixel, so the segment is vertical (angle is 90 degrees)
+            //                    }
+            //
+            //                    double dy = Math.abs(p2.y - p1.y);
+            //                    incidence = Math.atan(dy / dx);
+            //                } else {
+            //                    incidence = model.getAngle(reverse) - ((model.ccw() * PI) / 2);
+            //                }
+            //            } else if (model instanceof LineModel) {
+            //                incidence = model.getAngle(reverse);
+            //            }
             // Check incidence of last points before slur end
             List<Point> pts = slur.getSidePoints(reverse, params.tangentLength);
             Point p1 = reverse ? pts.get(pts.size() - 1) : pts.get(0);
