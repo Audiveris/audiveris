@@ -1064,7 +1064,7 @@ public class SlursBuilder
 
         private final Constant.Double maxIncidence = new Constant.Double(
                 "degree",
-                5,
+                10,
                 "Maximum incidence angle (in degrees) for staff tangency");
 
         private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
@@ -1076,7 +1076,7 @@ public class SlursBuilder
                 "Vertical distance to closest staff line to detect tangency");
 
         private final Scale.Fraction maxSlurDistance = new Scale.Fraction(
-                0.15,
+                0.1,
                 "Maximum circle distance for private final slur");
 
         private final Scale.Fraction maxExtDistance = new Scale.Fraction(
