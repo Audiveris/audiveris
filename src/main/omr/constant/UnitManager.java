@@ -21,11 +21,16 @@
 // </editor-fold>
 package omr.constant;
 
+import omr.util.StopWatch;
+
 import net.jcip.annotations.ThreadSafe;
+
+import org.reflections.Reflections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,14 +43,14 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import omr.Main;
 
 /**
  * Class {@code UnitManager} manages all units (AKA classes), for which we have a
  * ConstantSet.
  * <p>
  * To help {@link UnitTreeTable} display the whole tree of UnitNodes, UnitManager can pre-load all
- * the classes known to contain a ConstantSet. This list is kept up-to-date and stored as a
- * property.
+ * the classes known to contain a ConstantSet.
  * <p>
  * Since the persistency of a Constant uses its fully qualified name (i.e. the path to the enclosing
  * class, plus the name of the constant element in the ConstantSet), the determination of the fully
@@ -59,14 +64,8 @@ public class UnitManager
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Name of this unit */
-    private static final String UNIT = UnitManager.class.getName();
-
-    /** The single instance of this class */
+    /** The single instance of this class. */
     private static final UnitManager INSTANCE = new UnitManager();
-
-    /** Separator used in property that concatenates all unit names */
-    private static final String SEPARATOR = ";";
 
     private static final Logger logger = LoggerFactory.getLogger(
             UnitManager.class);
@@ -81,15 +80,6 @@ public class UnitManager
 
     /** Set of names of ConstantSets that still need to be initialized. */
     private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<String>();
-
-    /**
-     * Lists of all units known as containing a ConstantSet.
-     * This is kept up-to-date and saved as a property.
-     */
-    private Constant.String units;
-
-    /** Flag to avoid storing units being pre-loaded. */
-    private volatile boolean storeIt = false;
 
     //~ Constructors -------------------------------------------------------------------------------
     /** This is a singleton. */
@@ -259,52 +249,41 @@ public class UnitManager
     // preLoadUnits //
     //--------------//
     /**
-     * Allows to pre-load the names of the various nodes in the
-     * hierarchy, by simply extracting names stored at previous runs.
-     * This will load the classes not already loaded.
-     * This method is meant to be used by the UI which let the user browse and
-     * modify the whole collection of constants.
-     *
-     * @param main the application main class name
+     * Allows to pre-load the various classes that enclose a ConstantSet and are not
+     * already loaded.
+     * <p>
+     * This method is meant to be used by the UI which let the user browse and modify the whole
+     * collection of constants.
      */
-    public void preLoadUnits (String main)
+    public void preLoadUnits ()
     {
-        //log("pre-loading units");
-        String unitName;
+        StopWatch watch = new StopWatch("Reflections");
+        watch.start("new Reflections()");
 
-        if (main != null) {
-            unitName = main + ".Units";
-        } else {
-            unitName = "Units";
-        }
+        // Look into omr package hierarchy
+        Reflections reflections = new Reflections(Main.class.getPackage().getName());
 
-        units = new Constant.String(
-                UNIT,
-                unitName,
-                "",
-                "List of units known as containing a ConstantSet");
+        watch.start("getSubTypesOf()");
 
-        // Initialize units using the constant 'units'
-        final String[] tokens = units.getValue().split(SEPARATOR);
+        Set<Class<? extends ConstantSet>> classes = reflections.getSubTypesOf(ConstantSet.class);
 
-        storeIt = false;
+        watch.start("forName()");
 
-        for (String unit : tokens) {
+        for (Class<? extends ConstantSet> clazz : classes) {
+            // Should not happen, but safer.
+            if (Modifier.isAbstract(clazz.getModifiers()) || clazz.isInterface()) {
+                continue;
+            }
+
             try {
-                ///System.out.println ("pre-loading '" + unit + "'...");
-                Class.forName(unit); // This loads its ConstantSet
-                //log ("unit '" + unit + "' pre-loaded");
-            } catch (ClassNotFoundException ex) {
-                System.err.println("*** Cannot load ConstantSet " + unit + " " + ex);
+                Class<?> enclosing = clazz.getEnclosingClass();
+                Class.forName(enclosing.getName()); // This loads its ConstantSet
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
 
-        storeIt = true;
-
-        // Save the latest set of Units
-        storeUnits();
-
-        //log("all units have been pre-loaded from " + main);
+        ///watch.print();
     }
 
     //---------------//
@@ -392,11 +371,6 @@ public class UnitManager
         // Add this node and its parents as needed
         if (mapOfNodes.putIfAbsent(name, unit) == null) {
             updateParents(unit);
-
-            if (storeIt) {
-                // Make this unit name permanent
-                storeUnits();
-            }
         }
     }
 
@@ -444,38 +418,6 @@ public class UnitManager
         }
 
         return null;
-    }
-
-    //------------//
-    // storeUnits //
-    //------------//
-    /**
-     * Build a string by concatenating all node names and store it to
-     * disk for subsequent runs.
-     */
-    private void storeUnits ()
-    {
-        //log("storing units");
-
-        // Update the constant 'units' according to current units content
-        StringBuilder buf = new StringBuilder(1024);
-
-        for (String name : mapOfNodes.keySet()) {
-            Node node = getNode(name);
-
-            if (node instanceof UnitNode) {
-                if (buf.length() > 0) {
-                    buf.append(SEPARATOR);
-                }
-
-                buf.append(name);
-            }
-        }
-
-        // Side-effect: all constants are stored to disk
-        units.setValue(buf.toString());
-
-        //log(units.getName() + "=" + units.getValue());
     }
 
     //---------------//

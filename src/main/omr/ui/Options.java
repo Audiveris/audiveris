@@ -21,7 +21,6 @@
 // </editor-fold>
 package omr.ui;
 
-import omr.Main;
 import omr.OMR;
 
 import omr.constant.UnitManager;
@@ -216,7 +215,7 @@ public class Options
     public Options ()
     {
         // Preload constant units
-        UnitManager.getInstance().preLoadUnits(Main.class.getName());
+        UnitManager.getInstance().preLoadUnits();
 
         frame = new JFrame();
         frame.setName("optionsFrame");
