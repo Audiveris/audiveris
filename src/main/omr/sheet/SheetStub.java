@@ -146,9 +146,23 @@ public interface SheetStub
     /**
      * Report the stub sequence of page references.
      *
-     * @return the page refs
+     * @return the page ref 's
      */
     List<PageRef> getPageRefs ();
+
+    /**
+     * Report the first page ref in stub
+     *
+     * @return first page ref or null
+     */
+    PageRef getFirstPageRef ();
+
+    /**
+     * Report the last page ref in stub
+     *
+     * @return last page ref or null
+     */
+    PageRef getLastPageRef ();
 
     /**
      * Make sure the sheet material is in memory.

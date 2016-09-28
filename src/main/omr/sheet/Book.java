@@ -83,6 +83,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dd><ul>
  * <li>{@link #transcribe}</li>
  * <li>{@link #reachBookStep}</li>
+ * <li>{@link #updateScores}</li>
  * <li>{@link #buildScores}</li>
  * <li>{@link #getScores}</li>
  * </ul></dd>
@@ -125,7 +126,7 @@ public interface Book
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Determine scores by gathering and connecting sheets pages.
+     * Determine the logical parts of each score.
      */
     void buildScores ();
 
@@ -134,11 +135,11 @@ public interface Book
      */
     void close ();
 
-    /** Gather sheet pages into scores.
+    /** Update the gathering of sheet pages into scores.
      *
      * @param stub current stub
      */
-    void createScores (SheetStub stub);
+    void updateScores (SheetStub stub);
 
     /**
      * Create as many sheet stubs as there are images in the input image file.
@@ -207,7 +208,7 @@ public interface Book
     /**
      * Report the binarization filter defined at book level.
      *
-     * @return the filter param
+     * @return the filter parameter
      */
     Param<FilterDescriptor> getFilterParam ();
 

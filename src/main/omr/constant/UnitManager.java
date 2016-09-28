@@ -263,7 +263,7 @@ public class UnitManager
         // Look into omr package hierarchy
         Reflections reflections = new Reflections(Main.class.getPackage().getName());
 
-        watch.start("getSubTypesOf()");
+        watch.start("getSubTypesOf(ConstantSet)");
 
         Set<Class<? extends ConstantSet>> classes = reflections.getSubTypesOf(ConstantSet.class);
 

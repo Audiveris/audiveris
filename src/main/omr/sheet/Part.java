@@ -226,6 +226,11 @@ public class Part
      * with the orphan slurs at the end of the provided preceding part.
      * <p>
      * Ending orphan slurs that cannot connect are deleted.
+     * <p>
+     * This method is called in two contexts:<ol>
+     * <li>Within a page: it processes slur connections between systems of the page.
+     * <li>Within a score: it processes slur connections between pages of a score.
+     * </ol>
      *
      * @param precedingPart the part to connect to, in the preceding system,
      *                      [perhaps the last system of the preceding page]

@@ -106,7 +106,7 @@ public class GridStep
         watch.start("StaffLineCleaner");
         new StaffLineCleaner(sheet).process();
 
-        sheet.getStub().getBook().createScores(sheet.getStub());
+        sheet.getStub().getBook().updateScores(sheet.getStub());
 
         ///watch.print();
     }

@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.Unmarshaller;
@@ -71,10 +72,9 @@ public class Score
     // Persistent data
     //----------------
     //
-    /** Score id, within containing book. */
-    @XmlAttribute
-    private int id;
-
+    /** Score id, within containing book.
+     * see {@link #getId()}.
+     */
     /** LogicalPart list for the whole score. */
     @XmlElement(name = "logical-part")
     private List<LogicalPart> logicalParts;
@@ -91,7 +91,7 @@ public class Score
     private Book book;
 
     /** Page references. */
-    private ArrayList<PageRef> pageRefs;
+    private ArrayList<PageRef> pageRefs = new ArrayList<PageRef>();
 
     /** Referenced pages. */
     private ArrayList<Page> pages;
@@ -159,28 +159,17 @@ public class Score
     public void addPage (Page page)
     {
         getPages().add(page);
-        //        pageRefs.add(
-        //                new PageRef(
-        //                        page.getSheet().getStub().getNumber(),
-        //                        page.getId(),
-        //                        page.getDeltaMeasureId(),
-        //                        page.isMovementStart())
-        //        );
         page.setScore(this);
     }
 
     //------------//
     // addPageRef //
     //------------//
-    public void addPageRef (SheetStub stub,
+    public void addPageRef (int stubNumber,
                             PageRef pageRef)
     {
-        if (pageRefs == null) {
-            pageRefs = new ArrayList<PageRef>();
-        }
-
         pageRefs.add(pageRef);
-        pageLinks.add(new PageLink(stub.getNumber(), pageRef.getId()));
+        pageLinks.add(new PageLink(stubNumber, pageRef.getId()));
     }
 
     //-------//
@@ -222,15 +211,34 @@ public class Score
         return getPage(pageRefs.get(0));
     }
 
+    //-----------------//
+    // getFirstPageRef //
+    //-----------------//
+    public PageRef getFirstPageRef ()
+    {
+        if (pageRefs.isEmpty()) {
+            return null;
+        }
+
+        return pageRefs.get(0);
+    }
+
     //-------//
     // getId //
     //-------//
     /**
-     * @return the id
+     * @return the id, if any
      */
-    public int getId ()
+    @XmlAttribute
+    public Integer getId ()
     {
-        return id;
+        final int index = book.getScores().indexOf(this);
+
+        if (index != -1) {
+            return 1 + index;
+        }
+
+        return null;
     }
 
     //-------------//
@@ -243,6 +251,18 @@ public class Score
         }
 
         return getPage(pageRefs.get(pageRefs.size() - 1));
+    }
+
+    //----------------//
+    // getLastPageRef //
+    //----------------//
+    public PageRef getLastPageRef ()
+    {
+        if (pageRefs.isEmpty()) {
+            return null;
+        }
+
+        return pageRefs.get(pageRefs.size() - 1);
     }
 
     //-----------------//
@@ -331,6 +351,28 @@ public class Score
         final PageRef ref = getPageRef(page);
 
         return pageRefs.indexOf(ref);
+    }
+
+    //------------//
+    // getPageRef //
+    //------------//
+    public PageRef getPageRef (int sheetNumber)
+    {
+        for (PageRef pageRef : pageRefs) {
+            if (pageRef.getSheetNumber() == sheetNumber) {
+                return pageRef;
+            }
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // getPageRefs //
+    //-------------//
+    public List<PageRef> getPageRefs ()
+    {
+        return Collections.unmodifiableList(pageRefs);
     }
 
     //----------//
@@ -504,17 +546,6 @@ public class Score
         this.book = book;
     }
 
-    //-------//
-    // setId //
-    //-------//
-    /**
-     * @param id the id to set
-     */
-    public void setId (int id)
-    {
-        this.id = id;
-    }
-
     //-----------------//
     // setLogicalParts //
     //-----------------//
@@ -547,7 +578,7 @@ public class Score
     @Override
     public String toString ()
     {
-        return "{Score " + id + "}";
+        return "{Score " + getId() + "}";
     }
 
     //----------------//
@@ -557,9 +588,6 @@ public class Score
     private void afterUnmarshal (Unmarshaller u,
                                  Object parent)
     {
-        // Populate pageRefs
-        pageRefs = new ArrayList<PageRef>();
-
         for (PageLink pageLink : pageLinks) {
             SheetStub stub = book.getStub(pageLink.sheetNumber);
             pageRefs.add(stub.getPageRefs().get(pageLink.sheetPageId - 1));
@@ -584,22 +612,6 @@ public class Score
         Sheet sheet = book.getStubs().get(ref.getSheetNumber() - 1).getSheet();
 
         return sheet.getPages().get(ref.getId() - 1);
-    }
-
-    //------------//
-    // getPageRef //
-    //------------//
-    private PageRef getPageRef (int sheetNumber)
-    {
-        for (PageRef pageRef : pageRefs) {
-            if (pageRef.getSheetNumber() == sheetNumber) {
-                return pageRef;
-            }
-        }
-
-        logger.error("No page ref for sheet number " + sheetNumber);
-
-        return null;
     }
 
     //------------//

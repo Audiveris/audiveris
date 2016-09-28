@@ -252,8 +252,7 @@ public class BasicBook
     public void buildScores ()
     {
         for (Score score : scores) {
-            // Merges pages into their containing movement score (connecting the parts across pages)
-            // TODO: this may need the addition of dummy parts in some pages
+            // (re) build the score logical parts
             new ScoreReduction(score).reduce();
             //
             //            for (Page page : score.getPages()) {
@@ -346,37 +345,6 @@ public class BasicBook
             logger.info("Book file system closed.");
         } catch (Exception ex) {
             logger.warn("Could not close book file system " + ex, ex);
-        }
-    }
-
-    //--------------//
-    // createScores //
-    //--------------//
-    @Override
-    public synchronized void createScores (SheetStub currentStub)
-    {
-        scores.clear(); // ????
-
-        Score currentScore = null; // Current score
-
-        // Group all sheets pages into scores
-        for (SheetStub stub : stubs) {
-            // An invalid or not-yet-processed stub triggers a score break
-            if (!stub.isValid()
-                || (!stub.isDone(Step.GRID)
-                    && ((stub != currentStub) || (stub.getCurrentStep() != Step.GRID)))) {
-                currentScore = null;
-            } else {
-                for (PageRef pageRef : stub.getPageRefs()) {
-                    if ((currentScore == null) || pageRef.isMovementStart()) {
-                        scores.add(currentScore = new Score());
-                        currentScore.setBook(this);
-                        currentScore.setId(scores.size());
-                    }
-
-                    currentScore.addPageRef(stub, pageRef);
-                }
-            }
         }
     }
 
@@ -1412,6 +1380,92 @@ public class BasicBook
         return reachBookStep(Step.last(), false, null);
     }
 
+    //--------------//
+    // updateScores //
+    //--------------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The question is which scores should we update.
+     * Clearing all and rebuilding all is OK for pageRefs of all scores without loading sheets.
+     * But doing so, we lose logicalPart information of <b>all</b> scores, and to rebuild it we'll
+     * need to reload all valid sheets.
+     * <p>
+     * A better approach is to check the stub before and the stub after the current one.
+     * This may result in the addition or the removal of scores.
+     *
+     * @param currentStub the current stub
+     */
+    @Override
+    public synchronized void updateScores (SheetStub currentStub)
+    {
+        if (scores.isEmpty()) {
+            // Easy: allocate scores based on all book stubs
+            createScores();
+        } else {
+            // Determine just the impacted pageRefs
+            final SortedSet<PageRef> impactedRefs = new TreeSet<PageRef>();
+            final int stubNumber = currentStub.getNumber();
+
+            if (!currentStub.getPageRefs().isEmpty()) {
+                // Look in stub before current stub?
+                final PageRef firstPageRef = currentStub.getFirstPageRef();
+
+                if (!firstPageRef.isMovementStart()) {
+                    final SheetStub prevStub = (stubNumber > 1) ? stubs.get(stubNumber - 2) : null;
+
+                    if (prevStub != null) {
+                        final PageRef prevPageRef = prevStub.getLastPageRef();
+
+                        if (prevPageRef != null) {
+                            impactedRefs.addAll(getScore(prevPageRef).getPageRefs());
+                        }
+                    }
+                }
+
+                // Take pages of current stub
+                impactedRefs.addAll(currentStub.getPageRefs());
+
+                // Look in stub after current stub?
+                final SheetStub nextStub = (stubNumber < stubs.size()) ? stubs.get(stubNumber) : null;
+
+                if (nextStub != null) {
+                    final PageRef nextPageRef = nextStub.getFirstPageRef();
+
+                    if ((nextPageRef != null) && !nextPageRef.isMovementStart()) {
+                        impactedRefs.addAll(getScore(nextPageRef).getPageRefs());
+                    }
+                }
+            }
+
+            // Determine and remove the impacted scores
+            final List<Score> impactedScores = scoresOf(impactedRefs);
+            Integer scoreIndex = null;
+
+            if (!impactedScores.isEmpty()) {
+                scoreIndex = scores.indexOf(impactedScores.get(0));
+            } else {
+                for (Score score : scores) {
+                    if (score.getFirstPageRef().getSheetNumber() > stubNumber) {
+                        scoreIndex = scores.indexOf(score);
+
+                        break;
+                    }
+                }
+            }
+
+            if (scoreIndex == null) {
+                scoreIndex = scores.size();
+            }
+
+            logger.debug("Impacted pages:{} scores:{}", impactedRefs, impactedScores);
+            scores.removeAll(impactedScores);
+
+            // Insert new score(s) to replace the impacted one(s)
+            insertScores(currentStub, impactedRefs, scoreIndex);
+        }
+    }
+
     //------------------//
     // checkRadixChange //
     //------------------//
@@ -1490,6 +1544,36 @@ public class BasicBook
         return Zip.openFileSystem(bookPath);
     }
 
+    //--------------//
+    // createScores //
+    //--------------//
+    /**
+     * Create scores out of all book stubs.
+     */
+    private void createScores ()
+    {
+        Score score = null;
+
+        // Group provided sheets pages into scores
+        for (SheetStub stub : stubs) {
+            // An invalid or not-yet-processed stub triggers a score break
+            if (stub.getPageRefs().isEmpty()) {
+                score = null;
+            } else {
+                for (PageRef pageRef : stub.getPageRefs()) {
+                    if ((score == null) || pageRef.isMovementStart()) {
+                        scores.add(score = new Score());
+                        score.setBook(this);
+                    }
+
+                    score.addPageRef(stub.getNumber(), pageRef);
+                }
+            }
+        }
+
+        logger.debug("Created scores:{}", scores);
+    }
+
     //-------------------//
     // getConcernedStubs //
     //-------------------//
@@ -1547,6 +1631,28 @@ public class BasicBook
         return least;
     }
 
+    //----------//
+    // getScore //
+    //----------//
+    /**
+     * Report the score if any that contains the provided PageRef.
+     *
+     * @param pageRef the provided page ref (sheet#, page#)
+     * @return the containing score or null if not found
+     */
+    private Score getScore (PageRef pageRef)
+    {
+        for (Score score : scores) {
+            PageRef ref = score.getPageRef(pageRef.getSheetNumber());
+
+            if ((ref != null) && (ref.getId() == pageRef.getId())) {
+                return score;
+            }
+        }
+
+        return null;
+    }
+
     //----------------//
     // initTransients //
     //----------------//
@@ -1575,6 +1681,50 @@ public class BasicBook
         }
     }
 
+    //--------------//
+    // insertScores //
+    //--------------//
+    /**
+     * Insert scores out of provided sequence of PageRef's.
+     *
+     * @param currentStub stub being processed
+     * @param pageRefs    sequence of pageRefs
+     * @param insertIndex insertion index in scores list
+     */
+    private void insertScores (SheetStub currentStub,
+                               SortedSet<PageRef> pageRefs,
+                               int insertIndex)
+    {
+        Score score = null;
+        Integer stubNumber = null;
+        int index = insertIndex;
+
+        for (PageRef ref : pageRefs) {
+            if (stubNumber == null) {
+                // Very first
+                score = null;
+            } else if (stubNumber < (ref.getSheetNumber() - 1)) {
+                // One or several stubs missing
+                score = null;
+            }
+
+            if (ref.isMovementStart()) {
+                // Movement start
+                score = null;
+            }
+
+            if (score == null) {
+                scores.add(index++, score = new Score());
+                score.setBook(this);
+            }
+
+            score.addPageRef(ref.getSheetNumber(), ref);
+            stubNumber = ref.getSheetNumber();
+        }
+
+        logger.debug("Inserted scores:{}", scores.subList(insertIndex, index));
+    }
+
     //--------------------//
     // makeReadyForExport //
     //--------------------//
@@ -1589,6 +1739,44 @@ public class BasicBook
         if (scores.isEmpty()) {
             buildScores();
         }
+    }
+
+    //----------//
+    // scoresOf //
+    //----------//
+    /**
+     * Retrieve the list of scores that embrace the provided sequence of pageRefs.
+     *
+     * @param refs the provided pageRefs (sorted)
+     * @return the impacted scores
+     */
+    private List<Score> scoresOf (SortedSet<PageRef> refs)
+    {
+        final List<Score> impacted = new ArrayList<Score>();
+
+        if (!refs.isEmpty()) {
+            final int firstNumber = refs.first().getSheetNumber();
+            final int lastNumber = refs.last().getSheetNumber();
+
+            for (Score score : scores) {
+                if (score.getLastPageRef().getSheetNumber() < firstNumber) {
+                    continue;
+                }
+
+                if (score.getFirstPageRef().getSheetNumber() > lastNumber) {
+                    break;
+                }
+
+                List<PageRef> scoreRefs = new ArrayList<PageRef>(score.getPageRefs());
+                scoreRefs.retainAll(refs);
+
+                if (!scoreRefs.isEmpty()) {
+                    impacted.add(score);
+                }
+            }
+        }
+
+        return impacted;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

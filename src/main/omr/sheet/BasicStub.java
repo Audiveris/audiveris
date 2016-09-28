@@ -281,6 +281,19 @@ public class BasicStub
         return filterContext;
     }
 
+    //-----------------//
+    // getFirstPageRef //
+    //-----------------//
+    @Override
+    public PageRef getFirstPageRef ()
+    {
+        if (pageRefs.isEmpty()) {
+            return null;
+        }
+
+        return pageRefs.get(0);
+    }
+
     //-------//
     // getId //
     //-------//
@@ -301,6 +314,19 @@ public class BasicStub
     public LiveParam<String> getLanguageParam ()
     {
         return textContext;
+    }
+
+    //----------------//
+    // getLastPageRef //
+    //----------------//
+    @Override
+    public PageRef getLastPageRef ()
+    {
+        if (pageRefs.isEmpty()) {
+            return null;
+        }
+
+        return pageRefs.get(pageRefs.size() - 1);
     }
 
     //---------------//
@@ -447,6 +473,7 @@ public class BasicStub
     public void invalidate ()
     {
         invalid = Boolean.TRUE;
+        pageRefs.clear();
         setModified(true);
 
         if (OMR.gui != null) {
@@ -578,7 +605,7 @@ public class BasicStub
     {
         try {
             // Avoid loading sheet just to reset to binary:
-            // If sheet is available, use its picture.gettable()
+            // If sheet is available, use its picture.getTable()
             // Otherwise, load it directly from binary.xml on disk
             final RunTable binaryTable;
 
@@ -816,6 +843,7 @@ public class BasicStub
     private void doReset ()
     {
         doneSteps.clear();
+        pageRefs.clear();
         invalid = null;
         sheet = null;
 

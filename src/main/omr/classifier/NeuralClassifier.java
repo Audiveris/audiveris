@@ -360,10 +360,10 @@ public class NeuralClassifier
 
         INDArray output = model.output(features);
 
-        // Normalize all outputs, so that they sum to 1
-        Number sum = output.sumNumber();
-        output.divi(sum);
-
+//        // Normalize all outputs, so that they sum to 1
+//        Number sum = output.sumNumber();
+//        output.divi(sum);
+//
         Evaluation[] evals = new Evaluation[SHAPE_COUNT];
         Shape[] values = Shape.values();
 
@@ -569,7 +569,7 @@ public class NeuralClassifier
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder() //
                 .seed(seed).iterations(iterations) //
                 .activation("relu") //
-                .weightInit(WeightInit.XAVIER) //
+                .weightInit(WeightInit.RELU) //
                 .learningRate(learningRate) //
                 .regularization(true) //
                 .l2(1e-4) //
@@ -585,7 +585,7 @@ public class NeuralClassifier
                 .layer(
                         2,
                         new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD) //
-                        .activation("softplus") // softplus vs tanh vs sigmoid vs softmax
+                        .activation("softmax") // softplus vs tanh vs sigmoid vs softmax
                         .nIn(hiddenNum).nOut(SHAPE_COUNT).build()) //
                 .backprop(true) //
                 .pretrain(false) //
@@ -1008,7 +1008,7 @@ public class NeuralClassifier
 
         private final Constant.Integer maxIterations = new Constant.Integer(
                 "Iterations",
-                5000,
+                1000,
                 "Maximum number of iterations in training");
 
         private final Evaluation.Grade maxError = new Evaluation.Grade(

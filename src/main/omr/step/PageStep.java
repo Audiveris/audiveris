@@ -105,8 +105,9 @@ public class PageStep
     // connectSystemInitialSlurs //
     //---------------------------//
     /**
-     * Retrieve the connections between the (orphan) slurs at the beginning of the
-     * provided system and the (orphan) slurs at the end of the previous system if any.
+     * Within the current page only, retrieve the connections between the (orphan) slurs
+     * at the beginning of the provided system and the (orphan) slurs at the end of the
+     * previous system if any (within the same page).
      */
     private void connectSystemInitialSlurs (SystemInfo system)
     {

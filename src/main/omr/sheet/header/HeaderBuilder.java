@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.util.ArrayList;
 
 import javax.swing.WindowConstants;
 
@@ -169,6 +170,9 @@ public class HeaderBuilder
 
         // We should be able here to select the best clef for each staff
         clefColumn.selectClefs();
+
+        // Purge barline inters found within headers
+        purgeBarlines();
     }
 
     //---------------------//
@@ -190,7 +194,7 @@ public class HeaderBuilder
                 staff.setHeader(new StaffHeader(staff.getAbscissa(LEFT)));
             } else {
                 // Retrieve all bar lines grouped at beginning of staff
-                // And pick up the last (right-most) bar line in the group
+                // And pick up the last (right-most) barline in the group
                 BarlineInter lastBar = leftBar;
                 boolean moved;
 
@@ -209,6 +213,32 @@ public class HeaderBuilder
                 logger.debug("Staff#{} start:{} bar:{}", staff.getId(), start, lastBar);
 
                 staff.setHeader(new StaffHeader(start));
+            }
+        }
+    }
+
+    //---------------//
+    // purgeBarlines //
+    //---------------//
+    /**
+     * Delete any barline inter found within headers areas.
+     */
+    private void purgeBarlines ()
+    {
+        for (Staff staff : system.getStaves()) {
+            final int start = staff.getHeaderStart();
+            final int stop = staff.getHeaderStop();
+
+            for (BarlineInter bar : new ArrayList<BarlineInter>(staff.getBars())) {
+                final Point center = bar.getCenter();
+
+                if ((center.x > start) && (center.x < stop) && !bar.isStaffEnd(LEFT)) {
+                    if (bar.isVip()) {
+                        logger.info("Deleting {} in staff#{} header", bar, staff.getId());
+                    }
+
+                    bar.delete();
+                }
             }
         }
     }

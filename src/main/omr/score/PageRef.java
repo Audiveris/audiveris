@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class PageRef
+        implements Comparable<PageRef>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -85,6 +86,32 @@ public class PageRef
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // compareTo //
+    //-----------//
+    @Override
+    public int compareTo (PageRef that)
+    {
+        if (this.sheetNumber != that.sheetNumber) {
+            return Integer.compare(this.sheetNumber, that.sheetNumber);
+        }
+
+        return Integer.compare(this.id, that.id);
+    }
+
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (!(obj instanceof PageRef)) {
+            return false;
+        }
+
+        return compareTo((PageRef) obj) == 0;
+    }
+
     /**
      * @return the deltaMeasureId
      */
@@ -107,6 +134,19 @@ public class PageRef
     public int getSheetNumber ()
     {
         return sheetNumber;
+    }
+
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (97 * hash) + this.id;
+        hash = (97 * hash) + this.sheetNumber;
+
+        return hash;
     }
 
     //-----------------//

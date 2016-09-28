@@ -26,6 +26,8 @@ import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import omr.classifier.ShapeDescription;
 
+import omr.glyph.ShapeSet;
+
 import omr.image.TemplateFactory;
 
 import omr.sheet.Picture;
@@ -48,6 +50,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -197,6 +200,19 @@ public class Debug
         out.flush();
         out.close();
         logger.info("Classifier data saved in " + path.toAbsolutePath());
+
+        final List<String> names = Arrays.asList(ShapeSet.getPhysicalShapeNames());
+
+        // Shape names
+        StringBuilder sb = new StringBuilder("{ //\n");
+
+        for (int i = 0; i < names.size(); i++) {
+            String comma = (i < names.size() - 1) ? "," : "";
+            sb.append(String.format("\"%-18s // %3d\n", names.get(i) + "\"" + comma, i));
+        }
+
+        sb.append("};");
+        System.out.println(sb.toString());
     }
 
     //--------------//
@@ -213,6 +229,7 @@ public class Debug
     {
         Path modelPath = WellKnowns.EVAL_FOLDER.resolve(NeuralClassifier.MODEL_FILE_NAME);
         Files.deleteIfExists(modelPath);
+
         Path normsPath = WellKnowns.EVAL_FOLDER.resolve(NeuralClassifier.NORMS_FILE_NAME);
         Files.deleteIfExists(normsPath);
 

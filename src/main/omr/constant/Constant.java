@@ -543,7 +543,7 @@ public abstract class Constant
          */
         public boolean getValue ()
         {
-            return ((java.lang.Boolean) getCachedValue()).booleanValue();
+            return (java.lang.Boolean) getCachedValue();
         }
 
         /**
@@ -565,7 +565,7 @@ public abstract class Constant
         @Override
         public void setValue (java.lang.String string)
         {
-            setValue(java.lang.Boolean.valueOf(string).booleanValue());
+            setValue(java.lang.Boolean.parseBoolean(string));
         }
 
         /**
@@ -944,3 +944,4 @@ public abstract class Constant
         }
     }
 }
+// <T extends Enum<T>> T getEnum(name, Class<T> enumClass, T defaultValue)

@@ -505,8 +505,6 @@ public class BasicSheet
                     score.addPage(page);
 
                     final int idx = 1 + pages.indexOf(page);
-                    score.setId(idx);
-
                     final String scoreName = rootName + OMR.MOVEMENT_EXTENSION + idx;
                     final Path scorePath = sheetPathSansExt.resolve(scoreName + ext);
                     new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
@@ -515,7 +513,6 @@ public class BasicSheet
                 // Export the sheet single page as a score
                 final Score score = new Score();
                 score.setBook(book);
-                score.setId(1);
                 score.addPage(pages.get(0));
 
                 final Path scorePath = sheetPathSansExt.resolveSibling(rootName + ext);
