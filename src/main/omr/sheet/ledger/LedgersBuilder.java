@@ -316,7 +316,7 @@ public class LedgersBuilder
                 Orientation.HORIZONTAL,
                 system,
                 sheet.getFilamentIndex(),
-                predicate,
+                null, // predicate, // Miss many ledgers when significantly thicker than staff line!
                 maxThickness,
                 scale.toPixels(constants.minCoreSectionLength),
                 constants.minSideRatio.getValue());

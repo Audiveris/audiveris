@@ -962,7 +962,9 @@ public class SlursBuilder
             Arc endPart = slur.getPartAt(end);
 
             if ((endPart != null) && (endPart.getShape() == STAFF_ARC)) {
-                logger.debug("{} ending as staff line", slur);
+                if (debugArc) {
+                    logger.info("{} ending as STAFF_ARC", slur);
+                }
                 toDelete.add(inter);
 
                 continue;
@@ -1012,7 +1014,9 @@ public class SlursBuilder
                 continue;
             }
 
-            logger.debug("{} ending as staff line", slur);
+            if (debugArc) {
+                logger.info("{} ending as staff line", slur);
+            }
             toDelete.add(inter);
         }
 

@@ -65,9 +65,7 @@ import javax.swing.SwingUtilities;
 /**
  * Class {@code TrainingPanel} is a panel dedicated to the training of a classifier.
  * <p>
- * It is used through its subclasses {@link NetworkPanel} and {@link BayesianPanel} to train the
- * neural network engine and the bayesian engine respectively. It is a dedicated companion of class
- * {@link Trainer}.
+ * It is a dedicated companion of class {@link Trainer}.
  *
  * @author Hervé Bitteur
  */
@@ -111,14 +109,16 @@ class TrainingPanel
     /** UI panel dealing with samples selection. */
     private final SelectionPanel selectionPanel;
 
-    /** Input field for Learning rate of the neural network. */
+    /** [no Input] field for Learning rate of the neural network. */
     private final LDoubleField learningRate = new LDoubleField(
+            false, // Not editable for the time being
             "Learning Rate",
             "Learning rate of the neural network",
             "%.2f");
 
-    /** Input field for Maximum number of iterations to perform. */
+    /** [no Input] field for Maximum number of iterations to perform. */
     private final LIntegerField maxIterations = new LIntegerField(
+            false, // Not editable for the time being
             "Max Iterations",
             "Maximum number of iterations to perform");
 

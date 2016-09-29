@@ -217,10 +217,6 @@ public abstract class CurvesBuilder
 
             weed(clump); // Filter out the least interesting candidates
             maxClumpSize = Math.max(maxClumpSize, clump.size());
-
-            if (clump.isEmpty()) {
-                return;
-            }
         }
 
         // Combine candidates from both sides
@@ -230,6 +226,20 @@ public abstract class CurvesBuilder
         for (Curve sl : leftClump) {
             for (Curve sr : rightClump) {
                 Curve curve = (sl == sr) ? sl : createCurve(sl, sr);
+                createInter(curve, inters);
+            }
+        }
+
+        // Case of left clump empty (but not right)
+        if (leftClump.isEmpty() && !rightClump.isEmpty()) {
+            for (Curve curve : rightClump) {
+                createInter(curve, inters);
+            }
+        }
+
+        // Case of right clump empty (but not left)
+        if (!leftClump.isEmpty() && rightClump.isEmpty()) {
+            for (Curve curve : leftClump) {
                 createInter(curve, inters);
             }
         }
@@ -650,15 +660,11 @@ public abstract class CurvesBuilder
                             ///logger.info("Better {} than {} at {}", rookie, other, pivot);
                             if (rookies.contains(other)) {
                                 rookies.remove(other);
+                            } else if (actives.contains(other)) {
+                                actives.remove(other);
                             } else {
-                                if (actives.contains(other)) {
-                                    actives.remove(other);
-                                } else {
-                                    candidates.remove(other);
-                                }
-
-                                //TODO: We could update the extensions of 'other', if any
-                            }
+                                candidates.remove(other);
+                            } //TODO: We could update the extensions of 'other', if any
 
                             pivots.put(pivot, rookie);
                         }
