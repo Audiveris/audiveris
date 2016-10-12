@@ -171,7 +171,7 @@ public class Debug
     public void saveTrainingData (ActionEvent e)
             throws FileNotFoundException
     {
-        Path path = WellKnowns.EVAL_FOLDER.resolve(
+        Path path = WellKnowns.TRAIN_FOLDER.resolve(
                 "samples-" + ShapeDescription.getName() + ".csv");
         OutputStream os = new FileOutputStream(path.toFile());
         final PrintWriter out = getPrintWriter(os);
@@ -227,10 +227,10 @@ public class Debug
     public void trainAndSave (ActionEvent e)
             throws FileNotFoundException, IOException
     {
-        Path modelPath = WellKnowns.EVAL_FOLDER.resolve(NeuralClassifier.MODEL_FILE_NAME);
+        Path modelPath = WellKnowns.TRAIN_FOLDER.resolve(NeuralClassifier.MODEL_FILE_NAME);
         Files.deleteIfExists(modelPath);
 
-        Path normsPath = WellKnowns.EVAL_FOLDER.resolve(NeuralClassifier.NORMS_FILE_NAME);
+        Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(NeuralClassifier.NORMS_FILE_NAME);
         Files.deleteIfExists(normsPath);
 
         SampleRepository repository = SampleRepository.getInstance();

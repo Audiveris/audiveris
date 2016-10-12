@@ -29,7 +29,7 @@ data/projects/*
 data/scores/*
 data/scripts/*
 data/temp/*
-data/train/core/*
+data/train
 data/www/docs/api
 data/www/docs/guides
 nbproject/configs/*

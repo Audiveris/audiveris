@@ -174,9 +174,6 @@ public abstract class WellKnowns
     /** The folder where temporary data can be stored. */
     public static final Path TEMP_FOLDER = DATA_FOLDER.resolve("temp");
 
-    /** The folder where evaluation data is stored. */
-    public static final Path EVAL_FOLDER = DATA_FOLDER.resolve("eval");
-
     /** The folder where training material is stored. */
     public static final Path TRAIN_FOLDER = DATA_FOLDER.resolve("train");
 

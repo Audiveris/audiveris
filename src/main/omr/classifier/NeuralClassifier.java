@@ -491,19 +491,19 @@ public class NeuralClassifier
      */
     public void store ()
     {
-        final Path modelPath = WellKnowns.EVAL_FOLDER.resolve(MODEL_FILE_NAME);
-        final Path normsPath = WellKnowns.EVAL_FOLDER.resolve(NORMS_FILE_NAME);
+        final Path modelPath = WellKnowns.TRAIN_FOLDER.resolve(MODEL_FILE_NAME);
+        final Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(NORMS_FILE_NAME);
 
         try {
-            if (!Files.exists(WellKnowns.EVAL_FOLDER)) {
-                Files.createDirectories(WellKnowns.EVAL_FOLDER);
-                logger.info("Created directory {}", WellKnowns.EVAL_FOLDER);
+            if (!Files.exists(WellKnowns.TRAIN_FOLDER)) {
+                Files.createDirectories(WellKnowns.TRAIN_FOLDER);
+                logger.info("Created directory {}", WellKnowns.TRAIN_FOLDER);
             }
 
             storeModel(modelPath);
             storeNorms(normsPath);
 
-            logger.info("{} data stored to folder {}", getName(), WellKnowns.EVAL_FOLDER);
+            logger.info("{} data stored to folder {}", getName(), WellKnowns.TRAIN_FOLDER);
         } catch (Exception ex) {
             logger.warn("Error storing {} {}", getName(), ex.toString(), ex);
         }
@@ -675,8 +675,8 @@ public class NeuralClassifier
         logger.debug("Trying user data");
 
         {
-            final Path modelPath = WellKnowns.EVAL_FOLDER.resolve(MODEL_FILE_NAME);
-            final Path normsPath = WellKnowns.EVAL_FOLDER.resolve(NORMS_FILE_NAME);
+            final Path modelPath = WellKnowns.TRAIN_FOLDER.resolve(MODEL_FILE_NAME);
+            final Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(NORMS_FILE_NAME);
 
             if (Files.exists(modelPath) && Files.exists(normsPath)) {
                 try {
