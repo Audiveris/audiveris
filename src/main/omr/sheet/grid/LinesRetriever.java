@@ -1149,7 +1149,10 @@ public class LinesRetriever
 
             if (slopeDiff > params.maxSlopeDiff) {
                 if (fil.isVip()) {
-                    logger.info("VIP {} delta slope {}", fil, String.format("%.3f", slopeDiff));
+                    logger.info(
+                            "VIP discarded {} for delta slope {}",
+                            fil,
+                            String.format("%.3f > %.3f", slopeDiff, params.maxSlopeDiff));
                 }
 
                 toRemove.add(fil);
@@ -1317,7 +1320,7 @@ public class LinesRetriever
 
         private final Constant.Double maxSlopeDiff = new Constant.Double(
                 "radians",
-                0.02,
+                0.025,
                 "Maximum delta slope between filament and sheet");
 
         private final Constant.Double minSlope = new Constant.Double(

@@ -590,7 +590,12 @@ public class Score
     {
         for (PageLink pageLink : pageLinks) {
             SheetStub stub = book.getStub(pageLink.sheetNumber);
-            pageRefs.add(stub.getPageRefs().get(pageLink.sheetPageId - 1));
+
+            if (stub.getPageRefs().size() >= pageLink.sheetPageId) {
+                pageRefs.add(stub.getPageRefs().get(pageLink.sheetPageId - 1));
+            } else {
+                logger.info("Missing pages in {}", stub);
+            }
         }
     }
 

@@ -57,10 +57,10 @@ import omr.sheet.grid.LineInfo;
 import omr.sig.GradeImpacts;
 import omr.sig.SIGraph;
 import omr.sig.inter.AbstractInter;
+import omr.sig.inter.AbstractVerticalInter;
 import omr.sig.inter.HeadInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LedgerInter;
-import omr.sig.relation.BarConnectionRelation;
 import omr.sig.relation.HeadStemRelation;
 
 import omr.util.Dumping;
@@ -127,6 +127,9 @@ public class NoteHeadsBuilder
                     Shape.BEAM_HOOK,
                     Shape.BEAM_SMALL,
                     Shape.BEAM_HOOK_SMALL));
+
+    /** Specific value for no offsets. */
+    private static final int[] NO_OFFSETS = new int[]{0};
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
@@ -342,24 +345,25 @@ public class NoteHeadsBuilder
      */
     private int[] computeXOffsets ()
     {
-        // Use a window as wide as maxStem value, ensure odd value
-        int length = sheet.getScale().getMaxStem();
-
-        if ((length % 2) == 0) {
-            length++;
-        }
-
-        int[] offsets = new int[length];
-
-        for (int i = 0; i < length; i++) {
-            if ((i % 2) == 0) {
-                offsets[i] = -(i / 2);
-            } else {
-                offsets[i] = ((i + 1) / 2);
-            }
-        }
-
-        return offsets;
+        //        // Use a window as wide as maxStem value, ensure odd value
+        //        int length = sheet.getScale().getMaxStem();
+        //
+        //        if ((length % 2) == 0) {
+        //            length++;
+        //        }
+        //
+        //        int[] offsets = new int[length];
+        //
+        //        for (int i = 0; i < length; i++) {
+        //            if ((i % 2) == 0) {
+        //                offsets[i] = -(i / 2);
+        //            } else {
+        //                offsets[i] = ((i + 1) / 2);
+        //            }
+        //        }
+        //
+        //        return offsets;
+        return NO_OFFSETS;
     }
 
     //-------------//
@@ -536,14 +540,24 @@ public class NoteHeadsBuilder
             @Override
             public boolean check (Inter inter)
             {
-                if (!inter.isGood() || !COMPETING_SHAPES.contains(inter.getShape())) {
+                final Shape shape = inter.getShape();
+
+                if (!inter.isGood() || !COMPETING_SHAPES.contains(shape)) {
                     return false;
                 }
 
-                if (inter.getShape() == Shape.THIN_BARLINE) {
-                    // We may have a stem mistaken for a thin barline
-                    // So, take this as true competitor only if connected with other staff barline
-                    if (!sig.hasRelation(inter, BarConnectionRelation.class)) {
+                if (inter instanceof AbstractVerticalInter) {
+                    // We may have a stem mistaken for a thin barline or a thin connector
+                    // So, check bar/connector width vs max stem width
+                    AbstractVerticalInter vertical = (AbstractVerticalInter) inter;
+                    int width = (int) Math.floor(vertical.getWidth());
+
+                    if (width <= scale.getMaxStem()) {
+                        return false;
+                    }
+                } else if ((shape == Shape.BEAM) || (shape == Shape.BEAM_HOOK)) {
+                    // Check beam width
+                    if (inter.getBounds().width < params.minBeamWidth) {
                         return false;
                     }
                 }
@@ -836,10 +850,11 @@ public class NoteHeadsBuilder
                 0.375,
                 "Maximum dx between similar template instances");
 
-        private final Scale.Fraction maxClosedDy = new Scale.Fraction(
-                0.2,
-                "Extension allowed in y for closed lines");
-
+        //
+        //        private final Scale.Fraction maxClosedDy = new Scale.Fraction(
+        //                0.2,
+        //                "Extension allowed in y for closed lines");
+        //
         private final Scale.Fraction maxOpenDy = new Scale.Fraction(
                 0.25,
                 "Extension allowed in y for open lines");
@@ -855,6 +870,10 @@ public class NoteHeadsBuilder
         private final Constant.Ratio wholeBoost = new Constant.Ratio(
                 0.5,
                 "How much do we boost whole notes (always isolated)");
+
+        private final Scale.Fraction minBeamWidth = new Scale.Fraction(
+                2.5,
+                "Minimum good beam width to exclude heads");
     }
 
     //-----------//
@@ -924,9 +943,11 @@ public class NoteHeadsBuilder
 
         final int maxTemplateDx;
 
-        final int maxClosedDy;
-
+        //
+        //        final int maxClosedDy;
         final int maxOpenDy;
+
+        final int minBeamWidth;
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -939,8 +960,9 @@ public class NoteHeadsBuilder
             maxMatchingDistance = constants.maxMatchingDistance.getValue();
             reallyBadDistance = constants.reallyBadDistance.getValue();
             maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
-            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
+            //            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
             maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
+            minBeamWidth = scale.toPixels(constants.minBeamWidth);
         }
     }
 
@@ -1136,22 +1158,42 @@ public class NoteHeadsBuilder
                 int[] offsets = new int[params.maxOpenDy];
 
                 for (int i = 0; i < offsets.length; i++) {
-                    offsets[i] = dir * (i - 1);
-                }
+                    // 0, +1, -1, +2,+ 3, +4, ... (according to dir sign)
+                    switch (i) {
+                    case 0:
+                        offsets[0] = 0;
 
-                return offsets;
-            } else {
-                int[] offsets = new int[params.maxClosedDy];
+                        break;
 
-                for (int i = 0; i < offsets.length; i++) {
-                    if ((i % 2) == 0) {
-                        offsets[i] = -(i / 2);
-                    } else {
-                        offsets[i] = ((i + 1) / 2);
+                    case 1:
+                        offsets[1] = dir;
+
+                        break;
+
+                    case 2:
+                        offsets[2] = -dir;
+
+                        break;
+
+                    default:
+                        offsets[i] = dir * (i - 1);
                     }
                 }
 
                 return offsets;
+            } else {
+                //                int[] offsets = new int[params.maxClosedDy];
+                //
+                //                for (int i = 0; i < offsets.length; i++) {
+                //                    if ((i % 2) == 0) {
+                //                        offsets[i] = -(i / 2);
+                //                    } else {
+                //                        offsets[i] = ((i + 1) / 2);
+                //                    }
+                //                }
+                //
+                //                return offsets;
+                return NO_OFFSETS;
             }
         }
 

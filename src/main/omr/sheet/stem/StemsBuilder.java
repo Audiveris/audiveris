@@ -1941,7 +1941,7 @@ public class StemsBuilder
                 // If not canonical, discard one of the stem link
                 if (!isCanonicalShare()) {
                     if (!discardLargeGap()) {
-                        discardWeakerStem();
+                        ///discardWeakerStem(); // Weaker stem may not be the good criteria!!!
                     }
                 }
             }

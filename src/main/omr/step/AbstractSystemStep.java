@@ -151,8 +151,7 @@ public abstract class AbstractSystemStep<C>
     /**
      * Do preliminary common work before all systems processing are launched in parallel.
      *
-     * param sheet the containing sheet
-     *
+     * @param sheet the containing sheet
      * @return the created sheet context
      * @throws StepException raised if processing failed
      */
@@ -188,7 +187,7 @@ public abstract class AbstractSystemStep<C>
                             throws Exception
                     {
                         // If run on a separate thread (case of parallel), we have to set/unset log
-                        // If not, let's no unset log (it may be needed in following epilog)
+                        // If not, let's not unset log (it may be needed in following epilog)
                         try {
                             if (parallel) {
                                 LogUtil.start(sheet.getStub());

@@ -108,7 +108,7 @@ import javax.xml.bind.annotation.XmlValue;
  * After any user training, the data is stored as the custom definition in the user local area,
  * which will be picked up first when the application is run again.</p>
  *
- * @author HervÃ© Bitteur
+ * @author Hervé Bitteur
  */
 public class NeuralClassifier
         extends AbstractClassifier
