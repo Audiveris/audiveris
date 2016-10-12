@@ -30,6 +30,8 @@ data/scores/*
 data/scripts/*
 data/temp/*
 data/train
+data/train/*.zip
+data/train/*.csv
 data/www/docs/api
 data/www/docs/guides
 nbproject/configs/*
