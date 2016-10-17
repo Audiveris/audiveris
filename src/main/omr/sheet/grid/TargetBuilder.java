@@ -28,6 +28,7 @@ import omr.constant.ConstantSet;
 
 import omr.image.jai.JaiDewarper;
 
+import omr.sheet.Book;
 import omr.sheet.BookManager;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -41,7 +42,9 @@ import omr.ui.util.ItemRenderer;
 import omr.ui.view.ScrollView;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -58,7 +61,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -397,8 +399,10 @@ public class TargetBuilder
     private void storeImage (RenderedImage dewarpedImage)
     {
         String sheetId = sheet.getId();
-        Path path = Paths.get(BookManager.getDefaultDewarpFolder())
-                .resolve(sheetId + ".dewarped.png");
+        Book book = sheet.getStub().getBook();
+        final Path bookPath = BookManager.getDefaultBookPath(book);
+        final Path bookFolder = bookPath.getParent();
+        final Path path = bookFolder.resolve(sheetId + ".dewarped.png");
 
         try {
             ImageIO.write(dewarpedImage, "png", path.toFile());

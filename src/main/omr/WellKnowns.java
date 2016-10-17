@@ -177,20 +177,8 @@ public abstract class WellKnowns
     /** The folder where training material is stored. */
     public static final Path TRAIN_FOLDER = DATA_FOLDER.resolve("train");
 
-    /** The default folder where PDF data is stored. */
-    public static final Path DEFAULT_PRINT_FOLDER = DATA_FOLDER.resolve("print");
-
-    /** The default folder where scripts data is stored. */
-    public static final Path DEFAULT_SCRIPTS_FOLDER = DATA_FOLDER.resolve("scripts");
-
-    /** The default folder where books data is stored. */
-    public static final Path DEFAULT_BOOKS_FOLDER = DATA_FOLDER.resolve("books");
-
-    /** The default folder where scores data is stored. */
-    public static final Path DEFAULT_SCORES_FOLDER = DATA_FOLDER.resolve("scores");
-
-    /** The default base for separate folders. */
-    public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER;
+    /** The default base for output folders. */
+    public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER.resolve("output");
 
     static {
         /** Logging configuration. */

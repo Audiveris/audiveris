@@ -521,7 +521,6 @@ public class BasicSheet
 
             // Remember the book path in the book itself
             book.setExportPathSansExt(bookPathSansExt);
-            BookManager.setDefaultExportFolder(bookPathSansExt.getParent().toString());
 
             if (!book.isMultiSheet()) {
                 book.getScript().addTask(new ExportTask(bookPathSansExt, null));
@@ -844,8 +843,6 @@ public class BasicSheet
 
             new BookPdfOutput(getBook(), sheetPrintPath.toFile()).write(this);
             logger.info("Sheet printed to {}", sheetPrintPath);
-
-            BookManager.setDefaultPrintFolder(parent.toString());
         } catch (Exception ex) {
             logger.warn("Cannot print sheet to " + sheetPrintPath + " " + ex, ex);
         }

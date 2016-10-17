@@ -629,7 +629,7 @@ public class MainGui
                     BookActions ba = BookActions.getInstance();
 
                     if (itemName.equals("inputHistory")) {
-                        ba.getInputHistoryMenu().populate((JMenu) item, BookActions.class);
+                        ba.getImageHistoryMenu().populate((JMenu) item, BookActions.class);
                     } else if (itemName.equals("scriptHistory")) {
                         ba.getScriptHistoryMenu().populate((JMenu) item, BookActions.class);
                     }

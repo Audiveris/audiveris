@@ -54,7 +54,20 @@ import java.util.List;
  * It handles the collection of all book instances currently loaded, as well as the list of books
  * most recently loaded.
  * <p>
- * It handles where and how to handle inputs, books, exports, prints and scripts.
+ * It handles where and how to handle inputs (images, books, scripts) and outputs (books, exports,
+ * prints and scripts).
+ * <br>
+ * Default input folder:<ul>
+ * <li>(image) input: last image input folder used
+ * <li>(book) input: base
+ * <li>(script) input: base
+ * </ul>
+ * Default output folder and file:<ul>
+ * <li>book: base/radix/radix.omr
+ * <li>export: base/radix/radix.mxl
+ * <li>print: base/radix/radix.pdf
+ * <li>script: base/radix/radix.script.xml
+ * </ul>
  * <p>
  * The way books and sheets are exported depends on whether we allow the use of MusicXML
  * <b>Opus</b>:
@@ -120,8 +133,8 @@ public class BookManager
     /** Alias patterns. */
     private final AliasPatterns aliasPatterns = new AliasPatterns();
 
-    /** Input file history. (filled only when images (books) are successfully loaded) */
-    private PathHistory inputHistory;
+    /** Image file history. (filled only when images are successfully loaded) */
+    private PathHistory imageHistory;
 
     /** Book file history. (filled only when books are successfully loaded or saved) */
     private PathHistory bookHistory;
@@ -245,30 +258,17 @@ public class BookManager
         return Collections.unmodifiableList(books);
     }
 
-    //----------------------//
-    // getDefaultBaseFolder //
-    //----------------------//
+    //---------------//
+    // getBaseFolder //
+    //---------------//
     /**
-     * Report the default base for separate folders.
+     * Report the base for output folders.
      *
-     * @return the default base
+     * @return the output base folder
      */
-    public static String getDefaultBaseFolder ()
+    public static String getBaseFolder ()
     {
-        return constants.defaultBaseFolder.getValue();
-    }
-
-    //----------------------//
-    // getDefaultBookFolder //
-    //----------------------//
-    /**
-     * Report the folder where books are kept by default.
-     *
-     * @return the default folder
-     */
-    public static String getDefaultBookFolder ()
-    {
-        return constants.defaultBookFolder.getValue();
+        return constants.baseFolder.getValue();
     }
 
     //--------------------//
@@ -289,7 +289,7 @@ public class BookManager
 
         if (constants.useSeparateBookFolders.isSet()) {
             // Define target based on base + book folder and book name
-            Path folder = Paths.get(getDefaultBaseFolder(), book.getRadix());
+            Path folder = Paths.get(getBaseFolder(), book.getRadix());
 
             try {
                 if (!Files.exists(folder)) {
@@ -304,34 +304,8 @@ public class BookManager
             }
         } else {
             // Define target based on global folder and book name
-            return Paths.get(getDefaultBookFolder(), book.getRadix() + OMR.BOOK_EXTENSION);
+            return Paths.get(getBaseFolder(), book.getRadix() + OMR.BOOK_EXTENSION);
         }
-    }
-
-    //------------------------//
-    // getDefaultDewarpFolder //
-    //------------------------//
-    /**
-     * Report the folder to which de-warped images would be saved by default.
-     *
-     * @return the default file
-     */
-    public static String getDefaultDewarpFolder ()
-    {
-        return constants.defaultDewarpFolder.getValue();
-    }
-
-    //------------------------//
-    // getDefaultExportFolder //
-    //------------------------//
-    /**
-     * Report the folder where books are exported by default.
-     *
-     * @return the default file
-     */
-    public static String getDefaultExportFolder ()
-    {
-        return constants.defaultExportFolder.getValue();
     }
 
     //-----------------------------//
@@ -357,27 +331,45 @@ public class BookManager
         }
 
         // Folder?
-        final Path folder = Main.getCli().getExportFolder();
+        final Path exportFolder = Main.getCli().getExportFolder();
 
-        if (folder != null) {
-            return folder.resolve(book.getRadix());
+        if (exportFolder != null) {
+            return exportFolder.resolve(book.getRadix());
         }
 
         // Default
-        return Paths.get(getDefaultExportFolder(), book.getRadix());
+        if (constants.useSeparateBookFolders.isSet()) {
+            // Define target based on base + book folder and book name
+            Path folder = Paths.get(getBaseFolder(), book.getRadix());
+
+            try {
+                if (!Files.exists(folder)) {
+                    Files.createDirectories(folder);
+                }
+
+                return folder.resolve(book.getRadix());
+            } catch (IOException ex) {
+                logger.warn("Cannot create {}", folder, ex);
+
+                return null;
+            }
+        } else {
+            // Define target based on global folder and book name
+            return Paths.get(getBaseFolder(), book.getRadix());
+        }
     }
 
     //-----------------------//
-    // getDefaultInputFolder //
+    // getDefaultImageFolder //
     //-----------------------//
     /**
      * Report the folder where images should be found.
      *
      * @return the latest image folder
      */
-    public static String getDefaultInputFolder ()
+    public static String getDefaultImageFolder ()
     {
-        return constants.defaultInputFolder.getValue();
+        return constants.defaultImageFolder.getValue();
     }
 
     //---------------------//
@@ -403,29 +395,13 @@ public class BookManager
         }
 
         // Folder?
-        final Path folder = Main.getCli().getPrintFolder();
+        Path folder = Main.getCli().getPrintFolder();
 
-        if (folder != null) {
-            return folder.resolve(book.getRadix() + OMR.PDF_EXTENSION);
+        if (folder == null) {
+            folder = getTargetFolder(book); // Default
         }
 
-        // Default
-        return Paths.get(
-                constants.defaultPrintFolder.getValue(),
-                book.getRadix() + OMR.PDF_EXTENSION);
-    }
-
-    //------------------------//
-    // getDefaultScriptFolder //
-    //------------------------//
-    /**
-     * Report the folder where scripts should be found.
-     *
-     * @return the latest script folder
-     */
-    public static String getDefaultScriptFolder ()
-    {
-        return constants.defaultScriptFolder.getValue();
+        return folder.resolve(book.getRadix() + OMR.PDF_EXTENSION);
     }
 
     //----------------------//
@@ -444,25 +420,9 @@ public class BookManager
             return book.getScriptPath();
         }
 
-        if (constants.useSeparateBookFolders.isSet()) {
-            // Define target based on base + book folder and book name
-            Path folder = Paths.get(getDefaultBaseFolder(), book.getRadix());
+        final Path folder = getTargetFolder(book);
 
-            try {
-                if (!Files.exists(folder)) {
-                    Files.createDirectories(folder);
-                }
-
-                return folder.resolve(book.getRadix() + OMR.SCRIPT_EXTENSION);
-            } catch (IOException ex) {
-                logger.warn("Cannot create {}", folder, ex);
-
-                return null;
-            }
-        } else {
-            // Define target based on global folder and book name
-            return Paths.get(getDefaultScriptFolder(), book.getRadix() + OMR.BOOK_EXTENSION);
-        }
+        return folder.resolve(book.getRadix() + OMR.SCRIPT_EXTENSION);
     }
 
     //--------------------//
@@ -497,27 +457,6 @@ public class BookManager
         return INSTANCE;
     }
 
-    //----------------//
-    // getBookHistory //
-    //----------------//
-    /**
-     * Get access to the list of previous books.
-     *
-     * @return the history set of book files
-     */
-    public PathHistory getBookHistory ()
-    {
-        if (bookHistory == null) {
-            bookHistory = new PathHistory(
-                    "Book History",
-                    constants.bookHistory,
-                    constants.defaultBookFolder,
-                    constants.historySize.getValue());
-        }
-
-        return bookHistory;
-    }
-
     //------------------//
     // getScriptHistory //
     //------------------//
@@ -532,7 +471,7 @@ public class BookManager
             scriptHistory = new PathHistory(
                     "Script History",
                     constants.scriptHistory,
-                    constants.defaultScriptFolder,
+                    null,
                     constants.historySize.getValue());
         }
 
@@ -591,7 +530,7 @@ public class BookManager
         book.setModified(true);
         addBook(book);
 
-        getInputHistory().add(path); // Insert in input history
+        getImageHistory().add(path); // Insert in input history
 
         return book;
     }
@@ -620,38 +559,6 @@ public class BookManager
         logger.debug("removeBook {}", book);
 
         return books.remove(book);
-    }
-
-    //----------------------//
-    // setDefaultBookFolder //
-    //----------------------//
-    public static void setDefaultBookFolder (String value)
-    {
-        constants.defaultBookFolder.setValue(value);
-    }
-
-    //------------------------//
-    // setDefaultExportFolder //
-    //------------------------//
-    public static void setDefaultExportFolder (String value)
-    {
-        constants.defaultExportFolder.setValue(value);
-    }
-
-    //-----------------------//
-    // setDefaultPrintFolder //
-    //-----------------------//
-    public static void setDefaultPrintFolder (String value)
-    {
-        constants.defaultPrintFolder.setValue(value);
-    }
-
-    //------------------------//
-    // setDefaultScriptFolder //
-    //------------------------//
-    public static void setDefaultScriptFolder (String value)
-    {
-        constants.defaultScriptFolder.setValue(value);
     }
 
     //----------------//
@@ -683,6 +590,27 @@ public class BookManager
         return constants.defaultSigned.isSet();
     }
 
+    //----------------//
+    // getBookHistory //
+    //----------------//
+    /**
+     * Get access to the list of previous books.
+     *
+     * @return the history set of book files
+     */
+    public PathHistory getBookHistory ()
+    {
+        if (bookHistory == null) {
+            bookHistory = new PathHistory(
+                    "Book History",
+                    constants.bookHistory,
+                    null,
+                    constants.historySize.getValue());
+        }
+
+        return bookHistory;
+    }
+
     //-----------------//
     // getInputHistory //
     //-----------------//
@@ -691,17 +619,49 @@ public class BookManager
      *
      * @return the history set of input files
      */
-    public PathHistory getInputHistory ()
+    public PathHistory getImageHistory ()
     {
-        if (inputHistory == null) {
-            inputHistory = new PathHistory(
+        if (imageHistory == null) {
+            imageHistory = new PathHistory(
                     "Input History",
-                    constants.inputHistory,
-                    constants.defaultInputFolder,
+                    constants.imageHistory,
+                    constants.defaultImageFolder,
                     constants.historySize.getValue());
         }
 
-        return inputHistory;
+        return imageHistory;
+    }
+
+    //-----------------//
+    // getTargetFolder //
+    //-----------------//
+    /**
+     * Report the default target folder for the provided book
+     *
+     * @param book provided book
+     * @return default target folder
+     */
+    private static Path getTargetFolder (Book book)
+    {
+        if (constants.useSeparateBookFolders.isSet()) {
+            // Define target based on base + book folder and book name
+            Path folder = Paths.get(getBaseFolder(), book.getRadix());
+
+            try {
+                if (!Files.exists(folder)) {
+                    Files.createDirectories(folder);
+                }
+
+                return folder;
+            } catch (IOException ex) {
+                logger.warn("Cannot create {}", folder, ex);
+
+                return null;
+            }
+        } else {
+            // Use base folder
+            return Paths.get(getBaseFolder());
+        }
     }
 
     //---------//
@@ -758,41 +718,21 @@ public class BookManager
                 true,
                 "Should we use a separate folder for each book?");
 
-        private final Constant.String defaultBaseFolder = new Constant.String(
+        private final Constant.String baseFolder = new Constant.String(
                 WellKnowns.DEFAULT_BASE_FOLDER.toString(),
-                "Default base for separate book folders");
+                "Base for output folders");
 
-        private final Constant.String defaultInputFolder = new Constant.String(
+        private final Constant.String defaultImageFolder = new Constant.String(
                 WellKnowns.EXAMPLES_FOLDER.toString(),
                 "Default folder for selection of image files");
-
-        private final Constant.String defaultBookFolder = new Constant.String(
-                WellKnowns.DEFAULT_BOOKS_FOLDER.toString(),
-                "Default folder for Audiveris books");
-
-        private final Constant.String defaultExportFolder = new Constant.String(
-                WellKnowns.DEFAULT_SCORES_FOLDER.toString(),
-                "Default folder for saved scores");
-
-        private final Constant.String defaultPrintFolder = new Constant.String(
-                WellKnowns.DEFAULT_PRINT_FOLDER.toString(),
-                "Default folder for printing sheet files");
-
-        private final Constant.String defaultScriptFolder = new Constant.String(
-                WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
-                "Default folder for saved scripts");
-
-        private final Constant.String defaultDewarpFolder = new Constant.String(
-                WellKnowns.TEMP_FOLDER.toString(),
-                "Default folder for saved dewarped images");
 
         private final Constant.Boolean defaultSigned = new Constant.Boolean(
                 true,
                 "Should we inject ProxyMusic signature in the exported scores?");
 
-        private final Constant.String inputHistory = new Constant.String(
+        private final Constant.String imageHistory = new Constant.String(
                 "",
-                "History of books most recently loaded");
+                "History of images most recently loaded");
 
         private final Constant.String bookHistory = new Constant.String(
                 "",

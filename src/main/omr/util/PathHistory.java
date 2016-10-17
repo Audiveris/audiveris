@@ -52,7 +52,7 @@ public class PathHistory
     /** Underlying list of names. */
     private final NameSet nameSet;
 
-    /** Name of last folder used. */
+    /** Name of last folder used, if any. */
     private final Constant.String folderConstant;
 
     /** Related UI menu, if any. Null when no UI is used */
@@ -64,7 +64,7 @@ public class PathHistory
      *
      * @param name           a name for this history instance
      * @param constant       backing constant on disk
-     * @param folderConstant backing constant for last folder
+     * @param folderConstant backing constant for last folder, or null
      * @param maxSize        maximum items in history
      */
     public PathHistory (String name,
@@ -85,7 +85,10 @@ public class PathHistory
         nameSet.add(path.toAbsolutePath().toString());
 
         Path parent = path.toAbsolutePath().getParent();
-        folderConstant.setValue(parent.toAbsolutePath().toString());
+
+        if (folderConstant != null) {
+            folderConstant.setValue(parent.toAbsolutePath().toString());
+        }
 
         if (OMR.gui != null) {
             // Enable input history menu

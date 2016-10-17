@@ -140,8 +140,8 @@ public class BookActions
     /** Flag to indicate that manual assignments must be persisted. */
     private boolean manualPersisted = false;
 
-    /** Sub-menu on inputs history. */
-    private final HistoryMenu inputHistoryMenu;
+    /** Sub-menu on images history. */
+    private final HistoryMenu imageHistoryMenu;
 
     /** Sub-menu on books history. */
     private final HistoryMenu bookHistoryMenu;
@@ -156,8 +156,8 @@ public class BookActions
     private BookActions ()
     {
         final BookManager mgr = BookManager.getInstance();
-        inputHistoryMenu = new HistoryMenu(mgr.getInputHistory(), OpenInputTask.class);
-        bookHistoryMenu = new HistoryMenu(mgr.getBookHistory(), OpenBookTask.class);
+        imageHistoryMenu = new HistoryMenu(mgr.getImageHistory(), LoadImageTask.class);
+        bookHistoryMenu = new HistoryMenu(mgr.getBookHistory(), LoadBookTask.class);
         scriptHistoryMenu = new HistoryMenu(mgr.getScriptHistory(), LoadScriptTask.class);
     }
 
@@ -754,9 +754,9 @@ public class BookActions
     //---------------------//
     // getInputHistoryMenu //
     //---------------------//
-    public HistoryMenu getInputHistoryMenu ()
+    public HistoryMenu getImageHistoryMenu ()
     {
-        return inputHistoryMenu;
+        return imageHistoryMenu;
     }
 
     //----------------------//
@@ -846,7 +846,7 @@ public class BookActions
         final Path path = UIUtil.pathChooser(
                 false,
                 OMR.gui.getFrame(),
-                Paths.get(BookManager.getDefaultScriptFolder()),
+                Paths.get(BookManager.getBaseFolder()),
                 new OmrFileFilter("Score script files", new String[]{OMR.SCRIPT_EXTENSION}));
 
         if (path != null) {
@@ -866,14 +866,14 @@ public class BookActions
      * @return the asynchronous task, or null
      */
     @Action
-    public OpenBookTask openBook (ActionEvent e)
+    public LoadBookTask openBook (ActionEvent e)
     {
-        final String dir = BookManager.getDefaultBookFolder();
+        final String dir = BookManager.getBaseFolder();
         final Path path = selectBookPath(false, Paths.get(dir));
 
         if (path != null) {
             if (Files.exists(path)) {
-                return new OpenBookTask(path);
+                return new LoadBookTask(path);
             } else {
                 logger.warn("Path not found {}", path);
             }
@@ -892,21 +892,21 @@ public class BookActions
      * @return the asynchronous task, or null
      */
     @Action
-    public OpenInputTask openImageFile (ActionEvent e)
+    public LoadImageTask openImageFile (ActionEvent e)
     {
         String suffixes = constants.validImageExtensions.getValue();
         String allSuffixes = suffixes + " " + suffixes.toUpperCase();
         Path path = UIUtil.pathChooser(
                 false,
                 OMR.gui.getFrame(),
-                Paths.get(BookManager.getDefaultInputFolder()),
+                Paths.get(BookManager.getDefaultImageFolder()),
                 new OmrFileFilter(
                         "Major image files" + " (" + suffixes + ")",
                         allSuffixes.split("\\s")));
 
         if (path != null) {
             if (Files.exists(path)) {
-                return new OpenInputTask(path);
+                return new LoadImageTask(path);
             } else {
                 logger.warn("File not found {}", path);
             }
@@ -1570,8 +1570,6 @@ public class BookActions
                     script.dump();
                 }
 
-                // Remember (even across runs) the parent directory
-                BookManager.setDefaultScriptFolder(path.getParent().toString());
                 BookManager.getInstance().getScriptHistory().add(path);
                 script.run();
             } catch (FileNotFoundException ex) {
@@ -1591,22 +1589,22 @@ public class BookActions
     }
 
     //--------------//
-    // OpenBookTask //
+    // LoadBookTask //
     //--------------//
     /**
-     * Task that opens a book file.
+     * Task that loads a book (.omr project) file.
      */
-    public static class OpenBookTask
+    public static class LoadBookTask
             extends PathTask
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public OpenBookTask (Path path)
+        public LoadBookTask (Path path)
         {
             super(path);
         }
 
-        public OpenBookTask ()
+        public LoadBookTask ()
         {
         }
 
@@ -1640,22 +1638,22 @@ public class BookActions
     }
 
     //---------------//
-    // OpenInputTask //
+    // LoadImageTask //
     //---------------//
     /**
-     * Task that opens a book image file.
+     * Task that opens an image file.
      */
-    public static class OpenInputTask
+    public static class LoadImageTask
             extends PathTask
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public OpenInputTask (Path path)
+        public LoadImageTask (Path path)
         {
             super(path);
         }
 
-        public OpenInputTask ()
+        public LoadImageTask ()
         {
         }
 
@@ -2194,7 +2192,6 @@ public class BookActions
                 fos = new FileOutputStream(path.toFile());
                 omr.script.ScriptManager.getInstance().store(script, fos);
                 logger.info("Script stored as {}", path);
-                BookManager.setDefaultScriptFolder(folder.toString());
                 book.setScriptPath(path);
             } catch (FileNotFoundException ex) {
                 logger.warn("Cannot find script file " + path + ", " + ex, ex);

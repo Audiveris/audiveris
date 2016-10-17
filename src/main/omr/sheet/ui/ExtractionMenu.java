@@ -25,7 +25,6 @@ import omr.OMR;
 
 import omr.sheet.Book;
 import omr.sheet.BookManager;
-import omr.sheet.Picture;
 import omr.sheet.Sheet;
 
 import omr.ui.util.OmrFileFilter;
@@ -45,8 +44,10 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
+
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
+
 import javax.swing.JMenuItem;
 
 /**
@@ -109,8 +110,6 @@ public class ExtractionMenu
         }
 
         ImageIO.write(img, "png", file);
-
-        Picture.setDefaultExtractionDirectory(file.getParent());
         logger.info("Extraction stored as {}", file);
     }
 

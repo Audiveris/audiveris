@@ -21,8 +21,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.WellKnowns;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -35,7 +33,9 @@ import omr.image.ImageUtil;
 import omr.image.MedianGrayFilter;
 import omr.image.PixelFilter;
 import omr.image.PixelSource;
+
 import static omr.run.Orientation.VERTICAL;
+
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -415,14 +415,6 @@ public class Picture
         }
     }
 
-    //-------------------------------//
-    // getDefaultExtractionDirectory //
-    //-------------------------------//
-    public static String getDefaultExtractionDirectory ()
-    {
-        return constants.defaultExtractionDirectory.getValue();
-    }
-
     //-----------//
     // getHeight //
     //-----------//
@@ -740,14 +732,6 @@ public class Picture
         tables.remove(key);
     }
 
-    //-------------------------------//
-    // setDefaultExtractionDirectory //
-    //-------------------------------//
-    public static void setDefaultExtractionDirectory (String dir)
-    {
-        constants.defaultExtractionDirectory.setValue(dir);
-    }
-
     //----------//
     // setTable //
     //----------//
@@ -995,9 +979,5 @@ public class Picture
                 "pixels",
                 1,
                 "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
-
-        private final Constant.String defaultExtractionDirectory = new Constant.String(
-                WellKnowns.DEFAULT_SCRIPTS_FOLDER.toString(),
-                "Default directory for image extractions");
     }
 }

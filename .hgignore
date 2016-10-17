@@ -24,11 +24,12 @@ installer/build/*
 config/run.properties
 data/benches
 data/campaign
-data/print/*
-data/projects/*
-data/scores/*
-data/scripts/*
-data/temp/*
+data/print
+data/output/*
+data/projects
+data/scores
+data/scripts
+data/temp
 data/train
 data/train/*.zip
 data/train/*.csv

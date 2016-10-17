@@ -509,7 +509,6 @@ public class BasicBook
             try {
                 makeReadyForExport();
                 new OpusExporter(this).export(opusPath, bookName, sig);
-                BookManager.setDefaultExportFolder(bookPathSansExt.getParent().toString());
             } catch (Exception ex) {
                 logger.warn("Could not export opus " + opusPath, ex);
             }
@@ -531,7 +530,6 @@ public class BasicBook
 
                 try {
                     new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
-                    BookManager.setDefaultExportFolder(bookPathSansExt.getParent().toString());
                 } catch (Exception ex) {
                     logger.warn("Could not export score " + scoreName, ex);
                 }
@@ -980,7 +978,6 @@ public class BasicBook
             LogUtil.start(BasicBook.this);
             new BookPdfOutput(BasicBook.this, pdfPath.toFile()).write(null);
             setPrintPath(pdfPath);
-            BookManager.setDefaultPrintFolder(pdfPath.getParent().toString());
             getScript().addTask(new PrintTask(pdfPath, null));
         } catch (Exception ex) {
             logger.warn("Cannot write PDF to " + pdfPath, ex);
@@ -1286,7 +1283,6 @@ public class BasicBook
             this.bookPath = bookPath;
 
             BookManager.getInstance().getBookHistory().add(bookPath); // Insert in history
-            BookManager.setDefaultBookFolder(bookPath.getParent().toString());
 
             logger.info("Book stored as {}", bookPath);
         } catch (Throwable ex) {
