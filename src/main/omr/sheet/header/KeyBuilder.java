@@ -37,6 +37,7 @@ import omr.glyph.Shape;
 import omr.glyph.Symbol.Group;
 
 import omr.math.Clustering;
+import omr.math.GeoUtil;
 import omr.math.Population;
 import omr.math.Projection;
 import static omr.run.Orientation.VERTICAL;
@@ -49,6 +50,7 @@ import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 import omr.sheet.header.HeaderBuilder.Plotter;
+import omr.sheet.header.StaffHeader.Range;
 
 import omr.sig.SIGraph;
 import omr.sig.inter.BarlineInter;
@@ -75,7 +77,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import static java.awt.image.BufferedImage.TYPE_BYTE_GRAY;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -89,8 +95,8 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class {@code KeyBuilder} retrieves a staff key signature through the projection
- * to x-axis of the foreground pixels in a given abscissa range of a staff.
+ * Class {@code KeyBuilder} retrieves a staff key signature through the vertical
+ * projection to x-axis of the foreground pixels in a given abscissa range of a staff.
  * <p>
  * An instance typically handles the initial key signature, perhaps void, at the beginning of a
  * staff.
@@ -102,16 +108,16 @@ import java.util.TreeMap;
  * In the case of a key signature change, there may be some natural signs to explicitly cancel the
  * previous alterations, although this is not mandatory.
  * <p>
- * <img src="http://www.musicarrangers.com/star-theory/images/p14a.gif" />
+ * <img src="http://www.musicarrangers.com/star-theory/images/p14a.gif">
  * <p>
- * <img src="http://www.musicarrangers.com/star-theory/images/p14b.gif" />
+ * <img src="http://www.musicarrangers.com/star-theory/images/p14b.gif">
  * <p>
  * The relative positioning of alterations in a given signature is identical for all clefs (treble,
  * alto, tenor, bass) with the only exception of the sharp-based signatures in tenor clef.
  * <p>
- * <img src="http://www.musicarrangers.com/star-theory/images/p14c.gif" />
+ * <img src="http://www.musicarrangers.com/star-theory/images/p14c.gif">
  * <p>
- * The main tool is a projection of the StaffHeader pixels onto the x-axis.
+ * The main tool is a vertical projection of the StaffHeader pixels onto the x-axis.
  * Vertically, the projection uses an envelope that can embrace any key signature (under any clef),
  * from two interline values above the staff to one interline value below the staff.
  * Horizontally, the goal is to split the projection into slices, one slice for each alteration item
@@ -141,9 +147,11 @@ import java.util.TreeMap;
  * and not for a sharp).
  * <li>Determine the number of items.
  * <li>Determine precise horizontal slicing of the projection into items.
- * <li>Extract each item glyph and submit it to shape classifier for verification and vertical
- * positioning.
- * <li>Create one KeyInter instance.
+ * <li>Looking only at connected components within the key-sig area, try to retrieve one good
+ * component for each slice, by trying each glyph compound via shape classifier for verification and
+ * vertical positioning.
+ * <li>For slices left empty, use hard slice segmentation and perform recognition within slice only.
+ * <li>Create one KeyInter.
  * <li>Create one KeyAlterInter instance per item.
  * <li>Verify each item pitch in the staff (to be later matched against staff clef).
  * </ol>
@@ -197,8 +205,8 @@ public class KeyBuilder
     /** Precise beginning abscissa of measure. */
     private final int measureStart;
 
-    /** Rectangular area for header search. */
-    private final Rectangle headerArea;
+    /** ROI for key search. */
+    private final Roi roi;
 
     /** Projection of foreground pixels, indexed by abscissa. */
     private final Projection projection;
@@ -228,11 +236,11 @@ public class KeyBuilder
      * @param browseStart  estimated beginning abscissa for browsing.
      * @param inHeader     true for the key-sig in StaffHeader, false for a key-sig change
      */
-    public KeyBuilder (Staff staff,
-                       int globalWidth,
-                       int measureStart,
-                       int browseStart,
-                       boolean inHeader)
+    protected KeyBuilder (Staff staff,
+                          int globalWidth,
+                          int measureStart,
+                          int browseStart,
+                          boolean inHeader)
     {
         this.staff = staff;
         this.inHeader = inHeader;
@@ -257,15 +265,25 @@ public class KeyBuilder
 
         this.measureStart = measureStart;
 
-        headerArea = getHeaderArea();
-        projection = getProjection();
+        Rectangle browseRect = getBrowseRect();
+        roi = new Roi(browseRect.y, browseRect.height);
+        projection = getProjection(browseRect);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "KeyBuilder#" + getId();
+    }
+
     //---------//
     // addPlot //
     //---------//
-    public void addPlot (Plotter plotter)
+    protected void addPlot (Plotter plotter)
     {
         final int xMin = projection.getStart();
         final int xMax = projection.getStop();
@@ -329,7 +347,7 @@ public class KeyBuilder
     //---------------//
     // adjustPitches //
     //---------------//
-    public void adjustPitches ()
+    protected void adjustPitches ()
     {
         if (slices.isEmpty()) {
             return;
@@ -360,15 +378,15 @@ public class KeyBuilder
 
                 if (alter.getIntegerPitch() != std) {
                     logger.info(
-                            "Staff#{} slice index:{} pitch adjusted from {} to {}",
-                            staff.getId(),
-                            i,
+                            "Staff#{} slice#{} pitch adjusted from {} to {}",
+                            getId(),
+                            i + 1,
                             String.format("%.1f", alter.getMeasuredPitch()),
                             std);
                     alter.setPitch(std);
                 }
             } else {
-                logger.info("null alter");
+                logger.info("Staff#{} no alter for {}", getId(), slice);
             }
         }
 
@@ -421,39 +439,9 @@ public class KeyBuilder
     /**
      * @return the browseStart
      */
-    public Integer getBrowseStart ()
+    protected Integer getBrowseStart ()
     {
         return range.browseStart;
-    }
-
-    //-----------//
-    // getFifths //
-    //-----------//
-    /**
-     * Staff key signature is dynamically computed using the keyShape and the count of
-     * alteration slices.
-     *
-     * @return the signature as an int
-     */
-    public int getFifths ()
-    {
-        if (slices.isEmpty()) {
-            return 0;
-        }
-
-        if (keyShape == Shape.SHARP) {
-            return slices.size();
-        } else {
-            return -slices.size();
-        }
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    public int getId ()
-    {
-        return staff.getId();
     }
 
     //-----------------//
@@ -462,7 +450,7 @@ public class KeyBuilder
     /**
      * @return the measureStart
      */
-    public int getMeasureStart ()
+    protected int getMeasureStart ()
     {
         return measureStart;
     }
@@ -473,75 +461,9 @@ public class KeyBuilder
     /**
      * @return the slices
      */
-    public List<Slice> getSlices ()
+    protected List<Slice> getSlices ()
     {
         return slices;
-    }
-
-    //---------//
-    // hasStem //
-    //---------//
-    /**
-     * Report whether the provided rectangular peak area contains a vertical portion
-     * of 'coreLength' with a black ratio of at least 'minBlackRatio'.
-     * <p>
-     * A row is considered as black if it contains at least one black pixel.
-     *
-     * @param area          the vertical very narrow rectangle of interest
-     * @param source        the pixel source
-     * @param coreLength    minimum "stem" length
-     * @param minBlackRatio minimum ratio of black rows in "stem" length
-     * @return true if a "stem" is found
-     */
-    public boolean hasStem (Rectangle area,
-                            ByteProcessor source,
-                            int coreLength,
-                            double minBlackRatio)
-    {
-        // Process all rows
-        final boolean[] blacks = new boolean[area.height];
-        Arrays.fill(blacks, false);
-
-        for (int y = 0; y < area.height; y++) {
-            for (int x = 0; x < area.width; x++) {
-                if (source.get(area.x + x, area.y + y) == 0) {
-                    blacks[y] = true;
-
-                    break;
-                }
-            }
-        }
-
-        // Build a sliding window, of length coreLength
-        final int quorum = (int) Math.rint(coreLength * minBlackRatio);
-        int count = 0;
-
-        for (int y = 0; y < coreLength; y++) {
-            if (blacks[y]) {
-                count++;
-            }
-        }
-
-        if (count >= quorum) {
-            return true;
-        }
-
-        // Move the window downward
-        for (int y = 1, yMax = area.height - coreLength; y <= yMax; y++) {
-            if (blacks[y - 1]) {
-                count--;
-            }
-
-            if (blacks[y + (coreLength - 1)]) {
-                count++;
-            }
-
-            if (count >= quorum) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //-------------//
@@ -553,8 +475,8 @@ public class KeyBuilder
      * @param index             provided index
      * @param theoreticalOffset theoretical offset WRT measure start
      */
-    public void insertSlice (int index,
-                             int theoreticalOffset)
+    protected void insertSlice (int index,
+                                int theoreticalOffset)
     {
         Slice nextSlice = slices.get(index);
         Slice slice = createSlice(measureStart + theoreticalOffset, nextSlice.getRect().x - 1);
@@ -562,8 +484,10 @@ public class KeyBuilder
 
         // Reassign staff slice attachments
         for (int i = 0; i < slices.size(); i++) {
-            staff.addAttachment(Integer.toString(i + 1), slices.get(i).getRect());
+            staff.addAttachment("k" + (i + 1), slices.get(i).getRect());
         }
+
+        logger.debug("Staff#{} trying to insert key left {}", getId(), slice);
 
         // Process this new slice and try to assign a valid alter.
         extractAlter(slice, Collections.singleton(keyShape), Grades.keyAlterMinGrade2);
@@ -575,14 +499,14 @@ public class KeyBuilder
     /**
      * Process the potential key signature of the assigned staff.
      */
-    public void process ()
+    protected void process ()
     {
-        logger.debug("Key processing for S#{} staff#{}", system.getId(), staff.getId());
+        logger.debug("Key processing for S#{} staff#{}", system.getId(), getId());
 
         // Retrieve & check peaks
         browseArea();
 
-        // Infer signature
+        // Infer signature from peaks
         int signature = retrieveSignature();
 
         if (signature != 0) {
@@ -591,12 +515,23 @@ public class KeyBuilder
         }
 
         if (signature != 0) {
-            // Compute precise borders for each sig item
-            List<Integer> starts = computeBorders(signature);
+            // Compute start for each sig item
+            List<Integer> starts = computeStarts(signature);
 
             if (!starts.isEmpty()) {
-                // Extract and evaluate item-based glyphs
-                extractSlices(starts);
+                // Allocate empty slices
+                allocateSlices(starts);
+
+                // First, look for suitable items in key area, using connected components
+                retrieveComponents();
+
+                // If some slices are still empty, use hard slice extraction
+                List<Slice> emptySlices = getEmptySlices();
+
+                if (!emptySlices.isEmpty()) {
+                    logger.debug("Staff#{} empty key slices: {}", getId(), emptySlices);
+                    extractEmptySlices(emptySlices);
+                }
             } else {
                 signature = 0;
             }
@@ -611,7 +546,7 @@ public class KeyBuilder
      *
      * @param browseStart new browsing abscissa
      */
-    public void reprocess (int browseStart)
+    protected void reprocess (int browseStart)
     {
         range.browseStart = browseStart;
         reset();
@@ -631,8 +566,8 @@ public class KeyBuilder
      * @param stop  stop of range abscissa
      * @return the created slice if any, with its slice.alter if successful
      */
-    public Slice scanSlice (int start,
-                            int stop)
+    protected Slice scanSlice (int start,
+                               int stop)
     {
         if (isRangeVoid(start, stop)) {
             // Nothing interesting there
@@ -642,7 +577,9 @@ public class KeyBuilder
             slices.add(slice);
 
             // Append to staff slice attachments
-            staff.addAttachment(Integer.toString(slices.size()), slice.getRect());
+            staff.addAttachment("k" + slice.getId(), slice.getRect());
+
+            logger.debug("Staff#{} trying to append key right {}", getId(), slice);
 
             // Process this new slice
             Set<Shape> shapes = (keyShape != null) ? Collections.singleton(keyShape) : keyShapes;
@@ -656,13 +593,25 @@ public class KeyBuilder
         }
     }
 
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
+    //----------------//
+    // allocateSlices //
+    //----------------//
+    /**
+     * Using the starting mark found for each alteration item, defines all slices.
+     *
+     * @param starts
+     */
+    private void allocateSlices (List<Integer> starts)
     {
-        return "KeyBuilder#" + staff.getId();
+        final int count = starts.size();
+
+        for (int i = 0; i < count; i++) {
+            int start = starts.get(i);
+            int stop = (i < (count - 1)) ? (starts.get(i + 1) - 1) : range.stop;
+            Slice slice = createSlice(start, stop);
+            slices.add(slice);
+            staff.addAttachment("k" + (i + 1), slice.getRect());
+        }
     }
 
     //------------//
@@ -839,13 +788,13 @@ public class KeyBuilder
         }
     }
 
-    //----------------//
-    // computeBorders //
-    //----------------//
+    //---------------//
+    // computeStarts //
+    //---------------//
     /**
-     * Compute the precise abscissae that represent the borders of key-sig items.
+     * Compute the theoretical starting abscissa for each key-sig item.
      */
-    private List<Integer> computeBorders (int signature)
+    private List<Integer> computeStarts (int signature)
     {
         List<Integer> starts = new ArrayList<Integer>();
 
@@ -1014,7 +963,7 @@ public class KeyBuilder
     private Slice createSlice (int start,
                                int stop)
     {
-        Rectangle rect = new Rectangle(start, headerArea.y, stop - start + 1, headerArea.height);
+        Rectangle rect = new Rectangle(start, roi.y, stop - start + 1, roi.height);
 
         return new Slice(rect);
     }
@@ -1039,7 +988,7 @@ public class KeyBuilder
             // This is the very first space found
             if (space.getWidth() > params.maxFirstSpaceWidth) {
                 // No key signature!
-                logger.debug("Staff#{} no key signature.", staff.getId());
+                logger.debug("Staff#{} no key signature.", getId());
                 keepOn = false;
             } else {
                 // Set range.start here, since first chunk may be later skipped if lacking peak
@@ -1073,18 +1022,16 @@ public class KeyBuilder
                                         Set<Shape> targetShapes,
                                         double minGrade)
     {
-        Rectangle rect = slice.getRect();
-        ByteProcessor buf = new ByteProcessor(rect.width, rect.height);
-        buf.copyBits(staffFreeSource, -rect.x, -rect.y, Blitter.COPY);
-
-        RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
-        List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable, rect.getLocation());
-
-        purgeGlyphs(glyphs, rect);
-
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+        Rectangle sliceRect = slice.getRect();
 
-        for (ListIterator<Glyph> li = glyphs.listIterator(); li.hasNext();) {
+        ByteProcessor sliceBuf = roi.getSlicePixels(staffFreeSource, slice, slices);
+        RunTable runTable = new RunTableFactory(VERTICAL).createTable(sliceBuf);
+        List<Glyph> parts = GlyphFactory.buildGlyphs(runTable, sliceRect.getLocation());
+
+        purgeGlyphs(parts, (sliceRect.x + sliceRect.width) - 1);
+
+        for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
             Glyph glyph = li.next();
             glyph = glyphIndex.registerOriginal(glyph);
             glyph.addGroup(Group.ALTER_PART);
@@ -1092,25 +1039,25 @@ public class KeyBuilder
             li.set(glyph);
         }
 
-        KeyAdapter adapter = new KeyAdapter(glyphs, targetShapes);
+        SingleAdapter adapter = new SingleAdapter(slice, parts, targetShapes);
         new GlyphCluster(adapter, null).decompose();
 
-        if (adapter.bestEval != null) {
-            double grade = Inter.intrinsicRatio * adapter.bestEval.grade;
+        if (adapter.slice.eval != null) {
+            double grade = Inter.intrinsicRatio * adapter.slice.eval.grade;
 
             if (grade >= minGrade) {
-                logger.debug("Glyph#{} {}", adapter.bestGlyph.getId(), adapter.bestEval);
+                logger.debug("Glyph#{} {}", adapter.slice.glyph.getId(), adapter.slice.eval);
 
                 KeyAlterInter alterInter = KeyAlterInter.create(
-                        adapter.bestGlyph,
-                        adapter.bestEval.shape,
+                        adapter.slice.glyph,
+                        adapter.slice.eval.shape,
                         grade,
                         staff);
 
                 if (alterInter != null) {
-                    alterInter.setGlyph(sheet.getGlyphIndex().registerOriginal(adapter.bestGlyph));
                     sig.addVertex(alterInter);
                     slice.alter = alterInter;
+                    logger.debug("{}", slice);
 
                     return alterInter;
                 }
@@ -1120,34 +1067,48 @@ public class KeyBuilder
         return null;
     }
 
-    //---------------//
-    // extractSlices //
-    //---------------//
+    //--------------------//
+    // extractEmptySlices //
+    //--------------------//
     /**
      * Using the starting mark found for each alteration item, extract each vertical
      * slice and build alteration inter out of each slice.
      *
-     * @param starts sequence of starting abscissae
+     * @param emptySlices sequence of empty slices
      */
-    private void extractSlices (List<Integer> starts)
+    private void extractEmptySlices (List<Slice> emptySlices)
     {
-        final int count = starts.size();
-
-        for (int i = 0; i < count; i++) {
-            int start = starts.get(i);
-            int stop = (i < (count - 1)) ? (starts.get(i + 1) - 1) : range.stop;
-            Slice slice = createSlice(start, stop);
-
-            KeyAlterInter inter = extractAlter(
-                    slice,
-                    Collections.singleton(keyShape),
-                    Grades.keyAlterMinGrade);
-
-            if (inter != null) {
-                slices.add(slice);
-                staff.addAttachment(Integer.toString(i + 1), slice.getRect());
-            }
+        for (Slice slice : emptySlices) {
+            extractAlter(slice, Collections.singleton(keyShape), Grades.keyAlterMinGrade);
         }
+    }
+
+    //---------------//
+    // getBrowseRect //
+    //---------------//
+    /**
+     * Define the rectangular area to be browsed.
+     * <p>
+     * The lookup area must embrace all possible key signatures, whatever the staff clef, so it goes
+     * from first line to last line of staff, augmented of 2 interline value above and 1 interline
+     * value below.
+     *
+     * @return the rectangular area to be browsed
+     */
+    private Rectangle getBrowseRect ()
+    {
+        final int xMin = Math.max(0, measureStart - params.preStaffMargin);
+        final int xMax = range.browseStop;
+
+        int yMin = Integer.MAX_VALUE;
+        int yMax = Integer.MIN_VALUE;
+
+        for (int x = xMin; x <= xMax; x++) {
+            yMin = Math.min(yMin, staff.getFirstLine().yAt(xMin) - (2 * scale.getInterline()));
+            yMax = Math.max(yMax, staff.getLastLine().yAt(xMin) + (1 * scale.getInterline()));
+        }
+
+        return new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
     }
 
     //---------------//
@@ -1178,7 +1139,7 @@ public class KeyBuilder
             int barStart = bar.getBounds().x;
 
             if ((barStart > browseStart) && (barStart <= end)) {
-                logger.debug("Staff#{} stopping key search before {}", staff.getId(), bar);
+                logger.debug("Staff#{} stopping key search before {}", getId(), bar);
                 end = barStart - 1;
 
                 break;
@@ -1188,23 +1149,63 @@ public class KeyBuilder
         return end;
     }
 
-    //---------------//
-    // getHeaderArea //
-    //---------------//
-    private Rectangle getHeaderArea ()
+    //----------------//
+    // getEmptySlices //
+    //----------------//
+    /**
+     * Report the sequence of slices found empty.
+     *
+     * @return the empty slices
+     */
+    private List<Slice> getEmptySlices ()
     {
-        final int xMin = Math.max(0, measureStart - params.preStaffMargin);
-        final int xMax = range.browseStop;
+        List<Slice> emptySlices = null;
 
-        int yMin = Integer.MAX_VALUE;
-        int yMax = Integer.MIN_VALUE;
+        for (Slice slice : slices) {
+            if (slice.alter == null) {
+                if (emptySlices == null) {
+                    emptySlices = new ArrayList<Slice>();
+                }
 
-        for (int x = xMin; x <= xMax; x++) {
-            yMin = Math.min(yMin, staff.getFirstLine().yAt(xMin) - (2 * scale.getInterline()));
-            yMax = Math.max(yMax, staff.getLastLine().yAt(xMin) + (1 * scale.getInterline()));
+                emptySlices.add(slice);
+            }
         }
 
-        return new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
+        if (emptySlices == null) {
+            return Collections.emptyList();
+        }
+
+        return emptySlices;
+    }
+
+    //-----------//
+    // getFifths //
+    //-----------//
+    /**
+     * Staff key signature is dynamically computed using the keyShape and the count of
+     * alteration slices.
+     *
+     * @return the signature as an integer value
+     */
+    private int getFifths ()
+    {
+        if (slices.isEmpty()) {
+            return 0;
+        }
+
+        if (keyShape == Shape.SHARP) {
+            return slices.size();
+        } else {
+            return -slices.size();
+        }
+    }
+
+    //-------//
+    // getId //
+    //-------//
+    private int getId ()
+    {
+        return staff.getId();
     }
 
     //---------------//
@@ -1212,19 +1213,15 @@ public class KeyBuilder
     //---------------//
     /**
      * Cumulate the foreground pixels for each abscissa value in the lookup area.
-     * <p>
-     * The lookup area must embrace all possible key signatures, whatever the staff clef, so it
-     * goes from first line to last line of staff, augmented of 2 interline value above and 1
-     * interline value below.
      *
      * @return the populated cumulation table
      */
-    private Projection getProjection ()
+    private Projection getProjection (Rectangle browseRect)
     {
-        final int xMin = headerArea.x;
-        final int xMax = (headerArea.x + headerArea.width) - 1;
-        final int yMin = headerArea.y;
-        final int yMax = (headerArea.y + headerArea.height) - 1;
+        final int xMin = browseRect.x;
+        final int xMax = (browseRect.x + browseRect.width) - 1;
+        final int yMin = browseRect.y;
+        final int yMax = (browseRect.y + browseRect.height) - 1;
         final Projection table = new Projection.Short(xMin, xMax);
 
         for (int x = xMin; x <= xMax; x++) {
@@ -1240,6 +1237,72 @@ public class KeyBuilder
         }
 
         return table;
+    }
+
+    //---------//
+    // hasStem //
+    //---------//
+    /**
+     * Report whether the provided rectangular peak area contains a vertical portion
+     * of 'coreLength' with a black ratio of at least 'minBlackRatio'.
+     * <p>
+     * A row is considered as black if it contains at least one black pixel.
+     *
+     * @param area          the vertical very narrow rectangle of interest
+     * @param source        the pixel source
+     * @param coreLength    minimum "stem" length
+     * @param minBlackRatio minimum ratio of black rows in "stem" length
+     * @return true if a "stem" is found
+     */
+    private boolean hasStem (Rectangle area,
+                             ByteProcessor source,
+                             int coreLength,
+                             double minBlackRatio)
+    {
+        // Process all rows
+        final boolean[] blacks = new boolean[area.height];
+        Arrays.fill(blacks, false);
+
+        for (int y = 0; y < area.height; y++) {
+            for (int x = 0; x < area.width; x++) {
+                if (source.get(area.x + x, area.y + y) == 0) {
+                    blacks[y] = true;
+
+                    break;
+                }
+            }
+        }
+
+        // Build a sliding window, of length coreLength
+        final int quorum = (int) Math.rint(coreLength * minBlackRatio);
+        int count = 0;
+
+        for (int y = 0; y < coreLength; y++) {
+            if (blacks[y]) {
+                count++;
+            }
+        }
+
+        if (count >= quorum) {
+            return true;
+        }
+
+        // Move the window downward
+        for (int y = 1, yMax = area.height - coreLength; y <= yMax; y++) {
+            if (blacks[y - 1]) {
+                count--;
+            }
+
+            if (blacks[y + (coreLength - 1)]) {
+                count++;
+            }
+
+            if (count >= quorum) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //-------------//
@@ -1291,11 +1354,7 @@ public class KeyBuilder
      */
     private boolean isStemLike (KeyEvent.Peak peak)
     {
-        final Rectangle rect = new Rectangle(
-                peak.start,
-                headerArea.y,
-                peak.getWidth(),
-                headerArea.height);
+        final Rectangle rect = new Rectangle(peak.start, roi.y, peak.getWidth(), roi.height);
 
         if (peak.getWidth() <= 2) {
             rect.grow(1, 0); // Slight margin on left & right of peak
@@ -1304,7 +1363,7 @@ public class KeyBuilder
         boolean stem = hasStem(rect, staffFreeSource, params.coreStemLength, params.minBlackRatio);
 
         if (!stem) {
-            logger.debug("Staff#{} {} no stem", staff.getId(), peak);
+            logger.debug("Staff#{} {} no stem", getId(), peak);
         }
 
         return stem;
@@ -1338,7 +1397,7 @@ public class KeyBuilder
     //-------------//
     /**
      * Purge the population of glyph candidates as much as possible, since the cost
-     * of their later combinations is worse than exponential.
+     * of their later combinations is very high.
      * <p>
      * Those of width 1 and stuck on right side of slice can be safely removed, since they
      * certainly belong to the stem of the next slice.
@@ -1347,13 +1406,11 @@ public class KeyBuilder
      * questionable.
      *
      * @param glyphs the collection to purge
-     * @param rect   the slice rectangle
+     * @param xMax   maximum abscissa in area
      */
     private void purgeGlyphs (List<Glyph> glyphs,
-                              Rectangle rect)
+                              int xMax)
     {
-        //TODO: use constants!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        final int xMax = (rect.x + rect.width) - 1;
         final int minWeight = 2;
 
         List<Glyph> toRemove = new ArrayList<Glyph>();
@@ -1420,6 +1477,60 @@ public class KeyBuilder
 
         range.start = 0;
         range.stop = 0;
+    }
+
+    //--------------------//
+    // retrieveComponents //
+    //--------------------//
+    /**
+     * Look into sig area for key items, based on connected components.
+     */
+    private void retrieveComponents ()
+    {
+        logger.debug("Key for staff#{}", getId());
+
+        // Key-sig area pixels
+        ByteProcessor keyBuf = roi.getAreaPixels(staffFreeSource, range);
+        RunTable runTable = new RunTableFactory(VERTICAL).createTable(keyBuf);
+        List<Glyph> parts = GlyphFactory.buildGlyphs(runTable, new Point(range.start, roi.y));
+
+        purgeGlyphs(parts, range.stop);
+
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+
+        for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
+            Glyph glyph = li.next();
+            glyph = glyphIndex.registerOriginal(glyph);
+            glyph.addGroup(Group.ALTER_PART);
+            system.addFreeGlyph(glyph);
+            li.set(glyph);
+        }
+
+        MultipleAdapter adapter = new MultipleAdapter(parts, Collections.singleton(keyShape));
+        new GlyphCluster(adapter, null).decompose();
+
+        for (Slice slice : slices) {
+            if (slice.eval != null) {
+                double grade = Inter.intrinsicRatio * slice.eval.grade;
+
+                if (grade >= Grades.keyAlterMinGrade) {
+                    KeyAlterInter alterInter = KeyAlterInter.create(
+                            slice.glyph,
+                            slice.eval.shape,
+                            grade,
+                            staff);
+
+                    if (alterInter != null) {
+                        sig.addVertex(alterInter);
+                        slice.alter = alterInter;
+                    }
+                }
+            }
+
+            logger.debug("{}", slice);
+        }
+
+        // If one or several slices lack alter inter, process them by hard slice extraction
     }
 
     //-------------------//
@@ -1649,7 +1760,7 @@ public class KeyBuilder
                     for (int i = slices.size(); i < globalOffsets.size(); i++) {
                         int x = (builder.getMeasureStart() + globalOffsets.get(i)) - 1;
                         logger.debug(
-                                "Staff#{} Should investigate slice {} at {}",
+                                "Staff#{} Should investigate slice index:{} at x:{}",
                                 builder.getId(),
                                 i,
                                 x);
@@ -1675,7 +1786,7 @@ public class KeyBuilder
                     Inter inter = slice.getAlter();
 
                     if (inter == null) {
-                        logger.info("Staff#{} weird key slice at index {}", builder.getId(), i);
+                        logger.info("Staff#{} weird key {}", builder.getId(), slice);
                     }
                 }
             }
@@ -1684,6 +1795,13 @@ public class KeyBuilder
         //-------------------//
         // getBestSliceIndex //
         //-------------------//
+        /**
+         * Determine the corresponding global index for the provided abscissa offset.
+         *
+         * @param offset       slice offset
+         * @param maxSliceDist maximum acceptable abscissa distance
+         * @return the global index found or null
+         */
         private Integer getBestSliceIndex (int offset,
                                            int maxSliceDist)
         {
@@ -1726,7 +1844,7 @@ public class KeyBuilder
 
             for (KeyBuilder builder : builders.values()) {
                 ///StringBuilder sb = new StringBuilder();
-                ///sb.append("S#").append(projector.staff.getId());
+                ///sb.append("S#").append(builder.getId());
                 for (int i = 0; i < builder.getSlices().size(); i++) {
                     KeyBuilder.Slice slice = builder.getSlices().get(i);
                     sliceCount++;
@@ -1791,12 +1909,18 @@ public class KeyBuilder
     /**
      * Represents a rectangular slice of a key-sig, likely to contain an alteration item.
      */
-    public static class Slice
+    protected class Slice
     {
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Rectangular slice definition. */
         private final Rectangle rect;
+
+        /** Best glyph, if any. */
+        private Glyph glyph;
+
+        /** Best evaluation, if any. */
+        private Evaluation eval;
 
         /** Retrieved alter item, if any. */
         private KeyAlterInter alter;
@@ -1816,12 +1940,96 @@ public class KeyBuilder
             return rect;
         }
 
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("Slice{");
+            sb.append("#").append(getId());
+
+            if (alter != null) {
+                sb.append(" ").append(alter);
+            }
+
+            if (glyph != null) {
+                sb.append(String.format(" glyph#%d %.3f", glyph.getId(), eval.grade));
+            }
+
+            sb.append("}");
+
+            return sb.toString();
+        }
+
         /**
          * @return the alter, if any
          */
         KeyAlterInter getAlter ()
         {
             return alter;
+        }
+
+        int getId ()
+        {
+            return 1 + slices.indexOf(this);
+        }
+    }
+
+    //-----------------//
+    // AbstractAdapter //
+    //-----------------//
+    /**
+     * Abstract adapter for retrieving items.
+     */
+    private abstract class AbstractAdapter
+            extends GlyphCluster.AbstractAdapter
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Relevant shapes. */
+        protected final EnumSet<Shape> targetShapes = EnumSet.noneOf(Shape.class);
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public AbstractAdapter (List<Glyph> parts,
+                                Set<Shape> targetShapes)
+        {
+            super(parts, params.maxGlyphGap);
+            this.targetShapes.addAll(targetShapes);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean isSizeAcceptable (Rectangle box)
+        {
+            return (box.height <= params.maxGlyphHeight) && (box.width <= params.maxGlyphWidth);
+        }
+
+        @Override
+        public boolean isWeightAcceptable (int weight)
+        {
+            return weight >= params.minGlyphWeight;
+        }
+
+        protected void evaluateSliceGlyph (Slice slice,
+                                           Glyph glyph)
+        {
+            trials++;
+
+            Evaluation[] evals = classifier.getNaturalEvaluations(glyph, sheet.getInterline());
+
+            for (Shape shape : targetShapes) {
+                Evaluation eval = evals[shape.ordinal()];
+
+                if (glyph.getId() == 0) {
+                    glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+                    system.addFreeGlyph(glyph);
+                }
+
+                logger.debug("glyph#{} width:{} eval:{}", glyph.getId(), glyph.getWidth(), eval);
+
+                if ((slice.eval == null) || (slice.eval.grade < eval.grade)) {
+                    slice.eval = eval;
+                    slice.glyph = glyph;
+                }
+            }
         }
     }
 
@@ -1921,6 +2129,10 @@ public class KeyBuilder
                 1.5,
                 "Maximum distance between two glyphs of a single alter symbol");
 
+        private final Scale.Fraction maxGlyphWidth = new Scale.Fraction(
+                2.0,
+                "Maximum glyph width");
+
         private final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
                 3.5,
                 "Maximum glyph height");
@@ -1940,64 +2152,46 @@ public class KeyBuilder
                 "Maximum inner space within key signature");
     }
 
-    //------------//
-    // KeyAdapter //
-    //------------//
+    //-----------------//
+    // MultipleAdapter //
+    //-----------------//
     /**
-     * Handles the integration between glyph clustering class and key-sig environment.
+     * Adapter for retrieving all items of the key (in key area).
      */
-    private class KeyAdapter
-            extends GlyphCluster.AbstractAdapter
+    private class MultipleAdapter
+            extends AbstractAdapter
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Relevant shapes. */
-        private final EnumSet<Shape> targetShapes = EnumSet.noneOf(Shape.class);
-
-        private Evaluation bestEval = null;
-
-        private Glyph bestGlyph = null;
-
         //~ Constructors ---------------------------------------------------------------------------
-        public KeyAdapter (List<Glyph> glyphs,
-                           Set<Shape> targetShapes)
+
+        public MultipleAdapter (List<Glyph> parts,
+                                Set<Shape> targetShapes)
         {
-            super(glyphs, params.maxGlyphGap);
-            this.targetShapes.addAll(targetShapes);
+            super(parts, targetShapes);
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
         public void evaluateGlyph (Glyph glyph)
         {
-            trials++;
+            // Retrieve impacted slice
+            final Slice slice = sliceOf(glyph);
 
-            Evaluation[] evals = classifier.getNaturalEvaluations(glyph, sheet.getInterline());
-
-            for (Shape shape : targetShapes) {
-                Evaluation eval = evals[shape.ordinal()];
-
-                if ((bestEval == null) || (bestEval.grade < eval.grade)) {
-                    if (glyph.getId() == 0) {
-                        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                    }
-
-                    bestEval = eval;
-                    bestGlyph = glyph;
-                }
+            if (slice != null) {
+                evaluateSliceGlyph(slice, glyph);
             }
         }
 
-        @Override
-        public boolean isSizeAcceptable (Rectangle box)
+        private Slice sliceOf (Glyph glyph)
         {
-            return box.height <= params.maxGlyphHeight;
-        }
+            final Point centroid = glyph.getCentroid();
 
-        @Override
-        public boolean isWeightAcceptable (int weight)
-        {
-            return weight >= params.minGlyphWeight;
+            for (Slice slice : slices) {
+                if (GeoUtil.xEmbraces(slice.rect, centroid.x)) {
+                    return slice;
+                }
+            }
+
+            return null;
         }
     }
 
@@ -2052,6 +2246,8 @@ public class KeyBuilder
 
         final double maxGlyphGap;
 
+        final double maxGlyphWidth;
+
         final double maxGlyphHeight;
 
         final int minGlyphWeight;
@@ -2080,6 +2276,7 @@ public class KeyBuilder
             minFlatDelta = scale.toPixelsDouble(constants.minFlatDelta);
             offsetThreshold = scale.toPixelsDouble(constants.offsetThreshold);
             maxGlyphGap = scale.toPixelsDouble(constants.maxGlyphGap);
+            maxGlyphWidth = scale.toPixelsDouble(constants.maxGlyphWidth);
             maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
             minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
 
@@ -2089,6 +2286,138 @@ public class KeyBuilder
             minPeakCumul = (int) Math.rint(
                     (5 * scale.getMainFore())
                     + (constants.peakHeightRatio.getValue() * maxAlterContrib));
+        }
+    }
+
+    //-----//
+    // Roi //
+    //-----//
+    /**
+     * Handles the region of interest for key retrieval.
+     */
+    private static class Roi
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Region top ordinate. */
+        public final int y;
+
+        /** Region height. */
+        public final int height;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Roi (int y,
+                    int height)
+        {
+            this.y = y;
+            this.height = height;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Report the pixels buffer for the whole key area
+         *
+         * @param source pixel source (staff free)
+         * @param range  start/stop values for key area
+         * @return the buffer of area pixels
+         */
+        public ByteProcessor getAreaPixels (ByteProcessor source,
+                                            Range range)
+        {
+            Rectangle keyRect = new Rectangle(
+                    range.start,
+                    y,
+                    range.stop - range.start + 1,
+                    height);
+
+            ByteProcessor keyBuffer = new ByteProcessor(keyRect.width, height);
+            keyBuffer.copyBits(source, -keyRect.x, -y, Blitter.COPY);
+
+            return keyBuffer;
+        }
+
+        /**
+         * Report the pixels buffer for just a slice
+         *
+         * @param source pixel source (staff free)
+         * @param slice  the current slice
+         * @param slices sequence of all slices
+         * @return the buffer of slice pixels
+         */
+        public ByteProcessor getSlicePixels (ByteProcessor source,
+                                             Slice slice,
+                                             List<Slice> slices)
+        {
+            Rectangle sRect = slice.getRect();
+            BufferedImage sImage = new BufferedImage(sRect.width, sRect.height, TYPE_BYTE_GRAY);
+            ByteProcessor sBuffer = new ByteProcessor(sImage);
+            sBuffer.copyBits(source, -sRect.x, -sRect.y, Blitter.COPY);
+
+            // Erase good key items from adjacent slices, if any
+            final int idx = slices.indexOf(slice);
+            final Integer prevIdx = (idx > 0) ? (idx - 1) : null;
+            final Integer nextIdx = (idx < (slices.size() - 1)) ? (idx + 1) : null;
+            Graphics2D g = null;
+
+            for (Integer i : new Integer[]{prevIdx, nextIdx}) {
+                if (i != null) {
+                    final Slice sl = slices.get(i);
+
+                    if (sl.alter != null) {
+                        final Glyph glyph = sl.alter.getGlyph();
+
+                        if (glyph.getBounds().intersects(sRect)) {
+                            if (g == null) {
+                                g = sImage.createGraphics();
+                                g.setColor(Color.white);
+                            }
+
+                            final Point offset = new Point(
+                                    glyph.getLeft() - sRect.x,
+                                    glyph.getTop() - sRect.y);
+                            logger.debug("Erasing glyph#{} from {}", glyph.getId(), slice);
+                            glyph.getRunTable().render(g, offset);
+                        }
+                    }
+                }
+            }
+
+            if (g != null) {
+                g.dispose();
+            }
+
+            return sBuffer;
+        }
+    }
+
+    //---------------//
+    // SingleAdapter //
+    //---------------//
+    /**
+     * Adapter for retrieving one key item (in a slice).
+     */
+    private class SingleAdapter
+            extends AbstractAdapter
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Related slice. */
+        private final Slice slice;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public SingleAdapter (Slice slice,
+                              List<Glyph> parts,
+                              Set<Shape> targetShapes)
+        {
+            super(parts, targetShapes);
+            this.slice = slice;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void evaluateGlyph (Glyph glyph)
+        {
+            evaluateSliceGlyph(slice, glyph);
         }
     }
 }
