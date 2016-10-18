@@ -97,12 +97,7 @@ public class SampleMenu
     //-----------//
     private void addSample (Shape shape)
     {
-        final SampleRepository repository = SampleRepository.getInstance();
-
-        if (!repository.isLoaded()) {
-            repository.loadRepository(false);
-        }
-
+        final SampleRepository repository = SampleRepository.getLoadedInstance(false);
         final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
 
         repository.addSample(shape, glyph, sheet.getInterline(), sampleSheet);

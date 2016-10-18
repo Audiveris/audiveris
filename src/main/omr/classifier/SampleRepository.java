@@ -182,6 +182,28 @@ public class SampleRepository
         return INSTANCE;
     }
 
+    //-------------------//
+    // getLoadedInstance //
+    //-------------------//
+    /**
+     * Report the single instance of this class, after creating and loading it if needed.
+     *
+     * @param withBinaries if true, sheet binaries are also loaded.
+     * @return the single instance
+     */
+    public static SampleRepository getLoadedInstance (boolean withBinaries)
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SampleRepository();
+        }
+
+        if (!INSTANCE.isLoaded()) {
+            INSTANCE.loadRepository(withBinaries);
+        }
+
+        return INSTANCE;
+    }
+
     //-------------//
     // addListener //
     //-------------//

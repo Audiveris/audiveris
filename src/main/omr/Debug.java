@@ -176,11 +176,7 @@ public class Debug
         OutputStream os = new FileOutputStream(path.toFile());
         final PrintWriter out = getPrintWriter(os);
 
-        SampleRepository repository = SampleRepository.getInstance();
-
-        if (!repository.isLoaded()) {
-            repository.loadRepository(true);
-        }
+        SampleRepository repository = SampleRepository.getLoadedInstance(true);
 
         List<Sample> samples = repository.getAllSamples();
         logger.info("Samples: {}", samples.size());
@@ -233,11 +229,7 @@ public class Debug
         Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(NeuralClassifier.NORMS_FILE_NAME);
         Files.deleteIfExists(normsPath);
 
-        SampleRepository repository = SampleRepository.getInstance();
-
-        if (!repository.isLoaded()) {
-            repository.loadRepository(true);
-        }
+        SampleRepository repository = SampleRepository.getLoadedInstance(true);
 
         List<Sample> samples = repository.getAllSamples();
         logger.info("Samples: {}", samples.size());
