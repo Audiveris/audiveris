@@ -29,16 +29,23 @@ import omr.classifier.SheetContainer.Descriptor;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.SymbolSample;
 
 import omr.run.RunTable;
 
+import omr.sheet.Book;
+import omr.sheet.Picture;
+import omr.sheet.Sheet;
+import omr.sheet.Staff;
+
 import omr.ui.OmrGui;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 
+import omr.util.FileUtil;
 import omr.util.StopWatch;
 import omr.util.Zip;
 
@@ -178,6 +185,11 @@ public class SampleRepository
     //-------------//
     // addListener //
     //-------------//
+    /**
+     * Register a listener on repository updates.
+     *
+     * @param listener the listener to be kept informed
+     */
     public void addListener (ChangeListener listener)
     {
         Objects.requireNonNull(listener, "Cannot add a null listener");
@@ -190,19 +202,45 @@ public class SampleRepository
     /**
      * Add a new sample to the provided SampleSheet.
      *
-     * @param sample the sample to add, non-null
-     * @param sheet  the containing sample sheet
+     * @param sample      the sample to add, non-null
+     * @param sampleSheet the containing sample sheet
      * @see #removeSample(Sample)
      */
     public void addSample (Sample sample,
-                           SampleSheet sheet)
+                           SampleSheet sampleSheet)
     {
-        Objects.requireNonNull(sheet, "Cannot add a sample to a null sheet");
+        Objects.requireNonNull(sampleSheet, "Cannot add a sample to a null sample sheet");
 
-        sheet.privateAddSample(sample);
-        sampleMap.put(sample, sheet);
+        sampleSheet.privateAddSample(sample);
+        sampleMap.put(sample, sampleSheet);
 
         fireStateChanged(new AdditionEvent(sample));
+    }
+
+    //-----------//
+    // addSample //
+    //-----------//
+    public void addSample (Shape shape,
+                           Glyph glyph,
+                           Staff staff,
+                           Sheet sheet)
+    {
+        final SampleSheet sampleSheet = SampleRepository.this.findSampleSheet(sheet);
+        addSample(shape, glyph, staff.getSpecificInterline(), sampleSheet);
+    }
+
+    //-----------//
+    // addSample //
+    //-----------//
+    public void addSample (Shape shape,
+                           Glyph glyph,
+                           int interline,
+                           SampleSheet sampleSheet)
+    {
+        shape = Sample.getRecordableShape(shape);
+
+        final Sample sample = new Sample(glyph, interline, shape);
+        addSample(sample, sampleSheet);
     }
 
     //-----------------//
@@ -261,11 +299,11 @@ public class SampleRepository
             final int interline = sample.getInterline();
 
             for (int j = i + 1; j < n; j++) {
-                Sample s = allSamples.get(j);
-
                 if (deleted[j]) {
-                    break;
+                    continue;
                 }
+
+                Sample s = allSamples.get(j);
 
                 if (s.getWeight() != weight) {
                     break;
@@ -316,9 +354,32 @@ public class SampleRepository
         }
     }
 
-    //-----------//
-    // findSheet //
-    //-----------//
+    //-----------------//
+    // findSampleSheet //
+    //-----------------//
+    public SampleSheet findSampleSheet (Sheet sheet)
+    {
+        // Handle long name if any
+        final Book book = sheet.getStub().getBook();
+        String longSheetName = null;
+
+        if (book.getAlias() != null) {
+            longSheetName = FileUtil.getNameSansExtension(book.getInputPath());
+
+            if (book.isMultiSheet()) {
+                longSheetName = longSheetName + "#" + sheet.getStub().getNumber();
+            }
+        }
+
+        return findSampleSheet(
+                sheet.getId(),
+                longSheetName,
+                sheet.getPicture().getTable(Picture.TableKey.BINARY));
+    }
+
+    //-----------------//
+    // findSampleSheet //
+    //-----------------//
     /**
      * Find out (or create) the SampleSheet that corresponds to provided name and/or
      * image.
@@ -337,9 +398,9 @@ public class SampleRepository
      * @param image    sheet binary image, if any, strongly recommended
      * @return the found or created sheet, where samples can be added to. Non null.
      */
-    public SampleSheet findSheet (String name,
-                                  String longName,
-                                  RunTable image)
+    public SampleSheet findSampleSheet (String name,
+                                        String longName,
+                                        RunTable image)
     {
         if ((name == null) || ((name.isEmpty()) && (image == null))) {
             throw new IllegalArgumentException("findSheet() needs sheet name or image");
@@ -674,6 +735,8 @@ public class SampleRepository
         SampleSheet sampleSheet = getSampleSheet(sample);
         sampleSheet.privateRemoveSample(sample);
         sampleMap.remove(sample);
+
+        fireStateChanged(new RemovalEvent(sample));
     }
 
     //-----------------//
@@ -704,6 +767,7 @@ public class SampleRepository
 
             samplesRoot.getFileSystem().close();
             imagesRoot.getFileSystem().close();
+            setModified(false);
             logger.debug("storeRepository done");
         } catch (Throwable ex) {
             logger.warn("Error storing repository to " + SAMPLES_FILE + " " + ex, ex);
@@ -882,6 +946,18 @@ public class SampleRepository
             logger.debug("load done");
         } catch (Throwable ex) {
             logger.warn("Error loading " + SAMPLES_FILE + " " + ex, ex);
+        }
+    }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    private void setModified (boolean bool)
+    {
+        sheetContainer.setModified(bool);
+
+        for (SampleSheet sheet : idMap.values()) {
+            sheet.setModified(bool);
         }
     }
 

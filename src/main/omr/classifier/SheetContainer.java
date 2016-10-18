@@ -365,21 +365,28 @@ public class SheetContainer
     //------------//
     // Descriptor //
     //------------//
+    /**
+     * Descriptor of a SampleSheet.
+     */
     @XmlAccessorType(XmlAccessType.FIELD)
     public static class Descriptor
             implements Comparable<Descriptor>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        /** Sequential ID. */
         @XmlAttribute(name = "id")
         public int id;
 
+        /** Hash value of binary RunTable, if any. */
         @XmlAttribute(name = "hash")
         private Integer hash;
 
+        /** Short sheet name. */
         @XmlAttribute(name = "name")
         private String name;
 
+        /** All name aliases, perhaps empty. */
         @XmlElement(name = "alias")
         private final ArrayList<String> aliases = new ArrayList<String>();
 

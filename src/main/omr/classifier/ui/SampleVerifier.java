@@ -25,6 +25,7 @@ import omr.classifier.NeuralClassifier;
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import omr.classifier.SampleRepository.AdditionEvent;
+import omr.classifier.SampleRepository.RemovalEvent;
 import static omr.classifier.SampleRepository.STANDARD_INTERLINE;
 import omr.classifier.SheetContainer.Descriptor;
 
@@ -165,10 +166,10 @@ public class SampleVerifier
     /** Panel for samples display. */
     private final SampleListing sampleListing = new SampleListing(null);
 
-    /** Panel for shapes selection. */
+    /** Panel for shapes selection. With sampleListing as a listener */
     private final ShapeSelector shapeSelector = new ShapeSelector(sampleListing);
 
-    /** Panel for sheets selection. */
+    /** Panel for sheets selection. With shapeSelector as a listener */
     private final SheetSelector sheetSelector = new SheetSelector(shapeSelector);
 
     /** Has repository been checked for duplications?. */
@@ -268,6 +269,9 @@ public class SampleVerifier
         if (event instanceof AdditionEvent) {
             AdditionEvent addition = (AdditionEvent) event;
             verify(Arrays.asList(addition.sample));
+        } else if (event instanceof RemovalEvent) {
+            RemovalEvent removal = (RemovalEvent) event;
+            sampleListing.removeSample(removal.sample);
         } else {
             sheetSelector.stateChanged(event);
         }
@@ -406,14 +410,14 @@ public class SampleVerifier
          *
          * +=========++=============+=====================================+
          * | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-         * | . . . . || . sheet . . | . . . . . . . . . . . . . . . . . . |
+         * | . . . . || . sheet . . | . . . . . . . . shape 1 pane. . . . |
          * | . . . . || . . . . . . | . . sample. . . . . . . . . . . . . |
-         * | . . . . || . selector. | . . . . . . . . . . . . . . . . . . |
-         * | . . . . || . . . . . . | . . population. . . . . . . . . . . |
-         * | . . . . ||=============| . . . . . . . . . . . . . . . . . . |
+         * | . . . . || . selector. | . . . . . . . . shape 2 pane. . . . |
+         * | . . . . || . . . . . . | . . listing . . . . . . . . . . . . |
+         * | . . . . ||=============| . . . . . . . . shape 3 pane. . . . |
          * | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
-         * | . . . . || . sample. . | . . . . . . . . . . . . . . . . . . |
-         * | . . . . || . . . . . . |=====================================|
+         * | . . . . || . sample. . |=====================================|
+         * | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
          * | . . . . || . board . . | . . . . . . . . . . . . . . . . . . |
          * | . . . . || . . . . . . | . . . . . . . . . . . . . . . . . . |
          * | shape . ||-------------| . . . . . . . . . . . . . . . . . . |
@@ -519,6 +523,8 @@ public class SampleVerifier
     //---------------//
     /**
      * Display a list of samples, gathered by shape.
+     * It is implemented as a list of ShapePane instances, one per shape, each ShapePane instance
+     * handling a list of samples (all of the same shape).
      */
     private class SampleListing
             extends JScrollPane
@@ -619,10 +625,17 @@ public class SampleVerifier
             populateWith(allSamples);
         }
 
+        /**
+         * Remove and regenerate the whole content of SampleListing.
+         *
+         * @param samples the whole sequence of samples to display (assumed to be ordered by shape)
+         */
         private void populateWith (List<Sample> samples)
         {
-            // NB: samples are assumed to be ordered by shape
+            // Remove all ShapePane instances
             scrollablePanel.removeAll();
+
+            // Deselect any sample
             sampleService.publish(
                     new EntityListEvent<Sample>(
                             this,
@@ -630,13 +643,14 @@ public class SampleVerifier
                             MouseMovement.PRESSING,
                             Arrays.asList((Sample) null)));
 
+            // Rebuild ShapePane instances as needed
             Shape currentShape = null;
             List<Sample> shapeSamples = new ArrayList<Sample>();
 
             for (Sample sample : samples) {
                 final Shape shape = sample.getShape();
 
-                // End of shape collection?
+                // End of a shape collection?
                 if ((currentShape != null) && (currentShape != shape)) {
                     scrollablePanel.add(
                             new ShapePane(currentShape, shapeSamples, selectionListener));
@@ -656,11 +670,29 @@ public class SampleVerifier
             int sampleCount = samples.size();
             border.setTitle(title + ((sampleCount > 0) ? (": " + sampleCount) : ""));
             validate();
+            repaint();
+//
+//            // Pre-select the very first sample of the very first ShapePane
+//            if (!samples.isEmpty()) {
+//                ShapePane shapePane = (ShapePane) scrollablePanel.getComponent(0);
+//                shapePane.list.setSelectedIndex(0);
+//            }
+        }
 
-            // Pre-select the very first sample of the very first shape pane
-            if (!samples.isEmpty()) {
-                ShapePane shapePane = (ShapePane) scrollablePanel.getComponent(0);
-                shapePane.list.setSelectedIndex(0);
+        private void removeSample (Sample sample)
+        {
+            for (Component comp : scrollablePanel.getComponents()) {
+                ShapePane shapePane = (ShapePane) comp;
+
+                if (shapePane.model.contains(sample)) {
+                    shapePane.model.removeElement(sample);
+
+                    if (shapePane.model.isEmpty()) {
+                        scrollablePanel.remove(shapePane);
+                    }
+
+                    break;
+                }
             }
         }
     }
@@ -1000,8 +1032,10 @@ public class SampleVerifier
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        private final DefaultListModel<Sample> model = new DefaultListModel<Sample>();
+
         /** Underlying list of all samples for the shape. */
-        private final JList<Sample> list;
+        private final JList<Sample> list = new JList<Sample>(model);
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -1018,7 +1052,10 @@ public class SampleVerifier
             super(shape + " (" + samples.size() + ")");
             setLayout(new BorderLayout());
 
-            list = new JList<Sample>(samples.toArray(new Sample[samples.size()]));
+            for (Sample sample : samples) {
+                model.addElement(sample);
+            }
+
             list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
             list.setVisibleRowCount(0);
             list.setSelectionMode(SINGLE_SELECTION);
@@ -1053,6 +1090,11 @@ public class SampleVerifier
         }
 
         //~ Methods --------------------------------------------------------------------------------
+        public void remove (Sample sample)
+        {
+            model.removeElement(sample);
+        }
+
         /**
          * Determine the maximum dimension to accommodate all samples for this shape,
          * once they are scaled to the standard interline value.

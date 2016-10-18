@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -74,6 +75,7 @@ public class Sample
     @XmlAttribute(name = "interline")
     protected final int interline;
 
+    /** True for artificial (font-based) sample. */
     private boolean symbol;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -123,30 +125,21 @@ public class Sample
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * We need equality strictly based on reference.
+     *
+     * @param obj the reference object with which to compare.
+     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
+     */
+    @Override
+    public boolean equals (Object obj)
+    {
+        return this == obj;
+    }
+
     public int getInterline ()
     {
         return interline;
-    }
-
-    public Shape getShape ()
-    {
-        return shape;
-    }
-
-    /**
-     * @return the symbol
-     */
-    public boolean isSymbol ()
-    {
-        return symbol;
-    }
-
-    /**
-     * @param symbol the symbol to set
-     */
-    public void setSymbol (boolean symbol)
-    {
-        this.symbol = symbol;
     }
 
     //--------------------//
@@ -174,6 +167,38 @@ public class Sample
         } else {
             return null;
         }
+    }
+
+    public Shape getShape ()
+    {
+        return shape;
+    }
+
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = 97 * hash + Objects.hashCode(this.shape);
+        hash = 97 * hash + this.interline;
+        hash = 97 * hash + super.hashCode();
+
+        return hash;
+    }
+
+    /**
+     * @return the symbol
+     */
+    public boolean isSymbol ()
+    {
+        return symbol;
+    }
+
+    /**
+     * @param symbol the symbol to set
+     */
+    public void setSymbol (boolean symbol)
+    {
+        this.symbol = symbol;
     }
 
     //-----------//

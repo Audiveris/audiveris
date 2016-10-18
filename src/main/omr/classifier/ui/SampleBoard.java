@@ -332,7 +332,7 @@ public class SampleBoard
         public void actionPerformed (ActionEvent e)
         {
             final Sample sample = SampleBoard.this.getSelectedEntity();
-            logger.info("Removing {}", sample);
+            logger.debug("Removing {}", sample);
             controller.removeSample(sample);
         }
     }

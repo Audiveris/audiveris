@@ -21,7 +21,6 @@
 // </editor-fold>
 package omr.classifier.ui;
 
-import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import omr.classifier.SampleSheet;
 
@@ -29,15 +28,11 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
-import omr.sheet.Book;
-import omr.sheet.Picture;
 import omr.sheet.Sheet;
 
 import omr.sig.inter.Inter;
 
 import omr.ui.util.SeparableMenu;
-
-import omr.util.FileUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,35 +97,15 @@ public class SampleMenu
     //-----------//
     private void addSample (Shape shape)
     {
-        shape = Sample.getRecordableShape(shape);
-
-        final Sample sample = new Sample(glyph, sheet.getInterline(), shape);
-        logger.debug("addSample {}", sample);
-
         final SampleRepository repository = SampleRepository.getInstance();
 
         if (!repository.isLoaded()) {
             repository.loadRepository(false);
         }
 
-        // Handle long name if any
-        final Book book = sheet.getStub().getBook();
-        String longSheetName = null;
+        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
 
-        if (book.getAlias() != null) {
-            longSheetName = FileUtil.getNameSansExtension(book.getInputPath());
-
-            if (book.isMultiSheet()) {
-                longSheetName = longSheetName + "#" + sheet.getStub().getNumber();
-            }
-        }
-
-        final SampleSheet sampleSheet = repository.findSheet(
-                sheet.getId(),
-                longSheetName,
-                sheet.getPicture().getTable(Picture.TableKey.BINARY));
-
-        repository.addSample(sample, sampleSheet);
+        repository.addSample(shape, glyph, sheet.getInterline(), sampleSheet);
     }
 
     //-----------//
