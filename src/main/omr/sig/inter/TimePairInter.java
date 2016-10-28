@@ -35,9 +35,10 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import omr.util.VerticalSide;
 
 /**
- * Class {@code TimePairInter} is a time signature composed of two halves.
+ * Class {@code TimePairInter} is a time signature composed of two halves (num & den).
  *
  * @author Hervé Bitteur
  */
@@ -52,6 +53,7 @@ public class TimePairInter
     // Persistent data
     //----------------
     //
+    /** Signature halves: numerator then denominator. */
     @XmlElement(name = "number")
     private List<TimeNumberInter> members;
 
@@ -96,7 +98,7 @@ public class TimePairInter
     // create //
     //--------//
     /**
-     * Create a {@code TimePairInter} object from its 2 numbers.
+     * Create a {@code TimePairInter} object from its two halves.
      *
      * @param num numerator
      * @param den denominator
@@ -129,8 +131,13 @@ public class TimePairInter
         return bounds;
     }
 
+    //--------//
+    // getDen //
+    //--------//
     /**
-     * @return the den
+     * Convenient method to report denominator member.
+     *
+     * @return the denominator
      */
     public TimeNumberInter getDen ()
     {
@@ -140,14 +147,38 @@ public class TimePairInter
     //------------//
     // getMembers //
     //------------//
+    /**
+     * Report the sequence of pair members: numerator then denominator.
+     *
+     * @return sequence of pair half members
+     */
     @Override
     public List<? extends Inter> getMembers ()
     {
         return members;
     }
 
+    //-----------//
+    // getMember //
+    //-----------//
     /**
-     * @return the num
+     * Convenient method to report the pair member on desired side.
+     *
+     * @param side TOP or BOTTOM
+     * @return the numerator
+     */
+    public TimeNumberInter getMember (VerticalSide side)
+    {
+        return (TimeNumberInter) members.get(side == VerticalSide.TOP ? 0 : 1);
+    }
+
+    //--------//
+    // getNum //
+    //--------//
+    /**
+     * Convenient method to report the numerator member.
+     *
+     * @return the numerator
      */
     public TimeNumberInter getNum ()
     {

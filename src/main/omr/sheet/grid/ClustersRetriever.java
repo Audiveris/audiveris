@@ -688,8 +688,7 @@ public class ClustersRetriever
     // expandClusters //
     //----------------//
     /**
-     * Aggregate non-clustered filaments to close clusters when
-     * appropriate.
+     * Aggregate non-clustered filaments to close clusters when appropriate.
      */
     private void expandClusters ()
     {

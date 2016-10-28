@@ -25,7 +25,7 @@ import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import omr.classifier.SampleSheet;
 import omr.classifier.SheetContainer.Descriptor;
-import omr.classifier.ui.SampleVerifier.SampleController;
+import omr.classifier.ui.SampleController.AssignAction;
 
 import omr.constant.ConstantSet;
 
@@ -44,14 +44,13 @@ import omr.ui.util.Panel;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.jdesktop.application.ApplicationAction;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
@@ -91,17 +90,23 @@ public class SampleBoard
     /** Glyph characteristics : normalized height. */
     private final LLabel height = new LLabel("Height:", "Normalized height");
 
+    /** Staff-based pitch. */
+    private final LLabel pitch = new LLabel("Pitch:", "Staff-based pitch");
+
     /** Shape icon. */
     private final JLabel shapeIcon = new JLabel();
 
     /** Shape name. */
     private final LLabel shapeField = new LLabel("Shape:", "Shape for this sample");
 
+    /** The (re)assign button. (used as location for popup menu) */
+    private JButton assignButton;
+
     /** To remove. */
-    private final RemoveAction removeAction = new RemoveAction();
+    private final ApplicationAction removeAction;
 
     /** To reassign. */
-    private final AssignAction assignAction = new AssignAction();
+    private final AssignAction assignAction;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -128,6 +133,9 @@ public class SampleBoard
         shapeIcon.setPreferredSize(dim);
         shapeIcon.setMaximumSize(dim);
         shapeIcon.setMinimumSize(dim);
+
+        removeAction = controller.getRemoveAction();
+        assignAction = controller.getAssignAction();
 
         defineLayout();
     }
@@ -163,7 +171,7 @@ public class SampleBoard
     @Override
     protected FormLayout getFormLayout ()
     {
-        return Panel.makeFormLayout(5, 3);
+        return Panel.makeFormLayout(6, 3);
     }
 
     //--------------//
@@ -179,13 +187,13 @@ public class SampleBoard
         // Layout
         int r = 1; // -----------------------------
 
-        JButton removeButton = new JButton(removeAction);
+        JButton removeButton = new JButton(controller.getRemoveAction());
         removeButton.setHorizontalTextPosition(SwingConstants.LEFT);
         removeButton.setHorizontalAlignment(SwingConstants.RIGHT);
         removeAction.setEnabled(false);
         builder.add(removeButton, cst.xyw(5, r, 3));
 
-        JButton assignButton = new JButton(assignAction);
+        assignButton = new JButton(assignAction);
         assignButton.setHorizontalTextPosition(SwingConstants.LEFT);
         assignButton.setHorizontalAlignment(SwingConstants.RIGHT);
         assignAction.setEnabled(false);
@@ -194,7 +202,7 @@ public class SampleBoard
         r += 2; // --------------------------------
 
         // Shape Icon (start, spans several rows)
-        builder.add(shapeIcon, cst.xywh(3, r, 1, 7));
+        builder.add(shapeIcon, cst.xywh(3, r, 1, 9));
 
         builder.add(sheetName.getLabel(), cst.xy(1, r));
         builder.add(sheetName.getField(), cst.xyw(3, r, 9));
@@ -219,6 +227,11 @@ public class SampleBoard
 
         builder.add(height.getLabel(), cst.xy(9, r));
         builder.add(height.getField(), cst.xy(11, r));
+
+        r += 2; // --------------------------------
+
+        builder.add(pitch.getLabel(), cst.xy(9, r));
+        builder.add(pitch.getField(), cst.xy(11, r));
     }
 
     //-------------//
@@ -254,6 +267,12 @@ public class SampleBoard
             width.setText(String.format(DBL_FORMAT, (double) sample.getWidth() / interline));
             height.setText(String.format(DBL_FORMAT, (double) sample.getHeight() / interline));
 
+            if (sample.getPitch() != null) {
+                pitch.setText(String.format(DBL_FORMAT, sample.getPitch()));
+            } else {
+                pitch.setText("");
+            }
+
             SampleRepository repository = SampleRepository.getInstance();
             Descriptor desc = repository.getSheetDescriptor(sample);
             final String sh = desc.toString();
@@ -266,6 +285,7 @@ public class SampleBoard
             weight.setText("");
             width.setText("");
             height.setText("");
+            pitch.setText("");
             sheetName.setText("");
             sheetName.getField().setToolTipText(null);
             removeAction.setEnabled(false);
@@ -274,28 +294,6 @@ public class SampleBoard
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------------//
-    // AssignAction //
-    //--------------//
-    private static class AssignAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public AssignAction ()
-        {
-            super("Reassign");
-            this.putValue(Action.SHORT_DESCRIPTION, "Assign a new shape");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            logger.info("Not yet implemented");
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -311,29 +309,5 @@ public class SampleBoard
         private final PixelCount shapeIconWidth = new PixelCount(
                 50,
                 "Exact pixel width for the shape icon field");
-    }
-
-    //--------------//
-    // RemoveAction //
-    //--------------//
-    private class RemoveAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public RemoveAction ()
-        {
-            super("Remove");
-            this.putValue(Action.SHORT_DESCRIPTION, "Remove this sample");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            final Sample sample = SampleBoard.this.getSelectedEntity();
-            logger.debug("Removing {}", sample);
-            controller.removeSample(sample);
-        }
     }
 }

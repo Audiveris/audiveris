@@ -23,7 +23,10 @@ package omr.sheet.header;
 
 import omr.classifier.Evaluation;
 import omr.classifier.GlyphClassifier;
+import omr.classifier.SampleRepository;
+import omr.classifier.SampleSheet;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
@@ -100,6 +103,8 @@ import java.util.TreeMap;
  * <p>
  * Subclass {@link HeaderTimeBuilder} is used at the beginning of a staff (in staff header) while
  * subclass {@link BasicTimeBuilder} is used farther down the staff.
+ * <p>
+ * <img src="doc-files/TimeBuilder.png">
  *
  * @author Hervé Bitteur
  */
@@ -153,17 +158,20 @@ public abstract class TimeBuilder
     /** Scale-dependent parameters. */
     protected final Parameters params;
 
-    /** whole candidates. */
+    /** whole candidates. (common or cut or combo like 6/8 ...) */
     protected final List<Inter> wholes = new ArrayList<Inter>();
 
-    /** Top half candidates. */
+    /** Top half candidates. (6/ ...) */
     protected final List<Inter> nums = new ArrayList<Inter>();
 
-    /** Bottom half candidates. */
+    /** Bottom half candidates. (/8 ...) */
     protected final List<Inter> dens = new ArrayList<Inter>();
 
     /** The time inter instance chosen for the staff. */
-    private AbstractTimeInter timeInter;
+    protected AbstractTimeInter timeInter;
+
+    /** All glyphs submitted to classifier. */
+    protected final Set<Glyph> glyphCandidates = new HashSet<Glyph>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -208,15 +216,15 @@ public abstract class TimeBuilder
         return getClass().getSimpleName() + "#" + staff.getId();
     }
 
-    //-----------//
-    // createSig //
-    //-----------//
+    //---------------//
+    // createTimeSig //
+    //---------------//
     /**
      * Actually assign the time signature to the staff.
      *
      * @param bestTimeInter the time inter instance for this staff
      */
-    protected void createSig (AbstractTimeInter bestTimeInter)
+    protected void createTimeSig (AbstractTimeInter bestTimeInter)
     {
         timeInter = bestTimeInter;
 
@@ -225,7 +233,7 @@ public abstract class TimeBuilder
 
             final GlyphIndex index = system.getSheet().getGlyphIndex();
 
-            // If best time is a whole signature (common/cut) it is already in SIG.
+            // If best time is a whole signature (common, cut, combo) it is already in SIG.
             // If it is a pair, only the halves (num & den) are already in SIG, so save the pair.
             if (bestTimeInter instanceof TimePairInter) {
                 sig.addVertex(bestTimeInter);
@@ -242,14 +250,95 @@ public abstract class TimeBuilder
     }
 
     /**
+     * Retrieve all acceptable candidates (whole or half) for this staff.
+     * <p>
+     * All candidates are stored as Inter instances in system sig, and in dedicated builder lists
+     * (wholes, nums or dens).
+     */
+    protected abstract void findCandidates ();
+
+    /**
      * Discard all inters that do not pertain to chosen time signature.
      * <p>
      * This accounts for other WholeTimeInter instances and to all TimeNumberInter instances
      * that do not correspond to chosen num/den.
-     *
-     * @param chosenTime the time value chosen for this staff
      */
-    protected abstract void discardOtherMaterial (TimeValue chosenTime);
+    protected void discardOthers ()
+    {
+        final Map<Shape, Glyph> neutrals = new EnumMap<Shape, Glyph>(Shape.class);
+
+        if (timeInter instanceof TimeWholeInter) {
+            // It's a whole sig: COMMON_TIME or CUT_TIME or combo
+            glyphCandidates.remove(timeInter.getGlyph()); // Positive
+
+            // Check wholes
+            for (Inter inter : wholes) {
+                if (inter.getShape() != timeInter.getShape()) {
+                    inter.delete();
+                }
+            }
+
+            // Discard numbers
+            if (ShapeSet.SingleWholeTimes.contains(timeInter.getShape())) {
+                // Chosen is COMMON or CUT, so delete any pair member
+                for (VerticalSide side : VerticalSide.values()) {
+                    final List<Inter> members = (side == VerticalSide.TOP) ? nums : dens;
+
+                    for (Inter inter : members) {
+                        inter.delete();
+                    }
+                }
+            } else {
+                // Chosen is a combo 3/4, 6/8, ...
+                for (VerticalSide side : VerticalSide.values()) {
+                    final List<Inter> members = (side == VerticalSide.TOP) ? nums : dens;
+                    final int value = (side == VerticalSide.TOP) ? timeInter.getNumerator()
+                            : timeInter.getDenominator();
+
+                    for (Inter inter : members) {
+                        TimeNumberInter number = (TimeNumberInter) inter;
+
+                        if (number.getValue() == value) {
+                            neutrals.put(number.getShape(), inter.getGlyph()); // Compatible member
+                        }
+
+                        inter.delete();
+                    }
+                }
+            }
+        } else {
+            // It's a pair of numbers
+            final TimePairInter chosenPair = (TimePairInter) timeInter;
+            final TimeValue value = timeInter.getValue();
+
+            // Discard wholes
+            for (Inter inter : wholes) {
+                TimeWholeInter time = (TimeWholeInter) inter;
+
+                if (time.getValue().equals(value)) {
+                    neutrals.put(inter.getShape(), inter.getGlyph()); // Compatible whole
+                }
+
+                inter.delete();
+            }
+
+            // Check numbers
+            for (VerticalSide side : VerticalSide.values()) {
+                final List<Inter> members = (side == VerticalSide.TOP) ? nums : dens;
+                final TimeNumberInter chosenNumber = chosenPair.getMember(side);
+                glyphCandidates.remove(chosenNumber.getGlyph()); // Positive
+
+                for (Inter inter : members) {
+                    if (inter != chosenNumber) {
+                        inter.delete();
+                    }
+                }
+            }
+        }
+
+        glyphCandidates.removeAll(neutrals.values());
+        recordSamples(neutrals);
+    }
 
     //------------------//
     // filterCandidates //
@@ -304,13 +393,55 @@ public abstract class TimeBuilder
         return !wholes.isEmpty() || !nums.isEmpty();
     }
 
+    //---------------//
+    // recordSamples //
+    //---------------//
     /**
-     * Retrieve all acceptable candidates (whole or half) for this staff.
-     * <p>
-     * All candidates are stored as Inter instances in system sig, and in dedicated builder lists
-     * (wholes, nums or dens).
+     * If desired, record positive and/or negative samples.
      */
-    protected abstract void findCandidates ();
+    protected void recordSamples (Map<Shape, Glyph> neutrals)
+    {
+        if (!constants.recordPositiveSamples.isSet() && !constants.recordNegativeSamples.isSet()) {
+            return;
+        }
+
+        final Sheet sheet = staff.getSystem().getSheet();
+        final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
+        final int interline = staff.getSpecificInterline();
+
+        // Positive samples
+        if (constants.recordPositiveSamples.isSet()) {
+            if (timeInter instanceof TimeWholeInter) {
+                final Glyph glyph = timeInter.getGlyph();
+                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
+                repository.addSample(timeInter.getShape(), glyph, interline, sampleSheet, pitch);
+            } else if (timeInter instanceof TimePairInter) {
+                TimePairInter pair = (TimePairInter) timeInter;
+
+                for (Inter member : pair.getMembers()) {
+                    final Glyph glyph = member.getGlyph();
+                    final double pitch = staff.pitchPositionOf(glyph.getCentroid());
+                    repository.addSample(member.getShape(), glyph, interline, sampleSheet, pitch);
+                }
+            }
+
+            // Include neutrals as positives
+            for (Entry<Shape, Glyph> entry : neutrals.entrySet()) {
+                final Glyph glyph = entry.getValue();
+                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
+                repository.addSample(entry.getKey(), glyph, interline, sampleSheet, pitch);
+            }
+        }
+
+        // Negative samples (assigned to CLUTTER)
+        if (constants.recordNegativeSamples.isSet()) {
+            for (Glyph glyph : glyphCandidates) {
+                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
+                repository.addSample(Shape.CLUTTER, glyph, interline, sampleSheet, pitch);
+            }
+        }
+    }
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
@@ -510,41 +641,6 @@ public abstract class TimeBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        protected void discardOtherMaterial (TimeValue chosenTime)
-        {
-            // Wholes
-            for (Inter inter : wholes) {
-                if (inter != getTimeInter()) {
-                    inter.delete();
-                }
-            }
-
-            if (getTimeInter() instanceof TimeWholeInter) {
-                // Time whole
-                sig.deleteInters(nums);
-                sig.deleteInters(dens);
-            } else {
-                // Time pair
-                TimePairInter pair = (TimePairInter) getTimeInter();
-                Inter num = pair.getNum();
-
-                for (Inter inter : nums) {
-                    if (inter != num) {
-                        inter.delete();
-                    }
-                }
-
-                Inter den = pair.getDen();
-
-                for (Inter inter : dens) {
-                    if (inter != den) {
-                        inter.delete();
-                    }
-                }
-            }
-        }
-
-        @Override
         protected void findCandidates ()
         {
             // For time symbols found (whole or half), pitch is correct, but abscissa is random
@@ -623,7 +719,7 @@ public abstract class TimeBuilder
         }
 
         /**
-         * @return the ending abscissa offset of time-sig column WRT measure start, or -1 if invalid
+         * @return ending abscissa offset of time-sig column WRT measure start, or -1 if invalid
          */
         @Override
         public int retrieveTime ()
@@ -678,9 +774,12 @@ public abstract class TimeBuilder
      * <p>
      * The staff region that follows the staff clef (and staff key-sig if any) is searched for
      * presence of chunks.
-     * A global match can be tried for COMMON_TIME and for CUT_TIME shapes.
-     * All other shapes combine a numerator and a denominator, hence the area is split using
-     * middle staff line to ease the recognition of individual numbers.
+     * <p>
+     * A global match can be tried for TimeWholeInter: COMMON_TIME and for CUT_TIME shapes as well
+     * as predefined combo shapes like 4/4, 3/4, 6/8, etc.
+     * <p>
+     * We also try to combine a numerator and a denominator into a TimePairInter (such as [3,4]),
+     * by splitting time area using middle staff line to ease recognition of individual numbers.
      */
     public static class HeaderTimeBuilder
             extends TimeBuilder
@@ -696,7 +795,7 @@ public abstract class TimeBuilder
         /** Region of interest for time-sig. */
         private final Rectangle roi;
 
-        /** Adapters for glyph building, one for each kind: whole, num & den. */
+        /** 3 adapters for glyph building, one for each kind: whole, num & den. */
         private final Map<TimeKind, TimeAdapter> adapters = new EnumMap<TimeKind, TimeAdapter>(
                 TimeKind.class);
 
@@ -769,13 +868,13 @@ public abstract class TimeBuilder
             }
         }
 
-        //-----------//
-        // createSig //
-        //-----------//
+        //---------------//
+        // createTimeSig //
+        //---------------//
         @Override
-        protected void createSig (AbstractTimeInter bestTimeInter)
+        protected void createTimeSig (AbstractTimeInter bestTimeInter)
         {
-            super.createSig(bestTimeInter);
+            super.createTimeSig(bestTimeInter);
 
             // Expend header info
             if (bestTimeInter != null) {
@@ -784,53 +883,6 @@ public abstract class TimeBuilder
                 staff.setTimeStop(end);
 
                 staff.getHeader().time = bestTimeInter;
-            }
-        }
-
-        //----------------------//
-        // discardOtherMaterial //
-        //----------------------//
-        @Override
-        protected void discardOtherMaterial (TimeValue chosenTime)
-        {
-            if (chosenTime.specificShape != null) {
-                // COMMON_TIME or CUT_TIME, so discard other wholes
-                for (Inter inter : adapters.get(WHOLE).bestMap.values()) {
-                    if (inter.getShape() != chosenTime.specificShape) {
-                        inter.delete();
-                    }
-                }
-
-                // Discard all num & den numbers
-                sig.deleteInters(adapters.get(NUM).bestMap.values());
-                sig.deleteInters(adapters.get(DEN).bestMap.values());
-            } else {
-                // Discard wholes if time rational is different
-                for (Inter inter : adapters.get(WHOLE).bestMap.values()) {
-                    TimeWholeInter time = (TimeWholeInter) inter;
-
-                    if (!time.getValue().equals(chosenTime)) {
-                        inter.delete();
-                    }
-                }
-
-                // Discard num's different from chosen num
-                for (Inter inter : adapters.get(NUM).bestMap.values()) {
-                    TimeNumberInter number = (TimeNumberInter) inter;
-
-                    if (number.getValue() != chosenTime.timeRational.num) {
-                        inter.delete();
-                    }
-                }
-
-                // Discard den's different from chosen den
-                for (Inter inter : adapters.get(DEN).bestMap.values()) {
-                    TimeNumberInter number = (TimeNumberInter) inter;
-
-                    if (number.getValue() != chosenTime.timeRational.den) {
-                        inter.delete();
-                    }
-                }
             }
         }
 
@@ -844,9 +896,9 @@ public abstract class TimeBuilder
             browseProjection();
 
             if (range.start != 0) {
-                processWhole(); //   Look for whole time sigs (common, cut or combo like 3/4)
-                processHalf(NUM); // Look for top halves      (like 3/)
-                processHalf(DEN); // Look for bottom halves   (like /4)
+                processWhole(); //   Look for whole time sigs (common, cut or combo like 6/8)
+                processHalf(NUM); // Look for top halves      (like 6/)
+                processHalf(DEN); // Look for bottom halves   (like /8)
             }
         }
 
@@ -1051,7 +1103,7 @@ public abstract class TimeBuilder
             final List<Inter> inters = (half == NUM) ? nums : dens;
 
             // Define proper rectangular search area for this side
-            final int top = roi.y + ((half == NUM) ? 0 : (roi.height / 2));
+            final int top = roi.y + ((half == NUM) ? 0 : (roi.height - (roi.height / 2)));
             final int width = range.stop - range.start + 1;
             final Rectangle rect = new Rectangle(range.start, top, width, roi.height / 2);
             rect.grow(0, -params.yMargin);
@@ -1073,7 +1125,6 @@ public abstract class TimeBuilder
 
             if (!adapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : adapter.bestMap.entrySet()) {
-                    ///sheet.getGlyphIndex().addFreeGlyph(adapter.bestGlyph);
                     Inter inter = entry.getValue();
 
                     Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
@@ -1124,7 +1175,6 @@ public abstract class TimeBuilder
 
             if (!wholeAdapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : wholeAdapter.bestMap.entrySet()) {
-                    ///sheet.getGlyphIndex().addFreeGlyph(adapter.bestGlyph);
                     Inter inter = entry.getValue();
                     Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
                     inter.setBounds(timeBox);
@@ -1190,7 +1240,7 @@ public abstract class TimeBuilder
         protected final SystemInfo system;
 
         /** Best time value found, if any. */
-        protected TimeValue bestTime;
+        protected TimeValue timeValue;
 
         /** Map of time builders. (one per staff) */
         protected final Map<Staff, TimeBuilder> builders = new TreeMap<Staff, TimeBuilder>(
@@ -1329,26 +1379,26 @@ public abstract class TimeBuilder
 
                 if (grade > bestGrade) {
                     bestGrade = grade;
-                    bestTime = entry.getKey();
+                    timeValue = entry.getKey();
                 }
             }
 
-            if (bestTime == null) {
+            if (timeValue == null) {
                 return false; // Invalid column
             }
 
             // Forward the chosen time to each staff
-            AbstractTimeInter[] bestVector = vectors.get(bestTime);
+            AbstractTimeInter[] bestVector = vectors.get(timeValue);
             List<Staff> staves = system.getStaves();
 
             for (int is = 0; is < staves.size(); is++) {
                 Staff staff = staves.get(is);
                 TimeBuilder builder = builders.get(staff);
-                builder.createSig(bestVector[is]);
-                builder.discardOtherMaterial(bestTime);
+                builder.createTimeSig(bestVector[is]);
+                builder.discardOthers();
             }
 
-            logger.debug("System#{} TimeSignature: {}", system.getId(), bestTime);
+            logger.debug("System#{} TimeSignature: {}", system.getId(), timeValue);
 
             return true;
         }
@@ -1499,6 +1549,14 @@ public abstract class TimeBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        private final Constant.Boolean recordPositiveSamples = new Constant.Boolean(
+                false,
+                "Should we record positive samples from TimeBuilder?");
+
+        private final Constant.Boolean recordNegativeSamples = new Constant.Boolean(
+                false,
+                "Should we record negative samples from TimeBuilder?");
+
         private final Scale.Fraction roiWidth = new Scale.Fraction(
                 4.0,
                 "Width of region of interest for time signature");
@@ -1610,6 +1668,14 @@ public abstract class TimeBuilder
             trials++;
 
             final Sheet sheet = system.getSheet();
+
+            if (glyph.getId() == 0) {
+                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+                system.addFreeGlyph(glyph);
+            }
+
+            glyphCandidates.add(glyph);
+
             Evaluation[] evals = GlyphClassifier.getInstance()
                     .getNaturalEvaluations(
                             glyph,
@@ -1715,6 +1781,14 @@ public abstract class TimeBuilder
             trials++;
 
             final Sheet sheet = system.getSheet();
+
+            if (glyph.getId() == 0) {
+                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+                system.addFreeGlyph(glyph);
+            }
+
+            glyphCandidates.add(glyph);
+
             Evaluation[] evals = GlyphClassifier.getInstance()
                     .getNaturalEvaluations(
                             glyph,

@@ -24,7 +24,10 @@ package omr.sheet.header;
 import omr.classifier.Classifier;
 import omr.classifier.Evaluation;
 import omr.classifier.GlyphClassifier;
+import omr.classifier.SampleRepository;
+import omr.classifier.SampleSheet;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
@@ -72,6 +75,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -134,6 +138,9 @@ public class ClefBuilder
 
     /** Shape classifier to use. */
     private final Classifier classifier = GlyphClassifier.getInstance();
+
+    /** All glyphs submitted to classifier. */
+    private final Set<Glyph> glyphCandidates = new HashSet<Glyph>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -335,6 +342,36 @@ public class ClefBuilder
         }
     }
 
+    //---------------//
+    // recordSamples //
+    //---------------//
+    private void recordSamples ()
+    {
+        final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
+        final int interline = staff.getSpecificInterline();
+
+        if (constants.recordPositiveSamples.isSet()) {
+            // Positive samples (assigned to keyShape)
+            ClefInter clef = staff.getHeader().clef;
+
+            if (clef != null) {
+                final Glyph glyph = clef.getGlyph();
+                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
+                repository.addSample(clef.getShape(), glyph, interline, sampleSheet, pitch);
+                glyphCandidates.remove(glyph);
+            }
+        }
+
+        if (constants.recordNegativeSamples.isSet()) {
+            // Negative samples (assigned to CLUTTER)
+            for (Glyph glyph : glyphCandidates) {
+                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
+                repository.addSample(Shape.CLUTTER, glyph, interline, sampleSheet, pitch);
+            }
+        }
+    }
+
     //------------//
     // selectClef //
     //------------//
@@ -361,6 +398,11 @@ public class ClefBuilder
             // Delete the other candidates
             for (Inter other : clefs.subList(1, clefs.size())) {
                 other.delete();
+            }
+
+            // Record samples? both positive and negative ones
+            if (constants.recordPositiveSamples.isSet() || constants.recordNegativeSamples.isSet()) {
+                recordSamples();
             }
         }
     }
@@ -506,7 +548,10 @@ public class ClefBuilder
 
             if (glyph.getId() == 0) {
                 glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+                system.addFreeGlyph(glyph);
             }
+
+            glyphCandidates.add(glyph);
 
             logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
 
@@ -548,6 +593,14 @@ public class ClefBuilder
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean recordPositiveSamples = new Constant.Boolean(
+                false,
+                "Should we record positive samples from ClefBuilder?");
+
+        private final Constant.Boolean recordNegativeSamples = new Constant.Boolean(
+                false,
+                "Should we record negative samples from ClefBuilder?");
 
         private final Scale.Fraction maxClefEnd = new Scale.Fraction(
                 4.5,

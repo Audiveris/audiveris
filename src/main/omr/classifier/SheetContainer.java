@@ -34,7 +34,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import static java.util.Collections.EMPTY_LIST;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -77,6 +79,9 @@ public class SheetContainer
 
     /** True if container has been modified. */
     private boolean modified;
+
+    /** Descriptors to be deleted from disk. */
+    private Set<Descriptor> defunctDescriptors = new LinkedHashSet<Descriptor>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -206,14 +211,16 @@ public class SheetContainer
     /**
      * Marshal this instance to disk.
      *
-     * @param root root path of samples system
+     * @param samplesRoot path of samples system
+     * @param imagesRoot  path of images system
      */
-    public void marshal (Path root)
+    public void marshal (Path samplesRoot,
+                         Path imagesRoot)
     {
         try {
             logger.debug("Marshalling {}", this);
 
-            final Path path = root.resolve(CONTAINER_ENTRY_NAME);
+            final Path path = samplesRoot.resolve(CONTAINER_ENTRY_NAME);
 
             // Make sure the folder exists
             Files.createDirectories(path.getParent());
@@ -222,6 +229,15 @@ public class SheetContainer
             JAXBContext jaxbContext = JAXBContext.newInstance(SheetContainer.class);
             Jaxb.marshal(this, path, jaxbContext);
             logger.info("Stored {}", path);
+
+            // Remove defunct sheets if any
+            for (Descriptor descriptor : defunctDescriptors) {
+                SampleSheet.delete(descriptor, samplesRoot, imagesRoot);
+            }
+
+            defunctDescriptors.clear();
+
+            setModified(false);
         } catch (Exception ex) {
             logger.error("Error marshalling " + this + " " + ex, ex);
         }
@@ -277,6 +293,24 @@ public class SheetContainer
 
             return null;
         }
+    }
+
+    //------------------//
+    // removeDescriptor //
+    //------------------//
+    void removeDescriptor (Descriptor desc)
+    {
+        List<Descriptor> descriptors = hashMap.get(desc.hash);
+
+        descriptors.remove(desc);
+
+        if (descriptors.isEmpty()) {
+            hashMap.remove(desc.hash);
+        }
+
+        defunctDescriptors.add(desc);
+
+        setModified(true);
     }
 
     //----------------//

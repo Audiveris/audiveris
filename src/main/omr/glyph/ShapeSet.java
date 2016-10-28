@@ -539,8 +539,7 @@ public class ShapeSet
      * Populate the given menu with a hierarchy of all shapes,
      * organized by defined ShapeSets.
      *
-     * @param top      the JComponent to populate (typically a JMenu or a
-     *                 JPopupMenu)
+     * @param top      the JComponent to populate (typically a JMenu or a JPopupMenu)
      * @param listener the listener for notification of user selection
      */
     public static void addAllShapes (JComponent top,

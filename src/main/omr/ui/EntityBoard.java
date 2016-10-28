@@ -281,7 +281,8 @@ public class EntityBoard<E extends Entity>
     // getFormLayout //
     //---------------//
     /**
-     * Overridable method to provide layout.
+     * Overridable method to provide layout of the body part of the board.
+     * (not including the top board line: title + dump button)
      *
      * @return the proper FormLayout
      */

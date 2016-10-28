@@ -23,6 +23,8 @@ package omr;
 
 import omr.CLI.CliTask;
 
+import omr.classifier.SampleRepository;
+
 import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
@@ -53,7 +55,7 @@ import java.util.concurrent.Future;
  * Class {@code Main} is the main class for OMR application.
  * <p>
  * It deals with the main routine and its command line parameters.
- * It launches the User Interface, unless a batch mode is selected.
+ * It launches the User Interface, unless batch mode is selected.
  *
  * @see CLI
  *
@@ -151,6 +153,15 @@ public class Main
             // At this point all tasks have completed (except timeout...)
             // So shutdown gracefully the executors
             OmrExecutors.shutdown(false);
+
+            // Save sample repository if modified
+            if (SampleRepository.hasInstance()) {
+                SampleRepository repository = SampleRepository.getInstance();
+
+                if (repository.isModified()) {
+                    repository.storeRepository();
+                }
+            }
 
             // Store latest constant values on disk?
             if (constants.persistBatchCliConstants.getValue()) {

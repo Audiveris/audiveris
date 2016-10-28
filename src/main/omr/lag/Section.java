@@ -39,6 +39,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.util.Comparator;
 import java.util.List;
 
@@ -287,6 +288,14 @@ public interface Section
      * @return the mass center of the section, as a absolute point
      */
     public Point getCentroid ();
+
+    /**
+     * Return the absolute point which is at the mass center of the section, with all
+     * pixels considered of equal weight.
+     *
+     * @return the mass center of the section, as a absolute point
+     */
+    public Point2D getCentroid2D ();
 
     /**
      * Return the position (x for vertical runs, y for horizontal runs)

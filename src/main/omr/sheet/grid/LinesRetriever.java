@@ -129,6 +129,9 @@ public class LinesRetriever
     /** Second collection of filaments */
     private List<StaffFilament> secondFilaments;
 
+    /** Sloped filaments */
+    private List<StaffFilament> slopedFilaments;
+
     /** Discarded filaments */
     private List<StaffFilament> discardedFilaments;
 
@@ -265,7 +268,7 @@ public class LinesRetriever
             watch.start("defineEndPoints");
             defineEndPoints();
 
-            // Browse discarded filaments for possible inclusion
+            // Browse sloped filaments and discarded filaments for possible inclusion
             watch.start("include discarded filaments");
             includeDiscardedFilaments();
 
@@ -444,7 +447,7 @@ public class LinesRetriever
             logger.info("Global slope: {}", String.format("%.5f", globalSlope));
 
             // Purge sloped filaments
-            purgeSlopedFilaments();
+            slopedFilaments = purgeSlopedFilaments();
 
             // Retrieve regular patterns of filaments and pack them into clusters
             clustersRetriever = new ClustersRetriever(
@@ -554,101 +557,84 @@ public class LinesRetriever
         staffManager.detectShortStaves();
     }
 
-    //------------//
-    // canInclude //
-    //------------//
+    //--------------------//
+    // canIncludeFilament //
+    //--------------------//
     /**
-     * Check whether the staff line filament could include the provided
-     * entity (section or filament)
+     * Check whether the staff line filament could include the candidate filament
      *
-     * @param filament  the staff line filament
-     * @param idStr     (debug) entity id
-     * @param isVip     true if entity is vip
-     * @param box       the entity contour box
-     * @param center    the entity center
-     * @param candidate the section or glyph candidate
-     * @return true if OK, false otherwise
+     * @param lineFilament the staff line filament
+     * @param fil          the candidate filament
+     * @return true if OK
      */
-    private boolean canInclude (StaffFilament filament,
-                                boolean isVip,
-                                String idStr,
-                                Rectangle box,
-                                Point center,
-                                Object candidate)
+    private boolean canIncludeFilament (StaffFilament lineFilament,
+                                        Filament fil)
     {
+        final boolean isVip = fil.isVip();
+        final Rectangle box = fil.getBounds();
+        final int xMid = box.x + (box.width / 2);
+        final int maxThickness = params.maxStickerThickness;
+        final int maxExt = params.maxStickerExtension;
+
         // For VIP debugging
         String vips = null;
 
         if (isVip) {
-            vips = idStr + ": "; // BP here!
+            vips = "Fil#" + fil.getId() + ": "; // BP here!
         }
 
         // Check entity thickness
-        int height = box.height;
+        double eThickness = fil.getMeanThickness(HORIZONTAL);
 
-        if (height > params.maxStickerThickness) {
+        if (eThickness > maxThickness) {
             if (logger.isDebugEnabled() || isVip) {
-                logger.info("{}SSS height:{} vs {}", vips, height, params.maxStickerThickness);
+                logger.info("{}Fil thickness:{} vs {}", vips, eThickness, maxThickness);
             }
 
             return false;
         }
 
         // Check entity center gap with theoretical line
-        double yFil = filament.getPositionAt(center.x, HORIZONTAL);
-        double dy = Math.abs(yFil - center.y);
+        double yLine = lineFilament.getPositionAt(xMid, HORIZONTAL);
+        double yFil = fil.getPositionAt(xMid, HORIZONTAL);
+        double dy = Math.abs(yLine - yFil);
         double gap = dy - (scale.getMainFore() / 2.0);
 
         if (gap > params.maxStickerGap) {
             if (logger.isDebugEnabled() || isVip) {
-                logger.info("{}GGG gap:{} vs {}", vips, (float) gap, (float) params.maxStickerGap);
+                logger.info(String.format("%s gap:%.2f vs %.2f", vips, gap, params.maxStickerGap));
             }
 
             return false;
         }
 
-        // Check max extension from theoretical line
-        int extension = (int) Math.rint(
-                Math.max(Math.abs(yFil - box.y), Math.abs((box.y + height) - yFil)));
+        // Check max extension from theoretical line on each horizontal side of fil
+        Point2D start = fil.getStartPoint();
+        Point2D stop = fil.getStopPoint();
+        double dyStart = start.getY() - lineFilament.getPositionAt(start.getX(), HORIZONTAL);
+        double dyStop = stop.getY() - lineFilament.getPositionAt(stop.getX(), HORIZONTAL);
+        int ext = (int) Math.rint(Math.max(Math.abs(dyStart), Math.abs(dyStop)));
 
-        if (extension > params.maxStickerExtension) {
+        if (ext > maxExt) {
             if (logger.isDebugEnabled() || isVip) {
-                logger.info(
-                        "{}XXX ext:{} vs {}",
-                        vips,
-                        (float) extension,
-                        params.maxStickerExtension);
+                logger.info(String.format("%s ext:%d vs %d", vips, ext, maxExt));
             }
 
             return false;
         }
 
         // Check resulting thickness
-        double thickness = 0;
+        double rThickness = Compounds.getThicknessAt(
+                xMid,
+                HORIZONTAL,
+                scale,
+                (SectionCompound) fil,
+                lineFilament);
 
-        if (candidate instanceof Section) {
-            thickness = Compounds.getThicknessAt(
-                    center.x,
-                    HORIZONTAL,
-                    scale,
-                    (Section) candidate,
-                    filament);
-        } else if (candidate instanceof SectionCompound) {
-            thickness = Compounds.getThicknessAt(
-                    center.x,
-                    HORIZONTAL,
-                    scale,
-                    (SectionCompound) candidate,
-                    filament);
-        }
-
-        if (thickness > params.maxStickerThickness) {
+        if (rThickness > maxThickness) {
             if (logger.isDebugEnabled() || isVip) {
                 logger.info(
-                        "{}RRR thickness:{} vs {}",
-                        vips,
-                        (float) thickness,
-                        params.maxStickerExtension);
+                        String.format("%sRes thickness:%.1f vs %d", vips, rThickness, maxThickness));
             }
 
             return false;
@@ -661,50 +647,90 @@ public class LinesRetriever
         return true;
     }
 
-    //--------------------//
-    // canIncludeFilament //
-    //--------------------//
-    /**
-     * Check whether the staff line filament could include the candidate
-     * filament
-     *
-     * @param filament the staff line filament
-     * @param fil      the candidate filament
-     * @return true if OK
-     */
-    private boolean canIncludeFilament (StaffFilament filament,
-                                        Filament fil)
-    {
-        return canInclude(
-                filament,
-                fil.isVip(),
-                "Fil#" + fil.getId(),
-                fil.getBounds(),
-                fil.getCentroid(),
-                fil);
-    }
-
     //-------------------//
     // canIncludeSection //
     //-------------------//
     /**
-     * Check whether the staff line filament could include the candidate
-     * section
+     * Check whether the staff line filament could include the candidate section
      *
      * @param filament the staff line filament
-     * @param section  the candidate sticker
+     * @param section  the candidate section
      * @return true if OK, false otherwise
      */
     private boolean canIncludeSection (StaffFilament filament,
                                        Section section)
     {
-        return canInclude(
-                filament,
-                section.isVip(),
-                "Sct#" + section.getId(),
-                section.getBounds(),
-                section.getCentroid(),
-                section);
+        final boolean isVip = section.isVip();
+        final Rectangle box = section.getBounds();
+        final int xMid = box.x + (box.width / 2);
+        final int maxThickness = params.maxStickerThickness;
+        final int maxExt = params.maxStickerExtension;
+
+        // For VIP debugging
+        String vips = null;
+
+        if (isVip) {
+            vips = "Sct#" + section.getId() + ": "; // BP here!
+        }
+
+        // Check entity thickness
+        double eThickness = box.height;
+
+        if (eThickness > maxThickness) {
+            if (logger.isDebugEnabled() || isVip) {
+                logger.info("{}Sct thickness:{} vs {}", vips, eThickness, maxThickness);
+            }
+
+            return false;
+        }
+
+        // Check entity center gap with theoretical line
+        double yFil = filament.getPositionAt(xMid, HORIZONTAL);
+        double dy = Math.abs(yFil - section.getCentroid2D().getY());
+        double gap = dy - (scale.getMainFore() / 2.0);
+
+        if (gap > params.maxStickerGap) {
+            if (logger.isDebugEnabled() || isVip) {
+                logger.info(String.format("%s gap:%.2f vs %.2f", vips, gap, params.maxStickerGap));
+            }
+
+            return false;
+        }
+
+        // Check max extension from theoretical line
+        int ext = (int) Math.rint(
+                Math.max(Math.abs(yFil - box.y), Math.abs((box.y + eThickness) - yFil)));
+
+        if (ext > maxExt) {
+            if (logger.isDebugEnabled() || isVip) {
+                logger.info(String.format("%s ext:%d vs %d", vips, ext, maxExt));
+            }
+
+            return false;
+        }
+
+        // Check resulting thickness
+        double rThickness = Compounds.getThicknessAt(
+                xMid,
+                HORIZONTAL,
+                scale,
+                (Section) section,
+                filament);
+
+        if (rThickness > maxThickness) {
+            if (logger.isDebugEnabled() || isVip) {
+                logger.info(
+                        String.format("%sRes thickness:%.1f vs %d", vips, rThickness, maxThickness));
+            }
+
+            return false;
+        }
+
+        if (logger.isDebugEnabled() || isVip) {
+            logger.info("{}---", vips);
+        }
+
+        return true;
     }
 
     //-----------------//
@@ -852,14 +878,18 @@ public class LinesRetriever
     // includeDiscardedFilaments //
     //---------------------------//
     /**
-     * Last attempt to include discarded filaments to retrieved staff lines.
+     * Last attempt to include discarded (and sloped) filaments to retrieved staff lines.
      */
     private void includeDiscardedFilaments ()
     {
-        // Sort these discarded filaments by top ordinate
-        Collections.sort(discardedFilaments, Filament.topComparator);
+        List<StaffFilament> candidates = new ArrayList<StaffFilament>();
+        candidates.addAll(discardedFilaments);
+        candidates.addAll(slopedFilaments);
 
-        final int iMax = discardedFilaments.size() - 1;
+        // Sort candidates filaments by top ordinate
+        Collections.sort(candidates, Filament.topComparator);
+
+        final int iMax = candidates.size() - 1;
 
         for (SystemInfo system : sheet.getSystems()) {
             // Systems may be side by side, so restart from top
@@ -881,7 +911,7 @@ public class LinesRetriever
 
                     // Browse discarded filaments
                     for (int i = iMin; i <= iMax; i++) {
-                        Filament fil = discardedFilaments.get(i);
+                        Filament fil = candidates.get(i);
 
                         if (fil.getPartOf() != null) {
                             continue;
@@ -1130,11 +1160,22 @@ public class LinesRetriever
     /**
      * Now that we know the global sheet slope, discard the filaments whose slope is too
      * far from sheet slope.
+     * <p>
+     * Short filaments (typically based on a single section) are very likely to be horizontal, and
+     * thus may exhibit a significant delta slope when sheet absolute slope is high.
+     * For these short filaments, we have to accept a slope within [0-, sheet slope] if sheet slope
+     * is positive, and within [sheet slope, 0+] if sheet slope is negative.
+     *
+     * @return the collection of purged sloped filaments
      */
-    private void purgeSlopedFilaments ()
+    private List<StaffFilament> purgeSlopedFilaments ()
     {
         final double sheetSlope = sheet.getSkew().getSlope();
-        final List<Filament> toRemove = new ArrayList<Filament>();
+        final double minShortSlope = (sheetSlope > 0) ? (-params.maxSlopeDiff / 2)
+                : sheetSlope;
+        final double maxShortSlope = (sheetSlope > 0) ? sheetSlope
+                : (params.maxSlopeDiff / 2);
+        final List<StaffFilament> toRemove = new ArrayList<StaffFilament>();
 
         for (StaffFilament fil : filaments) {
             if (fil.isVip()) {
@@ -1148,6 +1189,13 @@ public class LinesRetriever
             final double slopeDiff = Math.abs(sheetSlope - filSlope);
 
             if (slopeDiff > params.maxSlopeDiff) {
+                if (fil.getLength(HORIZONTAL) < params.minLengthForSlopeCheck) {
+                    // Case of short filement
+                    if ((filSlope >= minShortSlope) && (filSlope <= maxShortSlope)) {
+                        continue;
+                    }
+                }
+
                 if (fil.isVip()) {
                     logger.info(
                             "VIP discarded {} for delta slope {}",
@@ -1163,6 +1211,8 @@ public class LinesRetriever
             logger.debug("Discarded sloped filaments: {}", toRemove.size());
             filaments.removeAll(toRemove);
         }
+
+        return toRemove;
     }
 
     //-------------------//
@@ -1371,6 +1421,10 @@ public class LinesRetriever
                 12,
                 "Minimum acceptable radius of polished curvature");
 
+        private final Scale.Fraction minLengthForSlopeCheck = new Scale.Fraction(
+                4.0,
+                "Minimum filament length for strict slope check");
+
         // Constants for display
         // ---------------------
         Constant.Boolean displayRuns = new Constant.Boolean(
@@ -1448,6 +1502,8 @@ public class LinesRetriever
         /** Minimum polished radius. */
         final int minRadius;
 
+        final int minLengthForSlopeCheck;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -1471,6 +1527,7 @@ public class LinesRetriever
             patternWidth = scale.toPixels(constants.patternWidth);
             patternJitter = scale.toPixels(constants.patternJitter);
             minRadius = scale.toPixels(constants.minRadius);
+            minLengthForSlopeCheck = scale.toPixels(constants.minLengthForSlopeCheck);
             maxStickerExtension = (int) Math.ceil(
                     scale.toPixelsDouble(constants.maxStickerExtension));
             minSlope = constants.minSlope.getValue();

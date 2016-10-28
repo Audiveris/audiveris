@@ -32,6 +32,7 @@ import omr.step.Step;
 import omr.util.Param;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
@@ -134,12 +135,6 @@ public interface Book
      * Delete this book instance, as well as its related resources.
      */
     void close ();
-
-    /** Update the gathering of sheet pages into scores.
-     *
-     * @param stub current stub
-     */
-    void updateScores (SheetStub stub);
 
     /**
      * Create as many sheet stubs as there are images in the input image file.
@@ -351,8 +346,10 @@ public interface Book
      *
      * @param number sheet number (1-based) within the book
      * @return the path to sheet folder
+     * @throws java.io.IOException
      */
-    Path openSheetFolder (int number);
+    Path openSheetFolder (int number)
+            throws IOException;
 
     /**
      * Print this book in PDF format.
@@ -467,4 +464,10 @@ public interface Book
      * @return true if OK
      */
     boolean transcribe ();
+
+    /** Update the gathering of sheet pages into scores.
+     *
+     * @param stub current stub
+     */
+    void updateScores (SheetStub stub);
 }

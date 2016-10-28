@@ -36,7 +36,6 @@ import omr.sheet.SystemInfo;
 import omr.sheet.SystemManager;
 
 import omr.ui.Board;
-import omr.ui.Colors;
 import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.SelectionHint;
@@ -71,7 +70,7 @@ import javax.swing.SwingConstants;
 
 /**
  * Class {@code EvaluationBoard} is a board dedicated to the display of evaluation
- * results performed by an classifier.
+ * results performed by a classifier.
  * It also provides through buttons the ability to manually assign a shape to the glyph at hand.
  *
  * @author Hervé Bitteur
@@ -97,25 +96,27 @@ public class EvaluationBoard
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph classifier. */
-    private final Classifier classifier;
+    protected final Classifier classifier;
 
     /** Related glyphs controller */
-    private final GlyphsController glyphsController;
+    protected final GlyphsController glyphsController;
 
     /** Related sheet */
     @Navigable(false)
     private final Sheet sheet;
 
     /** Pane for detailed info display about the glyph evaluation */
-    private final Selector selector;
+    protected final Selector selector;
 
     /** Do we use GlyphChecker annotations? */
     private boolean useAnnotations;
 
+    /** True for active buttons, false for passive fields. */
+    protected final boolean isActive;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a simplified passive evaluation board with one neural
-     * network classifier.
+     * Create a simplified passive evaluation board with one neural network classifier.
      *
      * @param classifier      the classifier to use
      * @param glyphController the related glyph controller
@@ -125,7 +126,7 @@ public class EvaluationBoard
                             GlyphsController glyphController,
                             boolean selected)
     {
-        this(null, classifier, glyphController, selected);
+        this(false, null, classifier, glyphController, selected);
         useAnnotations = false;
     }
 
@@ -136,12 +137,14 @@ public class EvaluationBoard
      * Create an evaluation board with one neural network classifier and the ability to
      * force glyph shape.
      *
+     * @param isActive        true for active buttons
      * @param sheet           the related sheet, or null
      * @param classifier      the classifier to use
      * @param glyphController the related glyph controller
      * @param selected        true for pre-selection
      */
-    public EvaluationBoard (Sheet sheet,
+    public EvaluationBoard (boolean isActive,
+                            Sheet sheet,
                             Classifier classifier,
                             GlyphsController glyphController,
                             boolean selected)
@@ -157,6 +160,7 @@ public class EvaluationBoard
 
         this.classifier = classifier;
         this.glyphsController = glyphController;
+        this.isActive = isActive;
         this.sheet = sheet;
 
         selector = new Selector();
@@ -165,6 +169,38 @@ public class EvaluationBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Call-back triggered when Glyph Selection has been modified.
+     *
+     * @param event the (Glyph) Selection
+     */
+    @Override
+    public void onEvent (UserEvent event)
+    {
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            // Don't evaluate Added glyph, since this would hide Compound evaluation
+            if (event.hint == SelectionHint.LOCATION_ADD) {
+                return;
+            }
+
+            if (event instanceof EntityListEvent) {
+                EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
+                Glyph glyph = listEvent.getEntity();
+                evaluate(glyph);
+            }
+        } catch (Exception ex) {
+            logger.warn("EvaluationBoard error", ex);
+        }
+    }
+
     //----------//
     // evaluate //
     //----------//
@@ -173,7 +209,7 @@ public class EvaluationBoard
      *
      * @param glyph the glyph at hand
      */
-    public void evaluate (Glyph glyph)
+    protected void evaluate (Glyph glyph)
     {
         if (glyph == null) {
             // Blank the output
@@ -209,38 +245,6 @@ public class EvaluationBoard
         }
     }
 
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when Glyph Selection has been modified.
-     *
-     * @param event the (Glyph) Selection
-     */
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            // Don't evaluate Added glyph, since this would hide Compound evaluation
-            if (event.hint == SelectionHint.LOCATION_ADD) {
-                return;
-            }
-
-            if (event instanceof EntityListEvent) {
-                EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
-                Glyph glyph = listEvent.getEntity();
-                evaluate(glyph);
-            }
-        } catch (Exception ex) {
-            logger.warn("EvaluationBoard error", ex);
-        }
-    }
-
     //--------------//
     // defineLayout //
     //--------------//
@@ -268,11 +272,108 @@ public class EvaluationBoard
             int r = (2 * i) + 1; // --------------------------------
             EvalButton evb = selector.buttons.get(i);
             builder.add(evb.grade, cst.xy(5, r));
-            builder.add((sheet != null) ? evb.button : evb.field, cst.xyw(7, r, 5));
+            builder.add(isActive ? evb.button : evb.field, cst.xyw(7, r, 5));
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //----------//
+    // Selector //
+    //----------//
+    protected class Selector
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        // A collection of EvalButton's
+        final List<EvalButton> buttons = new ArrayList<EvalButton>();
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Selector ()
+        {
+            for (int i = 0; i < evalCount(); i++) {
+                buttons.add(new EvalButton());
+            }
+
+            setEvals(null, null);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        //-----------//
+        // evalCount //
+        //-----------//
+        /**
+         * Report the number of displayed evaluations
+         *
+         * @return the number of eval buttons
+         */
+        public final int evalCount ()
+        {
+            return constants.visibleButtons.getValue();
+        }
+
+        //----------//
+        // setEvals //
+        //----------//
+        /**
+         * Display the evaluations.
+         * Only first evalCount evaluations are displayed.
+         *
+         * @param evals top evaluations sorted from best to worst
+         * @param glyph evaluated glyph, to check forbidden shapes if any
+         */
+        public final void setEvals (Evaluation[] evals,
+                                    Glyph glyph)
+        {
+            // Special case to empty the selector
+            if (evals == null) {
+                for (EvalButton evalButton : buttons) {
+                    evalButton.setEval(null, false);
+                }
+
+                return;
+            }
+
+            boolean enabled = !glyph.isVirtual();
+            double minGrade = constants.minGrade.getValue();
+            int iBound = Math.min(evalCount(), positiveEvals(evals));
+            int i;
+
+            for (i = 0; i < iBound; i++) {
+                Evaluation eval = evals[i];
+
+                // Limitation on shape relevance
+                if (eval.grade < minGrade) {
+                    break;
+                }
+
+                // Active buttons
+                buttons.get(i).setEval(eval, enabled);
+            }
+
+            // Zero the remaining buttons
+            for (; i < evalCount(); i++) {
+                buttons.get(i).setEval(null, false);
+            }
+        }
+
+        /**
+         * Return the number of evaluations with grade strictly positive
+         *
+         * @param evals the evaluations sorted from best to worst
+         * @return the number of evaluations with grade > 0
+         */
+        private int positiveEvals (Evaluation[] evals)
+        {
+            for (int i = 0; i < evals.length; i++) {
+                if (evals[i].grade <= 0) {
+                    return i;
+                }
+            }
+
+            return evals.length;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -312,7 +413,7 @@ public class EvaluationBoard
         {
             grade.setToolTipText("(Logarithmic) Grade of the evaluation");
 
-            if (sheet != null) {
+            if (isActive) {
                 button = new JButton();
                 button.addActionListener(this);
                 button.setToolTipText("Assignable shape");
@@ -347,43 +448,23 @@ public class EvaluationBoard
         }
 
         public void setEval (Evaluation eval,
-                             boolean barred,
                              boolean enabled)
         {
-            JComponent comp;
-
-            if (sheet != null) {
-                comp = button;
-            } else {
-                comp = field;
-            }
+            final JComponent comp = isActive ? button : field;
 
             if (eval != null) {
                 Evaluation.Failure failure = eval.failure;
                 String text = eval.shape.toString();
                 String tip = (failure != null) ? failure.toString() : null;
 
-                if (sheet != null) {
+                if (isActive) {
                     button.setEnabled(enabled);
-
-                    if (barred) {
-                        button.setBackground(Colors.EVALUATION_BARRED);
-                    } else {
-                        button.setBackground(null);
-                    }
-
                     button.setText(text);
                     button.setToolTipText(tip);
 
                     ShapeSymbol symbol = eval.shape.getDecoratedSymbol();
                     button.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
                 } else {
-                    if (barred) {
-                        field.setBackground(Colors.EVALUATION_BARRED);
-                    } else {
-                        field.setBackground(null);
-                    }
-
                     field.setText(text);
                     field.setToolTipText(tip);
 
@@ -405,103 +486,6 @@ public class EvaluationBoard
                 grade.setVisible(false);
                 comp.setVisible(false);
             }
-        }
-    }
-
-    //----------//
-    // Selector //
-    //----------//
-    private class Selector
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        // A collection of EvalButton's
-        final List<EvalButton> buttons = new ArrayList<EvalButton>();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Selector ()
-        {
-            for (int i = 0; i < evalCount(); i++) {
-                buttons.add(new EvalButton());
-            }
-
-            setEvals(null, null);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        //-----------//
-        // evalCount //
-        //-----------//
-        /**
-         * Report the number of displayed evaluations
-         *
-         * @return the number of eval buttons
-         */
-        public final int evalCount ()
-        {
-            return constants.visibleButtons.getValue();
-        }
-
-        //----------//
-        // setEvals //
-        //----------//
-        /**
-         * Display the evaluations with some text highlighting.
-         * Only first evalCount evaluations are displayed.
-         *
-         * @param evals top evaluations sorted from best to worst
-         * @param glyph evaluated glyph, to check forbidden shapes if any
-         */
-        public final void setEvals (Evaluation[] evals,
-                                    Glyph glyph)
-        {
-            // Special case to empty the selector
-            if (evals == null) {
-                for (EvalButton evalButton : buttons) {
-                    evalButton.setEval(null, false, false);
-                }
-
-                return;
-            }
-
-            boolean enabled = !glyph.isVirtual();
-            double minGrade = constants.minGrade.getValue();
-            int iBound = Math.min(evalCount(), positiveEvals(evals));
-            int i;
-
-            for (i = 0; i < iBound; i++) {
-                Evaluation eval = evals[i];
-
-                // Limitation on shape relevance
-                if (eval.grade < minGrade) {
-                    break;
-                }
-
-                // Active buttons
-                buttons.get(i).setEval(eval, false, enabled);
-            }
-
-            // Zero the remaining buttons
-            for (; i < evalCount(); i++) {
-                buttons.get(i).setEval(null, false, false);
-            }
-        }
-
-        /**
-         * Return the number of evaluations with grade strictly positive
-         *
-         * @param evals the evaluations sorted from best to worst
-         * @return the number of evaluations with grade > 0
-         */
-        private int positiveEvals (Evaluation[] evals)
-        {
-            for (int i = 0; i < evals.length; i++) {
-                if (evals[i].grade <= 0) {
-                    return i;
-                }
-            }
-
-            return evals.length;
         }
     }
 }

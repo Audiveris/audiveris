@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code TimeWholeInter} is a time signature defined by a single symbol (either
- * COMMON or CUT or predefined combos).
+ * COMMON or CUT or predefined combo like 6/8).
  *
  * @author Hervé Bitteur
  */
@@ -54,7 +54,7 @@ public class TimeWholeInter
      * Creates a new {@code TimeWholeInter} object.
      *
      * @param glyph underlying glyph
-     * @param shape precise shape (COMMON_TIME, CUT_TIME or predefined combos like TIME_FOUR_FOUR)
+     * @param shape precise shape (COMMON_TIME, CUT_TIME or predefined combo like TIME_FOUR_FOUR)
      * @param grade evaluation grade
      */
     public TimeWholeInter (Glyph glyph,

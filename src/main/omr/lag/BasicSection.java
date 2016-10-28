@@ -48,6 +48,7 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -528,6 +529,31 @@ public class BasicSection
         }
 
         return centroid;
+    }
+
+    //---------------//
+    // getCentroid2D //
+    //---------------//
+    @Override
+    public Point2D getCentroid2D ()
+    {
+        Point2D.Double orientedPoint = new Point2D.Double(0, 0);
+        int y = firstPos;
+
+        for (Run run : runs) {
+            final int length = run.getLength();
+            orientedPoint.y += (length * (2 * y));
+            orientedPoint.x += (length * ((2 * run.getStart()) + length));
+            y++;
+        }
+
+        orientedPoint.x /= (2 * getWeight());
+        orientedPoint.y /= (2 * getWeight());
+
+        Point2D absoluteCentroid = orientation.absolute(orientedPoint);
+        logger.debug("Centroid of {} is {}", this, absoluteCentroid);
+
+        return absoluteCentroid;
     }
 
     //-------------//

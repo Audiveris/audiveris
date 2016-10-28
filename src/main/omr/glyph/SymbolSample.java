@@ -64,7 +64,7 @@ public class SymbolSample
                             int interline,
                             RunTable runTable)
     {
-        super(0, 0, runTable, interline, 0, shape);
+        super(0, 0, runTable, interline, 0, shape, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

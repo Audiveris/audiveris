@@ -31,10 +31,10 @@ public abstract class KeyEvent
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Left abscissa. */
-    protected final int start;
+    protected int start;
 
     /** Right abscissa. */
-    protected final int stop;
+    protected int stop;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -66,7 +66,7 @@ public abstract class KeyEvent
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Cumulated height. */
-        private final int height;
+        protected int height;
 
         /** Flag for invalid peak. */
         private boolean invalid;

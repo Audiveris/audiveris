@@ -100,7 +100,8 @@ public class SampleMenu
         final SampleRepository repository = SampleRepository.getLoadedInstance(false);
         final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
 
-        repository.addSample(shape, glyph, sheet.getInterline(), sampleSheet);
+        // TODO: we need staff information (-> interline and pitch)
+        repository.addSample(shape, glyph, sheet.getInterline(), sampleSheet, null);
     }
 
     //-----------//

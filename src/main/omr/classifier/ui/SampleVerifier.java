@@ -21,21 +21,22 @@
 // </editor-fold>
 package omr.classifier.ui;
 
+import omr.WellKnowns;
+
+import omr.classifier.Classifier;
 import omr.classifier.NeuralClassifier;
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import omr.classifier.SampleRepository.AdditionEvent;
 import omr.classifier.SampleRepository.RemovalEvent;
-import static omr.classifier.SampleRepository.STANDARD_INTERLINE;
+import omr.classifier.SampleRepository.SheetRemovalEvent;
+import omr.classifier.ShapeDescription;
 import omr.classifier.SheetContainer.Descriptor;
 
 import omr.glyph.Glyph;
-import omr.glyph.GlyphsModel;
 import omr.glyph.Shape;
+import omr.glyph.ShapeSet;
 import omr.glyph.ui.EvaluationBoard;
-import omr.glyph.ui.GlyphsController;
-
-import omr.run.RunTable;
 
 import omr.ui.BoardsPane;
 import omr.ui.OmrGui;
@@ -43,12 +44,14 @@ import omr.ui.selection.EntityListEvent;
 import omr.ui.selection.EntityService;
 import omr.ui.selection.MouseMovement;
 import omr.ui.selection.SelectionHint;
-import omr.ui.selection.SelectionService;
 import omr.ui.util.FixedWidthIcon;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 
+import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
+import org.jdesktop.application.ApplicationAction;
+import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 
@@ -56,20 +59,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -81,12 +84,14 @@ import java.util.Locale;
 import java.util.Set;
 
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -94,9 +99,6 @@ import javax.swing.JSplitPane;
 import static javax.swing.JSplitPane.HORIZONTAL_SPLIT;
 import static javax.swing.JSplitPane.VERTICAL_SPLIT;
 import javax.swing.ListCellRenderer;
-import static javax.swing.ListSelectionModel.SINGLE_SELECTION;
-import javax.swing.Scrollable;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
@@ -134,16 +136,6 @@ public class SampleVerifier
     /** Stand-alone run (vs part of Audiveris). */
     private static boolean standAlone = false;
 
-    private static final Border SAMPLE_BORDER = BorderFactory.createEtchedBorder();
-
-    private static final Color SYMBOL_BACKGROUND = new Color(255, 220, 220);
-
-    private static final Color SAMPLE_BACKGROUND = new Color(220, 255, 220);
-
-    private static final int SAMPLE_MARGIN = 10;
-
-    private static final Point SAMPLE_OFFSET = new Point(SAMPLE_MARGIN, SAMPLE_MARGIN);
-
     /** Events that can be published on the local sample service. */
     private static final Class<?>[] eventsAllowed = new Class<?>[]{EntityListEvent.class};
 
@@ -160,20 +152,23 @@ public class SampleVerifier
     /** View of sample in sheet context. */
     private final SampleContext sampleContext = new SampleContext();
 
-    /** Boards filled by the current sample. (sampleBoard + evaluationBoard) */
-    private final BoardsPane boardsPane;
+    /** Has repository been checked for duplications and conflicts?. */
+    private boolean repoChecked;
+
+    /** Panel for sheets selection. */
+    private final SheetSelector sheetSelector = new SheetSelector();
+
+    /** Panel for shapes selection. */
+    private final ShapeSelector shapeSelector = new ShapeSelector();
 
     /** Panel for samples display. */
-    private final SampleListing sampleListing = new SampleListing(null);
+    private final SampleListing sampleListing;
 
-    /** Panel for shapes selection. With sampleListing as a listener */
-    private final ShapeSelector shapeSelector = new ShapeSelector(sampleListing);
+    /** Model for samples. */
+    private final SampleModel sampleModel;
 
-    /** Panel for sheets selection. With shapeSelector as a listener */
-    private final SheetSelector sheetSelector = new SheetSelector(shapeSelector);
-
-    /** Has repository been checked for duplications?. */
-    private boolean dupliChecked;
+    /** Controller for sample handling. */
+    private final SampleController sampleController;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -183,11 +178,12 @@ public class SampleVerifier
     {
         sampleService = new EntityService<Sample>("sample service", null, eventsAllowed);
         sampleContext.connect(sampleService);
+        sampleModel = new SampleModel(repository, sampleService);
+        sampleController = new SampleController(sampleModel);
 
-        SampleController controller = new SampleController(sampleService);
-        boardsPane = new BoardsPane(
-                new SampleBoard(controller),
-                new EvaluationBoard(NeuralClassifier.getInstance(), controller, true));
+        // Connect selectors (sheets -> shapes -> samples)
+        sampleListing = new SampleListing(this);
+        connectSelectors(true);
 
         // Stay informed of repository dynamic updates
         repository.addListener(this);
@@ -233,7 +229,7 @@ public class SampleVerifier
     {
         standAlone = true;
 
-        // Load repository, with binaries
+        // Load repository, with sheet images
         SampleRepository.getInstance().loadRepository(true);
 
         // Set UI Look and Feel
@@ -242,6 +238,163 @@ public class SampleVerifier
 
         // Off we go...
         Application.launch(SampleVerifier.class, args);
+    }
+
+    //-----------------//
+    // checkDuplicates //
+    //-----------------//
+    /**
+     * Action to check for sample duplicates
+     *
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void checkDuplicates (ActionEvent e)
+    {
+        checkRepository();
+    }
+
+    //------------//
+    // displayAll //
+    //------------//
+    /**
+     * Focus the verifier on a whole collection of samples, bypassing the usual
+     * manual selection of sheets then shapes then samples.
+     * <p>
+     * (Typically these are the samples that are not correctly recognized by the classifier during
+     * its test)
+     *
+     * @param samples the collection of samples to inspect
+     */
+    public void displayAll (List<Sample> samples)
+    {
+        connectSelectors(false); // Disable standard triggers: sheets -> shapes -> samples
+
+        // Select proper Sheets
+        Set<Descriptor> descSet = new HashSet<Descriptor>();
+
+        for (Sample sample : samples) {
+            descSet.add(repository.getSheetDescriptor(sample));
+        }
+
+        sheetSelector.select(descSet);
+
+        // Populate & select proper shapes
+        EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
+
+        for (Sample sample : samples) {
+            shapeSet.add(sample.getShape());
+        }
+
+        shapeSelector.populateWith(shapeSet);
+        shapeSelector.select(shapeSet);
+
+        // Populate samples
+        Collections.sort(samples, Sample.byShape); // Samples must be ordered by shape for listing
+        sampleListing.populateWith(samples);
+
+        connectSelectors(true); // Re-enable standard triggers: sheets -> shapes -> samples
+    }
+
+    //----------------//
+    // exportFeatures //
+    //----------------//
+    /**
+     * Generate a file (format csv) to be used by deep learning software,
+     * populated by samples features.
+     *
+     * @param e unused
+     */
+    @Action
+    public void exportFeatures (ActionEvent e)
+            throws FileNotFoundException
+    {
+        Path path = WellKnowns.TRAIN_FOLDER.resolve(
+                "samples-" + ShapeDescription.getName() + ".csv");
+        OutputStream os = new FileOutputStream(path.toFile());
+        final PrintWriter out = getPrintWriter(os);
+
+        List<Sample> samples = repository.getAllSamples();
+        logger.info("Samples: {}", samples.size());
+
+        for (Sample sample : samples) {
+            double[] ins = ShapeDescription.features(sample, sample.getInterline());
+
+            for (double in : ins) {
+                out.print((float) in);
+                out.print(",");
+            }
+
+            ///out.println(sample.getShape().getPhysicalShape());
+            out.println(sample.getShape().getPhysicalShape().ordinal());
+        }
+
+        out.flush();
+        out.close();
+        logger.info("Classifier data saved in " + path.toAbsolutePath());
+
+        final List<String> names = Arrays.asList(ShapeSet.getPhysicalShapeNames());
+
+        // Shape names
+        StringBuilder sb = new StringBuilder("{ //\n");
+
+        for (int i = 0; i < names.size(); i++) {
+            String comma = (i < (names.size() - 1)) ? "," : "";
+            sb.append(String.format("\"%-18s // %3d\n", names.get(i) + "\"" + comma, i));
+        }
+
+        sb.append("};");
+        System.out.println(sb.toString());
+    }
+
+    /**
+     * @return the sampleController
+     */
+    public SampleController getSampleController ()
+    {
+        return sampleController;
+    }
+
+    //------------//
+    // loadImages //
+    //------------//
+    /**
+     * Action to load sheet images
+     *
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void loadImages (ActionEvent e)
+    {
+        repository.loadSheetImages();
+    }
+
+    //---------//
+    // refresh //
+    //---------//
+    /**
+     * Action to update viewer with latest repository informations
+     *
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void refresh (ActionEvent e)
+    {
+        sheetSelector.stateChanged(null);
+    }
+
+    //------//
+    // save //
+    //------//
+    /**
+     * Action to save repository
+     *
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void save (ActionEvent e)
+    {
+        repository.checkForSave();
     }
 
     //------------//
@@ -254,7 +407,7 @@ public class SampleVerifier
     {
         OmrGui.getApplication().show(frame);
 
-        if (!dupliChecked) {
+        if (!repoChecked) {
             checkRepository();
         }
     }
@@ -262,57 +415,37 @@ public class SampleVerifier
     //--------------//
     // stateChanged //
     //--------------//
+    /**
+     * Call triggered by a repository update.
+     *
+     * @param event AdditionEvent or RemovalEvent or SheetRemovalEvent
+     */
     @Override
     public void stateChanged (ChangeEvent event)
     {
-        // Called by repository
         if (event instanceof AdditionEvent) {
             AdditionEvent addition = (AdditionEvent) event;
-            verify(Arrays.asList(addition.sample));
+
+            // If sheet and shape for this sample are currently selected then update sample listing
+            final Descriptor descriptor = repository.getSheetDescriptor(addition.sample);
+            final List<Descriptor> sheets = getSelectedSheets();
+
+            if (sheets.contains(descriptor)) {
+                final List<Shape> shapes = getSelectedShapes();
+
+                if (shapes.contains(addition.sample.getShape())) {
+                    sampleListing.addSample(addition.sample);
+                }
+            }
         } else if (event instanceof RemovalEvent) {
             RemovalEvent removal = (RemovalEvent) event;
             sampleListing.removeSample(removal.sample);
+        } else if (event instanceof SheetRemovalEvent) {
+            SheetRemovalEvent removal = (SheetRemovalEvent) event;
+            sheetSelector.model.removeElement(removal.descriptor);
         } else {
             sheetSelector.stateChanged(event);
         }
-    }
-
-    //--------//
-    // verify //
-    //--------//
-    /**
-     * Focus the verifier on a provided collection of samples.
-     * <p>
-     * (Typically these are the samples that are not correctly recognized by the classifier during
-     * its training)
-     *
-     * @param samples the collection of samples to inspect
-     */
-    public void verify (List<Sample> samples)
-    {
-        // Sort samples by shape
-        Collections.sort(samples, Sample.byShape);
-
-        // Select proper Sheets
-        Set<Descriptor> descSet = new HashSet<Descriptor>();
-
-        for (Sample sample : samples) {
-            descSet.add(repository.getSheetDescriptor(sample));
-        }
-
-        sheetSelector.select(descSet);
-
-        // Select proper shapes
-        EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
-
-        for (Sample sample : samples) {
-            shapeSet.add(sample.getShape());
-        }
-
-        shapeSelector.select(shapeSet);
-
-        // Samples
-        sampleListing.populateWith(samples);
     }
 
     //------------//
@@ -345,7 +478,7 @@ public class SampleVerifier
         // Set application exit listener
         addExitListener(repository.getExitListener());
 
-        if (!dupliChecked) {
+        if (!repoChecked) {
             checkRepository();
         }
     }
@@ -363,31 +496,144 @@ public class SampleVerifier
         show(frame); // Here we go...
     }
 
+    /**
+     * (Package private) Report the selected shapes
+     *
+     * @return the selected shapes
+     */
+    List<Shape> getSelectedShapes ()
+    {
+        return shapeSelector.list.getSelectedValuesList();
+    }
+
+    /**
+     * (Package private) Report the selected sheets descriptors
+     *
+     * @return the selected sheet descriptors
+     */
+    List<Descriptor> getSelectedSheets ()
+    {
+        return sheetSelector.list.getSelectedValuesList();
+    }
+
+    //---------------//
+    // publishSample //
+    //---------------//
+    void publishSample (Sample sample)
+    {
+        sampleService.publish(
+                new EntityListEvent<Sample>(
+                        this,
+                        SelectionHint.ENTITY_INIT,
+                        MouseMovement.PRESSING,
+                        Arrays.asList(sample)));
+    }
+
+    //--------------//
+    // buildMenuBar //
+    //--------------//
+    /**
+     * Build the menu bar for SampleVerifier frame.
+     *
+     * @return the populated menu bar
+     */
+    private JMenuBar buildMenuBar ()
+    {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu repoMenu = new JMenu();
+        repoMenu.setName("SampleVerifierRepoMenu");
+        menuBar.add(repoMenu);
+
+        ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
+
+        // Save repository
+        ApplicationAction saveAction = (ApplicationAction) actionMap.get("save");
+        repoMenu.add(new JMenuItem(saveAction));
+
+        // Refresh viewer
+        ApplicationAction refreshAction = (ApplicationAction) actionMap.get("refresh");
+        repoMenu.add(new JMenuItem(refreshAction));
+
+        repoMenu.addSeparator();
+
+        // Load sheet images
+        ApplicationAction loadImagesAction = (ApplicationAction) actionMap.get("loadImages");
+        repoMenu.add(new JMenuItem(loadImagesAction));
+
+        // Check for sample duplicates
+        ApplicationAction checkDuplicatesAction = (ApplicationAction) actionMap.get(
+                "checkDuplicates");
+        repoMenu.add(new JMenuItem(checkDuplicatesAction));
+
+        repoMenu.addSeparator();
+
+        // Export to CSV file
+        ApplicationAction exportAction = (ApplicationAction) actionMap.get("exportFeatures");
+        repoMenu.add(new JMenuItem(exportAction));
+
+        return menuBar;
+    }
+
     //-----------------//
     // checkRepository //
     //-----------------//
     private void checkRepository ()
     {
-        dupliChecked = true;
+        repoChecked = true;
 
-        // Look for duplications
-        List<Sample> toPurge = repository.checkAllSamples();
+        List<Sample> conflictings = new ArrayList<Sample>();
+        List<Sample> redundants = new ArrayList<Sample>();
+        repository.checkAllSamples(conflictings, redundants);
 
-        if (!toPurge.isEmpty()) {
+        if (conflictings.isEmpty() && redundants.isEmpty()) {
+            logger.info("All repository samples are OK.");
+
+            return;
+        }
+
+        if (!conflictings.isEmpty()) {
             int answer = JOptionPane.showConfirmDialog(
                     frame,
-                    "Purge repository of " + toPurge.size() + " duplication(s)?",
+                    "BEWARE: " + conflictings.size() + " conflict(s) detected",
+                    "Conflict(s) found in sample repository",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+
+            if (answer != JOptionPane.OK_OPTION) {
+                repoChecked = false; // So that warning persists
+            }
+        }
+
+        if (!redundants.isEmpty()) {
+            int answer = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Purge repository of " + redundants.size() + " duplication(s)?",
                     "Duplication(s) found in sample repository",
                     JOptionPane.YES_NO_CANCEL_OPTION,
                     JOptionPane.WARNING_MESSAGE);
 
             if (answer == JOptionPane.YES_OPTION) {
-                for (Sample sample : toPurge) {
+                for (Sample sample : redundants) {
                     repository.removeSample(sample);
                 }
             } else if (answer != JOptionPane.NO_OPTION) {
-                dupliChecked = false; // The user made no decision yet
+                repoChecked = false; // The user made no decision yet
             }
+        }
+    }
+
+    //------------------//
+    // connectSelectors //
+    //------------------//
+    private void connectSelectors (boolean bool)
+    {
+        if (bool) {
+            sheetSelector.setListener(shapeSelector);
+            shapeSelector.setListener(sampleListing);
+        } else {
+            sheetSelector.setListener(null);
+            shapeSelector.setListener(null);
         }
     }
 
@@ -439,6 +685,9 @@ public class SampleVerifier
         shapeSelector.setName("shapeSelector");
 
         // Center
+        BoardsPane boardsPane = new BoardsPane(
+                new SampleBoard(sampleController),
+                new SampleEvaluationBoard(sampleController));
         JSplitPane centerPane = new JSplitPane(
                 VERTICAL_SPLIT,
                 sheetSelector,
@@ -471,6 +720,9 @@ public class SampleVerifier
 
         frame.add(mainPane);
 
+        // Menu bar
+        frame.setJMenuBar(buildMenuBar());
+
         // Resource injection
         ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
         resource.injectComponents(frame);
@@ -478,103 +730,55 @@ public class SampleVerifier
         // Wiring
         boardsPane.connect();
 
-        // Initialization
+        // Initialize sheet selector with all repository sheet names
         sheetSelector.stateChanged(null);
 
         return frame;
     }
 
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //------------------//
-    // SampleController //
-    //------------------//
-    /**
-     * A very basic sample controller, with no location service.
-     */
-    public class SampleController
-            extends GlyphsController
+    //----------------//
+    // getPrintWriter //
+    //----------------//
+    private static PrintWriter getPrintWriter (OutputStream os)
     {
-        //~ Constructors ---------------------------------------------------------------------------
+        try {
+            final BufferedWriter bw = new BufferedWriter(
+                    new OutputStreamWriter(os, WellKnowns.FILE_ENCODING));
 
-        public SampleController (EntityService<Sample> sampleService)
-        {
-            super(new SampleModel(sampleService));
-        }
+            return new PrintWriter(bw);
+        } catch (Exception ex) {
+            logger.warn("Error creating PrintWriter " + ex, ex);
 
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public SelectionService getLocationService ()
-        {
             return null;
-        }
-
-        public void removeSample (Sample sample)
-        {
-            // Modify repository
-            ((SampleModel) model).removeSample(sample);
-
-            // Update UI
-            sampleListing.stateChanged(null);
         }
     }
 
-    //---------------//
-    // SampleListing //
-    //---------------//
-    /**
-     * Display a list of samples, gathered by shape.
-     * It is implemented as a list of ShapePane instances, one per shape, each ShapePane instance
-     * handling a list of samples (all of the same shape).
-     */
-    private class SampleListing
-            extends JScrollPane
-            implements ChangeListener
+    //~ Inner Interfaces ---------------------------------------------------------------------------
+    //-----------//
+    // Removable //
+    //-----------//
+    private interface Removable<E>
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
-        private final String title = "Samples";
+        String getTip ();
 
-        private final ScrollablePanel scrollablePanel = new ScrollablePanel();
+        void remove (List<E> entities);
+    }
 
-        /** Specific listener to avoid multi-selections across all lists in the panel. */
-        private final ListSelectionListener selectionListener = new ListSelectionListener()
-        {
-            @Override
-            public void valueChanged (ListSelectionEvent e)
-            {
-                JList<Sample> selectedList = (JList<Sample>) e.getSource();
-
-                if (e.getValueIsAdjusting()) {
-                    // Nullify selection in other lists
-                    for (Component comp : scrollablePanel.getComponents()) {
-                        ShapePane shapePane = (ShapePane) comp;
-                        JList<Sample> list = shapePane.list;
-
-                        if (list != selectedList) {
-                            list.clearSelection();
-                        }
-                    }
-                } else {
-                    // Publish selected sample
-                    final Sample sample = selectedList.getSelectedValue();
-
-                    ///logger.info("valueChanged sample:{}", sample);
-                    if (sample != null) {
-                        sampleService.publish(
-                                new EntityListEvent<Sample>(
-                                        this,
-                                        SelectionHint.ENTITY_INIT,
-                                        MouseMovement.PRESSING,
-                                        Arrays.asList(sample)));
-                    }
-                }
-            }
-        };
-
-        private boolean selfUpdating; // To avoid circular updating
-
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // TitledPanel //
+    //-------------//
+    /**
+     * A panel surrounded by an EmptyBorder and a title.
+     */
+    static class TitledPanel
+            extends Panel
+    {
         //~ Constructors ---------------------------------------------------------------------------
-        public SampleListing (ChangeListener listener)
+
+        public TitledPanel (String title)
         {
             setBorder(
                     BorderFactory.createTitledBorder(
@@ -582,293 +786,7 @@ public class SampleVerifier
                             title,
                             TitledBorder.LEFT,
                             TitledBorder.TOP));
-
-            scrollablePanel.setLayout(new BoxLayout(scrollablePanel, BoxLayout.Y_AXIS));
-
-            setViewportView(scrollablePanel);
-            setPreferredSize(new Dimension(800, 500));
-            setAlignmentX(LEFT_ALIGNMENT);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void stateChanged (ChangeEvent e)
-        {
-            if (selfUpdating) {
-                return;
-            }
-
-            // Gather all samples of selected shapes in selected sheets
-            final List<Sample> allSamples = new ArrayList<Sample>();
-            final List<Descriptor> descriptors = sheetSelector.list.getSelectedValuesList();
-            final JList<Shape> shapeList = shapeSelector.list;
-            final DefaultListModel<Shape> model = (DefaultListModel<Shape>) shapeList.getModel();
-
-            for (Shape shape : shapeList.getSelectedValuesList()) {
-                final ArrayList<Sample> shapeSamples = new ArrayList<Sample>();
-
-                for (Descriptor desc : descriptors) {
-                    shapeSamples.addAll(repository.getSamples(desc.id, shape));
-                }
-
-                if (shapeSamples.isEmpty()) {
-                    // Remove this shape from shapeSelector
-                    // SampleListing listens to ShapeSelector, so stateChanged() will be recalled
-                    selfUpdating = true;
-                    model.remove(model.indexOf(shape));
-                    selfUpdating = false;
-                }
-
-                allSamples.addAll(shapeSamples);
-            }
-
-            populateWith(allSamples);
-        }
-
-        /**
-         * Remove and regenerate the whole content of SampleListing.
-         *
-         * @param samples the whole sequence of samples to display (assumed to be ordered by shape)
-         */
-        private void populateWith (List<Sample> samples)
-        {
-            // Remove all ShapePane instances
-            scrollablePanel.removeAll();
-
-            // Deselect any sample
-            sampleService.publish(
-                    new EntityListEvent<Sample>(
-                            this,
-                            SelectionHint.ENTITY_INIT,
-                            MouseMovement.PRESSING,
-                            Arrays.asList((Sample) null)));
-
-            // Rebuild ShapePane instances as needed
-            Shape currentShape = null;
-            List<Sample> shapeSamples = new ArrayList<Sample>();
-
-            for (Sample sample : samples) {
-                final Shape shape = sample.getShape();
-
-                // End of a shape collection?
-                if ((currentShape != null) && (currentShape != shape)) {
-                    scrollablePanel.add(
-                            new ShapePane(currentShape, shapeSamples, selectionListener));
-                    shapeSamples.clear();
-                }
-
-                currentShape = shape;
-                shapeSamples.add(sample);
-            }
-
-            // Last shape
-            if ((currentShape != null) && !shapeSamples.isEmpty()) {
-                scrollablePanel.add(new ShapePane(currentShape, shapeSamples, selectionListener));
-            }
-
-            TitledBorder border = (TitledBorder) getBorder();
-            int sampleCount = samples.size();
-            border.setTitle(title + ((sampleCount > 0) ? (": " + sampleCount) : ""));
-            validate();
-            repaint();
-//
-//            // Pre-select the very first sample of the very first ShapePane
-//            if (!samples.isEmpty()) {
-//                ShapePane shapePane = (ShapePane) scrollablePanel.getComponent(0);
-//                shapePane.list.setSelectedIndex(0);
-//            }
-        }
-
-        private void removeSample (Sample sample)
-        {
-            for (Component comp : scrollablePanel.getComponents()) {
-                ShapePane shapePane = (ShapePane) comp;
-
-                if (shapePane.model.contains(sample)) {
-                    shapePane.model.removeElement(sample);
-
-                    if (shapePane.model.isEmpty()) {
-                        scrollablePanel.remove(shapePane);
-                    }
-
-                    break;
-                }
-            }
-        }
-    }
-
-    //-------------//
-    // SampleModel //
-    //-------------//
-    /**
-     * A very basic samples model, used to handle the deletion of samples.
-     */
-    private class SampleModel
-            extends GlyphsModel
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public SampleModel (EntityService<Sample> sampleService)
-        {
-            super(null, sampleService, null);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        // Certainly not called ...
-        @Override
-        public void deassignGlyph (Glyph sample)
-        {
-            logger.error("Implement deassignGlyph");
-        }
-
-        public void removeSample (Sample sample)
-        {
-            repository.removeSample(sample);
-        }
-    }
-
-    //----------------//
-    // SampleRenderer //
-    //----------------//
-    /**
-     * Render a sample cell within a ShapePane in ShapeListing.
-     */
-    private static class SampleRenderer
-            extends JPanel
-            implements ListCellRenderer<Sample>
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** The sample being rendered. */
-        private Sample sample;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public SampleRenderer (Dimension maxDimension)
-        {
-            setOpaque(true);
-            setPreferredSize(
-                    new Dimension(
-                            maxDimension.width + (2 * SAMPLE_MARGIN),
-                            maxDimension.height + (2 * SAMPLE_MARGIN)));
-            setBorder(SAMPLE_BORDER);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public Component getListCellRendererComponent (JList<? extends Sample> list,
-                                                       Sample sample,
-                                                       int index,
-                                                       boolean isSelected,
-                                                       boolean cellHasFocus)
-        {
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-            } else {
-                setBackground(sample.isSymbol() ? SYMBOL_BACKGROUND : SAMPLE_BACKGROUND);
-            }
-
-            this.sample = sample;
-
-            return this;
-        }
-
-        @Override
-        protected void paintComponent (Graphics g)
-        {
-            super.paintComponent(g); // Paint background
-
-            RunTable table = sample.getRunTable();
-            g.translate(SAMPLE_OFFSET.x, SAMPLE_OFFSET.y);
-
-            // Draw the (properly scaled) run table over a white rectangle of same bounds
-            final double ratio = (double) STANDARD_INTERLINE / sample.getInterline();
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.scale(ratio, ratio);
-
-            g2.setColor(Color.WHITE);
-            g2.fillRect(0, 0, table.getWidth(), table.getHeight());
-
-            g2.setColor(Color.BLACK);
-            table.render(g2, new Point(0, 0));
-
-            g2.dispose();
-
-            g.translate(-SAMPLE_OFFSET.x, -SAMPLE_OFFSET.y);
-        }
-    }
-
-    //-----------------//
-    // ScrollablePanel //
-    //-----------------//
-    private static class ScrollablePanel
-            extends JPanel
-            implements Scrollable
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public Dimension getPreferredScrollableViewportSize ()
-        {
-            return getPreferredSize();
-        }
-
-        /**
-         * Returns the distance to scroll to expose the next or previous block.
-         * <p>
-         * For JList:
-         * <ul>
-         * <li>if scrolling down, returns the distance to scroll so that the last
-         * visible element becomes the first completely visible element
-         * <li>if scrolling up, returns the distance to scroll so that the first
-         * visible element becomes the last completely visible element
-         * <li>returns {@code visibleRect.height} if the list is empty
-         * </ul>
-         * <p>
-         * For us:
-         * <p>
-         * "Element" could be the next/previous shape listPane?
-         *
-         * @param visibleRect the view area visible within the viewport
-         * @param orientation {@code SwingConstants.HORIZONTAL} or {@code SwingConstants.VERTICAL}
-         * @param direction   less or equal to zero to scroll up, greater than zero for down
-         * @return the "block" increment for scrolling in the specified direction; always positive
-         */
-        @Override
-        public int getScrollableBlockIncrement (Rectangle visibleRect,
-                                                int orientation,
-                                                int direction)
-        {
-            return visibleRect.height; // The whole window height. TODO: Could be improved.
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportHeight ()
-        {
-            return false;
-        }
-
-        @Override
-        public boolean getScrollableTracksViewportWidth ()
-        {
-            return true;
-        }
-
-        /**
-         * Returns the distance to scroll to expose the next or previous row.
-         * <p>
-         * JList
-         *
-         * @param visibleRect the view area visible within the viewport
-         * @param orientation {@code SwingConstants.HORIZONTAL} or {@code SwingConstants.VERTICAL}
-         * @param direction   less or equal to zero to scroll up, greater than zero for down
-         * @return the "unit" increment for scrolling in the specified direction; always positive
-         */
-        @Override
-        public int getScrollableUnitIncrement (Rectangle visibleRect,
-                                               int orientation,
-                                               int direction)
-        {
-            return 20; // Minimum cell height. TODO: Could be improved.
+            this.setInsets(25, 5, 0, 0);
         }
     }
 
@@ -892,9 +810,11 @@ public class SampleVerifier
         private ChangeListener listener;
 
         // Buttons
-        protected JButton selectAll = new JButton("Select All");
+        protected final JButton selectAll = new JButton("Select All");
 
-        protected JButton cancelAll = new JButton("Cancel All");
+        protected final JButton cancelAll = new JButton("Cancel All");
+
+        protected JButton remove;
 
         // Underlying list model
         protected final DefaultListModel<E> model = new DefaultListModel<E>();
@@ -909,19 +829,23 @@ public class SampleVerifier
         /**
          * Create a selector.
          *
-         * @param title    label for this selector
-         * @param listener potential (external) listener for changes, if any
+         * @param title     label for this selector
+         * @param removable adapter for remove action, or null
          */
         public Selector (String title,
-                         ChangeListener listener)
+                         final Removable<E> removable)
         {
             super(title);
             this.title = title;
-            this.listener = listener;
 
             setLayout(new BorderLayout());
             setMinimumSize(new Dimension(0, 200));
             setPreferredSize(new Dimension(180, 200));
+
+            if (removable != null) {
+                remove = new JButton("Remove");
+                remove.setToolTipText(removable.getTip());
+            }
 
             // To be informed of mouse (de)selections (not programmatic)
             list.addListSelectionListener(
@@ -930,11 +854,13 @@ public class SampleVerifier
                 @Override
                 public void valueChanged (ListSelectionEvent e)
                 {
-                    update(); // Brute force !!!
+                    if (!e.getValueIsAdjusting()) {
+                        update();
+                    }
                 }
             });
 
-            // Same action whatever the subclass : select all items
+            // Same action whatever the subclass: select all items
             selectAll.addActionListener(
                     new ActionListener()
             {
@@ -945,7 +871,7 @@ public class SampleVerifier
                 }
             });
 
-            // Same action whatever the subclass : deselect all items
+            // Same action whatever the subclass: deselect all items
             cancelAll.addActionListener(
                     new ActionListener()
             {
@@ -957,14 +883,34 @@ public class SampleVerifier
                 }
             });
 
-            JPanel buttons = new JPanel(new GridLayout(1, 2));
+            if (removable != null) {
+                remove.addActionListener(
+                        new ActionListener()
+                {
+                    @Override
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        removable.remove(list.getSelectedValuesList());
+                    }
+                });
+            }
+
+            JPanel buttons = new JPanel(new GridLayout(1, 3));
 
             buttons.add(selectAll);
             buttons.add(cancelAll);
 
+            if (removable != null) {
+                buttons.add(remove);
+            }
+
             // All buttons are initially disabled
             selectAll.setEnabled(false);
             cancelAll.setEnabled(false);
+
+            if (removable != null) {
+                remove.setEnabled(false);
+            }
 
             add(scrollPane, BorderLayout.CENTER);
             add(buttons, BorderLayout.SOUTH);
@@ -1001,6 +947,16 @@ public class SampleVerifier
             update();
         }
 
+        /**
+         * Set a listener to this instance
+         *
+         * @param listener listener for changes or null
+         */
+        public void setListener (ChangeListener listener)
+        {
+            this.listener = listener;
+        }
+
         protected void update ()
         {
             final int selectionCount = list.getSelectedIndices().length;
@@ -1014,106 +970,14 @@ public class SampleVerifier
             selectAll.setEnabled(model.size() > 0);
             cancelAll.setEnabled(selectionCount > 0);
 
+            if (remove != null) {
+                remove.setEnabled(selectionCount > 0);
+            }
+
             // Notify listener if any
             if (listener != null) {
                 listener.stateChanged(null);
             }
-        }
-    }
-
-    //-----------//
-    // ShapePane //
-    //-----------//
-    /**
-     * Handles the display of a list of samples assigned to the same shape.
-     */
-    private static class ShapePane
-            extends TitledPanel
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final DefaultListModel<Sample> model = new DefaultListModel<Sample>();
-
-        /** Underlying list of all samples for the shape. */
-        private final JList<Sample> list = new JList<Sample>(model);
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Build a ShapePane instance for the provided shape.
-         *
-         * @param shape             provided shape
-         * @param samples           all samples (within selected sheets) for that shape
-         * @param selectionListener listener on user selection
-         */
-        public ShapePane (Shape shape,
-                          List<Sample> samples,
-                          ListSelectionListener selectionListener)
-        {
-            super(shape + " (" + samples.size() + ")");
-            setLayout(new BorderLayout());
-
-            for (Sample sample : samples) {
-                model.addElement(sample);
-            }
-
-            list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-            list.setVisibleRowCount(0);
-            list.setSelectionMode(SINGLE_SELECTION);
-            list.addListSelectionListener(selectionListener);
-
-            // One renderer for all samples of same shape
-            list.setCellRenderer(new SampleRenderer(maxDimensionOf(samples)));
-
-            // Specific left/right keys to go through the whole list (and not only the current row)
-            list.addKeyListener(
-                    new KeyAdapter()
-            {
-                @Override
-                public void keyPressed (KeyEvent ke)
-                {
-                    final int size = list.getModel().getSize();
-                    final int index = list.getSelectedIndex();
-
-                    if ((ke.getKeyCode() == KeyEvent.VK_LEFT) && (index > 0)) {
-                        ke.consume();
-                        list.setSelectedIndex(index - 1);
-                    }
-
-                    if ((ke.getKeyCode() == KeyEvent.VK_RIGHT) && (index < (size - 1))) {
-                        ke.consume();
-                        list.setSelectedIndex(index + 1);
-                    }
-                }
-            });
-
-            add(list, BorderLayout.CENTER);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void remove (Sample sample)
-        {
-            model.removeElement(sample);
-        }
-
-        /**
-         * Determine the maximum dimension to accommodate all samples for this shape,
-         * once they are scaled to the standard interline value.
-         *
-         * @param samples the population of samples (same shape)
-         * @return the largest dimension observed
-         */
-        private Dimension maxDimensionOf (List<Sample> samples)
-        {
-            double w = 0;
-            double h = 0;
-
-            for (Sample sample : samples) {
-                final double ratio = (double) STANDARD_INTERLINE / sample.getInterline();
-                w = Math.max(w, ratio * sample.getWidth());
-                h = Math.max(h, ratio * sample.getHeight());
-            }
-
-            return new Dimension((int) Math.ceil(w), (int) Math.ceil(h));
         }
     }
 
@@ -1123,7 +987,7 @@ public class SampleVerifier
     /**
      * Render a shape item within the ShapeSelector list.
      */
-    private class ShapeRenderer
+    private static class ShapeRenderer
             extends JLabel
             implements ListCellRenderer<Shape>
     {
@@ -1162,6 +1026,42 @@ public class SampleVerifier
         }
     }
 
+    //-----------------------//
+    // SampleEvaluationBoard //
+    //-----------------------//
+    /**
+     * An evaluation board dedicated to evaluation / reassign of samples.
+     */
+    private class SampleEvaluationBoard
+            extends EvaluationBoard
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public SampleEvaluationBoard (SampleController controller)
+        {
+            super(true, null, NeuralClassifier.getInstance(), controller, true);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected void evaluate (Glyph glyph)
+        {
+            if (glyph == null) {
+                // Blank the output
+                selector.setEvals(null, null);
+            } else {
+                selector.setEvals(
+                        classifier.evaluate(
+                                glyph,
+                                ((Sample) glyph).getInterline(),
+                                selector.evalCount(),
+                                0.0, // minGrade
+                                Classifier.NO_CONDITIONS),
+                        glyph);
+            }
+        }
+    }
+
     //---------------//
     // ShapeSelector //
     //---------------//
@@ -1174,9 +1074,9 @@ public class SampleVerifier
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public ShapeSelector (ChangeListener listener)
+        public ShapeSelector ()
         {
-            super("Shapes", listener);
+            super("Shapes", null);
             setMinimumSize(new Dimension(100, 0));
 
             list.setCellRenderer(new ShapeRenderer());
@@ -1186,7 +1086,7 @@ public class SampleVerifier
         @Override
         public void stateChanged (ChangeEvent e)
         {
-            // Populate with shape names found in selected folders
+            // Called from sheetSelector: Populate with shape names found in selected sheets
             final EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
 
             for (Descriptor desc : sheetSelector.list.getSelectedValuesList()) {
@@ -1208,9 +1108,37 @@ public class SampleVerifier
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public SheetSelector (ChangeListener listener)
+        public SheetSelector ()
         {
-            super("Sheets", listener);
+            super(
+                    "Sheets",
+                    new Removable<Descriptor>()
+            {
+                @Override
+                public String getTip ()
+                {
+                    return "Remove whole material for selected sheets";
+                }
+
+                @Override
+                public void remove (List<Descriptor> sheets)
+                {
+                    int n = sheets.size();
+                    String target = (n > 1) ? ("these " + n + " sheets?") : ("this sheet?");
+                    int answer = JOptionPane.showConfirmDialog(
+                            frame,
+                            "Remove whole material from " + target,
+                            "Removal confirmation",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.WARNING_MESSAGE);
+
+                    if (answer == JOptionPane.YES_OPTION) {
+                        for (Descriptor desc : sheets) {
+                            repository.removeSheet(desc);
+                        }
+                    }
+                }
+            });
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -1218,29 +1146,6 @@ public class SampleVerifier
         public void stateChanged (ChangeEvent e)
         {
             populateWith(repository.getAllDescriptors());
-        }
-    }
-
-    //-------------//
-    // TitledPanel //
-    //-------------//
-    /**
-     * A panel surrounded by an EmptyBorder and a title.
-     */
-    private static class TitledPanel
-            extends Panel
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public TitledPanel (String title)
-        {
-            setBorder(
-                    BorderFactory.createTitledBorder(
-                            new EmptyBorder(20, 5, 0, 0), // TLBR
-                            title,
-                            TitledBorder.LEFT,
-                            TitledBorder.TOP));
-            this.setInsets(25, 5, 0, 0);
         }
     }
 }

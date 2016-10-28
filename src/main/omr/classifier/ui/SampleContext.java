@@ -194,6 +194,8 @@ public class SampleContext
                     dim = sheetTable.getDimension();
                     rect = sample.getBounds();
                 }
+            } else {
+                sheetTable = null; // To erase background image
             }
 
             setModelSize(dim);

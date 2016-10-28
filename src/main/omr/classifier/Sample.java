@@ -27,6 +27,8 @@ import omr.glyph.Shape;
 
 import omr.run.RunTable;
 
+import omr.util.Jaxb;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,7 @@ import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code Sample} represents a sample of a shape with the related glyph.
@@ -75,6 +78,11 @@ public class Sample
     @XmlAttribute(name = "interline")
     protected final int interline;
 
+    /** Staff-based pitch. */
+    @XmlAttribute(name = "pitch")
+    @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
+    protected Double pitch;
+
     /** True for artificial (font-based) sample. */
     private boolean symbol;
 
@@ -88,18 +96,21 @@ public class Sample
      * @param interline scaling information
      * @param id        sample id
      * @param shape     assigned shape
+     * @param pitch     pitch WRT related staff
      */
     public Sample (int left,
                    int top,
                    RunTable runTable,
                    int interline,
                    int id,
-                   Shape shape)
+                   Shape shape,
+                   Double pitch)
     {
         super(left, top, runTable);
         this.id = id;
         this.shape = shape;
         this.interline = interline;
+        this.pitch = pitch;
     }
 
     /**
@@ -108,40 +119,32 @@ public class Sample
      * @param glyph     the originating glyph
      * @param interline sheet interline
      * @param shape     assigned shape
+     * @param pitch     pitch WRT related staff
      */
     public Sample (Glyph glyph,
                    int interline,
-                   Shape shape)
+                   Shape shape,
+                   Double pitch)
     {
-        this(glyph.getLeft(), glyph.getTop(), glyph.getRunTable(), interline, glyph.getId(), shape);
+        this(
+                glyph.getLeft(),
+                glyph.getTop(),
+                glyph.getRunTable(),
+                interline,
+                glyph.getId(),
+                shape,
+                pitch);
     }
 
     /**
      * No-arg constructor needed for JAXB unmarshalling.
      */
-    public Sample ()
+    private Sample ()
     {
-        this(0, 0, null, 0, 0, null);
+        this(0, 0, null, 0, 0, null, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * We need equality strictly based on reference.
-     *
-     * @param obj the reference object with which to compare.
-     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
-     */
-    @Override
-    public boolean equals (Object obj)
-    {
-        return this == obj;
-    }
-
-    public int getInterline ()
-    {
-        return interline;
-    }
-
     //--------------------//
     // getRecordableShape //
     //--------------------//
@@ -169,6 +172,33 @@ public class Sample
         }
     }
 
+    /**
+     * We need equality strictly based on reference.
+     *
+     * @param obj the reference object with which to compare.
+     * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
+     */
+    @Override
+    public boolean equals (Object obj)
+    {
+        return this == obj;
+    }
+
+    public int getInterline ()
+    {
+        return interline;
+    }
+
+    /**
+     * Report the sample pitch with respect to related staff.
+     *
+     * @return pitch value (0 for mid line, -4 for top line, +4 for bottom line)
+     */
+    public Double getPitch ()
+    {
+        return pitch;
+    }
+
     public Shape getShape ()
     {
         return shape;
@@ -178,9 +208,9 @@ public class Sample
     public int hashCode ()
     {
         int hash = 7;
-        hash = 97 * hash + Objects.hashCode(this.shape);
-        hash = 97 * hash + this.interline;
-        hash = 97 * hash + super.hashCode();
+        hash = (97 * hash) + Objects.hashCode(this.shape);
+        hash = (97 * hash) + this.interline;
+        hash = (97 * hash) + super.hashCode();
 
         return hash;
     }

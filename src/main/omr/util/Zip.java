@@ -71,28 +71,23 @@ public abstract class Zip
      * <p>
      * When IO operations are finished, the file system must be closed via {@link FileSystem#close}
      *
+     * @param path path to zip file system
      * @return the root path of the (zipped) file system
+     * @throws java.io.IOException
      */
     public static Path createFileSystem (Path path)
+            throws IOException
     {
         Objects.requireNonNull(path, "Zip.createFileSystem: path is null");
 
-        try {
-            Files.deleteIfExists(path);
-        } catch (IOException ex) {
-            logger.warn("Error deleting zip file system: " + path + " " + ex, ex);
-        }
+        Files.deleteIfExists(path);
 
-        try {
-            // Make sure the containing folder exists
-            Files.createDirectories(path.getParent());
+        // Make sure the containing folder exists
+        Files.createDirectories(path.getParent());
 
-            // Make it a zip file
-            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path.toFile()));
-            zos.close();
-        } catch (IOException ex) {
-            logger.warn("Error creating zip file system " + path + " " + ex, ex);
-        }
+        // Make it a zip file
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path.toFile()));
+        zos.close();
 
         // Finally open the file system just created
         return openFileSystem(path);
@@ -243,19 +238,15 @@ public abstract class Zip
      *
      * @param path (zip) file path
      * @return the root path of the (zipped) file system
+     * @throws java.io.IOException
      */
     public static Path openFileSystem (Path path)
+            throws IOException
     {
         Objects.requireNonNull(path, "Zip.openFileSystem: path is null");
 
-        try {
-            FileSystem fileSystem = FileSystems.newFileSystem(path, null);
+        FileSystem fileSystem = FileSystems.newFileSystem(path, null);
 
-            return fileSystem.getPath(fileSystem.getSeparator());
-        } catch (Exception ex) {
-            logger.warn("Error opening zip file system " + path + " " + ex, ex);
-        }
-
-        return null;
+        return fileSystem.getPath(fileSystem.getSeparator());
     }
 }

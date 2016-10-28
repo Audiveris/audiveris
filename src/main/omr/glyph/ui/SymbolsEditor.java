@@ -181,7 +181,12 @@ public class SymbolsEditor
         boards.add(new InterBoard(sheet));
         boards.add(new ShapeBoard(sheet, symbolsController, false));
         boards.add(
-                new EvaluationBoard(sheet, GlyphClassifier.getInstance(), symbolsController, false));
+                new EvaluationBoard(
+                        true,
+                        sheet,
+                        GlyphClassifier.getInstance(),
+                        symbolsController,
+                        false));
 
         BoardsPane boardsPane = new BoardsPane(boards);
 

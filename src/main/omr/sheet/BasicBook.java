@@ -946,8 +946,10 @@ public class BasicBook
      * {@link #closeFileSystem(java.nio.file.FileSystem)}
      *
      * @return the root path of the (zipped) book file system
+     * @throws java.io.IOException
      */
     public Path openBookFile ()
+            throws IOException
     {
         return Zip.openFileSystem(bookPath);
     }
@@ -957,6 +959,7 @@ public class BasicBook
     //-----------------//
     @Override
     public Path openSheetFolder (int number)
+            throws IOException
     {
         Path root = openBookFile();
 
@@ -1514,6 +1517,7 @@ public class BasicBook
      * @return the root path of the (zipped) book file system
      */
     private static Path createBookFile (Path bookPath)
+            throws IOException
     {
         if (bookPath == null) {
             throw new IllegalStateException("bookPath is null");
@@ -1525,16 +1529,12 @@ public class BasicBook
             logger.warn("Error deleting book: " + bookPath, ex);
         }
 
-        try {
-            // Make sure the containing folder exists
-            Files.createDirectories(bookPath.getParent());
+        // Make sure the containing folder exists
+        Files.createDirectories(bookPath.getParent());
 
-            // Make it a zip file
-            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(bookPath.toFile()));
-            zos.close();
-        } catch (IOException ex) {
-            logger.warn("Error creating book:" + bookPath, ex);
-        }
+        // Make it a zip file
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(bookPath.toFile()));
+        zos.close();
 
         // Finally open the book file just created
         return Zip.openFileSystem(bookPath);

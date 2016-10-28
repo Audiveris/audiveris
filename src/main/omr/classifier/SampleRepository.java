@@ -109,7 +109,7 @@ public class SampleRepository
     /** Standard interline value: {@value}. (Any value could fit, if used consistently) */
     public static final int STANDARD_INTERLINE = 20;
 
-    /** The single instance of this class. */
+    /** The single instance of this class, if any. */
     private static volatile SampleRepository INSTANCE;
 
     /** File name for images material: {@value}. */
@@ -157,51 +157,17 @@ public class SampleRepository
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // getExitListener //
-    //-----------------//
-    public final Application.ExitListener getExitListener ()
-    {
-        return new RepositoryExitListener();
-    }
-
     //-------------//
-    // getInstance //
+    // hasInstance //
     //-------------//
     /**
-     * Report the single instance of this class, after creating it if needed.
+     * Report whether the repository instance has been allocated.
      *
-     * @return the single instance
+     * @return true if INSTANCE exists
      */
-    public static SampleRepository getInstance ()
+    public static boolean hasInstance ()
     {
-        if (INSTANCE == null) {
-            INSTANCE = new SampleRepository();
-        }
-
-        return INSTANCE;
-    }
-
-    //-------------------//
-    // getLoadedInstance //
-    //-------------------//
-    /**
-     * Report the single instance of this class, after creating and loading it if needed.
-     *
-     * @param withBinaries if true, sheet binaries are also loaded.
-     * @return the single instance
-     */
-    public static SampleRepository getLoadedInstance (boolean withBinaries)
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SampleRepository();
-        }
-
-        if (!INSTANCE.isLoaded()) {
-            INSTANCE.loadRepository(withBinaries);
-        }
-
-        return INSTANCE;
+        return INSTANCE != null;
     }
 
     //-------------//
@@ -248,7 +214,8 @@ public class SampleRepository
                            Sheet sheet)
     {
         final SampleSheet sampleSheet = SampleRepository.this.findSampleSheet(sheet);
-        addSample(shape, glyph, staff.getSpecificInterline(), sampleSheet);
+        final double pitch = staff.pitchPositionOf(glyph.getCentroid());
+        addSample(shape, glyph, staff.getSpecificInterline(), sampleSheet, pitch);
     }
 
     //-----------//
@@ -257,11 +224,12 @@ public class SampleRepository
     public void addSample (Shape shape,
                            Glyph glyph,
                            int interline,
-                           SampleSheet sampleSheet)
+                           SampleSheet sampleSheet,
+                           Double pitch)
     {
         shape = Sample.getRecordableShape(shape);
 
-        final Sample sample = new Sample(glyph, interline, shape);
+        final Sample sample = new Sample(glyph, interline, shape, pitch);
         addSample(sample, sampleSheet);
     }
 
@@ -279,9 +247,11 @@ public class SampleRepository
      * REDUNDANT: Even if they are assigned the same shape, only one of these samples should be kept
      * for optimal training, the others are reported via the returned purge list.
      *
-     * @return the collection of samples to purge (REDUNDANT ones, not the WRONG ones)
+     * @param conflictings output to be populated by conflicting samples
+     * @param redundants   output to be populated by redundant samples
      */
-    public List<Sample> checkAllSamples ()
+    public void checkAllSamples (List<Sample> conflictings,
+                                 List<Sample> redundants)
     {
         List<Sample> allSamples = getAllSamples();
 
@@ -304,7 +274,6 @@ public class SampleRepository
             }
         });
 
-        List<Sample> purged = new ArrayList<Sample>();
         int n = allSamples.size();
         logger.debug("Checking {} samples...", n);
 
@@ -339,6 +308,7 @@ public class SampleRepository
                                 sample,
                                 getSheetId(s),
                                 s);
+                        conflictings.add(s);
                     } else {
                         logger.info(
                                 "Same runtable for {}/{} & {}/{}",
@@ -346,18 +316,20 @@ public class SampleRepository
                                 sample,
                                 getSheetId(s),
                                 s);
-                        purged.add(s);
+                        redundants.add(s);
                         deleted[j] = true;
                     }
                 }
             }
         }
 
-        if (!purged.isEmpty()) {
-            logger.info("To be purged: {} / {}", purged.size(), allSamples.size());
+        if (!conflictings.isEmpty()) {
+            logger.warn("Conflicting samples: {} / {}", conflictings.size(), allSamples.size());
         }
 
-        return purged;
+        if (!redundants.isEmpty()) {
+            logger.info("Redundant samples: {} / {}", redundants.size(), allSamples.size());
+        }
     }
 
     //--------------//
@@ -536,6 +508,53 @@ public class SampleRepository
         return allSamples;
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class, after creating it if needed.
+     *
+     * @return the single instance
+     */
+    public static SampleRepository getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SampleRepository();
+        }
+
+        return INSTANCE;
+    }
+
+    //-------------------//
+    // getLoadedInstance //
+    //-------------------//
+    /**
+     * Report the single instance of this class, after creating and loading it if needed.
+     *
+     * @param withImages if true, sheet binaries are also loaded.
+     * @return the single instance
+     */
+    public static SampleRepository getLoadedInstance (boolean withImages)
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SampleRepository();
+        }
+
+        if (!INSTANCE.isLoaded()) {
+            INSTANCE.loadRepository(withImages);
+        }
+
+        return INSTANCE;
+    }
+
+    //-----------------//
+    // getExitListener //
+    //-----------------//
+    public final Application.ExitListener getExitListener ()
+    {
+        return new RepositoryExitListener();
+    }
+
     //----------------//
     // getSampleSheet //
     //----------------//
@@ -639,6 +658,17 @@ public class SampleRepository
         return null;
     }
 
+    //----------------//
+    // hasSheetImages //
+    //---------------//
+    /**
+     * Check whether file of sheet images is available.
+     */
+    public boolean hasSheetImages ()
+    {
+        return Files.exists(IMAGES_FILE);
+    }
+
     //----------//
     // isLoaded //
     //----------//
@@ -683,9 +713,9 @@ public class SampleRepository
     /**
      * Load the training material (font-based symbols as well as concrete samples).
      *
-     * @param withBinaries if true, sheet binaries are also loaded.
+     * @param withImages if true, sheet binary images are also loaded.
      */
-    public void loadRepository (boolean withBinaries)
+    public void loadRepository (boolean withImages)
     {
         final StopWatch watch = new StopWatch("Loading repository");
 
@@ -714,14 +744,9 @@ public class SampleRepository
             watch.start("loadSamples");
             loadSamples(samplesRoot);
 
-            if (withBinaries && Files.exists(IMAGES_FILE)) {
-                watch.start("open images.zip");
-
-                final Path imagesRoot = Zip.openFileSystem(IMAGES_FILE);
-
+            if (withImages) {
                 watch.start("loadImages");
-                loadImages(imagesRoot);
-                imagesRoot.getFileSystem().close();
+                loadSheetImages();
             }
 
             samplesRoot.getFileSystem().close();
@@ -732,6 +757,27 @@ public class SampleRepository
             if (constants.printWatch.isSet()) {
                 watch.print();
             }
+        }
+    }
+
+    //-----------------//
+    // loadSheetImages //
+    //-----------------//
+    /**
+     * Load the sheet images, if available.
+     */
+    public void loadSheetImages ()
+    {
+        if (hasSheetImages()) {
+            try {
+                final Path imagesRoot = Zip.openFileSystem(IMAGES_FILE);
+                loadImages(imagesRoot);
+                imagesRoot.getFileSystem().close();
+            } catch (IOException ex) {
+                logger.warn("Error loading sheet images " + ex, ex);
+            }
+        } else {
+            logger.info("{} not found.", IMAGES_FILE);
         }
     }
 
@@ -761,6 +807,31 @@ public class SampleRepository
         fireStateChanged(new RemovalEvent(sample));
     }
 
+    //-------------//
+    // removeSheet //
+    //-------------//
+    /**
+     * Remove the provided sheet with all its samples from the repository.
+     *
+     * @param descriptor the descriptor of the sampleSheet to remove
+     */
+    public void removeSheet (Descriptor descriptor)
+    {
+        final SampleSheet sampleSheet = idMap.get(descriptor.id);
+        idMap.remove(descriptor.id);
+
+        if (sampleSheet.getImage() != null) {
+            imageMap.remove(sampleSheet.getImage());
+        }
+
+        for (Sample sample : sampleSheet.getAllSamples()) {
+            sampleMap.remove(sample);
+        }
+
+        sheetContainer.removeDescriptor(descriptor);
+        fireStateChanged(new SheetRemovalEvent(descriptor));
+    }
+
     //-----------------//
     // storeRepository //
     //-----------------//
@@ -777,7 +848,7 @@ public class SampleRepository
 
             // Container
             if (sheetContainer.isModified()) {
-                sheetContainer.marshal(samplesRoot);
+                sheetContainer.marshal(samplesRoot, imagesRoot);
             }
 
             // Samples
@@ -790,7 +861,7 @@ public class SampleRepository
             samplesRoot.getFileSystem().close();
             imagesRoot.getFileSystem().close();
             setModified(false);
-            logger.debug("storeRepository done");
+            logger.info("Sample repository stored.");
         } catch (Throwable ex) {
             logger.warn("Error storing repository to " + SAMPLES_FILE + " " + ex, ex);
         }
@@ -912,7 +983,7 @@ public class SampleRepository
                 }
             });
 
-            logger.debug("loadBinaries done");
+            logger.debug("loadImages done");
         } catch (Throwable ex) {
             logger.warn("Error loading binaries from " + IMAGES_FILE + " " + ex, ex);
         }
@@ -1022,7 +1093,7 @@ public class SampleRepository
     // AdditionEvent //
     //---------------//
     /**
-     * Event used to carry information about addition performed.
+     * Event used to carry information about sample addition performed.
      */
     public class AdditionEvent
             extends ChangeEvent
@@ -1043,7 +1114,7 @@ public class SampleRepository
     // RemovalEvent //
     //--------------//
     /**
-     * Event used to carry information about removal performed.
+     * Event used to carry information about sample removal performed.
      */
     public class RemovalEvent
             extends ChangeEvent
@@ -1057,6 +1128,27 @@ public class SampleRepository
         {
             super(SampleRepository.this);
             this.sample = sample;
+        }
+    }
+
+    //-------------------//
+    // SheetRemovalEvent //
+    //-------------------//
+    /**
+     * Event used to carry information about sheet removal performed.
+     */
+    public class SheetRemovalEvent
+            extends ChangeEvent
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        public final Descriptor descriptor; // Descriptor of the removed sheet
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public SheetRemovalEvent (Descriptor descriptor)
+        {
+            super(SampleRepository.this);
+            this.descriptor = descriptor;
         }
     }
 

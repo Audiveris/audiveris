@@ -417,7 +417,11 @@ public class GuiActions
             @Override
             public void run ()
             {
-                SampleVerifier.getInstance().setVisible();
+                try {
+                    SampleVerifier.getInstance().setVisible();
+                } catch (Throwable ex) {
+                    logger.warn("Could not launch samples verifier. " + ex, ex);
+                }
             }
         });
     }

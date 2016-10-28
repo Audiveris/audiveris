@@ -344,7 +344,7 @@ class ValidationPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            SampleVerifier.getInstance().verify(falsePositives);
+            SampleVerifier.getInstance().displayAll(falsePositives);
             SampleVerifier.getInstance().setVisible();
         }
     }
@@ -401,7 +401,7 @@ class ValidationPanel
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            SampleVerifier.getInstance().verify(weakPositives);
+            SampleVerifier.getInstance().displayAll(weakPositives);
             SampleVerifier.getInstance().setVisible();
         }
     }

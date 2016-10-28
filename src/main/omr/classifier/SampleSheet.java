@@ -135,6 +135,58 @@ public class SampleSheet
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Delete from disk the samples and image if any of a defunct sheet
+     *
+     * @param descriptor  descriptor of the defunct sheet
+     * @param samplesRoot root for samples
+     * @param imagesRoot  root for images
+     */
+    public static void delete (SheetContainer.Descriptor descriptor,
+                               Path samplesRoot,
+                               Path imagesRoot)
+    {
+        final int id = descriptor.id;
+
+        try {
+            logger.info("Deleting material for sheet {}", descriptor);
+
+            // Delete folder for sheet data
+            final Path folderPath = samplesRoot.resolve(Integer.toString(id));
+
+            if (Files.exists(folderPath)) {
+                // Files(s)
+                final Path samplesPath = folderPath.resolve(SAMPLES_FILE_NAME);
+
+                if (Files.deleteIfExists(samplesPath)) {
+                    logger.info("   Samples: deleted {}", samplesPath);
+                }
+
+                // Then folder
+                Files.delete(folderPath);
+                logger.info("   Samples: deleted {}", folderPath);
+            }
+
+            // Image?
+            final Path imagesPath = imagesRoot.resolve(Integer.toString(id));
+
+            if (Files.exists(imagesPath)) {
+                // File(s)
+                final Path imagePath = imagesPath.resolve(IMAGE_FILE_NAME);
+
+                if (Files.deleteIfExists(imagePath)) {
+                    logger.info("   Images: deleted {}", imagePath);
+                }
+
+                // Then folder
+                Files.delete(imagesPath);
+                logger.info("   Images: deleted {}", imagesPath);
+            }
+        } catch (Exception ex) {
+            logger.error("Error deleting material for sheet " + descriptor + " " + ex, ex);
+        }
+    }
+
     //-----------//
     // isSymbols //
     //-----------//
@@ -219,6 +271,26 @@ public class SampleSheet
     public RunTable getImage ()
     {
         return image;
+    }
+
+    //------------//
+    // getSamples //
+    //------------//
+    /**
+     * Report the samples registered in this sheet for the provided shape.
+     *
+     * @param shape the provided shape
+     * @return the sheet samples for the provided shape
+     */
+    public List<Sample> getSamples (Shape shape)
+    {
+        final List<Sample> samples = shapeMap.get(shape);
+
+        if (samples != null) {
+            return samples;
+        }
+
+        return Collections.emptyList();
     }
 
     //-----------//
@@ -333,32 +405,12 @@ public class SampleSheet
         sb.append(" shapes:").append(shapeMap.size());
 
         if (image != null) {
-            sb.append(" image:").append(image);
+            sb.append(" image");
         }
 
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //------------//
-    // getSamples //
-    //------------//
-    /**
-     * Report the samples registered in this sheet for the provided shape.
-     *
-     * @param shape the provided shape
-     * @return the sheet samples for the provided shape
-     */
-    List<Sample> getSamples (Shape shape)
-    {
-        final List<Sample> samples = shapeMap.get(shape);
-
-        if (samples != null) {
-            return samples;
-        }
-
-        return Collections.emptyList();
     }
 
     //------------------//

@@ -5,7 +5,7 @@ sourceCompatibility = '1.7'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 ext.programName    = 'Audiveris'
-ext.programVersion = '5.0'
+ext.programVersion = '5.0.0'
 ext.companyName    = "$programName Ltd."
 ext.companyId      = "${programName}Ltd"
 

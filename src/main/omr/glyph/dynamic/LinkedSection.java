@@ -42,6 +42,7 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -204,6 +205,12 @@ public class LinkedSection
     public Point getCentroid ()
     {
         return section.getCentroid();
+    }
+
+    @Override
+    public Point2D getCentroid2D ()
+    {
+        return section.getCentroid2D();
     }
 
     //-------------//
