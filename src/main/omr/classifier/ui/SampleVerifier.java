@@ -79,6 +79,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -241,17 +242,59 @@ public class SampleVerifier
     }
 
     //-----------------//
-    // checkDuplicates //
+    // checkRepository //
     //-----------------//
     /**
-     * Action to check for sample duplicates
+     * Action to check for sample duplicates or conflicts
      *
-     * @param e the event which triggered this action
+     * @param e the event which triggered this action, perhaps null
      */
     @Action
-    public void checkDuplicates (ActionEvent e)
+    public void checkRepository (ActionEvent e)
     {
-        checkRepository();
+        repoChecked = true;
+
+        Set<Sample> conflictings = new LinkedHashSet<Sample>();
+        Set<Sample> redundants = new LinkedHashSet<Sample>();
+        repository.checkAllSamples(conflictings, redundants);
+
+        if (conflictings.isEmpty() && redundants.isEmpty()) {
+            logger.info("All repository samples are OK.");
+
+            return;
+        }
+
+        if (!redundants.isEmpty()) {
+            int answer = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Purge repository of " + redundants.size() + " duplication(s)?",
+                    "Duplication(s) found in sample repository",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+
+            if (answer == JOptionPane.YES_OPTION) {
+                for (Sample sample : redundants) {
+                    repository.removeSample(sample);
+                }
+            } else if (answer != JOptionPane.NO_OPTION) {
+                repoChecked = false; // The user made no decision yet
+            }
+        }
+
+        if (!conflictings.isEmpty()) {
+            int answer = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Inspect these conflicting samples?",
+                    "BEWARE: " + conflictings.size() + " conflict(s) detected",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+
+            if (answer == JOptionPane.YES_OPTION) {
+                displayAll(conflictings);
+            } else if (answer != JOptionPane.NO_OPTION) {
+                repoChecked = false; // The user made no decision yet
+            }
+        }
     }
 
     //------------//
@@ -262,11 +305,11 @@ public class SampleVerifier
      * manual selection of sheets then shapes then samples.
      * <p>
      * (Typically these are the samples that are not correctly recognized by the classifier during
-     * its test)
+     * its test, or conflicting samples in repository check)
      *
      * @param samples the collection of samples to inspect
      */
-    public void displayAll (List<Sample> samples)
+    public void displayAll (Collection<Sample> samples)
     {
         connectSelectors(false); // Disable standard triggers: sheets -> shapes -> samples
 
@@ -290,8 +333,9 @@ public class SampleVerifier
         shapeSelector.select(shapeSet);
 
         // Populate samples
-        Collections.sort(samples, Sample.byShape); // Samples must be ordered by shape for listing
-        sampleListing.populateWith(samples);
+        List<Sample> sorted = new ArrayList<Sample>(samples);
+        Collections.sort(sorted, Sample.byShape); // Must be ordered by shape for listing
+        sampleListing.populateWith(sorted);
 
         connectSelectors(true); // Re-enable standard triggers: sheets -> shapes -> samples
     }
@@ -408,7 +452,7 @@ public class SampleVerifier
         OmrGui.getApplication().show(frame);
 
         if (!repoChecked) {
-            checkRepository();
+            checkRepository(null);
         }
     }
 
@@ -479,7 +523,7 @@ public class SampleVerifier
         addExitListener(repository.getExitListener());
 
         if (!repoChecked) {
-            checkRepository();
+            checkRepository(null);
         }
     }
 
@@ -548,79 +592,25 @@ public class SampleVerifier
         ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
 
         // Save repository
-        ApplicationAction saveAction = (ApplicationAction) actionMap.get("save");
-        repoMenu.add(new JMenuItem(saveAction));
+        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("save")));
 
         // Refresh viewer
-        ApplicationAction refreshAction = (ApplicationAction) actionMap.get("refresh");
-        repoMenu.add(new JMenuItem(refreshAction));
+        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("refresh")));
 
-        repoMenu.addSeparator();
+        repoMenu.addSeparator(); // -----------------------
 
         // Load sheet images
-        ApplicationAction loadImagesAction = (ApplicationAction) actionMap.get("loadImages");
-        repoMenu.add(new JMenuItem(loadImagesAction));
+        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("loadImages")));
 
-        // Check for sample duplicates
-        ApplicationAction checkDuplicatesAction = (ApplicationAction) actionMap.get(
-                "checkDuplicates");
-        repoMenu.add(new JMenuItem(checkDuplicatesAction));
+        // Check for sample duplicates/conflicts
+        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("checkRepository")));
 
-        repoMenu.addSeparator();
+        repoMenu.addSeparator(); // -----------------------
 
         // Export to CSV file
-        ApplicationAction exportAction = (ApplicationAction) actionMap.get("exportFeatures");
-        repoMenu.add(new JMenuItem(exportAction));
+        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("exportFeatures")));
 
         return menuBar;
-    }
-
-    //-----------------//
-    // checkRepository //
-    //-----------------//
-    private void checkRepository ()
-    {
-        repoChecked = true;
-
-        List<Sample> conflictings = new ArrayList<Sample>();
-        List<Sample> redundants = new ArrayList<Sample>();
-        repository.checkAllSamples(conflictings, redundants);
-
-        if (conflictings.isEmpty() && redundants.isEmpty()) {
-            logger.info("All repository samples are OK.");
-
-            return;
-        }
-
-        if (!conflictings.isEmpty()) {
-            int answer = JOptionPane.showConfirmDialog(
-                    frame,
-                    "BEWARE: " + conflictings.size() + " conflict(s) detected",
-                    "Conflict(s) found in sample repository",
-                    JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.WARNING_MESSAGE);
-
-            if (answer != JOptionPane.OK_OPTION) {
-                repoChecked = false; // So that warning persists
-            }
-        }
-
-        if (!redundants.isEmpty()) {
-            int answer = JOptionPane.showConfirmDialog(
-                    frame,
-                    "Purge repository of " + redundants.size() + " duplication(s)?",
-                    "Duplication(s) found in sample repository",
-                    JOptionPane.YES_NO_CANCEL_OPTION,
-                    JOptionPane.WARNING_MESSAGE);
-
-            if (answer == JOptionPane.YES_OPTION) {
-                for (Sample sample : redundants) {
-                    repository.removeSample(sample);
-                }
-            } else if (answer != JOptionPane.NO_OPTION) {
-                repoChecked = false; // The user made no decision yet
-            }
-        }
     }
 
     //------------------//

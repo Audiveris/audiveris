@@ -62,6 +62,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EventObject;
@@ -250,8 +251,8 @@ public class SampleRepository
      * @param conflictings output to be populated by conflicting samples
      * @param redundants   output to be populated by redundant samples
      */
-    public void checkAllSamples (List<Sample> conflictings,
-                                 List<Sample> redundants)
+    public void checkAllSamples (Collection<Sample> conflictings,
+                                 Collection<Sample> redundants)
     {
         List<Sample> allSamples = getAllSamples();
 
@@ -308,6 +309,7 @@ public class SampleRepository
                                 sample,
                                 getSheetId(s),
                                 s);
+                        conflictings.add(sample);
                         conflictings.add(s);
                     } else {
                         logger.info(
@@ -342,7 +344,6 @@ public class SampleRepository
     {
         if (isLoaded() && isModified()) {
             storeRepository();
-            logger.info("Sample repository saved.");
         } else {
             logger.info("No need to save sample repository");
         }
