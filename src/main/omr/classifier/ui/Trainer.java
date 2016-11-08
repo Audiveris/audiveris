@@ -21,8 +21,6 @@
 // </editor-fold>
 package omr.classifier.ui;
 
-import omr.OMR;
-
 import omr.classifier.NeuralClassifier;
 
 import omr.constant.ConstantManager;
@@ -30,6 +28,7 @@ import omr.constant.ConstantManager;
 import omr.ui.OmrGui;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
+import omr.ui.util.UIUtil;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -53,9 +52,9 @@ import javax.swing.JFrame;
  * Class {@code Trainer} handles a User Interface dedicated to the
  * training and testing of a glyph classifier.
  * <p>
- * The frame is divided vertically in 4 parts:
+ * The frame is divided vertically in 3 parts:
  * <ol>
- * <li>The selection in repository of known glyphs ({@link SelectionPanel})
+ * <li>The selection in repository of samples ({@link SelectionPanel})
  * <li>The training of the neural network classifier ({@link TrainingPanel})
  * <li>The validation of the neural network classifier ({@link ValidationPanel})
  * </ol>
@@ -70,7 +69,7 @@ public class Trainer
 
     private static final Logger logger = LoggerFactory.getLogger(Trainer.class);
 
-    /** The single instance of this class */
+    /** The single instance of this class. */
     private static volatile Trainer INSTANCE;
 
     /** Stand-alone run (vs part of Audiveris). */
@@ -82,7 +81,7 @@ public class Trainer
     /** Standard width for fields/buttons in DLUs. */
     static final String FIELD_WIDTH = "30dlu";
 
-    /** An adapter triggered on window closing */
+    /** An adapter triggered on window closing. */
     private static final WindowAdapter windowCloser = new WindowAdapter()
     {
         @Override
@@ -97,16 +96,16 @@ public class Trainer
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related frame */
+    /** Related frame. */
     private JFrame frame;
 
-    /** Panel for selection in repository */
+    /** Panel for selection in repository. */
     private final SelectionPanel selectionPanel;
 
-    /** Panel for Neural network training */
+    /** Panel for Neural network training. */
     private final TrainingPanel trainingPanel;
 
-    /** Panel for Neural network validation */
+    /** Panel for Neural network validation. */
     private final ValidationPanel validationPanel;
 
     /** Current task. */
@@ -122,10 +121,7 @@ public class Trainer
         selectionPanel = new SelectionPanel(task);
         trainingPanel = new TrainingPanel(task, selectionPanel);
         selectionPanel.setTrainingPanel(trainingPanel);
-        validationPanel = new ValidationPanel(
-                task,
-                NeuralClassifier.getInstance(),
-                selectionPanel);
+        validationPanel = new ValidationPanel(task, NeuralClassifier.getInstance(), selectionPanel);
 
         // Initial state
         task.setActivity(Task.Activity.INACTIVE);
@@ -161,7 +157,9 @@ public class Trainer
     {
         if (standAlone) {
         } else {
-            OMR.gui.getApplication().show(getInstance().frame);
+            final JFrame frame = getInstance().frame;
+            OmrGui.getApplication().show(frame);
+            UIUtil.unMinimize(frame);
         }
     }
 
@@ -203,25 +201,6 @@ public class Trainer
         logger.debug("Trainer. 3/ready");
 
         frame.addWindowListener(windowCloser);
-
-        //
-        //        // Set application exit listener
-        //        addExitListener(new GuiExitListener());
-        //
-        //        // Weakly listen to OmrGui Actions parameters
-        //        PropertyChangeListener weak = new WeakPropertyChangeListener(this);
-        //        GuiActions.getInstance().addPropertyChangeListener(weak);
-        //
-        //        // Check MusicFont is loaded
-        //        MusicFont.checkMusicFont();
-        //
-        //        // Just in case we already have messages pending
-        //        notifyLog();
-        //
-        //        // Launch inputs, books & scripts
-        //        for (Callable<Void> task : Main.getCli().getCliTasks()) {
-        //            OmrExecutors.getCachedLowExecutor().submit(task);
-        //        }
     }
 
     //---------//
@@ -235,6 +214,14 @@ public class Trainer
         frame = defineLayout(getMainFrame());
 
         show(frame); // Here we go...
+    }
+
+    //--------------//
+    // displayFrame //
+    //--------------//
+    void displayFrame ()
+    {
+        frame.toFront();
     }
 
     //--------------//
@@ -313,7 +300,6 @@ public class Trainer
         {
             //~ Enumeration constant initializers --------------------------------------------------
 
-            /** No ongoing activity */
             /** No ongoing activity */
             INACTIVE,
             /** Selecting samples */

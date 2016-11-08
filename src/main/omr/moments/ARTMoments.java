@@ -34,11 +34,11 @@ public interface ARTMoments
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Number of angular indixes */
-    public static final int ANGULAR = 12;
+    /** Number of angular indices */
+    public static final int ANGULAR = 16; //12;
 
     /** Number of radius indices */
-    public static final int RADIAL = 3;
+    public static final int RADIAL = 4; //3;
 
     //~ Methods ------------------------------------------------------------------------------------
     /**

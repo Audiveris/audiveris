@@ -31,6 +31,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.FileDialog;
 import java.awt.Frame;
+import static java.awt.Frame.ICONIFIED;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
@@ -49,6 +50,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
@@ -82,6 +84,29 @@ public abstract class UIUtil
     };
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // unMinimize //
+    //------------//
+    /**
+     * Restore a frame, possibly minimized, to the front (either normal or maximized)
+     *
+     * @param frame the frame to show
+     * @see #minimize(JFrame)
+     */
+    public static void unMinimize (JFrame frame)
+    {
+        int state = frame.getExtendedState();
+
+        if ((state & ICONIFIED) != 0) {
+            state = state & ~ICONIFIED;
+        }
+
+        frame.setExtendedState(state);
+
+        frame.setVisible(true);
+        frame.toFront();
+    }
+
     //------------------//
     // directoryChooser //
     //------------------//
@@ -304,6 +329,22 @@ public abstract class UIUtil
         }
 
         return toolBorder;
+    }
+
+    //----------//
+    // minimize //
+    //----------//
+    /**
+     * Minimize the provided frame.
+     *
+     * @param frame the frame to minimize to icon
+     * @see #unMinimize(JFrame)
+     */
+    public static void minimize (JFrame frame)
+    {
+        int state = frame.getExtendedState();
+        state = state & ICONIFIED;
+        frame.setExtendedState(state);
     }
 
     //-------------//

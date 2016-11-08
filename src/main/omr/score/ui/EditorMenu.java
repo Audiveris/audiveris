@@ -21,6 +21,9 @@
 // </editor-fold>
 package omr.score.ui;
 
+import omr.classifier.SampleRepository;
+import omr.classifier.ui.FlocksMenu;
+
 import omr.glyph.ui.SymbolMenu;
 
 import omr.math.GeoUtil;
@@ -105,6 +108,7 @@ public class EditorMenu
             int symbolNb = symbolMenu.updateMenu(sheet.getGlyphIndex().getSelectedGlyphList());
             symbolMenu.getMenu().setVisible(symbolNb > 0);
         }
+
         return super.updateMenu(rect);
     }
 
@@ -115,6 +119,11 @@ public class EditorMenu
     {
         addMenu(new InterMenu(sheet));
         addMenu(new GlyphMenu(sheet));
+
+        if (SampleRepository.USE_FLOCKS) {
+            addMenu(new FlocksMenu(sheet));
+        }
+
         addMenu(new MeasureMenu());
         addMenu(new SlotMenu());
         ///addMenu(new ChordMenu());

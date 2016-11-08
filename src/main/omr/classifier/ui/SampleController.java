@@ -186,9 +186,11 @@ public class SampleController
         public AssignAction ()
         {
             super("Assign to...");
-            this.putValue(javax.swing.Action.SHORT_DESCRIPTION, "Assign a new shape");
+            putValue(javax.swing.Action.SHORT_DESCRIPTION, "Assign a new shape");
 
             ShapeSet.addAllShapes(menu, actionListener);
+            menu.setToolTipText("Assign a new shape");
+
             ShapeSet.addAllShapes(popup, actionListener);
         }
 

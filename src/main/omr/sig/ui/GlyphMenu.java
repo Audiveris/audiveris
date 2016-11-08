@@ -69,7 +69,7 @@ public class GlyphMenu
      */
     public GlyphMenu (Sheet sheet)
     {
-        super("Glyphs ...");
+        super("Glyphs");
         this.sheet = sheet;
     }
 
@@ -87,7 +87,11 @@ public class GlyphMenu
 
             for (Glyph glyph : glyphs) {
                 JMenuItem item = new SampleMenu(glyph, sheet);
-                item.setToolTipText(glyph.getGroups().toString());
+
+                if (!glyph.getGroups().isEmpty()) {
+                    item.setToolTipText(glyph.getGroups().toString());
+                }
+
                 item.addMouseListener(glyphListener);
                 add(item);
             }

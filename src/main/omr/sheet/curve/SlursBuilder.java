@@ -965,6 +965,7 @@ public class SlursBuilder
                 if (debugArc) {
                     logger.info("{} ending as STAFF_ARC", slur);
                 }
+
                 toDelete.add(inter);
 
                 continue;
@@ -1017,6 +1018,7 @@ public class SlursBuilder
             if (debugArc) {
                 logger.info("{} ending as staff line", slur);
             }
+
             toDelete.add(inter);
         }
 

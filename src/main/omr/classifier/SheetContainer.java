@@ -69,7 +69,7 @@ public class SheetContainer
     public static final String CONTAINER_ENTRY_NAME = "META-INF/container.xml";
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Map Hash code => sheet descriptors. */
+    /** Map (RunTable Hash code => sheet descriptors). */
     @XmlJavaTypeAdapter(Adapter.class)
     @XmlElement(name = "sheets")
     private HashMap<Integer, List<Descriptor>> hashMap = new HashMap<Integer, List<Descriptor>>();
@@ -213,9 +213,11 @@ public class SheetContainer
      *
      * @param samplesRoot path of samples system
      * @param imagesRoot  path of images system
+     * @param flocksRoot  path of flocks system
      */
     public void marshal (Path samplesRoot,
-                         Path imagesRoot)
+                         Path imagesRoot,
+                         Path flocksRoot)
     {
         try {
             logger.debug("Marshalling {}", this);
@@ -232,7 +234,7 @@ public class SheetContainer
 
             // Remove defunct sheets if any
             for (Descriptor descriptor : defunctDescriptors) {
-                SampleSheet.delete(descriptor, samplesRoot, imagesRoot);
+                SampleSheet.delete(descriptor, samplesRoot, imagesRoot, flocksRoot);
             }
 
             defunctDescriptors.clear();
@@ -485,6 +487,11 @@ public class SheetContainer
             }
 
             return sb.toString();
+        }
+
+        public String getName ()
+        {
+            return name;
         }
 
         public boolean isAlias (String str)

@@ -55,7 +55,7 @@ public class KeyAltersRelation
     @Override
     protected double getSourceCoeff ()
     {
-        return constants.keySupportCoeff.getValue();
+        return constants.sourceSupportCoeff.getValue();
     }
 
     //----------------//
@@ -64,7 +64,7 @@ public class KeyAltersRelation
     @Override
     protected double getTargetCoeff ()
     {
-        return constants.alterSupportCoeff.getValue();
+        return constants.targetSupportCoeff.getValue();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -76,11 +76,11 @@ public class KeyAltersRelation
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Ratio keySupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio sourceSupportCoeff = new Constant.Ratio(
                 5,
-                "Value for (source) key coeff in support formula");
+                "Value for (source) alter coeff in support formula");
 
-        private final Constant.Ratio alterSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio targetSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (target) alter coeff in support formula");
     }

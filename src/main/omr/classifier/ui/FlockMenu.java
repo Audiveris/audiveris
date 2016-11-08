@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                       S a m p l e M e n u                                      //
+//                                        F l o c k M e n u                                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,6 +21,8 @@
 // </editor-fold>
 package omr.classifier.ui;
 
+import omr.classifier.Flock;
+import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import omr.classifier.SampleSheet;
 
@@ -30,27 +32,28 @@ import omr.glyph.ShapeSet;
 
 import omr.sheet.Sheet;
 
-import omr.sig.inter.Inter;
-
+import omr.ui.OmrGui;
 import omr.ui.util.SeparableMenu;
+
+import org.jdesktop.application.Action;
+import org.jdesktop.application.ApplicationAction;
+import org.jdesktop.application.ApplicationActionMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.EnumSet;
-import java.util.Set;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code SampleMenu} is a menu dedicated to picking a glyph as a shape sample.
+ * Class {@code FlockMenu}
  *
  * @author Hervé Bitteur
  */
-public class SampleMenu
+public class FlockMenu
         extends SeparableMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -58,29 +61,75 @@ public class SampleMenu
     private static final Logger logger = LoggerFactory.getLogger(SampleMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Containing sheet. */
-    private final Sheet sheet;
-
     /** Selected glyph. */
     private final Glyph glyph;
 
+    /** Containing sheet. */
+    private final Sheet sheet;
+
+    /** Related sample sheet, if any. */
+    private SampleSheet sampleSheet;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SampleMenu} object.
+     * Creates a new {@code FlockMenu} object.
      *
      * @param glyph the selected glyph
      * @param sheet the containing sheet
      */
-    public SampleMenu (Glyph glyph,
-                       Sheet sheet)
+    public FlockMenu (Glyph glyph,
+                      Sheet sheet)
     {
-        this.sheet = sheet;
         this.glyph = glyph;
+        this.sheet = sheet;
+
+        final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+        sampleSheet = repository.pokeSampleSheet(sheet);
 
         populateMenu();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // addGood //
+    //---------//
+    @Action
+    public void addGood (ActionEvent e)
+    {
+        if (sampleSheet == null) {
+            final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+            sampleSheet = repository.findSampleSheet(sheet);
+        }
+
+        final Flock currentFlock = sampleSheet.getCurrentFlock(); // Cannot be null
+        final Shape shape = currentFlock.getBest().getShape();
+        final Glyph g = sheet.getGlyphIndex().registerOriginal(glyph);
+        final Sample good = new Sample(g, sheet.getInterline(), shape, null);
+        currentFlock.addGood(good);
+        sampleSheet.setModified(true);
+        logger.info("Added good {} to {}", good, currentFlock);
+    }
+
+    //----------//
+    // addOther //
+    //----------//
+    @Action
+    public void addOther (ActionEvent e)
+    {
+        if (sampleSheet == null) {
+            final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+            sampleSheet = repository.findSampleSheet(sheet);
+        }
+
+        final Flock currentFlock = sampleSheet.getCurrentFlock(); // Cannot be null
+        final Shape shape = currentFlock.getBest().getShape();
+        final Glyph g = sheet.getGlyphIndex().registerOriginal(glyph);
+        final Sample other = new Sample(g, sheet.getInterline(), shape, null);
+        currentFlock.addOther(other);
+        sampleSheet.setModified(true);
+        logger.info("Added other {} to {}", other, currentFlock);
+    }
+
     //----------//
     // getGlyph //
     //----------//
@@ -92,91 +141,49 @@ public class SampleMenu
         return glyph;
     }
 
-    //-----------//
-    // addSample //
-    //-----------//
-    private void addSample (Shape shape)
-    {
-        final SampleRepository repository = SampleRepository.getLoadedInstance(false);
-        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
-
-        // TODO: we need staff information (-> interline and pitch)
-        repository.addSample(shape, glyph, sheet.getInterline(), sampleSheet, null);
-    }
-
-    //-----------//
-    // getShapes //
-    //-----------//
-    private Set<Shape> getShapes ()
-    {
-        final Set<Shape> shapes = EnumSet.noneOf(Shape.class);
-
-        for (Inter inter : sheet.getInterIndex().getEntityService().getSelectedEntityList()) {
-            if (inter.getGlyph() == glyph) {
-                shapes.add(inter.getShape());
-            }
-        }
-
-        return shapes;
-    }
-
     //--------------//
     // populateMenu //
     //--------------//
+    /**
+     * Build the flock menu, based on selected glyph.
+     */
     private void populateMenu ()
     {
         setText(Integer.toString(glyph.getId()));
 
-        // Glyph interpretations
-        Set<Shape> shapes = getShapes();
+        ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
 
-        if (!shapes.isEmpty()) {
-            add(new AssignMenu(shapes));
+        // Best: Start a new flock with the glyph? Using manual shape selection
+        add(new SelectMenu());
+
+        Flock currentFlock = (sampleSheet != null) ? sampleSheet.getCurrentFlock() : null;
+
+        if (currentFlock != null) {
+            // Good: Add compatible glyph to current flock
+            add(new JMenuItem((ApplicationAction) actionMap.get("addGood")));
+
+            // Other: Add sub-optimal glyph to current flock
+            add(new JMenuItem((ApplicationAction) actionMap.get("addOther")));
+        }
+    }
+
+    //------------//
+    // selectBest //
+    //------------//
+    private void selectBest (Shape shape)
+    {
+        if (sampleSheet == null) {
+            final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+            sampleSheet = repository.findSampleSheet(sheet);
         }
 
-        // Manual shape selection
-        add(new SelectMenu());
+        final Glyph g = sheet.getGlyphIndex().registerOriginal(glyph);
+        final Sample best = new Sample(g, sheet.getInterline(), shape, null);
+
+        sampleSheet.getFlock(best);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //------------//
-    // AssignMenu //
-    //------------//
-    private class AssignMenu
-            extends JMenu
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final ActionListener listener = new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                JMenuItem source = (JMenuItem) e.getSource();
-                Shape shape = Shape.valueOf(source.getText());
-                addSample(shape);
-            }
-        };
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public AssignMenu (Set<Shape> shapes)
-        {
-            super("Assign sample");
-
-            populate(shapes);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        private void populate (Set<Shape> shapes)
-        {
-            for (Shape shape : shapes) {
-                JMenuItem menuItem = new JMenuItem(shape.toString(), shape.getDecoratedSymbol());
-                menuItem.addActionListener(listener);
-                add(menuItem);
-            }
-        }
-    }
-
     //------------//
     // SelectMenu //
     //------------//
@@ -187,7 +194,7 @@ public class SampleMenu
 
         public SelectMenu ()
         {
-            super("Select sample");
+            super("Set as Best");
 
             populate();
         }
@@ -204,7 +211,7 @@ public class SampleMenu
                 {
                     JMenuItem source = (JMenuItem) e.getSource();
                     Shape shape = Shape.valueOf(source.getText());
-                    addSample(shape);
+                    selectBest(shape);
                 }
             });
         }

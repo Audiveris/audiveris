@@ -351,16 +351,18 @@ public class ClefBuilder
         final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
         final int interline = staff.getSpecificInterline();
 
-        if (constants.recordPositiveSamples.isSet()) {
-            // Positive samples (assigned to keyShape)
-            ClefInter clef = staff.getHeader().clef;
+        // Positive samples (assigned to keyShape)
+        ClefInter clef = staff.getHeader().clef;
 
-            if (clef != null) {
-                final Glyph glyph = clef.getGlyph();
+        if (clef != null) {
+            final Glyph glyph = clef.getGlyph();
+
+            if (constants.recordPositiveSamples.isSet()) {
                 final double pitch = staff.pitchPositionOf(glyph.getCentroid());
                 repository.addSample(clef.getShape(), glyph, interline, sampleSheet, pitch);
-                glyphCandidates.remove(glyph);
             }
+
+            glyphCandidates.remove(glyph);
         }
 
         if (constants.recordNegativeSamples.isSet()) {
@@ -452,7 +454,14 @@ public class ClefBuilder
                 builder.setBrowseStart(measureStart);
                 builders.put(staff, builder);
                 builder.findClefs();
-                maxClefOffset = Math.max(maxClefOffset, staff.getClefStop() - measureStart);
+
+                final Integer clefStop = staff.getClefStop();
+
+                if (clefStop != null) {
+                    maxClefOffset = Math.max(maxClefOffset, clefStop - measureStart);
+                } else {
+                    logger.warn("Staff#{} no header clef.", staff.getId());
+                }
             }
 
             // Push StaffHeader
@@ -574,15 +583,15 @@ public class ClefBuilder
         }
 
         @Override
-        public boolean isSizeAcceptable (Rectangle box)
+        public boolean isTooLarge (Rectangle bounds)
         {
-            return box.height <= params.maxGlyphHeight;
+            return bounds.height > params.maxGlyphHeight;
         }
 
         @Override
-        public boolean isWeightAcceptable (int weight)
+        public boolean isTooLight (int weight)
         {
-            return weight >= params.minGlyphWeight;
+            return weight < params.minGlyphWeight;
         }
     }
 

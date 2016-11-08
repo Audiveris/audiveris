@@ -21,6 +21,9 @@
 // </editor-fold>
 package omr.classifier;
 
+import omr.classifier.SheetContainer.Descriptor;
+
+import omr.glyph.BasicGlyph;
 import omr.glyph.Shape;
 
 import omr.run.RunTable;
@@ -77,12 +80,18 @@ public class SampleSheet
     /** File name for sheet image: {@value}. */
     public static final String IMAGE_FILE_NAME = "image.xml";
 
+    /** File name for sheet flocks: {@value}. */
+    public static final String FLOCKS_FILE_NAME = "flocks.xml";
+
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet unique ID, negative for artificial sheets. */
     private final int id;
+
+    /** Full descriptor. */
+    private final Descriptor descriptor;
 
     /** Optional image runTable. */
     private RunTable image;
@@ -94,33 +103,36 @@ public class SampleSheet
     /** Has this sheet been modified?. */
     private boolean modified;
 
+    /** Flocks for this sheet. */
+    private List<Flock> flocks;
+
+    private Flock currentFlock;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleSheet} object.
      *
-     * @param id unique ID
+     * @param id         unique ID
+     * @param descriptor related descriptor
      */
-    public SampleSheet (int id)
+    public SampleSheet (int id,
+                        Descriptor descriptor)
     {
         this.id = id;
-    }
-
-    /**
-     * Meant for JAXB.
-     */
-    private SampleSheet ()
-    {
-        id = 0;
+        this.descriptor = descriptor;
     }
 
     /**
      * Creates a new {@code SampleSheet} object from a SampleList parameter.
      *
-     * @param value the (unmarshalled) SampleList
+     * @param value      the (unmarshalled) SampleList
+     * @param descriptor the related descriptor
      */
-    private SampleSheet (SampleList value)
+    private SampleSheet (SampleList value,
+                         Descriptor descriptor)
     {
         this.id = value.id;
+        this.descriptor = descriptor;
 
         for (Sample sample : value.samples) {
             Shape shape = sample.getShape();
@@ -141,46 +153,70 @@ public class SampleSheet
      * @param descriptor  descriptor of the defunct sheet
      * @param samplesRoot root for samples
      * @param imagesRoot  root for images
+     * @param flocksRoot  root for flocks
      */
     public static void delete (SheetContainer.Descriptor descriptor,
                                Path samplesRoot,
-                               Path imagesRoot)
+                               Path imagesRoot,
+                               Path flocksRoot)
     {
-        final int id = descriptor.id;
+        final String idStr = Integer.toString(descriptor.id);
 
         try {
             logger.info("Deleting material for sheet {}", descriptor);
 
-            // Delete folder for sheet data
-            final Path folderPath = samplesRoot.resolve(Integer.toString(id));
+            {
+                // Samples
+                final Path folderPath = samplesRoot.resolve(idStr);
 
-            if (Files.exists(folderPath)) {
-                // Files(s)
-                final Path samplesPath = folderPath.resolve(SAMPLES_FILE_NAME);
+                if (Files.exists(folderPath)) {
+                    // Files(s)
+                    final Path samplesPath = folderPath.resolve(SAMPLES_FILE_NAME);
 
-                if (Files.deleteIfExists(samplesPath)) {
-                    logger.info("   Samples: deleted {}", samplesPath);
+                    if (Files.deleteIfExists(samplesPath)) {
+                        logger.info("   Samples: deleted {}", samplesPath);
+                    }
+
+                    // Then folder
+                    Files.delete(folderPath);
+                    logger.info("   Samples: deleted {}", folderPath);
                 }
-
-                // Then folder
-                Files.delete(folderPath);
-                logger.info("   Samples: deleted {}", folderPath);
             }
 
-            // Image?
-            final Path imagesPath = imagesRoot.resolve(Integer.toString(id));
+            {
+                // Image?
+                final Path imagesPath = imagesRoot.resolve(idStr);
 
-            if (Files.exists(imagesPath)) {
-                // File(s)
-                final Path imagePath = imagesPath.resolve(IMAGE_FILE_NAME);
+                if (Files.exists(imagesPath)) {
+                    // File(s)
+                    final Path imagePath = imagesPath.resolve(IMAGE_FILE_NAME);
 
-                if (Files.deleteIfExists(imagePath)) {
-                    logger.info("   Images: deleted {}", imagePath);
+                    if (Files.deleteIfExists(imagePath)) {
+                        logger.info("   Images: deleted {}", imagePath);
+                    }
+
+                    // Then folder
+                    Files.delete(imagesPath);
+                    logger.info("   Images: deleted {}", imagesPath);
                 }
+            }
 
-                // Then folder
-                Files.delete(imagesPath);
-                logger.info("   Images: deleted {}", imagesPath);
+            // Flocks?
+            if (flocksRoot != null) {
+                final Path folderPath = flocksRoot.resolve(idStr);
+
+                if (Files.exists(folderPath)) {
+                    // File(s)
+                    final Path flocksPath = folderPath.resolve(FLOCKS_FILE_NAME);
+
+                    if (Files.deleteIfExists(flocksPath)) {
+                        logger.info("   Flocks: deleted {}", flocksPath);
+                    }
+
+                    // Then folder
+                    Files.delete(folderPath);
+                    logger.info("   Flocks: deleted {}", folderPath);
+                }
             }
         } catch (Exception ex) {
             logger.error("Error deleting material for sheet " + descriptor + " " + ex, ex);
@@ -208,10 +244,12 @@ public class SampleSheet
      * Load a SampleSheet instance from the provided path.
      *
      * @param path the source path
+     * @param desc sheet descriptor
      * @return the unmarshalled instance
      * @throws IOException
      */
-    public static SampleSheet unmarshal (Path path)
+    public static SampleSheet unmarshal (Path path,
+                                         Descriptor desc)
             throws IOException
     {
         logger.debug("SampleSheet unmarshalling {}", path);
@@ -220,7 +258,7 @@ public class SampleSheet
             InputStream is = Files.newInputStream(path, StandardOpenOption.READ);
             Unmarshaller um = getJaxbContext().createUnmarshaller();
             SampleList sampleList = (SampleList) um.unmarshal(is);
-            SampleSheet sampleSheet = new SampleSheet(sampleList);
+            SampleSheet sampleSheet = new SampleSheet(sampleList, desc);
             logger.debug("Unmarshalled {}", sampleSheet);
             is.close();
 
@@ -249,6 +287,68 @@ public class SampleSheet
         }
 
         return allSamples;
+    }
+
+    //-----------------//
+    // getCurrentFlock //
+    //-----------------//
+    public Flock getCurrentFlock ()
+    {
+        return currentFlock;
+    }
+
+    //----------//
+    // getFlock //
+    //----------//
+    /**
+     * Return (perhaps after creation) the flock based on provided best sample.
+     *
+     * @param best best sample
+     * @return the related flock
+     */
+    public Flock getFlock (Sample best)
+    {
+        currentFlock = null;
+
+        // Look for existing flock
+        for (Flock flock : getFlocks()) {
+            Sample flockBest = flock.getBest();
+
+            if (((BasicGlyph) flockBest).equals(best) && (flockBest.shape == best.shape)) {
+                currentFlock = flock;
+
+                break;
+            }
+        }
+
+        if (currentFlock == null) {
+            // Create a brand new one
+            if (flocks == null) {
+                flocks = new ArrayList<Flock>();
+            }
+
+            currentFlock = new Flock(best);
+            flocks.add(currentFlock);
+            logger.info("Created flock on {} in {}", best, this);
+            setModified(true);
+        }
+
+        return currentFlock;
+    }
+
+    //-----------//
+    // getFlocks //
+    //-----------//
+    /**
+     * @return the flocks
+     */
+    public List<Flock> getFlocks ()
+    {
+        if (flocks != null) {
+            return flocks;
+        }
+
+        return Collections.emptyList();
     }
 
     //-------//
@@ -334,39 +434,62 @@ public class SampleSheet
     // marshal //
     //---------//
     /**
-     * Marshal this instance to disk, using 'samplesRoot' for samples and "imagesRoot'
-     * for image.
+     * Marshal this instance to disk, using 'samplesRoot' for samples, "imagesRoot'
+     * for image and 'flocksRoot' for flocks.
      *
      * @param samplesRoot root for samples
      * @param imagesRoot  root for images
+     * @param flocksRoot  root for flocks, perhaps null
      */
     public void marshal (Path samplesRoot,
-                         Path imagesRoot)
+                         Path imagesRoot,
+                         Path flocksRoot)
     {
         try {
             logger.debug("Marshalling {}", this);
-
-            // Make sure the folder exists for sheet data
-            final Path folderPath = samplesRoot.resolve(Integer.toString(id));
-            Files.createDirectories(folderPath);
-
             // Samples
-            final Path samplesPath = folderPath.resolve(SAMPLES_FILE_NAME);
-            Jaxb.marshal(new SampleList(this), samplesPath, getJaxbContext());
-            logger.info("Stored {}", samplesPath);
+            {
+                final Path folderPath = samplesRoot.resolve(Integer.toString(id));
+                Files.createDirectories(folderPath);
+
+                final Path samplesPath = folderPath.resolve(SAMPLES_FILE_NAME);
+                Jaxb.marshal(new SampleList(this), samplesPath, getJaxbContext());
+                logger.info("Stored {}", samplesPath);
+            }
 
             // Binary
             if (image != null) {
-                final Path imagesPath = imagesRoot.resolve(Integer.toString(id));
-                Files.createDirectories(imagesPath);
+                final Path folderPath = imagesRoot.resolve(Integer.toString(id));
+                Files.createDirectories(folderPath);
 
-                final Path imagePath = imagesPath.resolve(IMAGE_FILE_NAME);
+                final Path imagePath = folderPath.resolve(IMAGE_FILE_NAME);
                 Jaxb.marshal(image, imagePath, getJaxbContext());
                 logger.info("Stored {}", imagePath);
+            }
+
+            // Flocks
+            if ((flocksRoot != null) && !getFlocks().isEmpty()) {
+                final Path folderPath = flocksRoot.resolve(Integer.toString(id));
+                Files.createDirectories(folderPath);
+
+                final Path flocksPath = folderPath.resolve(FLOCKS_FILE_NAME);
+                Jaxb.marshal(new FlockList(this), flocksPath, getJaxbContext());
+                logger.info("Stored {}", flocksPath);
             }
         } catch (Exception ex) {
             logger.error("Error marshalling " + this + " " + ex, ex);
         }
+    }
+
+    //-----------//
+    // setFlocks //
+    //-----------//
+    /**
+     * @param flocks the flocks to set
+     */
+    public void setFlocks (List<Flock> flocks)
+    {
+        this.flocks = flocks;
     }
 
     //----------//
@@ -402,12 +525,7 @@ public class SampleSheet
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
         sb.append("id:").append(id);
-        sb.append(" shapes:").append(shapeMap.size());
-
-        if (image != null) {
-            sb.append(" image");
-        }
-
+        sb.append(" ").append(descriptor.getName());
         sb.append("}");
 
         return sb.toString();
@@ -482,7 +600,10 @@ public class SampleSheet
     {
         // Lazy creation
         if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(RunTable.class, SampleList.class);
+            jaxbContext = JAXBContext.newInstance(
+                    RunTable.class,
+                    SampleList.class,
+                    FlockList.class);
         }
 
         return jaxbContext;

@@ -265,7 +265,7 @@ public abstract class TimeBuilder
      */
     protected void discardOthers ()
     {
-        final Map<Shape, Glyph> neutrals = new EnumMap<Shape, Glyph>(Shape.class);
+        final Map<Shape, Glyph> compatibles = new EnumMap<Shape, Glyph>(Shape.class);
 
         if (timeInter instanceof TimeWholeInter) {
             // It's a whole sig: COMMON_TIME or CUT_TIME or combo
@@ -299,7 +299,7 @@ public abstract class TimeBuilder
                         TimeNumberInter number = (TimeNumberInter) inter;
 
                         if (number.getValue() == value) {
-                            neutrals.put(number.getShape(), inter.getGlyph()); // Compatible member
+                            compatibles.put(number.getShape(), inter.getGlyph()); // Compatible member
                         }
 
                         inter.delete();
@@ -316,7 +316,7 @@ public abstract class TimeBuilder
                 TimeWholeInter time = (TimeWholeInter) inter;
 
                 if (time.getValue().equals(value)) {
-                    neutrals.put(inter.getShape(), inter.getGlyph()); // Compatible whole
+                    compatibles.put(inter.getShape(), inter.getGlyph()); // Compatible whole
                 }
 
                 inter.delete();
@@ -336,8 +336,8 @@ public abstract class TimeBuilder
             }
         }
 
-        glyphCandidates.removeAll(neutrals.values());
-        recordSamples(neutrals);
+        glyphCandidates.removeAll(compatibles.values());
+        recordSamples(compatibles);
     }
 
     //------------------//
@@ -399,7 +399,7 @@ public abstract class TimeBuilder
     /**
      * If desired, record positive and/or negative samples.
      */
-    protected void recordSamples (Map<Shape, Glyph> neutrals)
+    protected void recordSamples (Map<Shape, Glyph> compatibles)
     {
         if (!constants.recordPositiveSamples.isSet() && !constants.recordNegativeSamples.isSet()) {
             return;
@@ -426,8 +426,8 @@ public abstract class TimeBuilder
                 }
             }
 
-            // Include neutrals as positives
-            for (Entry<Shape, Glyph> entry : neutrals.entrySet()) {
+            // Include compatibles as positives
+            for (Entry<Shape, Glyph> entry : compatibles.entrySet()) {
                 final Glyph glyph = entry.getValue();
                 final double pitch = staff.pitchPositionOf(glyph.getCentroid());
                 repository.addSample(entry.getKey(), glyph, interline, sampleSheet, pitch);
@@ -1706,9 +1706,9 @@ public abstract class TimeBuilder
         }
 
         @Override
-        public boolean isWeightAcceptable (int weight)
+        public boolean isTooLight (int weight)
         {
-            return weight >= params.minHalfTimeWeight;
+            return weight < params.minHalfTimeWeight;
         }
     }
 
@@ -1749,9 +1749,9 @@ public abstract class TimeBuilder
         }
 
         @Override
-        public boolean isSizeAcceptable (Rectangle box)
+        public boolean isTooLarge (Rectangle bounds)
         {
-            return box.width <= params.maxTimeWidth;
+            return bounds.width > params.maxTimeWidth;
         }
     }
 
@@ -1817,9 +1817,9 @@ public abstract class TimeBuilder
         }
 
         @Override
-        public boolean isWeightAcceptable (int weight)
+        public boolean isTooLight (int weight)
         {
-            return weight >= params.minWholeTimeWeight;
+            return weight < params.minWholeTimeWeight;
         }
     }
 }

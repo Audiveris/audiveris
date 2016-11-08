@@ -168,7 +168,7 @@ public class HeaderBuilder
         int timeOffset = timeColumn.retrieveTime();
         setSystemTimeStop(timeOffset);
 
-        // We should be able here to select the best clef for each staff
+        // We should be able now to select the best clef for each staff
         clefColumn.selectClefs();
 
         // Purge barline inters found within headers

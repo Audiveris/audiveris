@@ -385,8 +385,8 @@ class SampleListing
         public SamplePopup ()
         {
             super("SamplePopup");
-            this.add(new JMenuItem(verifier.getSampleController().getRemoveAction()));
-            this.add(verifier.getSampleController().getAssignAction().menu);
+            add(new JMenuItem(verifier.getSampleController().getRemoveAction()));
+            add(verifier.getSampleController().getAssignAction().menu);
         }
     }
 

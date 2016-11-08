@@ -150,9 +150,23 @@ public class GlyphCluster
         ///logger.debug(" {} {} {}", set.size(), Glyphs.ids("set", set), Glyphs.ids("seen", seen));
 
         // Check what we have got
-        int weight = Glyphs.weightOf(set);
+        final int weight = Glyphs.weightOf(set);
 
-        if (adapter.isWeightAcceptable(weight)) {
+        if (adapter.isTooHeavy(weight)) {
+            logger.debug("Too high weight {} for {}", weight, set);
+
+            return;
+        }
+
+        Rectangle box = Glyphs.getBounds(set);
+
+        if (adapter.isTooLarge(box)) {
+            logger.debug("Too large  {} for {}", box, set);
+
+            return;
+        }
+
+        if (!adapter.isTooLight(weight)) {
             // Build compound and get acceptable evaluations for the compound
             Glyph compound = (set.size() > 1) ? GlyphFactory.buildGlyph(set) : set.iterator().next();
             compound.addGroup(group);
@@ -181,7 +195,7 @@ public class GlyphCluster
             // Check appending this atom does not make the resulting symbol too wide or too high
             Rectangle symBox = outlier.getBounds().union(setBox);
 
-            if (adapter.isSizeAcceptable(symBox)) {
+            if (!adapter.isTooLarge(symBox)) {
                 Set<Glyph> largerSet = new HashSet<Glyph>(set);
                 largerSet.add(outlier);
                 process(largerSet, newConsidered);
@@ -220,20 +234,36 @@ public class GlyphCluster
         List<Glyph> getParts ();
 
         /**
-         * Check whether symbol size is acceptable.
+         * Check whether glyph weight value is too high
          *
-         * @param bounds symbol bounding box
-         * @return true if OK
+         * @param weight glyph weight
+         * @return true if too high
          */
-        boolean isSizeAcceptable (Rectangle bounds);
+        boolean isTooHeavy (int weight);
 
         /**
-         * Check whether symbol weight is acceptable.
+         * Check whether glyph box is too large (too high values for height or width)
          *
-         * @param weight symbol weight
-         * @return true if OK
+         * @param bounds glyph bounds
+         * @return true if too large
          */
-        boolean isWeightAcceptable (int weight);
+        boolean isTooLarge (Rectangle bounds);
+
+        /**
+         * Check whether glyph weight value is too low
+         *
+         * @param weight glyph weight
+         * @return true if too low
+         */
+        boolean isTooLight (int weight);
+
+        /**
+         * Check whether glyph box is too small (too low values for height or width)
+         *
+         * @param bounds glyph bounds
+         * @return true if too small
+         */
+        boolean isTooSmall (Rectangle bounds);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -274,6 +304,30 @@ public class GlyphCluster
         public List<Glyph> getParts ()
         {
             return new ArrayList<Glyph>(graph.vertexSet());
+        }
+
+        @Override
+        public boolean isTooHeavy (int weight)
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isTooLarge (Rectangle bounds)
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isTooLight (int weight)
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isTooSmall (Rectangle bounds)
+        {
+            return false;
         }
     }
 }

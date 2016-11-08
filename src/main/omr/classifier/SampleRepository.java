@@ -107,6 +107,9 @@ public class SampleRepository
     private static final Logger logger = LoggerFactory.getLogger(
             SampleRepository.class);
 
+    /** Should we support flocks?. */
+    public static final boolean USE_FLOCKS = constants.useFlocks.isSet();
+
     /** Standard interline value: {@value}. (Any value could fit, if used consistently) */
     public static final int STANDARD_INTERLINE = 20;
 
@@ -119,11 +122,17 @@ public class SampleRepository
     /** File name for samples material: {@value}. */
     private static final String SAMPLES_FILE_NAME = "samples.zip";
 
+    /** File name for flocks material: {@value}. */
+    private static final String FLOCKS_FILE_NAME = "flocks.zip";
+
     /** File path for images material: {@value}. */
     private static final Path IMAGES_FILE = WellKnowns.TRAIN_FOLDER.resolve(IMAGES_FILE_NAME);
 
     /** File path for training material: {@value}. */
     private static final Path SAMPLES_FILE = WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME);
+
+    /** File path for flocks material: {@value}. */
+    private static final Path FLOCKS_FILE = WellKnowns.TRAIN_FOLDER.resolve(FLOCKS_FILE_NAME);
 
     /** Special name to refer to font-based samples: {@value}. */
     private static final String SYMBOLS = "<Font-Based Symbols>";
@@ -158,17 +167,51 @@ public class SampleRepository
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // getExitListener //
+    //-----------------//
+    public final Application.ExitListener getExitListener ()
+    {
+        return new RepositoryExitListener();
+    }
+
     //-------------//
-    // hasInstance //
+    // getInstance //
     //-------------//
     /**
-     * Report whether the repository instance has been allocated.
+     * Report the single instance of this class, after creating it if needed.
      *
-     * @return true if INSTANCE exists
+     * @return the single instance
      */
-    public static boolean hasInstance ()
+    public static SampleRepository getInstance ()
     {
-        return INSTANCE != null;
+        if (INSTANCE == null) {
+            INSTANCE = new SampleRepository();
+        }
+
+        return INSTANCE;
+    }
+
+    //-------------------//
+    // getLoadedInstance //
+    //-------------------//
+    /**
+     * Report the single instance of this class, after creating and loading it if needed.
+     *
+     * @param withImages if true, sheet binaries are also loaded.
+     * @return the single instance
+     */
+    public static SampleRepository getLoadedInstance (boolean withImages)
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SampleRepository();
+        }
+
+        if (!INSTANCE.isLoaded()) {
+            INSTANCE.loadRepository(withImages);
+        }
+
+        return INSTANCE;
     }
 
     //-------------//
@@ -447,7 +490,7 @@ public class SampleRepository
                     sheetContainer.addDescriptor(desc);
 
                     // Allocate a brand new sheet
-                    sheet = new SampleSheet(id);
+                    sheet = new SampleSheet(id, desc);
                     idMap.put(id, sheet);
                     imageMap.put(image, sheet);
                     sheet.setImage(image);
@@ -469,7 +512,7 @@ public class SampleRepository
                 sheetContainer.addDescriptor(desc);
 
                 // Allocate a brand new sheet
-                sheet = new SampleSheet(id);
+                sheet = new SampleSheet(id, desc);
                 idMap.put(id, sheet);
             }
         }
@@ -488,6 +531,25 @@ public class SampleRepository
     public List<Descriptor> getAllDescriptors ()
     {
         return sheetContainer.getAllDescriptors();
+    }
+
+    //--------------//
+    // getAllFlocks //
+    //--------------//
+    /**
+     * Report all the flocks in the repository.
+     *
+     * @return all the repository flocks
+     */
+    public List<Flock> getAllFlocks ()
+    {
+        final List<Flock> allFlocks = new ArrayList<Flock>();
+
+        for (SampleSheet sheet : idMap.values()) {
+            allFlocks.addAll(sheet.getFlocks());
+        }
+
+        return allFlocks;
     }
 
     //---------------//
@@ -509,53 +571,6 @@ public class SampleRepository
         return allSamples;
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class, after creating it if needed.
-     *
-     * @return the single instance
-     */
-    public static SampleRepository getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SampleRepository();
-        }
-
-        return INSTANCE;
-    }
-
-    //-------------------//
-    // getLoadedInstance //
-    //-------------------//
-    /**
-     * Report the single instance of this class, after creating and loading it if needed.
-     *
-     * @param withImages if true, sheet binaries are also loaded.
-     * @return the single instance
-     */
-    public static SampleRepository getLoadedInstance (boolean withImages)
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SampleRepository();
-        }
-
-        if (!INSTANCE.isLoaded()) {
-            INSTANCE.loadRepository(withImages);
-        }
-
-        return INSTANCE;
-    }
-
-    //-----------------//
-    // getExitListener //
-    //-----------------//
-    public final Application.ExitListener getExitListener ()
-    {
-        return new RepositoryExitListener();
-    }
-
     //----------------//
     // getSampleSheet //
     //----------------//
@@ -563,11 +578,25 @@ public class SampleRepository
      * Report the SampleSheet that contains the provided sample.
      *
      * @param sample the provided sample
-     * @return the containing sheet
+     * @return the containing sample sheet
      */
     public SampleSheet getSampleSheet (Sample sample)
     {
         return sampleMap.get(sample);
+    }
+
+    //----------------//
+    // getSampleSheet //
+    //----------------//
+    /**
+     * Report the SampleSheet related to the provided descriptor.
+     *
+     * @param descriptor the provided descriptor
+     * @return the related sample sheet
+     */
+    public SampleSheet getSampleSheet (Descriptor descriptor)
+    {
+        return idMap.get(descriptor.id);
     }
 
     //------------//
@@ -591,6 +620,35 @@ public class SampleRepository
         }
 
         return Collections.emptyList();
+    }
+
+    //------------//
+    // getSamples //
+    //------------//
+    /**
+     * Report, in the desired sheet descriptors, the samples of the desired shapes.
+     *
+     * @param descriptors the desired descriptors
+     * @param shapes      the desired shapes
+     * @return the list of samples related to desired shapes in desired sheets
+     */
+    public List<Sample> getSamples (Collection<Descriptor> descriptors,
+                                    Collection<Shape> shapes)
+    {
+        List<Sample> found = new ArrayList<Sample>();
+
+        for (Descriptor descriptor : descriptors) {
+            SampleSheet sampleSheet = idMap.get(descriptor.id);
+
+            List<Shape> sheetShapes = new ArrayList<Shape>(sampleSheet.getShapes());
+            sheetShapes.retainAll(shapes);
+
+            for (Shape shape : sheetShapes) {
+                found.addAll(sampleSheet.getSamples(shape));
+            }
+        }
+
+        return found;
     }
 
     //-----------//
@@ -659,9 +717,33 @@ public class SampleRepository
         return null;
     }
 
+    //-------------//
+    // hasInstance //
+    //-------------//
+    /**
+     * Report whether the repository instance has been allocated.
+     *
+     * @return true if INSTANCE exists
+     */
+    public static boolean hasInstance ()
+    {
+        return INSTANCE != null;
+    }
+
+    //----------------//
+    // hasSheetFlocks //
+    //----------------//
+    /**
+     * Check whether file of sheet flocks is available.
+     */
+    public boolean hasSheetFlocks ()
+    {
+        return Files.exists(FLOCKS_FILE);
+    }
+
     //----------------//
     // hasSheetImages //
-    //---------------//
+    //----------------//
     /**
      * Check whether file of sheet images is available.
      */
@@ -686,15 +768,6 @@ public class SampleRepository
     //------------//
     public boolean isModified ()
     {
-        if (false) {
-            // Force writing of everything
-            sheetContainer.setModified(true);
-
-            for (SampleSheet sheet : idMap.values()) {
-                sheet.setModified(true);
-            }
-        }
-
         if (sheetContainer.isModified()) {
             return true;
         }
@@ -744,13 +817,19 @@ public class SampleRepository
             //
             watch.start("loadSamples");
             loadSamples(samplesRoot);
+            samplesRoot.getFileSystem().close();
 
             if (withImages) {
                 watch.start("loadImages");
                 loadSheetImages();
             }
 
-            samplesRoot.getFileSystem().close();
+            // Flocks?
+            if (USE_FLOCKS) {
+                watch.start("loadFlocks");
+                loadSheetFlocks();
+            }
+
             loaded = true;
         } catch (IOException ex) {
             logger.warn("Error loading repository " + ex, ex);
@@ -758,6 +837,27 @@ public class SampleRepository
             if (constants.printWatch.isSet()) {
                 watch.print();
             }
+        }
+    }
+
+    //-----------------//
+    // loadSheetFlocks //
+    //-----------------//
+    /**
+     * Load the sheet flocks, if available.
+     */
+    public void loadSheetFlocks ()
+    {
+        if (hasSheetFlocks()) {
+            try {
+                final Path flocksRoot = Zip.openFileSystem(FLOCKS_FILE);
+                loadFlocks(flocksRoot);
+                flocksRoot.getFileSystem().close();
+            } catch (IOException ex) {
+                logger.warn("Error loading sheet flocks " + ex, ex);
+            }
+        } else {
+            logger.info("{} not found.", FLOCKS_FILE);
         }
     }
 
@@ -780,6 +880,22 @@ public class SampleRepository
         } else {
             logger.info("{} not found.", IMAGES_FILE);
         }
+    }
+
+    //-----------------//
+    // pokeSampleSheet //
+    //-----------------//
+    /**
+     * Return SampleSheet for provided sheet, only if it already exists.
+     *
+     * @param sheet provided sheet
+     * @return related SampleSheet if any
+     */
+    public SampleSheet pokeSampleSheet (Sheet sheet)
+    {
+        RunTable image = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+
+        return imageMap.get(image);
     }
 
     //----------------//
@@ -846,21 +962,29 @@ public class SampleRepository
                     : Zip.createFileSystem(SAMPLES_FILE);
             final Path imagesRoot = Files.exists(IMAGES_FILE) ? Zip.openFileSystem(IMAGES_FILE)
                     : Zip.createFileSystem(IMAGES_FILE);
+            final Path flocksRoot = USE_FLOCKS
+                    ? (Files.exists(FLOCKS_FILE) ? Zip.openFileSystem(FLOCKS_FILE)
+                    : Zip.createFileSystem(FLOCKS_FILE)) : null;
 
             // Container
             if (sheetContainer.isModified()) {
-                sheetContainer.marshal(samplesRoot, imagesRoot);
+                sheetContainer.marshal(samplesRoot, imagesRoot, flocksRoot);
             }
 
             // Samples
             for (SampleSheet sampleSheet : idMap.values()) {
                 if (sampleSheet.isModified()) {
-                    sampleSheet.marshal(samplesRoot, imagesRoot);
+                    sampleSheet.marshal(samplesRoot, imagesRoot, flocksRoot);
                 }
             }
 
             samplesRoot.getFileSystem().close();
             imagesRoot.getFileSystem().close();
+
+            if (flocksRoot != null) {
+                flocksRoot.getFileSystem().close();
+            }
+
             setModified(false);
             logger.info("Sample repository stored.");
         } catch (Throwable ex) {
@@ -918,7 +1042,7 @@ public class SampleRepository
             sheetContainer.addDescriptor(desc);
         }
 
-        SampleSheet symbolSheet = new SampleSheet(id);
+        SampleSheet symbolSheet = new SampleSheet(id, desc);
 
         for (Shape shape : ShapeSet.allPhysicalShapes) {
             Sample sample = buildSymbolSample(shape);
@@ -936,6 +1060,57 @@ public class SampleRepository
     {
         for (ChangeListener listener : listeners) {
             listener.stateChanged(event);
+        }
+    }
+
+    //------------//
+    // loadFlocks //
+    //------------//
+    /**
+     * Unmarshal all the sheet flocks available in training material.
+     */
+    private void loadFlocks (final Path root)
+    {
+        try {
+            Files.walkFileTree(
+                    root,
+                    new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
+
+                    if (fileName.equals(SampleSheet.FLOCKS_FILE_NAME)) {
+                        FlockList flockList = FlockList.unmarshal(file);
+
+                        if (flockList != null) {
+                            Path parent = file.getParent();
+                            String rel = root.relativize(parent).toString();
+
+                            int id = Integer.decode(rel);
+                            logger.debug("id: {}", id);
+
+                            SampleSheet sampleSheet = idMap.get(id);
+
+                            if (sampleSheet != null) {
+                                sampleSheet.setFlocks(flockList.getFlocks());
+                                logger.debug("Loaded {}", file);
+                            } else {
+                                logger.warn("No SampleSheet found for flocks {}", file);
+                            }
+                        }
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+
+            logger.debug("loadFlocks done");
+        } catch (Throwable ex) {
+            logger.warn("Error loading flocks from " + FLOCKS_FILE + " " + ex, ex);
         }
     }
 
@@ -1011,9 +1186,7 @@ public class SampleRepository
                     final String fileName = file.getFileName().toString();
 
                     if (fileName.equals(SampleSheet.SAMPLES_FILE_NAME)) {
-                        final SampleSheet sampleSheet = SampleSheet.unmarshal(file);
                         final String rel = root.relativize(file.getParent()).toString();
-
                         final int id = Integer.decode(rel);
                         final Descriptor desc = sheetContainer.getDescriptor(id);
 
@@ -1023,7 +1196,8 @@ public class SampleRepository
                                     id,
                                     SheetContainer.CONTAINER_ENTRY_NAME);
                         } else {
-                            final boolean isSymbol = SampleSheet.isSymbols(id);
+                            SampleSheet sampleSheet = SampleSheet.unmarshal(file, desc);
+                            boolean isSymbol = SampleSheet.isSymbols(id);
                             idMap.put(id, sampleSheet);
 
                             for (Sample sample : sampleSheet.getAllSamples()) {
@@ -1164,6 +1338,10 @@ public class SampleRepository
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
+
+        private final Constant.Boolean useFlocks = new Constant.Boolean(
+                false,
+                "Should we support flocks?");
     }
 
     //------------------------//

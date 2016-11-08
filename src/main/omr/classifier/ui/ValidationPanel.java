@@ -24,9 +24,13 @@ package omr.classifier.ui;
 import omr.classifier.Classifier;
 import omr.classifier.Evaluation;
 import omr.classifier.NeuralClassifier;
+
 import static omr.classifier.NeuralClassifier.getRawDataSet;
+
 import omr.classifier.Sample;
+import omr.classifier.SampleSource;
 import omr.classifier.ui.Trainer.Task;
+
 import static omr.classifier.ui.Trainer.Task.Activity.*;
 
 import omr.glyph.Grades;
@@ -66,12 +70,10 @@ import javax.swing.JProgressBar;
 /**
  * Class {@code ValidationPanel} handles the validation of a classifier against a
  * selected population of samples.
- * <p>
- * It is a dedicated companion of class {@link Trainer}.
  *
  * @author Hervé Bitteur
  */
-class ValidationPanel
+public class ValidationPanel
         implements Observer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -94,8 +96,8 @@ class ValidationPanel
     /** User progress bar to visualize the validation process. */
     private final JProgressBar progressBar = new JProgressBar();
 
-    /** User interface that handles samples selection. */
-    private final SelectionPanel selectionPanel;
+    /** Where samples are got from. */
+    private final SampleSource sampleSource;
 
     /** User action to validate the classifier against training base. */
     private final ValidateAction validateAction = new ValidateAction();
@@ -134,18 +136,21 @@ class ValidationPanel
     /**
      * Creates a new ValidationPanel object.
      *
-     * @param task           the current training activity
-     * @param classifier     the classifier to validate
-     * @param selectionPanel user panel for selection
+     * @param task       the current training activity
+     * @param classifier the classifier to validate
+     * @param source     source for samples
      */
     public ValidationPanel (Trainer.Task task,
                             Classifier classifier,
-                            SelectionPanel selectionPanel)
+                            SampleSource source)
     {
         this.classifier = classifier;
-        this.selectionPanel = selectionPanel;
+        this.sampleSource = source;
         this.task = task;
-        task.addObserver(this);
+
+        if (task != null) {
+            task.addObserver(this);
+        }
 
         component = new Panel();
         component.setNoInsets();
@@ -259,7 +264,7 @@ class ValidationPanel
 
         int positives = 0;
 
-        final List<Sample> samples = selectionPanel.getTestSamples();
+        final List<Sample> samples = sampleSource.getTestSamples();
 
         progressBar.setValue(0);
         progressBar.setMaximum(samples.size());
@@ -271,20 +276,23 @@ class ValidationPanel
                     sample,
                     sample.getInterline(),
                     1,
-                    Grades.validationMinGrade,
+                    0,
                     Classifier.NO_CONDITIONS);
+            Evaluation eval = evals[0];
 
-            if (evals.length == 0) {
-                weakPositives.add(sample);
-                System.out.printf("%-35s not recognized%n", sample.toString());
-            } else if (evals[0].shape.getPhysicalShape() == sample.getShape().getPhysicalShape()) {
-                positives++;
-            } else {
+            if (eval.shape.getPhysicalShape() == sample.getShape().getPhysicalShape()) {
+                if (eval.grade >= Grades.validationMinGrade) {
+                    positives++;
+                } else {
+                    weakPositives.add(sample);
+                    System.out.printf("%-35s weakly recognized%n", sample.toString());
+                }
+            } else if (eval.grade >= Grades.validationMinGrade) {
                 falsePositives.add(sample);
                 System.out.printf(
                         "%-35s mistaken for %s%n",
                         sample.toString(),
-                        evals[0].shape.getPhysicalShape());
+                        eval.shape.getPhysicalShape());
             }
 
             progressBar.setValue(++index); // Update progress bar
@@ -337,7 +345,7 @@ class ValidationPanel
 
         public FalsePositiveAction ()
         {
-            super("Verify");
+            super("Display");
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -373,11 +381,20 @@ class ValidationPanel
                 public void run ()
                 {
                     setEnabled(false);
-                    task.setActivity(VALIDATION);
+
+                    if (task != null) {
+                        task.setActivity(VALIDATION);
+                    }
+
                     runValidation();
+
                     weakPositiveAction.setEnabled(weakPositives.size() > 0);
                     falsePositiveAction.setEnabled(!falsePositives.isEmpty());
-                    task.setActivity(INACTIVE);
+
+                    if (task != null) {
+                        task.setActivity(INACTIVE);
+                    }
+
                     setEnabled(true);
                 }
             });
@@ -394,7 +411,7 @@ class ValidationPanel
 
         public WeakPositiveAction ()
         {
-            super("Verify");
+            super("Display");
         }
 
         //~ Methods --------------------------------------------------------------------------------

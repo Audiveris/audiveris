@@ -34,7 +34,6 @@ import omr.glyph.ShapeSet;
 import omr.util.OmrExecutors;
 import omr.util.UriUtil;
 
-import org.deeplearning4j.nn.api.Updater;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
@@ -53,7 +52,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -63,8 +61,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
@@ -196,17 +192,17 @@ public class NeuralClassifier
         return INSTANCE;
     }
 
-    //------------------//
-    // getMaxIterations //
-    //------------------//
+    //--------------//
+    // getMaxEpochs //
+    //--------------//
     /**
-     * Selector on the maximum number of training iterations.
+     * Selector on the maximum number of training epochs.
      *
-     * @return the upper limit on iteration counter
+     * @return the upper limit on epochs counter
      */
-    public static int getMaxIterations ()
+    public static int getMaxEpochs ()
     {
-        return constants.maxIterations.getValue();
+        return constants.maxEpochs.getValue();
     }
 
     //---------------//
@@ -358,14 +354,24 @@ public class NeuralClassifier
         final INDArray features = Nd4j.create(ins);
         normalize(features);
 
+        Shape[] values = Shape.values();
         INDArray output = model.output(features);
 
-//        // Normalize all outputs, so that they sum to 1
-//        Number sum = output.sumNumber();
-//        output.divi(sum);
-//
+        //
+        //        INDArray probs = model.labelProbabilities(features);
+        //
+        //        logger.info("\n--- {}", glyph);
+        //
+        //        for (int s = 0; s < SHAPE_COUNT; s++) {
+        //            logger.info(
+        //                    String.format(
+        //                            "%20s prob:%.5f new:%.5f",
+        //                            values[s],
+        //                            probs.getDouble(s),
+        //                            output.getDouble(s)));
+        //        }
+        //
         Evaluation[] evals = new Evaluation[SHAPE_COUNT];
-        Shape[] values = Shape.values();
 
         for (int s = 0; s < SHAPE_COUNT; s++) {
             evals[s] = new Evaluation(values[s], output.getDouble(s));
@@ -425,6 +431,19 @@ public class NeuralClassifier
         model.setListeners(monitor);
     }
 
+    //--------------//
+    // setMaxEpochs //
+    //--------------//
+    /**
+     * Modify the upper limit on the number of epochs for the training process.
+     *
+     * @param maxEpochs new value for epochs limit
+     */
+    public void setMaxEpochs (int maxEpochs)
+    {
+        constants.maxEpochs.setValue(maxEpochs);
+    }
+
     //-------------//
     // setMaxError //
     //-------------//
@@ -439,21 +458,6 @@ public class NeuralClassifier
         constants.maxError.setValue(maxError);
 
         ///engine.setMaxError(maxError);
-    }
-
-    //------------------//
-    // setMaxIterations //
-    //------------------//
-    /**
-     * Modify the upper limit on the number of iterations for the training process.
-     *
-     * @param maxIterations new value for iteration limit
-     */
-    public void setMaxIterations (int maxIterations)
-    {
-        constants.maxIterations.setValue(maxIterations);
-
-        ///engine.setMaxIterations(maxIterations);
     }
 
     //-------------//
@@ -544,7 +548,12 @@ public class NeuralClassifier
         // Train
         model = createNetwork();
         model.setListeners(monitor);
-        model.fit(dataSet);
+
+        final int epochs = getMaxEpochs();
+
+        for (int epoch = 0; epoch < epochs; epoch++) {
+            model.fit(dataSet);
+        }
 
         // Evaluate
         final List<String> names = Arrays.asList(ShapeSet.getPhysicalShapeNames());
@@ -564,10 +573,10 @@ public class NeuralClassifier
     {
         final int hiddenNum = SHAPE_COUNT;
         final long seed = 6;
-        final int iterations = getMaxIterations();
         final double learningRate = getLearningRate();
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder() //
-                .seed(seed).iterations(iterations) //
+                .seed(seed) //
+                .iterations(1) //
                 .activation("relu") //
                 .weightInit(WeightInit.RELU) //
                 .learningRate(learningRate) //
@@ -577,16 +586,22 @@ public class NeuralClassifier
                 .layer(
                         0,
                         new DenseLayer.Builder() //
-                        .nIn(ShapeDescription.length()).nOut(hiddenNum).build()) //
+                        .nIn(ShapeDescription.length()) //
+                        .nOut(hiddenNum) //
+                        .build()) //
                 .layer(
                         1,
                         new DenseLayer.Builder() //
-                        .nIn(hiddenNum).nOut(hiddenNum).build()) //
+                        .nIn(hiddenNum) //
+                        .nOut(hiddenNum) //
+                        .build()) //
                 .layer(
                         2,
                         new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD) //
                         .activation("softmax") // softplus vs tanh vs sigmoid vs softmax
-                        .nIn(hiddenNum).nOut(SHAPE_COUNT).build()) //
+                        .nIn(hiddenNum) //
+                        .nOut(SHAPE_COUNT) //
+                        .build()) //
                 .backprop(true) //
                 .pretrain(false) //
                 .build();
@@ -608,7 +623,7 @@ public class NeuralClassifier
         //                getLearningRate(),
         //                getMomentum(),
         //                getMaxError(),
-        //                getMaxIterations());
+        //                getMaxEpochs());
     }
 
     //--------------//
@@ -738,8 +753,7 @@ public class NeuralClassifier
             throws IOException
     {
         try {
-            ///return ModelSerializer.restoreMultiLayerNetwork(is);
-            return restoreMultiLayerNetwork(is);
+            return ModelSerializer.restoreMultiLayerNetwork(is);
         } catch (Throwable ex) {
             logger.warn("Error restoring network {}", ex.toString(), ex);
 
@@ -808,92 +822,6 @@ public class NeuralClassifier
 
         throw new IllegalStateException(
                 "Norms wasnt found within file, means: " + means + ", stds: " + stds);
-    }
-
-    /**
-     * HB: ability to read model from an inputStream, to be replaced ASAP by a suitable
-     * version of ModelSerializer.
-     */
-    private static MultiLayerNetwork restoreMultiLayerNetwork (InputStream is)
-            throws IOException
-    {
-        final ZipInputStream zis = new ZipInputStream(is);
-
-        boolean gotConfig = false;
-        boolean gotCoefficients = false;
-        boolean gotUpdater = false;
-
-        String json = "";
-        INDArray params = null;
-        Updater updater = null;
-
-        ZipEntry entry;
-
-        while ((entry = zis.getNextEntry()) != null) {
-            logger.debug("zis entry: {}", entry);
-
-            switch (entry.getName()) {
-            case "configuration.json":
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(zis));
-                String line = "";
-                StringBuilder js = new StringBuilder();
-
-                while ((line = reader.readLine()) != null) {
-                    js.append(line).append("\n");
-                }
-
-                json = js.toString();
-
-                gotConfig = true;
-
-                break;
-
-            case "coefficients.bin":
-
-                DataInputStream dis = new DataInputStream(zis);
-                params = Nd4j.read(dis);
-                gotCoefficients = true;
-
-                break;
-
-            case "updater.bin":
-
-                ObjectInputStream ois = new ObjectInputStream(zis);
-
-                try {
-                    updater = (Updater) ois.readObject();
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-
-                gotUpdater = true;
-
-                break;
-            }
-
-            zis.closeEntry();
-        }
-
-        logger.debug("zis closed.");
-        zis.close();
-
-        if (gotConfig && gotCoefficients) {
-            MultiLayerConfiguration confFromJson = MultiLayerConfiguration.fromJson(json);
-            MultiLayerNetwork network = new MultiLayerNetwork(confFromJson);
-            network.init();
-            network.setParameters(params);
-
-            if (gotUpdater && (updater != null)) {
-                network.setUpdater(updater);
-            }
-
-            return network;
-        } else {
-            throw new IllegalStateException(
-                    "Model wasnt found within file: gotConfig: [" + gotConfig
-                    + "], gotCoefficients: [" + gotCoefficients + "], gotUpdater: [" + gotUpdater + "]");
-        }
     }
 
     //------------//
@@ -1006,10 +934,10 @@ public class NeuralClassifier
 
         private final Constant.Ratio learningRate = new Constant.Ratio(0.1, "Learning Rate");
 
-        private final Constant.Integer maxIterations = new Constant.Integer(
-                "Iterations",
+        private final Constant.Integer maxEpochs = new Constant.Integer(
+                "Epochs",
                 1000,
-                "Maximum number of iterations in training");
+                "Maximum number of epochs in training");
 
         private final Evaluation.Grade maxError = new Evaluation.Grade(
                 1E-3,

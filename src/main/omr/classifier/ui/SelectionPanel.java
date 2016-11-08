@@ -23,6 +23,7 @@ package omr.classifier.ui;
 
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
+import omr.classifier.SampleSource;
 import static omr.classifier.ui.Trainer.Task.Activity.*;
 
 import omr.constant.ConstantSet;
@@ -62,7 +63,7 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 class SelectionPanel
-        implements SampleRepository.Monitor, Observer, ChangeListener
+        implements SampleSource, SampleRepository.Monitor, Observer, ChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

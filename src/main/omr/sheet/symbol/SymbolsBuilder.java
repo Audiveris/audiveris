@@ -421,27 +421,27 @@ public class SymbolsBuilder
         }
 
         @Override
-        public boolean isSizeAcceptable (Rectangle symBox)
+        public boolean isTooLarge (Rectangle symBox)
         {
             // Check width
             if (symBox.width > params.maxSymbolWidth) {
-                return false;
+                return true;
             }
 
             // Check height (not limited if on left of system: braces / brackets)
             if (GeoUtil.centerOf(symBox).x < system.getLeft()) {
-                return true;
+                return false;
             } else {
-                return symBox.height <= params.maxSymbolHeight;
+                return symBox.height > params.maxSymbolHeight;
             }
         }
 
         @Override
-        public boolean isWeightAcceptable (int weight)
+        public boolean isTooLight (int weight)
         {
             double normed = scale.pixelsToAreaFrac(weight);
 
-            return classifier.isBigEnough(normed);
+            return !classifier.isBigEnough(normed);
         }
     }
 }

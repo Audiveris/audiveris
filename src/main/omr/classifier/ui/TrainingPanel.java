@@ -103,9 +103,6 @@ class TrainingPanel
     /** Display of cardinality of whole population */
     private final JLabel wholeNumber = new JLabel();
 
-    /** Display of cardinality of core population */
-    private final JLabel coreNumber = new JLabel();
-
     /** UI panel dealing with samples selection. */
     private final SelectionPanel selectionPanel;
 
@@ -116,19 +113,18 @@ class TrainingPanel
             "Learning rate of the neural network",
             "%.2f");
 
-    /** [no Input] field for Maximum number of iterations to perform. */
-    private final LIntegerField maxIterations = new LIntegerField(
-            false, // Not editable for the time being
-            "Max Iterations",
-            "Maximum number of iterations to perform");
+    /** Field for Maximum number of epochs to perform. */
+    private final LIntegerField maxEpochs = new LIntegerField(
+            "Max Epochs",
+            "Maximum number of epochs to perform");
 
     /** Output for Number of iterations performed so far. */
     private final LLabel trainIndex = new LLabel(
-            "Last Iteration:",
-            "Number of iterations performed so far");
+            "Epoch:",
+            "Number of epochs performed so far");
 
     /** Output for score on last iteration. */
-    private final LLabel trainScore = new LLabel("Last Score:", "Score on last iteration");
+    private final LLabel trainScore = new LLabel("Score:", "Score on last iteration");
 
     /** Current iteration count. */
     private long iterCount;
@@ -327,8 +323,8 @@ class TrainingPanel
 
         builder.add(wholeNumber, cst.xy(5, r)); // ???????????????
 
-        builder.add(maxIterations.getLabel(), cst.xy(9, r));
-        builder.add(maxIterations.getField(), cst.xy(11, r));
+        builder.add(maxEpochs.getLabel(), cst.xy(9, r));
+        builder.add(maxEpochs.getField(), cst.xy(11, r));
 
         builder.add(learningRate.getLabel(), cst.xy(13, r));
         builder.add(learningRate.getField(), cst.xy(15, r));
@@ -351,7 +347,7 @@ class TrainingPanel
     //---------------//
     private void displayParams ()
     {
-        maxIterations.setValue(NeuralClassifier.getMaxIterations());
+        maxEpochs.setValue(NeuralClassifier.getMaxEpochs());
         learningRate.setValue(engine.getLearningRate());
     }
 
@@ -360,10 +356,10 @@ class TrainingPanel
     //-------------//
     private void inputParams ()
     {
-        engine.setMaxIterations(maxIterations.getValue());
+        engine.setMaxEpochs(maxEpochs.getValue());
         engine.setLearningRate(learningRate.getValue());
 
-        progressBar.setMaximum(maxIterations.getValue());
+        progressBar.setMaximum(maxEpochs.getValue());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -408,7 +404,7 @@ class TrainingPanel
                     task.setActivity(TRAINING);
 
                     List<Sample> samples = selectionPanel.getTrainSamples();
-                    progressBar.setMaximum(NeuralClassifier.getMaxIterations());
+                    progressBar.setMaximum(NeuralClassifier.getMaxEpochs());
                     progressBar.setValue(0);
 
                     // Check that all trainable shapes (and only those ones) are
@@ -460,46 +456,3 @@ class TrainingPanel
         }
     }
 }
-//
-//    //------------//
-//    // CoreAction //
-//    //------------//
-//    private class CoreAction
-//            extends AbstractAction
-//    {
-//        //~ Instance fields ------------------------------------------------------------------------
-//
-//        final SwingWorker<Integer, Object> worker = new SwingWorker<Integer, Object>()
-//        {
-//            @Override
-//            public void done ()
-//            {
-//                try {
-//                    coreNumber.setText("" + get());
-//                } catch (Exception ex) {
-//                    logger.warn("Error while loading core base", ex);
-//                }
-//            }
-//
-//            @Override
-//            protected Integer doInBackground ()
-//            {
-//                return selectionPanel.getTrainSamples(false).size();
-//            }
-//        };
-//
-//        //~ Constructors ---------------------------------------------------------------------------
-//        public CoreAction ()
-//        {
-//            super("Core");
-//        }
-//
-//        //~ Methods --------------------------------------------------------------------------------
-//        @Override
-//        public void actionPerformed (ActionEvent e)
-//        {
-//            useWhole = false;
-//            worker.execute();
-//        }
-//    }
-//
