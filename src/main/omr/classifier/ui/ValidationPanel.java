@@ -23,10 +23,6 @@ package omr.classifier.ui;
 
 import omr.classifier.Classifier;
 import omr.classifier.Evaluation;
-import omr.classifier.NeuralClassifier;
-
-import static omr.classifier.NeuralClassifier.getRawDataSet;
-
 import omr.classifier.Sample;
 import omr.classifier.SampleSource;
 import omr.classifier.ui.Trainer.Task;
@@ -34,7 +30,6 @@ import omr.classifier.ui.Trainer.Task;
 import static omr.classifier.ui.Trainer.Task.Activity.*;
 
 import omr.glyph.Grades;
-import omr.glyph.ShapeSet;
 
 import omr.ui.Colors;
 import omr.ui.field.LLabel;
@@ -43,11 +38,6 @@ import omr.ui.util.Panel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
-
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +56,11 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JProgressBar;
+import omr.classifier.NeuralClassifier;
+import omr.glyph.ShapeSet;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 
 /**
  * Class {@code ValidationPanel} handles the validation of a classifier against a
@@ -313,25 +308,27 @@ public class ValidationPanel
         falsePositiveValue.setText(Integer.toString(falsePositives.size()));
 
         // Evaluate
-        final NeuralClassifier neuralClassifier = (NeuralClassifier) classifier;
-        final MultiLayerNetwork model = neuralClassifier.getModel();
-        DataSet dataSet = getRawDataSet(samples);
-        neuralClassifier.normalize(dataSet.getFeatures());
+        if (NeuralClassifier.USE_DL4J) {
+            final NeuralClassifier neuralClassifier = (NeuralClassifier) classifier;
+            final MultiLayerNetwork model = (MultiLayerNetwork) neuralClassifier.getModel();
+            DataSet dataSet = NeuralClassifier.getRawDataSet(samples);
+            neuralClassifier.normalize(dataSet.getFeatures());
 
-        final List<String> names = Arrays.asList(ShapeSet.getPhysicalShapeNames());
-        org.deeplearning4j.eval.Evaluation eval = new org.deeplearning4j.eval.Evaluation(names);
-        INDArray guesses = model.output(dataSet.getFeatureMatrix());
-        eval.eval(dataSet.getLabels(), guesses);
-        System.out.println(eval.stats(true));
+            final List<String> names = Arrays.asList(ShapeSet.getPhysicalShapeNames());
+            org.deeplearning4j.eval.Evaluation eval = new org.deeplearning4j.eval.Evaluation(names);
+            INDArray guesses = model.output(dataSet.getFeatureMatrix());
+            eval.eval(dataSet.getLabels(), guesses);
+            System.out.println(eval.stats(true));
 
-        DecimalFormat df = new DecimalFormat("#.####");
-        logger.info(
-                String.format(
-                        "Accuracy: %s Precision: %s Recall: %s F1 Score: %s",
-                        df.format(eval.accuracy()),
-                        df.format(eval.precision()),
-                        df.format(eval.recall()),
-                        df.format(eval.f1())));
+            DecimalFormat df = new DecimalFormat("#.####");
+            logger.info(
+                    String.format(
+                            "Accuracy: %s Precision: %s Recall: %s F1 Score: %s",
+                            df.format(eval.accuracy()),
+                            df.format(eval.precision()),
+                            df.format(eval.recall()),
+                            df.format(eval.f1())));
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -345,15 +342,15 @@ public class ValidationPanel
 
         public FalsePositiveAction ()
         {
-            super("Display");
+            super("View");
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            SampleVerifier.getInstance().displayAll(falsePositives);
-            SampleVerifier.getInstance().setVisible();
+            SampleBrowser.getInstance().displayAll(falsePositives);
+            SampleBrowser.getInstance().setVisible();
         }
     }
 
@@ -411,15 +408,15 @@ public class ValidationPanel
 
         public WeakPositiveAction ()
         {
-            super("Display");
+            super("View");
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            SampleVerifier.getInstance().displayAll(weakPositives);
-            SampleVerifier.getInstance().setVisible();
+            SampleBrowser.getInstance().displayAll(weakPositives);
+            SampleBrowser.getInstance().setVisible();
         }
     }
 }

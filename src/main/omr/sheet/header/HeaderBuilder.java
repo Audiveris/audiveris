@@ -23,8 +23,6 @@ package omr.sheet.header;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.Shape;
-
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
@@ -106,7 +104,7 @@ public class HeaderBuilder
     private final ClefBuilder.Column clefColumn;
 
     /** Manager for column of keys signatures. */
-    private final KeyBuilder.Column keyColumn;
+    private final KeyColumn keyColumn;
 
     /** Manager for column of time signatures. */
     private final TimeBuilder.HeaderColumn timeColumn;
@@ -124,7 +122,7 @@ public class HeaderBuilder
         sig = system.getSig();
         maxHeaderWidth = system.getSheet().getScale().toPixels(constants.maxHeaderWidth);
         clefColumn = new ClefBuilder.Column(system);
-        keyColumn = new KeyBuilder.Column(system);
+        keyColumn = new KeyColumn(system);
         timeColumn = new TimeBuilder.HeaderColumn(system);
     }
 
@@ -255,7 +253,7 @@ public class HeaderBuilder
         if (largestOffset > 0) {
             for (Staff staff : system.getStaves()) {
                 StaffHeader header = staff.getHeader();
-                header.stop = header.clefRange.systemStop = header.start + largestOffset;
+                header.stop = header.start + largestOffset;
             }
         }
     }
@@ -272,7 +270,7 @@ public class HeaderBuilder
         if (largestOffset > 0) {
             for (Staff staff : system.getStaves()) {
                 StaffHeader header = staff.getHeader();
-                header.stop = header.keyRange.systemStop = header.start + largestOffset;
+                header.stop = header.start + largestOffset;
             }
         }
     }
@@ -289,7 +287,7 @@ public class HeaderBuilder
         if (largestOffset > 0) {
             for (Staff staff : system.getStaves()) {
                 StaffHeader header = staff.getHeader();
-                header.stop = header.timeRange.systemStop = header.start + largestOffset;
+                header.stop = header.start + largestOffset;
             }
         }
     }
@@ -387,14 +385,11 @@ public class HeaderBuilder
             String timeString = timeColumn.addPlot(this, staff);
 
             // Draw key sig portion
-            String keyString = keyColumn.addPlot(this, staff);
+            String keyString = keyColumn.addPlot(this, staff, maxHeaderWidth);
 
             // Get clef info
             ClefInter clef = staff.getHeader().clef;
-            Shape clefShape = (clef != null) ? clef.getShape() : null;
-            String clefString = (clef != null)
-                    ? (clefShape
-                       + ((clefShape == Shape.C_CLEF) ? (" " + clef.getKind()) : "")) : null;
+            String clefString = (clef != null) ? clef.getKind().toString() : null;
 
             // Draw the zero reference line
             {

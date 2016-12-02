@@ -59,7 +59,8 @@ public interface Symbol
         WEAK_PART("Optional part", new Color(0xffaaaa)),
         SYMBOL("Fixed symbol", new Color(0xaaaaff)),
         TIME_PART("Part of time sig", new Color(0xffaaff)),
-        ALTER_PART("Part of alterationg", new Color(0xffaacc)),
+        ALTER_PART("Part of alteration", new Color(0xffaacc)),
+        CLEF_PART("Part of clef", new Color(0xffaacc)),
         DROP("DnD glyph", new Color(0xffbbbb));
         //~ Instance fields ------------------------------------------------------------------------
 

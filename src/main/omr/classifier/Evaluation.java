@@ -81,15 +81,7 @@ public class Evaluation
     @Override
     public int compareTo (Evaluation that)
     {
-        if (this.grade > that.grade) {
-            return -1;
-        }
-
-        if (this.grade < that.grade) {
-            return +1;
-        }
-
-        return 0;
+        return Double.compare(that.grade, this.grade); // Reverse order: highest to lowest
     }
 
     //----------//

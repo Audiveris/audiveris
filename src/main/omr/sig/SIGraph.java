@@ -27,7 +27,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 
 import omr.math.GeoOrder;
-
 import static omr.math.GeoOrder.*;
 
 import omr.sheet.Staff;
@@ -204,12 +203,11 @@ public class SIGraph
     //------------------------//
     // computeContextualGrade //
     //------------------------//
-    public double computeContextualGrade (Inter inter,
-                                          boolean logging)
+    public double computeContextualGrade (Inter inter)
     {
         final List<Support> supports = getSupports(inter);
         final double cg = supports.isEmpty() ? inter.getGrade()
-                : computeContextualGrade(inter, supports, logging);
+                : computeContextualGrade(inter, supports);
         inter.setContextualGrade(cg);
 
         return cg;
@@ -277,7 +275,7 @@ public class SIGraph
     public void contextualize ()
     {
         for (Inter inter : vertexSet()) {
-            computeContextualGrade(inter, false);
+            computeContextualGrade(inter);
         }
     }
 
@@ -881,13 +879,13 @@ public class SIGraph
      * @param cause  the exclusion cause
      * @return the exclusions inserted
      */
-    public List<Relation> insertExclusions (List<Inter> inters,
+    public List<Relation> insertExclusions (List<? extends Inter> inters,
                                             Cause cause)
     {
         ///logger.warn("insertExclusions for size: {}", inters.size());
         List<Relation> exclusions = new ArrayList<Relation>();
 
-        for (int i = 0; i < (inters.size() - 1); i++) {
+        for (int i = 0, iBreak = inters.size(); i < iBreak; i++) {
             Inter inter = inters.get(i);
 
             for (Inter other : inters.subList(i + 1, inters.size())) {
@@ -1129,7 +1127,7 @@ public class SIGraph
 
                 // Update contextual values for all inters that were involved with 'weaker'
                 for (Inter inter : involved) {
-                    computeContextualGrade(inter, false);
+                    computeContextualGrade(inter);
                 }
 
                 exclusions.remove(bestRel);
@@ -1228,21 +1226,16 @@ public class SIGraph
      *
      * @param inter    the inter whose contextual grade is to be computed
      * @param supports all supporting relations inter is involved with, some may be in conflict
-     * @param logging  (debug) true for getting a printout of contributions retained
-     * @return the best resulting contextual probability for the inter
+     * @return the computed contextual grade
      */
     private Double computeContextualGrade (Inter inter,
-                                           List<? extends Support> supports,
-                                           boolean logging)
+                                           Collection<? extends Support> supports)
     {
         /** Collection of partners. */
         final List<Inter> partners = new ArrayList<Inter>();
 
-        /** Map: partner -> support ratio. */
-        final Map<Inter, Double> partnerRatios = new HashMap<Inter, Double>();
-
-        /** (debug) map: partner -> support relation. */
-        final Map<Inter, Support> supportMap = logging ? new HashMap<Inter, Support>() : null;
+        /** Map: partner -> contribution. */
+        final Map<Inter, Double> partnerContrib = new HashMap<Inter, Double>();
 
         // Check inter involvement
         for (Support support : supports) {
@@ -1261,44 +1254,22 @@ public class SIGraph
 
             if (ratio > 1) {
                 partners.add(partner);
-                partnerRatios.put(partner, ratio);
-
-                if (supportMap != null) {
-                    supportMap.put(partner, support);
-                }
+                partnerContrib.put(partner, partner.getGrade() * (ratio - 1));
             }
         }
 
         // Check for mutual exclusion between partners
         final List<List<Inter>> seqs = getPartitions(inter, partners);
         double bestCg = 0;
-        List<Inter> bestSeq = null;
 
         for (List<Inter> seq : seqs) {
-            int n = shrinkPartners(seq, partnerRatios);
-            double[] ratios = new double[n];
-            double[] partnerGrades = new double[n];
+            double contribution = 0;
 
-            for (int i = 0; i < n; i++) {
-                Inter partner = seq.get(i);
-                ratios[i] = partnerRatios.get(partner);
-                partnerGrades[i] = partner.getGrade();
+            for (Inter partner : seq) {
+                contribution += partnerContrib.get(partner);
             }
 
-            double cg = Grades.contextual(inter.getGrade(), partnerGrades, ratios);
-
-            if (cg > bestCg) {
-                bestCg = cg;
-                bestSeq = seq;
-            }
-        }
-
-        if (logging) {
-            logger.info(
-                    "{} cg:{} {}",
-                    inter,
-                    String.format("%.3f", bestCg),
-                    supportsSeenFrom(inter, supportMap, bestSeq));
+            bestCg = Math.max(bestCg, GradeUtil.contextual(inter.getGrade(), contribution));
         }
 
         return bestCg;
@@ -1317,45 +1288,6 @@ public class SIGraph
         }
 
         return inters;
-    }
-
-    //----------------//
-    // shrinkPartners //
-    //----------------//
-    /**
-     * Check, and shrink if needed, the collection of partners.
-     * <p>
-     * It is very expensive (and certainly useless) to compute contextual grade of an inter with too
-     * many partners. We put a reasonable limit to this number of partners and, if we have too many
-     * of them, we discard the ones which exhibit the lowest contribution values.
-     *
-     * @param list          (input/output) the list of partners which may be modified
-     * @param partnerRatios (input) the support ratio brought by each partner
-     * @return the final number of partners kept
-     */
-    private int shrinkPartners (List<Inter> list,
-                                Map<Inter, Double> partnerRatios)
-    {
-        final int maxSupportCount = constants.maxSupportCount.getValue();
-        int n = list.size();
-
-        if (n > maxSupportCount) {
-            List<Contribution> contribs = new ArrayList<Contribution>();
-
-            for (Inter partner : list) {
-                contribs.add(new Contribution(partner, partnerRatios.get(partner)));
-            }
-
-            Collections.sort(contribs, Contribution.byReverseValue);
-            list.clear();
-            n = maxSupportCount;
-
-            for (int i = 0; i < n; i++) {
-                list.add(contribs.get(i).partner);
-            }
-        }
-
-        return n;
     }
 
     //---------//

@@ -818,7 +818,6 @@ public class LinesRetriever
     //----------------//
     private List<Section> getAllStickers ()
     {
-        ///watch.start("index");
         List<Section> list = new ArrayList<Section>(hLag.getEntities());
 
         // Remove any (hori) section that is already part of a staff line
@@ -834,10 +833,9 @@ public class LinesRetriever
         // Build pos-based index
         final SectionTally<Section> tally = new SectionTally<Section>(sheet.getHeight(), list);
 
-        // Detect sections with connections
         Set<Section> connected = new HashSet<Section>();
 
-        ///watch.start("connections");
+        // Detect sections with connections below
         for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
             final Section source = list.get(i);
             final Run predRun = source.getLastRun();
@@ -845,22 +843,61 @@ public class LinesRetriever
             final int predStop = predRun.getStop();
             final int nextPos = source.getFirstPos() + source.getRunCount();
 
-            for (Section target : tally.getSubList(nextPos)) {
-                final Run succRun = target.getFirstRun();
+            if (nextPos < sheet.getHeight()) {
+                int touching = 0; // Number of touching pixels with next run(s)
 
-                if (succRun.getStart() > predStop) {
-                    break; // Since sublist is sorted on coord
-                }
+                for (Section target : tally.getSubList(nextPos)) {
+                    final Run succRun = target.getFirstRun();
 
-                if (succRun.getStop() >= predStart) {
-                    connected.add(source);
-                    connected.add(target);
+                    if (succRun.getStart() > predStop) {
+                        break; // Since sublist is sorted on coord
+                    }
+
+                    if (succRun.getStop() >= predStart) {
+                        int commonStart = Math.max(predStart, succRun.getStart());
+                        int commonStop = Math.min(predStop, succRun.getStop());
+                        touching += (commonStop - commonStart + 1);
+                    }
+
+                    if (touching > params.maxStickerConnectionLength) {
+                        connected.add(source);
+                    }
                 }
             }
         }
 
-        // Keep only sections that are 1-pixel high and do not touch any other hori section
-        /// watch.start("purge");
+        // Detect sections with connections above
+        for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
+            final Section source = list.get(i);
+            final Run predRun = source.getFirstRun();
+            final int predStart = predRun.getStart();
+            final int predStop = predRun.getStop();
+            final int nextPos = source.getFirstPos() - 1;
+
+            if (nextPos >= 0) {
+                int touching = 0; // Number of touching pixels with next run(s)
+
+                for (Section target : tally.getSubList(nextPos)) {
+                    final Run succRun = target.getLastRun();
+
+                    if (succRun.getStart() > predStop) {
+                        break; // Since sublist is sorted on coord
+                    }
+
+                    if (succRun.getStop() >= predStart) {
+                        int commonStart = Math.max(predStart, succRun.getStart());
+                        int commonStop = Math.min(predStop, succRun.getStop());
+                        touching += (commonStop - commonStart + 1);
+                    }
+
+                    if (touching > params.maxStickerConnectionLength) {
+                        connected.add(source);
+                    }
+                }
+            }
+        }
+
+        // Keep only sections that are 1-pixel high and have limited connection
         list.removeAll(connected);
 
         List<Section> stickers = new ArrayList<Section>();
@@ -1425,6 +1462,10 @@ public class LinesRetriever
                 4.0,
                 "Minimum filament length for strict slope check");
 
+        private final Scale.Fraction maxStickerConnectionLength = new Scale.Fraction(
+                0.05,
+                "Maximum connected pixels for a line sticker");
+
         // Constants for display
         // ---------------------
         Constant.Boolean displayRuns = new Constant.Boolean(
@@ -1504,6 +1545,8 @@ public class LinesRetriever
 
         final int minLengthForSlopeCheck;
 
+        final int maxStickerConnectionLength;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -1528,6 +1571,7 @@ public class LinesRetriever
             patternJitter = scale.toPixels(constants.patternJitter);
             minRadius = scale.toPixels(constants.minRadius);
             minLengthForSlopeCheck = scale.toPixels(constants.minLengthForSlopeCheck);
+            maxStickerConnectionLength = scale.toPixels(constants.maxStickerConnectionLength);
             maxStickerExtension = (int) Math.ceil(
                     scale.toPixelsDouble(constants.maxStickerExtension));
             minSlope = constants.minSlope.getValue();

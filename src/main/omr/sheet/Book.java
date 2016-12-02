@@ -41,6 +41,7 @@ import java.util.concurrent.locks.Lock;
 
 import javax.swing.JFrame;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import omr.classifier.SampleRepository;
 
 /**
  * Interface {@code Book} is the root class for handling a physical set of image input
@@ -470,4 +471,32 @@ public interface Book
      * @param stub current stub
      */
     void updateScores (SheetStub stub);
+
+    /**
+     * Tell whether the book has an existing specific sample repository.
+     *
+     * @return true if specific repository exists
+     */
+    boolean hasSpecificRepository ();
+
+    /**
+     * Tell whether the book has allocated a dedicated sample repository.
+     *
+     * @return true if allocated
+     */
+    boolean hasAllocatedRepository ();
+
+    /**
+     * Report the sample repository (specific or global) to populate for this book
+     *
+     * @return a specific book repository if possible, otherwise the global one
+     */
+    SampleRepository getSampleRepository ();
+
+    /**
+     * Report (after allocation if needed) the book <b>specific</b> sample repository
+     *
+     * @return the repository instance with material for this book only, or null
+     */
+    SampleRepository getSpecificSampleRepository ();
 }

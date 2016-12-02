@@ -117,8 +117,6 @@ public class GridBuilder
 
             // Display
             if (OMR.gui != null) {
-                sheet.getSymbolsEditor();
-
                 // Inter board
                 sheet.getStub().getAssembly().addBoard(SheetTab.DATA_TAB, new InterBoard(sheet));
 

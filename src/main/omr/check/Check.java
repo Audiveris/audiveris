@@ -23,7 +23,7 @@ package omr.check;
 
 import omr.constant.Constant;
 
-import omr.sig.Grades;
+import omr.sig.GradeUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -222,7 +222,7 @@ public abstract class Check<C>
             } else if (result.value >= high.getValue()) {
                 result.grade = 1;
             } else {
-                result.grade = Grades.clamp((result.value - low.getValue()) / range);
+                result.grade = GradeUtil.clamp((result.value - low.getValue()) / range);
             }
         } else {
             if (result.value > high.getValue()) {
@@ -230,7 +230,7 @@ public abstract class Check<C>
             } else if (result.value <= low.getValue()) {
                 result.grade = 1;
             } else {
-                result.grade = Grades.clamp(((high.getValue() - result.value) / range));
+                result.grade = GradeUtil.clamp(((high.getValue() - result.value) / range));
             }
         }
 

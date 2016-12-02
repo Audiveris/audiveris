@@ -25,7 +25,7 @@ import omr.OMR;
 import omr.WellKnowns;
 
 import omr.classifier.SampleRepository;
-import omr.classifier.ui.SampleVerifier;
+import omr.classifier.ui.SampleBrowser;
 import omr.classifier.ui.Trainer;
 
 import omr.constant.Constant;
@@ -273,7 +273,7 @@ public class GuiActions
     @Action
     public void saveSamples (ActionEvent e)
     {
-        SampleRepository.getInstance().checkForSave();
+        SampleRepository.getGlobalInstance(true).checkForSave();
     }
 
     //--------------------//
@@ -410,15 +410,14 @@ public class GuiActions
     @Action
     public void verifySamples (ActionEvent e)
     {
-        CursorController.launchWithDelayedMessage(
-                "Launching sample verifier...",
+        CursorController.launchWithDelayedMessage("Launching sample verifier...",
                 new Runnable()
         {
             @Override
             public void run ()
             {
                 try {
-                    SampleVerifier.getInstance().setVisible();
+                    SampleBrowser.getInstance().setVisible();
                 } catch (Throwable ex) {
                     logger.warn("Could not launch samples verifier. " + ex, ex);
                 }

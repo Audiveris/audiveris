@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -141,44 +142,45 @@ public class GlyphCluster
     /**
      * Process the provided set of parts.
      *
-     * @param set  the current parts
-     * @param seen all parts considered so far (current parts plus discarded ones)
+     * @param parts (read only) the set of current parts
+     * @param seen  (read only) all parts considered so far (current parts plus discarded ones)
      */
-    private void process (Set<Glyph> set,
+    private void process (Set<Glyph> parts,
                           Set<Glyph> seen)
     {
         ///logger.debug(" {} {} {}", set.size(), Glyphs.ids("set", set), Glyphs.ids("seen", seen));
 
         // Check what we have got
-        final int weight = Glyphs.weightOf(set);
+        final int weight = Glyphs.weightOf(parts);
 
         if (adapter.isTooHeavy(weight)) {
-            logger.debug("Too high weight {} for {}", weight, set);
+            logger.debug("Too high weight {} for {}", weight, parts);
 
             return;
         }
 
-        Rectangle box = Glyphs.getBounds(set);
+        Rectangle box = Glyphs.getBounds(parts);
 
         if (adapter.isTooLarge(box)) {
-            logger.debug("Too large  {} for {}", box, set);
+            logger.debug("Too large  {} for {}", box, parts);
 
             return;
         }
 
         if (!adapter.isTooLight(weight)) {
             // Build compound and get acceptable evaluations for the compound
-            Glyph compound = (set.size() > 1) ? GlyphFactory.buildGlyph(set) : set.iterator().next();
+            Glyph compound = (parts.size() > 1) ? GlyphFactory.buildGlyph(parts)
+                    : parts.iterator().next();
             compound.addGroup(group);
 
             // Create all acceptable inters, if any, for the compound
-            adapter.evaluateGlyph(compound);
+            adapter.evaluateGlyph(compound, parts);
         } else {
-            logger.debug("Too low weight {} for {}", weight, set);
+            logger.debug("Too low weight {} for {}", weight, parts);
         }
 
         // Then, identify all outliers immediately reachable from the compound
-        Set<Glyph> outliers = getOutliers(set);
+        Set<Glyph> outliers = getOutliers(parts);
         outliers.removeAll(seen);
 
         if (outliers.isEmpty()) {
@@ -186,7 +188,7 @@ public class GlyphCluster
         }
 
         ///logger.debug("      {}", Glyphs.ids("outliers", outliers));
-        Rectangle setBox = Glyphs.getBounds(set);
+        Rectangle setBox = Glyphs.getBounds(parts);
         Set<Glyph> newConsidered = new HashSet<Glyph>(seen);
 
         for (Glyph outlier : outliers) {
@@ -196,7 +198,7 @@ public class GlyphCluster
             Rectangle symBox = outlier.getBounds().union(setBox);
 
             if (!adapter.isTooLarge(symBox)) {
-                Set<Glyph> largerSet = new HashSet<Glyph>(set);
+                Set<Glyph> largerSet = new HashSet<Glyph>(parts);
                 largerSet.add(outlier);
                 process(largerSet, newConsidered);
             }
@@ -215,8 +217,10 @@ public class GlyphCluster
          * Evaluate a provided glyph and create all acceptable inter instances.
          *
          * @param glyph the glyph to evaluate
+         * @param parts the parts that compose this glyph
          */
-        void evaluateGlyph (Glyph glyph);
+        void evaluateGlyph (Glyph glyph,
+                            Set<Glyph> parts);
 
         /**
          * Report the neighboring parts of the provided one.
@@ -270,6 +274,9 @@ public class GlyphCluster
     //-----------------//
     // AbstractAdapter //
     //-----------------//
+    /**
+     * Basis for implementing an adapter.
+     */
     public abstract static class AbstractAdapter
             implements Adapter
     {
@@ -282,12 +289,25 @@ public class GlyphCluster
         public int trials = 0;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public AbstractAdapter (List<Glyph> parts,
+        /**
+         * Build an adapter from a set of parts and the maximum gap between parts.
+         * The connectivity graph is built internally.
+         *
+         * @param parts      the parts to pick from
+         * @param maxPartGap maximum distance between two parts to be directly reachable
+         */
+        public AbstractAdapter (Collection<Glyph> parts,
                                 double maxPartGap)
         {
             this(Glyphs.buildLinks(parts, maxPartGap));
         }
 
+        /**
+         * Build an adapter for which the connectivity graph is already known (usually
+         * thanks to a ConnectivityInspector to separate sub-sets up front).
+         *
+         * @param graph the ready-to-use connectivity (sub-)graph
+         */
         public AbstractAdapter (SimpleGraph<Glyph, GlyphLink> graph)
         {
             this.graph = graph;

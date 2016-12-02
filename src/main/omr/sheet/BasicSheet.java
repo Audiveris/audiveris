@@ -979,12 +979,15 @@ public class BasicSheet
 
         // Fall-through!
         case GRID:
+            pages.clear();
+            stub.clearPageRefs();
             skew = null;
 
             lagManager.setLag(Lags.HLAG, null);
             lagManager.setLag(Lags.VLAG, null);
 
             staffManager.reset();
+            systemManager.reset();
             symbolsController = null;
             symbolsEditor = null;
 

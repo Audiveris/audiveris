@@ -1157,7 +1157,7 @@ public class RunTable
     // persistentHashCode //
     //--------------------//
     /**
-     * Provide a hash code value that PERSIST across application executions.
+     * Provide a hash code value that <b>PERSISTS</b> across application executions.
      *
      * @return the persistent hash code for this run table
      */

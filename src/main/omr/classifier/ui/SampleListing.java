@@ -70,7 +70,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.MouseInputAdapter;
 
 /**
- * Class {@code SampleListing} is a private companion of {@link SampleVerifier},
+ * Class {@code SampleListing} is a private companion of {@link SampleBrowser},
  * it is in charge of a list of samples, gathered by shape.
  * It is implemented as a list of ShapePane instances, one per shape, each ShapePane instance
  * handling a list of samples (all of the same shape).
@@ -100,8 +100,11 @@ class SampleListing
 
     private final ScrollablePanel scrollablePanel = new ScrollablePanel();
 
-    /** SampleVerifier instance. */
-    private final SampleVerifier verifier;
+    /** Underlying sample repository. */
+    private final SampleRepository repository;
+
+    /** SampleBrowser instance. */
+    private final SampleBrowser browser;
 
     /** Listener on all shape lists. */
     private final ListMouseListener listener = new ListMouseListener();
@@ -113,9 +116,12 @@ class SampleListing
     /**
      * Creates a new {@code SampleListing} object.
      */
-    public SampleListing (SampleVerifier verifier)
+    public SampleListing (SampleBrowser browser,
+                          SampleRepository repository)
     {
-        this.verifier = verifier;
+        this.browser = browser;
+        this.repository = repository;
+
         popup = new SamplePopup();
         setBorder(
                 BorderFactory.createTitledBorder(
@@ -134,15 +140,14 @@ class SampleListing
     public void stateChanged (ChangeEvent e)
     {
         // Called from shapeSelector: Gather all samples of selected shapes in selected sheets
-        final SampleRepository repository = SampleRepository.getInstance();
         final List<Sample> allSamples = new ArrayList<Sample>();
-        final List<SheetContainer.Descriptor> descriptors = verifier.getSelectedSheets();
+        final List<SheetContainer.Descriptor> descriptors = browser.getSelectedSheets();
 
-        for (Shape shape : verifier.getSelectedShapes()) {
+        for (Shape shape : browser.getSelectedShapes()) {
             final ArrayList<Sample> shapeSamples = new ArrayList<Sample>();
 
             for (SheetContainer.Descriptor desc : descriptors) {
-                shapeSamples.addAll(repository.getSamples(desc.id, shape));
+                shapeSamples.addAll(repository.getSamples(desc.getName(), shape));
             }
 
             if (!shapeSamples.isEmpty()) {
@@ -180,7 +185,7 @@ class SampleListing
     {
         scrollablePanel.removeAll(); // Remove all ShapePane instances
 
-        verifier.publishSample(null); // Deselect any sample
+        browser.publishSample(null); // Deselect any sample
 
         // Rebuild ShapePane instances as needed
         Shape currentShape = null;
@@ -236,7 +241,7 @@ class SampleListing
 
                     if (model.isEmpty()) {
                         scrollablePanel.remove(shapePane);
-                        verifier.publishSample(null); // Deselect any sample
+                        browser.publishSample(null); // Deselect any sample
                     } else if (idx <= (model.getSize() - 1)) {
                         // Move selection to next item in shapePane
                         shapePane.list.setSelectedIndex(idx);
@@ -268,13 +273,13 @@ class SampleListing
         @Override
         public void mousePressed (MouseEvent e)
         {
-//            {
-//                JList<Sample> selectedList = (JList<Sample>) e.getSource();
-//                Point point = e.getPoint();
-//                int index = selectedList.locationToIndex(point);
-//                logger.info("index:{}", index);
-//            }
-//
+            //            {
+            //                JList<Sample> selectedList = (JList<Sample>) e.getSource();
+            //                Point point = e.getPoint();
+            //                int index = selectedList.locationToIndex(point);
+            //                logger.info("index:{}", index);
+            //            }
+            //
             alt = e.isAltDown();
 
             if (alt) {
@@ -290,7 +295,7 @@ class SampleListing
             if (alt) {
                 JList<Sample> selectedList = (JList<Sample>) e.getSource();
                 Sample sample = selectedList.getSelectedValue();
-                verifier.publishSample(sample);
+                browser.publishSample(sample);
             }
 
             alt = false;
@@ -317,7 +322,7 @@ class SampleListing
                     checkAlternative(sample); // Look for good alternative
                 }
             } else if (sample != null) {
-                verifier.publishSample(sample);
+                browser.publishSample(sample);
             }
         }
 
@@ -332,7 +337,6 @@ class SampleListing
 
             if (sample.getShape() == Shape.CLUTTER) {
                 final Rectangle box = sample.getBounds();
-                final SampleRepository repository = SampleRepository.getInstance();
                 final SampleSheet sampleSheet = repository.getSampleSheet(sample);
 
                 for (Shape shape : sampleSheet.getShapes()) {
@@ -366,7 +370,7 @@ class SampleListing
                     }
                 }
 
-                verifier.publishSample(bestAlternative);
+                browser.publishSample(bestAlternative);
             }
         }
     }
@@ -385,8 +389,8 @@ class SampleListing
         public SamplePopup ()
         {
             super("SamplePopup");
-            add(new JMenuItem(verifier.getSampleController().getRemoveAction()));
-            add(verifier.getSampleController().getAssignAction().menu);
+            add(new JMenuItem(browser.getSampleController().getRemoveAction()));
+            add(browser.getSampleController().getAssignAction().menu);
         }
     }
 
@@ -546,7 +550,7 @@ class SampleListing
      * Handles the display of a list of samples assigned to the same shape.
      */
     private class ShapePane
-            extends SampleVerifier.TitledPanel
+            extends SampleBrowser.TitledPanel
     {
         //~ Instance fields ------------------------------------------------------------------------
 

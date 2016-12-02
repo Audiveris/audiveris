@@ -57,6 +57,11 @@ public interface SheetStub
     void addPageRef (PageRef pageRef);
 
     /**
+     * Empty the collection of page references.
+     */
+    void clearPageRefs ();
+
+    /**
      * Close this stub, and remove it from the containing book.
      */
     void close ();
@@ -102,6 +107,13 @@ public interface SheetStub
     LiveParam<FilterDescriptor> getFilterParam ();
 
     /**
+     * Report the first page ref in stub
+     *
+     * @return first page ref or null
+     */
+    PageRef getFirstPageRef ();
+
+    /**
      * Report the distinguished name for this sheet stub.
      *
      * @return sheet (stub) name
@@ -114,6 +126,13 @@ public interface SheetStub
      * @return the OCR language(s) spec
      */
     LiveParam<String> getLanguageParam ();
+
+    /**
+     * Report the last page ref in stub
+     *
+     * @return last page ref or null
+     */
+    PageRef getLastPageRef ();
 
     /**
      * Report the latest step done so far on this sheet.
@@ -149,20 +168,6 @@ public interface SheetStub
      * @return the page ref 's
      */
     List<PageRef> getPageRefs ();
-
-    /**
-     * Report the first page ref in stub
-     *
-     * @return first page ref or null
-     */
-    PageRef getFirstPageRef ();
-
-    /**
-     * Report the last page ref in stub
-     *
-     * @return last page ref or null
-     */
-    PageRef getLastPageRef ();
 
     /**
      * Make sure the sheet material is in memory.

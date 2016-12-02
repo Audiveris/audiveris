@@ -465,6 +465,17 @@ public class SystemManager
         reportResults();
     }
 
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Empty the whole collection of systems.
+     */
+    public void reset ()
+    {
+        systems.clear();
+    }
+
     //------------//
     // setSystems //
     //------------//

@@ -39,20 +39,24 @@ import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
+import omr.glyph.Symbol.Group;
 import static omr.run.Orientation.VERTICAL;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
+import omr.sheet.Book;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
 
+import omr.sig.GradeUtil;
 import omr.sig.SIGraph;
 import omr.sig.inter.ClefInter;
 import omr.sig.inter.ClefInter.ClefKind;
 import omr.sig.inter.Inter;
+import omr.sig.relation.ClefKeyRelation;
 import omr.sig.relation.Exclusion;
 
 import omr.ui.symbol.Symbol;
@@ -79,7 +83,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -173,13 +176,15 @@ public class ClefBuilder
     //-----------//
     /**
      * Retrieve the most probable clef(s) at beginning of staff.
-     * At this time, we can keep several clef kinds, final choice will be made later with key sig.
+     * <p>
+     * At this time, we can keep several clef kinds. Final choice may be postponed until key
+     * retrieval, unless maximum potential key impact could not modify the selection of best clef.
      */
     public void findClefs ()
     {
         List<Glyph> parts = getParts();
 
-        // Formalize glyphs relationships in a global graph
+        // Formalize parts relationships in a global graph
         SimpleGraph<Glyph, GlyphLink> globalGraph = Glyphs.buildLinks(parts, params.maxPartGap);
         List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(
                 globalGraph).connectedSets();
@@ -195,42 +200,17 @@ public class ClefBuilder
             new GlyphCluster(adapter, null).decompose();
 
             int trials = adapter.trials;
-            logger.debug("Staff#{} clef parts:{} trials:{}", staff.getId(), set.size(), trials);
+            logger.info("Staff#{} clef parts:{} trials:{}", staff.getId(), set.size(), trials);
         }
 
-        // Register the best inter, if any, for each clef kind
+        // Discard poor candidates as much as possible
+        if (bestMap.size() > 1) {
+            purgeClefs(bestMap);
+        }
+
+        // Register the remaining clef candidates
         if (!bestMap.isEmpty()) {
-            Integer minClefStop = null;
-            List<Inter> inters = new ArrayList<Inter>();
-
-            for (Entry<ClefKind, ClefInter> entry : bestMap.entrySet()) {
-                ClefInter inter = entry.getValue();
-                inters.add(inter);
-
-                // Unerased staff line chunks may shift the symbol in abscissa,
-                // so use glyph centroid for a better positioning
-                //TODO: we could also check histogram right after clef end, looking for a low point?
-                Rectangle clefBox = inter.getSymbolBounds(scale.getInterline());
-                Symbol symbol = Symbols.getSymbol(inter.getShape());
-                Point symbolCentroid = symbol.getCentroid(clefBox);
-                Point glyphCentroid = inter.getGlyph().getCentroid();
-                int dx = glyphCentroid.x - symbolCentroid.x;
-                int dy = glyphCentroid.y - symbolCentroid.y;
-                logger.debug("Centroid translation dx:{} dy:{}", dx, dy);
-                clefBox.translate(dx, 0);
-                inter.setBounds(clefBox);
-                inter.setStaff(staff);
-
-                int gid = inter.getGlyph().getId();
-                sig.addVertex(inter);
-                logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, clefBox);
-
-                int end = clefBox.x + clefBox.width;
-                minClefStop = (minClefStop == null) ? end : Math.min(minClefStop, end);
-            }
-
-            sig.insertExclusions(inters, Exclusion.Cause.OVERLAP);
-            staff.setClefStop(minClefStop);
+            registerClefs(new ArrayList<ClefInter>(bestMap.values()));
         }
     }
 
@@ -294,6 +274,8 @@ public class ClefBuilder
         // Keep only interesting parts
         purgeParts(parts, rect);
 
+        system.registerGlyphs(parts, Group.CLEF_PART);
+
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
 
         for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
@@ -303,9 +285,39 @@ public class ClefBuilder
             li.set(glyph);
         }
 
-        logger.debug("Clef parts: {}", parts.size());
+        logger.debug("{} parts: {}", this, parts.size());
 
         return parts;
+    }
+
+    //------------//
+    // purgeClefs //
+    //------------//
+    private void purgeClefs (Map<ClefKind, ClefInter> bestMap)
+    {
+        final double maxContrib = ClefKeyRelation.maxContributionForClef();
+        final List<ClefInter> inters = new ArrayList<ClefInter>(bestMap.values());
+        Collections.sort(inters, Inter.byReverseGrade);
+
+        interLoop:
+        for (int i = 0; i < inters.size(); i++) {
+            final double grade = inters.get(i).getGrade();
+
+            for (int j = i + 1; j < inters.size(); j++) {
+                final ClefInter other = inters.get(j);
+                final double maxOtherCtx = GradeUtil.contextual(other.getGrade(), maxContrib);
+
+                if (grade > maxOtherCtx) {
+                    // Cut here since, whatever the key, no other clef can beat the best clef
+                    for (ClefInter poor : inters.subList(j, inters.size())) {
+                        logger.info("Staff#{} discarding poor {}", staff.getId(), poor);
+                        bestMap.remove(poor.getKind());
+                    }
+
+                    return;
+                }
+            }
+        }
     }
 
     //------------//
@@ -313,7 +325,7 @@ public class ClefBuilder
     //------------//
     /**
      * Purge the population of parts candidates as much as possible, since the cost
-     * of their later combinations is worse than exponential.
+     * of their later combinations is exponential.
      *
      * @param parts the collection to purge
      * @param rect  the slice rectangle
@@ -340,6 +352,11 @@ public class ClefBuilder
         if (!toRemove.isEmpty()) {
             parts.removeAll(toRemove);
         }
+
+        if (parts.size() > params.maxPartCount) {
+            Collections.sort(parts, Glyphs.byReverseWeight);
+            parts.retainAll(parts.subList(0, params.maxPartCount));
+        }
     }
 
     //---------------//
@@ -347,7 +364,13 @@ public class ClefBuilder
     //---------------//
     private void recordSamples ()
     {
-        final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+        final Book book = sheet.getStub().getBook();
+        final SampleRepository repository = book.getSampleRepository();
+
+        if (repository == null) {
+            return;
+        }
+
         final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
         final int interline = staff.getSpecificInterline();
 
@@ -374,6 +397,47 @@ public class ClefBuilder
         }
     }
 
+    //---------------//
+    // registerClefs //
+    //---------------//
+    /**
+     * Register the clefs into SIG and update staff clef abscissa stop.
+     *
+     * @param clefs list of remaining candidates
+     */
+    private void registerClefs (List<ClefInter> clefs)
+    {
+        Integer minClefStop = null;
+
+        for (ClefInter inter : clefs) {
+            // Unerased staff line chunks may shift the symbol in abscissa,
+            // so use glyph centroid for a better positioning
+            // For inter bounds, use font-based symbol bounds rather than glyph bounds
+            //TODO: we could also check histogram right after clef end, looking for a low point?
+            Rectangle clefBox = inter.getSymbolBounds(scale.getInterline());
+            Symbol symbol = Symbols.getSymbol(inter.getShape());
+            Point symbolCentroid = symbol.getCentroid(clefBox);
+            Point glyphCentroid = inter.getGlyph().getCentroid();
+            int dx = glyphCentroid.x - symbolCentroid.x;
+            int dy = glyphCentroid.y - symbolCentroid.y;
+            logger.debug("Centroid translation dx:{} dy:{}", dx, dy);
+            clefBox.translate(dx, 0);
+            inter.setBounds(clefBox); // Force theoretical bounds as inter bounds!
+            inter.setStaff(staff);
+
+            int gid = inter.getGlyph().getId();
+            sig.addVertex(inter);
+            logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, clefBox);
+
+            Rectangle box = inter.getGlyph().getBounds().intersection(clefBox);
+            int end = (box.x + box.width) - 1;
+            minClefStop = (minClefStop == null) ? end : Math.min(minClefStop, end);
+        }
+
+        sig.insertExclusions(clefs, Exclusion.Cause.OVERLAP);
+        staff.setClefStop(minClefStop);
+    }
+
     //------------//
     // selectClef //
     //------------//
@@ -382,22 +446,21 @@ public class ClefBuilder
      */
     private void selectClef ()
     {
-        // All clef candidates for this staff (which right now means just the header)
-        List<Inter> clefs = sig.inters(staff, ClefInter.class);
+        List<ClefInter> clefs = staff.getCompetingClefs(range.getStop());
 
         if (!clefs.isEmpty()) {
             for (Inter clef : clefs) {
-                sig.computeContextualGrade(clef, false);
+                sig.computeContextualGrade(clef);
             }
 
             Collections.sort(clefs, Inter.byReverseBestGrade);
 
             // Pickup the first one as header clef
-            ClefInter bestClef = (ClefInter) clefs.get(0);
+            ClefInter bestClef = clefs.get(0);
             bestClef.setGlyph(sheet.getGlyphIndex().registerOriginal(bestClef.getGlyph()));
             staff.getHeader().clef = bestClef;
 
-            // Delete the other candidates
+            // Delete the other clef candidates
             for (Inter other : clefs.subList(1, clefs.size())) {
                 other.delete();
             }
@@ -501,6 +564,8 @@ public class ClefBuilder
 
         final int yCoreMargin;
 
+        final int maxPartCount;
+
         final int minPartWeight;
 
         final double maxPartGap;
@@ -518,6 +583,7 @@ public class ClefBuilder
             beltMargin = scale.toPixels(constants.beltMargin);
             xCoreMargin = scale.toPixels(constants.xCoreMargin);
             yCoreMargin = scale.toPixels(constants.yCoreMargin);
+            maxPartCount = constants.maxPartCount.getValue();
             minPartWeight = scale.toPixels(constants.minPartWeight);
             maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
             maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
@@ -551,7 +617,8 @@ public class ClefBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public void evaluateGlyph (Glyph glyph)
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
         {
             trials++;
 
@@ -634,6 +701,11 @@ public class ClefBuilder
         private final Scale.Fraction yCoreMargin = new Scale.Fraction(
                 0.5,
                 "Vertical margin around core rectangle");
+
+        private final Constant.Integer maxPartCount = new Constant.Integer(
+                "Glyphs",
+                8,
+                "Maximum number of parts considered for a clef");
 
         private final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
                 0.01,

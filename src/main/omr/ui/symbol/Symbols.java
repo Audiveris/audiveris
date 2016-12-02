@@ -417,9 +417,9 @@ public abstract class Symbols
         sym.put(shape, new FlagsUpSymbol(count, false, shape));
     }
 
-    //----------//
+    //---------//
     // flatKey //
-    //----------//
+    //---------//
     private static void flatKey (int key,
                                  Shape shape)
     {

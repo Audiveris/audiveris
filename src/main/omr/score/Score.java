@@ -591,10 +591,14 @@ public class Score
         for (PageLink pageLink : pageLinks) {
             SheetStub stub = book.getStub(pageLink.sheetNumber);
 
-            if (stub.getPageRefs().size() >= pageLink.sheetPageId) {
-                pageRefs.add(stub.getPageRefs().get(pageLink.sheetPageId - 1));
+            if (pageLink.sheetPageId > 0) {
+                if (stub.getPageRefs().size() >= pageLink.sheetPageId) {
+                    pageRefs.add(stub.getPageRefs().get(pageLink.sheetPageId - 1));
+                } else {
+                    logger.info("Missing pages in {}", stub);
+                }
             } else {
-                logger.info("Missing pages in {}", stub);
+                logger.info("Illegal pageLink.sheetPageId: {}", pageLink.sheetPageId);
             }
         }
     }

@@ -47,6 +47,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -138,7 +139,7 @@ public abstract class Curve
     public void addAttachment (String id,
                                java.awt.Shape attachment)
     {
-        assert attachment != null : "Adding a null attachment";
+        Objects.requireNonNull(attachment, "Adding a null attachment");
 
         if (attachments == null) {
             attachments = new BasicAttachmentHolder();

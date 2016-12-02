@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -121,6 +122,15 @@ public class AlterInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //--------//
     // create //
     //--------//
     /**
@@ -162,23 +172,6 @@ public class AlterInter
         Pitches pitches = computePitch(glyph, shape, staff);
 
         return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
-    }
-
-    //--------------------//
-    // getFlatPitchOffset //
-    //--------------------//
-    public static double getFlatPitchOffset ()
-    {
-        return constants.flatPitchOffset.getValue();
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
     }
 
     //--------------------//
@@ -248,6 +241,27 @@ public class AlterInter
         return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
     }
 
+    //-------------------//
+    // getFlatAreaOffset //
+    //-------------------//
+    /**
+     * Report for a flat sign the vertical offset of pitch ordinate WRT sign top ordinate.
+     *
+     * @return height offset of pitch
+     */
+    public static double getFlatAreaOffset ()
+    {
+        return constants.flatAreaOffset.getValue();
+    }
+
+    //--------------------//
+    // getFlatPitchOffset //
+    //--------------------//
+    public static double getFlatPitchOffset ()
+    {
+        return constants.flatPitchOffset.getValue();
+    }
+
     /**
      * @return the measuredPitch
      */
@@ -273,7 +287,18 @@ public class AlterInter
     // computePitch //
     //--------------//
     /**
-     * Compute pitch and measuredPitch values according to glyph centroid and shape.
+     * Compute pitch (integer) and measuredPitch (double) values related to the provided
+     * staff, according to alteration glyph and shape.
+     * <p>
+     * Sharp and natural signs are symmetric, hence their pitch can be directly derived from
+     * centroid ordinate.
+     * <p>
+     * But sharp signs are not symmetric, hence we need a more precise point.
+     * We use two heuristics:<ul>
+     * <li>Augment centroid pitch by a fixed pitch offset, around 0.65</li>
+     * <li>Use point located at a fixed ratio of glyph height, around 0.65, to retrieve pitch.</li>
+     * </ul>
+     * And we use the average value from these two heuristics.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
@@ -284,16 +309,30 @@ public class AlterInter
                                            Shape shape,
                                            Staff staff)
     {
-        // Determine pitch according to shape and glyph centroid
         Point centroid = glyph.getCentroid();
-        double measuredPitch = staff.pitchPositionOf(centroid);
+        double massPitch = staff.pitchPositionOf(centroid);
 
         // Pitch offset for flat-based alterations
         if ((shape == Shape.FLAT) || (shape == Shape.DOUBLE_FLAT)) {
-            measuredPitch += constants.flatPitchOffset.getValue();
-        }
+            // Heuristic pitch offset WRT centroid pitch
+            massPitch += getFlatPitchOffset();
 
-        return new Pitches((int) Math.rint(measuredPitch), measuredPitch);
+            // Heuristic center WRT glyph box
+            Rectangle box = glyph.getBounds();
+            double geoPitch = staff.pitchPositionOf(
+                    new Point2D.Double(centroid.x, box.y + (getFlatAreaOffset() * box.height)));
+
+            // Average value of both heuristics
+            double mix = 0.5 * (massPitch + geoPitch);
+
+            // logger.info(
+            //         "G#{} {}",
+            //         glyph.getId(),
+            //         String.format("mass:%+.2f geo:%+.2f mix:%+.2f", massPitch, geoPitch, mix));
+            return new Pitches((int) Math.rint(mix), mix);
+        } else {
+            return new Pitches((int) Math.rint(massPitch), massPitch);
+        }
     }
 
     //-----------//
@@ -336,7 +375,11 @@ public class AlterInter
 
         private final Constant.Double flatPitchOffset = new Constant.Double(
                 "pitch",
-                0.75,
+                0.65,
                 "Pitch offset of flat WRT centroid-based pitch");
+
+        private final Constant.Ratio flatAreaOffset = new Constant.Ratio(
+                0.65,
+                "Area offset of flat WRT glyph height");
     }
 }

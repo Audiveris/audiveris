@@ -24,6 +24,8 @@ package omr.sheet;
 import omr.OMR;
 import omr.ProgramId;
 
+import omr.classifier.SampleRepository;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -142,13 +144,13 @@ public class BasicBook
     @XmlElement(name = "sub-books")
     private final List<Book> subBooks;
 
-    /** Input path of the related image(s) file, if any. */
-    @XmlAttribute(name = "path")
-    private final Path path;
-
     /** Book alias, if any. */
     @XmlAttribute(name = "alias")
     private String alias;
+
+    /** Input path of the related image(s) file, if any. */
+    @XmlAttribute(name = "path")
+    private final Path path;
 
     /** Sheet offset of image file with respect to full work, if any. */
     @XmlAttribute(name = "offset")
@@ -202,6 +204,9 @@ public class BasicBook
     /** Set if the book itself has been modified. */
     private boolean modified = false;
 
+    /** Book-level sample repository. */
+    private SampleRepository repository;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a Book with a path to an input images file.
@@ -245,6 +250,20 @@ public class BasicBook
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // checkAlias //
+    //------------//
+    private static String checkAlias (Path path)
+    {
+        // Alias?
+        if (AliasPatterns.useAliasPatterns()) {
+            final String nameSansExt = FileUtil.getNameSansExtension(path);
+            return BookManager.getInstance().getAlias(nameSansExt);
+
+        }
+        return null;
+    }
+
     //-------------//
     // buildScores //
     //-------------//
@@ -662,6 +681,49 @@ public class BasicBook
         return radix;
     }
 
+    //-----------------------------//
+    // getSpecificSampleRepository //
+    //-----------------------------//
+    @Override
+    public SampleRepository getSpecificSampleRepository ()
+    {
+        if (repository == null) {
+            repository = SampleRepository.getInstance(this, true);
+        }
+
+        return repository;
+    }
+
+    //-----------------------//
+    // hasSpecificRepository //
+    //-----------------------//
+    @Override
+    public boolean hasSpecificRepository ()
+    {
+        if (repository != null) {
+            return true;
+        }
+
+        // Look for needed files
+        return SampleRepository.repositoryExists(this);
+    }
+
+    //---------------------//
+    // getSampleRepository //
+    //---------------------//
+    @Override
+    public SampleRepository getSampleRepository ()
+    {
+        SampleRepository repo = getSpecificSampleRepository();
+
+        if (repo != null) {
+            return repo;
+        }
+
+        // No specific repository is possible, so use global
+        return SampleRepository.getGlobalInstance(true);
+    }
+
     //-----------//
     // getScores //
     //-----------//
@@ -726,6 +788,15 @@ public class BasicBook
         }
 
         return valids;
+    }
+
+    //---------------------//
+    // hasAllocatedRepository //
+    //---------------------//
+    @Override
+    public boolean hasAllocatedRepository ()
+    {
+        return repository != null;
     }
 
     //------------------//
@@ -806,6 +877,10 @@ public class BasicBook
             return true; // The book itself is modified
         }
 
+        if (repository != null && repository.isModified()) {
+            return true; // The book sample repository is modified
+        }
+
         for (SheetStub stub : stubs) {
             if (stub.isModified()) {
                 return true; // This sheet is modified
@@ -856,6 +931,8 @@ public class BasicBook
             book.initTransients(null, bookPath);
             is.close();
             rootPath.getFileSystem().close(); // Close book file
+
+            book.checkScore(); // TODO: remove ASAP
 
             return book;
         } catch (Exception ex) {
@@ -1257,6 +1334,11 @@ public class BasicBook
                         stub.getSheet().store(sheetFolder, null);
                     }
                 }
+
+                // Separate repository
+                if (repository != null && repository.isModified()) {
+                    repository.storeRepository();
+                }
             } else {
                 // (Store as): Switch from old to new book file
                 root = createBookFile(bookPath);
@@ -1402,66 +1484,79 @@ public class BasicBook
             // Easy: allocate scores based on all book stubs
             createScores();
         } else {
-            // Determine just the impacted pageRefs
-            final SortedSet<PageRef> impactedRefs = new TreeSet<PageRef>();
-            final int stubNumber = currentStub.getNumber();
+            try {
+                // Determine just the impacted pageRefs
+                final SortedSet<PageRef> impactedRefs = new TreeSet<PageRef>();
+                final int stubNumber = currentStub.getNumber();
 
-            if (!currentStub.getPageRefs().isEmpty()) {
-                // Look in stub before current stub?
-                final PageRef firstPageRef = currentStub.getFirstPageRef();
+                if (!currentStub.getPageRefs().isEmpty()) {
+                    // Look in stub before current stub?
+                    final PageRef firstPageRef = currentStub.getFirstPageRef();
 
-                if (!firstPageRef.isMovementStart()) {
-                    final SheetStub prevStub = (stubNumber > 1) ? stubs.get(stubNumber - 2) : null;
+                    if (!firstPageRef.isMovementStart()) {
+                        final SheetStub prevStub = (stubNumber > 1) ? stubs.get(stubNumber - 2) : null;
 
-                    if (prevStub != null) {
-                        final PageRef prevPageRef = prevStub.getLastPageRef();
+                        if (prevStub != null) {
+                            final PageRef prevPageRef = prevStub.getLastPageRef();
 
-                        if (prevPageRef != null) {
-                            impactedRefs.addAll(getScore(prevPageRef).getPageRefs());
+                            if (prevPageRef != null) {
+                                impactedRefs.addAll(getScore(prevPageRef).getPageRefs()); // NPE
+                            }
+                        }
+                    }
+
+                    // Take pages of current stub
+                    impactedRefs.addAll(currentStub.getPageRefs());
+
+                    // Look in stub after current stub?
+                    final SheetStub nextStub = (stubNumber < stubs.size()) ? stubs.get(stubNumber) : null;
+
+                    if (nextStub != null) {
+                        final PageRef nextPageRef = nextStub.getFirstPageRef();
+
+                        if ((nextPageRef != null) && !nextPageRef.isMovementStart()) {
+                            impactedRefs.addAll(getScore(nextPageRef).getPageRefs()); // NPE
                         }
                     }
                 }
 
-                // Take pages of current stub
-                impactedRefs.addAll(currentStub.getPageRefs());
+                // Determine and remove the impacted scores
+                final List<Score> impactedScores = scoresOf(impactedRefs);
+                Integer scoreIndex = null;
 
-                // Look in stub after current stub?
-                final SheetStub nextStub = (stubNumber < stubs.size()) ? stubs.get(stubNumber) : null;
+                if (!impactedScores.isEmpty()) {
+                    scoreIndex = scores.indexOf(impactedScores.get(0));
+                } else {
+                    for (Score score : scores) {
+                        if (score.getFirstPageRef().getSheetNumber() > stubNumber) {
+                            scoreIndex = scores.indexOf(score);
 
-                if (nextStub != null) {
-                    final PageRef nextPageRef = nextStub.getFirstPageRef();
-
-                    if ((nextPageRef != null) && !nextPageRef.isMovementStart()) {
-                        impactedRefs.addAll(getScore(nextPageRef).getPageRefs());
+                            break;
+                        }
                     }
                 }
-            }
 
-            // Determine and remove the impacted scores
-            final List<Score> impactedScores = scoresOf(impactedRefs);
-            Integer scoreIndex = null;
-
-            if (!impactedScores.isEmpty()) {
-                scoreIndex = scores.indexOf(impactedScores.get(0));
-            } else {
-                for (Score score : scores) {
-                    if (score.getFirstPageRef().getSheetNumber() > stubNumber) {
-                        scoreIndex = scores.indexOf(score);
-
-                        break;
-                    }
+                if (scoreIndex == null) {
+                    scoreIndex = scores.size();
                 }
+
+                logger.debug("Impacted pages:{} scores:{}", impactedRefs, impactedScores);
+                scores.removeAll(impactedScores);
+
+                // Insert new score(s) to replace the impacted one(s)
+                insertScores(currentStub, impactedRefs, scoreIndex);
+            } catch (Exception ex) {
+                // This seems to result from inconsistency between scores info and stubs info.
+                // Initial cause can be a sheet not marshalled (because of use by another process)
+                // followed by a reload of now non-consistent book.xml
+
+                // Workaround: Clear all scores and rebuild them from stubs info
+                // (Doing so, we may lose logical-part informations)
+                logger.warn("Error updating scores " + ex, ex);
+                logger.warn("Rebuilding them from stubs info.");
+                scores.clear();
+                createScores();
             }
-
-            if (scoreIndex == null) {
-                scoreIndex = scores.size();
-            }
-
-            logger.debug("Impacted pages:{} scores:{}", impactedRefs, impactedScores);
-            scores.removeAll(impactedScores);
-
-            // Insert new score(s) to replace the impacted one(s)
-            insertScores(currentStub, impactedRefs, scoreIndex);
         }
     }
 
@@ -1538,6 +1633,21 @@ public class BasicBook
 
         // Finally open the book file just created
         return Zip.openFileSystem(bookPath);
+    }
+
+    //------------//
+    // checkScore // Dirty hack, to be removed ASAP
+    //------------//
+    private void checkScore ()
+    {
+        for (Score score : scores) {
+            PageRef ref = score.getFirstPageRef();
+            if (ref == null) {
+                logger.warn("Discarding invalid score data.");
+                scores.clear();
+                break;
+            }
+        }
     }
 
     //--------------//
@@ -1663,8 +1773,14 @@ public class BasicBook
             revision = ProgramId.PROGRAM_REVISION;
         }
 
+        if (alias == null) {
+            alias = checkAlias(getInputPath());
+            if (alias != null) {
+                nameSansExt = alias;
+            }
+        }
+
         if (nameSansExt != null) {
-            // Apply alias patterns if any
             this.radix = nameSansExt;
         }
 

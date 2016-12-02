@@ -78,15 +78,20 @@ public class SaveTask
     //------//
     public void core (Book book)
     {
-        Path bookPath = (file != null) ? file
-                : ((folder != null)
-                        ? Paths.get(folder.toString(), book.getRadix() + OMR.BOOK_EXTENSION) : null);
+        if (book.isModified()) {
+            Path bookPath = (file != null) ? file
+                    : ((folder != null)
+                            ? Paths.get(folder.toString(), book.getRadix() + OMR.BOOK_EXTENSION)
+                            : null);
 
-        if (bookPath == null) {
-            bookPath = BookManager.getDefaultBookPath(book);
+            if (bookPath == null) {
+                bookPath = BookManager.getDefaultBookPath(book);
+            }
+
+            book.store(bookPath, false);
+        } else {
+            logger.info("No save needed for {}", book);
         }
-
-        book.store(bookPath, false);
     }
 
     //------//

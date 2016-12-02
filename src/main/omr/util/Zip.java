@@ -97,11 +97,10 @@ public abstract class Zip
     // createInputStream //
     //-------------------//
     /**
-     * Create a InputStream on a given file, by looking for a zip
-     * archive whose path is the file path with ".zip" appended,
+     * Create a InputStream on a given file, by looking for a zip archive,
      * and by reading the first entry in this zip file.
      *
-     * @param file the file (with no zip extension)
+     * @param file the zip file
      *
      * @return a InputStream on the zip entry
      */
@@ -109,8 +108,6 @@ public abstract class Zip
     {
         try {
             String path = file.getCanonicalPath();
-
-            //ZipFile zf = new ZipFile(path + ".zip");
             ZipFile zf = new ZipFile(path);
 
             for (Enumeration<?> entries = zf.entries(); entries.hasMoreElements();) {
@@ -225,6 +222,18 @@ public abstract class Zip
         }
 
         return null;
+    }
+
+    //---------//
+    // isEmpty //
+    //---------//
+    public static boolean isEmpty (File file)
+            throws FileNotFoundException, IOException
+    {
+        String path = file.getCanonicalPath();
+        ZipFile zf = new ZipFile(path);
+
+        return !zf.entries().hasMoreElements();
     }
 
     //----------------//

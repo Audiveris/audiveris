@@ -1172,7 +1172,7 @@ public class BeamsBuilder
                 }
 
                 if (inter.getContextualGrade() == null) {
-                    sig.computeContextualGrade(inter, false);
+                    sig.computeContextualGrade(inter);
                 }
 
                 return inter.getContextualGrade() >= Inter.minContextualGrade;

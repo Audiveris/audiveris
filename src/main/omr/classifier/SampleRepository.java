@@ -37,6 +37,7 @@ import omr.glyph.SymbolSample;
 import omr.run.RunTable;
 
 import omr.sheet.Book;
+import omr.sheet.BookManager;
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
@@ -95,7 +96,6 @@ import javax.swing.event.ChangeListener;
  * <p>
  * <img alt="Sample management" src="doc-files/Samples.png">
  *
- *
  * @author Hervé Bitteur
  */
 public class SampleRepository
@@ -107,14 +107,14 @@ public class SampleRepository
     private static final Logger logger = LoggerFactory.getLogger(
             SampleRepository.class);
 
-    /** Should we support flocks?. */
-    public static final boolean USE_FLOCKS = constants.useFlocks.isSet();
+    /** Should we support tribes?. */
+    public static final boolean USE_TRIBES = constants.useTribes.isSet();
 
     /** Standard interline value: {@value}. (Any value could fit, if used consistently) */
     public static final int STANDARD_INTERLINE = 20;
 
-    /** The single instance of this class, if any. */
-    private static volatile SampleRepository INSTANCE;
+    /** The global repository instance, if any. */
+    private static volatile SampleRepository GLOBAL;
 
     /** File name for images material: {@value}. */
     private static final String IMAGES_FILE_NAME = "images.zip";
@@ -122,24 +122,12 @@ public class SampleRepository
     /** File name for samples material: {@value}. */
     private static final String SAMPLES_FILE_NAME = "samples.zip";
 
-    /** File name for flocks material: {@value}. */
-    private static final String FLOCKS_FILE_NAME = "flocks.zip";
-
-    /** File path for images material: {@value}. */
-    private static final Path IMAGES_FILE = WellKnowns.TRAIN_FOLDER.resolve(IMAGES_FILE_NAME);
-
-    /** File path for training material: {@value}. */
-    private static final Path SAMPLES_FILE = WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME);
-
-    /** File path for flocks material: {@value}. */
-    private static final Path FLOCKS_FILE = WellKnowns.TRAIN_FOLDER.resolve(FLOCKS_FILE_NAME);
-
     /** Special name to refer to font-based samples: {@value}. */
-    private static final String SYMBOLS = "<Font-Based Symbols>";
+    private static final String SYMBOLS = "AAA_FONT_SYMBOLS";
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Sheets, mapped by their ID. */
-    private final Map<Integer, SampleSheet> idMap = new TreeMap<Integer, SampleSheet>();
+    /** Sheets, mapped by their unique name. */
+    private final Map<String, SampleSheet> nameMap = new TreeMap<String, SampleSheet>();
 
     /** Sheets, mapped by their image. */
     private final Map<RunTable, SampleSheet> imageMap = new HashMap<RunTable, SampleSheet>();
@@ -151,19 +139,41 @@ public class SampleRepository
     private SheetContainer sheetContainer = new SheetContainer();
 
     /** Is the repository already loaded?. */
-    private volatile boolean loaded;
+    private boolean loaded;
+
+    /** Have the images already been loaded?. */
+    private boolean imagesLoaded;
 
     /** Listeners on repository modifications. */
     private final Set<ChangeListener> listeners = new LinkedHashSet<ChangeListener>();
 
+    /** Folder path for this repository. */
+    private final Path folder;
+
+    /** File path for training material: {@value}. */
+    private final Path samplesFile;
+
+    /** File path for images material: {@value}. */
+    private final Path imagesFile;
+
     //~ Constructors -------------------------------------------------------------------------------
-    /** Private singleton constructor. */
-    private SampleRepository ()
+    /**
+     * (Private) constructor.
+     *
+     * @param folder hosting folder (either global train folder or book dedicated folder)
+     */
+    private SampleRepository (Path folder)
     {
         // Set application exit listener
         if (OMR.gui != null) {
             OmrGui.getApplication().addExitListener(getExitListener());
         }
+
+        this.folder = folder;
+
+        final String prefix = prefixOf(folder);
+        imagesFile = folder.resolve(prefix + IMAGES_FILE_NAME);
+        samplesFile = folder.resolve(prefix + SAMPLES_FILE_NAME);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -175,43 +185,72 @@ public class SampleRepository
         return new RepositoryExitListener();
     }
 
+    //-------------------//
+    // getGlobalInstance //
+    //-------------------//
+    /**
+     * Report the global repository, after creating it if needed.
+     *
+     * @param load true for a loaded repository
+     * @return the global instance of SampleRepository
+     */
+    public static SampleRepository getGlobalInstance (boolean load)
+    {
+        if (GLOBAL == null) {
+            GLOBAL = new SampleRepository(WellKnowns.TRAIN_FOLDER);
+        }
+
+        if (load && !GLOBAL.isLoaded()) {
+            GLOBAL.loadRepository();
+        }
+
+        return GLOBAL;
+    }
+
     //-------------//
     // getInstance //
     //-------------//
     /**
-     * Report the single instance of this class, after creating it if needed.
+     * Report the repository specifically related to the provided book.
      *
-     * @return the single instance
+     * @param book the provided book
+     * @param load true for a loaded repository
+     * @return the specific sample repository for the provided book, or null
      */
-    public static SampleRepository getInstance ()
+    public static SampleRepository getInstance (Book book,
+                                                boolean load)
     {
-        if (INSTANCE == null) {
-            INSTANCE = new SampleRepository();
+        if (BookManager.useSeparateBookFolders()) {
+            final Path bookFolder = BookManager.getDefaultBookFolder(book);
+            final Path baseFolder = BookManager.getBaseFolder();
+
+            // Make sure this is a folder dedicated to the book
+            if (!baseFolder.toAbsolutePath().normalize()
+                    .equals(bookFolder.toAbsolutePath().normalize())) {
+                final SampleRepository repo = new SampleRepository(bookFolder);
+
+                if (load && !repo.isLoaded()) {
+                    repo.loadRepository();
+                }
+
+                return repo;
+            }
         }
 
-        return INSTANCE;
+        return null;
     }
 
-    //-------------------//
-    // getLoadedInstance //
-    //-------------------//
+    //-------------//
+    // hasInstance //
+    //-------------//
     /**
-     * Report the single instance of this class, after creating and loading it if needed.
+     * Report whether the global repository has been allocated.
      *
-     * @param withImages if true, sheet binaries are also loaded.
-     * @return the single instance
+     * @return true if GLOBAL exists
      */
-    public static SampleRepository getLoadedInstance (boolean withImages)
+    public static boolean hasInstance ()
     {
-        if (INSTANCE == null) {
-            INSTANCE = new SampleRepository();
-        }
-
-        if (!INSTANCE.isLoaded()) {
-            INSTANCE.loadRepository(withImages);
-        }
-
-        return INSTANCE;
+        return GLOBAL != null;
     }
 
     //-------------//
@@ -232,6 +271,52 @@ public class SampleRepository
     // addSample //
     //-----------//
     /**
+     * Build and add a sample from a provided glyph, with its related staff and
+     * containing sheet.
+     *
+     * @param shape assigned shape
+     * @param glyph underlying glyph
+     * @param staff related staff
+     * @param sheet containing sheet
+     */
+    public void addSample (Shape shape,
+                           Glyph glyph,
+                           Staff staff,
+                           Sheet sheet)
+    {
+        final SampleSheet sampleSheet = findSampleSheet(sheet);
+        final double pitch = staff.pitchPositionOf(glyph.getCentroid());
+        addSample(shape, glyph, staff.getSpecificInterline(), sampleSheet, pitch);
+    }
+
+    //-----------//
+    // addSample //
+    //-----------//
+    /**
+     * Build and add a sample from the provided glyph into the provided sample sheet.
+     *
+     * @param shape       assigned shape
+     * @param glyph       underlying glyph
+     * @param interline   scaling factor
+     * @param sampleSheet target sample sheet
+     * @param pitch       staff-related pitch, if any
+     */
+    public void addSample (Shape shape,
+                           Glyph glyph,
+                           int interline,
+                           SampleSheet sampleSheet,
+                           Double pitch)
+    {
+        shape = Sample.getRecordableShape(shape);
+
+        final Sample sample = new Sample(glyph, interline, shape, pitch);
+        addSample(sample, sampleSheet);
+    }
+
+    //-----------//
+    // addSample //
+    //-----------//
+    /**
      * Add a new sample to the provided SampleSheet.
      *
      * @param sample      the sample to add, non-null
@@ -246,35 +331,9 @@ public class SampleRepository
         sampleSheet.privateAddSample(sample);
         sampleMap.put(sample, sampleSheet);
 
+        logger.info("{} added {} to {}", this, sample, sampleSheet);
+
         fireStateChanged(new AdditionEvent(sample));
-    }
-
-    //-----------//
-    // addSample //
-    //-----------//
-    public void addSample (Shape shape,
-                           Glyph glyph,
-                           Staff staff,
-                           Sheet sheet)
-    {
-        final SampleSheet sampleSheet = SampleRepository.this.findSampleSheet(sheet);
-        final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-        addSample(shape, glyph, staff.getSpecificInterline(), sampleSheet, pitch);
-    }
-
-    //-----------//
-    // addSample //
-    //-----------//
-    public void addSample (Shape shape,
-                           Glyph glyph,
-                           int interline,
-                           SampleSheet sampleSheet,
-                           Double pitch)
-    {
-        shape = Sample.getRecordableShape(shape);
-
-        final Sample sample = new Sample(glyph, interline, shape, pitch);
-        addSample(sample, sampleSheet);
     }
 
     //-----------------//
@@ -314,7 +373,7 @@ public class SampleRepository
                     return comp;
                 }
 
-                return Integer.compare(getSheetId(s1), getSheetId(s2));
+                return getSheetName(s1).compareTo(getSheetName(s2));
             }
         });
 
@@ -348,18 +407,18 @@ public class SampleRepository
                     if (s.getShape() != sample.getShape()) {
                         logger.warn(
                                 "Conflicting shapes between {}/{} and {}/{}",
-                                getSheetId(sample),
+                                getSheetName(sample),
                                 sample,
-                                getSheetId(s),
+                                getSheetName(s),
                                 s);
                         conflictings.add(sample);
                         conflictings.add(s);
                     } else {
                         logger.info(
                                 "Same runtable for {}/{} & {}/{}",
-                                getSheetId(sample),
+                                getSheetName(sample),
                                 sample,
-                                getSheetId(s),
+                                getSheetName(s),
                                 s);
                         redundants.add(s);
                         deleted[j] = true;
@@ -388,13 +447,19 @@ public class SampleRepository
         if (isLoaded() && isModified()) {
             storeRepository();
         } else {
-            logger.info("No need to save sample repository");
+            logger.info("No need to save {}", this);
         }
     }
 
     //-----------------//
     // findSampleSheet //
     //-----------------//
+    /**
+     * Find out (or create) the SampleSheet that corresponds to the provided Sheet.
+     *
+     * @param sheet provided sheet
+     * @return the found or created sample sheet, where samples can be added to. Non-null.
+     */
     public SampleSheet findSampleSheet (Sheet sheet)
     {
         // Handle long name if any
@@ -422,44 +487,45 @@ public class SampleRepository
      * Find out (or create) the SampleSheet that corresponds to provided name and/or
      * image.
      * <p>
-     * If sheet image is provided, the repository is searched for the image.
-     * <p>
-     * If an identical sheet image already exists, it is used and the provided name is kept as an
-     * alias.
-     * Otherwise, a new sample sheet is created.
-     * <p>
-     * If a sheet name is provided but no sheet image, we allocate a sheet with the provided name.
-     * Note that this is not reliable.
+     * If sheet image is provided, the repository is searched for the image:<ul>
+     * <li> If an identical sheet image already exists, it is used and the provided name is kept as
+     * an alias.
+     * <li>Otherwise, a new sample sheet is created. If the provided name is already used, a suffix
+     * is appended to the name to make it unique within the repository.
+     * </ul>
+     * If a sheet name is provided but no sheet image, a sample sheet is found or created with the
+     * provided name, <i>assumed to be unique</i>.
+     * Note that handling sheets without image is <b>not reliable</b>.
      *
      * @param name     name of containing sheet, non-null if image is null
      * @param longName an optional longer name, if any
      * @param image    sheet binary image, if any, strongly recommended
-     * @return the found or created sheet, where samples can be added to. Non null.
+     * @return the found or created sample sheet, where samples can be added to. Non-null.
      */
     public SampleSheet findSampleSheet (String name,
                                         String longName,
                                         RunTable image)
     {
         if ((name == null) || ((name.isEmpty()) && (image == null))) {
-            throw new IllegalArgumentException("findSheet() needs sheet name or image");
+            throw new IllegalArgumentException("findSampleSheet() needs sheet name or image");
         }
 
-        SampleSheet sheet;
+        SampleSheet sampleSheet;
 
         if (image != null) {
             final int hash = image.persistentHashCode();
-            sheet = imageMap.get(image);
+            sampleSheet = imageMap.get(image);
 
-            if (sheet == null) {
-                // Is there a not yet loaded table?
+            if (sampleSheet == null) {
+                // Is there a not-yet-loaded table?
                 List<Descriptor> descs = sheetContainer.getDescriptors(hash);
 
                 if (!descs.isEmpty()) {
                     try {
-                        final Path root = Zip.openFileSystem(IMAGES_FILE);
+                        final Path root = Zip.openFileSystem(imagesFile);
 
                         for (Descriptor desc : descs) {
-                            final Path file = root.resolve(Integer.toString(desc.id)).resolve(
+                            final Path file = root.resolve(desc.getName()).resolve(
                                     SampleSheet.IMAGE_FILE_NAME);
                             final RunTable rt = RunTable.unmarshal(file);
 
@@ -468,9 +534,9 @@ public class SampleRepository
                                 desc.addAlias(name);
                                 desc.addAlias(longName);
 
-                                sheet = idMap.get(desc.id);
-                                sheet.setImage(rt);
-                                imageMap.put(rt, sheet);
+                                sampleSheet = nameMap.get(desc.getName());
+                                sampleSheet.setImage(rt);
+                                imageMap.put(rt, sampleSheet);
 
                                 break;
                             }
@@ -481,43 +547,44 @@ public class SampleRepository
                     }
                 }
 
-                if (sheet == null) {
+                if (sampleSheet == null) {
+                    // Make sure name is unique
+                    name = sheetContainer.forgeUnique(name);
+
                     // Allocate a brand new descriptor
-                    int id = sheetContainer.getNewId();
-                    Descriptor desc = new Descriptor(id, hash, name);
+                    Descriptor desc = new Descriptor(name, hash);
                     desc.addAlias(longName);
 
                     sheetContainer.addDescriptor(desc);
 
                     // Allocate a brand new sheet
-                    sheet = new SampleSheet(id, desc);
-                    idMap.put(id, sheet);
-                    imageMap.put(image, sheet);
-                    sheet.setImage(image);
+                    sampleSheet = new SampleSheet(desc);
+                    nameMap.put(desc.getName(), sampleSheet);
+                    imageMap.put(image, sampleSheet);
+                    sampleSheet.setImage(image);
                 }
             }
         } else {
-            // We have no image, just a sheet name. This is dangerous!
+            // We have no image, just a sheet name. This is DANGEROUS!
             Descriptor desc = sheetContainer.getDescriptor(name);
 
             if (desc != null) {
                 desc.addAlias(longName);
 
-                return idMap.get(desc.id);
+                return nameMap.get(desc.getName());
             } else {
                 // Allocate a brand new descriptor
-                int id = sheetContainer.getNewId();
-                desc = new Descriptor(id, null, name);
+                desc = new Descriptor(name, null);
                 desc.addAlias(longName);
                 sheetContainer.addDescriptor(desc);
 
                 // Allocate a brand new sheet
-                sheet = new SampleSheet(id, desc);
-                idMap.put(id, sheet);
+                sampleSheet = new SampleSheet(desc);
+                nameMap.put(desc.getName(), sampleSheet);
             }
         }
 
-        return sheet;
+        return sampleSheet;
     }
 
     //-------------------//
@@ -533,25 +600,6 @@ public class SampleRepository
         return sheetContainer.getAllDescriptors();
     }
 
-    //--------------//
-    // getAllFlocks //
-    //--------------//
-    /**
-     * Report all the flocks in the repository.
-     *
-     * @return all the repository flocks
-     */
-    public List<Flock> getAllFlocks ()
-    {
-        final List<Flock> allFlocks = new ArrayList<Flock>();
-
-        for (SampleSheet sheet : idMap.values()) {
-            allFlocks.addAll(sheet.getFlocks());
-        }
-
-        return allFlocks;
-    }
-
     //---------------//
     // getAllSamples //
     //---------------//
@@ -564,11 +612,50 @@ public class SampleRepository
     {
         final List<Sample> allSamples = new ArrayList<Sample>();
 
-        for (SampleSheet sheet : idMap.values()) {
+        for (SampleSheet sheet : nameMap.values()) {
             allSamples.addAll(sheet.getAllSamples());
         }
 
         return allSamples;
+    }
+
+    //--------------//
+    // getAllTribes //
+    //--------------//
+    /**
+     * Report all the tribes in the repository.
+     *
+     * @return all the repository tribes
+     */
+    public List<Tribe> getAllTribes ()
+    {
+        final List<Tribe> allTribes = new ArrayList<Tribe>();
+
+        for (SampleSheet sheet : nameMap.values()) {
+            allTribes.addAll(sheet.getTribes());
+        }
+
+        return allTribes;
+    }
+
+    //---------------//
+    // getDescriptor //
+    //---------------//
+    /**
+     * Report the descriptor of the sample sheet that contains the provided sample.
+     *
+     * @param sample provided sample
+     * @return the descriptor of containing SampleSheet
+     */
+    public Descriptor getDescriptor (Sample sample)
+    {
+        SampleSheet sampleSheet = getSampleSheet(sample);
+
+        if (sampleSheet != null) {
+            return sampleSheet.getDescriptor();
+        }
+
+        return null;
     }
 
     //----------------//
@@ -596,24 +683,24 @@ public class SampleRepository
      */
     public SampleSheet getSampleSheet (Descriptor descriptor)
     {
-        return idMap.get(descriptor.id);
+        return nameMap.get(descriptor.getName());
     }
 
     //------------//
     // getSamples //
     //------------//
     /**
-     * Report, in the SampleSheet whose ID is provided, all samples assigned the
+     * Report, in the SampleSheet whose name is provided, all samples assigned the
      * desired shape.
      *
-     * @param id    ID of sample sheet
+     * @param name  name of sample sheet
      * @param shape desired shape
      * @return the list of samples related to shape in provided sheet
      */
-    public List<Sample> getSamples (int id,
+    public List<Sample> getSamples (String name,
                                     Shape shape)
     {
-        SampleSheet sampleSheet = idMap.get(id);
+        SampleSheet sampleSheet = nameMap.get(name);
 
         if (sampleSheet != null) {
             return sampleSheet.getSamples(shape);
@@ -638,7 +725,7 @@ public class SampleRepository
         List<Sample> found = new ArrayList<Sample>();
 
         for (Descriptor descriptor : descriptors) {
-            SampleSheet sampleSheet = idMap.get(descriptor.id);
+            SampleSheet sampleSheet = nameMap.get(descriptor.getName());
 
             List<Shape> sheetShapes = new ArrayList<Shape>(sampleSheet.getShapes());
             sheetShapes.retainAll(shapes);
@@ -655,7 +742,7 @@ public class SampleRepository
     // getShapes //
     //-----------//
     /**
-     * Report all shapes for which the provided sheet/descriptor has concrete samples.
+     * Report all shapes for which the provided sheet descriptor has concrete samples.
      *
      * @param descriptor descriptor of the sample sheet
      * @return the list of (non-empty) shapes
@@ -663,12 +750,12 @@ public class SampleRepository
     public Set<Shape> getShapes (Descriptor descriptor)
     {
         // Symbols?
-        if (SampleSheet.isSymbols(descriptor.id)) {
+        if (isSymbols(descriptor.getName())) {
             return ShapeSet.allPhysicalShapes;
         }
 
         // Standard sheet
-        SampleSheet sampleSheet = idMap.get(descriptor.id);
+        SampleSheet sampleSheet = nameMap.get(descriptor.getName());
 
         if (sampleSheet != null) {
             return sampleSheet.getShapes();
@@ -677,68 +764,24 @@ public class SampleRepository
         return Collections.emptySet();
     }
 
-    //--------------------//
-    // getSheetDescriptor //
-    //--------------------//
+    //--------------//
+    // getSheetName //
+    //--------------//
     /**
-     * Report the descriptor of the sample sheet that contains the provided sample.
+     * Report the name of the sample sheet that contains the provided sample.
      *
      * @param sample provided sample
-     * @return the descriptor of containing SampleSheet
+     * @return the containing SampleSheet name
      */
-    public Descriptor getSheetDescriptor (Sample sample)
+    public String getSheetName (Sample sample)
     {
         SampleSheet sampleSheet = sampleMap.get(sample);
 
         if (sampleSheet != null) {
-            return sheetContainer.getDescriptor(sampleSheet.getId());
+            return sampleSheet.getDescriptor().getName();
         }
 
         return null;
-    }
-
-    //------------//
-    // getSheetId //
-    //------------//
-    /**
-     * Report the ID of the sample sheet that contains the provided sample.
-     *
-     * @param sample provided sample
-     * @return the containing SampleSheet ID
-     */
-    public Integer getSheetId (Sample sample)
-    {
-        SampleSheet sampleSheet = sampleMap.get(sample);
-
-        if (sampleSheet != null) {
-            return sampleSheet.getId();
-        }
-
-        return null;
-    }
-
-    //-------------//
-    // hasInstance //
-    //-------------//
-    /**
-     * Report whether the repository instance has been allocated.
-     *
-     * @return true if INSTANCE exists
-     */
-    public static boolean hasInstance ()
-    {
-        return INSTANCE != null;
-    }
-
-    //----------------//
-    // hasSheetFlocks //
-    //----------------//
-    /**
-     * Check whether file of sheet flocks is available.
-     */
-    public boolean hasSheetFlocks ()
-    {
-        return Files.exists(FLOCKS_FILE);
     }
 
     //----------------//
@@ -746,10 +789,129 @@ public class SampleRepository
     //----------------//
     /**
      * Check whether file of sheet images is available.
+     *
+     * @return true if images are available
      */
     public boolean hasSheetImages ()
     {
-        return Files.exists(IMAGES_FILE);
+        return Files.exists(imagesFile);
+    }
+
+    //-------------------//
+    // includeRepository //
+    //-------------------//
+    public void includeRepository (SampleRepository source)
+    {
+        source.loadSheetImages();
+
+        for (SampleSheet sampleSheet : source.nameMap.values()) {
+            includeSampleSheet(sampleSheet);
+        }
+    }
+
+    //-----------//
+    // isSymbols //
+    //-----------//
+    /**
+     * Report whether the provided sheet name is a font-based symbols sheet
+     *
+     * @param name provided sheet name
+     * @return true if font-based symbols
+     */
+    public static boolean isSymbols (String name)
+    {
+        return SYMBOLS.equals(name);
+    }
+
+    //------------------//
+    // repositoryExists //
+    //------------------//
+    /**
+     * Report whether a repository exists on disk for the provided book.
+     *
+     * @param book the provided book
+     * @return true if repository file(s) exist(s)
+     */
+    public static boolean repositoryExists (Book book)
+    {
+        if (BookManager.useSeparateBookFolders()) {
+            final Path bookFolder = BookManager.getDefaultBookFolder(book);
+            final Path baseFolder = BookManager.getBaseFolder();
+
+            // Make sure this is a folder dedicated to the book
+            if (!baseFolder.toAbsolutePath().normalize()
+                    .equals(bookFolder.toAbsolutePath().normalize())) {
+                final String prefix = prefixOf(bookFolder);
+                final Path samplesFile = bookFolder.resolve(prefix + SAMPLES_FILE_NAME);
+
+                if (Files.exists(samplesFile)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    //--------------------//
+    // includeSampleSheet //
+    //--------------------//
+    /**
+     * Include the provided SampleSheet, with all its samples, into the repository.
+     * <p>
+     * The provided SampleSheet is meant to come from an external repository (typically from a
+     * book-specific repository to the global repository).
+     *
+     * @param extSheet the provided (external) SampleSheet
+     * @return the local SampleSheet (created or augmented)
+     */
+    public SampleSheet includeSampleSheet (SampleSheet extSheet)
+    {
+        // First, find out (or create) proper local SampleSheet
+        final RunTable extImage = extSheet.getImage();
+        final Descriptor extDescriptor = extSheet.getDescriptor();
+        final SampleSheet localSheet = findSampleSheet(extDescriptor.getName(), null, extImage);
+
+        // Copy external aliases
+        final Descriptor localDescriptor = localSheet.getDescriptor();
+        localDescriptor.addAlias(extDescriptor.getName());
+
+        for (String alias : extDescriptor.getAliases()) {
+            localDescriptor.addAlias(alias);
+        }
+
+        // Copy samples from external to local
+        for (Sample sample : extSheet.getAllSamples()) {
+            addSample(sample, localSheet);
+        }
+
+        // Copy tribes from external to local
+        for (Tribe tribe : extSheet.getTribes()) {
+            final Tribe localTribe = localSheet.getTribe(tribe.getHead());
+
+            for (Sample good : tribe.getGoods()) {
+                localTribe.addGood(good);
+            }
+
+            for (Sample member : tribe.getMembers()) {
+                localTribe.addOther(member);
+            }
+        }
+
+        return localSheet;
+    }
+
+    //----------//
+    // isGlobal //
+    //----------//
+    /**
+     * Report whether this repository if the global instance.
+     *
+     * @return true if global
+     */
+    public boolean isGlobal ()
+    {
+        return this == GLOBAL;
     }
 
     //----------//
@@ -772,7 +934,7 @@ public class SampleRepository
             return true;
         }
 
-        for (SampleSheet sheet : idMap.values()) {
+        for (SampleSheet sheet : nameMap.values()) {
             if (sheet.isModified()) {
                 return true;
             }
@@ -786,53 +948,54 @@ public class SampleRepository
     //----------------//
     /**
      * Load the training material (font-based symbols as well as concrete samples).
-     *
-     * @param withImages if true, sheet binary images are also loaded.
      */
-    public void loadRepository (boolean withImages)
+    public void loadRepository ()
     {
         final StopWatch watch = new StopWatch("Loading repository");
 
         try {
-            watch.start("open samples.zip");
+            if (Files.exists(samplesFile)) {
+                watch.start("open samples.zip");
 
-            final Path samplesRoot = Zip.openFileSystem(SAMPLES_FILE);
+                final Path samplesRoot = Zip.openFileSystem(samplesFile);
 
-            watch.start("loadContainer");
+                watch.start("loadContainer");
 
-            {
-                SheetContainer container = SheetContainer.unmarshal(samplesRoot);
+                {
+                    SheetContainer container = SheetContainer.unmarshal(samplesRoot);
 
-                if (container != null) {
-                    if (logger.isDebugEnabled()) {
-                        container.dump();
+                    if (container != null) {
+                        if (logger.isDebugEnabled()) {
+                            container.dump();
+                        }
+
+                        sheetContainer = container;
                     }
-
-                    sheetContainer = container;
                 }
-            }
 
-            //            watch.start("buildSymbols");
-            //            buildSymbols();
-            //
-            watch.start("loadSamples");
-            loadSamples(samplesRoot);
-            samplesRoot.getFileSystem().close();
+                //            watch.start("buildSymbols");
+                //            buildSymbols();
+                //
+                watch.start("loadSamples");
+                loadSamples(samplesRoot);
 
-            if (withImages) {
-                watch.start("loadImages");
-                loadSheetImages();
-            }
+                // Tribes?
+                if (USE_TRIBES) {
+                    watch.start("loadTribes");
+                    loadTribes(samplesRoot);
+                }
 
-            // Flocks?
-            if (USE_FLOCKS) {
-                watch.start("loadFlocks");
-                loadSheetFlocks();
+                samplesRoot.getFileSystem().close();
+            } else {
+                logger.info(
+                        "No {} in folder {}",
+                        samplesFile.getFileName(),
+                        samplesFile.getParent());
             }
 
             loaded = true;
         } catch (IOException ex) {
-            logger.warn("Error loading repository " + ex, ex);
+            logger.warn("Error loading " + this + " " + ex, ex);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -841,44 +1004,24 @@ public class SampleRepository
     }
 
     //-----------------//
-    // loadSheetFlocks //
-    //-----------------//
-    /**
-     * Load the sheet flocks, if available.
-     */
-    public void loadSheetFlocks ()
-    {
-        if (hasSheetFlocks()) {
-            try {
-                final Path flocksRoot = Zip.openFileSystem(FLOCKS_FILE);
-                loadFlocks(flocksRoot);
-                flocksRoot.getFileSystem().close();
-            } catch (IOException ex) {
-                logger.warn("Error loading sheet flocks " + ex, ex);
-            }
-        } else {
-            logger.info("{} not found.", FLOCKS_FILE);
-        }
-    }
-
-    //-----------------//
     // loadSheetImages //
     //-----------------//
     /**
-     * Load the sheet images, if available.
+     * Load the sheet images, if available and not already done.
      */
     public void loadSheetImages ()
     {
-        if (hasSheetImages()) {
+        if (!imagesLoaded && hasSheetImages()) {
             try {
-                final Path imagesRoot = Zip.openFileSystem(IMAGES_FILE);
+                final Path imagesRoot = Zip.openFileSystem(imagesFile);
                 loadImages(imagesRoot);
                 imagesRoot.getFileSystem().close();
+                imagesLoaded = true;
             } catch (IOException ex) {
                 logger.warn("Error loading sheet images " + ex, ex);
             }
         } else {
-            logger.info("{} not found.", IMAGES_FILE);
+            logger.info("{} not found.", imagesFile);
         }
     }
 
@@ -921,6 +1064,8 @@ public class SampleRepository
         sampleSheet.privateRemoveSample(sample);
         sampleMap.remove(sample);
 
+        logger.info("{} removed {} from {}", this, sample, sampleSheet);
+
         fireStateChanged(new RemovalEvent(sample));
     }
 
@@ -934,8 +1079,8 @@ public class SampleRepository
      */
     public void removeSheet (Descriptor descriptor)
     {
-        final SampleSheet sampleSheet = idMap.get(descriptor.id);
-        idMap.remove(descriptor.id);
+        final SampleSheet sampleSheet = nameMap.get(descriptor.getName());
+        nameMap.remove(descriptor.getName());
 
         if (sampleSheet.getImage() != null) {
             imageMap.remove(sampleSheet.getImage());
@@ -958,38 +1103,42 @@ public class SampleRepository
     public void storeRepository ()
     {
         try {
-            final Path samplesRoot = Files.exists(SAMPLES_FILE) ? Zip.openFileSystem(SAMPLES_FILE)
-                    : Zip.createFileSystem(SAMPLES_FILE);
-            final Path imagesRoot = Files.exists(IMAGES_FILE) ? Zip.openFileSystem(IMAGES_FILE)
-                    : Zip.createFileSystem(IMAGES_FILE);
-            final Path flocksRoot = USE_FLOCKS
-                    ? (Files.exists(FLOCKS_FILE) ? Zip.openFileSystem(FLOCKS_FILE)
-                    : Zip.createFileSystem(FLOCKS_FILE)) : null;
+            final Path samplesRoot = Files.exists(samplesFile) ? Zip.openFileSystem(samplesFile)
+                    : Zip.createFileSystem(samplesFile);
+            final Path imagesRoot = Files.exists(imagesFile) ? Zip.openFileSystem(imagesFile)
+                    : Zip.createFileSystem(imagesFile);
 
             // Container
             if (sheetContainer.isModified()) {
-                sheetContainer.marshal(samplesRoot, imagesRoot, flocksRoot);
+                sheetContainer.marshal(samplesRoot, imagesRoot);
             }
 
             // Samples
-            for (SampleSheet sampleSheet : idMap.values()) {
+            for (SampleSheet sampleSheet : nameMap.values()) {
                 if (sampleSheet.isModified()) {
-                    sampleSheet.marshal(samplesRoot, imagesRoot, flocksRoot);
+                    sampleSheet.marshal(samplesRoot, imagesRoot);
                 }
             }
 
             samplesRoot.getFileSystem().close();
             imagesRoot.getFileSystem().close();
 
-            if (flocksRoot != null) {
-                flocksRoot.getFileSystem().close();
-            }
-
             setModified(false);
-            logger.info("Sample repository stored.");
+            logger.info("{} stored.", this);
         } catch (Throwable ex) {
-            logger.warn("Error storing repository to " + SAMPLES_FILE + " " + ex, ex);
+            logger.warn("Error storing " + this + " to " + samplesFile + " " + ex, ex);
         }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        String name = isGlobal() ? "GLOBAL" : FileUtil.getNameSansExtension(folder);
+
+        return name + " repository";
     }
 
     //-------------------//
@@ -1034,15 +1183,14 @@ public class SampleRepository
      */
     private void buildSymbols ()
     {
-        int id = -1;
-        Descriptor desc = sheetContainer.getDescriptor(id);
+        Descriptor desc = sheetContainer.getDescriptor(SYMBOLS);
 
         if (desc == null) {
-            desc = new Descriptor(id, null, SYMBOLS);
+            desc = new Descriptor(SYMBOLS, null);
             sheetContainer.addDescriptor(desc);
         }
 
-        SampleSheet symbolSheet = new SampleSheet(id, desc);
+        SampleSheet symbolSheet = new SampleSheet(desc);
 
         for (Shape shape : ShapeSet.allPhysicalShapes) {
             Sample sample = buildSymbolSample(shape);
@@ -1050,7 +1198,7 @@ public class SampleRepository
             sampleMap.put(sample, symbolSheet);
         }
 
-        idMap.put(id, symbolSheet);
+        nameMap.put(SYMBOLS, symbolSheet);
     }
 
     //------------------//
@@ -1060,57 +1208,6 @@ public class SampleRepository
     {
         for (ChangeListener listener : listeners) {
             listener.stateChanged(event);
-        }
-    }
-
-    //------------//
-    // loadFlocks //
-    //------------//
-    /**
-     * Unmarshal all the sheet flocks available in training material.
-     */
-    private void loadFlocks (final Path root)
-    {
-        try {
-            Files.walkFileTree(
-                    root,
-                    new SimpleFileVisitor<Path>()
-            {
-                @Override
-                public FileVisitResult visitFile (Path file,
-                                                  BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    final String fileName = file.getFileName().toString();
-
-                    if (fileName.equals(SampleSheet.FLOCKS_FILE_NAME)) {
-                        FlockList flockList = FlockList.unmarshal(file);
-
-                        if (flockList != null) {
-                            Path parent = file.getParent();
-                            String rel = root.relativize(parent).toString();
-
-                            int id = Integer.decode(rel);
-                            logger.debug("id: {}", id);
-
-                            SampleSheet sampleSheet = idMap.get(id);
-
-                            if (sampleSheet != null) {
-                                sampleSheet.setFlocks(flockList.getFlocks());
-                                logger.debug("Loaded {}", file);
-                            } else {
-                                logger.warn("No SampleSheet found for flocks {}", file);
-                            }
-                        }
-                    }
-
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-
-            logger.debug("loadFlocks done");
-        } catch (Throwable ex) {
-            logger.warn("Error loading flocks from " + FLOCKS_FILE + " " + ex, ex);
         }
     }
 
@@ -1138,13 +1235,8 @@ public class SampleRepository
                         RunTable runTable = RunTable.unmarshal(file);
 
                         if (runTable != null) {
-                            Path parent = file.getParent();
-                            String rel = root.relativize(parent).toString();
-
-                            int id = Integer.decode(rel);
-                            logger.debug("id: {}", id);
-
-                            SampleSheet sampleSheet = idMap.get(id);
+                            Path folder = file.getParent().getFileName();
+                            SampleSheet sampleSheet = nameMap.get(folder.toString());
 
                             if (sampleSheet != null) {
                                 sampleSheet.setImage(runTable);
@@ -1158,10 +1250,8 @@ public class SampleRepository
                     return FileVisitResult.CONTINUE;
                 }
             });
-
-            logger.debug("loadImages done");
         } catch (Throwable ex) {
-            logger.warn("Error loading binaries from " + IMAGES_FILE + " " + ex, ex);
+            logger.warn("Error loading binaries from " + imagesFile + " " + ex, ex);
         }
     }
 
@@ -1186,19 +1276,18 @@ public class SampleRepository
                     final String fileName = file.getFileName().toString();
 
                     if (fileName.equals(SampleSheet.SAMPLES_FILE_NAME)) {
-                        final String rel = root.relativize(file.getParent()).toString();
-                        final int id = Integer.decode(rel);
-                        final Descriptor desc = sheetContainer.getDescriptor(id);
+                        Path folder = file.getParent().getFileName();
+                        Descriptor desc = sheetContainer.getDescriptor(folder.toString());
 
                         if (desc == null) {
                             logger.warn(
                                     "Samples entry {} not declared in {} is ignored.",
-                                    id,
+                                    folder,
                                     SheetContainer.CONTAINER_ENTRY_NAME);
                         } else {
                             SampleSheet sampleSheet = SampleSheet.unmarshal(file, desc);
-                            boolean isSymbol = SampleSheet.isSymbols(id);
-                            idMap.put(id, sampleSheet);
+                            boolean isSymbol = isSymbols(desc.getName());
+                            nameMap.put(desc.getName(), sampleSheet);
 
                             for (Sample sample : sampleSheet.getAllSamples()) {
                                 sample.setSymbol(isSymbol);
@@ -1210,11 +1299,58 @@ public class SampleRepository
                     return FileVisitResult.CONTINUE;
                 }
             });
-
-            logger.debug("load done");
         } catch (Throwable ex) {
-            logger.warn("Error loading " + SAMPLES_FILE + " " + ex, ex);
+            logger.warn("Error loading " + samplesFile + " " + ex, ex);
         }
+    }
+
+    //------------//
+    // loadTribes //
+    //------------//
+    /**
+     * Unmarshal all the sheet tribes available in training material.
+     */
+    private void loadTribes (final Path root)
+    {
+        try {
+            Files.walkFileTree(
+                    root,
+                    new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    final String fileName = file.getFileName().toString();
+
+                    if (fileName.equals(SampleSheet.TRIBES_FILE_NAME)) {
+                        Path folder = file.getParent().getFileName();
+                        SampleSheet sampleSheet = nameMap.get(folder.toString());
+
+                        if (sampleSheet != null) {
+                            TribeList tribeList = TribeList.unmarshal(file);
+                            sampleSheet.setTribes(tribeList.getTribes());
+                            logger.debug("Loaded {}", file);
+                        } else {
+                            logger.warn("No SampleSheet found for tribes {}", file);
+                        }
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (Throwable ex) {
+            logger.warn("Error loading tribes " + ex, ex);
+        }
+    }
+
+    //----------//
+    // prefixOf //
+    //----------//
+    private static String prefixOf (Path folder)
+    {
+        return (folder == WellKnowns.TRAIN_FOLDER) ? "" : (folder.getFileName() + "-");
     }
 
     //-------------//
@@ -1224,8 +1360,8 @@ public class SampleRepository
     {
         sheetContainer.setModified(bool);
 
-        for (SampleSheet sheet : idMap.values()) {
-            sheet.setModified(bool);
+        for (SampleSheet sampleSheet : nameMap.values()) {
+            sampleSheet.setModified(bool);
         }
     }
 
@@ -1339,9 +1475,9 @@ public class SampleRepository
                 false,
                 "Should we print out the stop watch?");
 
-        private final Constant.Boolean useFlocks = new Constant.Boolean(
+        private final Constant.Boolean useTribes = new Constant.Boolean(
                 false,
-                "Should we support flocks?");
+                "Should we support tribes?");
     }
 
     //------------------------//
@@ -1368,7 +1504,7 @@ public class SampleRepository
                 SingleFrameApplication appli = (SingleFrameApplication) Application.getInstance();
                 int answer = JOptionPane.showConfirmDialog(
                         appli.getMainFrame(),
-                        "Save sample repository?");
+                        "Save " + SampleRepository.this + "?");
 
                 if (answer == JOptionPane.YES_OPTION) {
                     storeRepository();

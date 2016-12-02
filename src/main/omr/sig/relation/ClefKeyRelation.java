@@ -24,6 +24,8 @@ package omr.sig.relation;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.sig.inter.Inter;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -49,6 +51,20 @@ public class ClefKeyRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------------------//
+    // maxContributionForClef //
+    //------------------------//
+    /**
+     * Report the maximum contribution for the clef, brought by the following key.
+     *
+     * @return maximum contribution a clef can expect (from the following key)
+     */
+    public static double maxContributionForClef ()
+    {
+        // Maximum key grade value is Inter.intrinsicRatio
+        return Inter.intrinsicRatio * constants.clefSupportCoeff.getValue();
+    }
+
     //----------------//
     // getSourceCoeff //
     //----------------//

@@ -37,9 +37,10 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -50,7 +51,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code SheetContainer} contains descriptions of sample sheets, notably their
- * ID, their name(s) and the hash-code of their binary image if any.
+ * ID, their name and alias(es) and the hash-code of their binary image if any.
  * <p>
  * Its main purpose is to avoid unnecessary loading of sheet images in memory.
  *
@@ -68,15 +69,19 @@ public class SheetContainer
     /** Name of the specific entry for container. */
     public static final String CONTAINER_ENTRY_NAME = "META-INF/container.xml";
 
+    /** Regex pattern for unique names. */
+    private static final Pattern UNIQUE_PATTERN = Pattern.compile("(.*)(_[0-9][0-9])");
+
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Map (RunTable Hash code => sheet descriptors). */
+    // Persistent data
+    //----------------
+    /** Map (RunTable Hash code => list of sheet descriptors). */
     @XmlJavaTypeAdapter(Adapter.class)
     @XmlElement(name = "sheets")
     private HashMap<Integer, List<Descriptor>> hashMap = new HashMap<Integer, List<Descriptor>>();
 
-    /** Current maximum ID value. */
-    private int maxId;
-
+    // Transient data
+    //---------------
     /** True if container has been modified. */
     private boolean modified;
 
@@ -85,7 +90,7 @@ public class SheetContainer
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SheetContainer} object.
+     * Creates a new {@code SheetContainer} object. Needed for JAXB.
      */
     public SheetContainer ()
     {
@@ -95,6 +100,11 @@ public class SheetContainer
     //---------------//
     // addDescriptor //
     //---------------//
+    /**
+     * Add a new descriptor to this container.
+     *
+     * @param desc the descriptor to add
+     */
     public void addDescriptor (Descriptor desc)
     {
         List<Descriptor> descriptors = hashMap.get(desc.hash);
@@ -115,9 +125,68 @@ public class SheetContainer
         logger.info("SheetContainer: {}", hashMap);
     }
 
+    //-------------//
+    // forgeUnique //
+    //-------------//
+    /**
+     * Forge a unique name from the provided one.
+     *
+     * @param name provided name
+     * @return the unique String forged from provided name
+     */
+    public String forgeUnique (final String name)
+    {
+        final String radix; // Name without "_nn" suffix if any
+        final Matcher matcher = UNIQUE_PATTERN.matcher(name);
+
+        if (matcher.find()) {
+            radix = matcher.group(1);
+        } else {
+            radix = name;
+        }
+
+        final List<String> similars = new ArrayList<String>();
+        boolean collided = false;
+
+        for (List<Descriptor> descriptors : hashMap.values()) {
+            for (Descriptor desc : descriptors) {
+                final String descName = desc.getName();
+
+                if (descName.startsWith(radix)) {
+                    similars.add(descName);
+                }
+
+                if (descName.equals(name)) {
+                    collided = true;
+                }
+            }
+        }
+
+        if (!collided) {
+            return name;
+        }
+
+        for (int i = 1; i < 100; i++) {
+            String newName = String.format("%s_%02d", radix, i);
+
+            if (!similars.contains(newName)) {
+                return newName;
+            }
+        }
+
+        logger.warn("No unique name could be forged for {}", name);
+
+        return null; // Very unlikely!
+    }
+
     //-------------------//
     // getAllDescriptors //
     //-------------------//
+    /**
+     * Report all the registered descriptors.
+     *
+     * @return all known descriptors
+     */
     public List<Descriptor> getAllDescriptors ()
     {
         List<Descriptor> all = new ArrayList<Descriptor>();
@@ -134,6 +203,12 @@ public class SheetContainer
     //---------------//
     // getDescriptor //
     //---------------//
+    /**
+     * Retrieve a descriptor by its unique sheet name.
+     *
+     * @param name unique sheet name
+     * @return the descriptor found or null
+     */
     public Descriptor getDescriptor (String name)
     {
         for (List<Descriptor> descriptors : hashMap.values()) {
@@ -147,27 +222,11 @@ public class SheetContainer
         return null;
     }
 
-    //---------------//
-    // getDescriptor //
-    //---------------//
-    public Descriptor getDescriptor (int id)
-    {
-        for (List<Descriptor> descriptors : hashMap.values()) {
-            for (Descriptor desc : descriptors) {
-                if (desc.id == id) {
-                    return desc;
-                }
-            }
-        }
-
-        return null;
-    }
-
     //----------------//
     // getDescriptors //
     //----------------//
     /**
-     * Report the list of sheet descriptors for a given table hash code
+     * Report the list of sheet descriptors that match a given table hash code.
      *
      * @param hash hash code of run table
      * @return the sheet descriptors for same hash
@@ -181,17 +240,6 @@ public class SheetContainer
         }
 
         return Collections.unmodifiableList(list);
-    }
-
-    //----------//
-    // getNewId //
-    //----------//
-    /**
-     * @return the next Id
-     */
-    public int getNewId ()
-    {
-        return ++maxId;
     }
 
     //------------//
@@ -213,11 +261,9 @@ public class SheetContainer
      *
      * @param samplesRoot path of samples system
      * @param imagesRoot  path of images system
-     * @param flocksRoot  path of flocks system
      */
     public void marshal (Path samplesRoot,
-                         Path imagesRoot,
-                         Path flocksRoot)
+                         Path imagesRoot)
     {
         try {
             logger.debug("Marshalling {}", this);
@@ -234,7 +280,7 @@ public class SheetContainer
 
             // Remove defunct sheets if any
             for (Descriptor descriptor : defunctDescriptors) {
-                SampleSheet.delete(descriptor, samplesRoot, imagesRoot, flocksRoot);
+                SampleSheet.delete(descriptor, samplesRoot, imagesRoot);
             }
 
             defunctDescriptors.clear();
@@ -243,6 +289,29 @@ public class SheetContainer
         } catch (Exception ex) {
             logger.error("Error marshalling " + this + " " + ex, ex);
         }
+    }
+
+    //------------------//
+    // removeDescriptor //
+    //------------------//
+    /**
+     * Remove a descriptor.
+     *
+     * @param desc the descriptor to remove
+     */
+    public void removeDescriptor (Descriptor desc)
+    {
+        List<Descriptor> descriptors = hashMap.get(desc.hash);
+
+        descriptors.remove(desc);
+
+        if (descriptors.isEmpty()) {
+            hashMap.remove(desc.hash);
+        }
+
+        defunctDescriptors.add(desc);
+
+        setModified(true);
     }
 
     //-------------//
@@ -264,7 +333,7 @@ public class SheetContainer
     {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append('{');
-        sb.append("maxId:").append(maxId);
+        sb.append("hashes:").append(hashMap.size());
         sb.append('}');
 
         return sb.toString();
@@ -294,42 +363,6 @@ public class SheetContainer
             logger.warn("Error unmarshalling SheetContainer " + ex, ex);
 
             return null;
-        }
-    }
-
-    //------------------//
-    // removeDescriptor //
-    //------------------//
-    void removeDescriptor (Descriptor desc)
-    {
-        List<Descriptor> descriptors = hashMap.get(desc.hash);
-
-        descriptors.remove(desc);
-
-        if (descriptors.isEmpty()) {
-            hashMap.remove(desc.hash);
-        }
-
-        defunctDescriptors.add(desc);
-
-        setModified(true);
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called immediately after unmarshalling of this object.
-     * We set maxId.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        for (List<Descriptor> descriptors : hashMap.values()) {
-            for (Descriptor desc : descriptors) {
-                maxId = Math.max(maxId, desc.id);
-            }
         }
     }
 
@@ -402,7 +435,7 @@ public class SheetContainer
     // Descriptor //
     //------------//
     /**
-     * Descriptor of a SampleSheet.
+     * Descriptor of a SampleSheet. To be kept in memory and save loading.
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     public static class Descriptor
@@ -410,36 +443,29 @@ public class SheetContainer
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Sequential ID. */
-        @XmlAttribute(name = "id")
-        public int id;
+        /** Short unique sheet name. */
+        @XmlAttribute(name = "name")
+        private String name;
 
         /** Hash value of binary RunTable, if any. */
         @XmlAttribute(name = "hash")
         private Integer hash;
 
-        /** Short sheet name. */
-        @XmlAttribute(name = "name")
-        private String name;
-
-        /** All name aliases, perhaps empty. */
+        /** Collection of all name aliases, perhaps empty. */
         @XmlElement(name = "alias")
         private final ArrayList<String> aliases = new ArrayList<String>();
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Descriptor (int id,
-                           Integer hash,
-                           String name)
+        public Descriptor (String name,
+                           Integer hash)
         {
-            this(id, hash, name, EMPTY_LIST);
+            this(name, hash, EMPTY_LIST);
         }
 
-        public Descriptor (int id,
+        public Descriptor (String name,
                            Integer hash,
-                           String name,
                            List<String> aliases)
         {
-            this.id = id;
             this.hash = hash;
             this.name = name;
             this.aliases.addAll(aliases);
@@ -462,7 +488,7 @@ public class SheetContainer
         @Override
         public int compareTo (Descriptor other)
         {
-            return Integer.compare(id, other.id);
+            return name.compareTo(other.name);
         }
 
         public List<String> getAliases ()
@@ -517,7 +543,7 @@ public class SheetContainer
         @Override
         public String toString ()
         {
-            return id + "/" + ((name != null) ? name : "");
+            return name;
         }
     }
 }

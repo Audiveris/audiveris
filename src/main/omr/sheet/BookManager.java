@@ -266,97 +266,22 @@ public class BookManager
      *
      * @return the output base folder
      */
-    public static String getBaseFolder ()
+    public static Path getBaseFolder ()
+    {
+        return Paths.get(getBaseFolderString());
+    }
+
+    //---------------------//
+    // getBaseFolderString //
+    //---------------------//
+    /**
+     * Report the base string for output folders.
+     *
+     * @return the output base folder string
+     */
+    public static String getBaseFolderString ()
     {
         return constants.baseFolder.getValue();
-    }
-
-    //--------------------//
-    // getDefaultBookPath //
-    //--------------------//
-    /**
-     * Report the file path to which the book should be saved.
-     *
-     * @param book the book to store
-     * @return the default book path for save
-     */
-    public static Path getDefaultBookPath (Book book)
-    {
-        // If book already has a target, use it
-        if (book.getBookPath() != null) {
-            return book.getBookPath();
-        }
-
-        if (constants.useSeparateBookFolders.isSet()) {
-            // Define target based on base + book folder and book name
-            Path folder = Paths.get(getBaseFolder(), book.getRadix());
-
-            try {
-                if (!Files.exists(folder)) {
-                    Files.createDirectories(folder);
-                }
-
-                return folder.resolve(book.getRadix() + OMR.BOOK_EXTENSION);
-            } catch (IOException ex) {
-                logger.warn("Cannot create {}", folder, ex);
-
-                return null;
-            }
-        } else {
-            // Define target based on global folder and book name
-            return Paths.get(getBaseFolder(), book.getRadix() + OMR.BOOK_EXTENSION);
-        }
-    }
-
-    //-----------------------------//
-    // getDefaultExportPathSansExt //
-    //-----------------------------//
-    /**
-     * Report the file path (without extension) to which the book should be written.
-     *
-     * @param book the book to export
-     * @return the default book path (without extension) for export
-     */
-    public static Path getDefaultExportPathSansExt (Book book)
-    {
-        if (book.getExportPathSansExt() != null) {
-            return book.getExportPathSansExt();
-        }
-
-        // File?
-        final Path file = Main.getCli().getExportAs();
-
-        if (file != null) {
-            return ExportPattern.getPathSansExt(file);
-        }
-
-        // Folder?
-        final Path exportFolder = Main.getCli().getExportFolder();
-
-        if (exportFolder != null) {
-            return exportFolder.resolve(book.getRadix());
-        }
-
-        // Default
-        if (constants.useSeparateBookFolders.isSet()) {
-            // Define target based on base + book folder and book name
-            Path folder = Paths.get(getBaseFolder(), book.getRadix());
-
-            try {
-                if (!Files.exists(folder)) {
-                    Files.createDirectories(folder);
-                }
-
-                return folder.resolve(book.getRadix());
-            } catch (IOException ex) {
-                logger.warn("Cannot create {}", folder, ex);
-
-                return null;
-            }
-        } else {
-            // Define target based on global folder and book name
-            return Paths.get(getBaseFolder(), book.getRadix());
-        }
     }
 
     //-----------------------//
@@ -370,38 +295,6 @@ public class BookManager
     public static String getDefaultImageFolder ()
     {
         return constants.defaultImageFolder.getValue();
-    }
-
-    //---------------------//
-    // getDefaultPrintPath //
-    //---------------------//
-    /**
-     * Report the file path to which the book should be printed.
-     *
-     * @param book the book to export
-     * @return the default book path for print
-     */
-    public static Path getDefaultPrintPath (Book book)
-    {
-        if (book.getPrintPath() != null) {
-            return book.getPrintPath();
-        }
-
-        // File?
-        final Path file = Main.getCli().getPrintAs();
-
-        if (file != null) {
-            return file;
-        }
-
-        // Folder?
-        Path folder = Main.getCli().getPrintFolder();
-
-        if (folder == null) {
-            folder = getTargetFolder(book); // Default
-        }
-
-        return folder.resolve(book.getRadix() + OMR.PDF_EXTENSION);
     }
 
     //----------------------//
@@ -423,21 +316,6 @@ public class BookManager
         final Path folder = getTargetFolder(book);
 
         return folder.resolve(book.getRadix() + OMR.SCRIPT_EXTENSION);
-    }
-
-    //--------------------//
-    // getExportExtension //
-    //--------------------//
-    /**
-     * Report the extension to use for book export, depending on the use (or not)
-     * of opus and of compression.
-     *
-     * @return the file extension to use.
-     */
-    public static String getExportExtension ()
-    {
-        return useOpus() ? OMR.OPUS_EXTENSION
-                : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION);
     }
 
     //-------------//
@@ -478,17 +356,33 @@ public class BookManager
         return scriptHistory;
     }
 
-    //-------------//
-    // isMultiBook //
-    //-------------//
+    //-------------------//
+    // getSeparateFolder //
+    //-------------------//
     /**
-     * Report whether we are currently handling more than one book.
+     * Report the separate folder for the provided book
      *
-     * @return true if more than one book
+     * @param book provided book
+     * @return separate folder, or null
      */
-    public static boolean isMultiBook ()
+    public static Path getSeparateFolder (Book book)
     {
-        return getInstance().books.size() > 1;
+        if (useSeparateBookFolders()) {
+            // Define target based on base + book folder and book name
+            Path folder = getBaseFolder().resolve(book.getRadix());
+
+            try {
+                if (!Files.exists(folder)) {
+                    Files.createDirectories(folder);
+                }
+
+                return folder;
+            } catch (IOException ex) {
+                logger.warn("Cannot create {}", folder, ex);
+            }
+        }
+
+        return null;
     }
 
     //----------//
@@ -536,15 +430,6 @@ public class BookManager
     }
 
     //------------//
-    // loadScript //
-    //------------//
-    @Override
-    public Book loadScript (Path path)
-    {
-        return ScriptManager.getInstance().loadAndRun(path.toFile(), false);
-    }
-
-    //------------//
     // removeBook //
     //------------//
     /**
@@ -574,20 +459,18 @@ public class BookManager
         return constants.useCompression.getValue();
     }
 
-    //---------//
-    // useOpus //
-    //---------//
-    public static boolean useOpus ()
+    //------------------------//
+    // useSeparateBookFolders //
+    //------------------------//
+    /**
+     * Report whether we use a separate folder for each book (as opposed to a single
+     * folder for all books).
+     *
+     * @return true for separate folders
+     */
+    public static boolean useSeparateBookFolders ()
     {
-        return constants.useOpus.isSet();
-    }
-
-    //--------------//
-    // useSignature //
-    //--------------//
-    public static boolean useSignature ()
-    {
-        return constants.defaultSigned.isSet();
+        return constants.useSeparateBookFolders.isSet();
     }
 
     //----------------//
@@ -609,6 +492,200 @@ public class BookManager
         }
 
         return bookHistory;
+    }
+
+    //----------------------//
+    // getDefaultBookFolder //
+    //----------------------//
+    /**
+     * Report the folder where the book should be saved.
+     *
+     * @param book the book to store
+     * @return the default book folder
+     */
+    public static Path getDefaultBookFolder (Book book)
+    {
+        // If book already has a target, use it
+        if (book.getBookPath() != null) {
+            return book.getBookPath().getParent();
+        }
+
+        if (useSeparateBookFolders()) {
+            // Define folder based on base + book radix
+            Path bookFolder = getBaseFolder().resolve(book.getRadix());
+
+            try {
+                if (!Files.exists(bookFolder)) {
+                    Files.createDirectories(bookFolder);
+                }
+
+                return bookFolder;
+            } catch (IOException ex) {
+                logger.warn("Cannot create {}", bookFolder, ex);
+
+                return null;
+            }
+        } else {
+            // Use global base folder
+            return getBaseFolder();
+        }
+    }
+
+    //--------------------//
+    // getDefaultBookPath //
+    //--------------------//
+    /**
+     * Report the file path to which the book should be saved.
+     *
+     * @param book the book to store
+     * @return the default book path for save
+     */
+    public static Path getDefaultBookPath (Book book)
+    {
+        // If book already has a target, use it
+        if (book.getBookPath() != null) {
+            return book.getBookPath();
+        }
+
+        final Path bookFolder = getDefaultBookFolder(book);
+
+        return bookFolder.resolve(book.getRadix() + OMR.BOOK_EXTENSION);
+    }
+
+    //-----------------------------//
+    // getDefaultExportPathSansExt //
+    //-----------------------------//
+    /**
+     * Report the file path (without extension) to which the book should be written.
+     *
+     * @param book the book to export
+     * @return the default book path (without extension) for export
+     */
+    public static Path getDefaultExportPathSansExt (Book book)
+    {
+        if (book.getExportPathSansExt() != null) {
+            return book.getExportPathSansExt();
+        }
+
+        // File?
+        final Path file = Main.getCli().getExportAs();
+
+        if (file != null) {
+            return ExportPattern.getPathSansExt(file);
+        }
+
+        // Folder?
+        final Path exportFolder = Main.getCli().getExportFolder();
+
+        if (exportFolder != null) {
+            return exportFolder.resolve(book.getRadix());
+        }
+
+        // Default
+        if (useSeparateBookFolders()) {
+            // Define target based on base + book folder and book name
+            Path folder = getBaseFolder().resolve(book.getRadix());
+
+            try {
+                if (!Files.exists(folder)) {
+                    Files.createDirectories(folder);
+                }
+
+                return folder.resolve(book.getRadix());
+            } catch (IOException ex) {
+                logger.warn("Cannot create {}", folder, ex);
+
+                return null;
+            }
+        } else {
+            // Define target based on global folder and book name
+            return getBaseFolder().resolve(book.getRadix());
+        }
+    }
+
+    //---------------------//
+    // getDefaultPrintPath //
+    //---------------------//
+    /**
+     * Report the file path to which the book should be printed.
+     *
+     * @param book the book to export
+     * @return the default book path for print
+     */
+    public static Path getDefaultPrintPath (Book book)
+    {
+        if (book.getPrintPath() != null) {
+            return book.getPrintPath();
+        }
+
+        // File?
+        final Path file = Main.getCli().getPrintAs();
+
+        if (file != null) {
+            return file;
+        }
+
+        // Folder?
+        Path folder = Main.getCli().getPrintFolder();
+
+        if (folder == null) {
+            folder = getTargetFolder(book); // Default
+        }
+
+        return folder.resolve(book.getRadix() + OMR.PDF_EXTENSION);
+    }
+
+    //--------------------//
+    // getExportExtension //
+    //--------------------//
+    /**
+     * Report the extension to use for book export, depending on the use (or not)
+     * of opus and of compression.
+     *
+     * @return the file extension to use.
+     */
+    public static String getExportExtension ()
+    {
+        return useOpus() ? OMR.OPUS_EXTENSION
+                : (useCompression() ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION);
+    }
+
+    //-------------//
+    // isMultiBook //
+    //-------------//
+    /**
+     * Report whether we are currently handling more than one book.
+     *
+     * @return true if more than one book
+     */
+    public static boolean isMultiBook ()
+    {
+        return getInstance().books.size() > 1;
+    }
+
+    //------------//
+    // loadScript //
+    //------------//
+    @Override
+    public Book loadScript (Path path)
+    {
+        return ScriptManager.getInstance().loadAndRun(path.toFile(), false);
+    }
+
+    //---------//
+    // useOpus //
+    //---------//
+    public static boolean useOpus ()
+    {
+        return constants.useOpus.isSet();
+    }
+
+    //--------------//
+    // useSignature //
+    //--------------//
+    public static boolean useSignature ()
+    {
+        return constants.defaultSigned.isSet();
     }
 
     //-----------------//
@@ -643,9 +720,9 @@ public class BookManager
      */
     private static Path getTargetFolder (Book book)
     {
-        if (constants.useSeparateBookFolders.isSet()) {
+        if (useSeparateBookFolders()) {
             // Define target based on base + book folder and book name
-            Path folder = Paths.get(getBaseFolder(), book.getRadix());
+            Path folder = getBaseFolder().resolve(book.getRadix());
 
             try {
                 if (!Files.exists(folder)) {
@@ -660,7 +737,7 @@ public class BookManager
             }
         } else {
             // Use base folder
-            return Paths.get(getBaseFolder());
+            return getBaseFolder();
         }
     }
 

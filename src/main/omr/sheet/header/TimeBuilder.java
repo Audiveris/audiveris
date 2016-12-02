@@ -47,6 +47,7 @@ import omr.run.RunTableFactory;
 import omr.score.TimeRational;
 import omr.score.TimeValue;
 
+import omr.sheet.Book;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Scale.InterlineScale;
@@ -406,7 +407,13 @@ public abstract class TimeBuilder
         }
 
         final Sheet sheet = staff.getSystem().getSheet();
-        final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+        final Book book = sheet.getStub().getBook();
+        final SampleRepository repository = book.getSampleRepository();
+
+        if (repository == null) {
+            return;
+        }
+
         final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
         final int interline = staff.getSpecificInterline();
 
@@ -701,11 +708,16 @@ public abstract class TimeBuilder
         public String addPlot (Plotter plotter,
                                Staff staff)
         {
-            // TRICK: when plotting a staff for which the header time has already been extracted,
-            // the header time range is used rather than the provided browseStart value.
-            // On the opposite, if the header time range is not yet found (or does not exist), then
-            // the staff headerStop value provides a good browseStart value.
-            int browseStart = staff.getHeaderStop();
+            final int browseStart;
+
+            if (staff.getKeyStop() != null) {
+                browseStart = staff.getKeyStop();
+            } else if (staff.getClefStop() != null) {
+                browseStart = staff.getClefStop();
+            } else {
+                browseStart = staff.getHeaderStart();
+            }
+
             HeaderTimeBuilder builder = new HeaderTimeBuilder(staff, this, browseStart);
             builder.addPlot(plotter);
 
@@ -855,11 +867,11 @@ public abstract class TimeBuilder
                 plotter.add(series, Color.BLUE, false);
             }
 
-            if (range.start != 0) {
+            if (range.hasStart() || (staff.getTimeStop() != null)) {
                 // Area limits
                 XYSeries series = new XYSeries("TimeArea");
-                int start = range.start;
-                int stop = range.stop;
+                int start = range.hasStart() ? range.getStart() : staff.getTimeStart();
+                int stop = range.hasStart() ? range.getStop() : staff.getTimeStop();
                 series.add(start, -Plotter.MARK);
                 series.add(start, staff.getHeight());
                 series.add(stop, staff.getHeight());
@@ -895,7 +907,7 @@ public abstract class TimeBuilder
             // Projection can help refine the abscissa range
             browseProjection();
 
-            if (range.start != 0) {
+            if (range.hasStart() && (range.getWidth() >= params.minTimeWidth)) {
                 processWhole(); //   Look for whole time sigs (common, cut or combo like 6/8)
                 processHalf(NUM); // Look for top halves      (like 6/)
                 processHalf(DEN); // Look for bottom halves   (like /8)
@@ -908,7 +920,7 @@ public abstract class TimeBuilder
         /**
          * Analyze projection data to refine time sig abscissa range.
          * We expect a small space before, suitable range for time sig, space after.
-         * Output: range.start & range.stop.
+         * Output: range.start & range.stop
          */
         private void browseProjection ()
         {
@@ -936,8 +948,8 @@ public abstract class TimeBuilder
                 return;
             }
 
-            range.start = first.stop;
-            range.stop = spaces.get(spaces.size() - 1).start;
+            range.setStart(first.stop);
+            range.setStop(spaces.get(spaces.size() - 1).start);
         }
 
         //----------//
@@ -1103,9 +1115,8 @@ public abstract class TimeBuilder
             final List<Inter> inters = (half == NUM) ? nums : dens;
 
             // Define proper rectangular search area for this side
-            final int top = roi.y + ((half == NUM) ? 0 : (roi.height - (roi.height / 2)));
-            final int width = range.stop - range.start + 1;
-            final Rectangle rect = new Rectangle(range.start, top, width, roi.height / 2);
+            int top = roi.y + ((half == NUM) ? 0 : (roi.height - (roi.height / 2)));
+            Rectangle rect = new Rectangle(range.getStart(), top, range.getWidth(), roi.height / 2);
             rect.grow(0, -params.yMargin);
             staff.addAttachment("T" + ((half == NUM) ? "N" : "D"), rect);
 
@@ -1155,11 +1166,7 @@ public abstract class TimeBuilder
         private void processWhole ()
         {
             // Define proper rectangular search area for a whole time-sig
-            Rectangle rect = new Rectangle(
-                    range.start,
-                    roi.y,
-                    range.stop - range.start + 1,
-                    roi.height);
+            Rectangle rect = new Rectangle(range.getStart(), roi.y, range.getWidth(), roi.height);
             rect.grow(0, -params.yMargin);
             staff.addAttachment("TF", rect);
 
@@ -1509,6 +1516,8 @@ public abstract class TimeBuilder
         //
         final int yMargin;
 
+        final int minTimeWidth;
+
         final int maxTimeWidth;
 
         final int maxHalvesDx;
@@ -1532,6 +1541,7 @@ public abstract class TimeBuilder
 
             // Use staff specific interline value
             yMargin = InterlineScale.toPixels(specific, constants.yMargin);
+            minTimeWidth = InterlineScale.toPixels(specific, constants.minTimeWidth);
             maxTimeWidth = InterlineScale.toPixels(specific, constants.maxTimeWidth);
             maxHalvesDx = InterlineScale.toPixels(specific, constants.maxHalvesDx);
             maxPartGap = InterlineScale.toPixels(specific, constants.maxPartGap);
@@ -1564,6 +1574,10 @@ public abstract class TimeBuilder
         private final Scale.Fraction yMargin = new Scale.Fraction(
                 0.10,
                 "Vertical white margin on raw rectangle");
+
+        private final Scale.Fraction minTimeWidth = new Scale.Fraction(
+                1.0,
+                "Minimum width for a time signature");
 
         private final Scale.Fraction maxTimeWidth = new Scale.Fraction(
                 2.0,
@@ -1663,7 +1677,8 @@ public abstract class TimeBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public void evaluateGlyph (Glyph glyph)
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
         {
             trials++;
 
@@ -1775,7 +1790,8 @@ public abstract class TimeBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public void evaluateGlyph (Glyph glyph)
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
         {
             //TODO: check glyph centroid for a whole symbol is not too far from staff middle line
             trials++;

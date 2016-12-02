@@ -31,6 +31,8 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
+import omr.math.NeuralNetwork;
+
 import omr.util.OmrExecutors;
 import omr.util.UriUtil;
 
@@ -116,6 +118,9 @@ public class NeuralClassifier
     private static final Logger logger = LoggerFactory.getLogger(
             NeuralClassifier.class);
 
+    /** True for DeepLearning4J, false for (obsolete) NeuralNetwork implementation. */
+    public static final boolean USE_DL4J = constants.useDl4j.isSet();
+
     /** The singleton. */
     private static volatile NeuralClassifier INSTANCE;
 
@@ -141,15 +146,19 @@ public class NeuralClassifier
     });
 
     /** Neural network file name. */
-    public static final String MODEL_FILE_NAME = "model.zip";
+    public static final String MODEL_FILE_NAME = USE_DL4J ? "model.zip" : "old-model.xml";
 
     /** Feature norms file name. */
     public static final String NORMS_FILE_NAME = "norms.zip";
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    /** The underlying neural network. */
+    /** The underlying (new) neural network. */
     private MultiLayerNetwork model;
+
+    /** The underlying (old) neural network. */
+    @Deprecated
+    private NeuralNetwork oldModel;
 
     /** Features means and standard deviations. */
     private Norms norms;
@@ -160,13 +169,24 @@ public class NeuralClassifier
      */
     private NeuralClassifier ()
     {
-        // Unmarshal from user or default data, if compatible
-        load();
+        if (USE_DL4J) {
+            // Unmarshal from user or default data, if compatible
+            load();
 
-        if (model == null) {
-            // Get a brand new one (not trained)
-            logger.info("Creating a brand new {}", getName());
-            model = createNetwork();
+            if (model == null) {
+                // Get a brand new one (not trained)
+                logger.info("Creating a brand new {}", getName());
+                model = createNetwork();
+            }
+        } else {
+            // Unmarshal from user or default data, if compatible
+            loadOld();
+
+            if (oldModel == null) {
+                // Get a brand new one (not trained)
+                logger.info("Creating a brand new {}", getName());
+                oldModel = createOldNetwork();
+            }
         }
     }
 
@@ -250,83 +270,17 @@ public class NeuralClassifier
     {
     }
 
-    //------//
-    // dump //
-    //------//
-    /**
-     * Dump the internals of the neural network to the standard output.
-     */
-    public void dump ()
-    {
-        logger.warn("dump not yet implemented");
-
-        ///engine.dump();
-    }
-
-    //--------------//
-    // getAmplitude //
-    //--------------//
-    /**
-     * Selector for the amplitude value (used in initial random values).
-     *
-     * @return the amplitude value
-     */
-    public double getAmplitude ()
-    {
-        return constants.amplitude.getValue();
-    }
-
-    //-----------------//
-    // getLearningRate //
-    //-----------------//
-    /**
-     * Selector of the current value for network learning rate.
-     *
-     * @return the current learning rate
-     */
-    public double getLearningRate ()
-    {
-        return constants.learningRate.getValue();
-    }
-
-    //-------------//
-    // getMaxError //
-    //-------------//
-    /**
-     * Report the error threshold to potentially stop the training
-     * process.
-     *
-     * @return the threshold currently in use
-     */
-    public double getMaxError ()
-    {
-        return constants.maxError.getValue();
-    }
-
-    //------------//
-    // getNetwork //
-    //------------//
+    //----------//
+    // getModel //
+    //----------//
     /**
      * Selector to the encapsulated Neural Network.
      *
      * @return the neural network
      */
-    public MultiLayerNetwork getModel ()
+    public Object getModel ()
     {
-        return model;
-    }
-
-    //-------------//
-    // getMomentum //
-    //-------------//
-    /**
-     * Report the momentum training value currently in use.
-     *
-     * @return the momentum in use
-     */
-    public double getMomentum ()
-    {
-        return constants.momentum.getValue();
+        return USE_DL4J ? model : oldModel;
     }
 
     //---------//
@@ -355,26 +309,41 @@ public class NeuralClassifier
         normalize(features);
 
         Shape[] values = Shape.values();
-        INDArray output = model.output(features);
-
-        //
-        //        INDArray probs = model.labelProbabilities(features);
-        //
-        //        logger.info("\n--- {}", glyph);
-        //
-        //        for (int s = 0; s < SHAPE_COUNT; s++) {
-        //            logger.info(
-        //                    String.format(
-        //                            "%20s prob:%.5f new:%.5f",
-        //                            values[s],
-        //                            probs.getDouble(s),
-        //                            output.getDouble(s)));
-        //        }
-        //
         Evaluation[] evals = new Evaluation[SHAPE_COUNT];
 
-        for (int s = 0; s < SHAPE_COUNT; s++) {
-            evals[s] = new Evaluation(values[s], output.getDouble(s));
+        if (USE_DL4J) {
+            INDArray output = model.output(features);
+
+            //
+            //        INDArray probs = model.labelProbabilities(features);
+            //
+            //        logger.info("\n--- {}", glyph);
+            //
+            //        for (int s = 0; s < SHAPE_COUNT; s++) {
+            //            logger.info(
+            //                    String.format(
+            //                            "%20s prob:%.5f new:%.5f",
+            //                            values[s],
+            //                            probs.getDouble(s),
+            //                            output.getDouble(s)));
+            //        }
+            //
+            for (int s = 0; s < SHAPE_COUNT; s++) {
+                evals[s] = new Evaluation(values[s], output.getDouble(s));
+            }
+        } else {
+            // Normalize inputs
+            for (int i = 0; i < ins.length; i++) {
+                ins[i] = features.getDouble(i);
+            }
+
+            double[] outs = new double[SHAPE_COUNT];
+            oldModel.run(ins, null, outs);
+            normalize(outs);
+
+            for (int s = 0; s < SHAPE_COUNT; s++) {
+                evals[s] = new Evaluation(values[s], outs[s]);
+            }
         }
 
         return evals;
@@ -395,40 +364,13 @@ public class NeuralClassifier
     }
 
     //--------------//
-    // setAmplitude //
-    //--------------//
-    /**
-     * Set the amplitude value for initial random values (UNUSED).
-     *
-     * @param amplitude
-     */
-    public void setAmplitude (double amplitude)
-    {
-        constants.amplitude.setValue(amplitude);
-    }
-
-    //-----------------//
-    // setLearningRate //
-    //-----------------//
-    /**
-     * Dynamically modify the learning rate of the neural network for
-     * its training task.
-     *
-     * @param learningRate new learning rate to use
-     */
-    public void setLearningRate (double learningRate)
-    {
-        constants.learningRate.setValue(learningRate);
-
-        ///model.setLearningRate(learningRate);
-    }
-
-    //--------------//
     // setListeners //
     //--------------//
     public void setListeners (Monitor... monitor)
     {
-        model.setListeners(monitor);
+        if (model != null) {
+            model.setListeners(monitor);
+        }
     }
 
     //--------------//
@@ -444,75 +386,6 @@ public class NeuralClassifier
         constants.maxEpochs.setValue(maxEpochs);
     }
 
-    //-------------//
-    // setMaxError //
-    //-------------//
-    /**
-     * Modify the error threshold to potentially stop the training
-     * process.
-     *
-     * @param maxError the new threshold value to use
-     */
-    public void setMaxError (double maxError)
-    {
-        constants.maxError.setValue(maxError);
-
-        ///engine.setMaxError(maxError);
-    }
-
-    //-------------//
-    // setMomentum //
-    //-------------//
-    /**
-     * Modify the value for momentum used from learning epoch to the
-     * other.
-     *
-     * @param momentum the new momentum value to be used
-     */
-    public void setMomentum (double momentum)
-    {
-        constants.momentum.setValue(momentum);
-
-        ///engine.setMomentum(momentum);
-    }
-
-    //------//
-    // stop //
-    //------//
-    /**
-     * Stop the on-going training.
-     * By default, this is a no-op
-     */
-    public void stop ()
-    {
-    }
-
-    //-------//
-    // store //
-    //-------//
-    /**
-     * Store the engine internals (model + norms), always as user files.
-     */
-    public void store ()
-    {
-        final Path modelPath = WellKnowns.TRAIN_FOLDER.resolve(MODEL_FILE_NAME);
-        final Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(NORMS_FILE_NAME);
-
-        try {
-            if (!Files.exists(WellKnowns.TRAIN_FOLDER)) {
-                Files.createDirectories(WellKnowns.TRAIN_FOLDER);
-                logger.info("Created directory {}", WellKnowns.TRAIN_FOLDER);
-            }
-
-            storeModel(modelPath);
-            storeNorms(normsPath);
-
-            logger.info("{} data stored to folder {}", getName(), WellKnowns.TRAIN_FOLDER);
-        } catch (Exception ex) {
-            logger.warn("Error storing {} {}", getName(), ex.toString(), ex);
-        }
-    }
-
     //-------//
     // train //
     //-------//
@@ -520,7 +393,7 @@ public class NeuralClassifier
      * Train the network using the provided collection of shape samples.
      *
      * @param samples the provided collection of shapes samples
-     * @param monitor the monitoring entity if any
+     * @param monitor the monitoring entity
      */
     @SuppressWarnings("unchecked")
     public void train (Collection<Sample> samples,
@@ -545,25 +418,64 @@ public class NeuralClassifier
         // Normalize
         dataSet.normalizeZeroMeanZeroUnitVariance();
 
-        // Train
-        model = createNetwork();
-        model.setListeners(monitor);
+        if (USE_DL4J) {
+            // Train
+            model = createNetwork();
+            model.setListeners(monitor);
 
-        final int epochs = getMaxEpochs();
+            final int epochs = getMaxEpochs();
 
-        for (int epoch = 0; epoch < epochs; epoch++) {
-            model.fit(dataSet);
+            for (int epoch = 0; epoch < epochs; epoch++) {
+                model.fit(dataSet);
+            }
+
+            // Evaluate
+            final List<String> names = Arrays.asList(
+                    ShapeSet.getPhysicalShapeNames());
+            org.deeplearning4j.eval.Evaluation eval = new org.deeplearning4j.eval.Evaluation(names);
+            INDArray guesses = model.output(dataSet.getFeatureMatrix());
+            eval.eval(dataSet.getLabels(), guesses);
+            logger.info(eval.stats(true));
+
+            // Store
+            store();
+        } else {
+            // Build the collection of patterns from the glyph data
+            INDArray features = dataSet.getFeatureMatrix();
+            int rows = features.rows();
+            int cols = features.columns();
+            logger.info("patterns: {}", rows);
+            logger.info("features: {}", cols);
+
+            INDArray labels = dataSet.getLabels();
+            double[][] inputs = new double[newSamples.size()][];
+            double[][] desiredOutputs = new double[newSamples.size()][];
+
+            for (int ig = 0; ig < rows; ig++) {
+                INDArray featureRow = features.getRow(ig);
+                double[] ins = new double[cols];
+                inputs[ig] = ins;
+
+                for (int j = 0; j < cols; j++) {
+                    ins[j] = featureRow.getDouble(j);
+                }
+
+                INDArray labelRow = labels.getRow(ig);
+                double[] des = new double[SHAPE_COUNT];
+                desiredOutputs[ig] = des;
+
+                for (int j = 0; j < SHAPE_COUNT; j++) {
+                    des[j] = labelRow.getDouble(j);
+                }
+            }
+
+            // Train
+            oldModel = createOldNetwork();
+            oldModel.train(inputs, desiredOutputs, monitor, monitor.getEpochPeriod());
+
+            // Store
+            storeOld();
         }
-
-        // Evaluate
-        final List<String> names = Arrays.asList(ShapeSet.getPhysicalShapeNames());
-        org.deeplearning4j.eval.Evaluation eval = new org.deeplearning4j.eval.Evaluation(names);
-        INDArray guesses = model.output(dataSet.getFeatureMatrix());
-        eval.eval(dataSet.getLabels(), guesses);
-        logger.info(eval.stats(true));
-
-        // Store
-        store();
     }
 
     //---------------//
@@ -573,7 +485,7 @@ public class NeuralClassifier
     {
         final int hiddenNum = SHAPE_COUNT;
         final long seed = 6;
-        final double learningRate = getLearningRate();
+        final double learningRate = constants.learningRate.getValue();
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder() //
                 .seed(seed) //
                 .iterations(1) //
@@ -610,20 +522,56 @@ public class NeuralClassifier
         model.init();
 
         return model;
+    }
 
-        //
-        //        // Note : We allocate a hidden layer with as many cells as the output layer
-        //        return new NeuralNetwork(
-        //                ShapeDescription.length(),
-        //                SHAPE_COUNT,
-        //                SHAPE_COUNT,
-        //                getAmplitude(),
-        //                ShapeDescription.getParameterLabels(), // Input labels
-        //                ShapeSet.getPhysicalShapeNames(), // Output labels
-        //                getLearningRate(),
-        //                getMomentum(),
-        //                getMaxError(),
-        //                getMaxEpochs());
+    //------------------//
+    // createOldNetwork //
+    //------------------//
+    private NeuralNetwork createOldNetwork ()
+    {
+        // We allocate a hidden layer with as many cells as the output layer
+        return new NeuralNetwork(
+                ShapeDescription.length(),
+                SHAPE_COUNT,
+                SHAPE_COUNT,
+                constants.amplitude.getValue(),
+                ShapeDescription.getParameterLabels(), // Input labels
+                ShapeSet.getPhysicalShapeNames(), // Output labels
+                constants.learningRate.getValue(),
+                constants.momentum.getValue(),
+                constants.maxError.getValue(),
+                getMaxEpochs());
+    }
+
+    //--------------//
+    // isCompatible //
+    //--------------//
+    @Deprecated
+    private final boolean isCompatible (NeuralNetwork oldModel)
+    {
+        if (!Arrays.equals(oldModel.getInputLabels(), ShapeDescription.getParameterLabels())) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Engine inputs: {}", Arrays.toString(oldModel.getInputLabels()));
+                logger.debug(
+                        "Shape  inputs: {}",
+                        Arrays.toString(ShapeDescription.getParameterLabels()));
+            }
+
+            return false;
+        }
+
+        if (!Arrays.equals(oldModel.getOutputLabels(), ShapeSet.getPhysicalShapeNames())) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Engine  outputs: {}", Arrays.toString(oldModel.getOutputLabels()));
+                logger.debug(
+                        "Physical shapes: {}",
+                        Arrays.toString(ShapeSet.getPhysicalShapeNames()));
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     //--------------//
@@ -824,6 +772,146 @@ public class NeuralClassifier
                 "Norms wasnt found within file, means: " + means + ", stds: " + stds);
     }
 
+    //---------//
+    // loadOld //
+    //---------//
+    /**
+     * Load model and norms from the most suitable data files.
+     * If user files do not exist or cannot be unmarshalled, the default files are used.
+     */
+    @Deprecated
+    private void loadOld ()
+    {
+        // First, try user data, if any, in local EVAL folder
+        logger.debug("Trying user data");
+
+        {
+            final Path modelPath = WellKnowns.TRAIN_FOLDER.resolve(MODEL_FILE_NAME);
+            final Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(NORMS_FILE_NAME);
+
+            if (Files.exists(modelPath) && Files.exists(normsPath)) {
+                InputStream is = null;
+
+                try {
+                    logger.debug("loadModel...");
+                    ///oldModel = loadModel(new FileInputStream(modelPath.toFile()));
+                    is = new FileInputStream(modelPath.toFile());
+                    oldModel = NeuralNetwork.unmarshal(is);
+
+                    logger.debug("loadNorms...");
+                    norms = loadNorms(new FileInputStream(normsPath.toFile()));
+                    logger.debug("loaded.");
+
+                    if (!isCompatible(oldModel)) {
+                        final String msg = "Obsolete neural user data in " + modelPath
+                                           + ", trying default data";
+                        logger.warn(msg);
+                    } else {
+                        // Tell user we are not using the default
+                        logger.debug("Neural loaded from {}", modelPath);
+
+                        return; // Normal exit
+                    }
+                } catch (Exception ex) {
+                    logger.warn("Load error {}", ex.toString(), ex);
+                    oldModel = null;
+                    norms = null;
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+            }
+        }
+
+        // Second, use default data (in program RES folder)
+        logger.debug("Trying default data");
+
+        final URI modelUri = UriUtil.toURI(WellKnowns.RES_URI, MODEL_FILE_NAME);
+        final URI normsUri = UriUtil.toURI(WellKnowns.RES_URI, NORMS_FILE_NAME);
+        InputStream is = null;
+
+        try {
+            ///oldModel = loadModel(modelUri.toURL().openStream());
+            is = modelUri.toURL().openStream();
+            oldModel = NeuralNetwork.unmarshal(is);
+
+            norms = loadNorms(normsUri.toURL().openStream());
+
+            if (!isCompatible(oldModel)) {
+                final String msg = "Obsolete neural default data in " + modelUri
+                                   + ", please retrain from scratch";
+                logger.warn(msg);
+            } else {
+                logger.debug("Neural loaded from {}", modelUri);
+
+                return; // Normal exit
+            }
+        } catch (Exception ex) {
+            logger.warn("Load error {}", ex.toString(), ex);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        oldModel = null;
+        norms = null;
+    }
+
+    //-----------//
+    // normalize //
+    //-----------//
+    /**
+     * Adjust all values, so that their sum equals 1
+     *
+     * @param vals the probability values
+     */
+    private void normalize (double[] vals)
+    {
+        double sum = 0;
+
+        for (double val : vals) {
+            sum += val;
+        }
+
+        for (int i = 0; i < vals.length; i++) {
+            vals[i] /= sum;
+        }
+    }
+
+    //-------//
+    // store //
+    //-------//
+    /**
+     * Store the engine internals (model + norms), always as user files.
+     */
+    private void store ()
+    {
+        final Path modelPath = WellKnowns.TRAIN_FOLDER.resolve(MODEL_FILE_NAME);
+        final Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(NORMS_FILE_NAME);
+
+        try {
+            if (!Files.exists(WellKnowns.TRAIN_FOLDER)) {
+                Files.createDirectories(WellKnowns.TRAIN_FOLDER);
+                logger.info("Created directory {}", WellKnowns.TRAIN_FOLDER);
+            }
+
+            storeModel(modelPath);
+            storeNorms(normsPath);
+
+            logger.info("{} data stored to folder {}", getName(), WellKnowns.TRAIN_FOLDER);
+        } catch (Exception ex) {
+            logger.warn("Error storing {} {}", getName(), ex.toString(), ex);
+        }
+    }
+
     //------------//
     // storeModel //
     //------------//
@@ -892,6 +980,43 @@ public class NeuralClassifier
         zos.close();
     }
 
+    //----------//
+    // storeOld //
+    //----------//
+    @Deprecated
+    private void storeOld ()
+    {
+        final Path modelPath = WellKnowns.TRAIN_FOLDER.resolve(MODEL_FILE_NAME);
+        final Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(NORMS_FILE_NAME);
+
+        OutputStream os = null;
+
+        try {
+            if (!Files.exists(WellKnowns.TRAIN_FOLDER)) {
+                Files.createDirectories(WellKnowns.TRAIN_FOLDER);
+                logger.info("Created directory {}", WellKnowns.TRAIN_FOLDER);
+            }
+
+            ///storeModel(modelPath);
+            os = new FileOutputStream(modelPath.toFile());
+            oldModel.marshal(os);
+            logger.info("Engine marshalled to {}", modelPath);
+
+            storeNorms(normsPath);
+
+            logger.info("{} data stored to folder {}", getName(), WellKnowns.TRAIN_FOLDER);
+        } catch (Exception ex) {
+            logger.warn("Error storing {} {}", getName(), ex.toString(), ex);
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+
     //------------//
     // writeEntry //
     //------------//
@@ -917,6 +1042,12 @@ public class NeuralClassifier
     public static interface Monitor
             extends IterationListener
     {
+        //~ Methods --------------------------------------------------------------------------------
+
+        public void epochPeriodDone (int epoch,
+                                     double score);
+
+        public int getEpochPeriod ();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -927,6 +1058,10 @@ public class NeuralClassifier
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean useDl4j = new Constant.Boolean(
+                true,
+                "Should we use DL4J (instead of old NN)?");
 
         private final Constant.Ratio amplitude = new Constant.Ratio(
                 0.5,

@@ -55,6 +55,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -214,7 +215,7 @@ public abstract class AbstractInter
     public void addAttachment (String id,
                                java.awt.Shape attachment)
     {
-        assert attachment != null : "Adding a null attachment";
+        Objects.requireNonNull(attachment, "Adding a null attachment");
 
         if (attachments == null) {
             attachments = new BasicAttachmentHolder();
@@ -668,7 +669,7 @@ public abstract class AbstractInter
     @Override
     public boolean isFrozen ()
     {
-        return frozen != null && frozen;
+        return (frozen != null) && frozen;
     }
 
     //--------//
@@ -839,8 +840,13 @@ public abstract class AbstractInter
     @Override
     public void setId (int id)
     {
-        assert this.id == 0 : "Reassigning inter id";
-        assert id != 0 : "Assigning zero inter id";
+        if (this.id != 0) {
+            throw new IllegalStateException("Reassigning inter id");
+        }
+
+        if (id == 0) {
+            throw new IllegalArgumentException("Assigning zero inter id");
+        }
 
         this.id = id;
     }
@@ -937,6 +943,11 @@ public abstract class AbstractInter
     //-----------//
     // internals //
     //-----------//
+    /**
+     * Protected method to report internal values of inter instance.
+     *
+     * @return a string on internal values
+     */
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());

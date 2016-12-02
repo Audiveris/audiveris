@@ -80,6 +80,7 @@ public class TemplateFactory
      */
     public Catalog getCatalog (int interline)
     {
+        ///interline += 1; // HORRIBLE TRICK TO BE REMOVED ASAP!!!!!!!!!!!!!!!!!!!!!!!!!
         Catalog catalog = allSizes.get(interline);
 
         if (catalog == null) {

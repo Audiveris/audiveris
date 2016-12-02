@@ -26,6 +26,9 @@ import omr.sheet.SystemInfo;
 import omr.step.AbstractSystemStep;
 import omr.step.StepException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Class {@code HeadersStep} implements <b>HEADERS</b> step, which handles the beginning
  * of every staff in a system.
@@ -35,8 +38,11 @@ import omr.step.StepException;
 public class HeadersStep
         extends AbstractSystemStep<Void>
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(HeadersStep.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadersStep} object.
      */

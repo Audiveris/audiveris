@@ -156,7 +156,7 @@ public class InterBoard
 
         // Compute contextual grade
         if ((inter.getSig() != null) && !inter.isDeleted()) {
-            inter.getSig().computeContextualGrade(inter, false);
+            inter.getSig().computeContextualGrade(inter);
         }
 
         super.dumpActionPerformed(e);

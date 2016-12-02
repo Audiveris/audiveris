@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  S a m p l e V e r i f i e r                                   //
+//                                   S a m p l e B r o w s e r                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -25,8 +25,7 @@ import omr.WellKnowns;
 
 import omr.classifier.Classifier;
 import omr.classifier.Evaluation;
-import omr.classifier.Flock;
-import omr.classifier.NeuralClassifier;
+import omr.classifier.GlyphClassifier;
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import omr.classifier.SampleRepository.AdditionEvent;
@@ -36,11 +35,14 @@ import omr.classifier.SampleSheet;
 import omr.classifier.SampleSource.ConstantSource;
 import omr.classifier.ShapeDescription;
 import omr.classifier.SheetContainer.Descriptor;
+import omr.classifier.Tribe;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.ui.EvaluationBoard;
+
+import omr.sheet.Book;
 
 import omr.ui.BoardsPane;
 import omr.ui.OmrGui;
@@ -114,7 +116,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Class {@code SampleVerifier} provides a user interface to browse through all samples
+ * Class {@code SampleBrowser} provides a user interface to browse through all samples
  * recorded for classifier training, in order to visually check the correctness of their
  * assigned shape, and to remove or reassign spurious samples when necessary.
  * <p>
@@ -129,16 +131,16 @@ import javax.swing.event.ListSelectionListener;
  *
  * @author Hervé Bitteur
  */
-public class SampleVerifier
+public class SampleBrowser
         extends SingleFrameApplication
         implements ChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SampleVerifier.class);
+    private static final Logger logger = LoggerFactory.getLogger(SampleBrowser.class);
 
     /** The unique class instance. */
-    private static volatile SampleVerifier INSTANCE;
+    private static volatile SampleBrowser INSTANCE;
 
     /** Stand-alone run (vs part of Audiveris). */
     private static boolean standAlone = false;
@@ -148,7 +150,7 @@ public class SampleVerifier
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Repository of training samples. */
-    private final SampleRepository repository = SampleRepository.getInstance();
+    private final SampleRepository repository;
 
     /** The dedicated frame. */
     private JFrame frame;
@@ -157,7 +159,7 @@ public class SampleVerifier
     private final EntityService<Sample> sampleService;
 
     /** View of sample in sheet context. */
-    private final SampleContext sampleContext = new SampleContext();
+    private final SampleContext sampleContext;
 
     /** Has repository been checked for duplications and conflicts?. */
     private boolean repoChecked;
@@ -179,17 +181,20 @@ public class SampleVerifier
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create an instance of {@code SampleVerifier}.
+     * Create an instance of {@code SampleBrowser}.
      */
-    private SampleVerifier ()
+    private SampleBrowser (SampleRepository repository)
     {
+        this.repository = repository;
+        sampleContext = new SampleContext(repository);
+
         sampleService = new EntityService<Sample>("sample service", null, eventsAllowed);
         sampleContext.connect(sampleService);
         sampleModel = new SampleModel(repository, sampleService);
         sampleController = new SampleController(sampleModel);
 
         // Connect selectors (sheets -> shapes -> samples)
-        sampleListing = new SampleListing(this);
+        sampleListing = new SampleListing(this, repository);
         connectSelectors(true);
 
         // Stay informed of repository dynamic updates
@@ -197,10 +202,12 @@ public class SampleVerifier
 
         if (!standAlone) {
             if (!repository.isLoaded()) {
-                repository.loadRepository(true);
+                repository.loadRepository();
+                repository.loadSheetImages();
             }
 
             frame = defineLayout(new JFrame());
+            frame.setTitle(repository.toString());
         } else {
             INSTANCE = this;
         }
@@ -208,52 +215,59 @@ public class SampleVerifier
 
     //~ Methods ------------------------------------------------------------------------------------
     //-------------//
-    // checkFlocks //
+    // getInstance //
     //-------------//
     /**
-     * Check how sample flocks are classified
+     * Give access to the global instance of this class.
      *
-     * @param e the event which triggered this action, perhaps null
+     * @return the SampleBrowser instance
      */
-    @Action
-    public void checkFlocks (ActionEvent e)
+    public static SampleBrowser getInstance ()
     {
-        final NeuralClassifier classifier = NeuralClassifier.getInstance();
-
-        for (Descriptor descriptor : repository.getAllDescriptors()) {
-            final SampleSheet sampleSheet = repository.getSampleSheet(descriptor);
-            final List<Flock> flocks = sampleSheet.getFlocks();
-
-            if (!flocks.isEmpty()) {
-                logger.info("Sheet {}", sampleSheet);
-
-                for (Flock flock : flocks) {
-                    final Sample best = flock.getBest();
-                    final int iline = best.getInterline();
-                    final int ord = best.getShape().ordinal();
-
-                    final Evaluation[] bestEvals = classifier.getNaturalEvaluations(best, iline);
-                    final Evaluation bestEval = bestEvals[ord];
-                    logger.info("Flock best: {} {}", bestEval, best);
-
-                    for (Sample good : flock.getGoods()) {
-                        Evaluation[] evals = classifier.getNaturalEvaluations(good, iline);
-                        logger.info("      good: {} {}", evals[ord], good);
-                    }
-
-                    for (Sample other : flock.getOthers()) {
-                        Evaluation[] evals = classifier.getNaturalEvaluations(other, iline);
-                        final Evaluation eval = evals[ord];
-
-                        if (eval.grade >= bestEval.grade) {
-                            logger.warn("     other: {} {} ABNORMAL", eval, other);
-                        } else {
-                            logger.info("     other: {} {}", eval, other);
-                        }
-                    }
-                }
-            }
+        if (INSTANCE == null) {
+            INSTANCE = new SampleBrowser(SampleRepository.getGlobalInstance(true));
         }
+
+        return INSTANCE;
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Give access to a specific book instance of this class.
+     *
+     * @return the SampleBrowser instance
+     */
+    public static SampleBrowser getInstance (Book book)
+    {
+        SampleRepository repo = book.getSampleRepository();
+
+        return new SampleBrowser(repo);
+    }
+
+    //------//
+    // main //
+    //------//
+    /**
+     * Just to allow stand-alone running of this class
+     *
+     * @param args not used
+     */
+    public static void main (String... args)
+    {
+        standAlone = true;
+
+        // Load repository, with sheet images
+        SampleRepository repo = SampleRepository.getGlobalInstance(true);
+        repo.loadSheetImages();
+
+        // Set UI Look and Feel
+        UILookAndFeel.setUI(null);
+        Locale.setDefault(Locale.ENGLISH);
+
+        // Off we go...
+        Application.launch(SampleBrowser.class, args);
     }
 
     //-----------------//
@@ -312,11 +326,60 @@ public class SampleVerifier
         }
     }
 
+    //-------------//
+    // checkTribes //
+    //-------------//
+    /**
+     * Check how sample tribes are classified
+     *
+     * @param e the event which triggered this action, perhaps null
+     */
+    @Action
+    public void checkTribes (ActionEvent e)
+    {
+        final Classifier classifier = GlyphClassifier.getInstance();
+
+        for (Descriptor descriptor : repository.getAllDescriptors()) {
+            final SampleSheet sampleSheet = repository.getSampleSheet(descriptor);
+            final List<Tribe> tribes = sampleSheet.getTribes();
+
+            if (!tribes.isEmpty()) {
+                logger.info("{}", sampleSheet);
+
+                for (Tribe tribe : tribes) {
+                    final Sample head = tribe.getHead();
+                    final int iline = head.getInterline();
+                    final int ord = head.getShape().ordinal();
+
+                    final Evaluation[] bestEvals = classifier.getNaturalEvaluations(head, iline);
+                    final Evaluation bestEval = bestEvals[ord];
+                    logger.info("   Tribe head: {} {}", bestEval, head);
+
+                    for (Sample good : tribe.getGoods()) {
+                        Evaluation[] evals = classifier.getNaturalEvaluations(good, iline);
+                        logger.info("         good: {} {}", evals[ord], good);
+                    }
+
+                    for (Sample member : tribe.getMembers()) {
+                        Evaluation[] evals = classifier.getNaturalEvaluations(member, iline);
+                        final Evaluation eval = evals[ord];
+
+                        if (eval.grade >= bestEval.grade) {
+                            logger.warn("       member: {} {} ABNORMAL", eval, member);
+                        } else {
+                            logger.info("       member: {} {}", eval, member);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     //------------//
     // displayAll //
     //------------//
     /**
-     * Focus the verifier on a whole collection of samples, bypassing the usual
+     * Focus the browser on a whole collection of samples, bypassing the usual
      * manual selection of sheets then shapes then samples.
      * <p>
      * (Typically these are the samples that are not correctly recognized by the classifier during
@@ -332,7 +395,7 @@ public class SampleVerifier
         Set<Descriptor> descSet = new HashSet<Descriptor>();
 
         for (Sample sample : samples) {
-            descSet.add(repository.getSheetDescriptor(sample));
+            descSet.add(repository.getDescriptor(sample));
         }
 
         sheetSelector.select(descSet);
@@ -409,23 +472,6 @@ public class SampleVerifier
         System.out.println(sb.toString());
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Give access to the single instance of this class.
-     *
-     * @return the SampleVerifier instance
-     */
-    public static SampleVerifier getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SampleVerifier();
-        }
-
-        return INSTANCE;
-    }
-
     //---------------------//
     // getSampleController //
     //---------------------//
@@ -451,27 +497,36 @@ public class SampleVerifier
         Trainer.launch();
     }
 
-    //------//
-    // main //
-    //------//
+    //------------//
+    // loadImages //
+    //------------//
     /**
-     * Just to allow stand-alone running of this class
+     * Action to load sheet images
      *
-     * @param args not used
+     * @param e the event which triggered this action
      */
-    public static void main (String... args)
+    @Action
+    public void loadImages (ActionEvent e)
     {
-        standAlone = true;
+        repository.loadSheetImages();
+        sampleContext.refresh();
+    }
 
-        // Load repository, with sheet images
-        SampleRepository.getInstance().loadRepository(true);
-
-        // Set UI Look and Feel
-        UILookAndFeel.setUI(null);
-        Locale.setDefault(Locale.ENGLISH);
-
-        // Off we go...
-        Application.launch(SampleVerifier.class, args);
+    //----------------//
+    // pushRepository //
+    //----------------//
+    /**
+     * Push this (local) repository to the global repository.
+     */
+    @Action
+    public void pushRepository ()
+    {
+        if (repository.isGlobal()) {
+            logger.warn("You cannot push the global repository to itself!");
+        } else {
+            SampleRepository global = SampleRepository.getGlobalInstance(true);
+            global.includeRepository(repository);
+        }
     }
 
     //---------//
@@ -604,7 +659,7 @@ public class SampleVerifier
             AdditionEvent addition = (AdditionEvent) event;
 
             // If sheet and shape for this sample are currently selected then update sample listing
-            final Descriptor descriptor = repository.getSheetDescriptor(addition.sample);
+            final Descriptor descriptor = repository.getDescriptor(addition.sample);
             final List<Descriptor> sheets = getSelectedSheets();
 
             if (sheets.contains(descriptor)) {
@@ -638,7 +693,7 @@ public class SampleVerifier
             JFrame frame = new JFrame("Sheets " + sheets);
             ValidationPanel panel = new ValidationPanel(
                     null,
-                    NeuralClassifier.getInstance(),
+                    GlyphClassifier.getInstance(),
                     new ConstantSource(sheetSelector.getTestSamples()));
             Panel comp = (Panel) panel.getComponent();
             comp.setInsets(5, 5, 5, 5); // TLBR
@@ -654,7 +709,7 @@ public class SampleVerifier
     @Override
     protected void initialize (String[] args)
     {
-        logger.debug("SampleVerifier. 1/initialize");
+        logger.debug("SampleBrowser. 1/initialize");
     }
 
     //-------//
@@ -663,7 +718,7 @@ public class SampleVerifier
     @Override
     protected void ready ()
     {
-        logger.debug("SampleVerifier. 3/ready");
+        logger.debug("SampleBrowser. 3/ready");
 
         frame.addWindowListener(
                 new WindowAdapter()
@@ -689,9 +744,10 @@ public class SampleVerifier
     @Override
     protected void startup ()
     {
-        logger.debug("SampleVerifier. 2/startup");
+        logger.debug("SampleBrowser. 2/startup");
 
         frame = defineLayout(getMainFrame());
+        frame.setTitle(repository.toString());
 
         show(frame); // Here we go...
     }
@@ -729,28 +785,11 @@ public class SampleVerifier
                         Arrays.asList(sample)));
     }
 
-    //----------------//
-    // getPrintWriter //
-    //----------------//
-    private static PrintWriter getPrintWriter (OutputStream os)
-    {
-        try {
-            final BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(os, WellKnowns.FILE_ENCODING));
-
-            return new PrintWriter(bw);
-        } catch (Exception ex) {
-            logger.warn("Error creating PrintWriter " + ex, ex);
-
-            return null;
-        }
-    }
-
     //--------------//
     // buildMenuBar //
     //--------------//
     /**
-     * Build the menu bar for SampleVerifier frame.
+     * Build the menu bar for SampleBrowser frame.
      *
      * @return the populated menu bar
      */
@@ -759,7 +798,7 @@ public class SampleVerifier
         JMenuBar menuBar = new JMenuBar();
 
         JMenu repoMenu = new JMenu();
-        repoMenu.setName("SampleVerifierRepoMenu");
+        repoMenu.setName("SampleBrowserRepoMenu");
         menuBar.add(repoMenu);
 
         ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
@@ -767,26 +806,33 @@ public class SampleVerifier
         // Refresh viewer
         repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("refresh")));
 
-        // Launch trainer
-        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("launchTrainer")));
-
-        // Save repository
-        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("save")));
-
-        repoMenu.addSeparator(); // -----------------------
-
         // Load sheet images
         repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("loadImages")));
+
+        repoMenu.addSeparator(); // -----------------------
 
         // Check for sample duplicates/conflicts
         repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("checkRepository")));
 
-        if (SampleRepository.USE_FLOCKS) {
-            // Check for flocks classification
-            repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("checkFlocks")));
+        if (SampleRepository.USE_TRIBES) {
+            // Check for tribes classification
+            repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("checkTribes")));
         }
 
         repoMenu.addSeparator(); // -----------------------
+
+        if (repository.isGlobal()) {
+            // Launch trainer
+            repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("launchTrainer")));
+        } else {
+            // Push local repository to global repository
+            repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("pushRepository")));
+        }
+
+        repoMenu.addSeparator(); // -----------------------
+
+        // Save repository
+        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("save")));
 
         // Export to CSV file
         repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("exportFeatures")));
@@ -820,7 +866,7 @@ public class SampleVerifier
      */
     private JFrame defineLayout (JFrame frame)
     {
-        frame.setName("SampleVerifierFrame"); // For SAF life cycle
+        frame.setName("SampleBrowserFrame"); // For SAF life cycle
 
         /*
          * |- left --||-- center ---|--------------- right ---------------|
@@ -907,18 +953,21 @@ public class SampleVerifier
         return frame;
     }
 
-    //------------//
-    // loadImages //
-    //------------//
-    /**
-     * Action to load sheet images
-     *
-     * @param e the event which triggered this action
-     */
-    @Action
-    private void loadImages (ActionEvent e)
+    //----------------//
+    // getPrintWriter //
+    //----------------//
+    private static PrintWriter getPrintWriter (OutputStream os)
     {
-        repository.loadSheetImages();
+        try {
+            final BufferedWriter bw = new BufferedWriter(
+                    new OutputStreamWriter(os, WellKnowns.FILE_ENCODING));
+
+            return new PrintWriter(bw);
+        } catch (Exception ex) {
+            logger.warn("Error creating PrintWriter " + ex, ex);
+
+            return null;
+        }
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
@@ -955,42 +1004,6 @@ public class SampleVerifier
                             TitledBorder.LEFT,
                             TitledBorder.TOP));
             this.setInsets(25, 5, 0, 0);
-        }
-    }
-
-    //-----------------------//
-    // SampleEvaluationBoard //
-    //-----------------------//
-    /**
-     * An evaluation board dedicated to evaluation / reassign of samples.
-     */
-    private class SampleEvaluationBoard
-            extends EvaluationBoard
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public SampleEvaluationBoard (SampleController controller)
-        {
-            super(true, null, NeuralClassifier.getInstance(), controller, true);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected void evaluate (Glyph glyph)
-        {
-            if (glyph == null) {
-                // Blank the output
-                selector.setEvals(null, null);
-            } else {
-                selector.setEvals(
-                        classifier.evaluate(
-                                glyph,
-                                ((Sample) glyph).getInterline(),
-                                selector.evalCount(),
-                                0.0, // minGrade
-                                Classifier.NO_CONDITIONS),
-                        glyph);
-            }
         }
     }
 
@@ -1197,6 +1210,42 @@ public class SampleVerifier
         }
     }
 
+    //-----------------------//
+    // SampleEvaluationBoard //
+    //-----------------------//
+    /**
+     * An evaluation board dedicated to evaluation / reassign of samples.
+     */
+    private class SampleEvaluationBoard
+            extends EvaluationBoard
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public SampleEvaluationBoard (SampleController controller)
+        {
+            super(true, null, GlyphClassifier.getInstance(), controller, true);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected void evaluate (Glyph glyph)
+        {
+            if (glyph == null) {
+                // Blank the output
+                selector.setEvals(null, null);
+            } else {
+                selector.setEvals(
+                        classifier.evaluate(
+                                glyph,
+                                ((Sample) glyph).getInterline(),
+                                selector.evalCount(),
+                                0.0, // minGrade
+                                Classifier.NO_CONDITIONS),
+                        glyph);
+            }
+        }
+    }
+
     //---------------//
     // ShapeSelector //
     //---------------//
@@ -1245,7 +1294,7 @@ public class SampleVerifier
                 super("ShapePopup");
 
                 ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(
-                        SampleVerifier.this);
+                        SampleBrowser.this);
 
                 add(new JMenuItem((ApplicationAction) actionMap.get("removeShapes")));
             }
@@ -1273,12 +1322,12 @@ public class SampleVerifier
         //~ Methods --------------------------------------------------------------------------------
         public List<Sample> getTestSamples ()
         {
-            List<Descriptor> sheets = list.getSelectedValuesList();
+            List<Descriptor> descriptors = list.getSelectedValuesList();
             List<Sample> samples = new ArrayList<Sample>();
 
-            for (Descriptor sheet : sheets) {
-                for (Shape shape : repository.getShapes(sheet)) {
-                    samples.addAll(repository.getSamples(sheet.id, shape));
+            for (Descriptor descriptor : descriptors) {
+                for (Shape shape : repository.getShapes(descriptor)) {
+                    samples.addAll(repository.getSamples(descriptor.getName(), shape));
                 }
             }
 
@@ -1305,7 +1354,7 @@ public class SampleVerifier
                 super("SheetPopup");
 
                 ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(
-                        SampleVerifier.this);
+                        SampleBrowser.this);
 
                 add(new JMenuItem((ApplicationAction) actionMap.get("removeSheets")));
                 add(new JMenuItem((ApplicationAction) actionMap.get("validateSheets")));

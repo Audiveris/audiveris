@@ -33,9 +33,6 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code KeySymbol} displays a Key Signature symbol.
- * <p>
- * <img src="doc-files/KeySignatures.png" />
- *
  */
 public abstract class KeySymbol
         extends ShapeSymbol
@@ -84,10 +81,10 @@ public abstract class KeySymbol
         p.itemRect = new Rectangle((int) Math.ceil(r2.getWidth()), (int) Math.ceil(r2.getHeight()));
 
         for (int k = 1; k <= (key * sign); k++) {
-            int position = KeyInter.getItemPosition(k * sign, null);
+            int pitch = KeyInter.getItemPitch(k * sign, null);
             Rectangle r = new Rectangle(
                     (int) Math.rint((k - 1) * p.itemDx),
-                    (int) Math.rint(position * p.stepDy),
+                    (int) Math.rint(pitch * p.stepDy),
                     p.itemRect.width,
                     p.itemRect.height);
 
@@ -121,13 +118,13 @@ public abstract class KeySymbol
         int sign = Integer.signum(key);
 
         for (int k = 1; k <= (key * sign); k++) {
-            int position = KeyInter.getItemPosition(k * sign, null);
+            int pitch = KeyInter.getItemPitch(k * sign, null);
             MusicFont.paint(
                     g,
                     p.layout,
                     new Point(
                             loc.x + (int) Math.rint((k - 1) * p.itemDx),
-                            loc.y + (int) Math.rint(position * p.stepDy)),
+                            loc.y + (int) Math.rint(pitch * p.stepDy)),
                     MIDDLE_LEFT);
         }
     }

@@ -72,13 +72,13 @@ public class RunTableHolder
      */
     public RunTableHolder (TableKey key)
     {
-        this.pathString = key + ".xml";
+        pathString = key + ".xml";
     }
 
     /** No-arg constructor needed for JAXB. */
     private RunTableHolder ()
     {
-        this.pathString = null;
+        pathString = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

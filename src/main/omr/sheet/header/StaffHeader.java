@@ -94,7 +94,7 @@ public class StaffHeader
     /** Abscissa range for key. */
     public Range keyRange;
 
-    /** Abscissa for start of each key alter. */
+    /** Abscissa for start of each key alter (used for plot only). */
     public List<Integer> alterStarts;
 
     /** Abscissa range for time. */
@@ -172,16 +172,47 @@ public class StaffHeader
         /** Abscissa for end of browsing. */
         public int browseStop;
 
-        /** Precise beginning of item. */
-        public int start;
+        /** Precise beginning of item, if any. */
+        private Integer start;
 
-        /** Precise end of item. */
-        public int stop;
-
-        /** Precise end of system-aligned item. */
-        public int systemStop;
+        /** Precise end of item, if any. */
+        private Integer stop;
 
         //~ Methods --------------------------------------------------------------------------------
+        public int getStart ()
+        {
+            return start;
+        }
+
+        public int getStop ()
+        {
+            if (stop != null) {
+                return stop;
+            }
+
+            return browseStop;
+        }
+
+        public int getWidth ()
+        {
+            return getStop() - getStart() + 1;
+        }
+
+        public boolean hasStart ()
+        {
+            return start != null;
+        }
+
+        public void setStart (int start)
+        {
+            this.start = start;
+        }
+
+        public void setStop (int stop)
+        {
+            this.stop = stop;
+        }
+
         @Override
         public String toString ()
         {
@@ -201,16 +232,12 @@ public class StaffHeader
                 sb.append(" bStop=").append(browseStop);
             }
 
-            if (start != 0) {
+            if (start != null) {
                 sb.append(" start=").append(start);
             }
 
-            if (stop != 0) {
+            if (stop != null) {
                 sb.append(" stop=").append(stop);
-            }
-
-            if (systemStop != 0) {
-                sb.append(" systemStop=").append(systemStop);
             }
 
             return sb.toString();

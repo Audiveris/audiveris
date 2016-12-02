@@ -22,10 +22,11 @@
 package omr.sig.inter;
 
 import omr.glyph.Shape;
-import static omr.glyph.Shape.*;
 
 import omr.sheet.Staff;
 import static omr.sig.inter.AbstractNoteInter.Step.*;
+import omr.sig.inter.ClefInter.ClefKind;
+import static omr.sig.inter.ClefInter.ClefKind.*;
 
 import omr.util.Entities;
 
@@ -33,7 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -41,6 +44,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code KeyInter} represents a key signature on a staff.
+ * <p>
+ * <img src="doc-files/KeySignatures.png">
  *
  * @author Hervé Bitteur
  */
@@ -51,40 +56,39 @@ public class KeyInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            KeyInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(KeyInter.class);
 
-    /** Standard (in G clef) pitch positions for the members of the sharp keys. */
-    private static final int[] sharpPitches = new int[]{
-        -4, // F - Fa
-        -1, // C - Do
-        -5, // G - Sol
-        -2, // D - Ré
-        +1, // A - La
-        -3, // E - Mi
-        0 //   B - Si
-    };
-
-    /** Note steps according to sharps key. */
-    private static final AbstractNoteInter.Step[] sharpSteps = new AbstractNoteInter.Step[]{
+    /** Sharp keys note steps. */
+    private static final AbstractNoteInter.Step[] SHARP_STEPS = new AbstractNoteInter.Step[]{
         F, C, G, D, A, E, B
     };
 
-    /** Standard(in G clef) pitch position for the members of the flat keys. */
-    private static final int[] flatPitches = new int[]{
-        0, //  B - Si
-        -3, // E - Mi
-        +1, // A - La
-        -2, // D - Ré
-        +2, // G - Sol
-        -1, // C - Do
-        +3 //  F - Fa
-    };
+    /** Sharp pitches per clef kind. */
+    public static final Map<ClefKind, int[]> SHARP_PITCHES_MAP = new EnumMap<ClefKind, int[]>(
+            ClefKind.class);
 
-    /** Note steps according to flats key. */
-    private static final AbstractNoteInter.Step[] flatSteps = new AbstractNoteInter.Step[]{
+    static {
+        SHARP_PITCHES_MAP.put(TREBLE, new int[]{-4, -1, -5, -2, 1, -3, 0});
+        SHARP_PITCHES_MAP.put(ALTO, new int[]{-3, 0, -4, -1, 2, -2, 1});
+        SHARP_PITCHES_MAP.put(BASS, new int[]{-2, 1, -3, 0, 3, -1, 2});
+        SHARP_PITCHES_MAP.put(TENOR, new int[]{2, -2, 1, -3, 0, -4, -1});
+    }
+
+    /** Flat keys note steps. */
+    private static final AbstractNoteInter.Step[] FLAT_STEPS = new AbstractNoteInter.Step[]{
         B, E, A, D, G, C, F
     };
+
+    /** Flat pitches per clef kind. */
+    public static final Map<ClefKind, int[]> FLAT_PITCHES_MAP = new EnumMap<ClefKind, int[]>(
+            ClefKind.class);
+
+    static {
+        FLAT_PITCHES_MAP.put(TREBLE, new int[]{0, -3, 1, -2, 2, -1, 3});
+        FLAT_PITCHES_MAP.put(ALTO, new int[]{1, -2, 2, -1, 3, 0, 4});
+        FLAT_PITCHES_MAP.put(BASS, new int[]{2, -1, 3, 0, 4, 1, 5});
+        FLAT_PITCHES_MAP.put(TENOR, new int[]{-1, -4, 0, -3, 1, -2, 2});
+    }
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of key components. */
@@ -93,7 +97,7 @@ public class KeyInter
 
     /** Numerical value for signature. */
     @XmlAttribute
-    private final int fifths;
+    private int fifths;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -112,6 +116,10 @@ public class KeyInter
         super(null, bounds, null, grade);
         this.alters = alters;
         this.fifths = fifths;
+
+        for (KeyAlterInter alter : alters) {
+            alter.setEnsemble(this);
+        }
     }
 
     /**
@@ -125,83 +133,6 @@ public class KeyInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getAlterFor //
-    //-------------//
-    public static int getAlterFor (AbstractNoteInter.Step step,
-                                   int signature)
-    {
-        if (signature > 0) {
-            for (int k = 0; k < signature; k++) {
-                if (step == sharpSteps[k]) {
-                    return 1;
-                }
-            }
-        } else {
-            for (int k = 0; k < -signature; k++) {
-                if (step == flatSteps[k]) {
-                    return -1;
-                }
-            }
-        }
-
-        return 0;
-    }
-
-    //-----------------//
-    // getItemPosition //
-    //-----------------//
-    /**
-     * Report the pitch position of the nth item, within the given clef.
-     * 'n' is negative for flats and positive for sharps, and start at 1 for
-     * sharps (and at -1 for flats)
-     *
-     * @param n        the signed index (one-based) of the desired item
-     * @param clefKind the kind (G_CLEF, F_CLEF or C_CLEF) of the active clef
-     * @return the pitch position of the item (sharp or flat)
-     */
-    public static int getItemPosition (int n,
-                                       Shape clefKind)
-    {
-        if (clefKind == null) {
-            clefKind = G_CLEF;
-        }
-
-        int stdPitch = (int) Math.rint((n >= 0) ? sharpPitches[n - 1] : flatPitches[-n - 1]);
-
-        return stdPitch + clefToDelta(clefKind);
-    }
-
-    //---------------------//
-    // getStandardPosition //
-    //---------------------//
-    /**
-     * Compute the standard mean pitch position of the provided key
-     *
-     * @param k the provided key value
-     * @return the corresponding standard mean pitch position
-     */
-    public static double getStandardPosition (int k)
-    {
-        if (k == 0) {
-            return 0;
-        }
-
-        double sum = 0;
-
-        if (k > 0) {
-            for (int i = 0; i < k; i++) {
-                sum += sharpPitches[i];
-            }
-        } else {
-            for (int i = 0; i > k; i--) {
-                sum -= flatPitches[-i];
-            }
-        }
-
-        return sum / k;
-    }
-
     //--------//
     // accept //
     //--------//
@@ -211,26 +142,76 @@ public class KeyInter
         visitor.visit(this);
     }
 
+    //----------//
+    // addAlter //
+    //----------//
+    /**
+     * (method currently not used) Insert a key item in existing key signature.
+     *
+     * @param alter the key item to insert
+     */
+    public void addAlter (KeyAlterInter alter)
+    {
+        // Insert provided alter at proper index
+        final int x = alter.getBounds().x;
+        int i = 0;
+
+        for (; i < alters.size(); i++) {
+            KeyAlterInter current = alters.get(i);
+
+            if (current.getBounds().x >= x) {
+                break;
+            }
+        }
+
+        alters.add(i, alter);
+        alter.setEnsemble(this);
+        bounds = null;
+    }
+
     //-------------//
     // getAlterFor //
     //-------------//
-    public int getAlterFor (AbstractNoteInter.Step step)
+    /**
+     * Report the alteration to apply to the provided note step, under the provided
+     * active key signature.
+     *
+     * @param step      note step
+     * @param signature key signature
+     * @return the key-based alteration (either -1, 0 or +1)
+     */
+    public static int getAlterFor (AbstractNoteInter.Step step,
+                                   int signature)
     {
-        if (fifths > 0) {
-            for (int k = 0; k < fifths; k++) {
-                if (step == sharpSteps[k]) {
+        if (signature > 0) {
+            for (int k = 0; k < signature; k++) {
+                if (step == SHARP_STEPS[k]) {
                     return 1;
                 }
             }
         } else {
-            for (int k = 0; k < -fifths; k++) {
-                if (step == flatSteps[k]) {
+            for (int k = 0; k < -signature; k++) {
+                if (step == FLAT_STEPS[k]) {
                     return -1;
                 }
             }
         }
 
         return 0;
+    }
+
+    //-------------//
+    // getAlterFor //
+    //-------------//
+    /**
+     * Report the alteration to apply to the provided note step, under this key.
+     *
+     * @param step note step
+     * @return the key-based alteration (either -1, 0 or +1)
+     */
+    public int getAlterFor (AbstractNoteInter.Step step)
+    {
+        return getAlterFor(step, getFifths());
     }
 
     //-----------//
@@ -250,11 +231,39 @@ public class KeyInter
     // getFifths //
     //-----------//
     /**
+     * Report the integer value that describes the key signature, using range [-1..-7]
+     * for flats and range [+1..+7] for sharps.
+     *
      * @return the signature
      */
     public int getFifths ()
     {
         return fifths;
+    }
+
+    //--------------//
+    // getItemPitch //
+    //--------------//
+    /**
+     * Report the pitch position of the nth item, within the given clef kind.
+     * 'n' is negative for flats and positive for sharps, and start at 1 for sharps (and at -1 for
+     * flats)
+     *
+     * @param n    the signed index (one-based) of the desired item
+     * @param kind the kind (TREBLE, ALTO, BASS or TENOR) of the active clef
+     * @return the pitch position of the key item (sharp or flat)
+     */
+    public static int getItemPitch (int n,
+                                    ClefKind kind)
+    {
+        if (kind == null) {
+            kind = TREBLE;
+        }
+
+        Map<ClefKind, int[]> map = (n > 0) ? SHARP_PITCHES_MAP : FLAT_PITCHES_MAP;
+        int[] pitches = map.get(kind);
+
+        return pitches[Math.abs(n)];
     }
 
     //------------//
@@ -264,6 +273,129 @@ public class KeyInter
     public List<? extends Inter> getMembers ()
     {
         return alters;
+    }
+
+    //------------//
+    // getPitches //
+    //------------//
+    /**
+     * Report the sequence of pitches imposed by a given clef kind (TREBLE, ALTO, TENOR
+     * or BASS) for a given key alteration shape (FLAT or SHARP).
+     *
+     * @param clefKind the kind of active clef
+     * @param shape    the desired shape for key
+     * @return the sequence of pitch values
+     */
+    public static int[] getPitches (ClefKind clefKind,
+                                    Shape shape)
+    {
+        return getPitchesMap(shape).get(clefKind);
+    }
+
+    //---------------//
+    // getPitchesMap //
+    //---------------//
+    /**
+     * Report the map of pitch sequences per clef kind, for a given key alteration shape.
+     *
+     * @param shape key alteration shape (FLAT or SHARP)
+     * @return the map per clef kind
+     */
+    public static Map<ClefKind, int[]> getPitchesMap (Shape shape)
+    {
+        if (shape == Shape.SHARP) {
+            return SHARP_PITCHES_MAP;
+        }
+
+        if (shape == Shape.FLAT) {
+            return FLAT_PITCHES_MAP;
+        }
+
+        throw new IllegalArgumentException("Illegal key shape " + shape);
+    }
+
+    //---------------------//
+    // getStandardPosition //
+    //---------------------//
+    /**
+     * Compute the standard (TREBLE) mean pitch position of the provided key
+     *
+     * @param k the provided key signature
+     * @return the corresponding standard mean pitch position of the key
+     */
+    public static double getStandardPosition (int k)
+    {
+        if (k == 0) {
+            return 0;
+        }
+
+        double sum = 0;
+
+        if (k > 0) {
+            final int[] pitches = SHARP_PITCHES_MAP.get(TREBLE);
+
+            for (int i = 0; i < k; i++) {
+                sum += pitches[i];
+            }
+        } else {
+            final int[] pitches = FLAT_PITCHES_MAP.get(TREBLE);
+
+            for (int i = 0; i > k; i--) {
+                sum -= pitches[-i];
+            }
+        }
+
+        return sum / k;
+    }
+
+    //-----------//
+    // guessKind //
+    //-----------//
+    public static ClefKind guessKind (Shape shape,
+                                      Double[] measuredPitches,
+                                      Map<ClefKind, Double> results)
+    {
+        Map<ClefKind, int[]> map = (shape == Shape.FLAT) ? FLAT_PITCHES_MAP : SHARP_PITCHES_MAP;
+
+        if (results == null) {
+            results = new EnumMap<ClefKind, Double>(ClefKind.class);
+        }
+
+        ClefKind bestKind = null;
+        double bestError = Double.MAX_VALUE;
+
+        for (Map.Entry<ClefKind, int[]> entry : map.entrySet()) {
+            ClefKind kind = entry.getKey();
+            int[] pitches = entry.getValue();
+            int count = 0;
+            double error = 0;
+
+            for (int i = 0; i < measuredPitches.length; i++) {
+                Double measured = measuredPitches[i];
+
+                if (measured != null) {
+                    count++;
+
+                    double diff = measured - pitches[i];
+                    error += (diff * diff);
+                }
+            }
+
+            if (count > 0) {
+                error /= count;
+                error = Math.sqrt(error);
+                results.put(kind, error);
+
+                if (error < bestError) {
+                    bestError = error;
+                    bestKind = kind;
+                }
+            }
+        }
+
+        logger.debug("{} results:{}", bestKind, results);
+
+        return bestKind;
     }
 
     //-----------//
@@ -277,10 +409,23 @@ public class KeyInter
      */
     public KeyInter replicate (Staff targetStaff)
     {
-        KeyInter inter = new KeyInter(null, 0, fifths, null);
+        KeyInter inter = new KeyInter(null, 0, getFifths(), null);
         inter.setStaff(targetStaff);
 
         return inter;
+    }
+
+    //-----------//
+    // setFifths //
+    //-----------//
+    /**
+     * (method currently not used) Adjust the signature integer value.
+     *
+     * @param fifths the fifths to set
+     */
+    public void setFifths (int fifths)
+    {
+        this.fifths = fifths;
     }
 
     //-------------//
@@ -289,7 +434,7 @@ public class KeyInter
     @Override
     public String shapeString ()
     {
-        return "KEY_SIG:" + fifths;
+        return "KEY_SIG:" + getFifths();
     }
 
     //-----------//
@@ -299,72 +444,8 @@ public class KeyInter
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" fifths:").append(fifths);
+        sb.append(" fifths:").append(getFifths());
 
         return sb.toString();
-    }
-
-    //-------------//
-    // clefToDelta //
-    //-------------//
-    /**
-     * Report the delta in pitch position (wrt standard G_CLEF positions)
-     * according to a given clef
-     *
-     * @param clef the clef
-     * @return the delta in pitch position
-     */
-    private static int clefToDelta (Shape clef)
-    {
-        switch (getClefKind(clef)) {
-        case F_CLEF:
-            return 2;
-
-        case C_CLEF:
-            return 1;
-
-        default:
-        case G_CLEF:
-            return 0;
-        }
-    }
-
-    //-------------//
-    // getClefKind //
-    //-------------//
-    /**
-     * Classify clefs by clef kinds, since for example the same key is
-     * represented with identical pitch positions for G_CLEF,
-     * G_CLEF_8VA and G_CLEF_8VB.
-     *
-     * @param shape the precise clef shape
-     * @return the clef kind
-     */
-    private static Shape getClefKind (Shape shape)
-    {
-        switch (shape) {
-        case G_CLEF:
-        case G_CLEF_SMALL:
-        case G_CLEF_8VA:
-        case G_CLEF_8VB:
-            return G_CLEF;
-
-        case F_CLEF:
-        case F_CLEF_SMALL:
-        case F_CLEF_8VA:
-        case F_CLEF_8VB:
-            return F_CLEF;
-
-        case C_CLEF:
-            return C_CLEF;
-
-        case PERCUSSION_CLEF:
-            return PERCUSSION_CLEF;
-
-        default:
-            logger.error("No base kind defined for clef {}", shape);
-
-            return null;
-        }
     }
 }

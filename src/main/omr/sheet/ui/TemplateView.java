@@ -167,7 +167,7 @@ public class TemplateView
                 Composite oldComposite = g.getComposite();
                 g.setComposite(templateComposite);
 
-                MusicFont musicFont = MusicFont.getFont(sheet.getScale().getInterline());
+                MusicFont musicFont = MusicFont.getFont(sheet.getScale().getInterline()); // +1 NO HORRIBLE TRICK
                 ShapeSymbol symbol = Symbols.getSymbol(template.getShape());
                 Rectangle symRect = template.getSymbolBoundsAt(refPoint.x, refPoint.y, anchor);
                 symbol.paintSymbol(g, musicFont, symRect.getLocation(), Alignment.TOP_LEFT);

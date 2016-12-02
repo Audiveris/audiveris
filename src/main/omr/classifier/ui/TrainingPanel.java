@@ -32,7 +32,6 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
 import omr.ui.Colors;
-import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.LLabel;
 import omr.ui.util.Panel;
@@ -106,22 +105,13 @@ class TrainingPanel
     /** UI panel dealing with samples selection. */
     private final SelectionPanel selectionPanel;
 
-    /** [no Input] field for Learning rate of the neural network. */
-    private final LDoubleField learningRate = new LDoubleField(
-            false, // Not editable for the time being
-            "Learning Rate",
-            "Learning rate of the neural network",
-            "%.2f");
-
     /** Field for Maximum number of epochs to perform. */
     private final LIntegerField maxEpochs = new LIntegerField(
             "Max Epochs",
             "Maximum number of epochs to perform");
 
     /** Output for Number of iterations performed so far. */
-    private final LLabel trainIndex = new LLabel(
-            "Epoch:",
-            "Number of epochs performed so far");
+    private final LLabel trainIndex = new LLabel("Epoch:", "Number of epochs performed so far");
 
     /** Output for score on last iteration. */
     private final LLabel trainScore = new LLabel("Score:", "Score on last iteration");
@@ -165,17 +155,23 @@ class TrainingPanel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Give access to the encapsulated swing component
-     *
-     * @return the user panel
-     */
+    @Override
+    public void epochPeriodDone (int epoch,
+                                 double score)
+    {
+        logger.info(String.format("epoch:%4d score: %.5f", epoch, score));
+        display(epoch, score);
+    }
+
     public JComponent getComponent ()
     {
         return component;
+    }
+
+    @Override
+    public int getEpochPeriod ()
+    {
+        return constants.listenerPeriod.getValue();
     }
 
     @Override
@@ -199,27 +195,10 @@ class TrainingPanel
         if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
             invoke();
 
-            final double result = model.score();
+            final double score = model.score();
             final int count = (int) iterCount;
-            logger.info("Score at iteration " + count + " is " + result);
-
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                // This part is run on swing thread
-                @Override
-                public void run ()
-                {
-                    // Update current values
-                    trainIndex.setText(Integer.toString(count));
-                    trainScore.setText(String.format("%.4f", result));
-
-                    // Update progress bar ?
-                    progressBar.setValue(count);
-
-                    component.repaint();
-                }
-            });
+            logger.info("Score at iteration " + count + " is " + score);
+            display(count, score);
         }
     }
 
@@ -326,9 +305,6 @@ class TrainingPanel
         builder.add(maxEpochs.getLabel(), cst.xy(9, r));
         builder.add(maxEpochs.getField(), cst.xy(11, r));
 
-        builder.add(learningRate.getLabel(), cst.xy(13, r));
-        builder.add(learningRate.getField(), cst.xy(15, r));
-
         r += 2; // ----------------------------
 
         JButton trainButton = new JButton(trainAction);
@@ -342,13 +318,34 @@ class TrainingPanel
         builder.add(trainScore.getField(), cst.xy(15, r));
     }
 
+    private void display (final int count,
+                          final double score)
+    {
+        SwingUtilities.invokeLater(
+                new Runnable()
+        {
+            // This part is run on swing thread
+            @Override
+            public void run ()
+            {
+                // Update current values
+                trainIndex.setText(Integer.toString(count));
+                trainScore.setText(String.format("%.4f", score));
+
+                // Update progress bar
+                progressBar.setValue(count);
+
+                component.repaint();
+            }
+        });
+    }
+
     //---------------//
     // displayParams //
     //---------------//
     private void displayParams ()
     {
         maxEpochs.setValue(NeuralClassifier.getMaxEpochs());
-        learningRate.setValue(engine.getLearningRate());
     }
 
     //-------------//
@@ -357,7 +354,6 @@ class TrainingPanel
     private void inputParams ()
     {
         engine.setMaxEpochs(maxEpochs.getValue());
-        engine.setLearningRate(learningRate.getValue());
 
         progressBar.setMaximum(maxEpochs.getValue());
     }
@@ -435,7 +431,7 @@ class TrainingPanel
         private final Constant.Integer listenerPeriod = new Constant.Integer(
                 "period",
                 50,
-                "Iteration period between listener calls");
+                "Period (in epochs) between listener calls");
     }
 
     //-------------//

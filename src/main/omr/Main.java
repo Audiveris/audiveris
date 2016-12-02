@@ -152,11 +152,11 @@ public class Main
 
             // At this point all tasks have completed (except timeout...)
             // So shutdown gracefully the executors
-            OmrExecutors.shutdown(false);
+            boolean timeout = !OmrExecutors.shutdown();
 
-            // Save sample repository if modified
+            // Save global sample repository if modified
             if (SampleRepository.hasInstance()) {
-                SampleRepository repository = SampleRepository.getInstance();
+                SampleRepository repository = SampleRepository.getGlobalInstance(false);
 
                 if (repository.isModified()) {
                     repository.storeRepository();
@@ -168,10 +168,23 @@ public class Main
                 ConstantManager.getInstance().storeResource();
             }
 
-            // Stop the JVM with failure status?
-            if (failure) {
-                logger.warn("Exit with failure status");
-                System.exit(-1);
+            // Force JVM exit?
+            if (failure || timeout) {
+                String msg = "Exit forced.";
+                int status = 0;
+
+                if (failure) {
+                    status -= 1;
+                    msg += " Failure";
+                }
+
+                if (timeout) {
+                    status -= 2;
+                    msg += " Timeout";
+                }
+
+                logger.warn(msg);
+                System.exit(status);
             }
         }
     }

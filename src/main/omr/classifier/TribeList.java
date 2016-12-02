@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        F l o c k L i s t                                       //
+//                                        T r i b e L i s t                                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -20,6 +20,8 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.classifier;
+
+import omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,92 +46,102 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Value class meant for JAXB.
  */
 @XmlAccessorType(value = XmlAccessType.NONE)
-@XmlRootElement(name = "flocks")
-class FlockList
+@XmlRootElement(name = "tribes")
+class TribeList
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(
-            FlockList.class);
+            TribeList.class);
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
-    @XmlAttribute(name = "id")
-    private final int id;
+    // Persistent data
+    //----------------
+    /** Used only to include sheet-name within the written file. */
+    @XmlAttribute(name = "sheet-name")
+    private final String name;
 
-    @XmlElement(name = "flock")
-    private final ArrayList<Flock> flocks = new ArrayList<Flock>();
+    /** The collection of tribes in sample sheet. */
+    @XmlElement(name = "tribe")
+    private final ArrayList<Tribe> tribes = new ArrayList<Tribe>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code FlockList} object.
+     * Creates a new {@code TribeList} object.
      *
-     * @param id          DOCUMENT ME!
-     * @param sampleSheet DOCUMENT ME!
+     * @param sampleSheet the containing sample sheet
      */
-    public FlockList (int id,
-                      SampleSheet sampleSheet)
+    public TribeList (SampleSheet sampleSheet)
     {
-        this.id = id;
+        name = sampleSheet.getDescriptor().getName();
 
-        for (Flock flock : sampleSheet.getFlocks()) {
-            flocks.add(flock);
-        }
-    }
-
-    /**
-     * Creates a new {@code FlockList} object.
-     *
-     * @param sampleSheet DOCUMENT ME!
-     */
-    public FlockList (SampleSheet sampleSheet)
-    {
-        this.id = sampleSheet.getId();
-
-        for (Flock flock : sampleSheet.getFlocks()) {
-            flocks.add(flock);
+        for (Tribe tribe : sampleSheet.getTribes()) {
+            tribes.add(tribe);
         }
     }
 
     // Meant for JAXB
-    private FlockList ()
+    private TribeList ()
     {
-        id = 0;
+        name = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // getTribes //
+    //-----------//
     /**
-     * @return the flocks
+     * @return the tribes
      */
-    public ArrayList<Flock> getFlocks ()
+    public ArrayList<Tribe> getTribes ()
     {
-        return flocks;
+        return tribes;
+    }
+
+    //---------//
+    // marshal //
+    //---------//
+    /**
+     * Marshal this instance to disk.
+     *
+     * @param tribesPath path to tribes file
+     */
+    public void marshal (Path tribesPath)
+    {
+        try {
+            logger.debug("Marshalling {}", this);
+            Jaxb.marshal(this, tribesPath, getJaxbContext());
+            logger.info("Stored {}", tribesPath);
+        } catch (Exception ex) {
+            logger.error("Error marshalling " + this + " " + ex, ex);
+        }
     }
 
     //-----------//
     // unmarshal //
     //-----------//
     /**
-     * Load a FlockList from the provided path.
+     * Load a TribeList from the provided path.
      *
      * @param path the source path
      * @return the unmarshalled instance
      * @throws IOException
      */
-    static FlockList unmarshal (Path path)
+    static TribeList unmarshal (Path path)
             throws IOException
     {
-        logger.debug("FlockList unmarshalling {}", path);
+        logger.debug("TribeList unmarshalling {}", path);
 
         try {
             InputStream is = Files.newInputStream(path, StandardOpenOption.READ);
             Unmarshaller um = getJaxbContext().createUnmarshaller();
-            FlockList flockList = (FlockList) um.unmarshal(is);
+            TribeList tribeList = (TribeList) um.unmarshal(is);
             is.close();
 
-            return flockList;
+            return tribeList;
         } catch (JAXBException ex) {
             logger.warn("Error unmarshalling " + path + " " + ex, ex);
 
@@ -145,7 +157,7 @@ class FlockList
     {
         // Lazy creation
         if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(FlockList.class);
+            jaxbContext = JAXBContext.newInstance(TribeList.class);
         }
 
         return jaxbContext;

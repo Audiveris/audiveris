@@ -33,6 +33,8 @@
     <action domain="BOOK" section="30" class="omr.sheet.ui.BookActions" method="printBookAs"/>
     <action domain="BOOK" section="40" class="omr.sheet.ui.BookActions" method="exportBook"/>
     <action domain="BOOK" section="40" class="omr.sheet.ui.BookActions" method="exportBookAs"/>
+    <action domain="BOOK" section="45" class="omr.sheet.ui.BookActions" method="viewBookRepository"/>
+    <action domain="BOOK" section="45" class="omr.sheet.ui.BookActions" method="saveBookRepository"/>
     <action domain="BOOK" section="50" class="omr.sheet.ui.BookActions" method="saveBook"           button="javax.swing.JButton"/>
     <action domain="BOOK" section="50" class="omr.sheet.ui.BookActions" method="saveBookAs"/>
     <action domain="BOOK" section="50" class="omr.sheet.ui.BookActions" method="closeBook"/>

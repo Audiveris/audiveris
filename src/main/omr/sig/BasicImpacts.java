@@ -106,6 +106,6 @@ public abstract class BasicImpacts
     public void setImpact (int index,
                            double impact)
     {
-        impacts[index] = Grades.clamp(impact);
+        impacts[index] = GradeUtil.clamp(impact);
     }
 }

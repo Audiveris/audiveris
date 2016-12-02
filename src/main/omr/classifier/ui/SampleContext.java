@@ -69,18 +69,26 @@ public class SampleContext
     private static final Point NO_OFFSET = new Point(0, 0);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    private final SampleRepository repository;
+
     private final ContextView contextView;
 
     private final SelectionService locationService = new SelectionService(
             "sampleLocationService",
             new Class<?>[]{LocationEvent.class});
 
+    private EntityService<Sample> sampleService;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleContext} object.
+     *
+     * @param repository the underlying repository
      */
-    public SampleContext ()
+    public SampleContext (SampleRepository repository)
     {
+        this.repository = repository;
+
         contextView = new ContextView(zoom, rubber);
         contextView.setLocationService(locationService);
         defineLayout();
@@ -92,8 +100,18 @@ public class SampleContext
     //---------//
     public void connect (EntityService<Sample> sampleService)
     {
+        this.sampleService = sampleService;
         sampleService.subscribeStrongly(EntityListEvent.class, contextView);
         locationService.subscribeStrongly(LocationEvent.class, contextView);
+    }
+
+    //---------//
+    // refresh //
+    //---------//
+    public void refresh ()
+    {
+        Sample sample = sampleService.getSelectedEntity();
+        contextView.display(sample);
     }
 
     //--------------//
@@ -148,7 +166,7 @@ public class SampleContext
                     showFocusLocation(locationEvent.getData(), true);
                 } else if (event instanceof EntityListEvent) {
                     // Sample => sample, sheet & location
-                    handleEvent((EntityListEvent<Sample>) event);
+                    display(((EntityListEvent<Sample>) event).getEntity());
                 }
             } catch (Exception ex) {
                 logger.warn(getClass().getName() + " onEvent error", ex);
@@ -174,19 +192,19 @@ public class SampleContext
             }
         }
 
-        //-------------//
-        // handleEvent //
-        //-------------//
-        private void handleEvent (EntityListEvent<Sample> sampleListEvent)
+        //---------//
+        // display //
+        //---------//
+        private void display (Sample newSample)
         {
+            sample = newSample;
+
             Dimension dim = NO_DIM;
             Rectangle rect = null;
-            sample = sampleListEvent.getEntity();
 
             if (sample != null) {
                 logger.debug("SampleContext sample:{}", sample);
 
-                SampleRepository repository = SampleRepository.getInstance();
                 SampleSheet sampleSheet = repository.getSampleSheet(sample);
                 sheetTable = (sampleSheet != null) ? sampleSheet.getImage() : null;
 

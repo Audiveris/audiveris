@@ -62,6 +62,10 @@ public class TimeWholeInter
                            double grade)
     {
         super(glyph, shape, grade);
+
+        if (!ShapeSet.WholeTimes.contains(shape)) {
+            throw new IllegalArgumentException(shape + " not allowed as TimeWholeInter shape");
+        }
     }
 
     /**

@@ -162,10 +162,11 @@ public class OmrExecutors
     /**
      * Gracefully shut down all the executors launched
      *
-     * @param immediately set to true for an immediate shutdown
+     * @return true if OK, false if timeout
      */
-    public static void shutdown (boolean immediately)
+    public static boolean shutdown ()
     {
+        boolean result = true;
         logger.debug("Closing all pools ...");
 
         // No creation of pools from now on!
@@ -173,13 +174,17 @@ public class OmrExecutors
 
         for (Pool pool : allPools) {
             if (pool.isActive()) {
-                pool.close(immediately);
+                if (!pool.close()) {
+                    result = false;
+                }
             } else {
                 logger.debug("Pool {} not active", pool.getName());
             }
         }
 
         logger.debug("OmrExecutors closed");
+
+        return result;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -199,44 +204,50 @@ public class OmrExecutors
          */
         public abstract String getName ();
 
-        //
         /**
          * Terminate the pool.
+         * <p>
+         * BEWARE, doc on shutdownNow says: There are no guarantees beyond best-effort attempts to
+         * stop processing actively executing tasks. For example, typical implementations will
+         * cancel via {@link Thread#interrupt}, so any task that fails to respond to interrupts may
+         * never terminate.
+         *
+         * @return true if OK, false if timed out
          */
-        public synchronized void close (boolean immediately)
+        public synchronized boolean close ()
         {
+            boolean result = true;
+
             if (!isActive()) {
-                return;
+                return result;
             }
 
-            logger.debug("Closing pool {}{}", getName(), immediately ? " immediately" : "");
+            logger.debug("Closing pool {}", getName());
+            pool.shutdown(); // Disable new tasks from being submitted
 
-            if (!immediately) {
-                pool.shutdown(); // Disable new tasks from being submitted
+            try {
+                // Wait a while for existing tasks to terminate
+                if (!pool.awaitTermination(constants.graceDelay.getValue(), TimeUnit.SECONDS)) {
+                    logger.warn("Pool {} did not terminate", getName());
+                    result = false;
 
-                try {
-                    // Wait a while for existing tasks to terminate
-                    if (!pool.awaitTermination(constants.graceDelay.getValue(), TimeUnit.SECONDS)) {
-                        logger.warn("Pool {} did not terminate", getName());
-
-                        // Cancel currently executing tasks
-                        pool.shutdownNow();
-                    }
-                } catch (InterruptedException ie) {
-                    // (Re-)Cancel if current thread also got interrupted
+                    // (Try to) cancel currently executing tasks.
                     pool.shutdownNow();
-                    // Preserve interrupt status
-                    Thread.currentThread().interrupt();
                 }
-            } else {
-                // Cancel currently executing tasks
+            } catch (InterruptedException ie) {
+                // (Re-)Try to cancel if current thread also got interrupted
                 pool.shutdownNow();
+
+                // Preserve interrupt status
+                Thread.currentThread().interrupt();
             }
 
             logger.debug("Pool {} closed.", getName());
 
             // Let garbage collector work
             pool = null;
+
+            return result;
         }
 
         /**

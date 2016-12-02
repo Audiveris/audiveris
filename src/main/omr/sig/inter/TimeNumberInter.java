@@ -26,6 +26,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyph;
 import omr.glyph.Shape;
+import omr.glyph.ShapeSet;
 
 import omr.sheet.Staff;
 
@@ -72,6 +73,11 @@ public class TimeNumberInter
                             VerticalSide side)
     {
         super(glyph, shape, grade, value);
+
+        if (!ShapeSet.PartialTimes.contains(shape)) {
+            throw new IllegalArgumentException(shape + " not allowed as TimeNumberInter shape");
+        }
+
         this.side = side;
     }
 
@@ -91,6 +97,10 @@ public class TimeNumberInter
                             VerticalSide side)
     {
         super(bounds, shape, grade, value);
+
+        if (!ShapeSet.PartialTimes.contains(shape)) {
+            throw new IllegalArgumentException(shape + " not allowed as TimeNumberInter shape");
+        }
         this.side = side;
     }
 

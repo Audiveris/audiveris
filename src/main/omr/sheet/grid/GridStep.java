@@ -24,8 +24,6 @@ package omr.sheet.grid;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.ui.SymbolsEditor;
-
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
 import omr.sheet.ui.ImageView;
@@ -75,11 +73,7 @@ public class GridStep
     public void displayUI (Step step,
                            Sheet sheet)
     {
-        SymbolsEditor editor = sheet.getSymbolsEditor();
-
-        if (editor != null) {
-            editor.refresh();
-        }
+        sheet.getSymbolsEditor().refresh();
 
         if (constants.displayNoStaff.isSet()) {
             sheet.getStub().getAssembly().addViewTab(

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                            F l o c k                                           //
+//                                            T r i b e                                           //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code Flock} defines a group of glyphs that compete for a symbol.
+ * Class {@code Tribe} defines a group of glyphs that compete for a symbol.
  * <p>
  * This is meant for testing classifier in its ability to separate the best candidate from other
  * sub-optimal candidates.
@@ -38,40 +38,40 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Hervé Bitteur
  */
 @XmlAccessorType(value = XmlAccessType.NONE)
-@XmlRootElement(name = "flock")
-public class Flock
+@XmlRootElement(name = "tribe")
+public class Tribe
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The sample that best defines the flock underlying symbol. */
+    /** The sample that best defines the tribe underlying symbol. */
     @XmlElement
-    private final Sample best;
+    private final Sample head;
 
     /** Samples that are considered as compatible with best. */
     @XmlElement(name = "good")
     private final List<Sample> goods = new ArrayList<Sample>();
 
     /** Samples that must be classified with lower grade than best sample. */
-    @XmlElement(name = "other")
-    private final List<Sample> others = new ArrayList<Sample>();
+    @XmlElement(name = "member")
+    private final List<Sample> members = new ArrayList<Sample>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Flock} object.
+     * Creates a new {@code Tribe} object.
      *
-     * @param best the best sample for flock underlying symbol
+     * @param best the best sample for tribe underlying symbol
      */
-    public Flock (Sample best)
+    public Tribe (Sample best)
     {
-        this.best = best;
+        this.head = best;
     }
 
     /**
      * No-arg constructor meant for JAXB.
      */
-    private Flock ()
+    private Tribe ()
     {
-        this.best = null;
+        this.head = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -84,17 +84,17 @@ public class Flock
 
     public void addOther (Sample other)
     {
-        if (!others.contains(other)) {
-            others.add(other);
+        if (!members.contains(other)) {
+            members.add(other);
         }
     }
 
     /**
      * @return the best
      */
-    public Sample getBest ()
+    public Sample getHead ()
     {
-        return best;
+        return head;
     }
 
     /**
@@ -108,23 +108,23 @@ public class Flock
     /**
      * @return the others
      */
-    public List<Sample> getOthers ()
+    public List<Sample> getMembers ()
     {
-        return others;
+        return members;
     }
 
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("Flock{");
-        sb.append("best:").append(best);
+        StringBuilder sb = new StringBuilder("Tribe{");
+        sb.append("head:").append(head);
 
         for (Sample good : goods) {
             sb.append(" good:").append(good);
         }
 
-        for (Sample other : others) {
-            sb.append(" other:").append(other);
+        for (Sample other : members) {
+            sb.append(" member:").append(other);
         }
 
         sb.append("}");

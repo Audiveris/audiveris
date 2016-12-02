@@ -23,6 +23,9 @@ package omr.sheet.ui;
 
 import omr.OMR;
 
+import omr.classifier.SampleRepository;
+import omr.classifier.ui.SampleBrowser;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -52,6 +55,7 @@ import omr.sheet.Staff;
 import omr.sheet.StaffManager;
 import omr.sheet.grid.StaffProjector;
 import omr.sheet.stem.StemScaler;
+
 import static omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static omr.sheet.ui.StubDependent.STUB_IDLE;
@@ -59,6 +63,7 @@ import static omr.sheet.ui.StubDependent.STUB_IDLE;
 import omr.step.Step;
 
 import omr.ui.BoardsPane;
+import omr.ui.util.CursorController;
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtil;
 import omr.ui.view.HistoryMenu;
@@ -458,7 +463,7 @@ public class BookActions
 
         if ((book != null) && checkStored(book)) {
             // Pre-select the suitable "next" book tab
-            // BINGO should not do this (we are not on EDT). Don't use a task!
+            // TODO? should not do this (we are not on EDT). Don't use a task!
             StubsController.getInstance().selectOtherBook(book);
 
             // Now close the book (+ related tab)
@@ -846,7 +851,7 @@ public class BookActions
         final Path path = UIUtil.pathChooser(
                 false,
                 OMR.gui.getFrame(),
-                Paths.get(BookManager.getBaseFolder()),
+                BookManager.getBaseFolder(),
                 new OmrFileFilter("Score script files", new String[]{OMR.SCRIPT_EXTENSION}));
 
         if (path != null) {
@@ -868,8 +873,7 @@ public class BookActions
     @Action
     public LoadBookTask openBook (ActionEvent e)
     {
-        final String dir = BookManager.getBaseFolder();
-        final Path path = selectBookPath(false, Paths.get(dir));
+        final Path path = selectBookPath(false, BookManager.getBaseFolder());
 
         if (path != null) {
             if (Files.exists(path)) {
@@ -1243,6 +1247,35 @@ public class BookActions
     }
 
     //--------------------//
+    // saveBookRepository //
+    //--------------------//
+    /**
+     * Action to save the separate repository of the currently selected book.
+     *
+     * @param e the event that triggered this action
+     * @return the UI task to perform
+     */
+    @Action(enabledProperty = BOOK_MODIFIED)
+    public Task<Void, Void> saveBookRepository (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        if (book.hasAllocatedRepository()) {
+            SampleRepository repo = book.getSampleRepository();
+
+            if (repo.isModified()) {
+                repo.storeRepository();
+            }
+        }
+
+        return null;
+    }
+
+    //--------------------//
     // setManualPersisted //
     //--------------------//
     public void setManualPersisted (boolean value)
@@ -1354,6 +1387,43 @@ public class BookActions
     @Action(selectedProperty = REBUILD_ALLOWED)
     public void toggleRebuild (ActionEvent e)
     {
+    }
+
+    //--------------------//
+    // viewBookRepository //
+    //--------------------//
+    /**
+     * Action to view the separate repository of the currently selected book.
+     *
+     * @param e the event that triggered this action
+     * @return the UI task to perform
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public Task<Void, Void> viewBookRepository (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book != null) {
+            if (book.hasSpecificRepository()) {
+                CursorController.launchWithDelayedMessage("Launching sample verifier...",
+                                                          new Runnable()
+                                                  {
+                                                      @Override
+                                                      public void run ()
+                                                      {
+                                                          try {
+                                                              SampleBrowser.getInstance(book).setVisible();
+                                                          } catch (Throwable ex) {
+                                                              logger.warn("Could not launch sample browser. " + ex, ex);
+                                                          }
+                                                      }
+                                                  });
+            } else {
+                logger.info("No specific sample repository for {}", book);
+            }
+        }
+
+        return null;
     }
 
     //------------//
@@ -1534,60 +1604,6 @@ public class BookActions
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //----------------//
-    // LoadScriptTask //
-    //----------------//
-    public static class LoadScriptTask
-            extends PathTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public LoadScriptTask (Path path)
-        {
-            super(path);
-        }
-
-        public LoadScriptTask ()
-        {
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            // Actually run the script
-            logger.info("Running script file {} ...", path);
-
-            FileInputStream is = null;
-
-            try {
-                is = new FileInputStream(path.toFile());
-
-                final Script script = ScriptManager.getInstance().load(is);
-
-                if (logger.isDebugEnabled()) {
-                    script.dump();
-                }
-
-                BookManager.getInstance().getScriptHistory().add(path);
-                script.run();
-            } catch (FileNotFoundException ex) {
-                logger.warn("Cannot find script file {}", path);
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ignored) {
-                        logger.warn("Error closing script file {}", path);
-                    }
-                }
-            }
-
-            return null;
-        }
-    }
-
     //--------------//
     // LoadBookTask //
     //--------------//
@@ -1683,6 +1699,60 @@ public class BookActions
                 }
             } else {
                 logger.warn("Path {} does not exist", path);
+            }
+
+            return null;
+        }
+    }
+
+    //----------------//
+    // LoadScriptTask //
+    //----------------//
+    public static class LoadScriptTask
+            extends PathTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public LoadScriptTask (Path path)
+        {
+            super(path);
+        }
+
+        public LoadScriptTask ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            // Actually run the script
+            logger.info("Running script file {} ...", path);
+
+            FileInputStream is = null;
+
+            try {
+                is = new FileInputStream(path.toFile());
+
+                final Script script = ScriptManager.getInstance().load(is);
+
+                if (logger.isDebugEnabled()) {
+                    script.dump();
+                }
+
+                BookManager.getInstance().getScriptHistory().add(path);
+                script.run();
+            } catch (FileNotFoundException ex) {
+                logger.warn("Cannot find script file {}", path);
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ignored) {
+                        logger.warn("Error closing script file {}", path);
+                    }
+                }
             }
 
             return null;

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                       F l o c k s M e n u                                      //
+//                                       T r i b e s M e n u                                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -43,16 +43,16 @@ import java.util.Collection;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code FlocksMenu} displays a collection of glyphs for Flock population.
+ * Class {@code TribesMenu} displays a collection of glyphs for Tribe population.
  *
  * @author Hervé Bitteur
  */
-public class FlocksMenu
+public class TribesMenu
         extends LocationDependentMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(FlocksMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(TribesMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     private final GlyphListener glyphListener = new GlyphListener();
@@ -61,13 +61,13 @@ public class FlocksMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code FlockMenu} object.
+     * Creates a new {@code TribeMenu} object.
      *
      * @param sheet DOCUMENT ME!
      */
-    public FlocksMenu (Sheet sheet)
+    public TribesMenu (Sheet sheet)
     {
-        super("Flocks");
+        super("Tribes");
         this.sheet = sheet;
     }
 
@@ -81,10 +81,10 @@ public class FlocksMenu
         Collection<Glyph> glyphs = sheet.getGlyphIndex().getSelectedGlyphList();
 
         if ((glyphs != null) && !glyphs.isEmpty()) {
-            UIUtil.insertTitle(this, "Flocks:");
+            UIUtil.insertTitle(this, "Tribes:");
 
             for (Glyph glyph : glyphs) {
-                JMenuItem item = new FlockMenu(glyph, sheet);
+                JMenuItem item = new TribeMenu(glyph, sheet);
 
                 if (!glyph.getGroups().isEmpty()) {
                     item.setToolTipText(glyph.getGroups().toString());
@@ -117,8 +117,8 @@ public class FlocksMenu
         @Override
         public void mouseEntered (MouseEvent e)
         {
-            FlockMenu flockMenu = (FlockMenu) e.getSource();
-            Glyph glyph = flockMenu.getGlyph();
+            TribeMenu tribeMenu = (TribeMenu) e.getSource();
+            Glyph glyph = tribeMenu.getGlyph();
 
             sheet.getGlyphIndex().getEntityService().publish(
                     new EntityListEvent<Glyph>(

@@ -17,33 +17,34 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>27</x>
-      <y>252</y>
-      <w>135</w>
-      <h>63</h>
+      <x>18</x>
+      <y>261</y>
+      <w>144</w>
+      <h>108</h>
     </coordinates>
     <panel_attributes>*SheetContainer*
-bg=#ff6666
+bg=#aaff66
 --
-maxId
---
-getDescriptors(hash)</panel_attributes>
+forgeUnique(name)
+addDescriptor(desc)
+removeDescriptor(desc)
+getDescriptors(hash)
+getDescriptor(name)</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>216</x>
-      <y>252</y>
-      <w>72</w>
-      <h>90</h>
+      <x>225</x>
+      <y>225</y>
+      <w>81</w>
+      <h>72</h>
     </coordinates>
     <panel_attributes>*Descriptor*
 bg=#aaff66
 --
-id
-hash
 name
+hash
 {aliases}
 </panel_attributes>
     <additional_attributes/>
@@ -52,62 +53,66 @@ name
     <id>Relation</id>
     <coordinates>
       <x>153</x>
-      <y>252</y>
-      <w>81</w>
+      <y>261</y>
+      <w>90</w>
       <h>27</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
-    <additional_attributes>10.0;10.0;70.0;10.0</additional_attributes>
+    <additional_attributes>10.0;10.0;80.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>27</x>
-      <y>72</y>
-      <w>144</w>
-      <h>99</h>
+      <x>18</x>
+      <y>81</y>
+      <w>189</w>
+      <h>153</h>
     </coordinates>
     <panel_attributes>*SampleRepository*
-bg=#ff6666
+bg=#aaff66
 --
-addSample()
-removeSample()</panel_attributes>
+folder
+--
+isGlobal()
+addSample(sample)
+getAllSamples()
+removeSample(sample)
+findSampleSheet(name, image)
+removeSheet(desc)
+includeRepository(repo)</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>72</x>
-      <y>162</y>
+      <x>81</x>
+      <y>225</y>
       <w>27</w>
-      <h>108</h>
+      <h>54</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;100.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;40.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>351</x>
-      <y>72</y>
-      <w>117</w>
+      <x>360</x>
+      <y>81</y>
+      <w>153</w>
       <h>99</h>
     </coordinates>
     <panel_attributes>*SampleSheet*
-bg=#aaff66
+bg=#ff6666
 --
-id
---
-getSamples(shape)
-getImage()</panel_attributes>
+getSamples(shape)</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>567</x>
-      <y>144</y>
-      <w>72</w>
+      <x>594</x>
+      <y>153</y>
+      <w>90</w>
       <h>72</h>
     </coordinates>
     <panel_attributes>*Sample*
@@ -121,9 +126,9 @@ symbol?</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>567</x>
-      <y>27</y>
-      <w>72</w>
+      <x>594</x>
+      <y>36</y>
+      <w>90</w>
       <h>90</h>
     </coordinates>
     <panel_attributes>*Glyph*
@@ -138,8 +143,8 @@ runtable</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>594</x>
-      <y>108</y>
+      <x>630</x>
+      <y>117</y>
       <w>27</w>
       <h>54</h>
     </coordinates>
@@ -149,102 +154,93 @@ runtable</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>459</x>
-      <y>135</y>
-      <w>126</w>
+      <x>504</x>
+      <y>144</y>
+      <w>108</w>
       <h>36</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
 shapeMap</panel_attributes>
-    <additional_attributes>10.0;20.0;120.0;20.0</additional_attributes>
+    <additional_attributes>10.0;20.0;100.0;20.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>162</x>
-      <y>63</y>
-      <w>207</w>
+      <x>198</x>
+      <y>72</y>
+      <w>180</w>
       <h>36</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
-idMap</panel_attributes>
-    <additional_attributes>10.0;20.0;210.0;20.0</additional_attributes>
+nameMap</panel_attributes>
+    <additional_attributes>10.0;20.0;180.0;20.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>162</x>
-      <y>99</y>
-      <w>207</w>
+      <x>198</x>
+      <y>108</y>
+      <w>180</w>
       <h>36</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
 imageMap</panel_attributes>
-    <additional_attributes>10.0;20.0;210.0;20.0</additional_attributes>
+    <additional_attributes>10.0;20.0;180.0;20.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>162</x>
-      <y>135</y>
-      <w>207</w>
+      <x>198</x>
+      <y>144</y>
+      <w>180</w>
       <h>36</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;
 sampleMap</panel_attributes>
-    <additional_attributes>10.0;20.0;210.0;20.0</additional_attributes>
+    <additional_attributes>10.0;20.0;180.0;20.0</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Database</type>
     <coordinates>
       <x>342</x>
       <y>225</y>
-      <w>90</w>
-      <h>99</h>
+      <w>153</w>
+      <h>117</h>
     </coordinates>
     <panel_attributes>*samples.zip*
-container.xml
 ...
-{id/samples.xml}
-...</panel_attributes>
+{name/samples.xml}
+{name/tribes.xml}
+...
+META-INF/container.xml</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.baselet.element.old.element.Database</type>
     <coordinates>
-      <x>162</x>
-      <y>360</y>
-      <w>180</w>
+      <x>351</x>
+      <y>522</y>
+      <w>261</w>
       <h>81</h>
     </coordinates>
     <panel_attributes>*images.zip*
+layer=1
 ...
-{id/image.xml}
+{name/image.xml}
 ...</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
-    <type>com.baselet.element.old.element.Relation</type>
-    <coordinates>
-      <x>261</x>
-      <y>144</y>
-      <w>107</w>
-      <h>125</h>
-    </coordinates>
-    <panel_attributes>lt=.
-(id)</panel_attributes>
-    <additional_attributes>27;108;90;27</additional_attributes>
-  </element>
-  <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>414</x>
-      <y>360</y>
-      <w>72</w>
+      <x>432</x>
+      <y>405</y>
+      <w>108</w>
       <h>72</h>
     </coordinates>
-    <panel_attributes>*RunTable*
-bg=#aaff66
+    <panel_attributes>*Image RunTable*
+bg=#ff0000
+layer=1
 --
 width
 height
@@ -254,57 +250,155 @@ height
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>441</x>
-      <y>162</y>
+      <x>495</x>
+      <y>171</y>
       <w>63</w>
-      <h>216</h>
+      <h>252</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
 image</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;220.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>342</x>
-      <y>378</y>
-      <w>81</w>
-      <h>27</h>
-    </coordinates>
-    <panel_attributes>lt=[&lt;]-[&gt;]</panel_attributes>
-    <additional_attributes>10.0;10.0;70.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>288</x>
-      <y>252</y>
-      <w>63</w>
-      <h>27</h>
-    </coordinates>
-    <panel_attributes>lt=[&lt;]-[&gt;]</panel_attributes>
-    <additional_attributes>10.0;10.0;50.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>378</x>
-      <y>171</y>
-      <w>27</w>
-      <h>63</h>
-    </coordinates>
-    <panel_attributes>lt=[^]-[v]</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;51.0</additional_attributes>
+    <additional_attributes>10.0;10.0;10.0;260.0</additional_attributes>
   </element>
   <element>
     <id>Text</id>
     <coordinates>
       <x>18</x>
-      <y>18</y>
+      <y>27</y>
       <w>90</w>
       <h>63</h>
     </coordinates>
     <panel_attributes>Sample Management</panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>414</x>
+      <y>171</y>
+      <w>27</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=[^]-[v]</panel_attributes>
+    <additional_attributes>10.0;19.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>297</x>
+      <y>171</y>
+      <w>81</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;60.0;70.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>576</x>
+      <y>288</y>
+      <w>126</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>*Tribe*
+bg=#bbccff</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>621</x>
+      <y>216</y>
+      <w>63</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+r1=goods
+</panel_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>594</x>
+      <y>216</y>
+      <w>54</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;
+m2=head</panel_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>504</x>
+      <y>171</y>
+      <w>90</w>
+      <h>135</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+r1=tribes</panel_attributes>
+    <additional_attributes>10.0;10.0;80.0;130.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>666</x>
+      <y>216</y>
+      <w>81</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;&lt;-&gt;
+r2=members</panel_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>333</x>
+      <y>18</y>
+      <w>405</w>
+      <h>351</h>
+    </coordinates>
+    <panel_attributes>/sample sheet on demand/
+bg=#eeeeaa
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>477</x>
+      <y>477</y>
+      <w>27</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=[^]-[v]</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;40.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>333</x>
+      <y>387</y>
+      <w>297</w>
+      <h>225</h>
+    </coordinates>
+    <panel_attributes>/image on demand/
+bg=#888888
+layer=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>162</x>
+      <y>315</y>
+      <w>189</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=[&lt;]-[&gt;]</panel_attributes>
+    <additional_attributes>10.0;10.0;190.0;10.0</additional_attributes>
   </element>
 </diagram>

@@ -82,7 +82,7 @@ class SelectionPanel
     private final Trainer.Task task;
 
     /** Underlying repository of samples. */
-    private final SampleRepository repository = SampleRepository.getInstance();
+    private final SampleRepository repository = SampleRepository.getGlobalInstance(true);
 
     /** For asynchronous execution of the sample selection. */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -171,11 +171,12 @@ class SelectionPanel
      *
      * @return the collection of selected samples
      */
+    @Override
     public List<Sample> getTrainSamples ()
     {
         if (!repository.isLoaded()) {
             progressBar.setValue(0);
-            repository.loadRepository(true);
+            repository.loadRepository();
         }
 
         List<Sample> samples = repository.getAllSamples();

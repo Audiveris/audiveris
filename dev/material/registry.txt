@@ -10,11 +10,11 @@ under HKEY_LOCAL_MACHINE\SOFTWARE\Classes
 -----------------------------------------
 created key: .omr Default: Audiveris.omr
 
-created key: Audiveris.omr Default: Audiveris project file
+created key: Audiveris.omr Default: Audiveris Book
     created subkey: DefaultIcon Default: d:\soft\audiveris-ng\res\icon-256.ico
     created subkey: shell
         created subkey: Open
-            created subkey: Command Default: c:\cygwin\bin\bash.exe -li d:\soft\audiveris-ng\launch.sh "%1"
+            created subkey: Command Default: c:\cygwin\bin\bash.exe -li d:\prog\Audiveris\bin\Audiveris "%1"
 (TODO: this command is much too specific!)
 
 

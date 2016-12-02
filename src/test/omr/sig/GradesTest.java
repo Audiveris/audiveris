@@ -48,7 +48,7 @@ public class GradesTest
     }
 
     //    /**
-    //     * Test of contextual method, of class Grades.
+    //     * Test of contextual method, of class GradeUtil.
     //     */
     //    @Test
     //    public void testContextual_3args_1 ()
@@ -58,11 +58,11 @@ public class GradesTest
     //        double ratio = 0.0;
     //        double source = 0.0;
     //        double expResult = 0.0;
-    //        double result = Grades.contextual(target, ratio, source);
+    //        double result = GradeUtil.contextual(target, ratio, source);
     //        assertEquals(expResult, result, 0.0);
     //    }
     //    /**
-    //     * Test of contextual method, of class Grades.
+    //     * Test of contextual method, of class GradeUtil.
     //     */
     //    @Test
     //    public void testContextual_5args ()
@@ -74,11 +74,11 @@ public class GradesTest
     //        double ratio2 = 0.0;
     //        double source2 = 0.0;
     //        double expResult = 0.0;
-    //        double result = Grades.contextual(target, ratio1, source1, ratio2, source2);
+    //        double result = GradeUtil.contextual(target, ratio1, source1, ratio2, source2);
     //        assertEquals(expResult, result, 0.0);
     //    }
     /**
-     * Test of contextual method, of class Grades.
+     * Test of contextual method, of class GradeUtil.
      */
     @Test
     public void testContextual_3args_2 ()
@@ -89,12 +89,12 @@ public class GradesTest
         double[] ratios = new double[]{5.0, 2.0};
         double[] sources = new double[]{0.5, 0.8};
         double expResult = 0.49;
-        double result = Grades.contextual(target, sources, ratios);
+        double result = GradeUtil.contextual(target, sources, ratios);
         assertEquals(expResult, result, 0.01);
     }
 
     //    /**
-    //     * Test of support method, of class Grades.
+    //     * Test of support method, of class GradeUtil.
     //     */
     //    @Test
     //    public void testSupport ()
@@ -103,7 +103,7 @@ public class GradesTest
     //        double target = 0.0;
     //        double ratio = 0.0;
     //        double expResult = 0.0;
-    //        double result = Grades.support(target, ratio);
+    //        double result = GradeUtil.support(target, ratio);
     //        assertEquals(expResult, result, 0.0);
     //    }
 }

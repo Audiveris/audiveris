@@ -23,7 +23,9 @@ package omr.sheet;
 
 import omr.glyph.BasicGlyph;
 import omr.glyph.Glyph;
+import omr.glyph.GlyphIndex;
 import omr.glyph.Symbol;
+import omr.glyph.Symbol.Group;
 
 import omr.lag.Section;
 
@@ -60,6 +62,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -483,33 +486,6 @@ public class SystemInfo
         return null;
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the IDs of the system collection.
-     *
-     * @param systems the collection of systems
-     * @return the string built
-     */
-    public static String toString (Collection<SystemInfo> systems)
-    {
-        if (systems == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(" systems[");
-
-        for (SystemInfo system : systems) {
-            sb.append("#").append(system.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
     //------------------//
     // getGroupedGlyphs //
     //------------------//
@@ -635,6 +611,33 @@ public class SystemInfo
         StringBuilder sb = new StringBuilder();
 
         sb.append("S").append(id).append(" ");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Convenient method, to build a string with just the IDs of the system collection.
+     *
+     * @param systems the collection of systems
+     * @return the string built
+     */
+    public static String toString (Collection<SystemInfo> systems)
+    {
+        if (systems == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#").append(system.getId());
+        }
+
+        sb.append("]");
 
         return sb.toString();
     }
@@ -1157,6 +1160,29 @@ public class SystemInfo
     public boolean isMultiStaff ()
     {
         return staves.size() > 1;
+    }
+
+    //----------------//
+    // registerGlyphs //
+    //----------------//
+    /**
+     * Make every glyph provided original, registered and included in freeGlyphs.
+     *
+     * @param parts the glyphs to register
+     * @param group group to assign, or null
+     */
+    public void registerGlyphs (List<Glyph> parts,
+                                Group group)
+    {
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+
+        for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
+            Glyph glyph = li.next();
+            glyph = glyphIndex.registerOriginal(glyph);
+            glyph.addGroup(group);
+            addFreeGlyph(glyph);
+            li.set(glyph);
+        }
     }
 
     //-----------------//

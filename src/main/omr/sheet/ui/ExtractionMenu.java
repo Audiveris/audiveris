@@ -75,7 +75,7 @@ public class ExtractionMenu
      */
     public ExtractionMenu (Sheet sheet)
     {
-        super("Extraction ...");
+        super("Extraction");
         this.sheet = sheet;
 
         add(new JMenuItem(new WholeAction())); // Save the whole sheet

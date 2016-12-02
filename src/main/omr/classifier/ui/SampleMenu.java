@@ -28,6 +28,7 @@ import omr.glyph.Glyph;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
+import omr.sheet.Book;
 import omr.sheet.Sheet;
 
 import omr.sig.inter.Inter;
@@ -97,7 +98,8 @@ public class SampleMenu
     //-----------//
     private void addSample (Shape shape)
     {
-        final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+        final Book book = sheet.getStub().getBook();
+        final SampleRepository repository = book.getSampleRepository();
         final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
 
         // TODO: we need staff information (-> interline and pitch)

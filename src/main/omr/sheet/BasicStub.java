@@ -184,17 +184,16 @@ public class BasicStub
         pageRefs.add(pageRef);
     }
 
-    //------//
-    // done //
-    //------//
-    /**
-     * Remember that the provided step has been completed on the sheet.
-     *
-     * @param step the provided step
-     */
-    public final void done (Step step)
+    //---------------//
+    // clearPageRefs //
+    //---------------//
+    @Override
+    public void clearPageRefs ()
     {
-        doneSteps.add(step);
+        // Clear pageRefs in this stub
+        pageRefs.clear();
+
+        // Clear pageRefs in related book store if any
     }
 
     //-------//
@@ -243,6 +242,19 @@ public class BasicStub
                 throw new StepException("Sheet ignored");
             }
         }
+    }
+
+    //------//
+    // done //
+    //------//
+    /**
+     * Remember that the provided step has been completed on the sheet.
+     *
+     * @param step the provided step
+     */
+    public final void done (Step step)
+    {
+        doneSteps.add(step);
     }
 
     //-------------//
@@ -444,6 +456,8 @@ public class BasicStub
                             logger.info("Loaded {}", sheetFile);
                         } catch (Exception ex) {
                             logger.warn("Error in loading sheet structure " + ex, ex);
+                            logger.info("Trying to restart from binary");
+                            resetToBinary();
                         } finally {
                             if (constants.printWatch.isSet()) {
                                 watch.print();
@@ -607,12 +621,14 @@ public class BasicStub
             // Avoid loading sheet just to reset to binary:
             // If sheet is available, use its picture.getTable()
             // Otherwise, load it directly from binary.xml on disk
-            final RunTable binaryTable;
+            RunTable binaryTable = null;
 
             if (hasSheet()) {
                 logger.debug("Getting BINARY from sheet");
                 binaryTable = getSheet().getPicture().getTable(TableKey.BINARY);
-            } else {
+            }
+
+            if (binaryTable == null) {
                 logger.debug("Loading BINARY from disk");
                 binaryTable = new RunTableHolder(TableKey.BINARY).getData(this);
             }
@@ -790,6 +806,11 @@ public class BasicStub
                         StepMonitoring.notifyStep(BasicStub.this, step); // Start monitoring
                         setModified(true); // At beginning of processing
                         sheet.reset(step); // Reset sheet relevant data
+
+                        if ((OMR.gui != null) && (step.ordinal() >= Step.GRID.ordinal())) {
+                            sheet.getSymbolsEditor(); // Display sheet UI
+                        }
+
                         step.doit(sheet); // Standard processing on an existing sheet
                         done(step); // Full completion
                     } finally {

@@ -36,20 +36,28 @@ import omr.sheet.grid.StaffFilament;
 import omr.sheet.header.StaffHeader;
 import omr.sheet.note.NotePosition;
 
+import omr.sig.SIGraph;
 import omr.sig.inter.AbstractNoteInter;
 import omr.sig.inter.BarlineInter;
+import omr.sig.inter.ClefInter;
 import omr.sig.inter.Inter;
 import omr.sig.inter.LedgerInter;
+import omr.sig.relation.Relation;
 
 import omr.ui.util.AttachmentHolder;
 import omr.ui.util.BasicAttachmentHolder;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Jaxb;
 import omr.util.Navigable;
 import omr.util.VerticalSide;
+
 import static omr.util.VerticalSide.*;
+
+import org.jgrapht.Graphs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +79,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -257,6 +266,14 @@ public class Staff
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------------//
+    // getDefiningPointSize //
+    //----------------------//
+    public static Scale.Fraction getDefiningPointSize ()
+    {
+        return constants.definingPointSize;
+    }
+
     //
     //---------------//
     // addAttachment //
@@ -280,7 +297,7 @@ public class Staff
     public void addLedger (LedgerInter ledger,
                            int index)
     {
-        assert ledger != null : "Cannot add a null ledger";
+        Objects.requireNonNull(ledger, "Cannot add a null ledger");
 
         List<LedgerInter> ledgerSet = ledgerMap.get(index);
 
@@ -303,8 +320,7 @@ public class Staff
      */
     public void addLedger (LedgerInter ledger)
     {
-        assert ledger != null : "Cannot add a null ledger";
-
+        Objects.requireNonNull(ledger, "Cannot add a null ledger");
         addLedger(ledger, getLedgerLineIndex(pitchPositionOf(ledger.getGlyph().getCentroid())));
     }
 
@@ -481,13 +497,47 @@ public class Staff
         return Collections.unmodifiableList(bars);
     }
 
+    //-------------//
+    // getBestClef //
+    //-------------//
+    public ClefInter getBestClef (int x)
+    {
+        List<ClefInter> clefs = getCompetingClefs(x);
+
+        if (clefs.isEmpty()) {
+            return null;
+        }
+
+        if (clefs.size() > 1) {
+            SIGraph sig = getSystem().getSig();
+
+            // Select best clef
+            for (Inter clef : clefs) {
+                sig.computeContextualGrade(clef);
+            }
+
+            Collections.sort(clefs, Inter.byReverseBestGrade);
+        }
+
+        return clefs.get(0);
+    }
+
+    //-------------//
+    // getClefStop //
+    //-------------//
     /**
      * @return the clefStop
      */
     public Integer getClefStop ()
     {
-        if (header.clefRange.valid) {
-            return header.clefRange.stop;
+        if ((header.clefRange != null) && header.clefRange.valid) {
+            return header.clefRange.getStop();
+        }
+
+        if (header.clef != null) {
+            Rectangle bounds = header.clef.getBounds();
+
+            return (bounds.x + bounds.width) - 1;
         }
 
         return null;
@@ -585,12 +635,72 @@ public class Staff
         return lines.get(idx);
     }
 
-    //----------------------//
-    // getDefiningPointSize //
-    //----------------------//
-    public static Scale.Fraction getDefiningPointSize ()
+    //-------------------//
+    // getCompetingClefs //
+    //-------------------//
+    /**
+     * Report the competing clef candidates active at provided abscissa.
+     *
+     * @param x provided abscissa
+     * @return the collection of competing clefs
+     */
+    public List<ClefInter> getCompetingClefs (int x)
     {
-        return constants.definingPointSize;
+        // Look for clef on left side in staff (together with its competing clefs)
+        SIGraph sig = getSystem().getSig();
+        List<Inter> staffClefs = sig.inters(this, ClefInter.class);
+        Collections.sort(staffClefs, Inter.byAbscissa);
+
+        Inter lastClef = null;
+
+        for (Inter inter : staffClefs) {
+            int xClef = inter.getBounds().x;
+
+            if (xClef < x) {
+                lastClef = inter;
+            }
+        }
+
+        if (lastClef == null) {
+            return Collections.emptyList();
+        }
+
+        // Pick up this clef together with all competing clefs
+        Set<Relation> excs = sig.getExclusions(lastClef);
+        List<ClefInter> clefs = new ArrayList<ClefInter>();
+        clefs.add((ClefInter) lastClef);
+
+        for (Relation rel : excs) {
+            Inter inter = Graphs.getOppositeVertex(sig, rel, lastClef);
+
+            if (inter instanceof ClefInter) {
+                ClefInter clef = (ClefInter) inter;
+
+                if ((clef.getStaff() == this) && !clefs.contains(clef)) {
+                    clefs.add(clef);
+                }
+            }
+        }
+
+        return clefs;
+    }
+
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
+    /**
+     * Compute staff-based line index, based on provided pitch position
+     *
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
+     */
+    public static int getLedgerLineIndex (double pitchPosition)
+    {
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
+        } else {
+            return (int) Math.rint(pitchPosition / 2) + 2;
+        }
     }
 
     //----------------//
@@ -622,33 +732,6 @@ public class Staff
         }
 
         return sum / (slopes.size() - 2);
-    }
-
-    //------------------------//
-    // getLedgerPitchPosition //
-    //------------------------//
-    /**
-     * Report the pitch position of a ledger WRT the related staff.
-     * <p>
-     * TODO: This implementation assumes a 5-line staff.
-     * But can we have ledgers on a staff with more (of less) than 5 lines?
-     *
-     * @param lineIndex the ledger line index
-     * @return the ledger pitch position
-     */
-    public static int getLedgerPitchPosition (int lineIndex)
-    {
-        //        // Safer, for the time being...
-        //        if (getStaff()
-        //                .getLines()
-        //                .size() != 5) {
-        //            throw new RuntimeException("Only 5-line staves are supported");
-        //        }
-        if (lineIndex > 0) {
-            return 4 + (2 * lineIndex);
-        } else {
-            return -4 + (2 * lineIndex);
-        }
     }
 
     //--------------//
@@ -744,13 +827,41 @@ public class Staff
         return staves.indexOf(this);
     }
 
+    //-------------//
+    // getKeyStart //
+    //-------------//
+    /**
+     * @return the keyStart
+     */
+    public Integer getKeyStart ()
+    {
+        if ((header.keyRange != null) && header.keyRange.valid) {
+            return header.keyRange.getStart();
+        }
+
+        if (header.key != null) {
+            return header.key.getBounds().x;
+        }
+
+        return null;
+    }
+
+    //------------//
+    // getKeyStop //
+    //------------//
     /**
      * @return the keyStop
      */
     public Integer getKeyStop ()
     {
-        if (header.keyRange.valid) {
-            return header.keyRange.stop;
+        if ((header.keyRange != null) && header.keyRange.valid) {
+            return header.keyRange.getStop();
+        }
+
+        if (header.key != null) {
+            Rectangle bounds = header.key.getBounds();
+
+            return (bounds.x + bounds.width) - 1;
         }
 
         return null;
@@ -769,30 +880,39 @@ public class Staff
         return lines.get(lines.size() - 1);
     }
 
-    //--------------------//
-    // getLedgerLineIndex //
-    //--------------------//
-    /**
-     * Compute staff-based line index, based on provided pitch position
-     *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
-     */
-    public static int getLedgerLineIndex (double pitchPosition)
-    {
-        if (pitchPosition > 0) {
-            return (int) Math.rint(pitchPosition / 2) - 2;
-        } else {
-            return (int) Math.rint(pitchPosition / 2) + 2;
-        }
-    }
-
     //--------------//
     // getLedgerMap //
     //--------------//
     public SortedMap<Integer, List<LedgerInter>> getLedgerMap ()
     {
         return ledgerMap;
+    }
+
+    //------------------------//
+    // getLedgerPitchPosition //
+    //------------------------//
+    /**
+     * Report the pitch position of a ledger WRT the related staff.
+     * <p>
+     * TODO: This implementation assumes a 5-line staff.
+     * But can we have ledgers on a staff with more (of less) than 5 lines?
+     *
+     * @param lineIndex the ledger line index
+     * @return the ledger pitch position
+     */
+    public static int getLedgerPitchPosition (int lineIndex)
+    {
+        //        // Safer, for the time being...
+        //        if (getStaff()
+        //                .getLines()
+        //                .size() != 5) {
+        //            throw new RuntimeException("Only 5-line staves are supported");
+        //        }
+        if (lineIndex > 0) {
+            return 4 + (2 * lineIndex);
+        } else {
+            return -4 + (2 * lineIndex);
+        }
     }
 
     //------------//
@@ -984,13 +1104,41 @@ public class Staff
         return system;
     }
 
+    //--------------//
+    // getTimeStart //
+    //--------------//
+    /**
+     * @return the timeStart
+     */
+    public Integer getTimeStart ()
+    {
+        if ((header.timeRange != null) && header.timeRange.valid) {
+            return header.timeRange.getStart();
+        }
+
+        if (header.time != null) {
+            return header.time.getBounds().x;
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // getTimeStop //
+    //-------------//
     /**
      * @return the timeStop
      */
     public Integer getTimeStop ()
     {
-        if (header.timeRange.valid) {
-            return header.timeRange.stop;
+        if ((header.timeRange != null) && header.timeRange.valid) {
+            return header.timeRange.getStop();
+        }
+
+        if (header.time != null) {
+            Rectangle bounds = header.time.getBounds();
+
+            return (bounds.x + bounds.width) - 1;
         }
 
         return null;
@@ -1052,6 +1200,13 @@ public class Staff
     //-----------------//
     // pitchToOrdinate //
     //-----------------//
+    /**
+     * Report the absolute ordinate for a staff-related pitch at a given abscissa.
+     *
+     * @param x     provided absolute abscissa
+     * @param pitch pitch value WRT this staff
+     * @return the corresponding absolute ordinate
+     */
     public double pitchToOrdinate (double x,
                                    double pitch)
     {
@@ -1106,7 +1261,7 @@ public class Staff
      */
     public boolean removeLedger (LedgerInter ledger)
     {
-        assert ledger != null : "Cannot remove a null ledger";
+        Objects.requireNonNull(ledger, "Cannot remove a null ledger");
         logger.debug("removing {}", ledger);
 
         // Browse all staff ledger indices
@@ -1239,12 +1394,15 @@ public class Staff
         retrieveSideBars();
     }
 
+    //-------------//
+    // setClefStop //
+    //-------------//
     /**
      * @param clefStop the clefStop to set
      */
     public void setClefStop (int clefStop)
     {
-        header.clefRange.stop = clefStop;
+        header.clefRange.setStop(clefStop);
         header.clefRange.valid = true;
     }
 
@@ -1280,12 +1438,15 @@ public class Staff
         header.stop = headerStop;
     }
 
+    //------------//
+    // setKeyStop //
+    //------------//
     /**
      * @param keyStop the keyStop to set
      */
     public void setKeyStop (Integer keyStop)
     {
-        header.keyRange.stop = keyStop;
+        header.keyRange.setStop(keyStop);
         header.keyRange.valid = true;
     }
 
@@ -1325,12 +1486,15 @@ public class Staff
         this.system = system;
     }
 
+    //-------------//
+    // setTimeStop //
+    //-------------//
     /**
      * @param timeStop the timeStop to set
      */
     public void setTimeStop (Integer timeStop)
     {
-        header.timeRange.stop = timeStop;
+        header.timeRange.setStop(timeStop);
         header.timeRange.valid = true;
     }
 

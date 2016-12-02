@@ -21,7 +21,7 @@
 // </editor-fold>
 package omr.classifier.ui;
 
-import omr.classifier.NeuralClassifier;
+import omr.classifier.GlyphClassifier;
 
 import omr.constant.ConstantManager;
 
@@ -121,7 +121,7 @@ public class Trainer
         selectionPanel = new SelectionPanel(task);
         trainingPanel = new TrainingPanel(task, selectionPanel);
         selectionPanel.setTrainingPanel(trainingPanel);
-        validationPanel = new ValidationPanel(task, NeuralClassifier.getInstance(), selectionPanel);
+        validationPanel = new ValidationPanel(task, GlyphClassifier.getInstance(), selectionPanel);
 
         // Initial state
         task.setActivity(Task.Activity.INACTIVE);

@@ -22,7 +22,7 @@
 package omr.score.ui;
 
 import omr.classifier.SampleRepository;
-import omr.classifier.ui.FlocksMenu;
+import omr.classifier.ui.TribesMenu;
 
 import omr.glyph.ui.SymbolMenu;
 
@@ -120,8 +120,8 @@ public class EditorMenu
         addMenu(new InterMenu(sheet));
         addMenu(new GlyphMenu(sheet));
 
-        if (SampleRepository.USE_FLOCKS) {
-            addMenu(new FlocksMenu(sheet));
+        if (SampleRepository.USE_TRIBES) {
+            addMenu(new TribesMenu(sheet));
         }
 
         addMenu(new MeasureMenu());
@@ -432,7 +432,7 @@ public class EditorMenu
             setVisible(staff != null);
 
             if (staff != null) {
-                setText("Staff #" + staff.getId() + " ...");
+                setText("Staff #" + staff.getId());
             }
         }
 

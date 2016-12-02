@@ -22,7 +22,6 @@
 package omr.sheet.symbol;
 
 import omr.glyph.Glyph;
-import omr.glyph.ui.SymbolsEditor;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -72,11 +71,7 @@ public class SymbolsStep
     public void displayUI (Step step,
                            Sheet sheet)
     {
-        final SymbolsEditor editor = sheet.getSymbolsEditor();
-
-        if (editor != null) {
-            editor.refresh();
-        }
+        sheet.getSymbolsEditor().refresh();
 
         // Update glyph board if needed (to see OCR'ed data)
         final SelectionService service = sheet.getGlyphIndex().getEntityService();

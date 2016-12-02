@@ -21,13 +21,6 @@
 // </editor-fold>
 package omr;
 
-import omr.classifier.NeuralClassifier;
-import omr.classifier.Sample;
-import omr.classifier.SampleRepository;
-import omr.classifier.ShapeDescription;
-
-import omr.glyph.ShapeSet;
-
 import omr.image.TemplateFactory;
 
 import omr.sheet.Picture;
@@ -42,16 +35,9 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Convenient class meant to temporarily inject some debugging.
@@ -156,87 +142,6 @@ public class Debug
         }
 
         logger.info("Done.");
-    }
-
-    //------------------//
-    // saveTrainingData //
-    //------------------//
-    /**
-     * Generate a file (format csv) to be used by deep learning software,
-     * with the training data.
-     *
-     * @param e unused
-     */
-    @Action
-    public void saveTrainingData (ActionEvent e)
-            throws FileNotFoundException
-    {
-        Path path = WellKnowns.TRAIN_FOLDER.resolve(
-                "samples-" + ShapeDescription.getName() + ".csv");
-        OutputStream os = new FileOutputStream(path.toFile());
-        final PrintWriter out = getPrintWriter(os);
-
-        SampleRepository repository = SampleRepository.getLoadedInstance(true);
-
-        List<Sample> samples = repository.getAllSamples();
-        logger.info("Samples: {}", samples.size());
-
-        for (Sample sample : samples) {
-            double[] ins = ShapeDescription.features(sample, sample.getInterline());
-
-            for (double in : ins) {
-                out.print((float) in);
-                out.print(",");
-            }
-
-            ///out.println(sample.getShape().getPhysicalShape());
-            out.println(sample.getShape().getPhysicalShape().ordinal());
-        }
-
-        out.flush();
-        out.close();
-        logger.info("Classifier data saved in " + path.toAbsolutePath());
-
-        final List<String> names = Arrays.asList(ShapeSet.getPhysicalShapeNames());
-
-        // Shape names
-        StringBuilder sb = new StringBuilder("{ //\n");
-
-        for (int i = 0; i < names.size(); i++) {
-            String comma = (i < names.size() - 1) ? "," : "";
-            sb.append(String.format("\"%-18s // %3d\n", names.get(i) + "\"" + comma, i));
-        }
-
-        sb.append("};");
-        System.out.println(sb.toString());
-    }
-
-    //--------------//
-    // trainAndSave //
-    //--------------//
-    /**
-     *
-     *
-     * @param e unused
-     */
-    @Action
-    public void trainAndSave (ActionEvent e)
-            throws FileNotFoundException, IOException
-    {
-        Path modelPath = WellKnowns.TRAIN_FOLDER.resolve(NeuralClassifier.MODEL_FILE_NAME);
-        Files.deleteIfExists(modelPath);
-
-        Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(NeuralClassifier.NORMS_FILE_NAME);
-        Files.deleteIfExists(normsPath);
-
-        SampleRepository repository = SampleRepository.getLoadedInstance(true);
-
-        List<Sample> samples = repository.getAllSamples();
-        logger.info("Samples: {}", samples.size());
-
-        NeuralClassifier classifier = NeuralClassifier.getInstance();
-        classifier.train(samples, null);
-        classifier.store();
     }
 
     //----------------//

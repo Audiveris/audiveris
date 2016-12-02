@@ -1277,7 +1277,7 @@ public abstract class AbstractChordInter
             double gr = 0;
 
             for (Inter inter : notes) {
-                gr += sig.computeContextualGrade(inter, false);
+                gr += sig.computeContextualGrade(inter);
             }
 
             gr /= notes.size();

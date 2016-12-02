@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        F l o c k M e n u                                       //
+//                                        T r i b e M e n u                                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,7 +21,7 @@
 // </editor-fold>
 package omr.classifier.ui;
 
-import omr.classifier.Flock;
+import omr.classifier.Tribe;
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
 import omr.classifier.SampleSheet;
@@ -49,11 +49,11 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code FlockMenu}
+ * Class {@code TribeMenu}
  *
  * @author Hervé Bitteur
  */
-public class FlockMenu
+public class TribeMenu
         extends SeparableMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -72,18 +72,18 @@ public class FlockMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code FlockMenu} object.
+     * Creates a new {@code TribeMenu} object.
      *
      * @param glyph the selected glyph
      * @param sheet the containing sheet
      */
-    public FlockMenu (Glyph glyph,
+    public TribeMenu (Glyph glyph,
                       Sheet sheet)
     {
         this.glyph = glyph;
         this.sheet = sheet;
 
-        final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+        final SampleRepository repository = SampleRepository.getGlobalInstance(true);
         sampleSheet = repository.pokeSampleSheet(sheet);
 
         populateMenu();
@@ -97,17 +97,17 @@ public class FlockMenu
     public void addGood (ActionEvent e)
     {
         if (sampleSheet == null) {
-            final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+            final SampleRepository repository = SampleRepository.getGlobalInstance(true);
             sampleSheet = repository.findSampleSheet(sheet);
         }
 
-        final Flock currentFlock = sampleSheet.getCurrentFlock(); // Cannot be null
-        final Shape shape = currentFlock.getBest().getShape();
+        final Tribe currentTribe = sampleSheet.getCurrentTribe(); // Cannot be null
+        final Shape shape = currentTribe.getHead().getShape();
         final Glyph g = sheet.getGlyphIndex().registerOriginal(glyph);
         final Sample good = new Sample(g, sheet.getInterline(), shape, null);
-        currentFlock.addGood(good);
+        currentTribe.addGood(good);
         sampleSheet.setModified(true);
-        logger.info("Added good {} to {}", good, currentFlock);
+        logger.info("Added good {} to {}", good, currentTribe);
     }
 
     //----------//
@@ -117,17 +117,17 @@ public class FlockMenu
     public void addOther (ActionEvent e)
     {
         if (sampleSheet == null) {
-            final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+            final SampleRepository repository = SampleRepository.getGlobalInstance(true);
             sampleSheet = repository.findSampleSheet(sheet);
         }
 
-        final Flock currentFlock = sampleSheet.getCurrentFlock(); // Cannot be null
-        final Shape shape = currentFlock.getBest().getShape();
+        final Tribe currentTribe = sampleSheet.getCurrentTribe(); // Cannot be null
+        final Shape shape = currentTribe.getHead().getShape();
         final Glyph g = sheet.getGlyphIndex().registerOriginal(glyph);
         final Sample other = new Sample(g, sheet.getInterline(), shape, null);
-        currentFlock.addOther(other);
+        currentTribe.addOther(other);
         sampleSheet.setModified(true);
-        logger.info("Added other {} to {}", other, currentFlock);
+        logger.info("Added other {} to {}", other, currentTribe);
     }
 
     //----------//
@@ -145,7 +145,7 @@ public class FlockMenu
     // populateMenu //
     //--------------//
     /**
-     * Build the flock menu, based on selected glyph.
+     * Build the tribe menu, based on selected glyph.
      */
     private void populateMenu ()
     {
@@ -153,16 +153,16 @@ public class FlockMenu
 
         ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
 
-        // Best: Start a new flock with the glyph? Using manual shape selection
+        // Best: Start a new tribe with the glyph? Using manual shape selection
         add(new SelectMenu());
 
-        Flock currentFlock = (sampleSheet != null) ? sampleSheet.getCurrentFlock() : null;
+        Tribe currentTribe = (sampleSheet != null) ? sampleSheet.getCurrentTribe() : null;
 
-        if (currentFlock != null) {
-            // Good: Add compatible glyph to current flock
+        if (currentTribe != null) {
+            // Good: Add compatible glyph to current tribe
             add(new JMenuItem((ApplicationAction) actionMap.get("addGood")));
 
-            // Other: Add sub-optimal glyph to current flock
+            // Other: Add sub-optimal glyph to current tribe
             add(new JMenuItem((ApplicationAction) actionMap.get("addOther")));
         }
     }
@@ -173,14 +173,14 @@ public class FlockMenu
     private void selectBest (Shape shape)
     {
         if (sampleSheet == null) {
-            final SampleRepository repository = SampleRepository.getLoadedInstance(false);
+            final SampleRepository repository = SampleRepository.getGlobalInstance(true);
             sampleSheet = repository.findSampleSheet(sheet);
         }
 
         final Glyph g = sheet.getGlyphIndex().registerOriginal(glyph);
         final Sample best = new Sample(g, sheet.getInterline(), shape, null);
 
-        sampleSheet.getFlock(best);
+        sampleSheet.getTribe(best);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

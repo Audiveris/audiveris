@@ -415,7 +415,8 @@ public class SymbolsBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public void evaluateGlyph (Glyph glyph)
+        public void evaluateGlyph (Glyph glyph,
+                                   Set<Glyph> parts)
         {
             SymbolsBuilder.this.evaluateGlyph(glyph);
         }

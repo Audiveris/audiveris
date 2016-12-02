@@ -28,6 +28,7 @@ import omr.glyph.Shape;
 
 import omr.run.RunTable;
 
+import omr.util.FileUtil;
 import omr.util.Jaxb;
 
 import org.slf4j.Logger;
@@ -59,13 +60,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  * <p>
  * A SampleSheet is just a container for one or several samples belonging to the same sheet.
  * <p>
- * Real sheet uniqueness is provided via its binary image, since several names could refer to the
- * same image.
- * <p>
- * A negative ID indicates an artificial font-based SampleSheet.
- * <p>
  * A SampleSheet may also contain the binary run-table of the original image, thus allowing to
  * display each sample within its context.
+ * Real sheet uniqueness is provided via its binary image, since several names could refer to the
+ * same image.
  */
 public class SampleSheet
 {
@@ -77,19 +75,16 @@ public class SampleSheet
     /** File name for sheet samples: {@value}. */
     public static final String SAMPLES_FILE_NAME = "samples.xml";
 
+    /** File name for sheet tribes: {@value}. */
+    public static final String TRIBES_FILE_NAME = "tribes.xml";
+
     /** File name for sheet image: {@value}. */
     public static final String IMAGE_FILE_NAME = "image.xml";
-
-    /** File name for sheet flocks: {@value}. */
-    public static final String FLOCKS_FILE_NAME = "flocks.xml";
 
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Sheet unique ID, negative for artificial sheets. */
-    private final int id;
-
     /** Full descriptor. */
     private final Descriptor descriptor;
 
@@ -103,22 +98,20 @@ public class SampleSheet
     /** Has this sheet been modified?. */
     private boolean modified;
 
-    /** Flocks for this sheet. */
-    private List<Flock> flocks;
+    /** Tribes for this sheet. */
+    private List<Tribe> tribes;
 
-    private Flock currentFlock;
+    /** Tribe being created by user. */
+    private Tribe currentTribe;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleSheet} object.
      *
-     * @param id         unique ID
      * @param descriptor related descriptor
      */
-    public SampleSheet (int id,
-                        Descriptor descriptor)
+    public SampleSheet (Descriptor descriptor)
     {
-        this.id = id;
         this.descriptor = descriptor;
     }
 
@@ -131,7 +124,6 @@ public class SampleSheet
     private SampleSheet (SampleList value,
                          Descriptor descriptor)
     {
-        this.id = value.id;
         this.descriptor = descriptor;
 
         for (Sample sample : value.samples) {
@@ -148,93 +140,41 @@ public class SampleSheet
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Delete from disk the samples and image if any of a defunct sheet
+     * Delete from disk the samples, tribes and image if any of a defunct sheet.
      *
      * @param descriptor  descriptor of the defunct sheet
-     * @param samplesRoot root for samples
+     * @param samplesRoot root for samples (& tribes)
      * @param imagesRoot  root for images
-     * @param flocksRoot  root for flocks
      */
     public static void delete (SheetContainer.Descriptor descriptor,
                                Path samplesRoot,
-                               Path imagesRoot,
-                               Path flocksRoot)
+                               Path imagesRoot)
     {
-        final String idStr = Integer.toString(descriptor.id);
-
         try {
             logger.info("Deleting material for sheet {}", descriptor);
 
             {
-                // Samples
-                final Path folderPath = samplesRoot.resolve(idStr);
+                // Samples (and tribes)
+                final Path folderPath = samplesRoot.resolve(descriptor.getName());
 
                 if (Files.exists(folderPath)) {
-                    // Files(s)
-                    final Path samplesPath = folderPath.resolve(SAMPLES_FILE_NAME);
-
-                    if (Files.deleteIfExists(samplesPath)) {
-                        logger.info("   Samples: deleted {}", samplesPath);
-                    }
-
-                    // Then folder
-                    Files.delete(folderPath);
-                    logger.info("   Samples: deleted {}", folderPath);
+                    FileUtil.deleteDirectory(folderPath);
+                    logger.info("   Samples: deleted {} folder", folderPath);
                 }
             }
 
             {
-                // Image?
-                final Path imagesPath = imagesRoot.resolve(idStr);
-
-                if (Files.exists(imagesPath)) {
-                    // File(s)
-                    final Path imagePath = imagesPath.resolve(IMAGE_FILE_NAME);
-
-                    if (Files.deleteIfExists(imagePath)) {
-                        logger.info("   Images: deleted {}", imagePath);
-                    }
-
-                    // Then folder
-                    Files.delete(imagesPath);
-                    logger.info("   Images: deleted {}", imagesPath);
-                }
-            }
-
-            // Flocks?
-            if (flocksRoot != null) {
-                final Path folderPath = flocksRoot.resolve(idStr);
+                // Images
+                final Path folderPath = imagesRoot.resolve(descriptor.getName());
 
                 if (Files.exists(folderPath)) {
-                    // File(s)
-                    final Path flocksPath = folderPath.resolve(FLOCKS_FILE_NAME);
-
-                    if (Files.deleteIfExists(flocksPath)) {
-                        logger.info("   Flocks: deleted {}", flocksPath);
-                    }
-
-                    // Then folder
-                    Files.delete(folderPath);
-                    logger.info("   Flocks: deleted {}", folderPath);
+                    FileUtil.deleteDirectory(folderPath);
+                    logger.info("   Images: deleted {} folder", folderPath);
                 }
             }
         } catch (Exception ex) {
             logger.error("Error deleting material for sheet " + descriptor + " " + ex, ex);
         }
-    }
-
-    //-----------//
-    // isSymbols //
-    //-----------//
-    /**
-     * Report whether the provided sheet ID is a font-based symbols sheet
-     *
-     * @param id provided sheet id
-     * @return true if font-based symbols
-     */
-    public static boolean isSymbols (int id)
-    {
-        return id < 0;
     }
 
     //-----------//
@@ -290,76 +230,22 @@ public class SampleSheet
     }
 
     //-----------------//
-    // getCurrentFlock //
+    // getCurrentTribe //
     //-----------------//
-    public Flock getCurrentFlock ()
+    public Tribe getCurrentTribe ()
     {
-        return currentFlock;
+        return currentTribe;
     }
 
-    //----------//
-    // getFlock //
-    //----------//
+    //---------------//
+    // getDescriptor //
+    //---------------//
     /**
-     * Return (perhaps after creation) the flock based on provided best sample.
-     *
-     * @param best best sample
-     * @return the related flock
+     * @return the descriptor
      */
-    public Flock getFlock (Sample best)
+    public Descriptor getDescriptor ()
     {
-        currentFlock = null;
-
-        // Look for existing flock
-        for (Flock flock : getFlocks()) {
-            Sample flockBest = flock.getBest();
-
-            if (((BasicGlyph) flockBest).equals(best) && (flockBest.shape == best.shape)) {
-                currentFlock = flock;
-
-                break;
-            }
-        }
-
-        if (currentFlock == null) {
-            // Create a brand new one
-            if (flocks == null) {
-                flocks = new ArrayList<Flock>();
-            }
-
-            currentFlock = new Flock(best);
-            flocks.add(currentFlock);
-            logger.info("Created flock on {} in {}", best, this);
-            setModified(true);
-        }
-
-        return currentFlock;
-    }
-
-    //-----------//
-    // getFlocks //
-    //-----------//
-    /**
-     * @return the flocks
-     */
-    public List<Flock> getFlocks ()
-    {
-        if (flocks != null) {
-            return flocks;
-        }
-
-        return Collections.emptyList();
-    }
-
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * @return the id
-     */
-    public int getId ()
-    {
-        return id;
+        return descriptor;
     }
 
     //----------//
@@ -406,6 +292,60 @@ public class SampleSheet
         return shapeMap.keySet();
     }
 
+    //----------//
+    // getTribe //
+    //----------//
+    /**
+     * Return (perhaps after creation) the tribe based on provided best sample.
+     *
+     * @param best best sample
+     * @return the related tribe
+     */
+    public Tribe getTribe (Sample best)
+    {
+        currentTribe = null;
+
+        // Look for existing tribe
+        for (Tribe tribe : getTribes()) {
+            Sample tribeBest = tribe.getHead();
+
+            if (((BasicGlyph) tribeBest).equals(best) && (tribeBest.shape == best.shape)) {
+                currentTribe = tribe;
+
+                break;
+            }
+        }
+
+        if (currentTribe == null) {
+            // Create a brand new one
+            if (tribes == null) {
+                tribes = new ArrayList<Tribe>();
+            }
+
+            currentTribe = new Tribe(best);
+            tribes.add(currentTribe);
+            logger.info("Created tribe on {} in {}", best, this);
+            setModified(true);
+        }
+
+        return currentTribe;
+    }
+
+    //-----------//
+    // getTribes //
+    //-----------//
+    /**
+     * @return the tribes
+     */
+    public List<Tribe> getTribes ()
+    {
+        if (tribes != null) {
+            return tribes;
+        }
+
+        return Collections.emptyList();
+    }
+
     //------------//
     // isModified //
     //------------//
@@ -417,79 +357,50 @@ public class SampleSheet
         return modified;
     }
 
-    //-----------//
-    // isSymbols //
-    //-----------//
-    /**
-     * Tell whether this SampleSheet instance is based on artificial font-based symbols.
-     *
-     * @return true if artificial
-     */
-    public boolean isSymbols ()
-    {
-        return isSymbols(id);
-    }
-
     //---------//
     // marshal //
     //---------//
     /**
-     * Marshal this instance to disk, using 'samplesRoot' for samples, "imagesRoot'
-     * for image and 'flocksRoot' for flocks.
+     * Marshal this instance to disk, using 'samplesRoot' for samples & tribes and
+     * "imagesRoot' for image.
      *
      * @param samplesRoot root for samples
      * @param imagesRoot  root for images
-     * @param flocksRoot  root for flocks, perhaps null
      */
     public void marshal (Path samplesRoot,
-                         Path imagesRoot,
-                         Path flocksRoot)
+                         Path imagesRoot)
     {
+        logger.debug("Marshalling {}", this);
+
         try {
-            logger.debug("Marshalling {}", this);
-            // Samples
             {
-                final Path folderPath = samplesRoot.resolve(Integer.toString(id));
+                // Samples
+                final Path folderPath = samplesRoot.resolve(descriptor.getName());
                 Files.createDirectories(folderPath);
 
                 final Path samplesPath = folderPath.resolve(SAMPLES_FILE_NAME);
                 Jaxb.marshal(new SampleList(this), samplesPath, getJaxbContext());
                 logger.info("Stored {}", samplesPath);
+
+                // Tribes
+                if (!getTribes().isEmpty()) {
+                    final Path tribesPath = folderPath.resolve(SampleSheet.TRIBES_FILE_NAME);
+                    new TribeList(this).marshal(tribesPath);
+                }
             }
 
             // Binary
             if (image != null) {
-                final Path folderPath = imagesRoot.resolve(Integer.toString(id));
+                final Path folderPath = imagesRoot.resolve(descriptor.getName());
                 Files.createDirectories(folderPath);
 
                 final Path imagePath = folderPath.resolve(IMAGE_FILE_NAME);
                 Jaxb.marshal(image, imagePath, getJaxbContext());
                 logger.info("Stored {}", imagePath);
             }
-
-            // Flocks
-            if ((flocksRoot != null) && !getFlocks().isEmpty()) {
-                final Path folderPath = flocksRoot.resolve(Integer.toString(id));
-                Files.createDirectories(folderPath);
-
-                final Path flocksPath = folderPath.resolve(FLOCKS_FILE_NAME);
-                Jaxb.marshal(new FlockList(this), flocksPath, getJaxbContext());
-                logger.info("Stored {}", flocksPath);
-            }
         } catch (Exception ex) {
             logger.error("Error marshalling " + this + " " + ex, ex);
         }
-    }
-
-    //-----------//
-    // setFlocks //
-    //-----------//
-    /**
-     * @param flocks the flocks to set
-     */
-    public void setFlocks (List<Flock> flocks)
-    {
-        this.flocks = flocks;
     }
 
     //----------//
@@ -516,6 +427,17 @@ public class SampleSheet
         this.modified = modified;
     }
 
+    //-----------//
+    // setTribes //
+    //-----------//
+    /**
+     * @param tribes the tribes to set
+     */
+    public void setTribes (List<Tribe> tribes)
+    {
+        this.tribes = tribes;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -524,8 +446,7 @@ public class SampleSheet
     {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
-        sb.append("id:").append(id);
-        sb.append(" ").append(descriptor.getName());
+        sb.append(getDescriptor().getName());
         sb.append("}");
 
         return sb.toString();
@@ -557,7 +478,6 @@ public class SampleSheet
 
         if (!sample.isSymbol()) {
             setModified(true);
-            logger.info("Added {} to {}", sample, this);
         }
     }
 
@@ -589,7 +509,6 @@ public class SampleSheet
         }
 
         setModified(true);
-        logger.info("Removed {} from {}", sample, this);
     }
 
     //----------------//
@@ -600,10 +519,7 @@ public class SampleSheet
     {
         // Lazy creation
         if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(
-                    RunTable.class,
-                    SampleList.class,
-                    FlockList.class);
+            jaxbContext = JAXBContext.newInstance(RunTable.class, SampleList.class);
         }
 
         return jaxbContext;
@@ -622,26 +538,19 @@ public class SampleSheet
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        @XmlAttribute(name = "id")
-        private final int id;
+        // Persistent data
+        //----------------
+        /** Used only to include sheet-name within the written file. */
+        @XmlAttribute(name = "sheet-name")
+        private final String name;
 
         @XmlElement(name = "sample")
         private final ArrayList<Sample> samples = new ArrayList<Sample>();
 
         //~ Constructors ---------------------------------------------------------------------------
-        public SampleList (int id,
-                           SampleSheet sampleSheet)
-        {
-            this.id = id;
-
-            for (List<Sample> list : sampleSheet.shapeMap.values()) {
-                samples.addAll(list);
-            }
-        }
-
         public SampleList (SampleSheet sampleSheet)
         {
-            this.id = sampleSheet.getId();
+            name = sampleSheet.getDescriptor().getName();
 
             for (List<Sample> list : sampleSheet.shapeMap.values()) {
                 samples.addAll(list);
@@ -651,7 +560,7 @@ public class SampleSheet
         // Meant for JAXB
         private SampleList ()
         {
-            id = 0;
+            name = null;
         }
     }
 }

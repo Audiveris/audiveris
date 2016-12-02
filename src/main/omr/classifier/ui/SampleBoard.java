@@ -23,7 +23,6 @@ package omr.classifier.ui;
 
 import omr.classifier.Sample;
 import omr.classifier.SampleRepository;
-import omr.classifier.SampleSheet;
 import omr.classifier.SheetContainer.Descriptor;
 import omr.classifier.ui.SampleController.AssignAction;
 
@@ -75,6 +74,8 @@ public class SampleBoard
     /** User controller for samples. */
     private final SampleController controller;
 
+    private final SampleRepository repository;
+
     /** Sheet name. */
     private final LLabel sheetName = new LLabel("Sheet:", "Containing sheet");
 
@@ -125,6 +126,7 @@ public class SampleBoard
                 true,
                 IdOption.ID_LABEL);
         this.controller = controller;
+        this.repository = ((SampleModel) controller.getModel()).getRepository();
 
         // Force a constant dimension for the shapeIcon field, despite variation in size of the icon
         Dimension dim = new Dimension(
@@ -273,13 +275,12 @@ public class SampleBoard
                 pitch.setText("");
             }
 
-            SampleRepository repository = SampleRepository.getInstance();
-            Descriptor desc = repository.getSheetDescriptor(sample);
+            Descriptor desc = repository.getDescriptor(sample);
             final String sh = desc.toString();
             sheetName.setText(sh);
             sheetName.getField().setToolTipText(desc.getAliasesString());
-            removeAction.setEnabled(!SampleSheet.isSymbols(desc.id));
-            assignAction.setEnabled(!SampleSheet.isSymbols(desc.id));
+            removeAction.setEnabled(!SampleRepository.isSymbols(desc.getName()));
+            assignAction.setEnabled(!SampleRepository.isSymbols(desc.getName()));
         } else {
             iLine.setText("");
             weight.setText("");
