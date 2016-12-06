@@ -200,7 +200,7 @@ public class ClefBuilder
             new GlyphCluster(adapter, null).decompose();
 
             int trials = adapter.trials;
-            logger.info("Staff#{} clef parts:{} trials:{}", staff.getId(), set.size(), trials);
+            logger.debug("Staff#{} clef parts:{} trials:{}", staff.getId(), set.size(), trials);
         }
 
         // Discard poor candidates as much as possible
@@ -310,7 +310,7 @@ public class ClefBuilder
                 if (grade > maxOtherCtx) {
                     // Cut here since, whatever the key, no other clef can beat the best clef
                     for (ClefInter poor : inters.subList(j, inters.size())) {
-                        logger.info("Staff#{} discarding poor {}", staff.getId(), poor);
+                        logger.debug("Staff#{} discarding poor {}", staff.getId(), poor);
                         bestMap.remove(poor.getKind());
                     }
 

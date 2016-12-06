@@ -213,6 +213,20 @@ public class StaffHeader
             this.stop = stop;
         }
 
+        /**
+         * Change stop value <b>ONLY IF</b> new value is smaller than the existing one.
+         *
+         * @param stop new stop value
+         */
+        public void shrinkStop (int stop)
+        {
+            if ((this.stop == null) || (stop <= this.stop)) {
+                this.stop = stop;
+            } else {
+                logger.info("Range tentative to shrinkStop() from {} to {}", this.stop, stop);
+            }
+        }
+
         @Override
         public String toString ()
         {

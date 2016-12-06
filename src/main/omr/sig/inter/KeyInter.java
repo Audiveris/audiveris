@@ -349,7 +349,7 @@ public class KeyInter
     }
 
     //-----------//
-    // guessKind //
+    // guessKind // Not used!
     //-----------//
     public static ClefKind guessKind (Shape shape,
                                       Double[] measuredPitches,
@@ -435,6 +435,41 @@ public class KeyInter
     public String shapeString ()
     {
         return "KEY_SIG:" + getFifths();
+    }
+
+    //--------//
+    // shrink //
+    //--------//
+    /**
+     * Discard the last alter item in this key.
+     */
+    public void shrink ()
+    {
+        // Discard last alter
+        KeyAlterInter lastAlter = (KeyAlterInter) alters.get(alters.size() - 1);
+        alters.remove(lastAlter);
+        lastAlter.delete();
+
+        // Adjust fifths
+        if (fifths > 0) {
+            fifths--;
+        } else {
+            fifths++;
+        }
+
+        // Recompute key grade
+        double newGrade = 0;
+
+        for (Inter alter : alters) {
+            newGrade += sig.computeContextualGrade(alter);
+        }
+
+        newGrade /= alters.size();
+        setGrade(newGrade);
+
+        // Reset cached data
+        bounds = null;
+        ctxGrade = null;
     }
 
     //-----------//

@@ -82,10 +82,10 @@ public class TribeMenu
     {
         this.glyph = glyph;
         this.sheet = sheet;
-
-        final SampleRepository repository = SampleRepository.getGlobalInstance(true);
-        sampleSheet = repository.pokeSampleSheet(sheet);
-
+//
+//        final SampleRepository repository = SampleRepository.getGlobalInstance(true);
+//        sampleSheet = repository.pokeSampleSheet(sheet);
+//
         populateMenu();
     }
 

@@ -81,6 +81,20 @@ public class KeyColumn
 
     private static final Logger logger = LoggerFactory.getLogger(KeyColumn.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /** Status of key replication within part. */
+    public enum PartStatus
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        /** Success. */
+        OK,
+        /** Slice count too be reduced. */
+        SHRINK,
+        /** No key in part. */
+        DESTROY;
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related system. */
     private final SystemInfo system;
@@ -235,6 +249,14 @@ public class KeyColumn
     }
 
     //-----------------//
+    // getGlobalOffset //
+    //-----------------//
+    int getGlobalOffset (int index)
+    {
+        return globalOffsets.get(index);
+    }
+
+    //-----------------//
     // getMaxSliceDist //
     //-----------------//
     final int getMaxSliceDist ()
@@ -325,23 +347,40 @@ public class KeyColumn
 
             if (staves.size() > 1) {
                 // All staves within the same part should have identical key signatures
-                // Strategy: pick up the "best" and try to replicate it in the 1 or 2 other staves
+                // Strategy: pick up the "best" and try to replicate it in the other stave(s)
                 KeyInter best = getBestIn(staves);
 
                 if (best != null) {
-                    Staff bestStaff = best.getStaff();
-                    KeyBuilder bestBuilder = builders.get(bestStaff);
+                    final Staff bestStaff = best.getStaff();
+                    final KeyBuilder bestBuilder = builders.get(bestStaff);
+                    boolean modified;
 
-                    // Check other staves
-                    for (Staff staff : staves) {
-                        if (staff != bestStaff) {
-                            KeyBuilder builder = builders.get(staff);
+                    do {
+                        modified = false;
 
-                            if (!builder.checkReplicate(bestBuilder)) {
-                                return false;
+                        // Check staves
+                        StaffLoop:
+                        for (Staff staff : staves) {
+                            if (staff != bestStaff) {
+                                KeyBuilder builder = builders.get(staff);
+
+                                switch (builder.checkReplicate(bestBuilder)) {
+                                case OK:
+                                    break;
+
+                                case SHRINK:
+                                    globalOffsets.remove(globalOffsets.size() - 1);
+                                    bestBuilder.shrink();
+                                    modified = true;
+
+                                    break StaffLoop;
+
+                                case DESTROY:
+                                    return false;
+                                }
                             }
                         }
-                    }
+                    } while (modified);
                 }
             }
         }

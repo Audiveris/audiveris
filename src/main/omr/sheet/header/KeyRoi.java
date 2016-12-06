@@ -46,7 +46,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code KeyRoi} handles the region of interest for key retrieval.
+ * Class {@code KeyRoi} handles the region of interest for key retrieval, split into
+ * vertical slices.
  *
  * @author Hervé Bitteur
  */
@@ -158,6 +159,9 @@ public class KeyRoi
         }
     }
 
+    //---------------//
+    // getAreaPixels //
+    //---------------//
     /**
      * Report the pixels buffer for the whole key area
      *
@@ -220,6 +224,9 @@ public class KeyRoi
         return validSlice;
     }
 
+    //----------------//
+    // getSlicePixels //
+    //----------------//
     /**
      * Report the pixels buffer for just a slice
      *

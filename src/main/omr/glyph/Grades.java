@@ -62,9 +62,6 @@ public abstract class Grades
     /** Minimum grade for a key signature item, phase #2 (staff slice-based) */
     public static final double keyAlterMinGrade2 = constants.keyAlterMinGrade2.getValue();
 
-    /** Minimum grade for a key signature item, phase #3 (system slice-based) */
-    public static final double keyAlterMinGrade3 = constants.keyAlterMinGrade3.getValue();
-
     /** Minimum grade for a glyph left over */
     public static final double leftOverMinGrade = constants.leftOverMinGrade.getValue();
 
@@ -175,10 +172,6 @@ public abstract class Grades
         private final Evaluation.Grade keyAlterMinGrade2 = new Evaluation.Grade(
                 0.01,
                 "Minimum grade for a key item symbol, phase 2 (staff slice)");
-
-        private final Evaluation.Grade keyAlterMinGrade3 = new Evaluation.Grade(
-                0.001,
-                "Minimum grade for a key item symbol, phase 3 (system slice)");
 
         private final Evaluation.Grade timeMinGrade = new Evaluation.Grade(
                 0.1,

@@ -22,7 +22,7 @@
 package omr.sheet.header;
 
 /**
- * Formalizes an event while browsing key signature abscissa range.
+ * Formalizes an event (peak or space) while browsing key signature abscissa range.
  *
  * @author Hervé Bitteur
  */
@@ -65,19 +65,21 @@ public abstract class KeyEvent
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Cumulated height. */
+        /** Max cumulated height. */
         protected int height;
 
-        /** Flag for invalid peak. */
-        private boolean invalid;
+        /** Weight of peak. */
+        protected int area;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Peak (int start,
                      int stop,
-                     int height)
+                     int height,
+                     int area)
         {
             super(start, stop);
             this.height = height;
+            this.area = area;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -86,37 +88,20 @@ public abstract class KeyEvent
             return 0.5 * (start + stop);
         }
 
-        public void setInvalid ()
-        {
-            invalid = true;
-        }
-
         @Override
         public String toString ()
         {
             StringBuilder sb = new StringBuilder();
-
-            if (invalid) {
-                sb.append("Invalid");
-            }
-
             sb.append("Peak{");
             sb.append(start);
             sb.append("-");
             sb.append(stop);
             sb.append("/");
-            sb.append(height);
+            sb.append("h:").append(height);
+            sb.append(",a:").append(area);
             sb.append("}");
 
             return sb.toString();
-        }
-
-        /**
-         * @return the invalid
-         */
-        boolean isInvalid ()
-        {
-            return invalid;
         }
     }
 
