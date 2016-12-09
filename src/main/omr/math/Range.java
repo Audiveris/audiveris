@@ -51,9 +51,9 @@ public class Range
     /**
      * Creates a new {@code Range} object.
      *
-     * @param min  key at start
-     * @param main key at highest count
-     * @param max  key at stop
+     * @param min  x start value
+     * @param main x at highest y value
+     * @param max  x stop value
      */
     public Range (int min,
                   int main,
@@ -73,6 +73,17 @@ public class Range
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // getWidth //
+    //----------//
+    public int getWidth ()
+    {
+        return max - min + 1;
+    }
+
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {

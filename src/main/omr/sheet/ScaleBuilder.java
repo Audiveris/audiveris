@@ -26,7 +26,7 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.math.IntegerHistogram;
+import omr.math.IntegerPeakFunction;
 import omr.math.Range;
 
 import omr.run.Run;
@@ -99,10 +99,10 @@ public class ScaleBuilder
     private HistoKeeper histoKeeper;
 
     /** Histogram on vertical black runs. */
-    private IntegerHistogram blackHisto;
+    private IntegerPeakFunction blackHisto;
 
     /** Histogram on vertical pairs of runs (black+white and white+black). */
-    private IntegerHistogram comboHisto;
+    private IntegerPeakFunction comboHisto;
 
     /** Most frequent length of vertical black runs found. */
     private Range blackPeak;
@@ -313,18 +313,8 @@ public class ScaleBuilder
                     maxBlack + maxWhite);
 
             // Allocate histograms
-            blackHisto = new IntegerHistogram(
-                    "black",
-                    maxBlack,
-                    constants.minGainRatio.getValue(),
-                    constants.minCountRatio.getValue(),
-                    constants.minDerivativeRatio.getValue());
-            comboHisto = new IntegerHistogram(
-                    "combo",
-                    maxBlack + maxWhite,
-                    constants.minGainRatio.getValue(),
-                    null,
-                    constants.minDerivativeRatio.getValue());
+            blackHisto = new IntegerPeakFunction("black", 0, maxBlack);
+            comboHisto = new IntegerPeakFunction("combo", 0, maxBlack + maxWhite);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -341,7 +331,7 @@ public class ScaleBuilder
                     int black = it.next().getLength();
 
                     if (black <= maxBlack) {
-                        blackHisto.increaseCount(black, 1);
+                        blackHisto.addValue(black, 1);
                     }
                 }
             }
@@ -380,8 +370,8 @@ public class ScaleBuilder
                             // Combo 2 is defined as W + B2, that is     [-----]
                             // combo1 + combo2 = 2 * (1/2 * B1 + W + 1/2 * B2) = 2 * combo
                             if ((white <= maxWhite) && (lastBlack != 0)) {
-                                comboHisto.increaseCount(lastBlack + white, 1); // B1 + W
-                                comboHisto.increaseCount(white + black, 1); // W + B2
+                                comboHisto.addValue(lastBlack + white, 1); // B1 + W
+                                comboHisto.addValue(white + black, 1); // W + B2
                             }
                         }
 
@@ -401,7 +391,7 @@ public class ScaleBuilder
         // retrieveBeamKey //
         //-----------------//
         /**
-         * Try to retrieve a suitable beam key.
+         * Try to retrieve a suitable beam thickness value.
          * <p>
          * Take most frequent black local max for which key (beam thickness) is larger than about
          * twice the main line thickness and smaller than mean white gap between staff lines.
@@ -433,18 +423,22 @@ public class ScaleBuilder
                 throws StepException
         {
             // Combo peak(s)
-            List<Range> comboPeaks = comboHisto.getHiLoPeaks();
+            final int area = comboHisto.getArea();
+            final List<Range> comboPeaks = comboHisto.getHiLoPeaks(
+                    constants.minGainRatio.getValue(),
+                    null,
+                    (int) Math.rint(area * constants.minDerivativeRatio.getValue()));
 
             if (comboPeaks.isEmpty()) {
                 sheet.getStub().invalidate();
                 throw new StepException("No regularly spaced lines found");
             }
 
-            // First combo peak
+            // Primary combo peak
             comboPeak = comboPeaks.get(0);
             logger.debug("comboPeak: {}", comboPeak);
 
-            // Second combo peak?
+            // Secondary combo peak?
             if (comboPeaks.size() > 1) {
                 comboPeak2 = comboPeaks.get(1);
 
@@ -485,7 +479,11 @@ public class ScaleBuilder
             checkBlack();
 
             // Black peaks
-            List<Range> blackPeaks = blackHisto.getHiLoPeaks();
+            final int area = blackHisto.getArea();
+            final List<Range> blackPeaks = blackHisto.getHiLoPeaks(
+                    constants.minGainRatio.getValue(),
+                    (int) Math.rint(area * constants.minCountRatio.getValue()),
+                    (int) Math.rint(area * constants.minDerivativeRatio.getValue()));
 
             if (blackPeaks.isEmpty()) {
                 sheet.getStub().invalidate();
@@ -502,30 +500,30 @@ public class ScaleBuilder
         public void writePlot ()
         {
             // Determine a suitable upper value for x
-            int upper;
+            int xMax;
 
             if (blackPeak != null) {
-                upper = blackPeak.max;
+                xMax = blackPeak.max;
             } else {
-                upper = 30;
+                xMax = 30;
             }
 
             if (comboPeak != null) {
-                upper = Math.max(upper, comboPeak.max);
+                xMax = Math.max(xMax, comboPeak.max);
             }
 
             if (comboPeak2 != null) {
-                upper = Math.max(upper, comboPeak2.max);
+                xMax = Math.max(xMax, comboPeak2.max);
             }
 
-            upper = (upper * 5) / 4; // Add some margin
+            xMax = (xMax * 5) / 4; // Add some margin
 
             Scale scale = sheet.getScale();
             String xLabel = "Lengths - " + ((scale != null) ? scale : "NO_SCALE");
 
             try {
                 final String title = sheet.getId() + " " + blackHisto.name;
-                blackHisto.new Plotter(title, xLabel, blackPeak, null, upper).plot(
+                blackHisto.new Plotter(title, xLabel, xMax, blackPeak).plot(
                         new Point(20, 20));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting black", ex);
@@ -533,7 +531,7 @@ public class ScaleBuilder
 
             try {
                 final String title = sheet.getId() + " " + comboHisto.name;
-                comboHisto.new Plotter(title, xLabel, comboPeak, comboPeak2, upper).plot(
+                comboHisto.new Plotter(title, xLabel, xMax, comboPeak, comboPeak2).plot(
                         new Point(80, 80));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting combo", ex);
@@ -552,9 +550,9 @@ public class ScaleBuilder
         private void checkBlack ()
                 throws StepException
         {
-            int blackCount = blackHisto.getWeight();
-            int size = binary.getWidth() * binary.getHeight();
-            double blackRatio = (double) blackCount / size;
+            final int blackCount = getBlackCount();
+            final int size = binary.getWidth() * binary.getHeight();
+            final double blackRatio = (double) blackCount / size;
             logger.debug("blackRatio: {}", blackRatio);
 
             if (blackRatio < constants.minBlackRatio.getValue()) {
@@ -564,6 +562,29 @@ public class ScaleBuilder
                         + "This sheet is almost blank.",
                         false);
             }
+        }
+
+        //---------------//
+        // getBlackCount //
+        //---------------//
+        /**
+         * Compute the total number of black pixels.
+         * <p>
+         * We use the fact that in 'blackHisto', x represents a black run length and y the number
+         * of occurrences of this run length in the image.
+         *
+         * @return the count of black pixels
+         */
+        private int getBlackCount ()
+        {
+            int total = 0;
+            int xMin = blackHisto.getXMin();
+
+            for (int i = xMin; i <= blackHisto.getXMax(); i++) {
+                total += ((i - xMin) * blackHisto.getValue(i));
+            }
+
+            return total;
         }
     }
 }

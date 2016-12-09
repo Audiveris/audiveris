@@ -385,8 +385,7 @@ public class KeyColumn
             }
         }
 
-        spreadStuff(); // ????????????????????
-
+        ///spreadStuff(); // ????????????????????
         printSliceTable();
 
         return true;
@@ -398,7 +397,7 @@ public class KeyColumn
     /**
      * Report the best KeyInter instance found in the provided staves.
      *
-     * @param staves tthe (part) staves
+     * @param staves the (part) staves
      * @return the best keyInter found, perhaps null
      */
     private KeyInter getBestIn (List<Staff> staves)

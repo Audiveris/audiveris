@@ -28,7 +28,7 @@ import omr.glyph.Shape;
 
 import omr.image.ImageUtil;
 
-import omr.math.IntegerHistogram;
+import omr.math.IntegerPeakFunction;
 import omr.math.Range;
 
 import omr.run.Orientation;
@@ -88,7 +88,7 @@ public class StemScaler
     private HistoKeeper histoKeeper;
 
     /** Histogram on horizontal foreground runs. */
-    private IntegerHistogram histo;
+    private IntegerPeakFunction histo;
 
     /** Most frequent length of horizontal foreground runs found, if any. */
     private Range peak;
@@ -164,7 +164,11 @@ public class StemScaler
     //-------------//
     private StemScale computeStem ()
     {
-        List<Range> stemPeaks = histo.getHiLoPeaks();
+        final int area = histo.getArea();
+        final List<Range> stemPeaks = histo.getHiLoPeaks(
+                constants.minGainRatio.getValue(),
+                (int) Math.rint(area * constants.minValueRatio.getValue()),
+                (int) Math.rint(area * constants.minDerivativeRatio.getValue()));
 
         if (!stemPeaks.isEmpty()) {
             peak = stemPeaks.get(0);
@@ -238,7 +242,7 @@ public class StemScaler
                 2.0,
                 "Margin erased above & below system header area");
 
-        private final Constant.Ratio minCountRatio = new Constant.Ratio(
+        private final Constant.Ratio minValueRatio = new Constant.Ratio(
                 0.1,
                 "Absolute ratio of total pixels for peak acceptance");
 
@@ -276,12 +280,7 @@ public class StemScaler
          */
         public HistoKeeper (int wMax)
         {
-            histo = new IntegerHistogram(
-                    "stem",
-                    wMax,
-                    constants.minGainRatio.getValue(),
-                    constants.minCountRatio.getValue(),
-                    constants.minDerivativeRatio.getValue());
+            histo = new IntegerPeakFunction("stem", 0, wMax);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -292,7 +291,7 @@ public class StemScaler
         public void writePlot ()
         {
             final String title = sheet.getId() + " " + histo.name;
-            histo.new Plotter(title, "Stem thickness", peak, null, maxBlack).plot(
+            histo.new Plotter(title, "Stem thickness", maxBlack, peak).plot(
                     new Point(80, 80));
         }
 
@@ -307,7 +306,7 @@ public class StemScaler
                     final int blackLength = it.next().getLength();
 
                     if (blackLength <= maxBlack) {
-                        histo.increaseCount(blackLength, 1);
+                        histo.addValue(blackLength, 1);
                     }
                 }
             }

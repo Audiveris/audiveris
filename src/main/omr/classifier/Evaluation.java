@@ -99,7 +99,7 @@ public class Evaluation
         } else if (grade == ALGORITHM) {
             sb.append("ALGORITHM");
         } else {
-            sb.append((float) grade);
+            sb.append(String.format("%.5f", grade));
         }
 
         if (failure != null) {

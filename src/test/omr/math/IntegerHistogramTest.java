@@ -12,7 +12,7 @@ public class IntegerHistogramTest
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    private IntegerHistogram histo;
+    private IntegerPeakFunction histo;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -24,7 +24,7 @@ public class IntegerHistogramTest
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Test of print method, of class IntegerHistogram.
+     * Test of print method, of class IntegerPeakFunction.
      */
     @Test
     public void testPrint ()
@@ -32,30 +32,30 @@ public class IntegerHistogramTest
         System.out.println("print");
 
         PrintStream stream = System.out;
-        IntegerHistogram instance = createHistogram();
+        IntegerPeakFunction instance = createHistogram();
         instance.print(stream);
     }
 
-    private IntegerHistogram createHistogram ()
+    private IntegerPeakFunction createHistogram ()
     {
-        histo = new IntegerHistogram("test", 20, 0.05, 0.10, 0.05);
-        histo.increaseCount(1, 1250);
-        histo.increaseCount(2, 1400);
-        histo.increaseCount(3, 2000);
-        histo.increaseCount(4, 1950);
-        histo.increaseCount(5, 2125);
-        histo.increaseCount(6, 1800);
-        histo.increaseCount(7, 1800);
-        histo.increaseCount(8, 2500);
-        histo.increaseCount(9, 3000);
-        histo.increaseCount(10, 20000);
-        histo.increaseCount(11, 12000);
-        histo.increaseCount(12, 1100);
-        histo.increaseCount(13, 1300);
-        histo.increaseCount(14, 11000);
-        histo.increaseCount(15, 23800);
-        histo.increaseCount(16, 3000);
-        histo.increaseCount(17, 600);
+        histo = new IntegerPeakFunction("test", 0, 20, 0.05, 0.10, 0.05);
+        histo.setValue(1, 1250);
+        histo.setValue(2, 1400);
+        histo.setValue(3, 2000);
+        histo.setValue(4, 1950);
+        histo.setValue(5, 2125);
+        histo.setValue(6, 1800);
+        histo.setValue(7, 1800);
+        histo.setValue(8, 2500);
+        histo.setValue(9, 3000);
+        histo.setValue(10, 20000);
+        histo.setValue(11, 12000);
+        histo.setValue(12, 1100);
+        histo.setValue(13, 1300);
+        histo.setValue(14, 11000);
+        histo.setValue(15, 23800);
+        histo.setValue(16, 3000);
+        histo.setValue(17, 600);
 
         return histo;
     }

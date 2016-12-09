@@ -46,6 +46,7 @@ import java.util.Set;
  * <li>Build the set of new reachable vertices.</li>
  * <li>For each reachable vertex, recursively process the new set composed of current set + the
  * reachable vertex.</li></ol>
+ * TODO: implement a non-recursive version for better efficiency?
  *
  * @author Hervé Bitteur
  */

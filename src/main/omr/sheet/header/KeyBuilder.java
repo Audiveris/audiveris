@@ -84,7 +84,9 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -230,7 +232,7 @@ public class KeyBuilder
     private final Projection projection;
 
     /** Sequence of valid peaks found. */
-    private final List<KeyEvent.Peak> peaks = new ArrayList<KeyEvent.Peak>();
+    private final List<KeyPeak> peaks = new ArrayList<KeyPeak>();
 
     /** Shape used for key signature. */
     private Shape keyShape;
@@ -314,6 +316,17 @@ public class KeyBuilder
             }
 
             plotter.add(cumulSeries, Color.RED, false);
+        }
+
+        {
+            // Derivatives
+            XYSeries derivative = new XYSeries("Der");
+
+            for (int x = xMin + 1; x <= xMax; x++) {
+                derivative.add(x, projection.getDerivative(x));
+            }
+
+            plotter.add(derivative, Color.GREEN, false);
         }
 
         List<Integer> alterStarts = staff.getHeader().alterStarts;
@@ -608,23 +621,22 @@ public class KeyBuilder
     // process //
     //---------//
     /**
-     * Process the potential key signature of the underlying staff.
+     * Process the potential key signature of the underlying staff in isolation.
      * <p>
      * This builds peaks, slices, alters and checks trailing space and clef(s) compatibility.
      */
     public void process ()
     {
         logger.debug("Key processing for S#{} staff#{}", system.getId(), getId());
-
-        browseArea(); // Retrieve & check peaks
-        purgeLightPeaks(); // Discard too light peaks
-
-        int signature = retrieveSignature(); // Infer signature from peaks
-
-        if (signature != 0) {
-            // Check/modify signature (by checking trailing length, and rough trailing space)
-            signature = checkSignature(signature);
+        if (getId() == 3) {
+            logger.info("BINGO");
         }
+
+        browseArea(); // Retrieve raw peaks
+
+        purgeLightPeaks(); // Discard some light peaks
+
+        int signature = refineSignature(inferSignature()); // Infer signature from peaks
 
         if (signature != 0) {
             List<Integer> starts = computeStarts(signature); // Compute start for each key item
@@ -655,17 +667,7 @@ public class KeyBuilder
             }
         }
 
-        // If best clef has not yet been selected, let's do it now
-        if (clefs.isEmpty()) {
-            clefs.addAll(staff.getCompetingClefs(range.getStop()));
-
-            for (Inter clef : clefs) {
-                sig.computeContextualGrade(clef);
-            }
-
-            Collections.sort(clefs, Inter.byReverseBestGrade);
-            clefs.retainAll(Arrays.asList(clefs.get(0)));
-        }
+        selectBestClef(); // In case staff clef has not yet been selected
     }
 
     //---------------//
@@ -778,30 +780,39 @@ public class KeyBuilder
     // browseArea //
     //------------//
     /**
-     * Browse the histogram to detect the sequence of peaks (similar to stems) and
+     * Browse the projection to detect the sequence of peaks (similar to stems) and
      * spaces (blanks).
+     * <p>
+     * A peak must get higher than 'minPeakCumul' and have an ascending portion before and a
+     * descending portion after, both of minimum dy within reasonable x range.
+     * <p>
+     * Peak start is taken at beginning of ascending portion (and can be refined at lowest point).
+     * Peak stop is taken at end of descending portion (and can be refined at lowest point).
+     * <p>
+     * We stop before invalid peak or wide space.
      */
     private void browseArea ()
     {
         // Space parameters
-        int maxSpaceCumul = params.maxSpaceCumul;
         int spaceStart = -1; // Space start abscissa
         int spaceStop = -1; // Space stop abscissa
-        boolean valleyHit = false; // Have we found a valley yet?
 
         // Peak parameters
         int peakStart = -1; // Peak start abscissa
+        int peakMain = -1; // Peak main abscissa (x at highest y)
         int peakStop = -1; // Peak stop abscissa
         int peakHeight = 0; // Peak height
         int peakArea = 0; // Peak area
 
+        boolean valleyHit = false; // Have we found a valley yet?
+
         for (int x = range.browseStart; x <= range.browseStop; x++) {
             int cumul = projection.getValue(x);
 
-            // For peak
             if (cumul >= params.minPeakCumul) {
+                // For peak
                 if (!valleyHit) {
-                    continue;
+                    continue; // This must be some end portion of clef, let's skip it
                 }
 
                 if (spaceStart != -1) {
@@ -814,29 +825,32 @@ public class KeyBuilder
                 }
 
                 if (peakStart == -1) {
-                    peakStart = x; // Beginning of peak
+                    peakStart = x; // Beginning of peak???
                 }
 
                 peakStop = x;
-                peakHeight = Math.max(peakHeight, cumul);
+                if (peakHeight < cumul) {
+                    peakHeight = cumul;
+                    peakMain = x;
+                }
                 peakArea += cumul;
             } else if (!valleyHit) {
-                valleyHit = true;
+                valleyHit = true; // This is the real browsing start
             } else {
                 if (peakStart != -1) {
                     // End of peak
-                    if (!createPeak(peakStart, peakStop, peakHeight, peakArea)) {
+                    if (!createPeak(peakStart, peakMain, peakStop, peakHeight, peakArea)) {
                         return; // Invalid peak encountered
                     }
 
                     peakStart = -1;
+                    peakMain = -1;
                     peakHeight = 0;
                     peakArea = 0;
                 }
 
-                // For space
-                if (cumul <= maxSpaceCumul) {
-                    // Below threshold, we are in a space
+                if (cumul <= params.maxSpaceCumul) {
+                    // For space
                     if (spaceStart == -1) {
                         spaceStart = x; // Start of space
                     }
@@ -858,7 +872,7 @@ public class KeyBuilder
             checkSpace(spaceStart, spaceStop);
         } else if (peakStart != -1) {
             // Finish ongoing peak if any (this is rather unlikely...)
-            createPeak(peakStart, peakStop, peakHeight, peakArea);
+            createPeak(peakStart, peakMain, peakStop, peakHeight, peakArea);
         }
     }
 
@@ -880,8 +894,8 @@ public class KeyBuilder
         final double[] dxs = new double[count - 1];
 
         for (int ip = 1; ip < peaks.size(); ip += 1) {
-            KeyEvent.Peak peak = peaks.get(ip);
-            KeyEvent.Peak prevPeak = peaks.get(ip - 1);
+            KeyPeak peak = peaks.get(ip);
+            KeyPeak prevPeak = peaks.get(ip - 1);
             double dx = peak.getCenter() - prevPeak.getCenter();
             totalDx += dx;
             maxDx = Math.max(maxDx, dx);
@@ -905,9 +919,9 @@ public class KeyBuilder
 
             if (dx > max) {
                 final int ip = is + 1;
-                final KeyEvent.Peak peak = peaks.get(ip);
+                final KeyPeak peak = peaks.get(ip);
                 logger.info("Staff#{} key cut before {}", getId(), peak);
-                range.shrinkStop(peak.start - 1);
+                range.shrinkStop(peak.min - 1);
                 peaks.retainAll(peaks.subList(0, ip));
 
                 return -(is + 1);
@@ -935,8 +949,8 @@ public class KeyBuilder
         final double[] dxs = new double[count - 1];
 
         for (int ip = 2; ip < peaks.size(); ip += 2) {
-            KeyEvent.Peak peak = peaks.get(ip);
-            KeyEvent.Peak prevPeak = peaks.get(ip - 1);
+            KeyPeak peak = peaks.get(ip);
+            KeyPeak prevPeak = peaks.get(ip - 1);
             double dx = peak.getCenter() - prevPeak.getCenter();
             totalDx += dx;
             maxDx = Math.max(maxDx, dx);
@@ -958,76 +972,12 @@ public class KeyBuilder
 
             if (dx > max) {
                 final int ip = 2 * (is + 1);
-                final KeyEvent.Peak peak = peaks.get(ip);
+                final KeyPeak peak = peaks.get(ip);
                 logger.info("Staff#{} key cut before {}", getId(), peak);
-                range.shrinkStop(peak.start - 1);
+                range.shrinkStop(peak.min - 1);
                 peaks.retainAll(peaks.subList(0, ip));
 
                 return is + 1;
-            }
-        }
-
-        return signature;
-    }
-
-    //----------------//
-    // checkSignature //
-    //----------------//
-    /**
-     * Additional tests on key signature, which may get adjusted.
-     * <ul>
-     * <li>Check if there is enough ink after last peak (depending on key shape).
-     * <li>Check if items are regularly spaced.
-     * <li>Check if the first invalid peak (if any) is sufficiently far from last good peak so
-     * that there is enough room for key trailing space.
-     * </ul>
-     *
-     * @return the signature value, perhaps modified
-     */
-    private int checkSignature (int signature)
-    {
-        KeyEvent.Peak lastPeak = getLastPeak();
-
-        // Where is the precise end of key signature?
-        int trail = range.getStop() - lastPeak.start + 1;
-
-        // Check trailing length
-        if (signature < 0) {
-            if (trail < params.minFlatTrail) {
-                logger.debug("Removing too narrow flat");
-                peaks.retainAll(peaks.subList(0, peaks.indexOf(lastPeak)));
-                range.shrinkStop(lastPeak.start - 1);
-                signature += 1;
-            }
-        } else if (trail < params.minSharpTrail) {
-            logger.debug("Removing too narrow sharp");
-            // Remove the last 2 peaks
-            peaks.retainAll(peaks.subList(0, peaks.indexOf(lastPeak)));
-            lastPeak = getLastPeak();
-            peaks.retainAll(peaks.subList(0, peaks.indexOf(lastPeak)));
-            range.shrinkStop(lastPeak.start - 1);
-            signature -= 1;
-        }
-
-        if (Math.abs(signature) >= 3) {
-            // Regulary spaced items?
-            if (signature < 0) {
-                signature = checkFlatDeltas(signature); // Flats
-            } else {
-                signature = checkSharpDeltas(signature); // Sharps
-            }
-        }
-
-        lastPeak = getLastPeak();
-
-        if (lastPeak != null) {
-            // Check minimum trailing space
-            trail = range.getStop() - lastPeak.start + 1;
-
-            if (trail < params.minTrailingSpace) {
-                logger.debug("Staff#{} no minimum trailing space", getId());
-
-                return 0;
             }
         }
 
@@ -1048,7 +998,7 @@ public class KeyBuilder
                                 int spaceStop)
     {
         boolean keepOn = true;
-        final int spaceWidth = spaceStop - spaceStop + 1;
+        final int spaceWidth = spaceStop - spaceStart + 1;
 
         if (!range.hasStart()) {
             // This is the very first space found
@@ -1058,13 +1008,13 @@ public class KeyBuilder
                 attributes.add(Attribute.INITIAL_WIDE_SPACE);
                 keepOn = false;
             } else {
-                // Set range.getStart() here, since first chunk may be later skipped if lacking peak
+                // Set range start here, since first chunk may be later skipped if lacking peak
                 range.setStart(spaceStop + 1);
             }
         } else if (peaks.isEmpty()) {
             range.setStart(spaceStop + 1);
         } else if (spaceWidth > params.maxInnerSpace) {
-            range.shrinkStop(spaceStart);
+            range.shrinkStop(spaceStart - 1);
             keepOn = false;
         }
 
@@ -1111,7 +1061,8 @@ public class KeyBuilder
     // checkWithClefs //
     //----------------//
     /**
-     * Compare the sequence of candidate key items with the possible active clefs.
+     * Compare the sequence of candidate key items with the possible active clefs and
+     * make the final clef selection.
      * <p>
      * For each possible clef kind, the sequence of items pitches is imposed (for chosen keyShape).
      * The problem is that item pitch is not fully reliable, especially for a flat item.
@@ -1312,25 +1263,25 @@ public class KeyBuilder
             starts.add(range.getStart());
 
             for (int i = 2; i < peaks.size(); i += 2) {
-                KeyEvent.Peak peak = peaks.get(i);
-                starts.add((int) Math.ceil(0.5 * (peak.start + peaks.get(i - 1).stop)));
+                KeyPeak peak = peaks.get(i);
+                starts.add((int) Math.ceil(0.5 * (peak.min + peaks.get(i - 1).max)));
             }
 
             // End of area
             refineAreaStop(getLastPeak(), params.sharpTrail, params.maxSharpTrail);
         } else if (signature < 0) {
             // Flats
-            KeyEvent.Peak firstPeak = peaks.get(0);
+            KeyPeak firstPeak = peaks.get(0);
 
             // Start of area, make sure there is nothing right before first peak
-            int flatHeading = ((firstPeak.start + firstPeak.stop) / 2) - range.getStart();
+            int flatHeading = ((firstPeak.min + firstPeak.max) / 2) - range.getStart();
 
             if (flatHeading <= params.maxFlatHeading) {
                 starts.add(range.getStart());
 
                 for (int i = 1; i < peaks.size(); i++) {
-                    KeyEvent.Peak peak = peaks.get(i);
-                    starts.add(peak.start);
+                    KeyPeak peak = peaks.get(i);
+                    starts.add(peak.min);
                 }
 
                 // End of area
@@ -1394,30 +1345,31 @@ public class KeyBuilder
     //------------//
     /**
      * (Try to) create a peak for a candidate alteration item.
-     * The peak is checked for its height and its width.
      * <p>
-     * If two (raw) peaks are too close, they are merged into a single peak.
-     * TODO: postpone decision until we master the whole population of peaks in this key?
+     * Peak is checked for its height and width, its "stem-like" shape, delta abscissa with previous
+     * peak, abscissa offset for first peak.
      *
      * @param start  start abscissa
+     * @param main   main abscissa
      * @param stop   stop abscissa
      * @param height peak height
      * @param area   peak area
-     * @return whether key processing can keep on
+     * @return whether browsing can keep on
      */
     private boolean createPeak (int start,
+                                int main,
                                 int stop,
                                 int height,
                                 int area)
     {
-        final KeyEvent.Peak peak = new KeyEvent.Peak(start, stop, height, area);
+        final KeyPeak peak = new KeyPeak(start, main, stop, height, area);
         boolean invalid = false;
 
         // Check whether this peak could be part of sig, otherwise give up
         if ((height > params.maxPeakCumul) || (peak.getWidth() > params.maxPeakWidth)) {
             logger.debug("Invalid height or width for peak");
             invalid = true;
-            range.shrinkStop(peak.start - 1);
+            range.shrinkStop(peak.min - 1);
         } else {
             // Does this peak correspond to a stem-shaped item? if not, simply ignore it
             if (!isStemLike(peak)) {
@@ -1425,30 +1377,30 @@ public class KeyBuilder
             }
 
             // We may have an interesting peak, check distance since previous peak
-            KeyEvent.Peak prevPeak = peaks.isEmpty() ? null : peaks.get(peaks.size() - 1);
+            KeyPeak lastPeak = getLastPeak();
 
-            if (prevPeak != null) {
+            if (lastPeak != null) {
                 // Check delta abscissa
                 double x = (start + stop) / 2.0;
-                double dx = x - ((prevPeak.start + prevPeak.stop) / 2.0);
+                double dx = x - ((lastPeak.min + lastPeak.max) / 2.0);
 
                 if (dx > params.maxPeakDx) {
                     // A large dx indicates we are beyond end of key signature
                     logger.debug("Too large delta since previous peak");
                     invalid = true;
-                    range.shrinkStop(peak.start - 1);
+                    range.shrinkStop(peak.min - 1);
                 }
             } else {
                 // Very first peak, check offset from theoretical start
-                // TODO: this is too strict, check emptyness in previous abscissae
+                // TODO: this is too strict, check "emptyness" in previous abscissae?
                 int offset = start - range.browseStart;
 
                 if (offset > params.maxFirstPeakOffset) {
                     logger.debug("First peak arrives too late");
                     invalid = true;
-                    range.shrinkStop(peak.start - 1);
+                    range.shrinkStop(peak.min - 1);
                 } else if (!range.hasStart()) {
-                    // Set range.start at beginning of browsing, since no space was found before peak
+                    // No space was found before peak, set range.start at beginning of browsing
                     range.setStart(range.browseStart);
                 }
             }
@@ -1705,7 +1657,7 @@ public class KeyBuilder
      *
      * @return the last (valid) peak, if any, or null
      */
-    private KeyEvent.Peak getLastPeak ()
+    private KeyPeak getLastPeak ()
     {
         if (peaks.isEmpty()) {
             return null;
@@ -1771,6 +1723,20 @@ public class KeyBuilder
         }
 
         return table;
+    }
+
+    private double getSmallestDx (KeyPeak peak,
+                                  Collection<KeyPeak> col)
+    {
+        double smallest = Double.MAX_VALUE;
+
+        for (KeyPeak p : col) {
+            if (p != peak) {
+                smallest = Math.min(smallest, Math.abs(p.getCenter() - peak.getCenter()));
+            }
+        }
+
+        return smallest;
     }
 
     //---------//
@@ -1839,6 +1805,83 @@ public class KeyBuilder
         return false;
     }
 
+    //----------------//
+    // inferSignature //
+    //----------------//
+    /**
+     * Infer a raw signature value, based on peaks configuration.
+     * <p>
+     * This is based on the average value of peaks intervals, computed on the short ones (the
+     * intervals shorter or equal to the mean value).
+     *
+     * @return -flats, 0 or +sharps
+     */
+    private int inferSignature ()
+    {
+        final int peakCount = peaks.size(); // Number of peaks
+
+        if (peakCount == 0) {
+            logger.debug("no peak");
+
+            return 0;
+        }
+
+        final int offset = peaks.get(0).min - range.getStart(); // Initial abscissa offset
+        final KeyPeak lastPeak = getLastPeak();
+
+        if (peakCount > 1) {
+            // Compute mean value of short intervals
+            double meanDx = (lastPeak.getCenter() - peaks.get(0).getCenter()) / (peakCount - 1);
+            int shorts = 0;
+            double sum = 0;
+
+            for (int i = 1; i < peakCount; i++) {
+                double interval = peaks.get(i).getCenter() - peaks.get(i - 1).getCenter();
+
+                if (interval <= meanDx) {
+                    shorts++;
+                    sum += interval;
+                }
+            }
+
+            final double meanShort = sum / shorts;
+
+            if (meanShort < params.minFlatDelta) {
+                keyShape = Shape.SHARP;
+            } else if (meanShort > params.maxSharpDelta) {
+                keyShape = Shape.FLAT;
+            } else {
+                keyShape = (offset > params.offsetThreshold) ? Shape.SHARP : Shape.FLAT;
+            }
+
+            // For sharps, peakCount must be an even number
+            if (keyShape == Shape.SHARP) {
+                if ((peakCount % 2) != 0) {
+                    // Discard last peak (TODO: why the last?)
+                    range.shrinkStop(lastPeak.min - 1);
+                    peaks.retainAll(peaks.subList(0, peakCount - 1));
+
+                    return (peakCount - 1) / 2;
+                }
+
+                return peakCount / 2;
+            } else {
+                return -peakCount;
+            }
+        } else if (offset <= params.offsetThreshold) {
+            // Acceptable flat
+            keyShape = Shape.FLAT;
+
+            return -1;
+        } else {
+            // Non acceptable stuff, so discard this single peak!
+            range.shrinkStop(lastPeak.min - 1);
+            peaks.clear();
+
+            return 0;
+        }
+    }
+
     //---------------//
     // isRatherEmpty //
     //---------------//
@@ -1894,9 +1937,9 @@ public class KeyBuilder
      * @param peak the peak to check
      * @return true if OK
      */
-    private boolean isStemLike (KeyEvent.Peak peak)
+    private boolean isStemLike (KeyPeak peak)
     {
-        final Rectangle rect = new Rectangle(peak.start, roi.y, peak.getWidth(), roi.height);
+        final Rectangle rect = new Rectangle(peak.min, roi.y, peak.getWidth(), roi.height);
 
         if (peak.getWidth() <= 2) {
             rect.grow(1, 0); // Slight margin on left & right of peak
@@ -1915,12 +1958,12 @@ public class KeyBuilder
     // purgeCandidates //
     //-----------------//
     /**
-     * Make sure that no part is shared by several candidates.
+     * Make sure that no part is shared by different candidates.
      */
     private void purgeCandidates (List<Candidate> candidates)
     {
         final List<Candidate> toRemove = new ArrayList<Candidate>();
-        Collections.sort(candidates);
+        Collections.sort(candidates, Candidate.byReverseGrade);
 
         for (int i = 0; i < candidates.size(); i++) {
             final Candidate candidate = candidates.get(i);
@@ -1943,39 +1986,50 @@ public class KeyBuilder
     // purgeLightPeaks //
     //-----------------//
     /**
-     * Discard the peaks that are too light compared with the others, unless they are
-     * distant enough from immediate neighbors.
+     * Discard the peaks that are too light compared with the others and have a close
+     * neighbor.
+     * <p>
+     * TODO: Perhaps a better approach could be based on regular pattern of peaks. But how?
      */
     private void purgeLightPeaks ()
     {
-        int n = 0; // Initial count of peaks
+        final int peakCount = peaks.size(); // Number of peaks
+
+        if (peakCount <= 1) {
+            return;
+        }
+
+        // Compute area quorum on all peaks but the smallest one
+        List<KeyPeak> sortedPeaks = new ArrayList<KeyPeak>(peaks);
+        Collections.sort(sortedPeaks, KeyPeak.byArea);
+
         int totalArea = 0; // Sum of peaks areas
-        int minArea = Integer.MAX_VALUE; // Smallest peak area found
 
-        for (KeyEvent.Peak peak : peaks) {
-            n++;
+        for (KeyPeak peak : sortedPeaks.subList(1, peakCount)) {
             totalArea += peak.area;
-            minArea = Math.min(minArea, peak.area);
         }
 
-        if (n >= 2) {
-            // Compute area quorum on all peaks but the smallest one
-            double quorum = (params.peakAreaQuorum * (totalArea - minArea)) / (n - 1);
+        final double quorum = (params.peakAreaQuorum * totalArea) / (peakCount - 1);
 
-            // Discard any peak which doesn't reach area quorum
-            List<KeyEvent.Peak> toDelete = new ArrayList<KeyEvent.Peak>();
+        // Discard any peak which doesn't reach area quorum
+        // and is abscissa-wise close to another peak
+        for (Iterator<KeyPeak> it = sortedPeaks.iterator(); it.hasNext();) {
+            final KeyPeak peak = it.next();
 
-            for (KeyEvent.Peak peak : peaks) {
-                if (peak.area < quorum) {
-                    toDelete.add(peak);
-                }
+            if (peak.area >= quorum) {
+                break; // End of "light" peaks
             }
 
-            if (!toDelete.isEmpty()) {
-                logger.info("Staff#{} toDelete {}", getId(), toDelete);
-                peaks.removeAll(toDelete);
+            // Check distance to closest peak
+            final double dx = getSmallestDx(peak, sortedPeaks);
+
+            if (dx < params.minLightPeakDx) {
+                logger.info("Staff#{} light {}", getId(), peak);
+                it.remove();
             }
         }
+
+        peaks.retainAll(sortedPeaks);
     }
 
     //------------//
@@ -2025,12 +2079,12 @@ public class KeyBuilder
      * @param typicalTrail typical length after last peak (this depends on alter shape)
      * @param maxTrail     maximum length after last peak
      */
-    private void refineAreaStop (KeyEvent.Peak lastGoodPeak,
+    private void refineAreaStop (KeyPeak lastGoodPeak,
                                  int typicalTrail,
                                  int maxTrail)
     {
-        final int xMin = (lastGoodPeak.start + typicalTrail) - 1;
-        final int xMax = Math.min(projection.getStop(), lastGoodPeak.start + maxTrail);
+        final int xMin = (lastGoodPeak.min + typicalTrail) - 1;
+        final int xMax = Math.min(projection.getStop(), lastGoodPeak.min + maxTrail);
 
         int minCount = Integer.MAX_VALUE;
         Integer newStop = null;
@@ -2047,6 +2101,61 @@ public class KeyBuilder
         if (newStop != null) {
             range.shrinkStop(newStop);
         }
+    }
+
+    //----------------//
+    // refineSignature //
+    //----------------//
+    /**
+     * Additional tests on key signature, which may get adjusted.
+     * <ul>
+     * <li>Check if there is enough ink after last peak (depending on key shape).
+     * <li>Check if items are regularly spaced.
+     * <li>Check if the first invalid peak (if any) is sufficiently far from last good peak so
+     * that there is enough room for key trailing space.
+     * </ul>
+     *
+     * @return the signature value, perhaps modified
+     */
+    private int refineSignature (int signature)
+    {
+        if (signature == 0) {
+            return 0;
+        }
+
+        KeyPeak lastPeak = getLastPeak();
+
+        // Where is the precise end of key signature?
+        int trail = range.getStop() - lastPeak.min + 1;
+
+        // Check trailing length
+        if (signature < 0) {
+            if (trail < params.minFlatTrail) {
+                logger.debug("Removing too narrow flat");
+                peaks.retainAll(peaks.subList(0, peaks.indexOf(lastPeak)));
+                range.shrinkStop(lastPeak.min - 1);
+                signature += 1;
+            }
+        } else if (trail < params.minSharpTrail) {
+            logger.debug("Removing too narrow sharp");
+            // Remove the last 2 peaks
+            peaks.retainAll(peaks.subList(0, peaks.indexOf(lastPeak)));
+            lastPeak = getLastPeak();
+            peaks.retainAll(peaks.subList(0, peaks.indexOf(lastPeak)));
+            range.shrinkStop(lastPeak.min - 1);
+            signature -= 1;
+        }
+
+        if (Math.abs(signature) >= 3) {
+            // Regulary spaced items?
+            if (signature < 0) {
+                signature = checkFlatDeltas(signature); // Flats
+            } else {
+                signature = checkSharpDeltas(signature); // Sharps
+            }
+        }
+
+        return signature;
     }
 
     //---------------//
@@ -2071,10 +2180,59 @@ public class KeyBuilder
     }
 
     //--------------------//
+    // retrieveCandidates //
+    //--------------------//
+    /**
+     * Retrieve all possible candidates (as connected components) with acceptable shape.
+     *
+     * @param shapes acceptable shapes
+     * @return the candidates found
+     */
+    private List<Candidate> retrieveCandidates (Set<Shape> shapes)
+    {
+        logger.debug("retrieveCandidates for staff#{}", getId());
+
+        // Key-signature area pixels
+        ByteProcessor keyBuf = roi.getAreaPixels(staffFreeSource, range);
+        RunTable runTable = new RunTableFactory(VERTICAL).createTable(keyBuf);
+        List<Glyph> parts = GlyphFactory.buildGlyphs(
+                runTable,
+                new Point(range.getStart(), roi.y));
+
+        purgeParts(parts, range.getStop());
+        registerParts(parts);
+
+        // Formalize parts relationships in a global graph
+        SimpleGraph<Glyph, GlyphLink> globalGraph = Glyphs.buildLinks(parts, params.maxPartGap);
+        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(
+                globalGraph).connectedSets();
+        logger.debug("Staff#{} sets:{}", getId(), sets.size());
+
+        List<Candidate> allCandidates = new ArrayList<Candidate>();
+
+        for (Set<Glyph> set : sets) {
+            // Use only the subgraph for this set
+            SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, globalGraph);
+            MultipleAdapter adapter = new MultipleAdapter(
+                    subGraph,
+                    shapes,
+                    Grades.keyAlterMinGrade1);
+            new GlyphCluster(adapter, null).decompose();
+            logger.debug("Staff#{} set:{} trials:{}", getId(), set.size(), adapter.trials);
+            allCandidates.addAll(adapter.candidates);
+        }
+
+        purgeCandidates(allCandidates);
+        Collections.sort(allCandidates, Candidate.byReverseGrade);
+
+        return allCandidates;
+    }
+
+    //--------------------//
     // retrieveComponents //
     //--------------------//
     /**
-     * Look into sig area for key items, based on connected components.
+     * Look into key signature area for key items, based on connected components.
      */
     private void retrieveComponents ()
     {
@@ -2137,78 +2295,35 @@ public class KeyBuilder
         }
     }
 
-    //-------------------//
-    // retrieveSignature //
-    //-------------------//
+    //----------------//
+    // selectBestClef //
+    //----------------//
     /**
-     * Retrieve the staff signature value.
-     * This is based on the average value of peaks intervals, computed on the short ones (the
-     * intervals shorter or equal to the mean value).
-     *
-     * @return -flats, 0 or +sharps
+     * If best clef has not yet been selected, let's do it now.
      */
-    private int retrieveSignature ()
+    private void selectBestClef ()
     {
-        KeyEvent.Peak lastGoodPeak = getLastPeak();
+        if (clefs.size() != 1) {
+            clefs.clear();
+            clefs.addAll(staff.getCompetingClefs(range.getStop()));
 
-        if (lastGoodPeak == null) {
-            logger.debug("no valid peak");
-
-            return 0;
-        }
-
-        int last = peaks.indexOf(lastGoodPeak); // Index of last good peak
-        int offset = peaks.get(0).start - range.getStart(); // Initial abscissa offset
-
-        if (last > 0) {
-            // Compute mean value of short intervals
-            double meanDx = (peaks.get(last).getCenter() - peaks.get(0).getCenter()) / last;
-            int shorts = 0;
-            double sum = 0;
-
-            for (int i = 1; i <= last; i++) {
-                double interval = peaks.get(i).getCenter() - peaks.get(i - 1).getCenter();
-
-                if (interval <= meanDx) {
-                    shorts++;
-                    sum += interval;
-                }
+            for (Inter clef : clefs) {
+                sig.computeContextualGrade(clef);
             }
 
-            double meanShort = sum / shorts;
+            Collections.sort(clefs, Inter.byReverseBestGrade);
 
-            if (meanShort < params.minFlatDelta) {
-                keyShape = Shape.SHARP;
-            } else if (meanShort > params.maxSharpDelta) {
-                keyShape = Shape.FLAT;
-            } else {
-                keyShape = (offset > params.offsetThreshold) ? Shape.SHARP : Shape.FLAT;
-            }
+            if (!clefs.isEmpty()) {
+                ClefInter bestClef = clefs.get(0);
 
-            // For sharps, peaks count must be an even number
-            if (keyShape == Shape.SHARP) {
-                if (((last + 1) % 2) != 0) {
-                    // Discard last peak
-                    range.shrinkStop(lastGoodPeak.start - 1);
-                    peaks.retainAll(peaks.subList(0, peaks.indexOf(lastGoodPeak)));
-                    last--;
+                for (ClefInter clef : clefs) {
+                    if (clef != bestClef) {
+                        clef.delete();
+                    }
                 }
 
-                return (last + 1) / 2;
-            } else {
-                return -(last + 1);
+                clefs.retainAll(Arrays.asList(bestClef));
             }
-        } else if (offset <= params.offsetThreshold) {
-            // Acceptable flat
-            keyShape = Shape.FLAT;
-
-            return -1;
-        } else {
-            // Non acceptable stuff, so discard this single peak!
-            range.shrinkStop(lastGoodPeak.start - 1);
-            peaks.retainAll(peaks.subList(0, peaks.indexOf(lastGoodPeak)));
-
-            return 0;
         }
     }
 
@@ -2289,9 +2404,13 @@ public class KeyBuilder
                 0.5,
                 "Maximum trailing length after last peak for a sharp item");
 
+        private final Scale.Fraction minLightPeakDx = new Scale.Fraction(
+                0.35, // 0.4 should be OK
+                "Minimum delta abscissa with closest peak to keep a light peak");
+
         private final Scale.Fraction minPeakDx = new Scale.Fraction(
                 0.3,
-                "Mainmum delta abscissa between peaks");
+                "Minimum delta abscissa between peaks");
 
         private final Scale.Fraction maxPeakDx = new Scale.Fraction(
                 1.4,
@@ -2438,7 +2557,7 @@ public class KeyBuilder
             final Rectangle glyphBox = glyph.getBounds();
 
             // Make sure that the glyph width embraces the slice peak(s)
-            for (KeyEvent.Peak peak : peaks) {
+            for (KeyPeak peak : peaks) {
                 final double peakCenter = peak.getCenter();
 
                 if ((sliceStart <= peakCenter) && (peakCenter <= sliceStop)) {
@@ -2460,7 +2579,7 @@ public class KeyBuilder
                 return;
             }
 
-            if (!embracesSlicePeaks(slice, glyph)) {
+            if ((slice != null) && !embracesSlicePeaks(slice, glyph)) {
                 return;
             }
 
@@ -2498,11 +2617,44 @@ public class KeyBuilder
     //-----------//
     // Candidate //
     //-----------//
+    /**
+     * Meant to mutually exclude candidates that have a part in common.
+     */
     private static class Candidate
-            implements Comparable<Candidate>
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
+        /** To sort according to decreasing grade. */
+        public static final Comparator<Candidate> byReverseGrade = new Comparator<Candidate>()
+        {
+            @Override
+            public int compare (Candidate c1,
+                                Candidate c2)
+            {
+                if (c1 == c2) {
+                    return 0;
+                }
+
+                return Double.compare(c2.eval.grade, c1.eval.grade);
+            }
+        };
+
+        /** To sort according to left abscissa. */
+        public static final Comparator<Candidate> byAbscissa = new Comparator<Candidate>()
+        {
+            @Override
+            public int compare (Candidate c1,
+                                Candidate c2)
+            {
+                if (c1 == c2) {
+                    return 0;
+                }
+
+                return Double.compare(c1.glyph.getLeft(), c2.glyph.getLeft());
+            }
+        };
+
+        //~ Instance fields ------------------------------------------------------------------------
         final Glyph glyph;
 
         final Set<Glyph> parts;
@@ -2521,9 +2673,15 @@ public class KeyBuilder
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public int compareTo (Candidate that)
+        public String toString ()
         {
-            return Double.compare(that.eval.grade, this.eval.grade);
+            StringBuilder sb = new StringBuilder("Candidate{#");
+
+            sb.append(glyph.getId());
+            sb.append(" ").append(eval);
+            sb.append("}");
+
+            return sb.toString();
         }
     }
 
@@ -2573,6 +2731,8 @@ public class KeyBuilder
         final int maxPeakDx;
 
         final int minPeakDx;
+
+        final double minLightPeakDx;
 
         final double maxSharpDelta;
 
@@ -2629,6 +2789,7 @@ public class KeyBuilder
             maxSharpTrail = scale.toPixels(constants.maxSharpTrail);
             maxPeakDx = scale.toPixels(constants.maxPeakDx);
             minPeakDx = scale.toPixels(constants.minPeakDx);
+            minLightPeakDx = scale.toPixelsDouble(constants.minLightPeakDx);
             peakAreaQuorum = constants.peakAreaQuorum.getValue();
             maxSharpDelta = scale.toPixelsDouble(constants.maxSharpDelta);
             minFlatDelta = scale.toPixelsDouble(constants.minFlatDelta);
@@ -2685,10 +2846,7 @@ public class KeyBuilder
         {
             // Retrieve impacted slice
             final KeySlice slice = roi.sliceOf(glyph.getCentroid().x);
-
-            if (slice != null) {
-                evaluateSliceGlyph(slice, glyph, parts);
-            }
+            evaluateSliceGlyph(slice, glyph, parts);
         }
 
         @Override

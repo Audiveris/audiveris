@@ -68,7 +68,7 @@ public interface SheetStub
 
     /**
      * An abnormal situation has been found, as detailed in provided message,
-     * now how should we proceed, depending on batch mode or user answer.
+     * now how should we proceed?, depending on batch mode or user answer.
      *
      * @param msg   the problem description
      * @param dummy true for a dummy (positive) decision

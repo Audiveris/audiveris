@@ -26,83 +26,35 @@ package omr.sheet.header;
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 public abstract class KeyEvent
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** Left abscissa. */
-    protected int start;
+    protected int min;
 
     /** Right abscissa. */
-    protected int stop;
+    protected int max;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new KeyEvent object.
      *
-     * @param start first abscissa of object
-     * @param stop  last abscissa of object
+     * @param min first abscissa of object
+     * @param max last abscissa of object
      */
-    public KeyEvent (int start,
-                     int stop)
+    public KeyEvent (int min,
+                     int max)
     {
-        this.start = start;
-        this.stop = stop;
+        this.min = min;
+        this.max = max;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     public int getWidth ()
     {
-        return stop - start + 1;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //------//
-    // Peak //
-    //------//
-    public static class Peak
-            extends KeyEvent
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Max cumulated height. */
-        protected int height;
-
-        /** Weight of peak. */
-        protected int area;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Peak (int start,
-                     int stop,
-                     int height,
-                     int area)
-        {
-            super(start, stop);
-            this.height = height;
-            this.area = area;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public double getCenter ()
-        {
-            return 0.5 * (start + stop);
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Peak{");
-            sb.append(start);
-            sb.append("-");
-            sb.append(stop);
-            sb.append("/");
-            sb.append("h:").append(height);
-            sb.append(",a:").append(area);
-            sb.append("}");
-
-            return sb.toString();
-        }
+        return max - min + 1;
     }
 
     //-------//
@@ -112,6 +64,7 @@ public abstract class KeyEvent
      * An abscissa range where no chunk is detected on top of staff lines and thus
      * indicates a possible separation.
      */
+    @Deprecated
     public static class Space
             extends KeyEvent
     {
@@ -129,7 +82,7 @@ public abstract class KeyEvent
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.append("Space(").append(start).append("-").append(stop).append(")");
+            sb.append("Space(").append(min).append("-").append(max).append(")");
 
             return sb.toString();
         }
