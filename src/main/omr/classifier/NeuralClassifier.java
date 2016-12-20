@@ -486,6 +486,17 @@ public class NeuralClassifier
         final int hiddenNum = SHAPE_COUNT;
         final long seed = 6;
         final double learningRate = constants.learningRate.getValue();
+
+        //        MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed).iterations(1)
+        //                .activation("relu").weightInit(WeightInit.RELU).learningRate(learningRate)
+        //                .regularization(true).l2(1e-4)
+        //                .list()
+        //                .layer(0, new DenseLayer.Builder().nIn(ShapeDescription.length()).nOut(hiddenNum).build())
+        //                .layer(1, new DenseLayer.Builder().nIn(hiddenNum).nOut(hiddenNum).build())
+        //                .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+        //                        .activation("softmax").nIn(hiddenNum).nOut(SHAPE_COUNT).build())
+        //                .backprop(true).pretrain(false).build();
+        //
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder() //
                 .seed(seed) //
                 .iterations(1) //
@@ -517,7 +528,6 @@ public class NeuralClassifier
                 .backprop(true) //
                 .pretrain(false) //
                 .build();
-
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
 

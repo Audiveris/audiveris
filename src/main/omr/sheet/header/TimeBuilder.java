@@ -39,7 +39,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.Symbol.Group;
 
-import omr.math.Projection;
+import omr.math.IntegerFunction;
 import static omr.run.Orientation.VERTICAL;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
@@ -54,7 +54,6 @@ import omr.sheet.Scale.InterlineScale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.header.HeaderBuilder.Plotter;
 import static omr.sheet.header.TimeBuilder.TimeKind.*;
 import omr.sheet.rhythm.MeasureStack;
 
@@ -69,6 +68,7 @@ import omr.sig.relation.Exclusion;
 import omr.sig.relation.Relation;
 import omr.sig.relation.TimeTopBottomRelation;
 
+import omr.util.ChartPlotter;
 import omr.util.Navigable;
 import omr.util.VerticalSide;
 
@@ -705,7 +705,7 @@ public abstract class TimeBuilder
          * @param staff   the desired staff
          * @return the time chosen to be added to plot title
          */
-        public String addPlot (Plotter plotter,
+        public String addPlot (ChartPlotter plotter,
                                Staff staff)
         {
             final int browseStart;
@@ -802,7 +802,7 @@ public abstract class TimeBuilder
         private final StaffHeader.Range range;
 
         /** Projection of foreground pixels, indexed by abscissa. */
-        private final Projection projection;
+        private final IntegerFunction projection;
 
         /** Region of interest for time-sig. */
         private final Rectangle roi;
@@ -848,35 +848,31 @@ public abstract class TimeBuilder
          *
          * @param plotter the plotter to augment
          */
-        protected void addPlot (Plotter plotter)
+        protected void addPlot (ChartPlotter plotter)
         {
-            final int xMin = projection.getStart();
-            final int xMax = projection.getStop();
+            final int xMin = projection.getXMin();
+            final int xMax = projection.getXMax();
 
             {
                 // Values
-                XYSeries series = new XYSeries("Time");
-                series.add(xMin, -Plotter.MARK);
-
-                for (int x = xMin; x <= xMax; x++) {
-                    series.add(x, projection.getValue(x));
-                }
-
-                series.add(xMax, -Plotter.MARK);
-
-                plotter.add(series, Color.BLUE, false);
+                XYSeries series = projection.getValueSeries();
+                series.setKey("Time");
+                plotter.add(series, Color.BLUE);
             }
 
             if (range.hasStart() || (staff.getTimeStop() != null)) {
                 // Area limits
-                XYSeries series = new XYSeries("TimeArea");
+                XYSeries series = new XYSeries("TimeArea", false); // No autosort
                 int start = range.hasStart() ? range.getStart() : staff.getTimeStart();
                 int stop = range.hasStart() ? range.getStop() : staff.getTimeStop();
-                series.add(start, -Plotter.MARK);
+
+                series.add(start, 0);
                 series.add(start, staff.getHeight());
+
                 series.add(stop, staff.getHeight());
-                series.add(stop, -Plotter.MARK);
-                plotter.add(series, Color.MAGENTA, false);
+                series.add(stop, 0);
+
+                plotter.add(series, Color.BLUE);
             }
         }
 
@@ -997,14 +993,14 @@ public abstract class TimeBuilder
          *
          * @return the projection on x-axis
          */
-        private Projection getProjection ()
+        private IntegerFunction getProjection ()
         {
             // Staff-free pixel source
-            final ByteProcessor source = system.getSheet().getPicture()
-                    .getSource(Picture.SourceKey.NO_STAFF);
+            final ByteProcessor source = system.getSheet().getPicture().getSource(
+                    Picture.SourceKey.NO_STAFF);
             final int xMin = roi.x;
             final int xMax = (roi.x + roi.width) - 1;
-            final Projection table = new Projection.Short(xMin, xMax);
+            final IntegerFunction function = new IntegerFunction(xMin, xMax);
 
             for (int x = xMin; x <= xMax; x++) {
                 short cumul = 0;
@@ -1015,10 +1011,10 @@ public abstract class TimeBuilder
                     }
                 }
 
-                table.increment(x, cumul);
+                function.setValue(x, cumul);
             }
 
-            return table;
+            return function;
         }
 
         //--------//

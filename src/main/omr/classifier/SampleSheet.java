@@ -91,6 +91,9 @@ public class SampleSheet
     /** Optional image runTable. */
     private RunTable image;
 
+    /** True if image is already on disk. */
+    private boolean imageSaved = true;
+
     /** Samples gathered by shape. */
     private final EnumMap<Shape, ArrayList<Sample>> shapeMap = new EnumMap<Shape, ArrayList<Sample>>(
             Shape.class);
@@ -354,7 +357,7 @@ public class SampleSheet
      */
     public boolean isModified ()
     {
-        return modified;
+        return modified || !imageSaved;
     }
 
     //---------//
@@ -390,12 +393,13 @@ public class SampleSheet
             }
 
             // Binary
-            if (image != null) {
+            if ((image != null) && !imageSaved) {
                 final Path folderPath = imagesRoot.resolve(descriptor.getName());
                 Files.createDirectories(folderPath);
 
                 final Path imagePath = folderPath.resolve(IMAGE_FILE_NAME);
                 Jaxb.marshal(image, imagePath, getJaxbContext());
+                imageSaved = true;
                 logger.info("Stored {}", imagePath);
             }
         } catch (Exception ex) {
@@ -410,10 +414,13 @@ public class SampleSheet
      * Register the image binary table for this sheet.
      *
      * @param image the image to set
+     * @param saved true if image already on disk
      */
-    public void setImage (RunTable image)
+    public void setImage (RunTable image,
+                          boolean saved)
     {
         this.image = image;
+        this.imageSaved = saved;
     }
 
     //-------------//

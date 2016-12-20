@@ -33,9 +33,7 @@ import omr.image.ImageUtil;
 import omr.image.MedianGrayFilter;
 import omr.image.PixelFilter;
 import omr.image.PixelSource;
-
 import static omr.run.Orientation.VERTICAL;
-
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
 
@@ -205,7 +203,7 @@ public class Picture
         width = binaryTable.getWidth();
         height = binaryTable.getHeight();
 
-        setTable(TableKey.BINARY, binaryTable);
+        setTable(TableKey.BINARY, binaryTable, false);
 
         // Remember the initial image
         initialImage = null;
@@ -738,14 +736,16 @@ public class Picture
     /**
      * Register a table.
      *
-     * @param key   table key
-     * @param table table to register
+     * @param key      table key
+     * @param table    table to register
+     * @param modified true if not saved on disk
      */
     public final void setTable (TableKey key,
-                                RunTable table)
+                                RunTable table,
+                                boolean modified)
     {
         RunTableHolder tableHolder = new RunTableHolder(key);
-        tableHolder.setData(table);
+        tableHolder.setData(table, modified);
         tables.put(key, tableHolder);
 
         switch (key) {

@@ -21,27 +21,16 @@
 // </editor-fold>
 package omr.math;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartFrame;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
-import java.awt.Point;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import javax.swing.WindowConstants;
 
 /**
  * Class {@code IntegerFunction} represents a function y = f(x), where x & y are
@@ -60,7 +49,7 @@ public class IntegerFunction
     private static final Logger logger = LoggerFactory.getLogger(IntegerFunction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Minimum x value. Often 0. */
+    /** Minimum x value. */
     protected final int xMin;
 
     /** Maximum x value. */
@@ -100,19 +89,63 @@ public class IntegerFunction
         values[x - xMin] += delta;
     }
 
+    //--------//
+    // argMax //
+    //--------//
+    /**
+     * Report the (first) x for highest y value (within the provided x domain).
+     *
+     * @param x1 x at beginning of domain
+     * @param x2 x at end of domain
+     * @return the x for first highest y in domain
+     */
+    public int argMax (int x1,
+                       int x2)
+    {
+        int main = x1;
+        int maxY = getValue(main);
+
+        for (int x = x1; x <= x2; x++) {
+            int y = getValue(x);
+
+            if (maxY < y) {
+                maxY = y;
+                main = x;
+            }
+        }
+
+        return main;
+    }
+
     //---------//
     // getArea //
     //---------//
     /**
      * Report the algebraic area between function and x axis.
      *
-     * @return integration on [xMin .. xMax] range
+     * @return integration on [xMin .. xMax] domain
      */
     public int getArea ()
     {
+        return getArea(xMin, xMax);
+    }
+
+    //---------//
+    // getArea //
+    //---------//
+    /**
+     * Report the algebraic area between function and x axis, from x1 to x2.
+     *
+     * @param x1 x at beginning of domain
+     * @param x2 x at end of domain
+     * @return integration on [x1 .. x2] domain
+     */
+    public int getArea (int x1,
+                        int x2)
+    {
         int area = 0;
 
-        for (int x = xMin; x <= xMax; x++) {
+        for (int x = x1; x <= x2; x++) {
             area += getValue(x);
         }
 
@@ -133,25 +166,74 @@ public class IntegerFunction
         return getValue(x) - getValue(x - 1);
     }
 
+    //---------------------//
+    // getDerivativeSeries //
+    //---------------------//
+    /**
+     * Report the XY series for function derivatives between x1 and x2.
+     *
+     * @param x1 lower value for x (x1 must be > xMin)
+     * @param x2 upper value for x
+     * @return the XY derivatives ready to plot
+     */
+    public XYSeries getDerivativeSeries (int x1,
+                                         int x2)
+    {
+        XYSeries derivativeSeries = new XYSeries("Derivative", false); // No autosort
+
+        for (int i = x1; i <= x2; i++) {
+            derivativeSeries.add(i, getDerivative(i));
+        }
+
+        return derivativeSeries;
+    }
+
+    //---------------------//
+    // getDerivativeSeries //
+    //---------------------//
+    /**
+     * Report the XY series for function derivatives up to provided x2.
+     *
+     * @param x2 upper value for x
+     * @return the XY derivatives ready to plot
+     */
+    public XYSeries getDerivativeSeries (int x2)
+    {
+        return getDerivativeSeries(xMin + 1, x2);
+    }
+
+    //---------------------//
+    // getDerivativeSeries //
+    //---------------------//
+    /**
+     * Report the XY series for function derivatives on whole x domain.
+     *
+     * @return the XY derivatives ready to plot
+     */
+    public XYSeries getDerivativeSeries ()
+    {
+        return getDerivativeSeries(xMin + 1, xMax);
+    }
+
     //----------------//
     // getLocalMaxima //
     //----------------//
     /**
      * Report the local maximum points, sorted by decreasing value
      *
-     * @param xMin minimum x value
-     * @param xMax maximum x value
+     * @param x1 minimum x value
+     * @param x2 maximum x value
      * @return the collection of local maxima x, ordered by decreasing value
      */
-    public List<Integer> getLocalMaxima (int xMin,
-                                         int xMax)
+    public List<Integer> getLocalMaxima (int x1,
+                                         int x2)
     {
         final List<Integer> maxima = new ArrayList<Integer>();
         Integer prevX = null;
         int prevY = 0;
         boolean growing = false;
 
-        for (int x = xMin; x <= xMax; x++) {
+        for (int x = x1; x <= x2; x++) {
             int y = getValue(x);
 
             if (prevX != null) {
@@ -200,6 +282,55 @@ public class IntegerFunction
         return values[x - xMin];
     }
 
+    //----------------//
+    // getValueSeries //
+    //----------------//
+    /**
+     * Report the XY series for function values from x1 to x2.
+     *
+     * @param x1 lower value for x
+     * @param x2 upper value for x
+     * @return the XY values ready to plot
+     */
+    public XYSeries getValueSeries (int x1,
+                                    int x2)
+    {
+        XYSeries valueSeries = new XYSeries("Value", false); // No autosort
+
+        for (int x = x1; x <= x2; x++) {
+            valueSeries.add(x, getValue(x));
+        }
+
+        return valueSeries;
+    }
+
+    //----------------//
+    // getValueSeries //
+    //----------------//
+    /**
+     * Report the XY series for function values up to provided xMax.
+     *
+     * @param x2 upper value for x
+     * @return the XY values ready to plot
+     */
+    public XYSeries getValueSeries (int x2)
+    {
+        return getValueSeries(xMin, x2);
+    }
+
+    //----------------//
+    // getValueSeries //
+    //----------------//
+    /**
+     * Report the XY series for function values on whole x domain.
+     *
+     * @return the XY values ready to plot
+     */
+    public XYSeries getValueSeries ()
+    {
+        return getValueSeries(xMin, xMax);
+    }
+
     //---------//
     // getXMax //
     //---------//
@@ -226,32 +357,51 @@ public class IntegerFunction
         return xMin;
     }
 
-    //--------//
-    // mainOf //
-    //--------//
+    //---------------//
+    // getZeroSeries //
+    //---------------//
     /**
-     * Report, within the provided range, the (first) x for highest y.
+     * Report 0 value on whole x domain.
      *
-     * @param xMin x at beginning of range
-     * @param xMax x at end of range
-     * @return the x for first highest y in range
+     * @return the zero series ready to plot
      */
-    public int mainOf (int xMin,
-                       int xMax)
+    public XYSeries getZeroSeries ()
     {
-        int main = xMin;
-        int maxY = getValue(main);
+        return getZeroSeries(xMin, xMax);
+    }
 
-        for (int x = xMin; x <= xMax; x++) {
-            int y = getValue(x);
+    //---------------//
+    // getZeroSeries //
+    //---------------//
+    /**
+     * Report 0 value until provided x2.
+     *
+     * @param x2 upper value for x
+     * @return the zero series ready to plot
+     */
+    public XYSeries getZeroSeries (int x2)
+    {
+        return getZeroSeries(xMin, x2);
+    }
 
-            if (maxY < y) {
-                maxY = y;
-                main = x;
-            }
-        }
+    //---------------//
+    // getZeroSeries //
+    //---------------//
+    /**
+     * Report 0 value from x1 to x2.
+     *
+     * @param x1 lower value for x
+     * @param x2 upper value for x
+     * @return the zero series ready to plot
+     */
+    public XYSeries getZeroSeries (int x1,
+                                   int x2)
+    {
+        XYSeries zeroSeries = new XYSeries("Zero", false); // No autosort
+        zeroSeries.add(x1, 0);
+        zeroSeries.add(x2, 0);
 
-        return main;
+        return zeroSeries;
     }
 
     //-------//
@@ -287,143 +437,5 @@ public class IntegerFunction
                           int y)
     {
         values[x - xMin] = y;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //---------//
-    // Plotter //
-    //---------//
-    /**
-     * Class {@code Plotter} plots the integer function.
-     */
-    public class Plotter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        protected final String title;
-
-        protected final int xMax;
-
-        protected final XYSeriesCollection dataset = new XYSeriesCollection();
-
-        protected final JFreeChart chart;
-
-        protected final XYPlot plot;
-
-        protected final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-
-        // Series index
-        protected int index = -1;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a new Plotter object.
-         *
-         * @param title  title for this histogram
-         * @param xLabel label along x axis
-         * @param xMax   maximum x value
-         */
-        public Plotter (String title,
-                        String xLabel,
-                        int xMax)
-        {
-            this.title = title;
-            this.xMax = xMax;
-
-            // Chart
-            chart = ChartFactory.createXYLineChart(
-                    title, // Title
-                    xLabel, // X-Axis label
-                    "Counts", // Y-Axis label
-                    dataset, // Dataset
-                    PlotOrientation.VERTICAL, // orientation
-                    true, // Show legend
-                    false, // Show tool tips
-                    false // urls
-            );
-
-            plot = (XYPlot) chart.getPlot();
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Build and display plot at provided screen location.
-         *
-         * @param location screen location
-         */
-        public void plot (Point location)
-        {
-            plot.setRenderer(renderer);
-
-            plotLevelHigh();
-
-            plotValues(); // -------------
-
-            plotLevelMedium();
-
-            plotDerivatives(); // --------
-
-            plotLevelLow();
-
-            plotZero(); // ---------------
-
-            // Hosting frame
-            ChartFrame frame = new ChartFrame(title, chart, true);
-            frame.pack();
-            frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            frame.setLocation(location);
-            frame.setVisible(true);
-        }
-
-        protected void add (XYSeries series,
-                            Color color,
-                            boolean displayShapes)
-        {
-            dataset.addSeries(series);
-            renderer.setSeriesPaint(++index, color);
-            renderer.setSeriesShapesVisible(index, displayShapes);
-        }
-
-        protected void plotLevelHigh ()
-        {
-        }
-
-        protected void plotLevelLow ()
-        {
-        }
-
-        protected void plotLevelMedium ()
-        {
-        }
-
-        protected void plotValues ()
-        {
-            XYSeries valueSeries = new XYSeries("Value");
-
-            for (int x = xMin; x <= xMax; x++) {
-                valueSeries.add(x, getValue(x));
-            }
-
-            add(valueSeries, Color.RED, false);
-        }
-
-        private void plotDerivatives ()
-        {
-            XYSeries derivative = new XYSeries("Derivative");
-
-            for (int i = xMin + 1; i <= xMax; i++) {
-                derivative.add(i, getDerivative(i));
-            }
-
-            add(derivative, Color.BLUE, false);
-        }
-
-        private void plotZero ()
-        {
-            XYSeries zeroSeries = new XYSeries("Zero");
-            zeroSeries.add(xMin, 0);
-            zeroSeries.add(xMax, 0);
-            add(zeroSeries, Color.WHITE, false);
-        }
     }
 }

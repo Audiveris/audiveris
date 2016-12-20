@@ -40,7 +40,9 @@ import omr.sig.inter.BarlineInter;
 import omr.sig.inter.Inter;
 
 import omr.util.HorizontalSide;
+
 import static omr.util.HorizontalSide.*;
+
 import omr.util.Navigable;
 
 import ij.process.ByteProcessor;
@@ -70,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.WindowConstants;
+import omr.ui.Colors;
 
 /**
  * Class {@code StaffProjector} is in charge of analyzing a staff projection onto
@@ -1410,47 +1413,47 @@ public class StaffProjector
 
             {
                 // Values
-                XYSeries valueSeries = new XYSeries("Cumuls");
+                XYSeries valueSeries = new XYSeries("Cumuls", false); // No autosort
 
                 for (int x = xMin; x <= xMax; x++) {
                     valueSeries.add(x, projection.getValue(x));
                 }
 
-                add(valueSeries, Color.RED, false);
+                add(valueSeries, Colors.CHART_VALUE, false);
             }
 
             {
                 // Derivatives
-                XYSeries derivativeSeries = new XYSeries("Derivatives");
+                XYSeries derivativeSeries = new XYSeries("Derivatives", false); // No autosort
 
                 for (int x = xMin; x <= xMax; x++) {
                     derivativeSeries.add(x, projection.getDerivative(x));
                 }
 
-                add(derivativeSeries, Color.BLUE, false);
+                add(derivativeSeries, Colors.CHART_DERIVATIVE, false);
             }
 
             {
                 // Derivatives positive threshold
-                XYSeries derSeries = new XYSeries("Der+");
+                XYSeries derSeries = new XYSeries("Der+", false); // No autosort
 
                 derSeries.add(xMin, params.minDerivative);
                 derSeries.add(xMax, params.minDerivative);
-                add(derSeries, Color.BLUE, false);
+                add(derSeries, Colors.CHART_DERIVATIVE, false);
             }
 
             {
                 // Derivatives negative threshold
-                XYSeries derSeries = new XYSeries("Der-");
+                XYSeries derSeries = new XYSeries("Der-", false); // No autosort
 
                 derSeries.add(xMin, -params.minDerivative);
                 derSeries.add(xMax, -params.minDerivative);
-                add(derSeries, Color.BLUE, false);
+                add(derSeries, Colors.CHART_DERIVATIVE, false);
             }
 
             {
                 // Theoretical staff height (assuming a 5-line staff)
-                XYSeries heightSeries = new XYSeries("StaffHeight");
+                XYSeries heightSeries = new XYSeries("StaffHeight", false); // No autosort
                 int totalHeight = 4 * staff.getSpecificInterline();
                 heightSeries.add(xMin, totalHeight);
                 heightSeries.add(xMax, totalHeight);
@@ -1459,7 +1462,7 @@ public class StaffProjector
 
             {
                 // BarPeak min threshold
-                XYSeries minSeries = new XYSeries("MinBar");
+                XYSeries minSeries = new XYSeries("MinBar", false); // No autosort
                 minSeries.add(xMin, params.barThreshold);
                 minSeries.add(xMax, params.barThreshold);
                 add(minSeries, Color.GREEN, true);
@@ -1467,7 +1470,7 @@ public class StaffProjector
 
             {
                 // Chunk threshold (assuming a 5-line staff)
-                XYSeries chunkSeries = new XYSeries("MaxChunk");
+                XYSeries chunkSeries = new XYSeries("MaxChunk", false); // No autosort
                 chunkSeries.add(xMin, params.chunkThreshold);
                 chunkSeries.add(xMax, params.chunkThreshold);
                 add(chunkSeries, Color.YELLOW, true);
@@ -1475,7 +1478,7 @@ public class StaffProjector
 
             {
                 // BracePeak min threshold
-                XYSeries minSeries = new XYSeries("MinBrace");
+                XYSeries minSeries = new XYSeries("MinBrace", false); // No autosort
                 minSeries.add(xMin, params.braceThreshold);
                 minSeries.add(xMax, params.braceThreshold);
                 add(minSeries, Color.ORANGE, true);
@@ -1483,7 +1486,7 @@ public class StaffProjector
 
             {
                 // Cumulated staff lines (assuming a 5-line staff)
-                XYSeries linesSeries = new XYSeries("Lines");
+                XYSeries linesSeries = new XYSeries("Lines", false); // No autosort
                 linesSeries.add(xMin, params.linesThreshold);
                 linesSeries.add(xMax, params.linesThreshold);
                 add(linesSeries, Color.MAGENTA, true);
@@ -1492,7 +1495,7 @@ public class StaffProjector
             {
                 // Threshold for no staff
                 final int nostaff = params.blankThreshold;
-                XYSeries holeSeries = new XYSeries("NoStaff");
+                XYSeries holeSeries = new XYSeries("NoStaff", false); // No autosort
                 holeSeries.add(xMin, nostaff);
                 holeSeries.add(xMax, nostaff);
                 add(holeSeries, Color.CYAN, true);
@@ -1500,10 +1503,10 @@ public class StaffProjector
 
             {
                 // Zero
-                XYSeries zeroSeries = new XYSeries("Zero");
+                XYSeries zeroSeries = new XYSeries("Zero", false); // No autosort
                 zeroSeries.add(xMin, 0);
                 zeroSeries.add(xMax, 0);
-                add(zeroSeries, Color.WHITE, true);
+                add(zeroSeries, Colors.CHART_ZERO, true);
             }
 
             // Hosting frame

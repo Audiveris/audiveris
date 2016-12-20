@@ -21,39 +21,21 @@
 // </editor-fold>
 package omr.sheet.header;
 
-import omr.classifier.Classifier;
-import omr.classifier.Evaluation;
-import omr.classifier.GlyphClassifier;
-import omr.classifier.SampleRepository;
-import omr.classifier.SampleSheet;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyph;
-import omr.glyph.GlyphCluster;
-import omr.glyph.GlyphCluster.AbstractAdapter;
-import omr.glyph.GlyphFactory;
-import omr.glyph.GlyphIndex;
-import omr.glyph.GlyphLink;
-import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
-import omr.glyph.Symbol.Group;
 
-import omr.math.GeoUtil;
-import omr.math.Projection;
-import static omr.run.Orientation.VERTICAL;
-import omr.run.RunTable;
-import omr.run.RunTableFactory;
+import omr.math.HiLoPeakFinder;
+import omr.math.IntegerFunction;
+import omr.math.Range;
 
-import omr.sheet.Book;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
-import omr.sheet.header.HeaderBuilder.Plotter;
 import omr.sheet.header.KeyColumn.PartStatus;
 
 import omr.sig.GradeUtil;
@@ -67,31 +49,28 @@ import omr.sig.inter.KeyInter;
 import omr.sig.relation.ClefKeyRelation;
 import omr.sig.relation.KeyAltersRelation;
 
+import omr.ui.Colors;
+
+import omr.util.ChartPlotter;
+import omr.util.IntUtil;
 import omr.util.Navigable;
 
 import ij.process.ByteProcessor;
 
 import org.jfree.data.xy.XYSeries;
 
-import org.jgrapht.alg.ConnectivityInspector;
-import org.jgrapht.graph.SimpleGraph;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Set;
 
 /**
@@ -213,9 +192,6 @@ public class KeyBuilder
     /** Header key signature or key signature change?. TODO: not yet used, but will be needed */
     private final boolean inHeader;
 
-    /** Shape classifier to use. */
-    private final Classifier classifier = GlyphClassifier.getInstance();
-
     /** Staff-free pixel source. */
     private final ByteProcessor staffFreeSource;
 
@@ -229,9 +205,12 @@ public class KeyBuilder
     private final KeyRoi roi;
 
     /** Projection of foreground pixels, indexed by abscissa. */
-    private final Projection projection;
+    private final IntegerFunction projection;
 
-    /** Sequence of valid peaks found. */
+    /** Peak finder based on derivative HiLos. */
+    private final HiLoPeakFinder peakFinder;
+
+    /** Sequence of valid peaks found, ordered by abscissa. */
     private final List<KeyPeak> peaks = new ArrayList<KeyPeak>();
 
     /** Shape used for key signature. */
@@ -240,11 +219,14 @@ public class KeyBuilder
     /** Resulting key inter, if any. */
     private KeyInter keyInter;
 
-    /** All glyphs submitted to classifier. */
-    private final Set<Glyph> glyphCandidates = new HashSet<Glyph>();
-
     /** Attributes assigned. */
     private final EnumSet<Attribute> attributes = EnumSet.noneOf(Attribute.class);
+
+    /** (Debug) is this a vip staff?. */
+    private final boolean isVip;
+
+    /** Companion in charge of glyph extraction & recognition. */
+    private final KeyExtractor extractor;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -268,6 +250,7 @@ public class KeyBuilder
         this.staff = staff;
         this.inHeader = inHeader;
 
+        isVip = IntUtil.parseInts(constants.vipStaves.getValue()).contains(staff.getId());
         system = staff.getSystem();
         sig = system.getSig();
         sheet = system.getSheet();
@@ -291,6 +274,8 @@ public class KeyBuilder
         Rectangle browseRect = getBrowseRect();
         roi = new KeyRoi(staff, browseRect.y, browseRect.height, column.getMaxSliceDist());
         projection = getProjection(browseRect);
+        peakFinder = new HiLoPeakFinder("Key", projection, range.browseStart, range.browseStop);
+        extractor = new KeyExtractor(staff, range, peaks, roi);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -302,76 +287,93 @@ public class KeyBuilder
      *
      * @param plotter header projection plotter to populate
      */
-    public void addPlot (Plotter plotter)
+    public void addPlot (ChartPlotter plotter)
     {
-        final int xMin = projection.getStart();
-        final int xMax = projection.getStop();
+        retrieveHiLoPeaks();
+
+        Integer derStart;
+
+        if (range.hasStart()) {
+            derStart = range.getStart();
+        } else {
+            derStart = staff.getKeyStart();
+        }
+
+        if (derStart == null) {
+            derStart = range.browseStart;
+        }
+
+        int derStop = range.getStop();
+
+        // Peaks
+        if ((peakFinder.getPeaks() != null) && !peakFinder.getPeaks().isEmpty()) {
+            plotter.add(peakFinder.getPeakSeries(derStart, derStop), Colors.CHART_PEAK);
+        }
+
+        // HiLos
+        plotter.add(peakFinder.getHiloSeries(derStart, derStop), Colors.CHART_HILO, true);
 
         {
-            // Values
-            XYSeries cumulSeries = new XYSeries("Key");
-
-            for (int x = xMin; x <= xMax; x++) {
-                cumulSeries.add(x, projection.getValue(x));
-            }
-
-            plotter.add(cumulSeries, Color.RED, false);
+            // Values (w/ threshold)
+            XYSeries valueSeries = peakFinder.getValueSeries(
+                    projection.getXMin(),
+                    projection.getXMax());
+            valueSeries.setKey("Key");
+            plotter.add(valueSeries, Colors.CHART_VALUE);
         }
 
         {
-            // Derivatives
-            XYSeries derivative = new XYSeries("Der");
-
-            for (int x = xMin + 1; x <= xMax; x++) {
-                derivative.add(x, projection.getDerivative(x));
-            }
-
-            plotter.add(derivative, Color.GREEN, false);
+            // Derivatives (w/ thresholds)
+            XYSeries derSeries = peakFinder.getDerivativeSeries(derStart, derStop);
+            plotter.add(derSeries, Colors.CHART_DERIVATIVE);
         }
 
         List<Integer> alterStarts = staff.getHeader().alterStarts;
 
         if (alterStarts != null) {
+            XYSeries startSeries = new XYSeries("Start", false); // No autosort
+
             for (int ia = 0; ia < alterStarts.size(); ia++) {
                 // Items marks
-                XYSeries sep = new XYSeries("A" + (ia + 1));
                 double x = alterStarts.get(ia);
-                sep.add(x, -Plotter.MARK);
-                sep.add(x, staff.getHeight());
-                plotter.add(sep, Color.CYAN, false);
+                startSeries.add(x, 0);
+                startSeries.add(x, staff.getHeight());
+                startSeries.add(x, null);
             }
+
+            plotter.add(startSeries, Color.ORANGE);
         }
 
         if (range.hasStart() || (staff.getKeyStart() != null)) {
             // Area limits
-            XYSeries series = new XYSeries("KeyArea");
+            XYSeries series = new XYSeries("KeyArea", false); // No autosort
             int start = range.hasStart() ? range.getStart() : staff.getKeyStart();
             int stop = range.hasStart() ? range.getStop() : staff.getKeyStop();
-            series.add(start, -Plotter.MARK);
+            series.add(start, 0);
             series.add(start, staff.getHeight());
             series.add(stop, staff.getHeight());
-            series.add(stop, -Plotter.MARK);
-            plotter.add(series, Color.ORANGE, false);
+            series.add(stop, 0);
+            plotter.add(series, Color.ORANGE);
         }
 
         {
             // Browse start for peak threshold
-            XYSeries series = new XYSeries("KeyBrowse");
+            XYSeries series = new XYSeries("KeyBrowse", false); // No autosort
             int start = range.browseStart;
             int stop = (staff.getKeyStop() != null) ? staff.getKeyStop() : range.getStop();
-            series.add(start, -Plotter.MARK);
-            series.add(start, params.minPeakCumul);
-            series.add(stop, params.minPeakCumul);
-            plotter.add(series, Color.BLACK, false);
+            series.add(start, 0);
+            series.add(start, params.minPeakValue);
+            series.add(stop, params.minPeakValue);
+            plotter.add(series, Color.BLACK);
         }
 
         {
             // Space threshold
-            XYSeries chunkSeries = new XYSeries("Space");
+            XYSeries chunkSeries = new XYSeries("Space", false); // No autosort
             int x = range.browseStart;
             chunkSeries.add(x, params.maxSpaceCumul);
-            chunkSeries.add(xMax, params.maxSpaceCumul);
-            plotter.add(chunkSeries, Color.YELLOW, false);
+            chunkSeries.add(projection.getXMax(), params.maxSpaceCumul);
+            plotter.add(chunkSeries, Color.YELLOW);
         }
     }
 
@@ -383,27 +385,49 @@ public class KeyBuilder
      */
     public void adjustPitches ()
     {
-        // Use pitches for chosen clef
-        final ClefInter bestClef = clefs.get(0);
-        final int[] stdPitches = KeyInter.getPitchesMap(keyShape).get(bestClef.getKind());
+        // Use pitches for chosen clef, if any
+        if (!clefs.isEmpty()) {
+            final ClefInter bestClef = clefs.get(0);
+            final int[] stdPitches = KeyInter.getPitchesMap(keyShape).get(bestClef.getKind());
 
-        for (int i = 0; i < roi.size(); i++) {
-            KeySlice slice = roi.get(i);
-            KeyAlterInter alter = slice.getAlter();
+            for (int i = 0; i < roi.size(); i++) {
+                KeySlice slice = roi.get(i);
+                KeyAlterInter alter = slice.getAlter();
 
-            if (alter != null) {
-                final int std = stdPitches[i];
+                if (alter == null) {
+                    final Set<Shape> shapes = Collections.singleton(keyShape);
+                    extractor.extractAlter(slice, shapes, Grades.keyAlterMinGrade2, false);
+                }
 
-                if (alter.getIntegerPitch() != std) {
-                    logger.info(
-                            "Staff#{} slice#{} pitch adjusted from {} to {}",
-                            getId(),
-                            slice.getId(),
-                            String.format("%.1f", alter.getMeasuredPitch()),
-                            std);
-                    alter.setPitch(std);
+                if (alter != null) {
+                    final int std = stdPitches[i];
+
+                    if (alter.getIntegerPitch() != std) {
+                        logger.info(
+                                "Staff#{} key slice#{} pitch adjusted from {} to {}",
+                                getId(),
+                                slice.getId(),
+                                String.format("%.1f", alter.getMeasuredPitch()),
+                                std);
+                        alter.setPitch(std);
+                    }
                 }
             }
+        } else {
+            logger.warn("Staff#{} no header clef.", getId());
+
+            Double[] measuredPitches = new Double[roi.size()];
+
+            for (int i = 0; i < roi.size(); i++) {
+                KeySlice slice = roi.get(i);
+                KeyAlterInter alter = slice.getAlter();
+
+                if (alter != null) {
+                    measuredPitches[i] = alter.getMeasuredPitch();
+                }
+            }
+
+            logger.info("Guessed clef: {}", KeyInter.guessKind(keyShape, measuredPitches, null));
         }
     }
 
@@ -434,12 +458,43 @@ public class KeyBuilder
         final ClefInter clef = clefs.get(0);
 
         // Remove local slices if needed
-        for (Iterator<KeySlice> it = roi.iterator(); it.hasNext();) {
-            KeySlice slice = it.next();
-            Integer index = column.getGlobalIndex(slice.getStart() - measureStart);
+        if ((keyShape != null) && (keyShape != sourceBuilder.keyShape)) {
+            roi.clear(); // Sharps vs Flats: slices are too different, remove all of them
+        } else {
+            for (Iterator<KeySlice> it = roi.iterator(); it.hasNext();) {
+                KeySlice slice = it.next();
+                KeyAlterInter alter = slice.getAlter();
+                final Integer index = column.getGlobalIndex(slice.getStart() - measureStart);
 
-            if ((index == null) || (index >= sourceBuilder.roi.size())) {
-                it.remove();
+                if ((index == null) || (index >= sourceBuilder.roi.size())) {
+                    if (alter != null) {
+                        alter.delete();
+                    }
+
+                    it.remove();
+                } else if (alter == null) {
+                    // We have no a good local alter
+                    // If starts & widths are not similar, discard all remaining local slices
+                    final KeySlice sourceSlice = sourceBuilder.roi.get(index);
+                    final int sStart = sourceSlice.getStart();
+                    final int sWidth = sourceSlice.getWidth();
+
+                    if ((Math.abs(sStart - slice.getStart()) > params.maxSliceDeltaX)
+                        || (Math.abs(sWidth - slice.getWidth()) > params.maxSliceDeltaWidth)) {
+                        it.remove();
+
+                        while (it.hasNext()) {
+                            slice = it.next();
+                            alter = slice.getAlter();
+
+                            if (alter != null) {
+                                alter.delete();
+                            }
+
+                            it.remove();
+                        }
+                    }
+                }
             }
         }
 
@@ -464,9 +519,7 @@ public class KeyBuilder
                 final double height = params.typicalGlyphHeight;
                 localSlice.setPitchRect(clef, sourceBuilder.getKeyShape(), height);
 
-                final int ink = getInk(localSlice.getRect());
-
-                if (ink < params.minGlyphWeight) {
+                if (!extractor.sliceHasInk(localSlice.getRect())) {
                     // No item can exist here!
                     int lastId = Math.abs(sourceKey.getFifths());
 
@@ -494,9 +547,17 @@ public class KeyBuilder
 
             if ((alter == null) || (alter.getGrade() < Grades.keyAlterMinGrade1)) {
                 slice.setPitchRect(clef, keyShape, params.typicalGlyphHeight);
-                extractAlter(slice, shapes, Grades.keyAlterMinGrade2);
+                extractor.extractAlter(slice, shapes, Grades.keyAlterMinGrade2, true);
             }
         }
+
+        // Create a brand new KeyInter with current slices & alters
+        if (keyInter != null) {
+            keyInter.delete();
+        }
+
+        createKeyInter();
+        sig.addEdge(clef, keyInter, new ClefKeyRelation());
 
         return PartStatus.OK;
     }
@@ -505,13 +566,14 @@ public class KeyBuilder
     // destroy //
     //---------//
     /**
-     * Remove any key material: slices potential alter and key shape.
+     * Remove any key material: slices potential alter.
      */
     public void destroy ()
     {
         roi.destroy();
-        keyShape = null;
 
+        /// Do not nullify keyShape = null;
+        //
         if (keyInter != null) {
             keyInter.delete();
             keyInter = null;
@@ -627,21 +689,29 @@ public class KeyBuilder
      */
     public void process ()
     {
-        logger.debug("Key processing for S#{} staff#{}", system.getId(), getId());
-        if (getId() == 3) {
-            logger.info("BINGO");
+        if (isVip) {
+            logger.info("VIP process key for S#{} staff#{}", system.getId(), getId()); // BP here!
         }
 
-        browseArea(); // Retrieve raw peaks
+        List<Range> hiloPeaks = retrieveHiLoPeaks(); // Retrieve all hilo peaks
+
+        browseArea(hiloPeaks); // Pick up raw peaks before end of key area
+
+        refineAreaStart();
+
+        mergePeaks(); // Merge close peaks
 
         purgeLightPeaks(); // Discard some light peaks
 
-        int signature = refineSignature(inferSignature()); // Infer signature from peaks
+        int signature = inferSignature(); // Infer signature from peaks
 
-        if (signature != 0) {
-            List<Integer> starts = computeStarts(signature); // Compute start for each key item
+        signature = refineSignature(signature); // Check trailing and regular peaks spacing
+
+        List<Integer> starts = computeStarts(signature); // Compute start for each key item
+
+        if (!starts.isEmpty()) {
             allocateSlices(starts); // Allocate (empty) slices
-            retrieveComponents(); // Look for suitable items in key area, using connected components
+            extractor.retrieveComponents(keyShape); // Check connected components for alters
 
             // If some slices are still empty, use hard slice extraction
             List<KeySlice> emptySlices = roi.getEmptySlices();
@@ -653,16 +723,26 @@ public class KeyBuilder
                 // NOTA: Some slices may still be empty at this point...
             }
 
-            // Check compatibility with active clef(s)
+            // Check compatibility with active clef(s) if any
             clefs.addAll(staff.getCompetingClefs(starts.get(0)));
 
-            if (!checkWithClefs()) {
-                logger.debug("Staff#{} no clef-key compatibility", getId());
-                destroy();
-            } else if (roi.getLastValidSlice().getId() == 1) {
-                // For very short key candidate (1 item), check space right after last item
+            if (!clefs.isEmpty()) {
+                if (!checkWithClefs()) {
+                    logger.debug("Staff#{} no clef-key compatibility", getId());
+                    destroy();
+
+                    return;
+                }
+            }
+
+            // For very short key candidate (1 item), check space right after last item
+            KeySlice lastValidSlice = roi.getLastValidSlice();
+
+            if ((lastValidSlice != null) && (lastValidSlice.getId() == 1)) {
                 if (!checkTrailingSpace()) {
                     destroy();
+
+                    return;
                 }
             }
         }
@@ -682,39 +762,7 @@ public class KeyBuilder
     public void recordSamples (boolean recordPositives,
                                boolean recordNegatives)
     {
-        final Book book = sheet.getStub().getBook();
-        final SampleRepository repository = book.getSampleRepository();
-
-        if (repository == null) {
-            return;
-        }
-
-        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
-        final int interline = staff.getSpecificInterline();
-
-        // Positive samples (assigned to keyShape)
-        for (KeySlice slice : roi) {
-            KeyAlterInter alter = slice.getAlter();
-
-            if (alter != null) {
-                final Glyph glyph = alter.getGlyph();
-
-                if (recordPositives) {
-                    final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-                    repository.addSample(keyShape, glyph, interline, sampleSheet, pitch);
-                }
-
-                glyphCandidates.remove(glyph);
-            }
-        }
-
-        if (recordNegatives) {
-            // Negative samples (assigned to CLUTTER)
-            for (Glyph glyph : glyphCandidates) {
-                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-                repository.addSample(Shape.CLUTTER, glyph, interline, sampleSheet, pitch);
-            }
-        }
+        extractor.recordSamples(recordPositives, recordNegatives, keyShape);
     }
 
     //--------//
@@ -783,38 +831,29 @@ public class KeyBuilder
      * Browse the projection to detect the sequence of peaks (similar to stems) and
      * spaces (blanks).
      * <p>
-     * A peak must get higher than 'minPeakCumul' and have an ascending portion before and a
-     * descending portion after, both of minimum dy within reasonable x range.
-     * <p>
-     * Peak start is taken at beginning of ascending portion (and can be refined at lowest point).
-     * Peak stop is taken at end of descending portion (and can be refined at lowest point).
-     * <p>
-     * We stop before invalid peak or wide space.
+     * We browse in parallel the spaces and the hilo-based peaks and stop before invalid peak or
+     * wide space.
+     *
+     * @param hiloPeaks sequence of peaks detected via derivative hilos
      */
-    private void browseArea ()
+    private void browseArea (List<Range> hiloPeaks)
     {
-        // Space parameters
+        if (hiloPeaks.isEmpty()) {
+            attributes.add(Attribute.INITIAL_WIDE_SPACE);
+
+            return;
+        }
+
+        Iterator<Range> hiloIter = hiloPeaks.iterator();
+        Range hl = hiloIter.next();
+
         int spaceStart = -1; // Space start abscissa
         int spaceStop = -1; // Space stop abscissa
-
-        // Peak parameters
-        int peakStart = -1; // Peak start abscissa
-        int peakMain = -1; // Peak main abscissa (x at highest y)
-        int peakStop = -1; // Peak stop abscissa
-        int peakHeight = 0; // Peak height
-        int peakArea = 0; // Peak area
-
-        boolean valleyHit = false; // Have we found a valley yet?
 
         for (int x = range.browseStart; x <= range.browseStop; x++) {
             int cumul = projection.getValue(x);
 
-            if (cumul >= params.minPeakCumul) {
-                // For peak
-                if (!valleyHit) {
-                    continue; // This must be some end portion of clef, let's skip it
-                }
-
+            if (cumul > params.maxSpaceCumul) {
                 if (spaceStart != -1) {
                     // End of space
                     if (!checkSpace(spaceStart, spaceStop)) {
@@ -824,89 +863,81 @@ public class KeyBuilder
                     spaceStart = -1;
                 }
 
-                if (peakStart == -1) {
-                    peakStart = x; // Beginning of peak???
-                }
-
-                peakStop = x;
-                if (peakHeight < cumul) {
-                    peakHeight = cumul;
-                    peakMain = x;
-                }
-                peakArea += cumul;
-            } else if (!valleyHit) {
-                valleyHit = true; // This is the real browsing start
-            } else {
-                if (peakStart != -1) {
-                    // End of peak
-                    if (!createPeak(peakStart, peakMain, peakStop, peakHeight, peakArea)) {
+                if ((hl != null) && (x >= hl.min)) {
+                    // Process this hilo
+                    if (!createPeak(
+                            hl.min,
+                            hl.main,
+                            hl.max,
+                            projection.getValue(hl.main),
+                            projection.getArea(hl.min, hl.max))) {
                         return; // Invalid peak encountered
                     }
 
-                    peakStart = -1;
-                    peakMain = -1;
-                    peakHeight = 0;
-                    peakArea = 0;
+                    x = hl.max;
+
+                    // Determine next suitable hilo, if any
+                    if (hiloIter.hasNext()) {
+                        Range next = hiloIter.next();
+                        int gap = next.min - hl.max - 1;
+
+                        if (gap <= params.maxInnerPeakGap) {
+                            hl = next;
+                        } else {
+                            logger.debug("Too large inner peak gap");
+                            hl = null;
+                        }
+                    } else {
+                        hl = null;
+                    }
+                }
+            } else {
+                // For space
+                if (spaceStart == -1) {
+                    spaceStart = x; // Start of space
                 }
 
-                if (cumul <= params.maxSpaceCumul) {
-                    // For space
-                    if (spaceStart == -1) {
-                        spaceStart = x; // Start of space
-                    }
-
-                    spaceStop = x;
-                } else if (spaceStart != -1) {
-                    // End of space
-                    if (!checkSpace(spaceStart, spaceStop)) {
-                        return; // Too wide space encountered
-                    }
-
-                    spaceStart = -1;
-                }
+                spaceStop = x; // Extend space
             }
         }
 
         // Finish ongoing space if any
         if (spaceStart != -1) {
             checkSpace(spaceStart, spaceStop);
-        } else if (peakStart != -1) {
-            // Finish ongoing peak if any (this is rather unlikely...)
-            createPeak(peakStart, peakMain, peakStop, peakHeight, peakArea);
         }
     }
 
     //-----------------//
-    // checkFlatDeltas //
+    // checkPeakDeltas //
     //-----------------//
     /**
-     * Check delta abscissa between flat items, based on their start peaks,
-     * to detect abnormal delta.
+     * Check delta abscissa between items start peaks, to detect final abnormal delta.
      *
      * @param signature initial signature value
      * @return final signature value
      */
-    private int checkFlatDeltas (int signature)
+    private int checkPeakDeltas (int signature)
     {
-        final int count = -signature; // Item count
+        final int count = Math.abs(signature); // Item count
+        final int ipc = (signature < 0) ? 1 : 2; // Peak count per item
         double totalDx = 0;
         double maxDx = Double.MIN_VALUE;
         final double[] dxs = new double[count - 1];
 
-        for (int ip = 1; ip < peaks.size(); ip += 1) {
+        for (int ip = ipc; ip < peaks.size(); ip += ipc) {
             KeyPeak peak = peaks.get(ip);
             KeyPeak prevPeak = peaks.get(ip - 1);
             double dx = peak.getCenter() - prevPeak.getCenter();
             totalDx += dx;
             maxDx = Math.max(maxDx, dx);
-            dxs[ip - 1] = dx;
+            dxs[(ip / ipc) - 1] = dx;
         }
 
-        final double meanDx = (totalDx - maxDx) / (count - 2);
-
-        //TODO maxPeakDx may be too high for flats???
-        final double max = 0.5 * (meanDx + params.maxPeakDx);
-        logger.info(
+        final double wMean = count - 2;
+        final double meanDx = (totalDx - maxDx) / wMean;
+        final double wMax = 3.0;
+        final double max = ((wMean * meanDx) + (wMax * params.maxPeakDx)) / (wMean + wMax);
+        logger.debug(
                 "Staff#{} peak dxs:{} mean:{} maxPeakDx:{} cutOver:{}",
                 getId(),
                 dxs,
@@ -918,66 +949,13 @@ public class KeyBuilder
             final double dx = dxs[is];
 
             if (dx > max) {
-                final int ip = is + 1;
+                final int ip = ipc * (is + 1);
                 final KeyPeak peak = peaks.get(ip);
-                logger.info("Staff#{} key cut before {}", getId(), peak);
+                logger.debug("Staff#{} key cut before {}", getId(), peak);
                 range.shrinkStop(peak.min - 1);
                 peaks.retainAll(peaks.subList(0, ip));
 
-                return -(is + 1);
-            }
-        }
-
-        return signature;
-    }
-
-    //------------------//
-    // checkSharpDeltas //
-    //------------------//
-    /**
-     * Check delta abscissa between sharp items, based on their start & stop peaks,
-     * to detect abnormal delta.
-     *
-     * @param signature initial signature value
-     * @return final signature value
-     */
-    private int checkSharpDeltas (int signature)
-    {
-        final int count = signature; // Item count
-        double totalDx = 0;
-        double maxDx = Double.MIN_VALUE;
-        final double[] dxs = new double[count - 1];
-
-        for (int ip = 2; ip < peaks.size(); ip += 2) {
-            KeyPeak peak = peaks.get(ip);
-            KeyPeak prevPeak = peaks.get(ip - 1);
-            double dx = peak.getCenter() - prevPeak.getCenter();
-            totalDx += dx;
-            maxDx = Math.max(maxDx, dx);
-            dxs[(ip / 2) - 1] = dx;
-        }
-
-        final double meanDx = (totalDx - maxDx) / (count - 2);
-        final double max = 0.5 * (meanDx + params.maxPeakDx);
-        logger.info(
-                "Staff#{} peak dxs:{} mean:{} maxPeakDx:{} cutOver:{}",
-                getId(),
-                dxs,
-                meanDx,
-                params.maxPeakDx,
-                max);
-
-        for (int is = 0; is < dxs.length; is++) {
-            final double dx = dxs[is];
-
-            if (dx > max) {
-                final int ip = 2 * (is + 1);
-                final KeyPeak peak = peaks.get(ip);
-                logger.info("Staff#{} key cut before {}", getId(), peak);
-                range.shrinkStop(peak.min - 1);
-                peaks.retainAll(peaks.subList(0, ip));
-
-                return is + 1;
+                return (signature < 0) ? (-(is + 1)) : (is + 1);
             }
         }
 
@@ -988,7 +966,11 @@ public class KeyBuilder
     // checkSpace //
     //------------//
     /**
-     * Check space between items. (clef, alterations, time-sig, ...)
+     * Check space encountered.
+     * <ul>
+     * <li>Before key start, a large space (> maxFirstSpaceWidth) indicates lack of key.
+     * <li>After key start, a large space (> maxInnerSpace) indicates key end has been reached.
+     * </ul>
      *
      * @param spaceStart space start abscissa
      * @param spaceStop  space stop abscissa
@@ -1092,7 +1074,10 @@ public class KeyBuilder
             if (alterCount > 0) {
                 // TODO: Check resulting key grade? if too low, give up!!!
                 final double keyGrade = computeKeyGrade(alterCount, pitchedGrades);
-                logger.info(dumpOf(clefKind, keyGrade, pitchedGrades));
+
+                if (logger.isDebugEnabled()) {
+                    logger.info(dumpOf(clefKind, keyGrade, pitchedGrades));
+                }
 
                 // Impact of key on clef
                 final double keyContribution = GradeUtil.contributionOf(keyGrade, clefRatio);
@@ -1226,7 +1211,7 @@ public class KeyBuilder
 
                 // Check single difference
                 if (dPitch > maxDeltaPitch) {
-                    logger.info(
+                    logger.debug(
                             "Staff#{} slice#{} invalid {} pitch {} vs {} for {}",
                             getId(),
                             slice.getId(),
@@ -1434,56 +1419,6 @@ public class KeyBuilder
         return sb.toString();
     }
 
-    //--------------//
-    // extractAlter //
-    //--------------//
-    /**
-     * In the provided slice, extract the relevant foreground pixels from the NO_STAFF
-     * image and evaluate possible glyph instances.
-     *
-     * @param slice        the slice to process
-     * @param targetShapes the set of shapes to try
-     * @param minGrade     minimum acceptable grade
-     * @return the Inter created if any
-     */
-    private KeyAlterInter extractAlter (KeySlice slice,
-                                        Set<Shape> targetShapes,
-                                        double minGrade)
-    {
-        Rectangle sliceRect = slice.getRect();
-        ByteProcessor sliceBuf = roi.getSlicePixels(staffFreeSource, slice);
-        RunTable runTable = new RunTableFactory(VERTICAL).createTable(sliceBuf);
-        List<Glyph> parts = GlyphFactory.buildGlyphs(runTable, sliceRect.getLocation());
-        purgeParts(parts, (sliceRect.x + sliceRect.width) - 1);
-        system.registerGlyphs(parts, Group.ALTER_PART);
-
-        SingleAdapter adapter = new SingleAdapter(slice, parts, targetShapes, minGrade);
-        new GlyphCluster(adapter, null).decompose();
-
-        if (slice.eval != null) {
-            double grade = Inter.intrinsicRatio * slice.eval.grade;
-
-            if (grade >= minGrade) {
-                if ((slice.alter == null) || (slice.alter.getGlyph() != slice.glyph)) {
-                    logger.debug("Glyph#{} {}", slice.glyph.getId(), slice.eval);
-
-                    KeyAlterInter alterInter = KeyAlterInter.create(
-                            slice.glyph,
-                            slice.eval.shape,
-                            grade,
-                            staff);
-                    sig.addVertex(alterInter);
-                    slice.alter = alterInter;
-                    logger.debug("{}", slice);
-                }
-
-                return slice.alter;
-            }
-        }
-
-        return null;
-    }
-
     //--------------------//
     // extractEmptySlices //
     //--------------------//
@@ -1496,7 +1431,11 @@ public class KeyBuilder
     private void extractEmptySlices (List<KeySlice> emptySlices)
     {
         for (KeySlice slice : emptySlices) {
-            extractAlter(slice, Collections.singleton(keyShape), Grades.keyAlterMinGrade2);
+            extractor.extractAlter(
+                    slice,
+                    Collections.singleton(keyShape),
+                    Grades.keyAlterMinGrade2,
+                    true);
         }
     }
 
@@ -1523,7 +1462,7 @@ public class KeyBuilder
             if ((alter == null) || (pitchedGrades[i] < Grades.keyAlterMinGrade1)) {
                 // Adjust slice rectangle, using theoretical pitch
                 slice.setPitchRect(clef, keyShape, params.typicalGlyphHeight);
-                extractAlter(slice, shapes, Grades.keyAlterMinGrade2);
+                extractor.extractAlter(slice, shapes, Grades.keyAlterMinGrade2, true);
             }
         }
     }
@@ -1621,34 +1560,6 @@ public class KeyBuilder
         }
     }
 
-    //--------//
-    // getInk //
-    //--------//
-    /**
-     * Report the amount of ink in the provided rectangle of the staff-free buffer.
-     *
-     * @param rect provided rectangle
-     * @return number of foreground pixels, off staff lines
-     */
-    private int getInk (Rectangle rect)
-    {
-        final int xMin = rect.x;
-        final int xMax = (rect.x + rect.width) - 1;
-        final int yMin = rect.y;
-        final int yMax = (rect.y + rect.height) - 1;
-        int weight = 0;
-
-        for (int x = xMin; x <= xMax; x++) {
-            for (int y = yMin; y <= yMax; y++) {
-                if (staffFreeSource.get(x, y) == 0) {
-                    weight++;
-                }
-            }
-        }
-
-        return weight;
-    }
-
     //-------------//
     // getLastPeak //
     //-------------//
@@ -1700,15 +1611,16 @@ public class KeyBuilder
     /**
      * Cumulate the foreground pixels for each abscissa value in the lookup area.
      *
+     * @param rect the lookup rectangle
      * @return the populated cumulation table
      */
-    private Projection getProjection (Rectangle browseRect)
+    private IntegerFunction getProjection (Rectangle rect)
     {
-        final int xMin = browseRect.x;
-        final int xMax = (browseRect.x + browseRect.width) - 1;
-        final int yMin = browseRect.y;
-        final int yMax = (browseRect.y + browseRect.height) - 1;
-        final Projection table = new Projection.Short(xMin, xMax);
+        final int xMin = rect.x;
+        final int xMax = (rect.x + rect.width) - 1;
+        final int yMin = rect.y;
+        final int yMax = (rect.y + rect.height) - 1;
+        final IntegerFunction table = new IntegerFunction(xMin, xMax);
 
         for (int x = xMin; x <= xMax; x++) {
             short cumul = 0;
@@ -1719,12 +1631,15 @@ public class KeyBuilder
                 }
             }
 
-            table.increment(x, cumul);
+            table.setValue(x, cumul);
         }
 
         return table;
     }
 
+    //---------------//
+    // getSmallestDx //
+    //---------------//
     private double getSmallestDx (KeyPeak peak,
                                   Collection<KeyPeak> col)
     {
@@ -1851,7 +1766,7 @@ public class KeyBuilder
             } else if (meanShort > params.maxSharpDelta) {
                 keyShape = Shape.FLAT;
             } else {
-                keyShape = (offset > params.offsetThreshold) ? Shape.SHARP : Shape.FLAT;
+                keyShape = (offset >= params.offsetThreshold) ? Shape.SHARP : Shape.FLAT;
             }
 
             // For sharps, peakCount must be an even number
@@ -1954,30 +1869,25 @@ public class KeyBuilder
         return stem;
     }
 
-    //-----------------//
-    // purgeCandidates //
-    //-----------------//
-    /**
-     * Make sure that no part is shared by different candidates.
-     */
-    private void purgeCandidates (List<Candidate> candidates)
+    //------------//
+    // mergePeaks //
+    //------------//
+    private void mergePeaks ()
     {
-        final List<Candidate> toRemove = new ArrayList<Candidate>();
-        Collections.sort(candidates, Candidate.byReverseGrade);
+        for (int i = 1; i < peaks.size(); i++) {
+            KeyPeak prevPeak = peaks.get(i - 1);
+            KeyPeak peak = peaks.get(i);
 
-        for (int i = 0; i < candidates.size(); i++) {
-            final Candidate candidate = candidates.get(i);
-
-            for (Glyph part : candidate.parts) {
-                toRemove.clear();
-
-                for (Candidate c : candidates.subList(i + 1, candidates.size())) {
-                    if (c.parts.contains(part)) {
-                        toRemove.add(c);
-                    }
-                }
-
-                candidates.removeAll(toRemove);
+            if ((peak.min - prevPeak.max) <= 1) {
+                KeyPeak merged = new KeyPeak(
+                        prevPeak.min,
+                        projection.argMax(prevPeak.min, peak.max),
+                        peak.max,
+                        Math.max(prevPeak.height, peak.height),
+                        projection.getArea(prevPeak.min, peak.max));
+                peaks.set(i - 1, merged);
+                peaks.remove(i);
+                i--;
             }
         }
     }
@@ -2024,7 +1934,7 @@ public class KeyBuilder
             final double dx = getSmallestDx(peak, sortedPeaks);
 
             if (dx < params.minLightPeakDx) {
-                logger.info("Staff#{} light {}", getId(), peak);
+                logger.debug("Staff#{} light {}", getId(), peak);
                 it.remove();
             }
         }
@@ -2032,41 +1942,36 @@ public class KeyBuilder
         peaks.retainAll(sortedPeaks);
     }
 
-    //------------//
-    // purgeParts //
-    //------------//
+    //-----------------//
+    // refineAreaStart //
+    //-----------------//
     /**
-     * Purge the population of candidate parts as much as possible, since the cost
-     * of their later combinations is exponential.
-     * <p>
-     * Those of width 1 and stuck on right side of slice can be safely removed, since they
-     * certainly belong to the stem of the next slice.
-     * <p>
-     * Those composed of just one (isolated) pixel are also removed, although this is more
-     * questionable.
-     *
-     * @param parts the collection to purge
-     * @param xMax  maximum abscissa in area
+     * Refine key area start, if needed, by using projection from 1 interline above top
+     * line down to staff bottom line.
      */
-    private void purgeParts (List<Glyph> parts,
-                             int xMax)
+    private void refineAreaStart ()
     {
-        final List<Glyph> toRemove = new ArrayList<Glyph>();
+        if (peaks.isEmpty()) {
+            return;
+        }
 
-        for (Glyph glyph : parts) {
-            if ((glyph.getWeight() < params.minPartWeight) || (glyph.getBounds().x == xMax)) {
-                toRemove.add(glyph);
+        final int xMin = range.getStart();
+        final int xMax = peaks.get(0).min - 1;
+        final int yMin = staff.getFirstLine().yAt(xMin) - scale.getInterline();
+        final int yMax = staff.getLastLine().yAt(xMin);
+        final Rectangle rect = new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
+        final IntegerFunction staffProj = getProjection(rect);
+        int start = xMax + 1;
+
+        for (int x = xMin; x <= xMax; x++) {
+            if (staffProj.getValue(x) > params.maxSpaceCumul) {
+                start = x;
+
+                break;
             }
         }
 
-        if (!toRemove.isEmpty()) {
-            parts.removeAll(toRemove);
-        }
-
-        if (parts.size() > params.maxPartCount) {
-            Collections.sort(parts, Glyphs.byReverseWeight);
-            parts.retainAll(parts.subList(0, params.maxPartCount));
-        }
+        range.setStart(start);
     }
 
     //----------------//
@@ -2084,7 +1989,7 @@ public class KeyBuilder
                                  int maxTrail)
     {
         final int xMin = (lastGoodPeak.min + typicalTrail) - 1;
-        final int xMax = Math.min(projection.getStop(), lastGoodPeak.min + maxTrail);
+        final int xMax = Math.min(projection.getXMax(), lastGoodPeak.min + maxTrail);
 
         int minCount = Integer.MAX_VALUE;
         Integer newStop = null;
@@ -2146,153 +2051,28 @@ public class KeyBuilder
             signature -= 1;
         }
 
-        if (Math.abs(signature) >= 3) {
+        if (Math.abs(signature) > 2) {
             // Regulary spaced items?
-            if (signature < 0) {
-                signature = checkFlatDeltas(signature); // Flats
-            } else {
-                signature = checkSharpDeltas(signature); // Sharps
-            }
+            signature = checkPeakDeltas(signature);
         }
 
         return signature;
     }
 
-    //---------------//
-    // registerParts //
-    //---------------//
-    /**
-     * Make sure any part glyph is registered (meant for easier visual checking).
-     *
-     * @param parts the parts to register
-     */
-    private void registerParts (List<Glyph> parts)
+    //-------------------//
+    // retrieveHiLoPeaks //
+    //-------------------//
+    private List<Range> retrieveHiLoPeaks ()
     {
-        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+        final List<Range> hiloPeaks = peakFinder.findPeaks(
+                params.maxSpaceCumul + 1, // minValue
+                params.minPeakValue, // minTopValue
+                params.minPeakDerivative, // minDerivative
+                params.minGainRatio); // minGainRatio
+        Collections.sort(hiloPeaks, Range.byMain);
+        logger.debug("Staff#{} hilos: {}", getId(), hiloPeaks);
 
-        for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
-            Glyph glyph = li.next();
-            glyph = glyphIndex.registerOriginal(glyph);
-            glyph.addGroup(Group.ALTER_PART);
-            system.addFreeGlyph(glyph);
-            li.set(glyph);
-        }
-    }
-
-    //--------------------//
-    // retrieveCandidates //
-    //--------------------//
-    /**
-     * Retrieve all possible candidates (as connected components) with acceptable shape.
-     *
-     * @param shapes acceptable shapes
-     * @return the candidates found
-     */
-    private List<Candidate> retrieveCandidates (Set<Shape> shapes)
-    {
-        logger.debug("retrieveCandidates for staff#{}", getId());
-
-        // Key-signature area pixels
-        ByteProcessor keyBuf = roi.getAreaPixels(staffFreeSource, range);
-        RunTable runTable = new RunTableFactory(VERTICAL).createTable(keyBuf);
-        List<Glyph> parts = GlyphFactory.buildGlyphs(
-                runTable,
-                new Point(range.getStart(), roi.y));
-
-        purgeParts(parts, range.getStop());
-        registerParts(parts);
-
-        // Formalize parts relationships in a global graph
-        SimpleGraph<Glyph, GlyphLink> globalGraph = Glyphs.buildLinks(parts, params.maxPartGap);
-        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(
-                globalGraph).connectedSets();
-        logger.debug("Staff#{} sets:{}", getId(), sets.size());
-
-        List<Candidate> allCandidates = new ArrayList<Candidate>();
-
-        for (Set<Glyph> set : sets) {
-            // Use only the subgraph for this set
-            SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, globalGraph);
-            MultipleAdapter adapter = new MultipleAdapter(
-                    subGraph,
-                    shapes,
-                    Grades.keyAlterMinGrade1);
-            new GlyphCluster(adapter, null).decompose();
-            logger.debug("Staff#{} set:{} trials:{}", getId(), set.size(), adapter.trials);
-            allCandidates.addAll(adapter.candidates);
-        }
-
-        purgeCandidates(allCandidates);
-        Collections.sort(allCandidates, Candidate.byReverseGrade);
-
-        return allCandidates;
-    }
-
-    //--------------------//
-    // retrieveComponents //
-    //--------------------//
-    /**
-     * Look into key signature area for key items, based on connected components.
-     */
-    private void retrieveComponents ()
-    {
-        logger.debug("Key for staff#{}", getId());
-
-        // Key-signature area pixels
-        ByteProcessor keyBuf = roi.getAreaPixels(staffFreeSource, range);
-        RunTable runTable = new RunTableFactory(VERTICAL).createTable(keyBuf);
-        List<Glyph> parts = GlyphFactory.buildGlyphs(
-                runTable,
-                new Point(range.getStart(), roi.y));
-
-        purgeParts(parts, range.getStop());
-        registerParts(parts);
-
-        // Formalize parts relationships in a global graph
-        SimpleGraph<Glyph, GlyphLink> globalGraph = Glyphs.buildLinks(parts, params.maxPartGap);
-        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(
-                globalGraph).connectedSets();
-        logger.debug("Staff#{} sets:{}", getId(), sets.size());
-
-        List<Candidate> allCandidates = new ArrayList<Candidate>();
-
-        for (Set<Glyph> set : sets) {
-            // Use only the subgraph for this set
-            SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, globalGraph);
-            MultipleAdapter adapter = new MultipleAdapter(
-                    subGraph,
-                    Collections.singleton(keyShape), // TODO: include NATURAL shape as well?
-                    Grades.keyAlterMinGrade1);
-            new GlyphCluster(adapter, null).decompose();
-            logger.debug("Staff#{} set:{} trials:{}", getId(), set.size(), adapter.trials);
-            allCandidates.addAll(adapter.candidates);
-        }
-
-        purgeCandidates(allCandidates);
-
-        for (Candidate candidate : allCandidates) {
-            final KeySlice slice = roi.sliceOf(candidate.glyph.getCentroid().x);
-
-            if ((slice.eval == null) || (slice.eval.grade < candidate.eval.grade)) {
-                slice.eval = candidate.eval;
-                slice.glyph = candidate.glyph;
-            }
-        }
-
-        for (KeySlice slice : roi) {
-            if (slice.eval != null) {
-                double grade = Inter.intrinsicRatio * slice.eval.grade;
-                KeyAlterInter alterInter = KeyAlterInter.create(
-                        slice.glyph,
-                        slice.eval.shape,
-                        grade,
-                        staff);
-                sig.addVertex(alterInter);
-                slice.alter = alterInter;
-            }
-
-            logger.debug("{}", slice);
-        }
+        return hiloPeaks;
     }
 
     //----------------//
@@ -2336,6 +2116,10 @@ public class KeyBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        private final Constant.String vipStaves = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP staff IDs");
+
         private final Scale.LineFraction maxSpaceCumul = new Scale.LineFraction(
                 2.0,
                 "Maximum cumul value in space (specified WRT staff line thickness)");
@@ -2353,7 +2137,7 @@ public class KeyBuilder
                 "Typical alteration height (flat or sharp)");
 
         private final Constant.Ratio peakHeightRatio = new Constant.Ratio(
-                0.4,
+                0.2, //0.4,
                 "Ratio of height to detect peaks");
 
         private final Constant.Ratio peakAreaQuorum = new Constant.Ratio(
@@ -2372,6 +2156,14 @@ public class KeyBuilder
                 4.0,
                 "Maximum cumul value to accept peak (absolute value)");
 
+        private final Scale.Fraction minPeakDerivative = new Scale.Fraction(
+                0.4, //0.2,
+                "Minimum derivative for peak detection");
+
+        private final Constant.Ratio minGainRatio = new Constant.Ratio(
+                0.2,
+                "Minimum gain ratio when extending peaks");
+
         private final Scale.Fraction maxPeakWidth = new Scale.Fraction(
                 0.45,
                 "Maximum width to accept peak (measured at threshold height)");
@@ -2385,7 +2177,7 @@ public class KeyBuilder
                 "Typical trailing length after peak for a flat item");
 
         private final Scale.Fraction minFlatTrail = new Scale.Fraction(
-                0.8,
+                0.7,
                 "Minimum trailing length after peak for a flat item");
 
         private final Scale.Fraction maxFlatTrail = new Scale.Fraction(
@@ -2413,7 +2205,7 @@ public class KeyBuilder
                 "Minimum delta abscissa between peaks");
 
         private final Scale.Fraction maxPeakDx = new Scale.Fraction(
-                1.4,
+                1.5, // 1.4,
                 "Maximum delta abscissa between peaks");
 
         private final Scale.Fraction maxSharpDelta = new Scale.Fraction(
@@ -2421,49 +2213,12 @@ public class KeyBuilder
                 "Maximum short peak delta for sharps");
 
         private final Scale.Fraction minFlatDelta = new Scale.Fraction(
-                0.5,
+                0.45,
                 "Minimum short peak delta for flats");
 
         private final Scale.Fraction offsetThreshold = new Scale.Fraction(
                 0.1,
                 "Threshold on first peak offset that differentiates flat & sharp");
-
-        private final Constant.Integer maxPartCount = new Constant.Integer(
-                "Glyphs",
-                8,
-                "Maximum number of parts considered for an alter symbol");
-
-        private final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
-                0.01,
-                "Minimum weight for an alter part");
-
-        private final Scale.Fraction maxPartGap = new Scale.Fraction(
-                1.5,
-                "Maximum distance between two parts of a single alter symbol");
-
-        private final Scale.Fraction minGlyphWidth = new Scale.Fraction(
-                0.5,
-                "Minimum glyph width");
-
-        private final Scale.Fraction maxGlyphWidth = new Scale.Fraction(
-                2.0,
-                "Maximum glyph width");
-
-        private final Scale.Fraction minGlyphHeight = new Scale.Fraction(
-                1.0,
-                "Minimum glyph height");
-
-        private final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
-                3.5,
-                "Maximum glyph height");
-
-        private final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
-                0.2,
-                "Minimum glyph weight");
-
-        private final Scale.AreaFraction maxGlyphWeight = new Scale.AreaFraction(
-                2.75,
-                "Maximum glyph weight");
 
         private final Constant.Double maxDeltaPitch_1 = new Constant.Double(
                 "pitch",
@@ -2480,8 +2235,16 @@ public class KeyBuilder
                 "Maximum cumul threshold in trailing area");
 
         private final Scale.Fraction minTrailingSpace = new Scale.Fraction(
-                0.5,
-                "Minimum space width after last key item");
+                0.25,
+                "Minimum space after last key item (before potential note head)");
+
+        private final Scale.Fraction maxSliceDeltaX = new Scale.Fraction(
+                0.15,
+                "Maximum abscissa delta to replicate slice");
+
+        private final Scale.Fraction maxSliceDeltaWidth = new Scale.Fraction(
+                0.15,
+                "Maximum width delta to replicate slice");
 
         // Beware: A too small value might miss the whole key signature
         private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
@@ -2492,197 +2255,11 @@ public class KeyBuilder
         private final Scale.Fraction maxInnerSpace = new Scale.Fraction(
                 0.7,
                 "Maximum inner space within key signature");
-    }
 
-    //--------------------//
-    // AbstractKeyAdapter //
-    //--------------------//
-    /**
-     * Abstract adapter for retrieving items.
-     */
-    private abstract class AbstractKeyAdapter
-            extends AbstractAdapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Minimum acceptable intrinsic grade. */
-        protected final double minGrade;
-
-        /** Relevant shapes. */
-        protected final EnumSet<Shape> targetShapes = EnumSet.noneOf(Shape.class);
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public AbstractKeyAdapter (SimpleGraph<Glyph, GlyphLink> graph,
-                                   Set<Shape> targetShapes,
-                                   double minGrade)
-        {
-            super(graph);
-            this.targetShapes.addAll(targetShapes);
-            this.minGrade = minGrade;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public boolean isTooHeavy (int weight)
-        {
-            return weight > params.maxGlyphWeight;
-        }
-
-        @Override
-        public boolean isTooLarge (Rectangle bounds)
-        {
-            return (bounds.width > params.maxGlyphWidth)
-                   || (bounds.height > params.maxGlyphHeight);
-        }
-
-        @Override
-        public boolean isTooLight (int weight)
-        {
-            return weight < params.minGlyphWeight;
-        }
-
-        @Override
-        public boolean isTooSmall (Rectangle bounds)
-        {
-            return (bounds.width < params.minGlyphWidth)
-                   || (bounds.height < params.minGlyphHeight);
-        }
-
-        protected boolean embracesSlicePeaks (KeySlice slice,
-                                              Glyph glyph)
-        {
-            final Rectangle sliceBox = slice.getRect();
-            final int sliceStart = sliceBox.x;
-            final int sliceStop = (sliceBox.x + sliceBox.width) - 1;
-            final Rectangle glyphBox = glyph.getBounds();
-
-            // Make sure that the glyph width embraces the slice peak(s)
-            for (KeyPeak peak : peaks) {
-                final double peakCenter = peak.getCenter();
-
-                if ((sliceStart <= peakCenter) && (peakCenter <= sliceStop)) {
-                    // Is this slice peak embraced by glyph?
-                    if (!GeoUtil.xEmbraces(glyphBox, peakCenter)) {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
-
-        protected void evaluateSliceGlyph (KeySlice slice,
-                                           Glyph glyph,
-                                           Set<Glyph> parts)
-        {
-            if (isTooSmall(glyph.getBounds())) {
-                return;
-            }
-
-            if ((slice != null) && !embracesSlicePeaks(slice, glyph)) {
-                return;
-            }
-
-            trials++;
-
-            if (glyph.getId() == 0) {
-                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                system.addFreeGlyph(glyph);
-            }
-
-            if (glyph.isVip()) {
-                logger.info("VIP evaluateSliceGlyph for {}", glyph);
-            }
-
-            glyphCandidates.add(glyph);
-
-            Evaluation[] evals = classifier.getNaturalEvaluations(glyph, sheet.getInterline());
-
-            for (Shape shape : targetShapes) {
-                Evaluation eval = evals[shape.ordinal()];
-                double grade = Inter.intrinsicRatio * eval.grade;
-
-                if (grade >= minGrade) {
-                    logger.debug("glyph#{} width:{} {}", glyph.getId(), glyph.getWidth(), eval);
-                    keepCandidate(glyph, parts, eval);
-                }
-            }
-        }
-
-        protected abstract void keepCandidate (Glyph glyph,
-                                               Set<Glyph> parts,
-                                               Evaluation eval);
-    }
-
-    //-----------//
-    // Candidate //
-    //-----------//
-    /**
-     * Meant to mutually exclude candidates that have a part in common.
-     */
-    private static class Candidate
-    {
-        //~ Static fields/initializers -------------------------------------------------------------
-
-        /** To sort according to decreasing grade. */
-        public static final Comparator<Candidate> byReverseGrade = new Comparator<Candidate>()
-        {
-            @Override
-            public int compare (Candidate c1,
-                                Candidate c2)
-            {
-                if (c1 == c2) {
-                    return 0;
-                }
-
-                return Double.compare(c2.eval.grade, c1.eval.grade);
-            }
-        };
-
-        /** To sort according to left abscissa. */
-        public static final Comparator<Candidate> byAbscissa = new Comparator<Candidate>()
-        {
-            @Override
-            public int compare (Candidate c1,
-                                Candidate c2)
-            {
-                if (c1 == c2) {
-                    return 0;
-                }
-
-                return Double.compare(c1.glyph.getLeft(), c2.glyph.getLeft());
-            }
-        };
-
-        //~ Instance fields ------------------------------------------------------------------------
-        final Glyph glyph;
-
-        final Set<Glyph> parts;
-
-        final Evaluation eval;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Candidate (Glyph glyph,
-                          Set<Glyph> parts,
-                          Evaluation eval)
-        {
-            this.glyph = glyph;
-            this.parts = parts;
-            this.eval = eval;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder("Candidate{#");
-
-            sb.append(glyph.getId());
-            sb.append(" ").append(eval);
-            sb.append("}");
-
-            return sb.toString();
-        }
+        // Beware: A too small value might miss final key signature items
+        private final Scale.Fraction maxInnerPeakGap = new Scale.Fraction(
+                1.25,
+                "Maximum inner peak gap within key signature");
     }
 
     //------------//
@@ -2700,7 +2277,13 @@ public class KeyBuilder
 
         final int maxInnerSpace;
 
-        final int minPeakCumul;
+        final int maxInnerPeakGap;
+
+        final double minGainRatio;
+
+        final int minPeakValue;
+
+        final int minPeakDerivative;
 
         final int maxSpaceCumul;
 
@@ -2738,27 +2321,9 @@ public class KeyBuilder
 
         final double minFlatDelta;
 
-        final double offsetThreshold;
-
-        final int maxPartCount;
-
-        final int minPartWeight;
-
-        final double maxPartGap;
-
-        final double minGlyphWidth;
-
-        final double maxGlyphWidth;
-
-        final double minGlyphHeight;
+        final int offsetThreshold;
 
         final double typicalGlyphHeight;
-
-        final double maxGlyphHeight;
-
-        final int minGlyphWeight;
-
-        final int maxGlyphWeight;
 
         final int minTrailingSpace;
 
@@ -2768,6 +2333,10 @@ public class KeyBuilder
 
         final double maxDeltaPitch_4;
 
+        final int maxSliceDeltaX;
+
+        final int maxSliceDeltaWidth;
+
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
@@ -2775,6 +2344,7 @@ public class KeyBuilder
             maxFirstPeakOffset = scale.toPixels(constants.maxFirstPeakOffset);
             maxFirstSpaceWidth = scale.toPixels(constants.maxFirstSpaceWidth);
             maxInnerSpace = scale.toPixels(constants.maxInnerSpace);
+            maxInnerPeakGap = scale.toPixels(constants.maxInnerPeakGap);
             maxSpaceCumul = scale.toPixels(constants.maxSpaceCumul);
             coreStemLength = scale.toPixels(constants.coreStemLength);
             minBlackRatio = constants.minBlackRatio.getValue();
@@ -2793,112 +2363,23 @@ public class KeyBuilder
             peakAreaQuorum = constants.peakAreaQuorum.getValue();
             maxSharpDelta = scale.toPixelsDouble(constants.maxSharpDelta);
             minFlatDelta = scale.toPixelsDouble(constants.minFlatDelta);
-            offsetThreshold = scale.toPixelsDouble(constants.offsetThreshold);
-            maxPartCount = constants.maxPartCount.getValue();
-            minPartWeight = scale.toPixels(constants.minPartWeight);
-            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
-            minGlyphWidth = scale.toPixelsDouble(constants.minGlyphWidth);
-            maxGlyphWidth = scale.toPixelsDouble(constants.maxGlyphWidth);
-            minGlyphHeight = scale.toPixelsDouble(constants.minGlyphHeight);
+            offsetThreshold = scale.toPixels(constants.offsetThreshold);
             typicalGlyphHeight = scale.toPixelsDouble(constants.typicalGlyphHeight);
-            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
-            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
-            maxGlyphWeight = scale.toPixels(constants.maxGlyphWeight);
             maxTrailingCumul = scale.toPixels(constants.maxTrailingCumul);
             minTrailingSpace = scale.toPixels(constants.minTrailingSpace);
             maxDeltaPitch_1 = constants.maxDeltaPitch_1.getValue();
             maxDeltaPitch_4 = constants.maxDeltaPitch_4.getValue();
+            minPeakDerivative = scale.toPixels(constants.minPeakDerivative);
+            minGainRatio = constants.minGainRatio.getValue();
+            maxSliceDeltaX = scale.toPixels(constants.maxSliceDeltaX);
+            maxSliceDeltaWidth = scale.toPixels(constants.maxSliceDeltaWidth);
 
             // Maximum alteration contribution (on top of staff lines)
             int whiteSpace = scale.getInterline() - scale.getMainFore();
             double maxAlterContrib = constants.typicalGlyphHeight.getValue() * whiteSpace;
-            minPeakCumul = (int) Math.rint(
+            minPeakValue = (int) Math.rint(
                     (5 * scale.getMainFore())
                     + (constants.peakHeightRatio.getValue() * maxAlterContrib));
-        }
-    }
-
-    //-----------------//
-    // MultipleAdapter //
-    //-----------------//
-    /**
-     * Adapter for retrieving all items of the key (in key area).
-     */
-    private class MultipleAdapter
-            extends AbstractKeyAdapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final List<Candidate> candidates = new ArrayList<Candidate>();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public MultipleAdapter (SimpleGraph<Glyph, GlyphLink> graph,
-                                Set<Shape> targetShapes,
-                                double minGrade)
-        {
-            super(graph, targetShapes, minGrade);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            // Retrieve impacted slice
-            final KeySlice slice = roi.sliceOf(glyph.getCentroid().x);
-            evaluateSliceGlyph(slice, glyph, parts);
-        }
-
-        @Override
-        protected void keepCandidate (Glyph glyph,
-                                      Set<Glyph> parts,
-                                      Evaluation eval)
-        {
-            candidates.add(new Candidate(glyph, parts, eval));
-        }
-    }
-
-    //---------------//
-    // SingleAdapter //
-    //---------------//
-    /**
-     * Adapter for retrieving one key item (in a slice).
-     */
-    private class SingleAdapter
-            extends AbstractKeyAdapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Related slice. */
-        private final KeySlice slice;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public SingleAdapter (KeySlice slice,
-                              List<Glyph> parts,
-                              Set<Shape> targetShapes,
-                              double minGrade)
-        {
-            super(Glyphs.buildLinks(parts, params.maxPartGap), targetShapes, minGrade);
-            this.slice = slice;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void evaluateGlyph (Glyph glyph,
-                                   Set<Glyph> parts)
-        {
-            evaluateSliceGlyph(slice, glyph, parts);
-        }
-
-        @Override
-        protected void keepCandidate (Glyph glyph,
-                                      Set<Glyph> parts,
-                                      Evaluation eval)
-        {
-            if ((slice.eval == null) || (slice.eval.grade < eval.grade)) {
-                slice.eval = eval;
-                slice.glyph = glyph;
-            }
         }
     }
 }

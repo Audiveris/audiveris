@@ -36,11 +36,12 @@ import omr.sheet.SystemInfo;
 
 import omr.sig.inter.KeyInter;
 
+import omr.util.ChartPlotter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -55,10 +56,11 @@ import java.util.TreeMap;
  * <p>
  * Second, it is assumed that, within the containing system: <ol>
  * <li>All staff key signatures start at similar abscissa offset since measure start,
- * <li>All staff key items have similar widths, hence they are aligned in slices across staves.
+ * <li>All staff key items have similar widths, hence they are aligned in slices across staves,
+ * even between small and standard staves.
  * <li>Slices are allocated based on detected ink peaks within header projection.
  * Hence, an allocated slice indicates the presence of ink (i.e. a slice is never empty).
- * <li>Sharp-based and flat-based keys are not mixed in a system.
+ * <li>Sharp-based and flat-based keys can be mixed in a system, but not within the same part.
  * <li>The number of key items may vary across staves, but not within the same part.
  * <li>The longest key signature defines an abscissa range which, whatever the system staff, can
  * contain either a key signature or nothing (no ink).
@@ -68,8 +70,8 @@ import java.util.TreeMap;
  * also marked as "stuffed".
  * <li>In a staff, any slice following a stuffed slice is also a stuffed slice.
  * </ol>
- * At system level, we use a phase #3, whereby multi-staff parts make sure all their staves have
- * the same key signatures, by "replicating" the best signature to the other staff (or staves).
+ * At system level, we make sure that any multi-staff part has the same key signature, by
+ * "replicating" the best signature to the other staff (or staves).
  *
  * @author Hervé Bitteur
  */
@@ -132,7 +134,7 @@ public class KeyColumn
      * @param projWidth projection width
      * @return a string that describes staff key signature, if any
      */
-    public String addPlot (HeaderBuilder.Plotter plotter,
+    public String addPlot (ChartPlotter plotter,
                            Staff staff,
                            int projWidth)
     {
@@ -160,8 +162,8 @@ public class KeyColumn
         // Define each staff key-sig area
         for (Staff staff : system.getStaves()) {
             int measStart = staff.getHeaderStart();
-            int clefStop = staff.getClefStop();
-            int browseStart = (clefStop != 0) ? (clefStop + 1) : staff.getHeaderStop();
+            Integer clefStop = staff.getClefStop();
+            int browseStart = (clefStop != null) ? (clefStop + 1) : staff.getHeaderStop();
             builders.put(
                     staff,
                     new KeyBuilder(this, staff, projectionWidth, measStart, browseStart, true));
@@ -173,9 +175,6 @@ public class KeyColumn
         }
 
         if (system.isMultiStaff()) {
-            // Check unique shape in system header keys
-            checkSystemShape();
-
             // Check keys alignment across staves at system level
             if (!checkSystemSlices()) {
                 for (KeyBuilder builder : builders.values()) {
@@ -264,64 +263,6 @@ public class KeyColumn
         return params.maxSliceDist;
     }
 
-    //
-    //    //------------------//
-    //    // checkEmptySlices //
-    //    //------------------//
-    //    /**
-    //     * (For a one-staff system), better check empty slices.
-    //     */
-    //    private void checkEmptySlices ()
-    //    {
-    //        for (KeyBuilder builder : builders.values()) {
-    //            if (builder.getKeyShape() != null) {
-    //                for (KeyBuilder.Slice slice : builder.getEmptySlices()) {
-    //                    // There must be something in this slice
-    //                    Set<Shape> shapes = Collections.singleton(builder.getKeyShape());
-    //                    builder.extractAlter(slice, shapes, Grades.keyAlterMinGrade3);
-    //                }
-    //            }
-    //        }
-    //    }
-    //
-    //------------------//
-    // checkSystemShape //
-    //------------------//
-    /**
-     * Verify that all (non-empty) key signatures within the system column share
-     * the same shape (either flat or sharp)
-     *
-     * @return true if OK
-     */
-    private boolean checkSystemShape ()
-    {
-        Map<Shape, List<Integer>> map = new EnumMap<Shape, List<Integer>>(Shape.class);
-
-        for (KeyBuilder builder : builders.values()) {
-            Shape shape = builder.getKeyShape();
-
-            if (shape != null) {
-                List<Integer> staves = map.get(shape);
-
-                if (staves == null) {
-                    map.put(shape, staves = new ArrayList<Integer>());
-                }
-
-                staves.add(builder.getId());
-            }
-        }
-
-        logger.debug("System#{}: {}", system.getId(), map);
-
-        if (map.keySet().size() > 1) {
-            logger.info("Mixed sharps & flats in system#{}: {}", system.getId(), map);
-
-            return false;
-        }
-
-        return true;
-    }
-
     //-------------------//
     // checkSystemSlices //
     //-------------------//
@@ -339,7 +280,9 @@ public class KeyColumn
             return false; // No key sig for the system
         }
 
-        printSliceTable();
+        if (logger.isDebugEnabled()) {
+            printSliceTable();
+        }
 
         PartLoop:
         for (Part part : system.getParts()) {
@@ -358,7 +301,6 @@ public class KeyColumn
                     do {
                         modified = false;
 
-                        // Check staves
                         StaffLoop:
                         for (Staff staff : staves) {
                             if (staff != bestStaff) {
@@ -386,7 +328,9 @@ public class KeyColumn
         }
 
         ///spreadStuff(); // ????????????????????
-        printSliceTable();
+        if (logger.isDebugEnabled()) {
+            printSliceTable();
+        }
 
         return true;
     }

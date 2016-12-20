@@ -223,7 +223,7 @@ public class StaffHeader
             if ((this.stop == null) || (stop <= this.stop)) {
                 this.stop = stop;
             } else {
-                logger.info("Range tentative to shrinkStop() from {} to {}", this.stop, stop);
+                logger.debug("Range tentative to shrinkStop() from {} to {}", this.stop, stop);
             }
         }
 

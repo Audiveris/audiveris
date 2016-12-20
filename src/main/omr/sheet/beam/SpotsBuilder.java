@@ -370,7 +370,7 @@ public class SpotsBuilder
         }
 
         // Save it for future HEADS step
-        sheet.getPicture().setTable(Picture.TableKey.HEAD_SPOTS, runs);
+        sheet.getPicture().setTable(Picture.TableKey.HEAD_SPOTS, runs, true);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

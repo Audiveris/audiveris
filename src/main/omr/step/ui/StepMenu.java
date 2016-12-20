@@ -21,6 +21,8 @@
 // </editor-fold>
 package omr.step.ui;
 
+import omr.OMR;
+
 import omr.script.SheetStepTask;
 
 import omr.sheet.Sheet;
@@ -43,6 +45,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.event.MenuEvent;
 
 /**
@@ -183,15 +186,22 @@ public class StepMenu
                     try {
                         Step sofar = stub.getLatestStep();
 
-                        if ((sofar == null) || (sofar.compareTo(step) <= 0)) {
-                            // Here work on the sheet
-                            final Sheet sheet = stub.getSheet();
-                            new SheetStepTask(sheet, step).run(sheet);
-                        } else {
-                            // There we rebuild just the current sheet
-                            ///Stepping.reprocessSheet(step, sheet, null, true);
-                            logger.info("Step {} already done", step);
+                        if ((sofar != null) & (sofar.compareTo(step) >= 0)) {
+                            int answer = JOptionPane.showConfirmDialog(
+                                    OMR.gui.getFrame(),
+                                    "About to redo step " + step + ", do you confirm?",
+                                    "Redo confirmation",
+                                    JOptionPane.YES_NO_CANCEL_OPTION,
+                                    JOptionPane.WARNING_MESSAGE);
+
+                            if (answer != JOptionPane.YES_OPTION) {
+                                return null;
+                            }
                         }
+
+                        // Work on the sheet
+                        final Sheet sheet = stub.getSheet();
+                        new SheetStepTask(sheet, step).run(sheet);
                     } catch (ProcessingCancellationException pce) {
                         logger.info("ProcessingCancellationException detected");
                     }

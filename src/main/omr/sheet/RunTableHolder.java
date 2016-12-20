@@ -143,10 +143,11 @@ public class RunTableHolder
     //---------//
     // setData //
     //---------//
-    public void setData (RunTable data)
+    public void setData (RunTable data,
+                         boolean modified)
     {
         this.data = data;
-        modified = true;
+        setModified(modified);
     }
 
     //-------------//

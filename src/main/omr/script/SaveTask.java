@@ -90,7 +90,7 @@ public class SaveTask
 
             book.store(bookPath, false);
         } else {
-            logger.info("No save needed for {}", book);
+            logger.info("No need to save {}", book);
         }
     }
 

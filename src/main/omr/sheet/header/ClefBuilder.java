@@ -33,7 +33,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.Glyph;
 import omr.glyph.GlyphCluster;
 import omr.glyph.GlyphFactory;
-import omr.glyph.GlyphIndex;
 import omr.glyph.GlyphLink;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
@@ -81,7 +80,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -139,6 +137,12 @@ public class ClefBuilder
     /** Scale-dependent parameters. */
     private final Parameters params;
 
+    /** Outer clef area. */
+    private Rectangle outerRect;
+
+    /** Inner clef area. */
+    private Rectangle innerRect;
+
     /** Shape classifier to use. */
     private final Classifier classifier = GlyphClassifier.getInstance();
 
@@ -182,30 +186,16 @@ public class ClefBuilder
      */
     public void findClefs ()
     {
-        List<Glyph> parts = getParts();
+        // Define outer & inner lookup areas
+        outerRect = getOuterRect();
+        innerRect = getInnerRect(outerRect);
 
-        // Formalize parts relationships in a global graph
-        SimpleGraph<Glyph, GlyphLink> globalGraph = Glyphs.buildLinks(parts, params.maxPartGap);
-        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(
-                globalGraph).connectedSets();
-        logger.debug("Staff#{} sets: {}", staff.getId(), sets.size());
+        // First attempt, using both outer & inner areas
+        Map<ClefKind, ClefInter> bestMap = getBestMap(true);
 
-        // Best inter per clef kind
-        Map<ClefKind, ClefInter> bestMap = new EnumMap<ClefKind, ClefInter>(ClefKind.class);
-
-        for (Set<Glyph> set : sets) {
-            // Use only the subgraph for this set
-            SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, globalGraph);
-            ClefAdapter adapter = new ClefAdapter(subGraph, bestMap);
-            new GlyphCluster(adapter, null).decompose();
-
-            int trials = adapter.trials;
-            logger.debug("Staff#{} clef parts:{} trials:{}", staff.getId(), set.size(), trials);
-        }
-
-        // Discard poor candidates as much as possible
-        if (bestMap.size() > 1) {
-            purgeClefs(bestMap);
+        if (bestMap.isEmpty()) {
+            // Second attempt, focused on inner area only
+            bestMap = getBestMap(false);
         }
 
         // Register the remaining clef candidates
@@ -237,15 +227,76 @@ public class ClefBuilder
         return "ClefBuilder#" + staff.getId();
     }
 
-    //----------//
-    // getParts //
-    //----------//
+    //------------//
+    // getBestMap //
+    //------------//
     /**
-     * Retrieve all glyph instances that could be part of clef.
+     * Retrieve the map of best clefs, organized per kind.
      *
-     * @return clef possible parts
+     * @param isFirstPass true for first pass only
+     * @return the bestMap found
      */
-    private List<Glyph> getParts ()
+    private Map<ClefKind, ClefInter> getBestMap (boolean isFirstPass)
+    {
+        List<Glyph> parts = getParts(isFirstPass);
+
+        // Formalize parts relationships in a global graph
+        SimpleGraph<Glyph, GlyphLink> globalGraph = Glyphs.buildLinks(parts, params.maxPartGap);
+        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(
+                globalGraph).connectedSets();
+        logger.debug("Staff#{} sets: {}", staff.getId(), sets.size());
+
+        // Best inter per clef kind
+        Map<ClefKind, ClefInter> bestMap = new EnumMap<ClefKind, ClefInter>(ClefKind.class);
+
+        for (Set<Glyph> set : sets) {
+            // Use only the subgraph for this set
+            SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, globalGraph);
+            ClefAdapter adapter = new ClefAdapter(subGraph, bestMap);
+            new GlyphCluster(adapter, null).decompose();
+
+            int trials = adapter.trials;
+            logger.debug("Staff#{} clef parts:{} trials:{}", staff.getId(), set.size(), trials);
+        }
+
+        // Discard poor candidates as much as possible
+        if (bestMap.size() > 1) {
+            purgeClefs(bestMap);
+        }
+
+        return bestMap;
+    }
+
+    //--------------//
+    // getInnerRect //
+    //--------------//
+    /**
+     * Report the inner rectangle within the outer rectangle.
+     *
+     * @param outer provided outer rectangle
+     * @return the inner rectangle
+     */
+    private Rectangle getInnerRect (Rectangle outer)
+    {
+        // Core rectangle
+        Rectangle inner = new Rectangle(outer);
+        inner.grow(0, -params.yCoreMargin);
+        inner.x += params.xCoreMargin;
+        inner.width -= params.xCoreMargin;
+        staff.addAttachment("c", inner);
+
+        return inner;
+    }
+
+    //--------------//
+    // getOuterRect //
+    //--------------//
+    /**
+     * Report the outer rectangle.
+     *
+     * @return the outer rectangle
+     */
+    private Rectangle getOuterRect ()
     {
         // Rectangular ROI (within sheet image)
         int areaTop = Math.max(
@@ -254,13 +305,29 @@ public class ClefBuilder
         int areaBottom = Math.min(
                 sheet.getHeight() - 1,
                 staff.getLastLine().yAt(range.browseStart) + params.belowStaff);
-        Rectangle rect = new Rectangle(
+        Rectangle outer = new Rectangle(
                 range.browseStart,
                 areaTop,
                 range.browseStop - range.browseStart,
                 areaBottom - areaTop + 1);
-        rect.grow(-params.beltMargin, 0);
-        staff.addAttachment("C", rect);
+        outer.grow(-params.beltMargin, 0);
+        staff.addAttachment("C", outer);
+
+        return outer;
+    }
+
+    //----------//
+    // getParts //
+    //----------//
+    /**
+     * Retrieve all glyph instances that could be part of clef.
+     *
+     * @param isFirstPass true for first pass
+     * @return clef possible parts
+     */
+    private List<Glyph> getParts (boolean isFirstPass)
+    {
+        final Rectangle rect = isFirstPass ? outerRect : innerRect;
 
         // Grab pixels out of staff-free source
         ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
@@ -272,19 +339,9 @@ public class ClefBuilder
         List<Glyph> parts = GlyphFactory.buildGlyphs(runTable, rect.getLocation());
 
         // Keep only interesting parts
-        purgeParts(parts, rect);
+        purgeParts(parts, isFirstPass);
 
         system.registerGlyphs(parts, Group.CLEF_PART);
-
-        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
-
-        for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
-            final Glyph part = li.next();
-            Glyph glyph = glyphIndex.registerOriginal(part);
-            system.addFreeGlyph(glyph);
-            li.set(glyph);
-        }
-
         logger.debug("{} parts: {}", this, parts.size());
 
         return parts;
@@ -327,24 +384,18 @@ public class ClefBuilder
      * Purge the population of parts candidates as much as possible, since the cost
      * of their later combinations is exponential.
      *
-     * @param parts the collection to purge
-     * @param rect  the slice rectangle
+     * @param parts       the collection to purge
+     * @param isFirstPass true for first pass
      */
     private void purgeParts (List<Glyph> parts,
-                             Rectangle rect)
+                             boolean isFirstPass)
     {
-        // The rect is used for cropping only.
-        // Use a smaller core rectangle which must be intersected by any part candidate
-        Rectangle core = new Rectangle(rect);
-        core.grow(0, -params.yCoreMargin);
-        core.x += params.xCoreMargin;
-        core.width -= params.xCoreMargin;
-        staff.addAttachment("c", core);
-
         List<Glyph> toRemove = new ArrayList<Glyph>();
 
         for (Glyph part : parts) {
-            if ((part.getWeight() < params.minPartWeight) || !part.getBounds().intersects(core)) {
+            if (part.getWeight() < params.minPartWeight) {
+                toRemove.add(part);
+            } else if (isFirstPass && !part.getBounds().intersects(innerRect)) {
                 toRemove.add(part);
             }
         }

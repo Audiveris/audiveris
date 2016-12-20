@@ -535,7 +535,7 @@ public class SampleRepository
                                 desc.addAlias(longName);
 
                                 sampleSheet = nameMap.get(desc.getName());
-                                sampleSheet.setImage(rt);
+                                sampleSheet.setImage(rt, true);
                                 imageMap.put(rt, sampleSheet);
 
                                 break;
@@ -561,7 +561,7 @@ public class SampleRepository
                     sampleSheet = new SampleSheet(desc);
                     nameMap.put(desc.getName(), sampleSheet);
                     imageMap.put(image, sampleSheet);
-                    sampleSheet.setImage(image);
+                    sampleSheet.setImage(image, false);
                 }
             }
         } else {
@@ -1239,7 +1239,7 @@ public class SampleRepository
                             SampleSheet sampleSheet = nameMap.get(folder.toString());
 
                             if (sampleSheet != null) {
-                                sampleSheet.setImage(runTable);
+                                sampleSheet.setImage(runTable, true);
                                 logger.debug("Loaded {}", file);
                             } else {
                                 logger.warn("No SampleSheet found for image {}", file);

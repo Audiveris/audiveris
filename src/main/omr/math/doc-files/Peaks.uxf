@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="13.3">
+  <help_text>//Uncomment the following line to change the fontsize:
+        //fontsize=14
+
+        //Welcome to UMLet!
+
+        // *Double-click on UML elements to add them to the diagram.
+        // *Edit element properties by modifying the text in this panel.
+        // *Edit the files in the 'palettes' directory to store your own element palettes.
+        // *Press Del or Backspace to remove elements from the diagram.
+        // *Hold down Ctrl key to select multiple elements.
+        // *Press c to copy the UML diagram to the system clipboard.
+        // * This text will be stored with each diagram. Feel free to use the area for notes.
+    </help_text>
+  <zoom_level>9</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>216</x>
+      <y>207</y>
+      <w>144</w>
+      <h>225</h>
+    </coordinates>
+    <panel_attributes>*IntegerFunction*
+--
+xMin, xMax
+values
+--
+setValue(x,y)
+addValue(x,delta)
+getValue(x)
+getDerivative(x)
+argMax(x1,x2)
+getArea(x1,x2)
+getLocalMaxima(x1,x2)
+--
+print(stream)
+getValueSeries()
+getDerivativeSeries()
+getZeroSeries()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>18</x>
+      <y>207</y>
+      <w>135</w>
+      <h>216</h>
+    </coordinates>
+    <panel_attributes>*HiLoPeakFinder*
+bg=#ffaa66
+--
+name
+xMin, xMax
+minValue
+minDerivative
+minGainRatio
+hilos
+peaks
+--
+findPeaks()
+--
+getValueSeries()
+getDerivativeSeries()
+getHiLoSeries()
+getPeakSeries()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>144</x>
+      <y>207</y>
+      <w>90</w>
+      <h>27</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>80.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Text</id>
+    <coordinates>
+      <x>18</x>
+      <y>9</y>
+      <w>90</w>
+      <h>45</h>
+    </coordinates>
+    <panel_attributes>Peak Management</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>18</x>
+      <y>63</y>
+      <w>180</w>
+      <h>108</h>
+    </coordinates>
+    <panel_attributes>*ChartPlotter*
+bg=#aaff66
+--
+dataset
+chart
+renderer
+--
+add(series,color,withShape?)
+display(title, location)</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

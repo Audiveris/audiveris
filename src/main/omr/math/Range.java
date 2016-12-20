@@ -21,6 +21,8 @@
 // </editor-fold>
 package omr.math;
 
+import java.util.Comparator;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -33,8 +35,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "range")
 public class Range
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** To sort by increasing main. */
+    public static final Comparator<Range> byMain = new Comparator<Range>()
+    {
+        @Override
+        public int compare (Range e1,
+                            Range e2)
+        {
+            return Double.compare(e1.main, e2.main);
+        }
+    };
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Key at beginning of range. */
     @XmlAttribute
     public final int min;

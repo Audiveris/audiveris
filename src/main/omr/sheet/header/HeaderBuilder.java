@@ -33,26 +33,21 @@ import omr.sig.inter.BarlineInter;
 import omr.sig.inter.ClefInter;
 import omr.sig.relation.BarGroupRelation;
 import omr.sig.relation.Relation;
+
+import omr.util.ChartPlotter;
+
 import static omr.util.HorizontalSide.LEFT;
+
 import omr.util.Navigable;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartFrame;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
-
-import javax.swing.WindowConstants;
+import omr.ui.Colors;
 
 /**
  * Class {@code HeaderBuilder} handles the header at the beginning of a given system.
@@ -137,7 +132,53 @@ public class HeaderBuilder
      */
     public void plot (Staff staff)
     {
-        new ChartPlotter(staff).plot();
+        final Sheet sheet = system.getSheet();
+        final String frameTitle = sheet.getId() + " header staff#" + staff.getId();
+        final ChartPlotter plotter = new ChartPlotter(
+                frameTitle,
+                "Abscissae - staff interline:" + staff.getSpecificInterline(),
+                "Counts");
+
+        // Draw time sig portion
+        String timeString = timeColumn.addPlot(plotter, staff);
+
+        // Draw key sig portion
+        String keyString = keyColumn.addPlot(plotter, staff, maxHeaderWidth);
+
+        // Get clef info
+        ClefInter clef = staff.getHeader().clef;
+        String clefString = (clef != null) ? clef.getKind().toString() : null;
+
+        {
+            // Draw the zero reference line
+            final int xMin = staff.getHeaderStart();
+            final int xMax = xMin + maxHeaderWidth;
+
+            XYSeries series = new XYSeries("Zero", false); // No autosort
+            series.add(xMin, 0);
+            series.add(xMax, 0);
+            plotter.add(series, Colors.CHART_ZERO, true);
+        }
+
+        // Build chart title: clef + key + time
+        StringBuilder chartTitle = new StringBuilder(frameTitle);
+
+        if (clefString != null) {
+            chartTitle.append(" ").append(clefString);
+        }
+
+        if (keyString != null) {
+            chartTitle.append(" ").append(keyString);
+        }
+
+        if (timeString != null) {
+            chartTitle.append(" ").append(timeString);
+        }
+
+        plotter.setChartTitle(chartTitle.toString());
+
+        // Display frame
+        plotter.display(frameTitle, new Point(20 * staff.getId(), 20 * staff.getId()));
     }
 
     //---------------//
@@ -292,141 +333,7 @@ public class HeaderBuilder
         }
     }
 
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    //---------//
-    // Plotter //
-    //---------//
-    public interface Plotter
-    {
-        //~ Static fields/initializers -------------------------------------------------------------
-
-        /** Height of marks below zero line. */
-        static double MARK = 2.5;
-
-        //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Add a point series to the plotter.
-         *
-         * @param series        the series to add
-         * @param color         display color
-         * @param displayShapes true to display a shape at each point location
-         */
-        void add (XYSeries series,
-                  Color color,
-                  boolean displayShapes);
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------------//
-    // ChartPlotter //
-    //--------------//
-    /**
-     * Handles the display of projection chart.
-     */
-    private class ChartPlotter
-            implements Plotter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Staff staff;
-
-        private final XYSeriesCollection dataset = new XYSeriesCollection();
-
-        // Chart
-        private final JFreeChart chart;
-
-        private final XYPlot plot;
-
-        private final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-
-        private final StringBuilder title = new StringBuilder();
-
-        // Series index
-        private int index = -1;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public ChartPlotter (Staff staff)
-        {
-            this.staff = staff;
-
-            Sheet sheet = system.getSheet();
-            title.append(sheet.getId()).append(" header staff#").append(staff.getId());
-
-            chart = ChartFactory.createXYLineChart(
-                    title.toString(), // Title
-                    "Abscissae - staff interline:" + staff.getSpecificInterline(), // X-Axis label
-                    "Counts", // Y-Axis label
-                    dataset, // Dataset
-                    PlotOrientation.VERTICAL, // orientation
-                    true, // Show legend
-                    false, // Show tool tips
-                    false // urls
-            );
-
-            plot = (XYPlot) chart.getPlot();
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void add (XYSeries series,
-                         Color color,
-                         boolean displayShapes)
-        {
-            dataset.addSeries(series);
-            renderer.setSeriesPaint(++index, color);
-            renderer.setSeriesShapesVisible(index, displayShapes);
-        }
-
-        public void plot ()
-        {
-            plot.setRenderer(renderer);
-
-            // Draw time sig portion
-            String timeString = timeColumn.addPlot(this, staff);
-
-            // Draw key sig portion
-            String keyString = keyColumn.addPlot(this, staff, maxHeaderWidth);
-
-            // Get clef info
-            ClefInter clef = staff.getHeader().clef;
-            String clefString = (clef != null) ? clef.getKind().toString() : null;
-
-            // Draw the zero reference line
-            {
-                final int xMin = staff.getHeaderStart();
-                final int xMax = xMin + maxHeaderWidth;
-
-                XYSeries series = new XYSeries("Zero");
-                series.add(xMin, -MARK);
-                series.add(xMin, 0);
-                series.add(xMax, 0);
-                series.add(xMax, -MARK);
-                add(series, Color.WHITE, false);
-            }
-
-            if (clefString != null) {
-                title.append(" ").append(clefString);
-            }
-
-            if (keyString != null) {
-                title.append(" ").append(keyString);
-            }
-
-            if (timeString != null) {
-                title.append(" ").append(timeString);
-            }
-
-            chart.setTitle(title.toString());
-
-            // Hosting frame
-            ChartFrame frame = new ChartFrame(title.toString(), chart, true);
-            frame.pack();
-            frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            frame.setLocation(new Point(20 * staff.getId(), 20 * staff.getId()));
-            frame.setVisible(true);
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//

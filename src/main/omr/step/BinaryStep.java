@@ -110,7 +110,7 @@ public class BinaryStep
 
         RunTableFactory vertFactory = new RunTableFactory(Orientation.VERTICAL);
         RunTable wholeVertTable = vertFactory.createTable(binary);
-        picture.setTable(Picture.TableKey.BINARY, wholeVertTable);
+        picture.setTable(Picture.TableKey.BINARY, wholeVertTable, true);
 
         // To discard image
         picture.disposeSource(SourceKey.INITIAL);

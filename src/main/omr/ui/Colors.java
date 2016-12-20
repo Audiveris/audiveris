@@ -105,6 +105,21 @@ public class Colors
     /** Music for mixed symbols view */
     public static final Color MUSIC_SYMBOLS = new Color(170, 255, 170, alpha);
 
+    /** Function values in charts. */
+    public static final Color CHART_VALUE = Color.RED;
+
+    /** Function derivatives in charts. */
+    public static final Color CHART_DERIVATIVE = Color.GREEN;
+
+    /** Derivative hilos in charts. */
+    public static final Color CHART_HILO = Color.CYAN;
+
+    /** Peaks in charts. */
+    public static final Color CHART_PEAK = Color.YELLOW;
+
+    /** Zero line in charts. */
+    public static final Color CHART_ZERO = Color.WHITE;
+
     /** Color for a progress bar */
     public static final Color PROGRESS_BAR = Color.ORANGE;
 

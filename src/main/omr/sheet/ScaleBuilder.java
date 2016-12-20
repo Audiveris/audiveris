@@ -26,7 +26,8 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.math.IntegerPeakFunction;
+import omr.math.HiLoPeakFinder;
+import omr.math.IntegerFunction;
 import omr.math.Range;
 
 import omr.run.Run;
@@ -38,6 +39,7 @@ import omr.sheet.Scale.LineScale;
 
 import omr.step.StepException;
 
+import omr.util.ChartPlotter;
 import omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -97,12 +99,6 @@ public class ScaleBuilder
 
     /** Keeper of vertical run length histograms, for foreground & background. */
     private HistoKeeper histoKeeper;
-
-    /** Histogram on vertical black runs. */
-    private IntegerPeakFunction blackHisto;
-
-    /** Histogram on vertical pairs of runs (black+white and white+black). */
-    private IntegerPeakFunction comboHisto;
 
     /** Most frequent length of vertical black runs found. */
     private Range blackPeak;
@@ -297,9 +293,17 @@ public class ScaleBuilder
         //~ Instance fields ------------------------------------------------------------------------
 
         // Upper bounds for run lengths (assuming sheet height >= staff height)
+        final int maxBlack;
+
         final int maxWhite;
 
-        final int maxBlack;
+        final IntegerFunction blackFunction;
+
+        final HiLoPeakFinder blackFinder;
+
+        final IntegerFunction comboFunction;
+
+        final HiLoPeakFinder comboFinder;
 
         //~ Constructors ---------------------------------------------------------------------------
         public HistoKeeper ()
@@ -313,8 +317,11 @@ public class ScaleBuilder
                     maxBlack + maxWhite);
 
             // Allocate histograms
-            blackHisto = new IntegerPeakFunction("black", 0, maxBlack);
-            comboHisto = new IntegerPeakFunction("combo", 0, maxBlack + maxWhite);
+            blackFunction = new IntegerFunction(0, maxBlack);
+            blackFinder = new HiLoPeakFinder("black", blackFunction);
+
+            comboFunction = new IntegerFunction(0, maxBlack + maxWhite);
+            comboFinder = new HiLoPeakFinder("combo", comboFunction);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -331,13 +338,13 @@ public class ScaleBuilder
                     int black = it.next().getLength();
 
                     if (black <= maxBlack) {
-                        blackHisto.addValue(black, 1);
+                        blackFunction.addValue(black, 1);
                     }
                 }
             }
 
             if (logger.isDebugEnabled()) {
-                blackHisto.print(System.out);
+                blackFunction.print(System.out);
             }
         }
 
@@ -370,8 +377,8 @@ public class ScaleBuilder
                             // Combo 2 is defined as W + B2, that is     [-----]
                             // combo1 + combo2 = 2 * (1/2 * B1 + W + 1/2 * B2) = 2 * combo
                             if ((white <= maxWhite) && (lastBlack != 0)) {
-                                comboHisto.addValue(lastBlack + white, 1); // B1 + W
-                                comboHisto.addValue(white + black, 1); // W + B2
+                                comboFunction.addValue(lastBlack + white, 1); // B1 + W
+                                comboFunction.addValue(white + black, 1); // W + B2
                             }
                         }
 
@@ -383,7 +390,7 @@ public class ScaleBuilder
             }
 
             if (logger.isDebugEnabled()) {
-                comboHisto.print(System.out);
+                comboFunction.print(System.out);
             }
         }
 
@@ -402,7 +409,7 @@ public class ScaleBuilder
             int minHeight = (int) Math.floor(minBeamLineRatio * blackPeak.main);
             int maxHeight = comboPeak.main - blackPeak.main;
 
-            List<Integer> localMaxima = blackHisto.getLocalMaxima(minHeight - 1, maxHeight + 1);
+            List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight - 1, maxHeight + 1);
 
             for (int local : localMaxima) {
                 if ((local >= minHeight) && (local <= maxHeight)) {
@@ -418,16 +425,20 @@ public class ScaleBuilder
         //------------------------//
         /**
          * Retrieve combo peak for interline (and interline2 if any).
+         * <p>
+         * FYI: If comboPeak and comboPeak2 get modified, they will appear as such in scale info,
+         * but the chart will still display the (original) peaks found.
          */
         public void retrieveInterlinePeaks ()
                 throws StepException
         {
             // Combo peak(s)
-            final int area = comboHisto.getArea();
-            final List<Range> comboPeaks = comboHisto.getHiLoPeaks(
-                    constants.minGainRatio.getValue(),
+            final int area = comboFunction.getArea();
+            final List<Range> comboPeaks = comboFinder.findPeaks(
+                    1,
                     null,
-                    (int) Math.rint(area * constants.minDerivativeRatio.getValue()));
+                    (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
+                    constants.minGainRatio.getValue());
 
             if (comboPeaks.isEmpty()) {
                 sheet.getStub().invalidate();
@@ -479,11 +490,12 @@ public class ScaleBuilder
             checkBlack();
 
             // Black peaks
-            final int area = blackHisto.getArea();
-            final List<Range> blackPeaks = blackHisto.getHiLoPeaks(
-                    constants.minGainRatio.getValue(),
+            final int area = blackFunction.getArea();
+            final List<Range> blackPeaks = blackFinder.findPeaks(
+                    1,
                     (int) Math.rint(area * constants.minCountRatio.getValue()),
-                    (int) Math.rint(area * constants.minDerivativeRatio.getValue()));
+                    (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
+                    constants.minGainRatio.getValue());
 
             if (blackPeaks.isEmpty()) {
                 sheet.getStub().invalidate();
@@ -522,17 +534,17 @@ public class ScaleBuilder
             String xLabel = "Lengths - " + ((scale != null) ? scale : "NO_SCALE");
 
             try {
-                final String title = sheet.getId() + " " + blackHisto.name;
-                blackHisto.new Plotter(title, xLabel, xMax, blackPeak).plot(
-                        new Point(20, 20));
+                final String title = sheet.getId() + " " + blackFinder.name;
+                ChartPlotter plotter = new ChartPlotter(title, xLabel, "Counts");
+                blackFinder.plot(plotter, true, 0, xMax).display(new Point(20, 20));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting black", ex);
             }
 
             try {
-                final String title = sheet.getId() + " " + comboHisto.name;
-                comboHisto.new Plotter(title, xLabel, xMax, comboPeak, comboPeak2).plot(
-                        new Point(80, 80));
+                final String title = sheet.getId() + " " + comboFinder.name;
+                ChartPlotter plotter = new ChartPlotter(title, xLabel, "Counts");
+                comboFinder.plot(plotter, true, 0, xMax).display(new Point(80, 80));
             } catch (Throwable ex) {
                 logger.warn("Error in plotting combo", ex);
             }
@@ -578,10 +590,10 @@ public class ScaleBuilder
         private int getBlackCount ()
         {
             int total = 0;
-            int xMin = blackHisto.getXMin();
+            int xMin = blackFunction.getXMin();
 
-            for (int i = xMin; i <= blackHisto.getXMax(); i++) {
-                total += ((i - xMin) * blackHisto.getValue(i));
+            for (int i = xMin; i <= blackFunction.getXMax(); i++) {
+                total += ((i - xMin) * blackFunction.getValue(i));
             }
 
             return total;

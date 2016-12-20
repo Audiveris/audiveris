@@ -28,7 +28,8 @@ import omr.glyph.Shape;
 
 import omr.image.ImageUtil;
 
-import omr.math.IntegerPeakFunction;
+import omr.math.HiLoPeakFinder;
+import omr.math.IntegerFunction;
 import omr.math.Range;
 
 import omr.run.Orientation;
@@ -46,6 +47,7 @@ import omr.sheet.SystemInfo;
 import omr.sig.SIGraph;
 import omr.sig.inter.Inter;
 
+import omr.util.ChartPlotter;
 import omr.util.StopWatch;
 
 import ij.process.ByteProcessor;
@@ -86,9 +88,6 @@ public class StemScaler
 
     /** Keeper of horizontal run length histogram. */
     private HistoKeeper histoKeeper;
-
-    /** Histogram on horizontal foreground runs. */
-    private IntegerPeakFunction histo;
 
     /** Most frequent length of horizontal foreground runs found, if any. */
     private Range peak;
@@ -140,7 +139,6 @@ public class StemScaler
             // Use a buffer with bar lines and connections removed
             watch.start("getBuffer");
 
-            Picture picture = sheet.getPicture();
             ByteProcessor buffer = getBuffer();
 
             // Look at histogram for stem thickness
@@ -148,8 +146,7 @@ public class StemScaler
 
             RunTableFactory runFactory = new RunTableFactory(Orientation.HORIZONTAL);
             RunTable horiTable = runFactory.createTable(buffer);
-            histoKeeper = new HistoKeeper(picture.getWidth() - 1);
-            histoKeeper.buildHistograms(horiTable, picture.getHeight());
+            histoKeeper = new HistoKeeper(horiTable, sheet.getScale().getInterline());
 
             return computeStem();
         } finally {
@@ -164,11 +161,12 @@ public class StemScaler
     //-------------//
     private StemScale computeStem ()
     {
-        final int area = histo.getArea();
-        final List<Range> stemPeaks = histo.getHiLoPeaks(
-                constants.minGainRatio.getValue(),
+        final int area = histoKeeper.function.getArea();
+        final List<Range> stemPeaks = histoKeeper.peakFinder.findPeaks(
+                1,
                 (int) Math.rint(area * constants.minValueRatio.getValue()),
-                (int) Math.rint(area * constants.minDerivativeRatio.getValue()));
+                (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
+                constants.minGainRatio.getValue());
 
         if (!stemPeaks.isEmpty()) {
             peak = stemPeaks.get(0);
@@ -269,50 +267,53 @@ public class StemScaler
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        // We are not interested of horizontal runs longer than this value
-        private final int maxBlack = 20;
+        private final IntegerFunction function;
+
+        private final HiLoPeakFinder peakFinder;
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create an instance of histoKeeper.
          *
-         * @param wMax the maximum possible horizontal run length value
+         * @param maxLength the maximum possible horizontal run length value
          */
-        public HistoKeeper (int wMax)
+        public HistoKeeper (RunTable horiTable,
+                            int maxLength)
         {
-            histo = new IntegerPeakFunction("stem", 0, wMax);
+            function = new IntegerFunction(0, maxLength);
+            populateFunction(horiTable);
+            peakFinder = new HiLoPeakFinder("stem", function);
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        //
         //-----------//
         // writePlot //
         //-----------//
         public void writePlot ()
         {
-            final String title = sheet.getId() + " " + histo.name;
-            histo.new Plotter(title, "Stem thickness", maxBlack, peak).plot(
-                    new Point(80, 80));
+            final String title = sheet.getId() + " " + peakFinder.name;
+            ChartPlotter plotter = new ChartPlotter(title, "Stem thickness", "Counts");
+            peakFinder.plot(plotter, true);
+            plotter.display(new Point(80, 80));
         }
 
-        //-----------------//
-        // buildHistograms //
-        //-----------------//
-        private void buildHistograms (RunTable horiTable,
-                                      int height)
+        private void populateFunction (RunTable horiTable)
         {
+            final int height = horiTable.getHeight();
+            final int maxLength = function.getXMax();
+
             for (int y = 0; y < height; y++) {
                 for (Iterator<Run> it = horiTable.iterator(y); it.hasNext();) {
                     final int blackLength = it.next().getLength();
 
-                    if (blackLength <= maxBlack) {
-                        histo.addValue(blackLength, 1);
+                    if (blackLength <= maxLength) {
+                        function.addValue(blackLength, 1);
                     }
                 }
             }
 
             if (logger.isDebugEnabled()) {
-                histo.print(System.out);
+                function.print(System.out);
             }
         }
     }

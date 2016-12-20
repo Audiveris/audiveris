@@ -230,12 +230,15 @@ public class KeyRoi
     /**
      * Report the pixels buffer for just a slice
      *
-     * @param source pixel source (staff free)
-     * @param slice  the current slice
+     * @param source        pixel source (staff free)
+     * @param slice         the current slice
+     * @param cropNeighbors true for discarding pixels taken by neighboring slices
      * @return the buffer of slice pixels
      */
     public ByteProcessor getSlicePixels (ByteProcessor source,
-                                         KeySlice slice)
+                                         KeySlice slice,
+                                         boolean cropNeighbors
+    )
     {
         Rectangle sRect = slice.getRect();
         BufferedImage sImage = new BufferedImage(
@@ -245,37 +248,39 @@ public class KeyRoi
         ByteProcessor sBuffer = new ByteProcessor(sImage);
         sBuffer.copyBits(source, -sRect.x, -sRect.y, Blitter.COPY);
 
-        // Erase good key items from adjacent slices, if any
-        final int idx = indexOf(slice);
-        final Integer prevIdx = (idx > 0) ? (idx - 1) : null;
-        final Integer nextIdx = (idx < (size() - 1)) ? (idx + 1) : null;
-        Graphics2D g = null;
+        if (cropNeighbors) {
+            // Erase good key items from adjacent slices, if any
+            final int idx = indexOf(slice);
+            final Integer prevIdx = (idx > 0) ? (idx - 1) : null;
+            final Integer nextIdx = (idx < (size() - 1)) ? (idx + 1) : null;
+            Graphics2D g = null;
 
-        for (Integer i : new Integer[]{prevIdx, nextIdx}) {
-            if (i != null) {
-                final KeySlice sl = get(i);
+            for (Integer i : new Integer[]{prevIdx, nextIdx}) {
+                if (i != null) {
+                    final KeySlice sl = get(i);
 
-                if (sl.alter != null) {
-                    final Glyph glyph = sl.alter.getGlyph();
+                    if (sl.alter != null) {
+                        final Glyph glyph = sl.alter.getGlyph();
 
-                    if (glyph.getBounds().intersects(sRect)) {
-                        if (g == null) {
-                            g = sImage.createGraphics();
-                            g.setColor(Color.white);
+                        if (glyph.getBounds().intersects(sRect)) {
+                            if (g == null) {
+                                g = sImage.createGraphics();
+                                g.setColor(Color.white);
+                            }
+
+                            final Point offset = new Point(
+                                    glyph.getLeft() - sRect.x,
+                                    glyph.getTop() - sRect.y);
+                            logger.debug("Erasing glyph#{} from {}", glyph.getId(), slice);
+                            glyph.getRunTable().render(g, offset);
                         }
-
-                        final Point offset = new Point(
-                                glyph.getLeft() - sRect.x,
-                                glyph.getTop() - sRect.y);
-                        logger.debug("Erasing glyph#{} from {}", glyph.getId(), slice);
-                        glyph.getRunTable().render(g, offset);
                     }
                 }
             }
-        }
 
-        if (g != null) {
-            g.dispose();
+            if (g != null) {
+                g.dispose();
+            }
         }
 
         return sBuffer;
