@@ -1681,8 +1681,7 @@ public abstract class TimeBuilder
             final Sheet sheet = system.getSheet();
 
             if (glyph.getId() == 0) {
-                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                system.addFreeGlyph(glyph);
+                glyph = system.registerGlyph(glyph, null);
             }
 
             glyphCandidates.add(glyph);
@@ -1795,8 +1794,7 @@ public abstract class TimeBuilder
             final Sheet sheet = system.getSheet();
 
             if (glyph.getId() == 0) {
-                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                system.addFreeGlyph(glyph);
+                glyph = system.registerGlyph(glyph, null);
             }
 
             glyphCandidates.add(glyph);

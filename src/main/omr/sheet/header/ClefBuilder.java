@@ -46,6 +46,7 @@ import omr.run.RunTableFactory;
 import omr.sheet.Book;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
+import omr.sheet.Scale.InterlineScale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
@@ -60,8 +61,9 @@ import omr.sig.relation.Exclusion;
 
 import omr.ui.symbol.Symbol;
 import omr.ui.symbol.Symbols;
-
+import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
+import omr.util.VerticalSide;
 
 import ij.process.Blitter;
 import ij.process.ByteProcessor;
@@ -102,8 +104,8 @@ public class ClefBuilder
 
     /**
      * All possible clef symbols at beginning of staff: all but small clefs.
-     * Octave bass clefs are reported to be extremely <a
-     * href="http://en.wikipedia.org/wiki/Clef#Octave_clefs">rare</a>.
+     * Octave bass clefs are reported to be extremely
+     * <a href="http://en.wikipedia.org/wiki/Clef#Octave_clefs">rare</a>.
      */
     private static final EnumSet<Shape> HEADER_CLEF_SHAPES = EnumSet.of(
             F_CLEF,
@@ -163,7 +165,7 @@ public class ClefBuilder
         sig = system.getSig();
         sheet = system.getSheet();
         scale = sheet.getScale();
-        params = new Parameters(scale);
+        params = new Parameters(scale, staff.getSpecificInterline());
 
         final StaffHeader header = staff.getHeader();
 
@@ -293,23 +295,43 @@ public class ClefBuilder
     //--------------//
     /**
      * Report the outer rectangle.
+     * <p>
+     * To cope with overlapping clefs across staves, the roi cannot vertically extend past the
+     * middle of gutter with a neighboring staff.
      *
      * @return the outer rectangle
      */
     private Rectangle getOuterRect ()
     {
-        // Rectangular ROI (within sheet image)
-        int areaTop = Math.max(
-                0,
-                staff.getFirstLine().yAt(range.browseStart) - params.aboveStaff);
-        int areaBottom = Math.min(
-                sheet.getHeight() - 1,
-                staff.getLastLine().yAt(range.browseStart) + params.belowStaff);
-        Rectangle outer = new Rectangle(
-                range.browseStart,
-                areaTop,
-                range.browseStop - range.browseStart,
-                areaBottom - areaTop + 1);
+        final int xMin = range.browseStart;
+        final int xMax = range.browseStop;
+        final int xMid = (xMin + xMax) / 2;
+
+        // Determine upper limit
+        final int staffTop = staff.getFirstLine().yAt(xMid);
+        int yMin = Math.max(0, staffTop - params.aboveStaff);
+
+        // Staff above?
+        for (Staff st : sheet.getStaffManager().vertNeighbors(staff, VerticalSide.TOP)) {
+            if ((st.getAbscissa(LEFT) < xMid) && (st.getAbscissa(RIGHT) > xMid)) {
+                final int yLast = st.getLastLine().yAt(xMid);
+                yMin = Math.max(yMin, (int) Math.ceil(0.5 * (yLast + staffTop + 1)));
+            }
+        }
+
+        // Determine lower limit
+        final int staffBottom = staff.getLastLine().yAt(xMid);
+        int yMax = Math.min(sheet.getHeight() - 1, staffBottom + params.belowStaff);
+
+        // Staff below?
+        for (Staff st : sheet.getStaffManager().vertNeighbors(staff, VerticalSide.BOTTOM)) {
+            if ((st.getAbscissa(LEFT) < xMid) && (st.getAbscissa(RIGHT) > xMid)) {
+                final int yFirst = st.getFirstLine().yAt(xMid);
+                yMax = Math.min(yMax, (int) Math.floor(0.5 * ((staffBottom + yFirst) - 1)));
+            }
+        }
+
+        Rectangle outer = new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
         outer.grow(-params.beltMargin, 0);
         staff.addAttachment("C", outer);
 
@@ -453,6 +475,9 @@ public class ClefBuilder
     //---------------//
     /**
      * Register the clefs into SIG and update staff clef abscissa stop.
+     * <p>
+     * Beware clef stop is defined as min stop over all remaining clef candidates for this staff,
+     * which may be too left shifted.
      *
      * @param clefs list of remaining candidates
      */
@@ -603,19 +628,25 @@ public class ClefBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        final int maxPartCount;
+
+        // Sheet scale dependent
+        //----------------------
+        //
         final int maxClefEnd;
-
-        final int aboveStaff;
-
-        final int belowStaff;
 
         final int beltMargin;
 
-        final int xCoreMargin;
+        final int xCoreMargin; // staff?
 
-        final int yCoreMargin;
+        final int yCoreMargin; // staff?
 
-        final int maxPartCount;
+        // Staff scale dependent
+        //----------------------
+        //
+        final int aboveStaff;
+
+        final int belowStaff;
 
         final int minPartWeight;
 
@@ -626,19 +657,24 @@ public class ClefBuilder
         final int minGlyphWeight;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        public Parameters (Scale scale,
+                           int specific)
         {
+            maxPartCount = constants.maxPartCount.getValue();
+
+            // Use sheet global interline value
             maxClefEnd = scale.toPixels(constants.maxClefEnd);
-            aboveStaff = scale.toPixels(constants.aboveStaff);
-            belowStaff = scale.toPixels(constants.belowStaff);
             beltMargin = scale.toPixels(constants.beltMargin);
             xCoreMargin = scale.toPixels(constants.xCoreMargin);
             yCoreMargin = scale.toPixels(constants.yCoreMargin);
-            maxPartCount = constants.maxPartCount.getValue();
-            minPartWeight = scale.toPixels(constants.minPartWeight);
-            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
-            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
-            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
+
+            // Use staff specific interline value
+            aboveStaff = InterlineScale.toPixels(specific, constants.aboveStaff);
+            belowStaff = InterlineScale.toPixels(specific, constants.belowStaff);
+            minPartWeight = InterlineScale.toPixels(specific, constants.minPartWeight);
+            maxPartGap = InterlineScale.toPixelsDouble(specific, constants.maxPartGap);
+            maxGlyphHeight = InterlineScale.toPixelsDouble(specific, constants.maxGlyphHeight);
+            minGlyphWeight = InterlineScale.toPixels(specific, constants.minGlyphWeight);
         }
     }
 
@@ -674,8 +710,7 @@ public class ClefBuilder
             trials++;
 
             if (glyph.getId() == 0) {
-                glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                system.addFreeGlyph(glyph);
+                glyph = system.registerGlyph(glyph, null);
             }
 
             glyphCandidates.add(glyph);
@@ -683,7 +718,9 @@ public class ClefBuilder
             logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
 
             // TODO: use some checking, such as pitch position?
-            Evaluation[] evals = classifier.getNaturalEvaluations(glyph, sheet.getInterline());
+            Evaluation[] evals = classifier.getNaturalEvaluations(
+                    glyph,
+                    staff.getSpecificInterline());
 
             for (Shape shape : HEADER_CLEF_SHAPES) {
                 Evaluation eval = evals[shape.ordinal()];

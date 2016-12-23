@@ -24,8 +24,11 @@ package omr.sig.inter;
 import omr.glyph.Shape;
 
 import omr.sheet.Staff;
+
 import static omr.sig.inter.AbstractNoteInter.Step.*;
+
 import omr.sig.inter.ClefInter.ClefKind;
+
 import static omr.sig.inter.ClefInter.ClefKind.*;
 
 import omr.util.Entities;
@@ -34,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +97,7 @@ public class KeyInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of key components. */
     @XmlElement(name = "key-alter")
-    private final List<KeyAlterInter> alters;
+    private final List<KeyAlterInter> alters = new ArrayList<KeyAlterInter>();
 
     /** Numerical value for signature. */
     @XmlAttribute
@@ -114,7 +118,7 @@ public class KeyInter
                      List<KeyAlterInter> alters)
     {
         super(null, bounds, null, grade);
-        this.alters = alters;
+        this.alters.addAll(alters);
         this.fifths = fifths;
 
         for (KeyAlterInter alter : alters) {
@@ -128,7 +132,6 @@ public class KeyInter
     private KeyInter ()
     {
         super(null, null, null, null);
-        this.alters = null;
         this.fifths = 0;
     }
 
@@ -446,7 +449,7 @@ public class KeyInter
     public void shrink ()
     {
         // Discard last alter
-        KeyAlterInter lastAlter = (KeyAlterInter) alters.get(alters.size() - 1);
+        KeyAlterInter lastAlter = alters.get(alters.size() - 1);
         alters.remove(lastAlter);
         lastAlter.delete();
 

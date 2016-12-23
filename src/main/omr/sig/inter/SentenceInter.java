@@ -92,7 +92,7 @@ public class SentenceInter
     @XmlList
     @XmlIDREF
     @XmlElement(name = "words")
-    protected final List<WordInter> words;
+    protected final List<WordInter> words = new ArrayList<WordInter>();
 
     /** Average font for the sentence. */
     @XmlAttribute(name = "font")
@@ -123,7 +123,7 @@ public class SentenceInter
 
         this.meanFont = meanFont;
         this.role = role;
-        this.words = words;
+        this.words.addAll(words);
 
         for (WordInter word : words) {
             word.setEnsemble(this);
@@ -136,7 +136,6 @@ public class SentenceInter
     protected SentenceInter ()
     {
         super(null, null, null, null);
-        this.words = null;
         this.meanFont = null;
         this.role = null;
     }

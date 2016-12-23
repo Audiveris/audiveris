@@ -26,16 +26,16 @@ import omr.score.TimeRational;
 import omr.sheet.Staff;
 
 import omr.util.Entities;
+import omr.util.VerticalSide;
 
 import java.awt.Rectangle;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import omr.util.VerticalSide;
 
 /**
  * Class {@code TimePairInter} is a time signature composed of two halves (num & den).
@@ -55,7 +55,7 @@ public class TimePairInter
     //
     /** Signature halves: numerator then denominator. */
     @XmlElement(name = "number")
-    private List<TimeNumberInter> members;
+    private final List<TimeNumberInter> members = new ArrayList<TimeNumberInter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -73,7 +73,8 @@ public class TimePairInter
                            double grade)
     {
         super(null, bounds, timeRational, grade);
-        members = Arrays.asList(num, den);
+        members.add(num);
+        members.add(den);
     }
 
     /**
@@ -141,7 +142,21 @@ public class TimePairInter
      */
     public TimeNumberInter getDen ()
     {
-        return (TimeNumberInter) members.get(1);
+        return members.get(1);
+    }
+
+    //-----------//
+    // getMember //
+    //-----------//
+    /**
+     * Convenient method to report the pair member on desired side.
+     *
+     * @param side TOP or BOTTOM
+     * @return the numerator
+     */
+    public TimeNumberInter getMember (VerticalSide side)
+    {
+        return members.get((side == VerticalSide.TOP) ? 0 : 1);
     }
 
     //------------//
@@ -158,20 +173,6 @@ public class TimePairInter
         return members;
     }
 
-    //-----------//
-    // getMember //
-    //-----------//
-    /**
-     * Convenient method to report the pair member on desired side.
-     *
-     * @param side TOP or BOTTOM
-     * @return the numerator
-     */
-    public TimeNumberInter getMember (VerticalSide side)
-    {
-        return (TimeNumberInter) members.get(side == VerticalSide.TOP ? 0 : 1);
-    }
-
     //--------//
     // getNum //
     //--------//
@@ -182,7 +183,7 @@ public class TimePairInter
      */
     public TimeNumberInter getNum ()
     {
-        return (TimeNumberInter) members.get(0);
+        return members.get(0);
     }
 
     //-----------------//

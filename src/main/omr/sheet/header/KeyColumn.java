@@ -91,8 +91,10 @@ public class KeyColumn
 
         /** Success. */
         OK,
-        /** Slice count too be reduced. */
+        /** Slice count to be reduced. */
         SHRINK,
+        /** Replication failed. */
+        NO_REPLICATE,
         /** No key in part. */
         DESTROY;
     }
@@ -162,8 +164,10 @@ public class KeyColumn
         // Define each staff key-sig area
         for (Staff staff : system.getStaves()) {
             int measStart = staff.getHeaderStart();
-            Integer clefStop = staff.getClefStop();
-            int browseStart = (clefStop != null) ? (clefStop + 1) : staff.getHeaderStop();
+
+            // Integer clefStop = staff.getClefStop(); // Not very reliable...
+            // int browseStart = (clefStop != null) ? (clefStop + 1) : staff.getHeaderStop();
+            int browseStart = staff.getHeaderStop() + 1;
             builders.put(
                     staff,
                     new KeyBuilder(this, staff, projectionWidth, measStart, browseStart, true));
@@ -188,7 +192,7 @@ public class KeyColumn
         // Adjust each individual alter pitch, according to best matching key-sig
         // A staff may have no key-sig while the others have some in the same system
         for (KeyBuilder builder : builders.values()) {
-            if (builder.getKeyShape() != null) {
+            if (builder.getRoi().getLastValidSlice() != null) {
                 builder.adjustPitches();
                 builder.finalizeKey();
             }
@@ -316,6 +320,9 @@ public class KeyColumn
                                     modified = true;
 
                                     break StaffLoop;
+
+                                case NO_REPLICATE:
+                                    break;
 
                                 case DESTROY:
                                     return false;

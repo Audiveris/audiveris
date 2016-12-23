@@ -31,8 +31,8 @@ import omr.math.HiLoPeakFinder;
 import omr.math.IntegerFunction;
 import omr.math.Range;
 
-import omr.sheet.Picture;
 import omr.sheet.Scale;
+import omr.sheet.Scale.InterlineScale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
@@ -54,8 +54,6 @@ import omr.ui.Colors;
 import omr.util.ChartPlotter;
 import omr.util.IntUtil;
 import omr.util.Navigable;
-
-import ij.process.ByteProcessor;
 
 import org.jfree.data.xy.XYSeries;
 
@@ -192,9 +190,6 @@ public class KeyBuilder
     /** Header key signature or key signature change?. TODO: not yet used, but will be needed */
     private final boolean inHeader;
 
-    /** Staff-free pixel source. */
-    private final ByteProcessor staffFreeSource;
-
     /** Precise beginning abscissa of measure. */
     private final int measureStart;
 
@@ -254,10 +249,8 @@ public class KeyBuilder
         system = staff.getSystem();
         sig = system.getSig();
         sheet = system.getSheet();
-        staffFreeSource = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
-
         scale = sheet.getScale();
-        params = new Parameters(scale);
+        params = new Parameters(scale, staff.getSpecificInterline());
 
         final StaffHeader header = staff.getHeader();
 
@@ -273,9 +266,9 @@ public class KeyBuilder
 
         Rectangle browseRect = getBrowseRect();
         roi = new KeyRoi(staff, browseRect.y, browseRect.height, column.getMaxSliceDist());
-        projection = getProjection(browseRect);
-        peakFinder = new HiLoPeakFinder("Key", projection, range.browseStart, range.browseStop);
         extractor = new KeyExtractor(staff, range, peaks, roi);
+        projection = extractor.getProjection(browseRect);
+        peakFinder = new HiLoPeakFinder("Key", projection, range.browseStart, range.browseStop);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -396,7 +389,7 @@ public class KeyBuilder
 
                 if (alter == null) {
                     final Set<Shape> shapes = Collections.singleton(keyShape);
-                    extractor.extractAlter(slice, shapes, Grades.keyAlterMinGrade2, false);
+                    alter = extractor.extractAlter(slice, shapes, Grades.keyAlterMinGrade2, false);
                 }
 
                 if (alter != null) {
@@ -414,8 +407,6 @@ public class KeyBuilder
                 }
             }
         } else {
-            logger.warn("Staff#{} no header clef.", getId());
-
             Double[] measuredPitches = new Double[roi.size()];
 
             for (int i = 0; i < roi.size(); i++) {
@@ -427,7 +418,10 @@ public class KeyBuilder
                 }
             }
 
-            logger.info("Guessed clef: {}", KeyInter.guessKind(keyShape, measuredPitches, null));
+            logger.warn(
+                    "Staff#{} no header clef, guessed: {}",
+                    getId(),
+                    KeyInter.guessKind(keyShape, measuredPitches, null));
         }
     }
 
@@ -449,6 +443,9 @@ public class KeyBuilder
      */
     public PartStatus checkReplicate (KeyBuilder sourceBuilder)
     {
+        if (isVip) {
+            logger.info("VIP checkReplicate for S#{} staff#{}", system.getId(), getId()); // BP!
+        }
         final KeyInter sourceKey = sourceBuilder.keyInter;
 
         if ((keyInter != null) && (keyInter.getFifths() == sourceKey.getFifths())) {
@@ -557,9 +554,14 @@ public class KeyBuilder
         }
 
         createKeyInter();
-        sig.addEdge(clef, keyInter, new ClefKeyRelation());
 
-        return PartStatus.OK;
+        if (keyInter == null) {
+            logger.info("Staff#{} key replication failed.", getId());
+            return PartStatus.NO_REPLICATE;
+        } else {
+            sig.addEdge(clef, keyInter, new ClefKeyRelation());
+            return PartStatus.OK;
+        }
     }
 
     //---------//
@@ -703,6 +705,8 @@ public class KeyBuilder
 
         purgeLightPeaks(); // Discard some light peaks
 
+        //        refineAreaStop();
+        //
         int signature = inferSignature(); // Infer signature from peaks
 
         signature = refineSignature(signature); // Check trailing and regular peaks spacing
@@ -1030,7 +1034,10 @@ public class KeyBuilder
         int interline = scale.getInterline();
         Rectangle rect = new Rectangle(x, y - (interline / 2), interline, interline);
 
-        boolean ok = isRatherEmpty(rect);
+        boolean ok = extractor.isRatherEmpty(
+                rect,
+                params.maxTrailingCumul,
+                params.minTrailingSpace);
 
         if (!ok) {
             logger.debug("Staff#{} slice#{} no trailing space", getId(), lastValid.getId());
@@ -1068,24 +1075,27 @@ public class KeyBuilder
 
             // Pitches expected for active clef kind and key shape
             final ClefKind clefKind = clef.getKind();
-            final double[] pitchedGrades = new double[roi.size()];
-            final int alterCount = computePitchedGrades(clefKind, pitchedGrades);
 
-            if (alterCount > 0) {
-                // TODO: Check resulting key grade? if too low, give up!!!
-                final double keyGrade = computeKeyGrade(alterCount, pitchedGrades);
+            if (clefKind != ClefKind.PERCUSSION) {
+                final double[] pitchedGrades = new double[roi.size()];
+                final int alterCount = computePitchedGrades(clefKind, pitchedGrades);
 
-                if (logger.isDebugEnabled()) {
-                    logger.info(dumpOf(clefKind, keyGrade, pitchedGrades));
-                }
+                if (alterCount > 0) {
+                    // TODO: Check resulting key grade? if too low, give up!!!
+                    final double keyGrade = computeKeyGrade(alterCount, pitchedGrades);
 
-                // Impact of key on clef
-                final double keyContribution = GradeUtil.contributionOf(keyGrade, clefRatio);
-                final double clefCtx = GradeUtil.contextual(clef.getGrade(), keyContribution);
+                    if (logger.isDebugEnabled()) {
+                        logger.info(dumpOf(clefKind, keyGrade, pitchedGrades));
+                    }
 
-                if (clefCtx > bestCompatibleClefCtx) {
-                    bestCompatibleClefCtx = clefCtx;
-                    bestCompatibleClef = clef;
+                    // Impact of key on clef
+                    final double keyContribution = GradeUtil.contributionOf(keyGrade, clefRatio);
+                    final double clefCtx = GradeUtil.contextual(clef.getGrade(), keyContribution);
+
+                    if (clefCtx > bestCompatibleClefCtx) {
+                        bestCompatibleClefCtx = clefCtx;
+                        bestCompatibleClef = clef;
+                    }
                 }
             }
         }
@@ -1253,7 +1263,7 @@ public class KeyBuilder
             }
 
             // End of area
-            refineAreaStop(getLastPeak(), params.sharpTrail, params.maxSharpTrail);
+            refineShapeStop(getLastPeak(), params.sharpTrail, params.maxSharpTrail);
         } else if (signature < 0) {
             // Flats
             KeyPeak firstPeak = peaks.get(0);
@@ -1270,7 +1280,7 @@ public class KeyBuilder
                 }
 
                 // End of area
-                refineAreaStop(getLastPeak(), params.flatTrail, params.maxFlatTrail);
+                refineShapeStop(getLastPeak(), params.flatTrail, params.maxFlatTrail);
             } else {
                 logger.debug("Too large heading {} before first flat peak", flatHeading);
             }
@@ -1299,6 +1309,10 @@ public class KeyBuilder
                     box.add(alter.getBounds());
                 }
             }
+        }
+
+        if (alters.isEmpty()) {
+            return;
         }
 
         // Grade: all alters in a key signature support each other
@@ -1577,66 +1591,6 @@ public class KeyBuilder
         return peaks.get(peaks.size() - 1);
     }
 
-    //--------------//
-    // getLocalPeak //
-    //--------------//
-    /**
-     * Try to find a local peak within the provided range
-     *
-     * @param start range start
-     * @param stop  range stop
-     * @return peak abscissa, or null
-     */
-    private Integer getLocalPeak (int start,
-                                  int stop)
-    {
-        int bestCumul = -1;
-        Integer bestX = null;
-
-        for (int x = start; x <= stop; x++) {
-            int cumul = projection.getValue(x);
-
-            if (bestCumul < cumul) {
-                bestCumul = cumul;
-                bestX = x;
-            }
-        }
-
-        return bestX;
-    }
-
-    //---------------//
-    // getProjection //
-    //---------------//
-    /**
-     * Cumulate the foreground pixels for each abscissa value in the lookup area.
-     *
-     * @param rect the lookup rectangle
-     * @return the populated cumulation table
-     */
-    private IntegerFunction getProjection (Rectangle rect)
-    {
-        final int xMin = rect.x;
-        final int xMax = (rect.x + rect.width) - 1;
-        final int yMin = rect.y;
-        final int yMax = (rect.y + rect.height) - 1;
-        final IntegerFunction table = new IntegerFunction(xMin, xMax);
-
-        for (int x = xMin; x <= xMax; x++) {
-            short cumul = 0;
-
-            for (int y = yMin; y <= yMax; y++) {
-                if (staffFreeSource.get(x, y) == 0) {
-                    cumul++;
-                }
-            }
-
-            table.setValue(x, cumul);
-        }
-
-        return table;
-    }
-
     //---------------//
     // getSmallestDx //
     //---------------//
@@ -1652,72 +1606,6 @@ public class KeyBuilder
         }
 
         return smallest;
-    }
-
-    //---------//
-    // hasStem //
-    //---------//
-    /**
-     * Report whether the provided rectangular peak area contains a vertical portion
-     * of 'coreLength' with a black ratio of at least 'minBlackRatio'.
-     * <p>
-     * A row is considered as black if it contains at least one black pixel.
-     *
-     * @param area          the vertical very narrow rectangle of interest
-     * @param source        the pixel source
-     * @param coreLength    minimum "stem" length
-     * @param minBlackRatio minimum ratio of black rows in "stem" length
-     * @return true if a "stem" is found
-     */
-    private boolean hasStem (Rectangle area,
-                             ByteProcessor source,
-                             int coreLength,
-                             double minBlackRatio)
-    {
-        // Process all rows
-        final boolean[] blacks = new boolean[area.height];
-        Arrays.fill(blacks, false);
-
-        for (int y = 0; y < area.height; y++) {
-            for (int x = 0; x < area.width; x++) {
-                if (source.get(area.x + x, area.y + y) == 0) {
-                    blacks[y] = true;
-
-                    break;
-                }
-            }
-        }
-
-        // Build a sliding window, of length coreLength
-        final int quorum = (int) Math.rint(coreLength * minBlackRatio);
-        int count = 0;
-
-        for (int y = 0; y < coreLength; y++) {
-            if (blacks[y]) {
-                count++;
-            }
-        }
-
-        if (count >= quorum) {
-            return true;
-        }
-
-        // Move the window downward
-        for (int y = 1, yMax = area.height - coreLength; y <= yMax; y++) {
-            if (blacks[y - 1]) {
-                count--;
-            }
-
-            if (blacks[y + (coreLength - 1)]) {
-                count++;
-            }
-
-            if (count >= quorum) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //----------------//
@@ -1741,12 +1629,14 @@ public class KeyBuilder
             return 0;
         }
 
-        final int offset = peaks.get(0).min - range.getStart(); // Initial abscissa offset
+        final KeyPeak firstPeak = peaks.get(0);
         final KeyPeak lastPeak = getLastPeak();
+        final int headOffset = firstPeak.min - range.getStart();
+        final int trail = range.getStop() - lastPeak.max; // BEWARE: trail is not reliable
 
         if (peakCount > 1) {
             // Compute mean value of short intervals
-            double meanDx = (lastPeak.getCenter() - peaks.get(0).getCenter()) / (peakCount - 1);
+            double meanDx = (lastPeak.getCenter() - firstPeak.getCenter()) / (peakCount - 1);
             int shorts = 0;
             double sum = 0;
 
@@ -1765,8 +1655,23 @@ public class KeyBuilder
                 keyShape = Shape.SHARP;
             } else if (meanShort > params.maxSharpDelta) {
                 keyShape = Shape.FLAT;
+            } else if (headOffset > params.maxFlatHead) {
+                keyShape = Shape.SHARP;
+
+                //            } else if (trail > params.maxSharpTrail) {
+                //                keyShape = Shape.FLAT;
             } else {
-                keyShape = (offset >= params.offsetThreshold) ? Shape.SHARP : Shape.FLAT;
+                // Use delta between first 2 peaks
+                double interval = peaks.get(1).getCenter() - firstPeak.getCenter();
+
+                if (interval > params.maxSharpDelta) {
+                    keyShape = Shape.FLAT;
+                } else if (interval < params.minFlatDelta) {
+                    keyShape = Shape.SHARP;
+                } else {
+                    // Not reliable at all...
+                    keyShape = (headOffset >= params.offsetThreshold) ? Shape.SHARP : Shape.FLAT;
+                }
             }
 
             // For sharps, peakCount must be an even number
@@ -1783,7 +1688,7 @@ public class KeyBuilder
             } else {
                 return -peakCount;
             }
-        } else if (offset <= params.offsetThreshold) {
+        } else if (headOffset <= params.maxFlatHead) {
             // Acceptable flat
             keyShape = Shape.FLAT;
 
@@ -1795,49 +1700,6 @@ public class KeyBuilder
 
             return 0;
         }
-    }
-
-    //---------------//
-    // isRatherEmpty //
-    //---------------//
-    /**
-     * Check whether the provided rectangle is free of note head.
-     *
-     * @param rect the lookup area
-     * @return true if rather empty
-     */
-    private boolean isRatherEmpty (Rectangle rect)
-    {
-        final int xMin = rect.x;
-        final int xMax = (rect.x + rect.width) - 1;
-        final int yMin = rect.y;
-        final int yMax = (rect.y + rect.height) - 1;
-        final int maxCumul = params.maxTrailingCumul;
-        final int minWidth = params.minTrailingSpace;
-
-        int spaceStart = -1;
-
-        for (int x = xMin; x <= xMax; x++) {
-            int cumul = 0;
-
-            for (int y = yMin; y <= yMax; y++) {
-                if (staffFreeSource.get(x, y) == 0) {
-                    cumul++;
-                }
-            }
-
-            if (cumul <= maxCumul) {
-                if (spaceStart == -1) {
-                    spaceStart = x;
-                } else if ((x - spaceStart + 1) >= minWidth) {
-                    return true;
-                }
-            } else {
-                spaceStart = -1;
-            }
-        }
-
-        return false;
     }
 
     //------------//
@@ -1860,7 +1722,7 @@ public class KeyBuilder
             rect.grow(1, 0); // Slight margin on left & right of peak
         }
 
-        boolean stem = hasStem(rect, staffFreeSource, params.coreStemLength, params.minBlackRatio);
+        boolean stem = extractor.hasStem(rect, params.coreStemLength, params.minBlackRatio);
 
         if (!stem) {
             logger.debug("Staff#{} {} no stem", getId(), peak);
@@ -1960,7 +1822,7 @@ public class KeyBuilder
         final int yMin = staff.getFirstLine().yAt(xMin) - scale.getInterline();
         final int yMax = staff.getLastLine().yAt(xMin);
         final Rectangle rect = new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
-        final IntegerFunction staffProj = getProjection(rect);
+        final IntegerFunction staffProj = extractor.getProjection(rect);
         int start = xMax + 1;
 
         for (int x = xMin; x <= xMax; x++) {
@@ -1978,18 +1840,64 @@ public class KeyBuilder
     // refineAreaStop //
     //----------------//
     /**
-     * Adjust the stop abscissa of key sig.
-     *
-     * @param lastGoodPeak last valid peak found
-     * @param typicalTrail typical length after last peak (this depends on alter shape)
-     * @param maxTrail     maximum length after last peak
+     * Adjust stop abscissa of area, by looking at potential space after last peak.
+     * <p>
+     * NOTA: very dangerous for flats!
      */
-    private void refineAreaStop (KeyPeak lastGoodPeak,
-                                 int typicalTrail,
-                                 int maxTrail)
+    private void refineAreaStop ()
     {
-        final int xMin = (lastGoodPeak.min + typicalTrail) - 1;
-        final int xMax = Math.min(projection.getXMax(), lastGoodPeak.min + maxTrail);
+        KeyPeak lastPeak = getLastPeak();
+
+        if (lastPeak == null) {
+            return;
+        }
+
+        final int xMin = lastPeak.max + 1;
+        final int xMax = range.getStop();
+
+        int spaceStart = -1; // Space start abscissa
+        int spaceStop = -1; // Space stop abscissa
+
+        for (int x = xMin; x <= xMax; x++) {
+            int count = projection.getValue(x);
+
+            if (count <= params.maxSpaceCumul) {
+                if (spaceStart == -1) {
+                    spaceStart = x; // Start of space
+                }
+
+                spaceStop = x; // Extend space
+            } else if (spaceStart != -1) {
+                int spaceWidth = spaceStop - spaceStart + 1;
+
+                if (spaceWidth > params.maxSpaceInAlter) {
+                    // Stop here
+                    range.shrinkStop(spaceStart - 1);
+
+                    return;
+                }
+
+                spaceStart = -1;
+            }
+        }
+    }
+
+    //-----------------//
+    // refineShapeStop //
+    //-----------------//
+    /**
+     * Adjust the stop abscissa of key sig, based on key shape
+     *
+     * @param lastPeak     last peak found
+     * @param typicalTrail typical length after last peak (this depends on alter shape)
+     * @param maxTrail     maximum length after last peak (this depends on alter shape)
+     */
+    private void refineShapeStop (KeyPeak lastPeak,
+                                  int typicalTrail,
+                                  int maxTrail)
+    {
+        final int xMin = (lastPeak.min + typicalTrail) - 1;
+        final int xMax = Math.min(projection.getXMax(), lastPeak.min + maxTrail);
 
         int minCount = Integer.MAX_VALUE;
         Integer newStop = null;
@@ -2008,9 +1916,9 @@ public class KeyBuilder
         }
     }
 
-    //----------------//
+    //-----------------//
     // refineSignature //
-    //----------------//
+    //-----------------//
     /**
      * Additional tests on key signature, which may get adjusted.
      * <ul>
@@ -2137,7 +2045,7 @@ public class KeyBuilder
                 "Typical alteration height (flat or sharp)");
 
         private final Constant.Ratio peakHeightRatio = new Constant.Ratio(
-                0.2, //0.4,
+                0.25, //0.4,
                 "Ratio of height to detect peaks");
 
         private final Constant.Ratio peakAreaQuorum = new Constant.Ratio(
@@ -2200,21 +2108,21 @@ public class KeyBuilder
                 0.35, // 0.4 should be OK
                 "Minimum delta abscissa with closest peak to keep a light peak");
 
-        private final Scale.Fraction minPeakDx = new Scale.Fraction(
-                0.3,
-                "Minimum delta abscissa between peaks");
-
         private final Scale.Fraction maxPeakDx = new Scale.Fraction(
                 1.5, // 1.4,
                 "Maximum delta abscissa between peaks");
 
         private final Scale.Fraction maxSharpDelta = new Scale.Fraction(
-                0.75,
+                0.7,
                 "Maximum short peak delta for sharps");
 
         private final Scale.Fraction minFlatDelta = new Scale.Fraction(
                 0.45,
                 "Minimum short peak delta for flats");
+
+        private final Scale.Fraction maxFlatHead = new Scale.Fraction(
+                0.2,
+                "Maximum head length before flat peak");
 
         private final Scale.Fraction offsetThreshold = new Scale.Fraction(
                 0.1,
@@ -2246,6 +2154,10 @@ public class KeyBuilder
                 0.15,
                 "Maximum width delta to replicate slice");
 
+        private final Scale.Fraction maxSpaceInAlter = new Scale.Fraction(
+                0.4,
+                "Maximum space within an alter");
+
         // Beware: A too small value might miss the whole key signature
         private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
                 1.75,
@@ -2269,6 +2181,17 @@ public class KeyBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        final double minBlackRatio;
+
+        final double minGainRatio;
+
+        final double peakAreaQuorum;
+
+        // Sheet scale dependent
+        //----------------------
+        //
+        final int maxSpaceCumul;
+
         final int preStaffMargin;
 
         final int maxFirstPeakOffset;
@@ -2279,55 +2202,13 @@ public class KeyBuilder
 
         final int maxInnerPeakGap;
 
-        final double minGainRatio;
-
-        final int minPeakValue;
-
-        final int minPeakDerivative;
-
-        final int maxSpaceCumul;
-
-        final int coreStemLength;
-
-        final double minBlackRatio;
-
-        final int maxPeakCumul;
-
-        final int maxPeakWidth;
-
-        final double peakAreaQuorum;
-
-        final int maxFlatHeading;
-
-        final int flatTrail;
-
-        final int minFlatTrail;
-
-        final int maxFlatTrail;
-
-        final int sharpTrail;
-
-        final int minSharpTrail;
-
-        final int maxSharpTrail;
-
         final int maxPeakDx;
-
-        final int minPeakDx;
 
         final double minLightPeakDx;
 
         final double maxSharpDelta;
 
         final double minFlatDelta;
-
-        final int offsetThreshold;
-
-        final double typicalGlyphHeight;
-
-        final int minTrailingSpace;
-
-        final int maxTrailingCumul;
 
         final double maxDeltaPitch_1;
 
@@ -2337,45 +2218,94 @@ public class KeyBuilder
 
         final int maxSliceDeltaWidth;
 
+        // Staff scale dependent
+        //----------------------
+        //
+        final int maxSpaceInAlter;
+
+        final int minPeakDerivative;
+
+        final int coreStemLength;
+
+        final int maxPeakCumul;
+
+        final int maxPeakWidth;
+
+        final int maxFlatHeading;
+
+        final int flatTrail;
+
+        final int minFlatTrail;
+
+        final int maxFlatHead;
+
+        final int maxFlatTrail;
+
+        final int sharpTrail;
+
+        final int minSharpTrail;
+
+        final int maxSharpTrail;
+
+        final int offsetThreshold;
+
+        final double typicalGlyphHeight;
+
+        final int minTrailingSpace;
+
+        final int maxTrailingCumul;
+
+        final int minPeakValue;
+
         //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        public Parameters (Scale scale,
+                           int specific)
         {
+            minBlackRatio = constants.minBlackRatio.getValue();
+            minGainRatio = constants.minGainRatio.getValue();
+            peakAreaQuorum = constants.peakAreaQuorum.getValue();
+
+            // Use sheet global line value
+            maxSpaceCumul = scale.toPixels(constants.maxSpaceCumul);
+
+            // Use sheet global interline value
             preStaffMargin = scale.toPixels(constants.preStaffMargin);
             maxFirstPeakOffset = scale.toPixels(constants.maxFirstPeakOffset);
             maxFirstSpaceWidth = scale.toPixels(constants.maxFirstSpaceWidth);
             maxInnerSpace = scale.toPixels(constants.maxInnerSpace);
             maxInnerPeakGap = scale.toPixels(constants.maxInnerPeakGap);
-            maxSpaceCumul = scale.toPixels(constants.maxSpaceCumul);
-            coreStemLength = scale.toPixels(constants.coreStemLength);
-            minBlackRatio = constants.minBlackRatio.getValue();
-            maxPeakCumul = scale.toPixels(constants.maxPeakCumul);
-            maxPeakWidth = scale.toPixels(constants.maxPeakWidth);
-            maxFlatHeading = scale.toPixels(constants.maxFlatHeading);
-            flatTrail = scale.toPixels(constants.flatTrail);
-            minFlatTrail = scale.toPixels(constants.minFlatTrail);
-            maxFlatTrail = scale.toPixels(constants.maxFlatTrail);
-            sharpTrail = scale.toPixels(constants.sharpTrail);
-            minSharpTrail = scale.toPixels(constants.minSharpTrail);
-            maxSharpTrail = scale.toPixels(constants.maxSharpTrail);
             maxPeakDx = scale.toPixels(constants.maxPeakDx);
-            minPeakDx = scale.toPixels(constants.minPeakDx);
             minLightPeakDx = scale.toPixelsDouble(constants.minLightPeakDx);
-            peakAreaQuorum = constants.peakAreaQuorum.getValue();
             maxSharpDelta = scale.toPixelsDouble(constants.maxSharpDelta);
             minFlatDelta = scale.toPixelsDouble(constants.minFlatDelta);
-            offsetThreshold = scale.toPixels(constants.offsetThreshold);
-            typicalGlyphHeight = scale.toPixelsDouble(constants.typicalGlyphHeight);
-            maxTrailingCumul = scale.toPixels(constants.maxTrailingCumul);
-            minTrailingSpace = scale.toPixels(constants.minTrailingSpace);
             maxDeltaPitch_1 = constants.maxDeltaPitch_1.getValue();
             maxDeltaPitch_4 = constants.maxDeltaPitch_4.getValue();
-            minPeakDerivative = scale.toPixels(constants.minPeakDerivative);
-            minGainRatio = constants.minGainRatio.getValue();
             maxSliceDeltaX = scale.toPixels(constants.maxSliceDeltaX);
             maxSliceDeltaWidth = scale.toPixels(constants.maxSliceDeltaWidth);
 
+            // Use staff specific interline value
+            maxSpaceInAlter = InterlineScale.toPixels(specific, constants.maxSpaceInAlter);
+            minPeakDerivative = InterlineScale.toPixels(specific, constants.minPeakDerivative);
+            coreStemLength = InterlineScale.toPixels(specific, constants.coreStemLength);
+            maxPeakCumul = InterlineScale.toPixels(specific, constants.maxPeakCumul);
+            maxPeakWidth = InterlineScale.toPixels(specific, constants.maxPeakWidth);
+            maxFlatHeading = InterlineScale.toPixels(specific, constants.maxFlatHeading);
+            flatTrail = InterlineScale.toPixels(specific, constants.flatTrail);
+            minFlatTrail = InterlineScale.toPixels(specific, constants.minFlatTrail);
+            maxFlatHead = InterlineScale.toPixels(specific, constants.maxFlatHead);
+            maxFlatTrail = InterlineScale.toPixels(specific, constants.maxFlatTrail);
+            sharpTrail = InterlineScale.toPixels(specific, constants.sharpTrail);
+            minSharpTrail = InterlineScale.toPixels(specific, constants.minSharpTrail);
+            maxSharpTrail = InterlineScale.toPixels(specific, constants.maxSharpTrail);
+            offsetThreshold = InterlineScale.toPixels(specific, constants.offsetThreshold);
+            typicalGlyphHeight = InterlineScale.toPixelsDouble(
+                    specific,
+                    constants.typicalGlyphHeight);
+            minTrailingSpace = InterlineScale.toPixels(specific, constants.minTrailingSpace);
+            maxTrailingCumul = InterlineScale.toPixels(specific, constants.maxTrailingCumul);
+
             // Maximum alteration contribution (on top of staff lines)
-            int whiteSpace = scale.getInterline() - scale.getMainFore();
+            int whiteSpace = specific - scale.getMainFore();
             double maxAlterContrib = constants.typicalGlyphHeight.getValue() * whiteSpace;
             minPeakValue = (int) Math.rint(
                     (5 * scale.getMainFore())

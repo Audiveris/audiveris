@@ -615,33 +615,6 @@ public class SystemInfo
         return sb.toString();
     }
 
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Convenient method, to build a string with just the IDs of the system collection.
-     *
-     * @param systems the collection of systems
-     * @return the string built
-     */
-    public static String toString (Collection<SystemInfo> systems)
-    {
-        if (systems == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(" systems[");
-
-        for (SystemInfo system : systems) {
-            sb.append("#").append(system.getId());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
     //-------------------//
     // getMeasureStackAt //
     //-------------------//
@@ -1162,6 +1135,28 @@ public class SystemInfo
         return staves.size() > 1;
     }
 
+    //---------------//
+    // registerGlyph //
+    //---------------//
+    /**
+     * Make glyph original, registered and included in freeGlyphs.
+     *
+     * @param glyph the glyph to register
+     * @param group group to assign, or null
+     * @return the (perhaps new) registered glyph
+     */
+    public Glyph registerGlyph (Glyph glyph,
+                                Group group)
+    {
+        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+
+        glyph = glyphIndex.registerOriginal(glyph);
+        glyph.addGroup(group);
+        addFreeGlyph(glyph);
+
+        return glyph;
+    }
+
     //----------------//
     // registerGlyphs //
     //----------------//
@@ -1174,14 +1169,8 @@ public class SystemInfo
     public void registerGlyphs (List<Glyph> parts,
                                 Group group)
     {
-        final GlyphIndex glyphIndex = sheet.getGlyphIndex();
-
         for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
-            Glyph glyph = li.next();
-            glyph = glyphIndex.registerOriginal(glyph);
-            glyph.addGroup(group);
-            addFreeGlyph(glyph);
-            li.set(glyph);
+            li.set(registerGlyph(li.next(), group));
         }
     }
 
@@ -1247,6 +1236,56 @@ public class SystemInfo
         this.indented = indented ? Boolean.TRUE : null;
     }
 
+    //-----------//
+    // setStaves //
+    //-----------//
+    /**
+     * @param staves the range of staves
+     */
+    public final void setStaves (List<Staff> staves)
+    {
+        this.staves = staves;
+
+        for (Staff staff : staves) {
+            staff.setSystem(this);
+        }
+
+        updateCoordinates();
+    }
+
+    //-------------------//
+    // updateCoordinates //
+    //-------------------//
+    public final void updateCoordinates ()
+    {
+        try {
+            Staff firstStaff = getFirstStaff();
+            LineInfo firstLine = firstStaff.getFirstLine();
+            Point2D topLeft = firstLine.getEndPoint(LEFT);
+
+            Staff lastStaff = getLastStaff();
+            LineInfo lastLine = lastStaff.getLastLine();
+            Point2D botLeft = lastLine.getEndPoint(LEFT);
+
+            left = Integer.MAX_VALUE;
+
+            int right = 0;
+
+            for (Staff staff : staves) {
+                left = Math.min(left, staff.getAbscissa(LEFT));
+                right = Math.max(right, staff.getAbscissa(RIGHT));
+            }
+
+            top = (int) Math.rint(topLeft.getY());
+            width = right - left + 1;
+            deltaY = (int) Math.rint(
+                    lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
+            bottom = (int) Math.rint(botLeft.getY());
+        } catch (Exception ex) {
+            logger.warn("Error updating coordinates for system#{}", id, ex);
+        }
+    }
+
     //-------------//
     // setInterSet //
     //-------------//
@@ -1266,21 +1305,31 @@ public class SystemInfo
         this.page = page;
     }
 
-    //-----------//
-    // setStaves //
-    //-----------//
+    //----------//
+    // toString //
+    //----------//
     /**
-     * @param staves the range of staves
+     * Convenient method, to build a string with just the IDs of the system collection.
+     *
+     * @param systems the collection of systems
+     * @return the string built
      */
-    public final void setStaves (List<Staff> staves)
+    public static String toString (Collection<SystemInfo> systems)
     {
-        this.staves = staves;
-
-        for (Staff staff : staves) {
-            staff.setSystem(this);
+        if (systems == null) {
+            return "";
         }
 
-        updateCoordinates();
+        StringBuilder sb = new StringBuilder();
+        sb.append(" systems[");
+
+        for (SystemInfo system : systems) {
+            sb.append("#").append(system.getId());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
     }
 
     //
@@ -1324,39 +1373,6 @@ public class SystemInfo
         //
         //sb.append("}");
         return sb.toString();
-    }
-
-    //-------------------//
-    // updateCoordinates //
-    //-------------------//
-    public final void updateCoordinates ()
-    {
-        try {
-            Staff firstStaff = getFirstStaff();
-            LineInfo firstLine = firstStaff.getFirstLine();
-            Point2D topLeft = firstLine.getEndPoint(LEFT);
-
-            Staff lastStaff = getLastStaff();
-            LineInfo lastLine = lastStaff.getLastLine();
-            Point2D botLeft = lastLine.getEndPoint(LEFT);
-
-            left = Integer.MAX_VALUE;
-
-            int right = 0;
-
-            for (Staff staff : staves) {
-                left = Math.min(left, staff.getAbscissa(LEFT));
-                right = Math.max(right, staff.getAbscissa(RIGHT));
-            }
-
-            top = (int) Math.rint(topLeft.getY());
-            width = right - left + 1;
-            deltaY = (int) Math.rint(
-                    lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.getY());
-            bottom = (int) Math.rint(botLeft.getY());
-        } catch (Exception ex) {
-            logger.warn("Error updating coordinates for system#{}", id, ex);
-        }
     }
 
     //-----------//

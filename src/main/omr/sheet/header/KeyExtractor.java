@@ -40,6 +40,7 @@ import omr.glyph.Shape;
 import omr.glyph.Symbol.Group;
 
 import omr.math.GeoUtil;
+import omr.math.IntegerFunction;
 import static omr.run.Orientation.VERTICAL;
 import omr.run.RunTable;
 import omr.run.RunTableFactory;
@@ -47,6 +48,7 @@ import omr.run.RunTableFactory;
 import omr.sheet.Book;
 import omr.sheet.Picture;
 import omr.sheet.Scale;
+import omr.sheet.Scale.InterlineScale;
 import omr.sheet.Sheet;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
@@ -66,6 +68,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -139,7 +142,7 @@ public class KeyExtractor
         sig = system.getSig();
         sheet = system.getSheet();
         id = staff.getId();
-        params = new Parameters(sheet.getScale());
+        params = new Parameters(staff.getSpecificInterline());
 
         staffFreeSource = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
     }
@@ -195,6 +198,147 @@ public class KeyExtractor
         }
 
         return null;
+    }
+
+    //---------------//
+    // getProjection //
+    //---------------//
+    /**
+     * Cumulate the foreground pixels for each abscissa value in the provided rectangle.
+     *
+     * @param rect the lookup rectangle
+     * @return the populated cumulation function
+     */
+    public IntegerFunction getProjection (Rectangle rect)
+    {
+        final int xMin = rect.x;
+        final int xMax = (rect.x + rect.width) - 1;
+        final int yMin = rect.y;
+        final int yMax = (rect.y + rect.height) - 1;
+        final IntegerFunction table = new IntegerFunction(xMin, xMax);
+
+        for (int x = xMin; x <= xMax; x++) {
+            short cumul = 0;
+
+            for (int y = yMin; y <= yMax; y++) {
+                if (staffFreeSource.get(x, y) == 0) {
+                    cumul++;
+                }
+            }
+
+            table.setValue(x, cumul);
+        }
+
+        return table;
+    }
+
+    //---------//
+    // hasStem //
+    //---------//
+    /**
+     * Report whether the provided rectangular peak area contains a vertical portion
+     * of 'coreLength' with a black ratio of at least 'minBlackRatio'.
+     * <p>
+     * A row is considered as black if it contains at least one black pixel.
+     *
+     * @param area          the vertical very narrow rectangle of interest
+     * @param coreLength    minimum "stem" length
+     * @param minBlackRatio minimum ratio of black rows in "stem" length
+     * @return true if a "stem" is found
+     */
+    public boolean hasStem (Rectangle area,
+                            int coreLength,
+                            double minBlackRatio)
+    {
+        // Process all rows
+        final boolean[] blacks = new boolean[area.height];
+        Arrays.fill(blacks, false);
+
+        for (int y = 0; y < area.height; y++) {
+            for (int x = 0; x < area.width; x++) {
+                if (staffFreeSource.get(area.x + x, area.y + y) == 0) {
+                    blacks[y] = true;
+
+                    break;
+                }
+            }
+        }
+
+        // Build a sliding window, of length coreLength
+        final int quorum = (int) Math.rint(coreLength * minBlackRatio);
+        int count = 0;
+
+        for (int y = 0; y < coreLength; y++) {
+            if (blacks[y]) {
+                count++;
+            }
+        }
+
+        if (count >= quorum) {
+            return true;
+        }
+
+        // Move the window downward
+        for (int y = 1, yMax = area.height - coreLength; y <= yMax; y++) {
+            if (blacks[y - 1]) {
+                count--;
+            }
+
+            if (blacks[y + (coreLength - 1)]) {
+                count++;
+            }
+
+            if (count >= quorum) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //---------------//
+    // isRatherEmpty //
+    //---------------//
+    /**
+     * Check whether the provided rectangle is free of note head.
+     *
+     * @param rect     the lookup area
+     * @param maxCumul max projection at given x for a space
+     * @param minWidth min width of space
+     * @return true if rather empty
+     */
+    public boolean isRatherEmpty (Rectangle rect,
+                                  int maxCumul,
+                                  int minWidth)
+    {
+        final int xMin = rect.x;
+        final int xMax = (rect.x + rect.width) - 1;
+        final int yMin = rect.y;
+        final int yMax = (rect.y + rect.height) - 1;
+
+        int spaceStart = -1;
+
+        for (int x = xMin; x <= xMax; x++) {
+            int cumul = 0;
+
+            for (int y = yMin; y <= yMax; y++) {
+                if (staffFreeSource.get(x, y) == 0) {
+                    cumul++;
+                }
+            }
+
+            if (cumul <= maxCumul) {
+                if (spaceStart == -1) {
+                    spaceStart = x;
+                } else if ((x - spaceStart + 1) >= minWidth) {
+                    return true;
+                }
+            } else {
+                spaceStart = -1;
+            }
+        }
+
+        return false;
     }
 
     //---------------//
@@ -669,7 +813,7 @@ public class KeyExtractor
                 "Minimum glyph height");
 
         private final Scale.Fraction maxGlyphHeight = new Scale.Fraction(
-                3.5,
+                3.8,
                 "Maximum glyph height");
 
         private final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
@@ -677,7 +821,7 @@ public class KeyExtractor
                 "Minimum glyph weight");
 
         private final Scale.AreaFraction maxGlyphWeight = new Scale.AreaFraction(
-                2.9,
+                3.4,
                 "Maximum glyph weight");
     }
 
@@ -730,6 +874,9 @@ public class KeyExtractor
 
         final int maxPartCount;
 
+        // Staff scale dependent
+        //----------------------
+        //
         final int minPartWeight;
 
         final double maxPartGap;
@@ -747,17 +894,19 @@ public class KeyExtractor
         final int maxGlyphWeight;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        public Parameters (int specific)
         {
             maxPartCount = constants.maxPartCount.getValue();
-            minPartWeight = scale.toPixels(constants.minPartWeight);
-            maxPartGap = scale.toPixelsDouble(constants.maxPartGap);
-            minGlyphWidth = scale.toPixelsDouble(constants.minGlyphWidth);
-            maxGlyphWidth = scale.toPixelsDouble(constants.maxGlyphWidth);
-            minGlyphHeight = scale.toPixelsDouble(constants.minGlyphHeight);
-            maxGlyphHeight = scale.toPixelsDouble(constants.maxGlyphHeight);
-            minGlyphWeight = scale.toPixels(constants.minGlyphWeight);
-            maxGlyphWeight = scale.toPixels(constants.maxGlyphWeight);
+
+            // Use staff specific interline value
+            minPartWeight = InterlineScale.toPixels(specific, constants.minPartWeight);
+            maxPartGap = InterlineScale.toPixelsDouble(specific, constants.maxPartGap);
+            minGlyphWidth = InterlineScale.toPixelsDouble(specific, constants.minGlyphWidth);
+            maxGlyphWidth = InterlineScale.toPixelsDouble(specific, constants.maxGlyphWidth);
+            minGlyphHeight = InterlineScale.toPixelsDouble(specific, constants.minGlyphHeight);
+            maxGlyphHeight = InterlineScale.toPixelsDouble(specific, constants.maxGlyphHeight);
+            minGlyphWeight = InterlineScale.toPixels(specific, constants.minGlyphWeight);
+            maxGlyphWeight = InterlineScale.toPixels(specific, constants.maxGlyphWeight);
         }
     }
 
