@@ -121,32 +121,34 @@ public class IntegerFunction
     // getArea //
     //---------//
     /**
-     * Report the algebraic area between function and x axis.
+     * Report the area above x axis.
      *
      * @return integration on [xMin .. xMax] domain
      */
     public int getArea ()
     {
-        return getArea(xMin, xMax);
+        return getArea(xMin, xMax, 0);
     }
 
     //---------//
     // getArea //
     //---------//
     /**
-     * Report the algebraic area between function and x axis, from x1 to x2.
+     * Report the area between function and y line, from x1 to x2.
      *
      * @param x1 x at beginning of domain
      * @param x2 x at end of domain
-     * @return integration on [x1 .. x2] domain
+     * @param y  minimum value
+     * @return integration on [x1 .. x2] domain above y
      */
     public int getArea (int x1,
-                        int x2)
+                        int x2,
+                        int y)
     {
         int area = 0;
 
         for (int x = x1; x <= x2; x++) {
-            area += getValue(x);
+            area += Math.max(0, getValue(x) - y);
         }
 
         return area;
@@ -228,6 +230,10 @@ public class IntegerFunction
     public List<Integer> getLocalMaxima (int x1,
                                          int x2)
     {
+        // Check range
+        x1 = Math.max(x1, xMin);
+        x2 = Math.min(x2, xMax);
+
         final List<Integer> maxima = new ArrayList<Integer>();
         Integer prevX = null;
         int prevY = 0;

@@ -749,11 +749,18 @@ public class BarsRetriever
                     }
 
                     // Also, connected bars support each other
-                    Relation bcRel = new BarConnectionRelation(connection.getImpacts());
-                    StaffPeak bottomPeak = connection.bottomPeak;
-                    sig.addEdge(topPeak.getInter(), bottomPeak.getInter(), bcRel);
+                    final Inter topInter = topPeak.getInter();
+                    final StaffPeak bottomPeak = connection.bottomPeak;
+                    final Inter bottomInter = bottomPeak.getInter();
+
+                    if ((topInter != null) && (bottomInter != null)) {
+                        Relation bcRel = new BarConnectionRelation(connection.getImpacts());
+                        sig.addEdge(topInter, bottomInter, bcRel);
+                    } else {
+                        logger.info("Cannot create connection for {}", align);
+                    }
                 } catch (Exception ex) {
-                    logger.warn("Cannot create connection for {} {}", align, ex.toString(), ex);
+                    logger.warn("Error creating connection for {} {}", align, ex.toString(), ex);
                 }
             }
         }
@@ -1145,7 +1152,9 @@ public class BarsRetriever
                     // First peak could itself be a brace portion (mistaken for a bar)
                     final StaffPeak secondPeak = peaks.get(1);
                     maxRight = secondPeak.getStart() - 1 - params.braceBarNeutralGap;
-                    minLeft = maxRight - (params.maxBracePeakWidth + params.maxBraceBarGap);
+                    minLeft = Math.max(
+                            0,
+                            maxRight - (params.maxBracePeakWidth + params.maxBraceBarGap));
                     bracePeak = lookForBracePeak(staff, minLeft, maxRight);
 
                     if (bracePeak != null) {

@@ -487,6 +487,9 @@ public class BasicStub
     public void invalidate ()
     {
         invalid = Boolean.TRUE;
+
+        book.updateScores(this);
+
         pageRefs.clear();
         setModified(true);
 

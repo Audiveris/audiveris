@@ -22,12 +22,12 @@
 package omr.sheet.header;
 
 import omr.glyph.Glyph;
+import omr.glyph.Shape;
 
 import omr.math.GeoUtil;
 
 import omr.sheet.Staff;
 
-import omr.sig.inter.Inter;
 import omr.sig.inter.KeyAlterInter;
 
 import ij.process.Blitter;
@@ -62,6 +62,9 @@ public class KeyRoi
     /** Underlying staff. */
     private final Staff staff;
 
+    /** Targeted key shape. */
+    private final Shape keyShape;
+
     /** Region top ordinate. */
     public final int y;
 
@@ -76,22 +79,35 @@ public class KeyRoi
      * Creates a new {@code KeyRoi} object.
      *
      * @param staff        containing staff
+     * @param keyShape     SHARP or FLAT
      * @param y            top ordinate
      * @param height       area height
      * @param maxSliceDist acceptable distance from slice side
      */
     public KeyRoi (Staff staff,
+                   Shape keyShape,
                    int y,
                    int height,
                    int maxSliceDist)
     {
         this.staff = staff;
+        this.keyShape = keyShape;
         this.y = y;
         this.height = height;
         this.maxSliceDist = maxSliceDist;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------------//
+    // attachmentKey //
+    //---------------//
+    public String attachmentKey (int id)
+    {
+        final String s = (keyShape == Shape.SHARP) ? "s" : "f";
+
+        return "k" + s + id;
+    }
+
     //-------------//
     // createSlice //
     //-------------//
@@ -107,21 +123,20 @@ public class KeyRoi
     {
         final Rectangle rect = new Rectangle(start, y, stop - start + 1, height);
         final KeySlice slice = new KeySlice(rect, this);
-        final int mid = (start + stop) / 2;
 
-        if (isEmpty() || (mid > get(size() - 1).getStop())) {
+        if (isEmpty() || (stop > get(size() - 1).getStop())) {
             // Append at end
             add(slice);
-            staff.addAttachment("k" + size(), slice.getRect());
+            staff.addAttachment(attachmentKey(size()), slice.getRect());
         } else {
             // Insert at proper index
             for (KeySlice sl : this) {
-                if (mid < sl.getStart()) {
+                if (stop <= sl.getStop()) {
                     final int idx = indexOf(sl);
                     add(idx, slice);
 
                     for (int i = idx; i < size(); i++) {
-                        staff.addAttachment("k" + (i + 1), get(i).getRect());
+                        staff.addAttachment(attachmentKey(i + 1), get(i).getRect());
                     }
 
                     break;
@@ -143,6 +158,11 @@ public class KeyRoi
         for (KeySlice slice : this) {
             slice.deleteAlter();
         }
+
+        clear(); // Remove all slices
+
+        final String s = (keyShape == Shape.SHARP) ? "s" : "f";
+        staff.removeAttachments("k" + s);
     }
 
     //--------------//
@@ -192,7 +212,7 @@ public class KeyRoi
         List<KeySlice> emptySlices = null;
 
         for (KeySlice slice : this) {
-            if (slice.alter == null) {
+            if (slice.getAlter() == null) {
                 if (emptySlices == null) {
                     emptySlices = new ArrayList<KeySlice>();
                 }
@@ -237,8 +257,7 @@ public class KeyRoi
      */
     public ByteProcessor getSlicePixels (ByteProcessor source,
                                          KeySlice slice,
-                                         boolean cropNeighbors
-    )
+                                         boolean cropNeighbors)
     {
         Rectangle sRect = slice.getRect();
         BufferedImage sImage = new BufferedImage(
@@ -259,8 +278,8 @@ public class KeyRoi
                 if (i != null) {
                     final KeySlice sl = get(i);
 
-                    if (sl.alter != null) {
-                        final Glyph glyph = sl.alter.getGlyph();
+                    if (sl.getAlter() != null) {
+                        final Glyph glyph = sl.getAlter().getGlyph();
 
                         if (glyph.getBounds().intersects(sRect)) {
                             if (g == null) {
@@ -314,7 +333,7 @@ public class KeyRoi
     public KeySlice sliceOf (int x)
     {
         for (KeySlice slice : this) {
-            if (GeoUtil.xEmbraces(slice.rect, x)) {
+            if (GeoUtil.xEmbraces(slice.getRect(), x)) {
                 return slice;
             }
         }
@@ -333,13 +352,7 @@ public class KeyRoi
     public void stuffSlicesFrom (int index)
     {
         for (KeySlice slice : subList(index, size())) {
-            Inter alter = slice.getAlter();
-
-            if (alter != null) {
-                alter.delete();
-                slice.alter = null;
-            }
-
+            slice.deleteAlter();
             slice.setStuffed();
         }
     }

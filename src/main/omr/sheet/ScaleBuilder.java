@@ -205,6 +205,12 @@ public class ScaleBuilder
                     + " pixels," + LINE_SEPARATOR + "either this sheet contains no staves,"
                     + LINE_SEPARATOR + "or the picture resolution is too low (try 300 DPI).",
                     false);
+        } else if (interline > constants.maxInterline.getValue()) {
+            sheet.getStub().decideOnRemoval(
+                    sheet.getId() + LINE_SEPARATOR + "Too large interline value: " + interline
+                    + " pixels" + LINE_SEPARATOR
+                    + "This sheet does not seem to contain staff lines.",
+                    false);
         }
     }
 
@@ -250,6 +256,11 @@ public class ScaleBuilder
                 "Pixels",
                 11,
                 "Minimum resolution, expressed as number of pixels per interline");
+
+        private final Constant.Integer maxInterline = new Constant.Integer(
+                "Pixels",
+                100,
+                "Maximum interline value (in pixels)");
 
         private final Constant.Ratio minCountRatio = new Constant.Ratio(
                 0.1,

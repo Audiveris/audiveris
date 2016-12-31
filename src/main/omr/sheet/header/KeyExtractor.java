@@ -99,12 +99,6 @@ public class KeyExtractor
 
     private final Staff staff;
 
-    private final StaffHeader.Range range; // See KeyBuilder
-
-    private final List<KeyPeak> peaks; // See KeyBuilder
-
-    private final KeyRoi roi; // See KeyBuilder
-
     private final int id; // Staff ID
 
     /** Scale-dependent parameters. */
@@ -125,18 +119,10 @@ public class KeyExtractor
      *
      * @param staff the underlying staff
      * @param range key range information
-     * @param peaks detected peaks
-     * @param roi   roi with slices
      */
-    public KeyExtractor (Staff staff,
-                         StaffHeader.Range range,
-                         List<KeyPeak> peaks,
-                         KeyRoi roi)
+    public KeyExtractor (Staff staff)
     {
         this.staff = staff;
-        this.range = range;
-        this.peaks = peaks;
-        this.roi = roi;
 
         system = staff.getSystem();
         sig = system.getSig();
@@ -155,13 +141,17 @@ public class KeyExtractor
      * In the provided slice, extract the relevant foreground pixels from the NO_STAFF
      * image and evaluate possible glyph instances.
      *
+     * @param roi           key roi
+     * @param peaks         relevant peaks
      * @param slice         the slice to process
      * @param targetShapes  the set of shapes to try
      * @param minGrade      minimum acceptable grade
      * @param cropNeighbors true for discarding pixels from neighbors
      * @return the Inter created if any
      */
-    public KeyAlterInter extractAlter (KeySlice slice,
+    public KeyAlterInter extractAlter (KeyRoi roi,
+                                       List<KeyPeak> peaks,
+                                       KeySlice slice,
                                        Set<Shape> targetShapes,
                                        double minGrade,
                                        boolean cropNeighbors)
@@ -173,27 +163,28 @@ public class KeyExtractor
         purgeParts(parts, (sliceRect.x + sliceRect.width) - 1);
         system.registerGlyphs(parts, Group.ALTER_PART);
 
-        SingleAdapter adapter = new SingleAdapter(slice, parts, targetShapes, minGrade);
+        SingleAdapter adapter = new SingleAdapter(slice, peaks, parts, targetShapes, minGrade);
         new GlyphCluster(adapter, null).decompose();
 
-        if (slice.eval != null) {
-            double grade = Inter.intrinsicRatio * slice.eval.grade;
+        if (slice.getEval() != null) {
+            double grade = Inter.intrinsicRatio * slice.getEval().grade;
 
             if (grade >= minGrade) {
-                if ((slice.alter == null) || (slice.alter.getGlyph() != slice.glyph)) {
-                    logger.debug("Glyph#{} {}", slice.glyph.getId(), slice.eval);
+                if ((slice.getAlter() == null)
+                    || (slice.getAlter().getGlyph() != slice.getGlyph())) {
+                    logger.debug("Glyph#{} {}", slice.getGlyph().getId(), slice.getEval());
 
                     KeyAlterInter alterInter = KeyAlterInter.create(
-                            slice.glyph,
-                            slice.eval.shape,
+                            slice.getGlyph(),
+                            slice.getEval().shape,
                             grade,
                             staff);
                     sig.addVertex(alterInter);
-                    slice.alter = alterInter;
+                    slice.setAlter(alterInter);
                     logger.debug("{}", slice);
                 }
 
-                return slice.alter;
+                return slice.getAlter();
             }
         }
 
@@ -206,12 +197,14 @@ public class KeyExtractor
     /**
      * Cumulate the foreground pixels for each abscissa value in the provided rectangle.
      *
-     * @param rect the lookup rectangle
+     * @param measureStart abscissa at measure start
+     * @param rect         the lookup rectangle
      * @return the populated cumulation function
      */
-    public IntegerFunction getProjection (Rectangle rect)
+    public IntegerFunction getProjection (int measureStart,
+                                          Rectangle rect)
     {
-        final int xMin = rect.x;
+        final int xMin = Math.min(measureStart, rect.x);
         final int xMax = (rect.x + rect.width) - 1;
         final int yMin = rect.y;
         final int yMax = (rect.y + rect.height) - 1;
@@ -349,10 +342,12 @@ public class KeyExtractor
      *
      * @param recordPositives true to record positive glyphs
      * @param recordNegatives true to retrieve negative glyphs
+     * @param roi             key roi
      * @param keyShape        key shape (SHARP or FLAT)
      */
     public void recordSamples (boolean recordPositives,
                                boolean recordNegatives,
+                               KeyRoi roi,
                                Shape keyShape)
     {
         final Book book = sheet.getStub().getBook();
@@ -396,10 +391,16 @@ public class KeyExtractor
     /**
      * Retrieve all possible candidates (as connected components) with acceptable shape.
      *
+     * @param range  working range
+     * @param roi    key roi
+     * @param peaks  relevant peaks
      * @param shapes acceptable shapes
      * @return the candidates found
      */
-    public List<Candidate> retrieveCandidates (Set<Shape> shapes)
+    public List<Candidate> retrieveCandidates (StaffHeader.Range range,
+                                               KeyRoi roi,
+                                               List<KeyPeak> peaks,
+                                               Set<Shape> shapes)
     {
         logger.debug("retrieveCandidates for staff#{}", id);
 
@@ -425,6 +426,8 @@ public class KeyExtractor
             // Use only the subgraph for this set
             SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, globalGraph);
             MultipleAdapter adapter = new MultipleAdapter(
+                    roi,
+                    peaks,
                     subGraph,
                     shapes,
                     Grades.keyAlterMinGrade1);
@@ -445,33 +448,43 @@ public class KeyExtractor
     /**
      * Look into key signature area for key items, based on connected components.
      *
+     * @param range    working range
+     * @param roi      key roi
+     * @param peaks    relevant peaks
      * @param keyShape expected alter shape
      */
-    public void retrieveComponents (Shape keyShape)
+    public void retrieveComponents (StaffHeader.Range range,
+                                    KeyRoi roi,
+                                    List<KeyPeak> peaks,
+                                    Shape keyShape)
     {
         logger.debug("Key for staff#{}", id);
 
-        List<Candidate> allCandidates = retrieveCandidates(Collections.singleton(keyShape));
+        List<Candidate> allCandidates = retrieveCandidates(
+                range,
+                roi,
+                peaks,
+                Collections.singleton(keyShape));
 
         for (Candidate candidate : allCandidates) {
             final KeySlice slice = roi.sliceOf(candidate.glyph.getCentroid().x);
 
-            if ((slice.eval == null) || (slice.eval.grade < candidate.eval.grade)) {
-                slice.eval = candidate.eval;
-                slice.glyph = candidate.glyph;
+            if ((slice.getEval() == null) || (slice.getEval().grade < candidate.eval.grade)) {
+                slice.setEval(candidate.eval);
+                slice.setGlyph(candidate.glyph);
             }
         }
 
         for (KeySlice slice : roi) {
-            if (slice.eval != null) {
-                double grade = Inter.intrinsicRatio * slice.eval.grade;
+            if (slice.getEval() != null) {
+                double grade = Inter.intrinsicRatio * slice.getEval().grade;
                 KeyAlterInter alterInter = KeyAlterInter.create(
-                        slice.glyph,
-                        slice.eval.shape,
+                        slice.getGlyph(),
+                        slice.getEval().shape,
                         grade,
                         staff);
                 sig.addVertex(alterInter);
-                slice.alter = alterInter;
+                slice.setAlter(alterInter);
             }
 
             logger.debug("{}", slice);
@@ -670,6 +683,9 @@ public class KeyExtractor
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        /** Relevant peaks. */
+        protected final List<KeyPeak> peaks;
+
         /** Minimum acceptable intrinsic grade. */
         protected final double minGrade;
 
@@ -678,10 +694,12 @@ public class KeyExtractor
 
         //~ Constructors ---------------------------------------------------------------------------
         public AbstractKeyAdapter (SimpleGraph<Glyph, GlyphLink> graph,
+                                   List<KeyPeak> peaks,
                                    Set<Shape> targetShapes,
                                    double minGrade)
         {
             super(graph);
+            this.peaks = peaks;
             this.targetShapes.addAll(targetShapes);
             this.minGrade = minGrade;
         }
@@ -836,14 +854,19 @@ public class KeyExtractor
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        final KeyRoi roi;
+
         final List<Candidate> candidates = new ArrayList<Candidate>();
 
         //~ Constructors ---------------------------------------------------------------------------
-        public MultipleAdapter (SimpleGraph<Glyph, GlyphLink> graph,
+        public MultipleAdapter (KeyRoi roi,
+                                List<KeyPeak> peaks,
+                                SimpleGraph<Glyph, GlyphLink> graph,
                                 Set<Shape> targetShapes,
                                 double minGrade)
         {
-            super(graph, targetShapes, minGrade);
+            super(graph, peaks, targetShapes, minGrade);
+            this.roi = roi;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -926,11 +949,12 @@ public class KeyExtractor
 
         //~ Constructors ---------------------------------------------------------------------------
         public SingleAdapter (KeySlice slice,
+                              List<KeyPeak> peaks,
                               List<Glyph> parts,
                               Set<Shape> targetShapes,
                               double minGrade)
         {
-            super(Glyphs.buildLinks(parts, params.maxPartGap), targetShapes, minGrade);
+            super(Glyphs.buildLinks(parts, params.maxPartGap), peaks, targetShapes, minGrade);
             this.slice = slice;
         }
 
@@ -947,9 +971,9 @@ public class KeyExtractor
                                       Set<Glyph> parts,
                                       Evaluation eval)
         {
-            if ((slice.eval == null) || (slice.eval.grade < eval.grade)) {
-                slice.eval = eval;
-                slice.glyph = glyph;
+            if ((slice.getEval() == null) || (slice.getEval().grade < eval.grade)) {
+                slice.setEval(eval);
+                slice.setGlyph(glyph);
             }
         }
     }

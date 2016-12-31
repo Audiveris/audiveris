@@ -109,6 +109,7 @@ public class StaffHeader
     public StaffHeader (int start)
     {
         this.start = start;
+        stop = start; // Initial value
     }
 
     /**

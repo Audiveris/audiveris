@@ -24,8 +24,6 @@ package omr.sheet.header;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Shape;
-
 import omr.math.Clustering;
 import omr.math.Population;
 
@@ -33,6 +31,7 @@ import omr.sheet.Part;
 import omr.sheet.Scale;
 import omr.sheet.Staff;
 import omr.sheet.SystemInfo;
+import omr.sheet.header.KeyBuilder.ShapeBuilder;
 
 import omr.sig.inter.KeyInter;
 
@@ -54,10 +53,10 @@ import java.util.TreeMap;
  * For each staff slice, a connected component is first looked up (phase #1) and, if
  * unsuccessful, then a hard slice-based glyph is searched (phase #2).
  * <p>
- * Second, it is assumed that, within the containing system: <ol>
+ * Second, it is assumed that, within the same containing system: <ol>
  * <li>All staff key signatures start at similar abscissa offset since measure start,
- * <li>All staff key items have similar widths, hence they are aligned in slices across staves,
- * even between small and standard staves.
+ * <li>All staff key slices have similar widths across staves, even between small and standard
+ * staves, and regardless of key alter shape (SHARP, FLAT or NATURAL),
  * <li>Slices are allocated based on detected ink peaks within header projection.
  * Hence, an allocated slice indicates the presence of ink (i.e. a slice is never empty).
  * <li>Sharp-based and flat-based keys can be mixed in a system, but not within the same part.
@@ -72,6 +71,9 @@ import java.util.TreeMap;
  * </ol>
  * At system level, we make sure that any multi-staff part has the same key signature, by
  * "replicating" the best signature to the other staff (or staves).
+ * <p>
+ * Example of key shapes mixed in the same system:<br>
+ * <img src="doc-files/IMSLP00693-1-MixedKeyShapesInSystem.png">
  *
  * @author Hervé Bitteur
  */
@@ -93,6 +95,8 @@ public class KeyColumn
         OK,
         /** Slice count to be reduced. */
         SHRINK,
+        /** No clef in staff. */
+        NO_CLEF,
         /** Replication failed. */
         NO_REPLICATE,
         /** No key in part. */
@@ -161,13 +165,13 @@ public class KeyColumn
      */
     public int retrieveKeys (int projectionWidth)
     {
-        // Define each staff key-sig area
+        // Define each staff key-signature area
         for (Staff staff : system.getStaves()) {
             int measStart = staff.getHeaderStart();
 
-            // Integer clefStop = staff.getClefStop(); // Not very reliable...
-            // int browseStart = (clefStop != null) ? (clefStop + 1) : staff.getHeaderStop();
-            int browseStart = staff.getHeaderStop() + 1;
+            Integer clefStop = staff.getClefStop(); // Not very reliable...
+            int browseStart = (clefStop != null) ? (clefStop + 1) : (staff.getHeaderStop() + 1);
+            //            int browseStart = staff.getHeaderStop() + 1;
             builders.put(
                     staff,
                     new KeyBuilder(this, staff, projectionWidth, measStart, browseStart, true));
@@ -182,7 +186,7 @@ public class KeyColumn
             // Check keys alignment across staves at system level
             if (!checkSystemSlices()) {
                 for (KeyBuilder builder : builders.values()) {
-                    builder.destroy();
+                    builder.destroyAll();
                 }
 
                 return 0; // No key in system
@@ -192,10 +196,7 @@ public class KeyColumn
         // Adjust each individual alter pitch, according to best matching key-sig
         // A staff may have no key-sig while the others have some in the same system
         for (KeyBuilder builder : builders.values()) {
-            if (builder.getRoi().getLastValidSlice() != null) {
-                builder.adjustPitches();
-                builder.finalizeKey();
-            }
+            builder.finalizeKey();
         }
 
         // Record samples? both positive and negative ones
@@ -218,6 +219,14 @@ public class KeyColumn
         }
 
         return maxKeyOffset;
+    }
+
+    //-----------------//
+    // getMaxSliceDist //
+    //-----------------//
+    final int getMaxSliceDist ()
+    {
+        return params.maxSliceDist;
     }
 
     //----------------//
@@ -259,14 +268,6 @@ public class KeyColumn
         return globalOffsets.get(index);
     }
 
-    //-----------------//
-    // getMaxSliceDist //
-    //-----------------//
-    final int getMaxSliceDist ()
-    {
-        return params.maxSliceDist;
-    }
-
     //-------------------//
     // checkSystemSlices //
     //-------------------//
@@ -288,18 +289,20 @@ public class KeyColumn
             printSliceTable();
         }
 
+        // All staves within the same part should have identical key signatures
+        // Strategy: pick up the "best" KeyInter and try to replicate it in the other stave(s)
         PartLoop:
         for (Part part : system.getParts()) {
             List<Staff> staves = part.getStaves();
 
             if (staves.size() > 1) {
-                // All staves within the same part should have identical key signatures
-                // Strategy: pick up the "best" and try to replicate it in the other stave(s)
                 KeyInter best = getBestIn(staves);
 
                 if (best != null) {
+                    final int fifths = best.getFifths();
                     final Staff bestStaff = best.getStaff();
-                    final KeyBuilder bestBuilder = builders.get(bestStaff);
+                    final KeyBuilder bestKeyBuilder = builders.get(bestStaff);
+                    final ShapeBuilder bestBuilder = bestKeyBuilder.getShapeBuilder(fifths);
                     boolean modified;
 
                     do {
@@ -307,11 +310,15 @@ public class KeyColumn
 
                         StaffLoop:
                         for (Staff staff : staves) {
-                            if (staff != bestStaff) {
+                            if (staff == bestStaff) {
+                                bestKeyBuilder.getShapeBuilder(-fifths).destroy();
+                            } else {
                                 KeyBuilder builder = builders.get(staff);
 
                                 switch (builder.checkReplicate(bestBuilder)) {
                                 case OK:
+                                case NO_CLEF:
+                                case NO_REPLICATE:
                                     break;
 
                                 case SHRINK:
@@ -320,9 +327,6 @@ public class KeyColumn
                                     modified = true;
 
                                     break StaffLoop;
-
-                                case NO_REPLICATE:
-                                    break;
 
                                 case DESTROY:
                                     return false;
@@ -358,7 +362,7 @@ public class KeyColumn
 
         for (Staff staff : staves) {
             KeyBuilder builder = builders.get(staff);
-            KeyInter keyInter = builder.getKeyInter();
+            KeyInter keyInter = builder.getBestKeyInter();
 
             if (keyInter != null) {
                 double ctxGrade = keyInter.getBestGrade();
@@ -371,36 +375,6 @@ public class KeyColumn
         }
 
         return best;
-    }
-
-    //--------------------//
-    // getFirstStuffIndex //
-    //--------------------//
-    private Integer getFirstStuffIndex ()
-    {
-        Integer firstStuffIndex = null;
-
-        for (KeyBuilder builder : builders.values()) {
-            final KeyRoi roi = builder.getRoi();
-
-            for (int i = 0; i < roi.size(); i++) {
-                KeySlice slice = roi.get(i);
-
-                if (slice.isStuffed()) {
-                    int x = slice.getRect().x;
-                    int offset = x - builder.getMeasureStart();
-                    Integer index = getGlobalIndex(offset);
-
-                    if (index != null) {
-                        if ((firstStuffIndex == null) || (firstStuffIndex > index)) {
-                            firstStuffIndex = index;
-                        }
-                    }
-                }
-            }
-        }
-
-        return firstStuffIndex;
     }
 
     //------------------//
@@ -422,25 +396,30 @@ public class KeyColumn
         List<Double> vals = new ArrayList<Double>(); // All offset values
 
         for (KeyBuilder builder : builders.values()) {
-            final KeyRoi roi = builder.getRoi();
+            KeyInter bestInter = builder.getBestKeyInter();
 
-            for (int i = 0; i < roi.size(); i++) {
-                KeySlice slice = roi.get(i);
+            if (bestInter != null) {
+                final ShapeBuilder shapeBuilder = builder.getShapeBuilder(bestInter.getFifths());
+                final KeyRoi roi = shapeBuilder.getRoi();
 
-                ///if (slice.getAlter() != null) {
-                int x = slice.getRect().x;
-                int offset = x - builder.getMeasureStart();
-                meanSliceWidth += slice.getRect().width;
-                sliceCount++;
+                for (int i = 0; i < roi.size(); i++) {
+                    KeySlice slice = roi.get(i);
 
-                while (i >= pops.size()) {
-                    pops.add(new Population());
+                    ///if (slice.getAlter() != null) {
+                    int x = slice.getRect().x;
+                    int offset = x - builder.getMeasureStart();
+                    meanSliceWidth += slice.getRect().width;
+                    sliceCount++;
+
+                    while (i >= pops.size()) {
+                        pops.add(new Population());
+                    }
+
+                    pops.get(i).includeValue(offset);
+                    vals.add((double) offset);
+
+                    ///}
                 }
-
-                pops.get(i).includeValue(offset);
-                vals.add((double) offset);
-
-                ///}
             }
         }
 
@@ -474,7 +453,11 @@ public class KeyColumn
             meanSliceWidth = (int) Math.rint(meanSliceWidth / (double) sliceCount);
         }
 
-        logger.debug("globalOffsets:{} meanSliceWidth:{}", globalOffsets, meanSliceWidth);
+        logger.debug(
+                "System#{} offsets:{} meanWidth:{}",
+                system.getId(),
+                globalOffsets,
+                meanSliceWidth);
 
         return meanSliceWidth;
     }
@@ -498,75 +481,7 @@ public class KeyColumn
         logger.info("{}", title);
 
         for (KeyBuilder builder : builders.values()) {
-            final int p = builder.getStaff().getPart().getId();
-            final Shape keyShape = builder.getKeyShape();
-            final int bid = builder.getId();
-            final KeyRoi roi = builder.getRoi();
-            StringBuilder line = new StringBuilder();
-            line.append(String.format("P%1d %2d %-7s", p, bid, (keyShape != null) ? keyShape : ""));
-
-            for (int i = 0; i < roi.size(); i++) {
-                KeySlice slice = roi.get(i);
-                int x = slice.getRect().x;
-                int offset = x - builder.getMeasureStart();
-                Integer index = getGlobalIndex(offset);
-
-                if (index != null) {
-                    if (index == i) {
-                        line.append(slice.getLabel());
-                    } else if (index > i) {
-                        line.append("<INSERT> ");
-                    } else {
-                        line.append(" <EMPTY> ");
-                    }
-                } else if (i == 0) {
-                    // First slice is too far on left
-                    line.append(" <LEFT>  ");
-                } else {
-                    line.append(" <BREAK> ");
-
-                    break;
-                }
-            }
-
-            logger.info("{}", line);
-        }
-    }
-
-    //-------------//
-    // spreadStuff //
-    //-------------//
-    /**
-     * Spread stuffed slices across staves.
-     * A "stuffed" slice is occupied by some ink which is not considered as a key alter, therefore
-     * this abscissa cannot be occupied by a key alter in any other staff within the same system.
-     */
-    private void spreadStuff ()
-    {
-        Integer firstStuffIndex = getFirstStuffIndex();
-
-        if (firstStuffIndex != null) {
-            for (KeyBuilder builder : builders.values()) {
-                final int bid = builder.getId();
-                final KeyRoi roi = builder.getRoi();
-
-                for (int i = 0; i < roi.size(); i++) {
-                    KeySlice slice = roi.get(i);
-
-                    if (!slice.isStuffed()) {
-                        int x = slice.getRect().x;
-                        int offset = x - builder.getMeasureStart();
-                        Integer index = getGlobalIndex(offset);
-
-                        if (index >= firstStuffIndex) {
-                            logger.debug("Staff#{} stuff spread from slice {}", bid, index + 1);
-                            builder.getRoi().stuffSlicesFrom(index);
-
-                            break;
-                        }
-                    }
-                }
-            }
+            builder.printSliceTable();
         }
     }
 
@@ -614,3 +529,72 @@ public class KeyColumn
         }
     }
 }
+//
+//    //-------------//
+//    // spreadStuff //
+//    //-------------//
+//    /**
+//     * Spread stuffed slices across staves.
+//     * A "stuffed" slice is occupied by some ink which is not considered as a key alter, therefore
+//     * this abscissa cannot be occupied by a key alter in any other staff within the same system.
+//     */
+//    private void spreadStuff ()
+//    {
+//        Integer firstStuffIndex = getFirstStuffIndex();
+//
+//        if (firstStuffIndex != null) {
+//            for (KeyBuilder builder : builders.values()) {
+//                final int bid = builder.getId();
+//                final KeyRoi roi = builder.getRoi();
+//
+//                for (int i = 0; i < roi.size(); i++) {
+//                    KeySlice slice = roi.get(i);
+//
+//                    if (!slice.isStuffed()) {
+//                        int x = slice.getRect().x;
+//                        int offset = x - builder.getMeasureStart();
+//                        Integer index = getGlobalIndex(offset);
+//
+//                        if (index >= firstStuffIndex) {
+//                            logger.debug("Staff#{} stuff spread from slice {}", bid, index + 1);
+//                            builder.getRoi().stuffSlicesFrom(index);
+//
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+//
+//    //--------------------//
+//    // getFirstStuffIndex //
+//    //--------------------//
+//    private Integer getFirstStuffIndex ()
+//    {
+//        Integer firstStuffIndex = null;
+//
+//        for (KeyBuilder builder : builders.values()) {
+//            final KeyRoi roi = builder.getRoi();
+//
+//            for (int i = 0; i < roi.size(); i++) {
+//                KeySlice slice = roi.get(i);
+//
+//                if (slice.isStuffed()) {
+//                    int x = slice.getRect().x;
+//                    int offset = x - builder.getMeasureStart();
+//                    Integer index = getGlobalIndex(offset);
+//
+//                    if (index != null) {
+//                        if ((firstStuffIndex == null) || (firstStuffIndex > index)) {
+//                            firstStuffIndex = index;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        return firstStuffIndex;
+//    }
+//

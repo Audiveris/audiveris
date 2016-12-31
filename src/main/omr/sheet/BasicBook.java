@@ -790,9 +790,9 @@ public class BasicBook
         return valids;
     }
 
-    //---------------------//
+    //------------------------//
     // hasAllocatedRepository //
-    //---------------------//
+    //------------------------//
     @Override
     public boolean hasAllocatedRepository ()
     {
@@ -1543,7 +1543,11 @@ public class BasicBook
                 logger.debug("Impacted pages:{} scores:{}", impactedRefs, impactedScores);
                 scores.removeAll(impactedScores);
 
-                // Insert new score(s) to replace the impacted one(s)
+                // Insert new score(s) to replace the impacted one(s)?
+                if (!currentStub.isValid()) {
+                    impactedRefs.removeAll(currentStub.getPageRefs());
+                }
+
                 insertScores(currentStub, impactedRefs, scoreIndex);
             } catch (Exception ex) {
                 // This seems to result from inconsistency between scores info and stubs info.

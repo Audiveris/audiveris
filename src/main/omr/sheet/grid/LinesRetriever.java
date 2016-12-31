@@ -22,6 +22,7 @@
 package omr.sheet.grid;
 
 import omr.OMR;
+import static omr.WellKnowns.LINE_SEPARATOR;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -55,6 +56,8 @@ import omr.sheet.Staff;
 import omr.sheet.StaffManager;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.RunsViewer;
+
+import omr.step.StepException;
 
 import omr.ui.Colors;
 import omr.ui.util.ItemRenderer;
@@ -421,6 +424,7 @@ public class LinesRetriever
      * </pre>
      */
     public void retrieveLines ()
+            throws StepException
     {
         StopWatch watch = new StopWatch("retrieveLines");
 
@@ -1158,6 +1162,7 @@ public class LinesRetriever
      * Discard all filaments that exhibit a too strong curvature.
      */
     private void purgeCurvedFilaments ()
+            throws StepException
     {
         List<Filament> toRemove = new ArrayList<Filament>();
 
@@ -1188,6 +1193,13 @@ public class LinesRetriever
         if (!toRemove.isEmpty()) {
             logger.debug("Discarded curved line filaments: {}", toRemove.size());
             filaments.removeAll(toRemove);
+        }
+
+        if (filaments.size() < 5) {
+            sheet.getStub().decideOnRemoval(
+                    sheet.getId() + LINE_SEPARATOR + "Too few staff filaments: " + filaments.size()
+                    + LINE_SEPARATOR + "This sheet does not seem to contain staff lines.",
+                    false);
         }
     }
 

@@ -33,6 +33,9 @@ import omr.sig.inter.ClefInter;
 import omr.sig.inter.KeyAlterInter;
 import omr.sig.inter.KeyInter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Rectangle;
 
 /**
@@ -43,22 +46,25 @@ import java.awt.Rectangle;
  */
 public class KeySlice
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(KeySlice.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing Roi. */
     private final KeyRoi roi;
 
     /** Rectangular slice definition. */
-    Rectangle rect;
+    private Rectangle rect;
 
     /** Best glyph, if any. */
-    Glyph glyph;
+    private Glyph glyph;
 
     /** Best evaluation, if any. */
-    Evaluation eval;
+    private Evaluation eval;
 
     /** Retrieved alter item, if any. */
-    KeyAlterInter alter;
+    private KeyAlterInter alter;
 
     /** If occupied by non-valid material. */
     private boolean stuffed;
@@ -92,6 +98,47 @@ public class KeySlice
     public KeyAlterInter getAlter ()
     {
         return alter;
+    }
+
+    /**
+     * @param alter the alter to set
+     */
+    public void setAlter (KeyAlterInter alter)
+    {
+        deleteAlter();
+        this.alter = alter;
+    }
+
+    /**
+     * @return the eval
+     */
+    public Evaluation getEval ()
+    {
+        return eval;
+    }
+
+    /**
+     * @param eval the eval to set
+     */
+    public void setEval (Evaluation eval)
+    {
+        this.eval = eval;
+    }
+
+    /**
+     * @return the glyph
+     */
+    public Glyph getGlyph ()
+    {
+        return glyph;
+    }
+
+    /**
+     * @param glyph the glyph to set
+     */
+    public void setGlyph (Glyph glyph)
+    {
+        this.glyph = glyph;
     }
 
     public int getId ()
@@ -157,19 +204,18 @@ public class KeySlice
      */
     public void setPitchRect (ClefInter clef,
                               Shape keyShape,
-                              double typicalHeight)
+                              int typicalHeight)
     {
         final Staff staff = roi.getStaff();
         final int[] clefPitches = KeyInter.getPitches(clef.getKind(), keyShape);
         final int pitch = clefPitches[getId() - 1];
         final double yp = staff.pitchToOrdinate(rect.x, pitch);
-        final double height = typicalHeight;
+        final int height = typicalHeight;
         final double ratio = (keyShape == Shape.FLAT) ? AlterInter.getFlatAreaOffset() : 0.5;
         final double offset = height * ratio;
         final int y = (int) Math.rint(yp - offset);
-        final int h = (int) Math.rint(height);
-        setRect(new Rectangle(getStart(), y, getWidth(), h));
-        staff.addAttachment("k" + getId(), rect);
+        setRect(new Rectangle(getStart(), y, getWidth(), height));
+        staff.addAttachment(roi.attachmentKey(getId()), rect);
     }
 
     /**
