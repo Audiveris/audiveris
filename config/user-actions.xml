@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <actions>
-<!--    <action domain="DEBUG" section="50" class="omr.Debug" method="injectChordNames"/>-->
-<!--    <action domain="DEBUG" section="35" class="omr.Debug" method="checkSources"/>
-    <action domain="DEBUG" section="40" class="omr.Debug" method="checkTemplates"/>-->
-<!--    <action domain="DEBUG" section="60" class="omr.ui.GuiActions" method="launchSymbolRipper"/>-->
-    <action domain="DEBUG" section="50" class="omr.ui.GuiActions" method="clearLog" button="javax.swing.JButton"/>
-    <action domain="DEBUG" section="70" class="omr.sheet.ui.BookActions"  method="dumpEventServices"/>
-<!--    <action domain="DEBUG" section="35" class="omr.Debug" method="saveTrainingData"/>-->
-<!--    <action domain="DEBUG" section="35" class="omr.Debug" method="trainAndSave"/>-->
+<!--    <action domain="DEBUG" section="50" class="org.audiveris.omr.Debug" method="injectChordNames"/>-->
+<!--    <action domain="DEBUG" section="35" class="org.audiveris.omr.Debug" method="checkSources"/>
+    <action domain="DEBUG" section="40" class="org.audiveris.omr.Debug" method="checkTemplates"/>-->
+<!--    <action domain="DEBUG" section="60" class="org.audiveris.omr.ui.GuiActions" method="launchSymbolRipper"/>-->
+    <action domain="DEBUG" section="50" class="org.audiveris.omr.ui.GuiActions" method="clearLog" button="javax.swing.JButton"/>
+    <action domain="DEBUG" section="70" class="org.audiveris.omr.sheet.ui.BookActions"  method="dumpEventServices"/>
 </actions>
