@@ -113,7 +113,6 @@ public class KeyExtractor
      * Creates a new {@code KeyExtractor} object.
      *
      * @param staff the underlying staff
-     * @param range key range information
      */
     public KeyExtractor (Staff staff)
     {

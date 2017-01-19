@@ -37,6 +37,7 @@ import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
@@ -510,6 +511,49 @@ public class Staff
         }
 
         return clefs.get(0);
+    }
+
+    //---------------//
+    // getBrowseStop //
+    //---------------//
+    /**
+     * Report the maximum abscissa before a really good barline is encountered.
+     *
+     * @param xMin minimum abscissa
+     * @param xMax initial value of maximum abscissa
+     * @return final maximum abscissa
+     */
+    public int getBrowseStop (int xMin,
+                              int xMax)
+    {
+        final SIGraph sig = system.getSig();
+
+        for (BarlineInter bar : bars) {
+            // Exclude poor barline
+            if (!bar.isGood()) {
+                continue;
+            }
+
+            // Exclude barline not connected to other staff
+            if (!sig.hasRelation(bar, BarConnectionRelation.class)) {
+                continue;
+            }
+
+            int barStart = bar.getBounds().x;
+
+            if (barStart > xMax) {
+                break;
+            }
+
+            if (barStart > xMin) {
+                logger.debug("Staff#{} stopping search before {}", getId(), bar);
+                xMax = barStart - 1;
+
+                break;
+            }
+        }
+
+        return xMax;
     }
 
     //-------------//

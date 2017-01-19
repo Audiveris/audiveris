@@ -66,8 +66,7 @@ public class SampleSheet
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SampleSheet.class);
+    private static final Logger logger = LoggerFactory.getLogger(SampleSheet.class);
 
     /** File name for sheet samples: {@value}. */
     public static final String SAMPLES_FILE_NAME = "samples.xml";
@@ -81,9 +80,25 @@ public class SampleSheet
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    public enum ImageStatus
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        /** There is no recorded image for this sheet. */
+        NO_IMAGE,
+        /** Sheet image is available on disk. */
+        ON_DISK,
+        /** Sheet image is available in memory. */
+        LOADED;
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Full descriptor. */
     private final Descriptor descriptor;
+
+    /** Current image status for this sheet. */
+    private ImageStatus imageStatus;
 
     /** Optional image runTable. */
     private RunTable image;
@@ -259,6 +274,31 @@ public class SampleSheet
         return image;
     }
 
+    /**
+     * Report current image status for this sheet.
+     *
+     * @param repository the containing repository
+     * @return current image status
+     */
+    public ImageStatus getImageStatus (SampleRepository repository)
+    {
+        if (imageStatus == null) {
+            // Already loaded?
+            if (image != null) {
+                return imageStatus = ImageStatus.LOADED;
+            }
+
+            // Check on disk
+            if (repository.diskImageExists(descriptor)) {
+                return imageStatus = ImageStatus.ON_DISK;
+            }
+
+            return imageStatus = ImageStatus.NO_IMAGE;
+        }
+
+        return imageStatus;
+    }
+
     //------------//
     // getSamples //
     //------------//
@@ -410,7 +450,7 @@ public class SampleSheet
     /**
      * Register the image binary table for this sheet.
      *
-     * @param image the image to set
+     * @param image the image to set (non-null)
      * @param saved true if image already on disk
      */
     public void setImage (RunTable image,
@@ -418,6 +458,7 @@ public class SampleSheet
     {
         this.image = image;
         this.imageSaved = saved;
+        imageStatus = ImageStatus.LOADED;
     }
 
     //-------------//

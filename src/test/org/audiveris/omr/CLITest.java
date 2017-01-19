@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr;
 
-import org.audiveris.omr.CLI;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Dumping;
 import static org.junit.Assert.assertEquals;
@@ -88,7 +87,7 @@ public class CLITest
     {
         System.out.println("\n+++ testRun");
 
-        String[] args = new String[]{"-run", "omr.step.RunClass"};
+        String[] args = new String[]{"-run", "org.audiveris.omr.step.RunClass"};
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
         assertNotNull("baratin", params.runClass);
@@ -119,10 +118,10 @@ public class CLITest
     {
         System.out.println("\n+++ testSheets");
 
-        String[] args = new String[]{"-sheets", "3", "4", "6"};
+        String[] args = new String[]{"-sheets", "3", "4", "6", "11 14"};
         CLI.Parameters params = instance.getParameters(args);
         new Dumping().dump(params);
-        assertEquals(Arrays.asList(3, 4, 6).toString(), params.getSheetIds().toString());
+        assertEquals(Arrays.asList(3, 4, 6, 11, 14).toString(), params.getSheetIds().toString());
     }
 
     @Test

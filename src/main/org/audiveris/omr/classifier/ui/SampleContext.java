@@ -204,7 +204,27 @@ public class SampleContext
                 logger.debug("SampleContext sample:{}", sample);
 
                 SampleSheet sampleSheet = repository.getSampleSheet(sample);
-                sheetTable = (sampleSheet != null) ? sampleSheet.getImage() : null;
+
+                if (sampleSheet != null) {
+                    switch (sampleSheet.getImageStatus(repository)) {
+                    case NO_IMAGE:
+                        sheetTable = null;
+
+                        break;
+
+                    case ON_DISK:
+                        sheetTable = repository.loadImage(sampleSheet);
+
+                        break;
+
+                    case LOADED:
+                        sheetTable = sampleSheet.getImage();
+
+                        break;
+                    }
+                } else {
+                    sheetTable = null;
+                }
 
                 if (sheetTable != null) {
                     dim = sheetTable.getDimension();

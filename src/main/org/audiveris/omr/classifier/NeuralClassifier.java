@@ -396,7 +396,7 @@ public class NeuralClassifier
                        Monitor monitor)
     {
         if (samples.isEmpty()) {
-            logger.warn("No sample to retrain Neural Network classifier");
+            logger.warn("No sample to retrain neural classifier");
 
             return;
         }
@@ -416,8 +416,11 @@ public class NeuralClassifier
 
         if (USE_DL4J) {
             // Train
+            logger.debug("Creating network...");
             model = createNetwork();
             model.setListeners(monitor);
+
+            logger.info("Training network...");
 
             final int epochs = getMaxEpochs();
 
@@ -426,6 +429,8 @@ public class NeuralClassifier
             }
 
             // Evaluate
+            logger.info("Evaluating network...");
+
             final List<String> names = Arrays.asList(
                     ShapeSet.getPhysicalShapeNames());
             org.deeplearning4j.eval.Evaluation eval = new org.deeplearning4j.eval.Evaluation(names);
@@ -440,7 +445,7 @@ public class NeuralClassifier
             INDArray features = dataSet.getFeatureMatrix();
             int rows = features.rows();
             int cols = features.columns();
-            logger.info("patterns: {}", rows);
+            logger.info("samples: {}", rows);
             logger.info("features: {}", cols);
 
             INDArray labels = dataSet.getLabels();
@@ -505,22 +510,22 @@ public class NeuralClassifier
                 .layer(
                         0,
                         new DenseLayer.Builder() //
-                        .nIn(ShapeDescription.length()) //
-                        .nOut(hiddenNum) //
-                        .build()) //
+                                .nIn(ShapeDescription.length()) //
+                                .nOut(hiddenNum) //
+                                .build()) //
                 .layer(
                         1,
                         new DenseLayer.Builder() //
-                        .nIn(hiddenNum) //
-                        .nOut(hiddenNum) //
-                        .build()) //
+                                .nIn(hiddenNum) //
+                                .nOut(hiddenNum) //
+                                .build()) //
                 .layer(
                         2,
                         new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD) //
-                        .activation("softmax") // softplus vs tanh vs sigmoid vs softmax
-                        .nIn(hiddenNum) //
-                        .nOut(SHAPE_COUNT) //
-                        .build()) //
+                                .activation("softmax") // softplus vs tanh vs sigmoid vs softmax
+                                .nIn(hiddenNum) //
+                                .nOut(SHAPE_COUNT) //
+                                .build()) //
                 .backprop(true) //
                 .pretrain(false) //
                 .build();

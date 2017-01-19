@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -67,6 +68,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
@@ -113,10 +116,19 @@ public class SampleRepository
     private static final String IMAGES_FILE_NAME = "images.zip";
 
     /** File name for samples material: {@value}. */
-    private static final String SAMPLES_FILE_NAME = "samples.zip";
+    public static final String SAMPLES_FILE_NAME = "samples.zip";
 
     /** Special name to refer to font-based samples: {@value}. */
     private static final String SYMBOLS = "AAA_FONT_SYMBOLS";
+
+    /**
+     * Regex pattern for samples archive file name.
+     * <ul>
+     * <li>samples.zip for the global repository (in WellKnowns.TRAIN_FOLDER)
+     * <li>BOOK_NAME-samples.zip for a local book repository (in some folder)
+     * </ul>
+     */
+    private static final Pattern SAMPLES_PATTERN = Pattern.compile("(.*-)?(samples\\.zip)");
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sheets, mapped by their unique name. */
@@ -140,10 +152,10 @@ public class SampleRepository
     /** Listeners on repository modifications. */
     private final Set<ChangeListener> listeners = new LinkedHashSet<ChangeListener>();
 
-    /** Folder path for this repository. */
-    private final Path folder;
+    /** Book radix for this repository (empty string for the global repository). */
+    private final String bookRadix;
 
-    /** File path for training material: {@value}. */
+    /** File path for samples material: {@value}. */
     private final Path samplesFile;
 
     /** File path for images material: {@value}. */
@@ -153,99 +165,38 @@ public class SampleRepository
     /**
      * (Private) constructor.
      *
-     * @param folder hosting folder (either global train folder or book dedicated folder)
+     * @param samplesFile path to the samples archive file
      */
-    private SampleRepository (Path folder)
+    private SampleRepository (Path samplesFile)
     {
+        if (!Files.exists(samplesFile)) {
+            throw new IllegalArgumentException(samplesFile + " does not exist.");
+        }
+
+        final Path fileName = samplesFile.getFileName();
+        final Matcher matcher = SAMPLES_PATTERN.matcher(fileName.toString());
+
+        if (!matcher.find()) {
+            throw new IllegalArgumentException("Illegal samples archive name: " + samplesFile);
+        }
+
+        String prefix = matcher.group(1);
+
+        if (prefix == null) {
+            prefix = "";
+        }
+
+        bookRadix = prefix.isEmpty() ? "" : prefix.substring(0, prefix.length() - 1);
+        this.samplesFile = samplesFile;
+        this.imagesFile = samplesFile.resolveSibling(prefix + IMAGES_FILE_NAME);
+
         // Set application exit listener
         if (OMR.gui != null) {
             OmrGui.getApplication().addExitListener(getExitListener());
         }
-
-        this.folder = folder;
-
-        final String prefix = prefixOf(folder);
-        imagesFile = folder.resolve(prefix + IMAGES_FILE_NAME);
-        samplesFile = folder.resolve(prefix + SAMPLES_FILE_NAME);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // getExitListener //
-    //-----------------//
-    public final Application.ExitListener getExitListener ()
-    {
-        return new RepositoryExitListener();
-    }
-
-    //-------------------//
-    // getGlobalInstance //
-    //-------------------//
-    /**
-     * Report the global repository, after creating it if needed.
-     *
-     * @param load true for a loaded repository
-     * @return the global instance of SampleRepository
-     */
-    public static SampleRepository getGlobalInstance (boolean load)
-    {
-        if (GLOBAL == null) {
-            GLOBAL = new SampleRepository(WellKnowns.TRAIN_FOLDER);
-        }
-
-        if (load && !GLOBAL.isLoaded()) {
-            GLOBAL.loadRepository();
-        }
-
-        return GLOBAL;
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the repository specifically related to the provided book.
-     *
-     * @param book the provided book
-     * @param load true for a loaded repository
-     * @return the specific sample repository for the provided book, or null
-     */
-    public static SampleRepository getInstance (Book book,
-                                                boolean load)
-    {
-        if (BookManager.useSeparateBookFolders()) {
-            final Path bookFolder = BookManager.getDefaultBookFolder(book);
-            final Path baseFolder = BookManager.getBaseFolder();
-
-            // Make sure this is a folder dedicated to the book
-            if (!baseFolder.toAbsolutePath().normalize()
-                    .equals(bookFolder.toAbsolutePath().normalize())) {
-                final SampleRepository repo = new SampleRepository(bookFolder);
-
-                if (load && !repo.isLoaded()) {
-                    repo.loadRepository();
-                }
-
-                return repo;
-            }
-        }
-
-        return null;
-    }
-
-    //-------------//
-    // hasInstance //
-    //-------------//
-    /**
-     * Report whether the global repository has been allocated.
-     *
-     * @return true if GLOBAL exists
-     */
-    public static boolean hasInstance ()
-    {
-        return GLOBAL != null;
-    }
-
     //-------------//
     // addListener //
     //-------------//
@@ -445,6 +396,44 @@ public class SampleRepository
     }
 
     //-----------------//
+    // diskImageExists //
+    //-----------------//
+    /**
+     * Report whether the provided descriptor has an image on disk.
+     *
+     * @param descriptor the provided sheet descriptor
+     * @return true if sheet image file exists on disk
+     */
+    public boolean diskImageExists (Descriptor descriptor)
+    {
+        if (!Files.exists(imagesFile)) {
+            return false;
+        }
+
+        try {
+            Path imagesRoot = Zip.openFileSystem(imagesFile);
+
+            try {
+                Path folderPath = imagesRoot.resolve(descriptor.getName());
+
+                if (!Files.exists(folderPath)) {
+                    return false;
+                }
+
+                Path imagePath = folderPath.resolve(SampleSheet.IMAGE_FILE_NAME);
+
+                return Files.exists(imagePath);
+            } finally {
+                if (imagesRoot != null) {
+                    imagesRoot.getFileSystem().close();
+                }
+            }
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+
+    //-----------------//
     // findSampleSheet //
     //-----------------//
     /**
@@ -536,7 +525,7 @@ public class SampleRepository
                         }
 
                         root.getFileSystem().close();
-                    } catch (IOException ex) {
+                    } catch (IOException ignored) {
                     }
                 }
 
@@ -651,18 +640,72 @@ public class SampleRepository
         return null;
     }
 
-    //----------------//
-    // getSampleSheet //
-    //----------------//
+    //-------------------//
+    // getGlobalInstance //
+    //-------------------//
     /**
-     * Report the SampleSheet that contains the provided sample.
+     * Report the global repository, after creating it if needed.
      *
-     * @param sample the provided sample
-     * @return the containing sample sheet
+     * @param load true for a loaded repository
+     * @return the global instance of SampleRepository
      */
-    public SampleSheet getSampleSheet (Sample sample)
+    public static synchronized SampleRepository getGlobalInstance (boolean load)
     {
-        return sampleMap.get(sample);
+        if (GLOBAL == null) {
+            GLOBAL = getInstance(WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME), load);
+        }
+
+        if (load && (GLOBAL != null) && !GLOBAL.isLoaded()) {
+            GLOBAL.loadRepository();
+        }
+
+        return GLOBAL;
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the repository specifically related to the provided book.
+     *
+     * @param book the provided book
+     * @param load true for a loaded repository
+     * @return the specific sample repository for the provided book, or null
+     */
+    public static SampleRepository getInstance (Book book,
+                                                boolean load)
+    {
+        return getInstance(getSamplesFile(book), load);
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the repository specifically related to the provided samples archives.
+     *
+     * @param samplesFile path to the global or specific samples .zip archive
+     * @param load        true for a loaded repository
+     * @return the specific sample repository, or null
+     */
+    public static SampleRepository getInstance (Path samplesFile,
+                                                boolean load)
+    {
+        try {
+            final SampleRepository repo = new SampleRepository(samplesFile);
+
+            if (load && !repo.isLoaded()) {
+                logger.info("Repository loading...");
+                repo.loadRepository();
+                logger.info("Repository loaded.");
+            }
+
+            return repo;
+        } catch (Exception ex) {
+            logger.warn("Could not get repository instance at {} " + ex, samplesFile, ex);
+
+            return null;
+        }
     }
 
     //----------------//
@@ -679,27 +722,18 @@ public class SampleRepository
         return nameMap.get(descriptor.getName());
     }
 
-    //------------//
-    // getSamples //
-    //------------//
+    //----------------//
+    // getSampleSheet //
+    //----------------//
     /**
-     * Report, in the SampleSheet whose name is provided, all samples assigned the
-     * desired shape.
+     * Report the SampleSheet that contains the provided sample.
      *
-     * @param name  name of sample sheet
-     * @param shape desired shape
-     * @return the list of samples related to shape in provided sheet
+     * @param sample the provided sample
+     * @return the containing sample sheet
      */
-    public List<Sample> getSamples (String name,
-                                    Shape shape)
+    public SampleSheet getSampleSheet (Sample sample)
     {
-        SampleSheet sampleSheet = nameMap.get(name);
-
-        if (sampleSheet != null) {
-            return sampleSheet.getSamples(shape);
-        }
-
-        return Collections.emptyList();
+        return sampleMap.get(sample);
     }
 
     //------------//
@@ -729,6 +763,29 @@ public class SampleRepository
         }
 
         return found;
+    }
+
+    //------------//
+    // getSamples //
+    //------------//
+    /**
+     * Report, in the SampleSheet whose name is provided, all samples assigned the
+     * desired shape.
+     *
+     * @param name  name of sample sheet
+     * @param shape desired shape
+     * @return the list of samples related to shape in provided sheet
+     */
+    public List<Sample> getSamples (String name,
+                                    Shape shape)
+    {
+        SampleSheet sampleSheet = nameMap.get(name);
+
+        if (sampleSheet != null) {
+            return sampleSheet.getSamples(shape);
+        }
+
+        return Collections.emptyList();
     }
 
     //-----------//
@@ -777,29 +834,17 @@ public class SampleRepository
         return null;
     }
 
-    //----------------//
-    // hasSheetImages //
-    //----------------//
+    //-------------//
+    // hasInstance //
+    //-------------//
     /**
-     * Check whether file of sheet images is available.
+     * Report whether the global repository has been allocated.
      *
-     * @return true if images are available
+     * @return true if GLOBAL exists
      */
-    public boolean hasSheetImages ()
+    public static boolean hasInstance ()
     {
-        return Files.exists(imagesFile);
-    }
-
-    //-------------------//
-    // includeRepository //
-    //-------------------//
-    public void includeRepository (SampleRepository source)
-    {
-        source.loadSheetImages();
-
-        for (SampleSheet sampleSheet : source.nameMap.values()) {
-            includeSampleSheet(sampleSheet);
-        }
+        return GLOBAL != null;
     }
 
     //-----------//
@@ -827,23 +872,40 @@ public class SampleRepository
      */
     public static boolean repositoryExists (Book book)
     {
-        if (BookManager.useSeparateBookFolders()) {
-            final Path bookFolder = BookManager.getDefaultBookFolder(book);
-            final Path baseFolder = BookManager.getBaseFolder();
+        return Files.exists(getSamplesFile(book));
+    }
 
-            // Make sure this is a folder dedicated to the book
-            if (!baseFolder.toAbsolutePath().normalize()
-                    .equals(bookFolder.toAbsolutePath().normalize())) {
-                final String prefix = prefixOf(bookFolder);
-                final Path samplesFile = bookFolder.resolve(prefix + SAMPLES_FILE_NAME);
+    //-----------------//
+    // getExitListener //
+    //-----------------//
+    public final Application.ExitListener getExitListener ()
+    {
+        return new RepositoryExitListener();
+    }
 
-                if (Files.exists(samplesFile)) {
-                    return true;
-                }
-            }
+    //----------------//
+    // hasSheetImages //
+    //----------------//
+    /**
+     * Check whether file of sheet images is available.
+     *
+     * @return true if images are available
+     */
+    public boolean hasSheetImages ()
+    {
+        return Files.exists(imagesFile);
+    }
+
+    //-------------------//
+    // includeRepository //
+    //-------------------//
+    public void includeRepository (SampleRepository source)
+    {
+        source.loadAllImages();
+
+        for (SampleSheet sampleSheet : source.nameMap.values()) {
+            includeSampleSheet(sampleSheet);
         }
-
-        return false;
     }
 
     //--------------------//
@@ -894,6 +956,23 @@ public class SampleRepository
         return localSheet;
     }
 
+    //--------------------//
+    // includeSamplesFile //
+    //--------------------//
+    /**
+     * Include the content of a samples file.
+     *
+     * @param samplesFile provided samples file
+     */
+    public synchronized void includeSamplesFile (Path samplesFile)
+    {
+        SampleRepository repo = getInstance(samplesFile, true);
+
+        if (repo != null) {
+            includeRepository(repo);
+        }
+    }
+
     //----------//
     // isGlobal //
     //----------//
@@ -934,6 +1013,70 @@ public class SampleRepository
         }
 
         return false;
+    }
+
+    //---------------//
+    // loadAllImages //
+    //---------------//
+    /**
+     * Load the sheet images, if available and not already done.
+     */
+    public void loadAllImages ()
+    {
+        if (imagesLoaded) {
+            logger.info("All images already loaded.");
+        } else if (!hasSheetImages()) {
+            logger.info("Images file {} not found.", imagesFile);
+        } else {
+            try {
+                final Path imagesRoot = Zip.openFileSystem(imagesFile);
+                logger.info("Loading all images from {} ...", imagesFile);
+                loadAllImages(imagesRoot);
+                imagesRoot.getFileSystem().close();
+                imagesLoaded = true;
+            } catch (IOException ex) {
+                logger.warn("Error loading sheet images " + ex, ex);
+            }
+        }
+    }
+
+    //-----------//
+    // loadImage //
+    //-----------//
+    public RunTable loadImage (SampleSheet sampleSheet)
+    {
+        final Descriptor descriptor = sampleSheet.getDescriptor();
+        RunTable runTable = null;
+
+        try {
+            final Path imagesRoot = Zip.openFileSystem(imagesFile);
+
+            try {
+                Path folderPath = imagesRoot.resolve(descriptor.getName());
+
+                if (!Files.exists(folderPath)) {
+                    return null;
+                }
+
+                Path file = folderPath.resolve(SampleSheet.IMAGE_FILE_NAME);
+                runTable = RunTable.unmarshal(file);
+
+                if (runTable != null) {
+                    sampleSheet.setImage(runTable, true);
+                    logger.debug("Loaded {}", file);
+                }
+            } finally {
+                if (imagesRoot != null) {
+                    imagesRoot.getFileSystem().close();
+                }
+            }
+        } catch (IOException ex) {
+            logger.warn("Error loading {} image ", descriptor, ex);
+
+            return null;
+        }
+
+        return runTable;
     }
 
     //----------------//
@@ -997,28 +1140,6 @@ public class SampleRepository
     }
 
     //-----------------//
-    // loadSheetImages //
-    //-----------------//
-    /**
-     * Load the sheet images, if available and not already done.
-     */
-    public void loadSheetImages ()
-    {
-        if (!imagesLoaded && hasSheetImages()) {
-            try {
-                final Path imagesRoot = Zip.openFileSystem(imagesFile);
-                loadImages(imagesRoot);
-                imagesRoot.getFileSystem().close();
-                imagesLoaded = true;
-            } catch (IOException ex) {
-                logger.warn("Error loading sheet images " + ex, ex);
-            }
-        } else {
-            logger.info("{} not found.", imagesFile);
-        }
-    }
-
-    //-----------------//
     // pokeSampleSheet //
     //-----------------//
     /**
@@ -1032,6 +1153,21 @@ public class SampleRepository
         RunTable image = sheet.getPicture().getTable(Picture.TableKey.BINARY);
 
         return imageMap.get(image);
+    }
+
+    //------------------------//
+    // purgeOrphanDescriptors //
+    //------------------------//
+    public void purgeOrphanDescriptors ()
+    {
+        for (Descriptor descriptor : new ArrayList<Descriptor>(getAllDescriptors())) {
+            final SampleSheet sampleSheet = getSampleSheet(descriptor);
+
+            if (sampleSheet == null) {
+                sheetContainer.removeDescriptor(descriptor);
+                logger.info("{} removed orphan descriptor: {}", this, descriptor);
+            }
+        }
     }
 
     //----------------//
@@ -1087,6 +1223,52 @@ public class SampleRepository
         fireStateChanged(new SheetRemovalEvent(descriptor));
     }
 
+    //-------------------//
+    // splitTrainAndTest //
+    //-------------------//
+    /**
+     * Build train collection and test collection out of this repository.
+     * <p>
+     * In the 'train' collection, no shape collection can contain more than maxShapeSampleCount
+     * samples.
+     *
+     * @param train    output to be populated by train samples
+     * @param test     output to be populated by test samples
+     * @param minCount minimum sample count per shape (for test)
+     * @param maxCount maximum sample count per shape (for train and test)
+     */
+    public void splitTrainAndTest (List<Sample> train,
+                                   List<Sample> test,
+                                   int minCount,
+                                   int maxCount)
+    {
+        // Gather samples by shape
+        EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<Shape, List<Sample>>(Shape.class);
+
+        for (Sample sample : getAllSamples()) {
+            Shape shape = sample.getShape();
+            List<Sample> list = shapeSamples.get(shape);
+
+            if (list == null) {
+                shapeSamples.put(shape, list = new ArrayList<Sample>());
+            }
+
+            list.add(sample);
+        }
+
+        for (List<Sample> list : shapeSamples.values()) {
+            Collections.shuffle(list);
+            train.addAll(list.subList(0, Math.min(list.size(), maxCount)));
+
+            final int size = list.size();
+            final int i1 = Math.max(0, size - minCount);
+            final int i2 = Math.max(maxCount, size - maxCount);
+            test.addAll(list.subList(Math.min(i1, i2), size));
+        }
+
+        logger.info("Train: {}, Test: {}", train.size(), test.size());
+    }
+
     //-----------------//
     // storeRepository //
     //-----------------//
@@ -1129,9 +1311,25 @@ public class SampleRepository
     @Override
     public String toString ()
     {
-        String name = isGlobal() ? "GLOBAL" : FileUtil.getNameSansExtension(folder);
+        String name = isGlobal() ? "GLOBAL" : bookRadix;
 
         return name + " repository";
+    }
+
+    //----------------//
+    // getSamplesFile //
+    //----------------//
+    /**
+     * Report the path to the (theoretical) samples file for the provided book.
+     *
+     * @param book the provided book
+     * @return the theoretical path to samples file
+     */
+    private static Path getSamplesFile (Book book)
+    {
+        final Path bookFolder = BookManager.getDefaultBookFolder(book);
+
+        return bookFolder.resolve(book.getRadix() + "-" + SAMPLES_FILE_NAME);
     }
 
     //-------------------//
@@ -1204,19 +1402,44 @@ public class SampleRepository
         }
     }
 
-    //------------//
-    // loadImages //
-    //------------//
+    //---------------//
+    // loadAllImages //
+    //---------------//
     /**
-     * Unmarshal all the sheet images available in training material.
+     * Unmarshal all the sheet images available in training material and not yet loaded.
      */
-    private void loadImages (final Path root)
+    private void loadAllImages (final Path root)
     {
         try {
             Files.walkFileTree(
                     root,
                     new SimpleFileVisitor<Path>()
             {
+                @Override
+                public FileVisitResult preVisitDirectory (Path dir,
+                                                          BasicFileAttributes attrs)
+                        throws IOException
+                {
+                    // Check whether we already have an image for this folder
+                    final Path dirFile = dir.getFileName();
+
+                    if (dirFile != null) {
+                        String dirName = dirFile.toString();
+
+                        if (dirName.endsWith("/")) {
+                            dirName = dirName.substring(0, dirName.length() - 1);
+                        }
+
+                        final SampleSheet sampleSheet = nameMap.get(dirName);
+
+                        if ((sampleSheet != null) && (sampleSheet.getImage() != null)) {
+                            return FileVisitResult.SKIP_SUBTREE;
+                        }
+                    }
+
+                    return FileVisitResult.CONTINUE;
+                }
+
                 @Override
                 public FileVisitResult visitFile (Path file,
                                                   BasicFileAttributes attrs)
@@ -1336,14 +1559,6 @@ public class SampleRepository
         } catch (Throwable ex) {
             logger.warn("Error loading tribes " + ex, ex);
         }
-    }
-
-    //----------//
-    // prefixOf //
-    //----------//
-    private static String prefixOf (Path folder)
-    {
-        return (folder == WellKnowns.TRAIN_FOLDER) ? "" : (folder.getFileName() + "-");
     }
 
     //-------------//

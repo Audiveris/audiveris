@@ -28,7 +28,7 @@ import java.net.MalformedURLException;
 import javax.imageio.ImageIO;
 
 /**
- * Class {@code GhostPictureAdapter}is a {@link GhostDropAdapter} whose image is
+ * Class {@code GhostPictureAdapter} is a {@link GhostDropAdapter} whose image is
  * retrieved from the class resource path.
  *
  * @param <A> The precise type of action carried by the drop

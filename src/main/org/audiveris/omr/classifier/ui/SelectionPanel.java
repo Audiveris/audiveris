@@ -29,6 +29,7 @@ import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSource;
 import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.*;
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.field.LLabel;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Observable;
@@ -70,9 +72,6 @@ class SelectionPanel
     private static final Logger logger = LoggerFactory.getLogger(SelectionPanel.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Reference of network panel companion. (TBI) */
-    private TrainingPanel trainingPanel;
-
     /** Swing component. */
     private final Panel component;
 
@@ -107,6 +106,12 @@ class SelectionPanel
     private final LLabel nbSelectedSamples = new LLabel(
             "Selected:",
             "Number of selected samples to load");
+
+    /** Sample collection for training. */
+    private List<Sample> trains;
+
+    /** Sample collection for testing. */
+    private List<Sample> tests;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -156,9 +161,14 @@ class SelectionPanel
      *
      * @return the collection of selected samples
      */
+    @Override
     public List<Sample> getTestSamples ()
     {
-        return getTrainSamples(); // TODO: separate train vs test collections...
+        if (tests == null) {
+            getTrainSamples();
+        }
+
+        return tests;
     }
 
     //-----------------//
@@ -172,18 +182,33 @@ class SelectionPanel
     @Override
     public List<Sample> getTrainSamples ()
     {
-        if (!repository.isLoaded()) {
-            progressBar.setValue(0);
-            repository.loadRepository();
+        if (trains == null) {
+            trains = new ArrayList<Sample>();
+            tests = new ArrayList<Sample>();
+
+            if (!repository.isLoaded()) {
+                progressBar.setValue(0);
+                repository.loadRepository();
+            }
+
+            final int minCount = constants.minShapeSampleCount.getValue();
+            final int maxCount = constants.maxShapeSampleCount.getValue();
+            repository.splitTrainAndTest(trains, tests, minCount, maxCount);
+            nbLoaded = trains.size();
+            ///setTotalSamples(nbLoaded);
+            setSelectedSamples(trains.size());
+            progressBar.setValue(nbLoaded);
         }
 
-        List<Sample> samples = repository.getAllSamples();
-        nbLoaded = samples.size();
-        setTotalSamples(nbLoaded);
-        setSelectedSamples(nbLoaded);
-        progressBar.setValue(nbLoaded);
+        return trains;
+    }
 
-        return samples;
+    //------------------------//
+    // getMinShapeSampleCount //
+    //------------------------//
+    public static int getMinShapeSampleCount ()
+    {
+        return constants.minShapeSampleCount.getValue();
     }
 
     //--------------//
@@ -245,14 +270,6 @@ class SelectionPanel
         selectAction.setEnabled(task.getActivity() == INACTIVE);
     }
 
-    //------------------//
-    // setTrainingPanel //
-    //------------------//
-    void setTrainingPanel (TrainingPanel trainingPanel)
-    {
-        this.trainingPanel = trainingPanel;
-    }
-
     //--------------//
     // defineLayout //
     //--------------//
@@ -262,7 +279,7 @@ class SelectionPanel
 
         FormLayout layout = Panel.makeFormLayout(
                 3,
-                4,
+                3,
                 "",
                 Trainer.LABEL_WIDTH,
                 Trainer.FIELD_WIDTH);
@@ -271,21 +288,21 @@ class SelectionPanel
 
         ///builder.setDefaultDialogBorder();
         int r = 1; // ----------------------------
-        builder.addSeparator("Selection", cst.xyw(1, r, 7));
-        builder.add(progressBar, cst.xyw(9, r, 7));
+        builder.addSeparator("Selection", cst.xyw(1, r, 3));
+        builder.add(progressBar, cst.xyw(5, r, 7));
 
         r += 2; // ----------------------------
         //        builder.add(new JButton(dumpAction), cst.xy(3, r));
         //        builder.add(new JButton(refreshAction), cst.xy(5, r));
         //
 
-        builder.add(totalSamples.getLabel(), cst.xy(13, r));
-        builder.add(totalSamples.getField(), cst.xy(15, r));
+        builder.add(totalSamples.getLabel(), cst.xy(9, r));
+        builder.add(totalSamples.getField(), cst.xy(11, r));
 
         r += 2; // ----------------------------
         builder.add(new JButton(selectAction), cst.xy(3, r));
-        builder.add(nbSelectedSamples.getLabel(), cst.xy(13, r));
-        builder.add(nbSelectedSamples.getField(), cst.xy(15, r));
+        builder.add(nbSelectedSamples.getLabel(), cst.xy(9, r));
+        builder.add(nbSelectedSamples.getField(), cst.xy(11, r));
     }
 
     //---------------//
@@ -311,10 +328,59 @@ class SelectionPanel
     private static final class Constants
             extends ConstantSet
     {
-        //        private final Constant.Integer maxSimilar = new Constant.Integer(
-        //                "Glyphs",
-        //                10,
-        //                "Absolute maximum number of instances for the same shape" + " used in training");
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Integer maxShapeSampleCount = new Constant.Integer(
+                "samples",
+                100,
+                "Maximum sample count per shape for training");
+
+        private final Constant.Integer minShapeSampleCount = new Constant.Integer(
+                "samples",
+                10,
+                "Minimum sample count per shape for training");
+    }
+
+    //--------------//
+    // GradedSample //
+    //--------------//
+    /**
+     * Handle a sample together with its grade.
+     */
+    private static class GradedSample
+    {
+        //~ Static fields/initializers -------------------------------------------------------------
+
+        /** For comparing GradedSample instances in reverse grade order. */
+        static final Comparator<GradedSample> reverseGradeComparator = new Comparator<GradedSample>()
+        {
+            @Override
+            public int compare (GradedSample gs1,
+                                GradedSample gs2)
+            {
+                return Double.compare(gs2.grade, gs1.grade);
+            }
+        };
+
+        //~ Instance fields ------------------------------------------------------------------------
+        final Sample sample;
+
+        final double grade;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public GradedSample (Sample sample,
+                             double grade)
+        {
+            this.sample = sample;
+            this.grade = grade;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return "GradedSample{" + sample + " " + grade + "}";
+        }
     }
 
     //------------//
@@ -359,48 +425,6 @@ class SelectionPanel
             //            }
             //
             //            System.out.println(String.format("%4d %s", sampleNb, prevName));
-        }
-    }
-
-    //--------------//
-    // GradedSample //
-    //--------------//
-    /**
-     * Handle a sample together with its grade.
-     */
-    private static class GradedSample
-    {
-        //~ Static fields/initializers -------------------------------------------------------------
-
-        /** For comparing GradedSample instances in reverse grade order. */
-        static final Comparator<GradedSample> reverseGradeComparator = new Comparator<GradedSample>()
-        {
-            @Override
-            public int compare (GradedSample gs1,
-                                GradedSample gs2)
-            {
-                return Double.compare(gs2.grade, gs1.grade);
-            }
-        };
-
-        //~ Instance fields ------------------------------------------------------------------------
-        final Sample sample;
-
-        final double grade;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public GradedSample (Sample sample,
-                             double grade)
-        {
-            this.sample = sample;
-            this.grade = grade;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return "GradedSample{" + sample + " " + grade + "}";
         }
     }
 

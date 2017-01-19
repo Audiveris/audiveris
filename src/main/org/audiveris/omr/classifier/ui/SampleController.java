@@ -82,7 +82,6 @@ public class SampleController
 
         ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
         removeAction = (ApplicationAction) actionMap.get("removeSample");
-        ///assignAction = (ApplicationAction) actionMap.get("assignSample");
         assignAction = new AssignAction();
     }
 
@@ -163,8 +162,6 @@ public class SampleController
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        public JMenu menu = new JMenu("Assign to...");
-
         public JPopupMenu popup = new JPopupMenu();
 
         ActionListener actionListener = new ActionListener()
@@ -186,9 +183,6 @@ public class SampleController
             super("Assign to...");
             putValue(javax.swing.Action.SHORT_DESCRIPTION, "Assign a new shape");
 
-            ShapeSet.addAllShapes(menu, actionListener);
-            menu.setToolTipText("Assign a new shape");
-
             ShapeSet.addAllShapes(popup, actionListener);
         }
 
@@ -202,6 +196,16 @@ public class SampleController
                 JButton button = (JButton) source;
                 popup.show(button, button.getWidth(), 20);
             }
+        }
+
+        public JMenu getMenu ()
+        {
+            JMenu menu = new JMenu("Assign to");
+
+            ShapeSet.addAllShapes(menu, actionListener);
+            menu.setToolTipText("Assign a new shape");
+
+            return menu;
         }
     }
 }

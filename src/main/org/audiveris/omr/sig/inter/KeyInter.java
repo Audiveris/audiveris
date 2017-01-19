@@ -244,11 +244,14 @@ public class KeyInter
     //--------------//
     /**
      * Report the pitch position of the nth item, within the given clef kind.
-     * 'n' is negative for flats and positive for sharps, and start at 1 for sharps (and at -1 for
-     * flats)
+     * <p>
+     * 'n' is negative for flats and positive for sharps. <br>
+     * Legal values for sharps are: +1, +2, +3, +4, +5, +6, +7 <br>
+     * While for flats they can be: -1, -2, -3, -4, -5, -6, -7
      *
      * @param n    the signed index (one-based) of the desired item
-     * @param kind the kind (TREBLE, ALTO, BASS or TENOR) of the active clef
+     * @param kind the kind (TREBLE, ALTO, BASS or TENOR) of the active clef.
+     *             If null, TREBLE is assumed.
      * @return the pitch position of the key item (sharp or flat)
      */
     public static int getItemPitch (int n,
@@ -261,7 +264,7 @@ public class KeyInter
         Map<ClefKind, int[]> map = (n > 0) ? SHARP_PITCHES_MAP : FLAT_PITCHES_MAP;
         int[] pitches = map.get(kind);
 
-        return pitches[Math.abs(n)];
+        return pitches[Math.abs(n) - 1];
     }
 
     //------------//

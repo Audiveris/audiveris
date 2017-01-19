@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr;
 
+import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.script.ExportTask;
 import org.audiveris.omr.script.PrintTask;
@@ -162,7 +163,7 @@ public class CLI
     // getCliTasks //
     //-------------//
     /**
-     * Prepare the collection of CLI tasks (inputs, books, scripts).
+     * Prepare the collection of CLI tasks (inputs, books, scripts, samples).
      *
      * @return the collection of tasks
      */
@@ -181,7 +182,10 @@ public class CLI
                     tasks.add(new ScriptTask(path));
                 } else if (str.endsWith(OMR.BOOK_EXTENSION)) {
                     tasks.add(new BookTask(path));
+                } else if (str.endsWith("-" + SampleRepository.SAMPLES_FILE_NAME)) {
+                    tasks.add(new SamplesTask(path));
                 } else {
+                    // Everything else is considered as an image input file
                     tasks.add(new InputTask(path));
                 }
             }
@@ -510,7 +514,7 @@ public class CLI
     // IntArrayOptionHandler //
     //-----------------------//
     /**
-     * Argument handler for an array of positive integers.
+     * Option handler for an array of positive integers.
      * <p>
      * It also accepts a range of integers, such as: 3-10 to mean: 3 4 5 6 7 8 9 10.
      * Restriction: the range cannot contain space if not quoted:
@@ -683,7 +687,7 @@ public class CLI
     // PropertyOptionHandler //
     //-----------------------//
     /**
-     * Argument handler for a property definition.
+     * Option handler for a property definition.
      */
     public static class PropertyOptionHandler
             extends OptionHandler<Properties>
@@ -909,6 +913,39 @@ public class CLI
                     LogUtil.removeAppender(book.getRadix());
                 }
             }
+        }
+    }
+
+    //-------------//
+    // SamplesTask //
+    //-------------//
+    /**
+     * Processing a samples file.
+     */
+    private static class SamplesTask
+            extends CliTask
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public SamplesTask (Path path)
+        {
+            super(path);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return "Samples \"" + path + "\"";
+        }
+
+        @Override
+        protected Book loadBook (Path path)
+        {
+            SampleRepository global = SampleRepository.getGlobalInstance(true);
+            global.includeSamplesFile(path);
+
+            return null;
         }
     }
 

@@ -43,7 +43,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -236,13 +238,14 @@ class TrainingPanel
      * Check that all trainable shapes are present in the training population and that
      * only legal shapes are present.
      * If illegal (non trainable) shapes are found, they are removed from the population.
+     * If quorum is not reached, samples are artificially replicated.
      *
      * @param samples the population of samples to check
+     * @return the filtered / augmented collection
      */
-    private void checkPopulation (List<Sample> samples)
+    private List<Sample> checkPopulation (List<Sample> samples)
     {
-        boolean[] present = new boolean[LAST_PHYSICAL_SHAPE.ordinal() + 1];
-        Arrays.fill(present, false);
+        EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<Shape, List<Sample>>(Shape.class);
 
         for (Iterator<Sample> it = samples.iterator(); it.hasNext();) {
             Sample sample = it.next();
@@ -252,7 +255,13 @@ class TrainingPanel
                 Shape physicalShape = shape.getPhysicalShape();
 
                 if (physicalShape.isTrainable()) {
-                    present[physicalShape.ordinal()] = true;
+                    List<Sample> list = shapeSamples.get(shape);
+
+                    if (list == null) {
+                        shapeSamples.put(shape, list = new ArrayList<Sample>());
+                    }
+
+                    list.add(sample);
                 } else {
                     logger.warn("Removing non trainable shape: {}", physicalShape);
                     it.remove();
@@ -263,11 +272,35 @@ class TrainingPanel
             }
         }
 
-        for (int i = 0; i < present.length; i++) {
-            if (!present[i]) {
-                logger.warn("Missing shape: {}", Shape.values()[i]);
+        final Shape[] shapes = Shape.values();
+        final int iMax = LAST_PHYSICAL_SHAPE.ordinal();
+        final int minCount = SelectionPanel.getMinShapeSampleCount();
+        final List<Sample> newSamples = new ArrayList<Sample>();
+
+        for (int is = 0; is <= iMax; is++) {
+            Shape shape = shapes[is];
+            List<Sample> list = shapeSamples.get(shape);
+
+            if (list == null) {
+                logger.warn("Missing shape: {}", shape);
+            } else if (!list.isEmpty()) {
+                final int size = list.size();
+                int togo = minCount - size;
+                newSamples.addAll(list);
+
+                // Ensure minimum sample count is reached for this shape
+                if (togo > 0) {
+                    Collections.shuffle(list);
+
+                    do {
+                        newSamples.addAll(list.subList(0, Math.min(size, togo)));
+                        togo -= size;
+                    } while (togo > 0);
+                }
             }
         }
+
+        return newSamples;
     }
 
     //--------------//
@@ -282,7 +315,7 @@ class TrainingPanel
 
         FormLayout layout = Panel.makeFormLayout(
                 3,
-                4,
+                3,
                 "",
                 Trainer.LABEL_WIDTH,
                 Trainer.FIELD_WIDTH);
@@ -292,15 +325,15 @@ class TrainingPanel
         // Evaluator Title & Progress Bar
         int r = 1; // ----------------------------
         String title = "Training";
-        builder.addSeparator(title, cst.xyw(1, r, 7));
-        builder.add(progressBar, cst.xyw(9, r, 7));
+        builder.addSeparator(title, cst.xyw(1, r, 3));
+        builder.add(progressBar, cst.xyw(5, r, 7));
 
         r += 2; // ----------------------------
 
         builder.add(wholeNumber, cst.xy(5, r)); // ???????????????
 
-        builder.add(maxEpochs.getLabel(), cst.xy(9, r));
-        builder.add(maxEpochs.getField(), cst.xy(11, r));
+        builder.add(maxEpochs.getLabel(), cst.xy(5, r));
+        builder.add(maxEpochs.getField(), cst.xy(7, r));
 
         r += 2; // ----------------------------
 
@@ -308,11 +341,11 @@ class TrainingPanel
         trainButton.setToolTipText("Train the classifier from scratch");
         builder.add(trainButton, cst.xy(3, r));
 
-        builder.add(trainIndex.getLabel(), cst.xy(9, r));
-        builder.add(trainIndex.getField(), cst.xy(11, r));
+        builder.add(trainIndex.getLabel(), cst.xy(5, r));
+        builder.add(trainIndex.getField(), cst.xy(7, r));
 
-        builder.add(trainScore.getLabel(), cst.xy(13, r));
-        builder.add(trainScore.getField(), cst.xy(15, r));
+        builder.add(trainScore.getLabel(), cst.xy(9, r));
+        builder.add(trainScore.getField(), cst.xy(11, r));
     }
 
     private void display (final int count,
@@ -400,9 +433,9 @@ class TrainingPanel
                     progressBar.setMaximum(NeuralClassifier.getMaxEpochs());
                     progressBar.setValue(0);
 
-                    // Check that all trainable shapes (and only those ones) are
-                    // present in the training population
-                    checkPopulation(samples);
+                    // Check that all trainable shapes (and only those ones) are present
+                    // And fill up to quorum count on each shape
+                    samples = checkPopulation(samples);
 
                     // Train on the data set
                     engine.train(samples, TrainingPanel.this);

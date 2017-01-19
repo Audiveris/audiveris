@@ -1395,7 +1395,7 @@ public class BookActions
         if (book != null) {
             if (book.hasSpecificRepository()) {
                 CursorController.launchWithDelayedMessage(
-                        "Launching sample verifier...",
+                        "Launching sample browser...",
                         new Runnable()
                 {
                     @Override

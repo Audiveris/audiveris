@@ -199,7 +199,7 @@ public class SampleBrowser
         if (!standAlone) {
             if (!repository.isLoaded()) {
                 repository.loadRepository();
-                repository.loadSheetImages();
+                repository.loadAllImages();
             }
 
             frame = defineLayout(new JFrame());
@@ -218,7 +218,7 @@ public class SampleBrowser
      *
      * @return the SampleBrowser instance
      */
-    public static SampleBrowser getInstance ()
+    public static synchronized SampleBrowser getInstance ()
     {
         if (INSTANCE == null) {
             INSTANCE = new SampleBrowser(SampleRepository.getGlobalInstance(true));
@@ -256,7 +256,7 @@ public class SampleBrowser
 
         // Load repository, with sheet images
         SampleRepository repo = SampleRepository.getGlobalInstance(true);
-        repo.loadSheetImages();
+        repo.loadAllImages();
 
         // Set UI Look and Feel
         UILookAndFeel.setUI(null);
@@ -278,6 +278,8 @@ public class SampleBrowser
     public void checkRepository (ActionEvent e)
     {
         repoChecked = true;
+
+        repository.purgeOrphanDescriptors();
 
         Set<Sample> conflictings = new LinkedHashSet<Sample>();
         Set<Sample> redundants = new LinkedHashSet<Sample>();
@@ -337,6 +339,11 @@ public class SampleBrowser
 
         for (Descriptor descriptor : repository.getAllDescriptors()) {
             final SampleSheet sampleSheet = repository.getSampleSheet(descriptor);
+
+            if (sampleSheet == null) {
+                continue;
+            }
+
             final List<Tribe> tribes = sampleSheet.getTribes();
 
             if (!tribes.isEmpty()) {
@@ -504,7 +511,7 @@ public class SampleBrowser
     @Action
     public void loadImages (ActionEvent e)
     {
-        repository.loadSheetImages();
+        repository.loadAllImages();
         sampleContext.refresh();
     }
 
@@ -964,19 +971,6 @@ public class SampleBrowser
 
             return null;
         }
-    }
-
-    //~ Inner Interfaces ---------------------------------------------------------------------------
-    //-----------//
-    // Removable //
-    //-----------//
-    private interface Removable<E>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        String getTip ();
-
-        void remove (List<E> entities);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

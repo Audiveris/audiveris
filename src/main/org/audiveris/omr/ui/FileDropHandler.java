@@ -22,6 +22,7 @@
 package org.audiveris.omr.ui;
 
 import org.audiveris.omr.OMR;
+import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.script.ScriptManager;
@@ -117,6 +118,8 @@ public class FileDropHandler
                     new DropScriptTask(file).execute();
                 } else if (fileName.endsWith(OMR.BOOK_EXTENSION)) {
                     new DropBookTask(file).execute();
+                } else if (fileName.endsWith("-" + SampleRepository.SAMPLES_FILE_NAME)) {
+                    new DropSamplesTask(file).execute();
                 } else {
                     new DropInputTask(file, defaultStep.getTarget()).execute();
                 }
@@ -249,6 +252,34 @@ public class FileDropHandler
             } finally {
                 LogUtil.stopBook();
             }
+        }
+    }
+
+    //-----------------//
+    // DropSamplesTask //
+    //-----------------//
+    private static class DropSamplesTask
+            extends VoidTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final File file;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public DropSamplesTask (File file)
+        {
+            this.file = file;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws Exception
+        {
+            SampleRepository global = SampleRepository.getGlobalInstance(true);
+            global.includeSamplesFile(file.toPath());
+
+            return null;
         }
     }
 

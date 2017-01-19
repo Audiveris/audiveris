@@ -72,7 +72,7 @@ public abstract class GhostDropAdapter<A>
     /**
      * Register a drop listener
      *
-     * @param listener the listener to registrate
+     * @param listener the listener to register
      */
     public void addDropListener (GhostDropListener<A> listener)
     {

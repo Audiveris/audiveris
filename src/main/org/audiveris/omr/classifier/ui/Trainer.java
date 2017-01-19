@@ -115,10 +115,9 @@ public class Trainer
      */
     public Trainer ()
     {
-        // Create the 5 companions
+        // Create the companions
         selectionPanel = new SelectionPanel(task);
         trainingPanel = new TrainingPanel(task, selectionPanel);
-        selectionPanel.setTrainingPanel(trainingPanel);
         validationPanel = new ValidationPanel(task, GlyphClassifier.getInstance(), selectionPanel);
 
         // Initial state
@@ -136,7 +135,7 @@ public class Trainer
     //-------------//
     // getInstance //
     //-------------//
-    public static Trainer getInstance ()
+    public static synchronized Trainer getInstance ()
     {
         if (INSTANCE == null) {
             INSTANCE = new Trainer();

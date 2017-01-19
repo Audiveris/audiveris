@@ -56,7 +56,6 @@ import static org.audiveris.omr.sheet.header.TimeBuilder.TimeKind.*;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
-import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
@@ -843,9 +842,6 @@ public abstract class TimeBuilder
          */
         protected void addPlot (ChartPlotter plotter)
         {
-            final int xMin = projection.getXMin();
-            final int xMax = projection.getXMax();
-
             {
                 // Values
                 XYSeries series = projection.getValueSeries();
@@ -1022,23 +1018,7 @@ public abstract class TimeBuilder
         private Rectangle getRoi ()
         {
             final int start = range.browseStart;
-            int stop = (start + params.roiWidth) - 1;
-
-            // Check bar line for end of ROI
-            for (BarlineInter bar : staff.getBars()) {
-                if (!bar.isGood()) {
-                    continue;
-                }
-
-                int barStart = bar.getBounds().x;
-
-                if ((barStart > start) && (barStart <= stop)) {
-                    logger.debug("Staff#{} stopping time search before {}", staff.getId(), bar);
-                    stop = barStart - 1;
-
-                    break;
-                }
-            }
+            final int stop = staff.getBrowseStop(start, (start + params.roiWidth) - 1);
 
             final int top = Math.min(
                     staff.getFirstLine().yAt(start),

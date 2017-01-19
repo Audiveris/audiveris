@@ -25,8 +25,10 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.Shape.FLAT;
 import static org.audiveris.omr.glyph.Shape.SHARP;
+
 import org.audiveris.omr.math.HiLoPeakFinder;
 import org.audiveris.omr.math.IntegerFunction;
 import org.audiveris.omr.math.Range;
@@ -38,7 +40,6 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.header.KeyColumn.PartStatus;
 import org.audiveris.omr.sig.GradeUtil;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 import org.audiveris.omr.sig.inter.Inter;
@@ -226,7 +227,7 @@ public class KeyBuilder
         sheet = system.getSheet();
         params = new Parameters(sheet.getScale(), staff.getSpecificInterline());
 
-        final int browseStop = getBrowseStop(globalWidth, measureStart, browseStart);
+        final int browseStop = staff.getBrowseStop(browseStart, measureStart + globalWidth);
         final Rectangle browseRect = getBrowseRect(browseStart, browseStop);
         extractor = new KeyExtractor(staff);
         projection = extractor.getProjection(measureStart, browseRect);
@@ -604,44 +605,6 @@ public class KeyBuilder
         yMax += (1 * interline);
 
         return new Rectangle(xMin, yMin, xMax - xMin + 1, yMax - yMin + 1);
-    }
-
-    //---------------//
-    // getBrowseStop //
-    //---------------//
-    /**
-     * Determine the abscissa where to stop projection analysis.
-     * <p>
-     * The analysis range is typically [browseStart .. measureStart+globalWidth] but may end
-     * earlier if a (good) bar line is encountered.
-     *
-     * @param globalWidth  theoretical projection length
-     * @param measureStart abscissa at measure start
-     * @param browseStart  abscissa at browse start (just after clef)
-     * @return the end abscissa
-     */
-    private int getBrowseStop (int globalWidth,
-                               int measureStart,
-                               int browseStart)
-    {
-        int end = measureStart + globalWidth;
-
-        for (BarlineInter bar : staff.getBars()) {
-            if (!bar.isGood()) {
-                continue;
-            }
-
-            int barStart = bar.getBounds().x;
-
-            if ((barStart > browseStart) && (barStart <= end)) {
-                logger.debug("Staff#{} stopping key search before {}", getId(), bar);
-                end = barStart - 1;
-
-                break;
-            }
-        }
-
-        return end;
     }
 
     //---------------//
@@ -1127,9 +1090,6 @@ public class KeyBuilder
                     }
                 }
             }
-
-            //
-            //            selectBestClef(); // In case staff clef has not yet been selected
         }
 
         //--------//
@@ -2253,7 +2213,7 @@ public class KeyBuilder
                 "Maximum x offset of first peak (WRT browse start)");
 
         private final Scale.Fraction maxPeakCumul = new Scale.Fraction(
-                4.0,
+                4.25,
                 "Maximum cumul value to accept peak (absolute value)");
 
         private final Scale.Fraction minPeakDerivative = new Scale.Fraction(

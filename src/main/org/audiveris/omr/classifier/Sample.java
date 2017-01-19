@@ -63,6 +63,39 @@ public class Sample
         }
     };
 
+    /** For comparing Sample instances by normalized width. */
+    public static final Comparator<Sample> byNormalizedWidth = new Comparator<Sample>()
+    {
+        @Override
+        public int compare (Sample s1,
+                            Sample s2)
+        {
+            return Double.compare(s1.getNormalizedWidth(), s2.getNormalizedWidth());
+        }
+    };
+
+    /** For comparing Sample instances by normalized height. */
+    public static final Comparator<Sample> byNormalizedHeight = new Comparator<Sample>()
+    {
+        @Override
+        public int compare (Sample s1,
+                            Sample s2)
+        {
+            return Double.compare(s1.getNormalizedHeight(), s2.getNormalizedHeight());
+        }
+    };
+
+    /** For comparing Sample instances by normalized weight. */
+    public static final Comparator<Sample> byNormalizedWeight = new Comparator<Sample>()
+    {
+        @Override
+        public int compare (Sample s1,
+                            Sample s2)
+        {
+            return Double.compare(s1.getNormalizedWeight(), s2.getNormalizedWeight());
+        }
+    };
+
     //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
@@ -185,6 +218,45 @@ public class Sample
     public int getInterline ()
     {
         return interline;
+    }
+
+    //---------------------//
+    // getNormalizedHeight //
+    //---------------------//
+    /**
+     * Report the sample height normalized by related interline
+     *
+     * @return height / interline
+     */
+    public double getNormalizedHeight ()
+    {
+        return getHeight() / (double) interline;
+    }
+
+    //---------------------//
+    // getNormalizedWeight //
+    //---------------------//
+    /**
+     * Report the sample weight normalized by related squared interline
+     *
+     * @return weight / interline**2
+     */
+    public double getNormalizedWeight ()
+    {
+        return getWeight() / ((double) interline * interline);
+    }
+
+    //--------------------//
+    // getNormalizedWidth //
+    //--------------------//
+    /**
+     * Report the sample width normalized by related interline
+     *
+     * @return width / interline
+     */
+    public double getNormalizedWidth ()
+    {
+        return getWidth() / (double) interline;
     }
 
     /**

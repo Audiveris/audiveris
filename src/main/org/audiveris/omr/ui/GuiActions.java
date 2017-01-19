@@ -245,16 +245,16 @@ public class GuiActions
     @Action
     public void launchTrainer (ActionEvent e)
     {
-        CursorController.launchWithDelayedMessage(
-                "Launching trainer...",
-                new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                Trainer.launch();
-            }
-        });
+//        CursorController.launchWithDelayedMessage(
+//                "Launching trainer...",
+//                new Runnable()
+//        {
+//            @Override
+//            public void run ()
+//            {
+        Trainer.launch();
+//            }
+//        });
     }
 
     //-------------//
@@ -406,7 +406,7 @@ public class GuiActions
     public void verifySamples (ActionEvent e)
     {
         CursorController.launchWithDelayedMessage(
-                "Launching sample verifier...",
+                "Launching sample browser...",
                 new Runnable()
         {
             @Override

@@ -126,6 +126,17 @@ public class ValidationPanel
     /** User action to investigate on weak positives. */
     private final WeakPositiveAction weakPositiveAction = new WeakPositiveAction();
 
+    /** Display number of samples weakly negative. */
+    private final LLabel weakNegativeValue = new LLabel(
+            "Weak Negatives:",
+            "Number of samples weakly negative");
+
+    /** Collection of samples weakly negatives. */
+    private final List<Sample> weakNegatives = new ArrayList<Sample>();
+
+    /** User action to investigate on weak negatives. */
+    private final WeakNegativeAction weakNegativeAction = new WeakNegativeAction();
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ValidationPanel object.
@@ -183,6 +194,7 @@ public class ValidationPanel
     {
         weakPositiveAction.setEnabled(!weakPositives.isEmpty());
         falsePositiveAction.setEnabled(!falsePositives.isEmpty());
+        weakNegativeAction.setEnabled(!weakNegatives.isEmpty());
 
         Task task = (Task) obs;
         validateAction.setEnabled(task.getActivity() == Task.Activity.INACTIVE);
@@ -198,8 +210,8 @@ public class ValidationPanel
 
         /** Common JGoogies builder for this class and its subclass if any */
         FormLayout layout = Panel.makeFormLayout(
+                5,
                 3,
-                4,
                 "",
                 Trainer.LABEL_WIDTH,
                 Trainer.FIELD_WIDTH);
@@ -207,18 +219,17 @@ public class ValidationPanel
 
         // Validation title & progress bar
         int r = 1;
-        builder.addSeparator("Validation", cst.xyw(1, r, 7));
-        builder.add(progressBar, cst.xyw(9, r, 7));
+        builder.addSeparator("Validation", cst.xyw(1, r, 3));
+        builder.add(progressBar, cst.xyw(5, r, 7));
         progressBar.setForeground(Colors.PROGRESS_BAR);
 
         r += 2; // ----------------------------
 
-        builder.add(positiveValue.getLabel(), cst.xy(5, r));
+        builder.add(positiveValue.getLabel(), cst.xyw(4, r, 2));
         builder.add(positiveValue.getField(), cst.xy(7, r));
-        builder.add(weakPositiveValue.getLabel(), cst.xy(9, r));
-        builder.add(weakPositiveValue.getField(), cst.xy(11, r));
-        builder.add(falsePositiveValue.getLabel(), cst.xy(13, r));
-        builder.add(falsePositiveValue.getField(), cst.xy(15, r));
+
+        builder.add(falsePositiveValue.getLabel(), cst.xyw(8, r, 2));
+        builder.add(falsePositiveValue.getField(), cst.xy(11, r));
 
         r += 2; // ----------------------------
 
@@ -226,16 +237,31 @@ public class ValidationPanel
         validateButton.setToolTipText("Validate the classifier on current base of samples");
         builder.add(validateButton, cst.xy(3, r));
 
-        JButton weakPositiveButton = new JButton(weakPositiveAction);
-        weakPositiveButton.setToolTipText("Display the impacted samples for verification");
+        builder.add(pcValue.getLabel(), cst.xy(5, r));
+        builder.add(pcValue.getField(), cst.xy(7, r));
 
         JButton falsePositiveButton = new JButton(falsePositiveAction);
         falsePositiveButton.setToolTipText("Display the impacted samples for verification");
+        builder.add(falsePositiveButton, cst.xy(11, r));
 
-        builder.add(pcValue.getLabel(), cst.xy(5, r));
-        builder.add(pcValue.getField(), cst.xy(7, r));
-        builder.add(weakPositiveButton, cst.xy(11, r));
-        builder.add(falsePositiveButton, cst.xy(15, r));
+        r += 2; // ----------------------------
+
+        builder.add(weakPositiveValue.getLabel(), cst.xyw(4, r, 2));
+        builder.add(weakPositiveValue.getField(), cst.xy(7, r));
+
+        builder.add(weakNegativeValue.getLabel(), cst.xyw(8, r, 2));
+        builder.add(weakNegativeValue.getField(), cst.xy(11, r));
+
+        r += 2; // ----------------------------
+
+        JButton weakPositiveButton = new JButton(weakPositiveAction);
+        weakPositiveButton.setToolTipText("Display the impacted samples for verification");
+        builder.add(weakPositiveButton, cst.xy(7, r));
+
+        JButton weakNegativeButton = new JButton(weakNegativeAction);
+        weakNegativeButton.setToolTipText("Display the impacted samples for verification");
+        builder.add(weakNegativeButton, cst.xy(11, r));
+
     }
 
     //---------------//
@@ -252,9 +278,11 @@ public class ValidationPanel
         falsePositiveValue.setText("");
         weakPositiveAction.setEnabled(false);
         falsePositiveAction.setEnabled(false);
+        weakNegativeAction.setEnabled(false);
 
         weakPositives.clear();
         falsePositives.clear();
+        weakNegatives.clear();
 
         int positives = 0;
 
@@ -279,14 +307,19 @@ public class ValidationPanel
                     positives++;
                 } else {
                     weakPositives.add(sample);
-                    System.out.printf("%-35s weakly recognized%n", sample.toString());
+//                    System.out.printf("%-35s weakly recognized%n", sample.toString());
                 }
-            } else if (eval.grade >= Grades.validationMinGrade) {
-                falsePositives.add(sample);
-                System.out.printf(
-                        "%-35s mistaken for %s%n",
-                        sample.toString(),
-                        eval.shape.getPhysicalShape());
+            } else {
+                if (eval.grade >= Grades.validationMinGrade) {
+                    falsePositives.add(sample);
+//                    System.out.printf(
+//                            "%-35s mistaken for %s%n",
+//                            sample.toString(),
+//                            eval.shape.getPhysicalShape());
+                } else {
+                    weakNegatives.add(sample);
+//                    System.out.printf("%-35s weakly negative%n", sample.toString());
+                }
             }
 
             progressBar.setValue(++index); // Update progress bar
@@ -305,6 +338,7 @@ public class ValidationPanel
         pcValue.setText(String.format("%.2f", pc));
         weakPositiveValue.setText(Integer.toString(weakPositives.size()));
         falsePositiveValue.setText(Integer.toString(falsePositives.size()));
+        weakNegativeValue.setText(Integer.toString(weakNegatives.size()));
 
         // Evaluate
         if (NeuralClassifier.USE_DL4J) {
@@ -387,6 +421,7 @@ public class ValidationPanel
 
                     weakPositiveAction.setEnabled(weakPositives.size() > 0);
                     falsePositiveAction.setEnabled(!falsePositives.isEmpty());
+                    weakNegativeAction.setEnabled(weakNegatives.size() > 0);
 
                     if (task != null) {
                         task.setActivity(INACTIVE);
@@ -416,6 +451,28 @@ public class ValidationPanel
         public void actionPerformed (ActionEvent e)
         {
             SampleBrowser.getInstance().displayAll(weakPositives);
+            SampleBrowser.getInstance().setVisible();
+        }
+    }
+
+    //--------------------//
+    // WeakNegativeAction //
+    //--------------------//
+    private class WeakNegativeAction
+            extends AbstractAction
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public WeakNegativeAction ()
+        {
+            super("View");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            SampleBrowser.getInstance().displayAll(weakNegatives);
             SampleBrowser.getInstance().setVisible();
         }
     }
