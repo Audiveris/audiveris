@@ -55,14 +55,13 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li><b>Beam thickness</b>: main. A second peak in the histogram of vertical foreground runs
  * signals the presence of beams.
  * Otherwise it is computed as a ratio of main background length between staff lines.</li>
- * <li><b>Stem thickness</b>: main. A suitable peak in the histogram of horizontal foreground runs
- * signals the presence of stems.
- * Otherwise it is computed as a ratio of line thickness.</li>
+ * <li><b>Stem thickness</b>: main, max. These values are computed during STEM_SEEDS step.</li>
  * </ul>
  * <p>
  * Optional informations: Some of this data may be detected, according to the page at hand.<ul>
  * <li><b>Staff 2nd interline</b>: min, main, max. A second peak in the histogram of vertical
- * background runs signals the presence of staves with a different interline value.</li>
+ * background runs signals the presence of staves with a different interline value.
+ * Note this 2nd interline is second in frequency, not necessarily in value (staff interline).</li>
  * </ul>
  * <p>
  * This class also provides methods for converting values based on what the interline and the line
@@ -116,29 +115,6 @@ public class Scale
     private StemScale stemScale;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create a degenerated scale entity, meant for computing
-     * scale-dependent parameters.
-     *
-     * @param interline the score interline value.
-     */
-    public Scale (int interline)
-    {
-        this(interline, -1);
-    }
-
-    /**
-     * Create a scale entity, meant for a staff.
-     *
-     * @param interline the interline value
-     * @param mainFore  the line thickness
-     */
-    public Scale (int interline,
-                  int mainFore)
-    {
-        this(new LineScale(-1, mainFore, -1), new InterlineScale(-1, interline, -1), null, null);
-    }
-
     /**
      * Create a scale entity, meant for a whole sheet.
      *
@@ -194,6 +170,11 @@ public class Scale
     //----------------------//
     // getBeamThicknessMain //
     //----------------------//
+    /**
+     * Report the main thickness for beams.
+     *
+     * @return main beam thickness
+     */
     public int getBeamThicknessMain ()
     {
         Objects.requireNonNull(beamScale, "This scale instance has no beam information");
@@ -240,7 +221,8 @@ public class Scale
     // getInterline2 //
     //---------------//
     /**
-     * Report the second interline value this scale is based upon.
+     * Report the secondary interline value this scale is based upon.
+     * It may be larger or smaller than the main interline value.
      *
      * @return the second number if any of pixels (black + white) from one line
      *         to the other, otherwise null.
@@ -258,6 +240,8 @@ public class Scale
     // getInterlineScale //
     //-------------------//
     /**
+     * Report the main scale. It may be larger or smaller than potential secondary scale.
+     *
      * @return the interlineScale
      */
     public InterlineScale getInterlineScale ()
@@ -265,15 +249,52 @@ public class Scale
         return interlineScale;
     }
 
+    //-------------------//
+    // getInterlineScale //
+    //-------------------//
+    /**
+     * Report the large or small scale, according to boolean value.
+     *
+     * @param small true for getting small scale, false for getting large scale
+     * @return the desired interlineScale
+     */
+    public InterlineScale getInterlineScale (boolean small)
+    {
+        if (interlineScale2 == null) {
+            return interlineScale;
+        }
+
+        if (interlineScale2.main < interlineScale.main) {
+            return small ? interlineScale2 : interlineScale;
+        } else {
+            return small ? interlineScale : interlineScale2;
+        }
+    }
+
     //--------------------//
     // getInterlineScale2 //
     //--------------------//
     /**
+     * Report the secondary scale if any. It may be larger or smaller than main scale.
+     *
      * @return the secondInterlineScale
      */
     public InterlineScale getInterlineScale2 ()
     {
         return interlineScale2;
+    }
+
+    //------------------------//
+    // getLargeInterlineScale //
+    //------------------------//
+    /**
+     * Convenient method, to report the large interline scale within sheet.
+     *
+     * @return the large interlineScale
+     */
+    public InterlineScale getLargeInterlineScale ()
+    {
+        return getInterlineScale(false);
     }
 
     //-------------//
@@ -336,6 +357,8 @@ public class Scale
     // getMaxStem //
     //------------//
     /**
+     * Report the reasonable maximum stem width within the sheet.
+     *
      * @return the reasonable maximum stem thickness
      */
     public int getMaxStem ()
@@ -347,7 +370,7 @@ public class Scale
     // getMinInterline //
     //-----------------//
     /**
-     * Report the minimum interline (using standard percentile).
+     * Report the minimum main interline (using standard percentile).
      *
      * @return the minInterline
      */
@@ -373,10 +396,35 @@ public class Scale
         }
     }
 
+    //---------------------------//
+    // getSpecificInterlineScale //
+    //---------------------------//
+    /**
+     * Report the interline scale that correspond to the provided interline value.
+     *
+     * @param specific interline value for a specific staff
+     * @return the desired interlineScale
+     * @throws IllegalArgumentException if the specific value is not known in sheet scale.
+     */
+    public InterlineScale getSpecificInterlineScale (int specific)
+    {
+        if (interlineScale.main == specific) {
+            return interlineScale;
+        }
+
+        if ((interlineScale2 != null) && (interlineScale2.main == specific)) {
+            return interlineScale2;
+        }
+
+        throw new IllegalArgumentException("Illegal interline value: " + specific);
+    }
+
     //----------------------//
     // getStemMainThickness //
     //----------------------//
     /**
+     * Report the most frequent stem thickness (width).
+     *
      * @return the most frequent stem thickness
      */
     public int getStemMainThickness ()
@@ -387,6 +435,11 @@ public class Scale
     //--------------------//
     // isBeamExtrapolated //
     //--------------------//
+    /**
+     * Tell whether beam scaling info is extrapolated (rather than measured).
+     *
+     * @return true for extrapolated, false for measured
+     */
     public boolean isBeamExtrapolated ()
     {
         Objects.requireNonNull(beamScale, "This scale instance has no beam information");
@@ -398,8 +451,7 @@ public class Scale
     // pixelsToAreaFrac //
     //------------------//
     /**
-     * Compute the interline area fraction that corresponds to the
-     * given number of pixels.
+     * Compute the interline area fraction that corresponds to the given number of pixels.
      *
      * @param pixels the equivalent in number of pixels
      * @return the interline area fraction
@@ -414,8 +466,7 @@ public class Scale
     // pixelsToFrac //
     //--------------//
     /**
-     * Compute the interline fraction that corresponds to the given
-     * number of pixels.
+     * Compute the interline fraction that corresponds to the given number of pixels.
      *
      * @param pixels the equivalent in number of pixels
      * @return the interline fraction
@@ -430,8 +481,7 @@ public class Scale
     // pixelsToLineFrac //
     //------------------//
     /**
-     * Compute the line fraction that corresponds to the given
-     * number of pixels.
+     * Compute the line fraction that corresponds to the given number of pixels.
      *
      * @param pixels the equivalent in number of pixels
      * @return the line fraction
@@ -474,8 +524,8 @@ public class Scale
     // toPixels //
     //----------//
     /**
-     * Compute the number of pixels that corresponds to the fraction of
-     * interline provided, according to the scale.
+     * Compute the number of pixels that corresponds to the fraction of interline
+     * provided, according to the scale.
      *
      * @param frac a measure based on interline (1 = one interline)
      * @return the actual number of pixels with the current scale
@@ -489,8 +539,8 @@ public class Scale
     // toPixels //
     //----------//
     /**
-     * Compute the number of pixels that corresponds to the fraction of
-     * line thickness provided, according to the scale.
+     * Compute the number of pixels that corresponds to the fraction of line thickness
+     * provided, according to the scale.
      *
      * @param lineFrac a measure based on line thickness (1 = one line height)
      * @return the actual number of pixels with the current scale
@@ -504,8 +554,7 @@ public class Scale
     // toPixels //
     //----------//
     /**
-     * Compute the squared-normalized number of pixels, according to
-     * the scale.
+     * Compute the squared-normalized number of pixels, according to the scale.
      *
      * @param areaFrac a measure based on interline (1 = one interline square)
      * @return the actual squared number of pixels with the current scale
@@ -519,8 +568,7 @@ public class Scale
     // toPixelsDouble //
     //----------------//
     /**
-     * Convenient method, working directly on a constant of interline
-     * fraction.
+     * Convenient method, working directly on a constant of interline fraction.
      * Same as toPixels, but the result is a double instead of a rounded int.
      *
      * @param frac the interline fraction constant
@@ -597,8 +645,7 @@ public class Scale
     // AreaFraction //
     //--------------//
     /**
-     * A subclass of Constant.Double, meant to store a fraction of
-     * interline-based area.
+     * A subclass of Constant.Double, meant to store a fraction of interline-based area.
      */
     public static class AreaFraction
             extends Constant.Double
@@ -606,8 +653,7 @@ public class Scale
         //~ Constructors ---------------------------------------------------------------------------
 
         /**
-         * Specific constructor, where 'unit' and 'name' are assigned
-         * later.
+         * Specific constructor, where 'unit' and 'name' are assigned later.
          *
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant
@@ -631,8 +677,9 @@ public class Scale
      * histogram reveals no beam peak. The main value for beam thickness is then extrapolated as a
      * pre-defined fraction of sheet interline, and flagged as such in this BeamScale instance.
      * <p>
-     * When beams are actually retrieved, the vertical distance between beams of the same group is
-     * also measured and recorded in this BeamScale as mean value and standard deviation.
+     * When beams are actually retrieved (during BEAMS step), the vertical distance between beams of
+     * the same group is also measured and recorded in this BeamScale as mean value and standard
+     * deviation.
      */
     public static class BeamScale
     {
@@ -682,6 +729,8 @@ public class Scale
 
         //~ Methods --------------------------------------------------------------------------------
         /**
+         * Report the average distance (center to center) between beams of the same group.
+         *
          * @return the distanceMean
          */
         public Double getDistanceMean ()
@@ -690,6 +739,8 @@ public class Scale
         }
 
         /**
+         * Report the standard deviation of beam distance.
+         *
          * @return the distanceSigma
          */
         public Double getDistanceSigma ()
@@ -697,17 +748,29 @@ public class Scale
             return distanceSigma;
         }
 
+        /**
+         * Report the most frequent beam distance
+         *
+         * @return the most frequent beam distance
+         */
         public int getMain ()
         {
             return main;
         }
 
+        /**
+         * Tell whether beam thickness is extrapolated (rather than measured)
+         *
+         * @return true for extrapolated, false for measured
+         */
         public boolean isExtrapolated ()
         {
             return extra != null;
         }
 
         /**
+         * Record mean and sigma values for inter-beam distance
+         *
          * @param distanceMean  the distanceMean to set
          * @param distanceSigma the distanceSigma to set
          */
@@ -801,6 +864,9 @@ public class Scale
     //----------------//
     // InterlineScale //
     //----------------//
+    /**
+     * Range of values for staff line vertical distance (center to center).
+     */
     public static class InterlineScale
             extends Range
     {
@@ -843,6 +909,17 @@ public class Scale
                                     AreaFraction areaFrac)
         {
             return (int) Math.rint(interline * interline * areaFrac.getValue());
+        }
+
+        /**
+         * Compute the squared-normalized number of pixels.
+         *
+         * @param areaFrac a measure based on interline (1 = one interline square)
+         * @return the actual squared number of pixels with the current scale
+         */
+        public int toPixels (AreaFraction areaFrac)
+        {
+            return toPixels(main, areaFrac);
         }
 
         /**
@@ -930,6 +1007,9 @@ public class Scale
     //-----------//
     // LineScale //
     //-----------//
+    /**
+     * Range of values for staff line thickness.
+     */
     public static class LineScale
             extends Range
     {
@@ -1027,21 +1107,19 @@ public class Scale
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        //---------//
-        // getMain //
-        //---------//
         /**
-         * @return the main
+         * Report the most frequent stem thickness
+         *
+         * @return the main value
          */
         public int getMain ()
         {
             return main;
         }
 
-        //--------//
-        // getMax //
-        //--------//
         /**
+         * Report the reasonable maximum stem thickness.
+         *
          * @return the max
          */
         public int getMax ()
@@ -1049,9 +1127,6 @@ public class Scale
             return max;
         }
 
-        //----------//
-        // toString //
-        //----------//
         @Override
         public String toString ()
         {

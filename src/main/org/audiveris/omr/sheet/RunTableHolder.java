@@ -111,7 +111,7 @@ public class RunTableHolder
 
                     dataFile.getFileSystem().close(); // Close book file system
                     modified = false;
-                    logger.info("Loaded {}", dataFile);
+                    logger.debug("Loaded {}", dataFile);
                 }
             } catch (Exception ex) {
                 logger.warn("Error unmarshalling from " + pathString, ex);

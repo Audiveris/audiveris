@@ -33,8 +33,11 @@ import org.audiveris.omr.classifier.ui.Trainer;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.ui.ShapeColorChooser;
+import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.ui.symbol.SymbolRipper;
 import org.audiveris.omr.ui.util.CursorController;
+import org.audiveris.omr.ui.util.OmrFileFilter;
+import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.util.WebBrowser;
 import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.UriUtil;
@@ -110,6 +113,87 @@ public class GuiActions
     public static final String BOARDS_DISPLAYED = "boardsDisplayed";
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized GuiActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GuiActions();
+        }
+
+        return INSTANCE;
+    }
+
+    //---------------------//
+    // browseGlobalSamples //
+    //---------------------//
+    /**
+     * Launch browser on the global repository.
+     *
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void browseGlobalSamples (ActionEvent e)
+    {
+        CursorController.launchWithDelayedMessage(
+                "Launching sample browser...",
+                new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                try {
+                    SampleBrowser.getInstance().setVisible();
+                } catch (Throwable ex) {
+                    logger.warn("Could not launch samples verifier. " + ex, ex);
+                }
+            }
+        });
+    }
+
+    //--------------------//
+    // browseLocalSamples //
+    //--------------------//
+    /**
+     * Launch browser on a local sample repository.
+     *
+     * @param e the event which triggered this action
+     */
+    @Action
+    public void browseLocalSamples (ActionEvent e)
+    {
+        // Select local samples repository
+        final String ext = SampleRepository.SAMPLES_FILE_NAME;
+        final Path repoPath = UIUtil.pathChooser(
+                false,
+                OMR.gui.getFrame(),
+                BookManager.getBaseFolder(),
+                new OmrFileFilter(ext, new String[]{ext}));
+
+        if (repoPath != null) {
+            CursorController.launchWithDelayedMessage(
+                    "Launching sample browser...",
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    try {
+                        new SampleBrowser(SampleRepository.getInstance(repoPath, true)).setVisible();
+                    } catch (Throwable ex) {
+                        logger.warn("Could not launch samples browser. " + ex, ex);
+                    }
+                }
+            });
+        }
+    }
+
     //----------//
     // clearLog //
     //----------//
@@ -166,23 +250,6 @@ public class GuiActions
     public void exit (ActionEvent e)
     {
         OMR.gui.getApplication().exit();
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized GuiActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GuiActions();
-        }
-
-        return INSTANCE;
     }
 
     //-------------------//
@@ -245,28 +312,29 @@ public class GuiActions
     @Action
     public void launchTrainer (ActionEvent e)
     {
-//        CursorController.launchWithDelayedMessage(
-//                "Launching trainer...",
-//                new Runnable()
-//        {
-//            @Override
-//            public void run ()
-//            {
+        //        CursorController.launchWithDelayedMessage(
+        //                "Launching trainer...",
+        //                new Runnable()
+        //        {
+        //            @Override
+        //            public void run ()
+        //            {
         Trainer.launch();
-//            }
-//        });
+
+        //            }
+        //        });
     }
 
-    //-------------//
-    // saveSamples //
-    //-------------//
+    //-------------------//
+    // saveGlobalSamples //
+    //-------------------//
     /**
-     * Action that saves the sample repository
+     * Action that saves the global sample repository.
      *
      * @param e the event which triggered this action
      */
     @Action
-    public void saveSamples (ActionEvent e)
+    public void saveGlobalSamples (ActionEvent e)
     {
         SampleRepository.getGlobalInstance(true).checkForSave();
     }
@@ -391,34 +459,6 @@ public class GuiActions
     @Action(selectedProperty = LOG_DISPLAYED)
     public void toggleLog (ActionEvent e)
     {
-    }
-
-    //---------------//
-    // verifySamples //
-    //---------------//
-    /**
-     * Action that opens a windows dedicated to the management of collections
-     * of samples used as training material for the neural network
-     *
-     * @param e the event which triggered this action
-     */
-    @Action
-    public void verifySamples (ActionEvent e)
-    {
-        CursorController.launchWithDelayedMessage(
-                "Launching sample browser...",
-                new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                try {
-                    SampleBrowser.getInstance().setVisible();
-                } catch (Throwable ex) {
-                    logger.warn("Could not launch samples verifier. " + ex, ex);
-                }
-            }
-        });
     }
 
     //--------------//

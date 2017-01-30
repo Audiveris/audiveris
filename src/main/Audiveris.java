@@ -22,7 +22,7 @@
 
 /**
  * Class {@code Audiveris} is simply a convenient entry point to OMR, which
- * delegates the call to {@link omr.Main#main}.
+ * delegates the call to {@link org.audiveris.omr.Main#main}.
  *
  * @author Hervé Bitteur
  */
@@ -40,7 +40,7 @@ public final class Audiveris
     // main //
     //------//
     /**
-     * The main entry point, which just calls {@link omr.Main#main}.
+     * The main entry point, which just calls {@link org.audiveris.omr.Main#main}.
      *
      * @param args These arguments are simply passed to Main
      */

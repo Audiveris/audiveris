@@ -339,7 +339,7 @@ public class BasicBook
         // Time for some cleanup...
         Memory.gc();
 
-        logger.info("Book closed.");
+        logger.debug("Book closed.");
     }
 
     //-------------//
@@ -1274,6 +1274,7 @@ public class BasicBook
                        boolean withBackup)
     {
         Memory.gc(); // Launch garbage collection, to save on weak glyph references ...
+        boolean diskWritten = false; // Has disk actually been written?
 
         // Backup existing book file?
         if (withBackup && Files.exists(bookPath)) {
@@ -1288,18 +1289,20 @@ public class BasicBook
             final Path root;
             getLock().lock();
             checkRadixChange(bookPath);
-            logger.info("Storing book...");
+            logger.debug("Storing book...");
 
             if ((this.bookPath == null)
                 || this.bookPath.toAbsolutePath().equals(bookPath.toAbsolutePath())) {
                 if (this.bookPath == null) {
                     root = Zip.createFileSystem(bookPath);
+                    diskWritten = true;
                 } else {
                     root = Zip.openFileSystem(bookPath);
                 }
 
                 if (modified) {
                     storeBookInfo(root); // Book info (book.xml)
+                    diskWritten = true;
                 }
 
                 // Contained sheets
@@ -1307,6 +1310,7 @@ public class BasicBook
                     if (stub.isModified()) {
                         final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
                         stub.getSheet().store(sheetFolder, null);
+                        diskWritten = true;
                     }
                 }
 
@@ -1317,6 +1321,7 @@ public class BasicBook
             } else {
                 // (Store as): Switch from old to new book file
                 root = createBookFile(bookPath);
+                diskWritten = true;
 
                 if (modified) {
                     storeBookInfo(root); // Book info (book.xml)
@@ -1344,7 +1349,9 @@ public class BasicBook
 
             BookManager.getInstance().getBookHistory().add(bookPath); // Insert in history
 
-            logger.info("Book stored as {}", bookPath);
+            if (diskWritten) {
+                logger.info("Book stored as {}", bookPath);
+            }
         } catch (Throwable ex) {
             logger.warn("Error storing " + this + " to " + bookPath + " ex:" + ex, ex);
         } finally {

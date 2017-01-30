@@ -25,10 +25,8 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.Shape.FLAT;
 import static org.audiveris.omr.glyph.Shape.SHARP;
-
 import org.audiveris.omr.math.HiLoPeakFinder;
 import org.audiveris.omr.math.IntegerFunction;
 import org.audiveris.omr.math.Range;
@@ -2405,51 +2403,57 @@ public class KeyBuilder
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale,
-                           int specific)
+                           int staffSpecific)
         {
             minGainRatio = constants.minGainRatio.getValue();
             minBlackRatio = constants.minBlackRatio.getValue();
             peakAreaQuorum = constants.peakAreaQuorum.getValue();
-
-            // Use sheet global interline value
-            preStaffMargin = scale.toPixels(constants.preStaffMargin);
-            maxFirstPeakOffset = scale.toPixels(constants.maxFirstPeakOffset);
-            maxFirstSpaceWidth = scale.toPixels(constants.maxFirstSpaceWidth);
-            maxInnerSpace = scale.toPixels(constants.maxInnerSpace);
-            maxInnerPeakGap = scale.toPixels(constants.maxInnerPeakGap);
-            maxPeakDx = scale.toPixels(constants.maxPeakDx);
-            minSharpLightPeakDx = scale.toPixelsDouble(constants.minSharpLightPeakDx);
-            minFlatLightPeakDx = scale.toPixelsDouble(constants.minFlatLightPeakDx);
-            maxSharpDelta = scale.toPixelsDouble(constants.maxSharpDelta);
-            minFlatDelta = scale.toPixelsDouble(constants.minFlatDelta);
             maxDeltaPitch_1 = constants.maxDeltaPitch_1.getValue();
             maxDeltaPitch_4 = constants.maxDeltaPitch_4.getValue();
-            maxSliceDeltaX = scale.toPixels(constants.maxSliceDeltaX);
-            maxSliceDeltaWidth = scale.toPixels(constants.maxSliceDeltaWidth);
 
-            // Use staff specific interline value
-            maxSpaceCumul = InterlineScale.toPixels(specific, constants.maxSpaceCumul);
+            {
+                // Use sheet large interline scale
+                final InterlineScale large = scale.getLargeInterlineScale();
+                preStaffMargin = large.toPixels(constants.preStaffMargin);
+                maxFirstPeakOffset = large.toPixels(constants.maxFirstPeakOffset);
+                maxFirstSpaceWidth = large.toPixels(constants.maxFirstSpaceWidth);
+                maxInnerSpace = large.toPixels(constants.maxInnerSpace);
+                maxInnerPeakGap = large.toPixels(constants.maxInnerPeakGap);
+                maxPeakDx = large.toPixels(constants.maxPeakDx);
+                minSharpLightPeakDx = large.toPixelsDouble(constants.minSharpLightPeakDx);
+                minFlatLightPeakDx = large.toPixelsDouble(constants.minFlatLightPeakDx);
+                maxSharpDelta = large.toPixelsDouble(constants.maxSharpDelta);
+                minFlatDelta = large.toPixelsDouble(constants.minFlatDelta);
+                maxSliceDeltaX = large.toPixels(constants.maxSliceDeltaX);
+                maxSliceDeltaWidth = large.toPixels(constants.maxSliceDeltaWidth);
+            }
 
-            minPeakDerivative = InterlineScale.toPixels(specific, constants.minPeakDerivative);
-            minPeakCumul = InterlineScale.toPixels(specific, constants.minPeakCumul);
-            maxPeakCumul = InterlineScale.toPixels(specific, constants.maxPeakCumul);
-            maxPeakWidth = InterlineScale.toPixels(specific, constants.maxPeakWidth);
+            {
+                // Use staff specific interline value
+                final InterlineScale specific = scale.getSpecificInterlineScale(staffSpecific);
+                maxSpaceCumul = specific.toPixels(constants.maxSpaceCumul);
 
-            maxSpaceInAlter = InterlineScale.toPixels(specific, constants.maxSpaceInAlter);
-            coreStemLength = InterlineScale.toPixels(specific, constants.coreStemLength);
+                minPeakDerivative = specific.toPixels(constants.minPeakDerivative);
+                minPeakCumul = specific.toPixels(constants.minPeakCumul);
+                maxPeakCumul = specific.toPixels(constants.maxPeakCumul);
+                maxPeakWidth = specific.toPixels(constants.maxPeakWidth);
 
-            maxFlatHeading = InterlineScale.toPixels(specific, constants.maxFlatHeading);
-            maxFlatTrail = InterlineScale.toPixels(specific, constants.maxFlatTrail);
-            stdFlatTrail = InterlineScale.toPixels(specific, constants.stdFlatTrail);
-            minFlatTrail = InterlineScale.toPixels(specific, constants.minFlatTrail);
+                maxSpaceInAlter = specific.toPixels(constants.maxSpaceInAlter);
+                coreStemLength = specific.toPixels(constants.coreStemLength);
 
-            maxSharpTrail = InterlineScale.toPixels(specific, constants.maxSharpTrail);
-            stdSharpTrail = InterlineScale.toPixels(specific, constants.stdSharpTrail);
-            minSharpTrail = InterlineScale.toPixels(specific, constants.minSharpTrail);
+                maxFlatHeading = specific.toPixels(constants.maxFlatHeading);
+                maxFlatTrail = specific.toPixels(constants.maxFlatTrail);
+                stdFlatTrail = specific.toPixels(constants.stdFlatTrail);
+                minFlatTrail = specific.toPixels(constants.minFlatTrail);
 
-            stdGlyphHeight = InterlineScale.toPixels(specific, constants.stdGlyphHeight);
-            minTrailingSpace = InterlineScale.toPixels(specific, constants.minTrailingSpace);
-            maxTrailingCumul = InterlineScale.toPixels(specific, constants.maxTrailingCumul);
+                maxSharpTrail = specific.toPixels(constants.maxSharpTrail);
+                stdSharpTrail = specific.toPixels(constants.stdSharpTrail);
+                minSharpTrail = specific.toPixels(constants.minSharpTrail);
+
+                stdGlyphHeight = specific.toPixels(constants.stdGlyphHeight);
+                minTrailingSpace = specific.toPixels(constants.minTrailingSpace);
+                maxTrailingCumul = specific.toPixels(constants.maxTrailingCumul);
+            }
         }
     }
 }

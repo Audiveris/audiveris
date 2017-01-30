@@ -178,8 +178,10 @@ public class SampleBrowser
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of {@code SampleBrowser}.
+     *
+     * @param repository the repository (global or local) to browse
      */
-    private SampleBrowser (SampleRepository repository)
+    public SampleBrowser (SampleRepository repository)
     {
         this.repository = repository;
         sampleContext = new SampleContext(repository);
@@ -204,6 +206,7 @@ public class SampleBrowser
 
             frame = defineLayout(new JFrame());
             frame.setTitle(repository.toString());
+            frame.addWindowListener(new ClosingAdapter());
         } else {
             INSTANCE = this;
         }
@@ -233,6 +236,7 @@ public class SampleBrowser
     /**
      * Give access to a specific book instance of this class.
      *
+     * @param book provided book
      * @return the SampleBrowser instance
      */
     public static SampleBrowser getInstance (Book book)
@@ -373,6 +377,8 @@ public class SampleBrowser
                             logger.info("       member: {} {}", eval, member);
                         }
                     }
+
+                    logger.info("");
                 }
             }
         }
@@ -751,6 +757,7 @@ public class SampleBrowser
 
         frame = defineLayout(getMainFrame());
         frame.setTitle(repository.toString());
+        frame.addWindowListener(new ClosingAdapter());
 
         show(frame); // Here we go...
     }
@@ -994,6 +1001,28 @@ public class SampleBrowser
                             TitledBorder.LEFT,
                             TitledBorder.TOP));
             this.setInsets(25, 5, 0, 0);
+        }
+    }
+
+    //----------------//
+    // ClosingAdapter //
+    //----------------//
+    private class ClosingAdapter
+            extends WindowAdapter
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void windowClosing (WindowEvent e)
+        {
+            // Check for modified repo
+            Application.ExitListener exitListener = repository.getExitListener();
+            boolean ok = exitListener.canExit(e);
+
+            if (ok) {
+                OmrGui.getApplication().removeExitListener(exitListener);
+                frame.dispose(); // Do close
+            }
         }
     }
 

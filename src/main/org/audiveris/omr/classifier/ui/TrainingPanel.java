@@ -196,7 +196,7 @@ class TrainingPanel
 
             final double score = model.score();
             final int count = (int) iterCount;
-            logger.info("Score at iteration " + count + " is " + score);
+            logger.info(String.format("Score at iteration %d is %.5f", count, score));
             display(count, score);
         }
     }

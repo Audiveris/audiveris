@@ -391,7 +391,7 @@ public class GlyphIndex
     //----------//
     /**
      * This public method <b>must not be called</b> on GlyphIndex.
-     * Use {@link #registerOriginal(omr.glyph.Glyph)} instead.
+     * Use {@link #registerOriginal(org.audiveris.omr.glyph.Glyph)} instead.
      *
      * @param glyph
      */

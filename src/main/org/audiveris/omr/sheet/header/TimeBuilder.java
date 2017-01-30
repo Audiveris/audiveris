@@ -1501,22 +1501,28 @@ public abstract class TimeBuilder
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale,
-                           int specific)
+                           int staffSpecific)
         {
-            // Use sheet global interline value
-            roiWidth = scale.toPixels(constants.roiWidth);
-            maxFirstSpaceWidth = scale.toPixels(constants.maxFirstSpaceWidth);
-            maxInnerSpace = scale.toPixels(constants.maxInnerSpace);
+            {
+                // Use sheet large interline scale
+                final InterlineScale large = scale.getLargeInterlineScale();
+                roiWidth = large.toPixels(constants.roiWidth);
+                maxFirstSpaceWidth = large.toPixels(constants.maxFirstSpaceWidth);
+                maxInnerSpace = large.toPixels(constants.maxInnerSpace);
+            }
 
-            // Use staff specific interline value
-            yMargin = InterlineScale.toPixels(specific, constants.yMargin);
-            minTimeWidth = InterlineScale.toPixels(specific, constants.minTimeWidth);
-            maxTimeWidth = InterlineScale.toPixels(specific, constants.maxTimeWidth);
-            maxHalvesDx = InterlineScale.toPixels(specific, constants.maxHalvesDx);
-            maxPartGap = InterlineScale.toPixels(specific, constants.maxPartGap);
-            minWholeTimeWeight = InterlineScale.toPixels(specific, constants.minWholeTimeWeight);
-            minHalfTimeWeight = InterlineScale.toPixels(specific, constants.minHalfTimeWeight);
-            maxSpaceCumul = InterlineScale.toPixels(specific, constants.maxSpaceCumul);
+            {
+                // Use staff specific interline value
+                final InterlineScale specific = scale.getSpecificInterlineScale(staffSpecific);
+                yMargin = specific.toPixels(constants.yMargin);
+                minTimeWidth = specific.toPixels(constants.minTimeWidth);
+                maxTimeWidth = specific.toPixels(constants.maxTimeWidth);
+                maxHalvesDx = specific.toPixels(constants.maxHalvesDx);
+                maxPartGap = specific.toPixels(constants.maxPartGap);
+                minWholeTimeWeight = specific.toPixels(constants.minWholeTimeWeight);
+                minHalfTimeWeight = specific.toPixels(constants.minHalfTimeWeight);
+                maxSpaceCumul = specific.toPixels(constants.maxSpaceCumul);
+            }
         }
     }
 

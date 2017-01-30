@@ -161,18 +161,20 @@ public class SampleRepository
     /** File path for images material: {@value}. */
     private final Path imagesFile;
 
+    /** To handle save on close. */
+    private Application.ExitListener exitListener;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) constructor.
+     * <p>
+     * NOTA: The provided samples file is not accessed before {@link #loadRepository()} or
+     * {@link storeRepository()} is called.
      *
-     * @param samplesFile path to the samples archive file
+     * @param samplesFile path to the samples archive file.
      */
     private SampleRepository (Path samplesFile)
     {
-        if (!Files.exists(samplesFile)) {
-            throw new IllegalArgumentException(samplesFile + " does not exist.");
-        }
-
         final Path fileName = samplesFile.getFileName();
         final Matcher matcher = SAMPLES_PATTERN.matcher(fileName.toString());
 
@@ -672,8 +674,8 @@ public class SampleRepository
      * @param load true for a loaded repository
      * @return the specific sample repository for the provided book, or null
      */
-    public static SampleRepository getInstance (Book book,
-                                                boolean load)
+    public static synchronized SampleRepository getInstance (Book book,
+                                                             boolean load)
     {
         return getInstance(getSamplesFile(book), load);
     }
@@ -878,9 +880,13 @@ public class SampleRepository
     //-----------------//
     // getExitListener //
     //-----------------//
-    public final Application.ExitListener getExitListener ()
+    public final synchronized Application.ExitListener getExitListener ()
     {
-        return new RepositoryExitListener();
+        if (exitListener == null) {
+            exitListener = new RepositoryExitListener();
+        }
+
+        return exitListener;
     }
 
     //----------------//

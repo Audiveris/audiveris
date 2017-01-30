@@ -32,10 +32,12 @@ import org.audiveris.omr.math.NeuralNetwork;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.UriUtil;
 
+import org.deeplearning4j.nn.api.Layer.TrainingMode;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.layers.BaseLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
@@ -308,34 +310,26 @@ public class NeuralClassifier
         Evaluation[] evals = new Evaluation[SHAPE_COUNT];
 
         if (USE_DL4J) {
-            INDArray output = model.output(features);
+            INDArray output = model.output(features, TrainingMode.TEST);
+            BaseLayer outputLayer = (BaseLayer) model.getOutputLayer();
+            INDArray preOutput = outputLayer.preOutput(false);
 
-            //
-            //        INDArray probs = model.labelProbabilities(features);
-            //
-            //        logger.info("\n--- {}", glyph);
-            //
-            //        for (int s = 0; s < SHAPE_COUNT; s++) {
-            //            logger.info(
-            //                    String.format(
-            //                            "%20s prob:%.5f new:%.5f",
-            //                            values[s],
-            //                            probs.getDouble(s),
-            //                            output.getDouble(s)));
-            //        }
-            //
             for (int s = 0; s < SHAPE_COUNT; s++) {
-                evals[s] = new Evaluation(values[s], output.getDouble(s));
+                double grade = sigmoid(preOutput.getDouble(s)); // Rather than normalized output
+                evals[s] = new Evaluation(values[s], grade);
             }
+
+            //            for (int s = 0; s < SHAPE_COUNT; s++) {
+            //                evals[s] = new Evaluation(values[s], output.getDouble(s));
+            //            }
         } else {
-            // Normalize inputs
             for (int i = 0; i < ins.length; i++) {
                 ins[i] = features.getDouble(i);
             }
 
             double[] outs = new double[SHAPE_COUNT];
             oldModel.run(ins, null, outs);
-            normalize(outs);
+            normalize(outs); // ????
 
             for (int s = 0; s < SHAPE_COUNT; s++) {
                 evals[s] = new Evaluation(values[s], outs[s]);
@@ -479,12 +473,28 @@ public class NeuralClassifier
         }
     }
 
+    //---------//
+    // sigmoid //
+    //---------//
+    /**
+     * Simple sigmoid function, with a step around 0 abscissa.
+     * It is used to squash raw values into the [0..1] range
+     *
+     * @param val abscissa
+     * @return the related function value
+     */
+    private static double sigmoid (double val)
+    {
+        // Lambda chosen as 0.25 rather arbitrarily, to avoid too many values near 0.9999
+        return 1.0 / (1.0 + Math.exp(-val * 0.25));
+    }
+
     //---------------//
     // createNetwork //
     //---------------//
     private MultiLayerNetwork createNetwork ()
     {
-        final int hiddenNum = SHAPE_COUNT;
+        final int hiddenNum = 2 * SHAPE_COUNT;
         final long seed = 6;
         final double learningRate = constants.learningRate.getValue();
 
@@ -522,7 +532,7 @@ public class NeuralClassifier
                 .layer(
                         2,
                         new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD) //
-                                .activation("softmax") // softplus vs tanh vs sigmoid vs softmax
+                                .activation("softmax") //
                                 .nIn(hiddenNum) //
                                 .nOut(SHAPE_COUNT) //
                                 .build()) //

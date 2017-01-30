@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
+import org.audiveris.omr.classifier.Classifier;
+import org.audiveris.omr.classifier.Evaluation;
+import org.audiveris.omr.classifier.NeuralClassifier;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
 import static org.audiveris.omr.classifier.SampleRepository.STANDARD_INTERLINE;
@@ -47,6 +50,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -556,6 +560,7 @@ class SampleListing
         {
             super("SamplePopup");
 
+            ///add(new JMenuItem(browser.getSampleController().getTestAction()));
             add(new JMenuItem(browser.getSampleController().getRemoveAction()));
 
             add(browser.getSampleController().getAssignAction().getMenu());
@@ -564,7 +569,7 @@ class SampleListing
             sortMenu.add(new JMenuItem(new SortByWidthAction()));
             sortMenu.add(new JMenuItem(new SortByHeightAction()));
             sortMenu.add(new JMenuItem(new SortByWeightAction()));
-            ///sortMenu.add(new JMenuItem(new SortByGradeAction()));
+            sortMenu.add(new JMenuItem(new SortByGradeAction()));
             add(sortMenu);
         }
     }
@@ -735,8 +740,11 @@ class SampleListing
     private class SortByGradeAction
             extends AbstractAction
     {
-        //~ Constructors ---------------------------------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
+        final Classifier classifier = NeuralClassifier.getInstance();
+
+        //~ Constructors ---------------------------------------------------------------------------
         public SortByGradeAction ()
         {
             super("Grade");
@@ -747,7 +755,57 @@ class SampleListing
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            logger.warn("SortByGradeAction is not yet implemented");
+            // To avoid repetitive grade computing, we save grade into GradedSample entities
+            final Sample currentSample = (Sample) browser.getSampleController()
+                    .getGlyphService()
+                    .getSelectedEntity();
+            final ShapePane shapePane = getShapePane(currentSample.getShape());
+            final List<GradedSample> list = new ArrayList<GradedSample>();
+
+            logger.info("Computing grades...");
+            for (Enumeration<Sample> en = shapePane.model.elements(); en.hasMoreElements();) {
+                Sample sample = en.nextElement();
+                Evaluation[] evals = classifier.getNaturalEvaluations(
+                        sample,
+                        sample.getInterline());
+                double grade = evals[sample.getShape().ordinal()].grade;
+                list.add(new GradedSample(grade, sample));
+            }
+
+            logger.info("All grades computed.");
+            Collections.sort(list);
+            logger.info("Samples sorted.");
+            shapePane.model.clear();
+
+            for (GradedSample gradedSample : list) {
+                shapePane.model.addElement(gradedSample.sample);
+            }
+        }
+
+        //~ Inner Classes --------------------------------------------------------------------------
+        private class GradedSample
+                implements Comparable<GradedSample>
+        {
+            //~ Instance fields --------------------------------------------------------------------
+
+            final double grade;
+
+            final Sample sample;
+
+            //~ Constructors -----------------------------------------------------------------------
+            public GradedSample (double grade,
+                                 Sample sample)
+            {
+                this.grade = grade;
+                this.sample = sample;
+            }
+
+            //~ Methods ----------------------------------------------------------------------------
+            @Override
+            public int compareTo (GradedSample that)
+            {
+                return Double.compare(that.grade, this.grade); // By decreasing grade
+            }
         }
     }
 

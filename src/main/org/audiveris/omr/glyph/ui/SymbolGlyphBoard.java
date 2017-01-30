@@ -39,8 +39,8 @@ import org.slf4j.LoggerFactory;
  * <ul>
  * <li>A <b>symbolSpinner</b> to browse through all glyphs that are considered as symbols, that is
  * built from aggregation of contiguous sections, or by combination of other symbols.
- * Glyphs whose shape is set to {@link omr.glyph.Shape#NOISE}, that is too small glyphs, are not
- * included in this spinner.</ul>
+ * Glyphs whose shape is set to {@link org.audiveris.omr.glyph.Shape#NOISE}, that is too small
+ * glyphs, are not included in this spinner.</ul>
  *
  * <p>
  * <img alt="Image of SymbolGlyphBoard" src="doc-files/SymbolGlyphBoard.png">

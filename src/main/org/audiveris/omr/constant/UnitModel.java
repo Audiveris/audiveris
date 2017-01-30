@@ -83,10 +83,10 @@ public class UnitModel
          */
         UNIT("Unit", false, 70, String.class),
         /**
-         * Column relevant only for constants which are fractions of
-         * interline, as defined by {@link omr.sheet.Scale.Fraction}.
-         * The equivalent number of pixels is displayed, according to the scale
-         * of the currently selected Sheet.
+         * Column relevant only for constants which are fractions of interline, as
+         * defined by {@link org.audiveris.omr.sheet.Scale.Fraction}.
+         * The equivalent number of pixels is displayed, according to the scale of the currently
+         * selected Sheet.
          * If there is no current Sheet, then just a question mark (?) is shown
          */
         PIXEL("Pixels", false, 30, String.class),

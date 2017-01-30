@@ -29,6 +29,7 @@ import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.StaffLine;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
@@ -79,9 +80,7 @@ public class StaffFilament
      */
     public StaffFilament (int interline)
     {
-        super(
-                interline,
-                (int) Math.rint(interline * constants.segmentLength.getWrappedValue().doubleValue()));
+        super(interline, InterlineScale.toPixels(interline, constants.segmentLength));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -135,9 +134,8 @@ public class StaffFilament
     public void fillHoles (int pos,
                            List<StaffFilament> fils)
     {
-        Scale scale = new Scale(interline);
-        int maxHoleLength = scale.toPixels(constants.maxHoleLength);
-        int virtualLength = scale.toPixels(constants.virtualSegmentLength);
+        int maxHoleLength = InterlineScale.toPixels(interline, constants.maxHoleLength);
+        int virtualLength = InterlineScale.toPixels(interline, constants.virtualSegmentLength);
 
         // Look for long holes
         Double holeStart = null;

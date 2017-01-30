@@ -29,6 +29,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.TemplateSymbol;
 import org.audiveris.omr.util.ByteUtil;
@@ -328,7 +329,7 @@ public class Template
             return fores;
         }
 
-        int dilation = new Scale(interline).toPixels(constants.dilation);
+        int dilation = InterlineScale.toPixels(interline, constants.dilation);
 
         // Populate an enlarged buffer with these foreground pixels
         final Rectangle bufBox = new Rectangle(box);

@@ -26,7 +26,7 @@ import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
-import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Scale.InterlineScale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,10 +92,8 @@ public class CurvedFilament
     public void computeLine ()
     {
         try {
-            Scale scale = new Scale(interline);
-
             /** Width of window to retrieve pixels */
-            int probeWidth = scale.toPixels(Filament.getProbeWidth());
+            int probeWidth = InterlineScale.toPixels(interline, Filament.getProbeWidth());
 
             // We need a rough orientation right now
             Orientation orientation = getRoughOrientation();
@@ -335,8 +333,7 @@ public class CurvedFilament
                 }
 
                 // Lookup corresponding section(s)
-                Scale scale = new Scale(interline);
-                int probeWidth = scale.toPixels(Filament.getProbeWidth());
+                int probeWidth = InterlineScale.toPixels(interline, Filament.getProbeWidth());
                 Orientation orientation = getRoughOrientation();
                 final Point2D point = points.get(idx);
                 Point2D orientedPt = orientation.oriented(points.get(idx));

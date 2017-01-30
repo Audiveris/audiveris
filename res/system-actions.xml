@@ -76,8 +76,9 @@
 
 <!--    <action domain="TOOL" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="togglePersist" item="javax.swing.JCheckBoxMenuItem"/>-->
 <!--    <action domain="TOOL" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="recordGlyphs" />-->
-    <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="verifySamples" />
-    <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="saveSamples" />
+    <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="browseGlobalSamples" />
+    <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="saveGlobalSamples" />
+    <action domain="TOOL" section="15" class="org.audiveris.omr.ui.GuiActions"        method="browseLocalSamples" />
     <action domain="TOOL" section="20" class="org.audiveris.omr.ui.GuiActions"        method="launchTrainer" />
 <!--    <action domain="TOOL" section="20"  class="org.audiveris.omr.ui.GuiActions" method="defineShapeColors" />-->
     <action domain="TOOL" section="30" class="org.audiveris.omr.ui.GuiActions"        method="showMemory" />

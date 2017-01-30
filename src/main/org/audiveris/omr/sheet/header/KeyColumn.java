@@ -65,8 +65,8 @@ import java.util.TreeMap;
  * also marked as "stuffed".
  * <li>In a staff, any slice following a stuffed slice is also a stuffed slice.
  * </ol>
- * At system level, we make sure that any multi-staff part has the same key signature, by
- * "replicating" the best signature to the other staff (or staves).
+ * At system level, we make sure that all staves in any multi-staff part have the same key
+ * signature, by "replicating" the best signature to the other staff (or staves) in the part.
  * <p>
  * Example of key shapes mixed in the same system:<br>
  * <img src="doc-files/IMSLP00693-1-MixedKeyShapesInSystem.png">

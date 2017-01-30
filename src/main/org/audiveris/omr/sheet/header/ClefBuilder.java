@@ -653,23 +653,29 @@ public class ClefBuilder
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale,
-                           int specific)
+                           int staffSpecific)
         {
             maxPartCount = constants.maxPartCount.getValue();
 
-            // Use sheet global interline value
-            maxClefEnd = scale.toPixels(constants.maxClefEnd);
-            beltMargin = scale.toPixels(constants.beltMargin);
-            xCoreMargin = scale.toPixels(constants.xCoreMargin);
-            yCoreMargin = scale.toPixels(constants.yCoreMargin);
+            {
+                // Use sheet large interline scale
+                final InterlineScale large = scale.getLargeInterlineScale();
+                maxClefEnd = large.toPixels(constants.maxClefEnd);
+                beltMargin = large.toPixels(constants.beltMargin);
+                xCoreMargin = large.toPixels(constants.xCoreMargin);
+                yCoreMargin = large.toPixels(constants.yCoreMargin);
+            }
 
-            // Use staff specific interline value
-            aboveStaff = InterlineScale.toPixels(specific, constants.aboveStaff);
-            belowStaff = InterlineScale.toPixels(specific, constants.belowStaff);
-            minPartWeight = InterlineScale.toPixels(specific, constants.minPartWeight);
-            maxPartGap = InterlineScale.toPixelsDouble(specific, constants.maxPartGap);
-            maxGlyphHeight = InterlineScale.toPixelsDouble(specific, constants.maxGlyphHeight);
-            minGlyphWeight = InterlineScale.toPixels(specific, constants.minGlyphWeight);
+            {
+                // Use staff specific interline value
+                final InterlineScale specific = scale.getSpecificInterlineScale(staffSpecific);
+                aboveStaff = specific.toPixels(constants.aboveStaff);
+                belowStaff = specific.toPixels(constants.belowStaff);
+                minPartWeight = specific.toPixels(constants.minPartWeight);
+                maxPartGap = specific.toPixelsDouble(constants.maxPartGap);
+                maxGlyphHeight = specific.toPixelsDouble(constants.maxGlyphHeight);
+                minGlyphWeight = specific.toPixels(constants.minGlyphWeight);
+            }
         }
     }
 

@@ -273,11 +273,19 @@ public class SampleBoard
             }
 
             Descriptor desc = repository.getDescriptor(sample);
-            final String sh = desc.toString();
-            sheetName.setText(sh);
-            sheetName.getField().setToolTipText(desc.getAliasesString());
-            removeAction.setEnabled(!SampleRepository.isSymbols(desc.getName()));
-            assignAction.setEnabled(!SampleRepository.isSymbols(desc.getName()));
+
+            if (desc != null) {
+                final String sh = desc.toString();
+                sheetName.setText(sh);
+                sheetName.getField().setToolTipText(desc.getAliasesString());
+                removeAction.setEnabled(!SampleRepository.isSymbols(desc.getName()));
+                assignAction.setEnabled(!SampleRepository.isSymbols(desc.getName()));
+            } else {
+                sheetName.setText("");
+                sheetName.getField().setToolTipText(null);
+                removeAction.setEnabled(false);
+                assignAction.setEnabled(false);
+            }
         } else {
             iLine.setText("");
             weight.setText("");
