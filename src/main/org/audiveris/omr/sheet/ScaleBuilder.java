@@ -225,7 +225,7 @@ public class ScaleBuilder
 
         if (comboPeak != null) {
             final int guess = (int) Math.rint(
-                    constants.beamAsWhiteRatio.getValue() * (comboPeak.main - blackPeak.main));
+                    constants.beamAsWhiteRatio.getValue() * getMaxWhite());
             logger.info("No beam key found, guessed value {}", guess);
 
             return new BeamScale(guess, true);
@@ -234,6 +234,25 @@ public class ScaleBuilder
         logger.warn("No global scale information available");
 
         return null;
+    }
+
+    //-------------//
+    // getMaxWhite //
+    //-------------//
+    /**
+     * Return the typical white gap between (larger) staff lines.
+     *
+     * @return (larger) white gap
+     */
+    private int getMaxWhite ()
+    {
+        int maxCombo = comboPeak.main;
+
+        if (comboPeak2 != null) {
+            maxCombo = Math.max(maxCombo, comboPeak2.main);
+        }
+
+        return maxCombo - blackPeak.main;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -405,14 +424,14 @@ public class ScaleBuilder
          * Try to retrieve a suitable beam thickness value.
          * <p>
          * Take most frequent black local max for which key (beam thickness) is larger than about
-         * twice the main line thickness and smaller than mean white gap between staff lines.
+         * twice the main line thickness and smaller than main white gap between (large) staff
+         * lines.
          */
         public void retrieveBeamKey ()
         {
             double minBeamLineRatio = constants.minBeamLineRatio.getValue();
             int minHeight = (int) Math.floor(minBeamLineRatio * blackPeak.main);
-            int maxHeight = comboPeak.main - blackPeak.main;
-
+            int maxHeight = getMaxWhite();
             List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight - 1, maxHeight + 1);
 
             for (int local : localMaxima) {

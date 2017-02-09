@@ -222,7 +222,7 @@ javadoc {
     options.overview('src/main/overview.html')
 }
 
-// Ability to include private tasks
+// Ability to include private tasks (such as save)
 fileTree("$projectDir/private").include('*.gradle').each { file ->
      apply from: file
 }
