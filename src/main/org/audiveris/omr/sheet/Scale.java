@@ -271,6 +271,28 @@ public class Scale
         }
     }
 
+    //-------------------//
+    // getInterlineScale //
+    //-------------------//
+    /**
+     * Report the scale that applies for the provided (staff) interline value.
+     *
+     * @param interline the provided (staff specific) interline
+     * @return the desired interlineScale
+     */
+    public InterlineScale getInterlineScale (int interline)
+    {
+        if (interlineScale.main == interline) {
+            return interlineScale;
+        }
+
+        if ((interlineScale2 != null) && (interlineScale2.main == interline)) {
+            return interlineScale2;
+        }
+
+        throw new IllegalArgumentException("No interline scale for provided value " + interline);
+    }
+
     //--------------------//
     // getInterlineScale2 //
     //--------------------//
@@ -951,6 +973,18 @@ public class Scale
         public double toPixelsDouble (Fraction frac)
         {
             return toPixelsDouble(main, frac);
+        }
+
+        /**
+         * Compute the interline fraction that corresponds to the given number of pixels.
+         *
+         * @param pixels the equivalent in number of pixels
+         * @return the interline fraction
+         * @see #toPixels
+         */
+        public double pixelsToFrac (double pixels)
+        {
+            return pixels / main;
         }
     }
 
