@@ -20,6 +20,9 @@ ext.targetOSArch   = ["i386":"x86", "i486":"x86", "i586":"x86", "i686":"x86",
 ext.targetOS       = "${project.ext.targetOSName}-${project.ext.targetOSArch}"  
 println "targetOS=${project.ext.targetOS}"
 
+ext.dl4jVersion = '0.7.2'
+ext.nd4jVersion = '0.7.2'
+
 if (!hasProperty('mainClass')) {
     ext.mainClass = ext.programName
 }
@@ -100,14 +103,15 @@ dependencies {
         [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.2'],
         [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.2'],
         [group: 'net.java.dev.jai-imageio', name: 'jai-imageio-core-standalone', version: '1.2-pre-dr-b04-2014-09-13'],
-        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: '0.6.0'],
-        [group: 'org.nd4j', name: 'nd4j-native', version: '0.6.0']
+        [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: "${project.ext.dl4jVersion}"],
+        [group: 'org.deeplearning4j', name: 'deeplearning4j-ui_2.10', version: "${project.ext.dl4jVersion}"],
+        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}"]
     )
 
     runtime(
         [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.2', classifier: "${project.ext.targetOS}"],
         [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.2', classifier: "${project.ext.targetOS}"],
-        [group: 'org.nd4j', name: 'nd4j-native', version: '0.6.0', classifier: "${project.ext.targetOS}"]
+        [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}", classifier: "${project.ext.targetOS}"]
     )
 
     testCompile(

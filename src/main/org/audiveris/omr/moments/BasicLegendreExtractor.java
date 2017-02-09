@@ -285,20 +285,6 @@ public class BasicLegendreExtractor
                     val += inc;
                 }
 
-                // Fake image, using a filled square (to be removed)
-                //                                int r = 10;
-                //                                area = 1.0 / (r * r);
-                //
-                //                                for (int x = -r; x <= r; x++) {
-                //                                    double ix = x / r;
-                //
-                //                                    for (int y = -r; y <= r; y++) {
-                //                                        double iy = y / r;
-                //                                        double inc = P[m].evaluate(ix) * P[n].evaluate(iy);
-                //                                        inc *= mNorm * nNorm;
-                //                                        val += inc;
-                //                                    }
-                //                                }
                 // Save to descriptor
                 descriptor.setMoment(m, n, val * area);
             }

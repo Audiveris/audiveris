@@ -699,31 +699,6 @@ public class ShapeSet
      * @param col1 a first collection of shapes
      * @param col2 a second collection of shapes
      * @param col3 a third collection of shapes
-     * @return a single collection
-     */
-    public static Collection<Shape> shapesOf (Collection<Shape> col1,
-                                              Collection<Shape> col2,
-                                              Collection<Shape> col3)
-    {
-        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
-                : EnumSet.noneOf(Shape.class);
-
-        shapes.addAll(col1);
-        shapes.addAll(col2);
-        shapes.addAll(col3);
-
-        return shapes;
-    }
-
-    //----------//
-    // shapesOf //
-    //----------//
-    /**
-     * Convenient way to build a collection of shapes.
-     *
-     * @param col1 a first collection of shapes
-     * @param col2 a second collection of shapes
-     * @param col3 a third collection of shapes
      * @param col4 a fourth collection of shapes
      * @return a single collection
      */
@@ -741,20 +716,6 @@ public class ShapeSet
         shapes.addAll(col4);
 
         return shapes;
-    }
-
-    //----------//
-    // shapesOf //
-    //----------//
-    /**
-     * Convenient way to build a collection of shapes.
-     *
-     * @param shapes an array of shapes
-     * @return a single collection
-     */
-    public static Collection<Shape> shapesOf (Shape... shapes)
-    {
-        return Arrays.asList(shapes);
     }
 
     //---------//
@@ -812,7 +773,6 @@ public class ShapeSet
         return name;
     }
 
-    //
     //-----------------------//
     // getPhysicalShapeNames //
     //-----------------------//
@@ -831,6 +791,68 @@ public class ShapeSet
         }
 
         return names;
+    }
+
+    //-----------------------------//
+    // getPhysicalShapeNamesString //
+    //-----------------------------//
+    /**
+     * Report a formatted string with the names of all the physical shapes.
+     *
+     * @return a global string
+     */
+    public static String getPhysicalShapeNamesString ()
+    {
+        final List<String> names = Arrays.asList(getPhysicalShapeNames());
+        StringBuilder sb = new StringBuilder("{ //\n");
+
+        for (int i = 0; i < names.size(); i++) {
+            String comma = (i < (names.size() - 1)) ? "," : "";
+            sb.append(String.format("\"%-18s // %3d\n", names.get(i) + "\"" + comma, i));
+        }
+
+        sb.append("};");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    /**
+     * Convenient way to build a collection of shapes.
+     *
+     * @param col1 a first collection of shapes
+     * @param col2 a second collection of shapes
+     * @param col3 a third collection of shapes
+     * @return a single collection
+     */
+    public static Collection<Shape> shapesOf (Collection<Shape> col1,
+                                              Collection<Shape> col2,
+                                              Collection<Shape> col3)
+    {
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
+
+        shapes.addAll(col1);
+        shapes.addAll(col2);
+        shapes.addAll(col3);
+
+        return shapes;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    /**
+     * Convenient way to build a collection of shapes.
+     *
+     * @param shapes an array of shapes
+     * @return a single collection
+     */
+    public static Collection<Shape> shapesOf (Shape... shapes)
+    {
+        return Arrays.asList(shapes);
     }
 
     //--------//

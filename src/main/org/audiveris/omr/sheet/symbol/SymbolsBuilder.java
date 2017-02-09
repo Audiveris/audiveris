@@ -23,7 +23,7 @@ package org.audiveris.omr.sheet.symbol;
 
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.GlyphClassifier;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphCluster;
@@ -80,7 +80,7 @@ public class SymbolsBuilder
     private final Sheet sheet;
 
     /** Shape classifier to use. */
-    private final Classifier classifier = GlyphClassifier.getInstance();
+    private final Classifier classifier = ShapeClassifier.getInstance();
 
     /** Companion factory for symbols inters. */
     private final SymbolFactory factory;

@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
-import org.audiveris.omr.classifier.NormalizedImage;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
@@ -29,7 +28,6 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ui.GlyphsController;
-import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.selection.SelectionService;
 
@@ -71,8 +69,6 @@ public class SampleController
 
     private final AssignAction assignAction;
 
-    private final ApplicationAction testAction;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SampleController} object.
@@ -87,7 +83,6 @@ public class SampleController
         ApplicationActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(this);
         removeAction = (ApplicationAction) actionMap.get("removeSample");
         assignAction = new AssignAction();
-        testAction = (ApplicationAction) actionMap.get("testSample");
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -141,11 +136,6 @@ public class SampleController
         return removeAction;
     }
 
-    public ApplicationAction getTestAction ()
-    {
-        return testAction;
-    }
-
     public void removeSample (Sample sample)
     {
         final SampleModel sampleModel = (SampleModel) model;
@@ -161,26 +151,6 @@ public class SampleController
         final SampleModel sampleModel = (SampleModel) model;
         final Sample sample = (Sample) sampleModel.getGlyphService().getSelectedEntity();
         SampleController.this.removeSample(sample);
-    }
-
-    //------------//
-    // TestSample //
-    //------------//
-    @Action
-    public void testSample (ActionEvent e)
-    {
-        final SampleModel sampleModel = (SampleModel) model;
-        final Sample sample = (Sample) sampleModel.getGlyphService().getSelectedEntity();
-        SampleController.this.testSample(sample);
-    }
-
-    private void testSample (Sample sample)
-    {
-        logger.info("testSample on {}", sample);
-
-        NormalizedImage ni = NormalizedImage.getInstance(sample, sample.getInterline());
-        ImageUtil.saveOnDisk(ni.buffer.getBufferedImage(), sample.getShape().toString());
-        logger.info("testSample done.");
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

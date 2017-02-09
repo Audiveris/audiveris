@@ -74,7 +74,7 @@ public interface LUT
     int getSize ();
 
     /**
-     * Report the value for precise point (px,yy) by interpolation of values defined
+     * Report the value for precise point (px,py) by interpolation of values defined
      * for integer coordinates.
      *
      * @param px precise abscissa

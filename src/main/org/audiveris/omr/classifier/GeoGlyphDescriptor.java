@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                              S h a p e D e s c r i p t o r G e o                               //
+//                              G e o G l y p h D e s c r i p t o r                               //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -24,83 +24,62 @@ package org.audiveris.omr.classifier;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.moments.GeometricMoments;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Class {@code ShapeDescriptorGeo} defines shape description based on Geometric moments.
+ * Class {@code GeoGlyphDescriptor} defines glyph features based on Geometric moments.
  *
  * @author Hervé Bitteur
  */
-public class ShapeDescriptorGeo
-        implements ShapeDescription.Descriptor
+public class GeoGlyphDescriptor
+        extends GlyphDescriptor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Number of geometric moments used. */
-    public static final int momentCount = 10;
+    public static final int MOMENT_COUNT = 10;
 
     /** Use the 10 first geometric moments + aspect. */
-    private static final int length = momentCount + 1;
+    private static final int LENGTH = MOMENT_COUNT + 1;
+
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code GeoGlyphDescriptor} object.
+     */
+    public GeoGlyphDescriptor ()
+    {
+        super("geo");
+    }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // features //
-    //----------//
-    @Override
-    public double[] features (Glyph glyph,
-                              int interline)
-    {
-        double[] ins = new double[length];
-
-        // We take all the first moments
-        double[] k = glyph.getGeometricMoments(interline).getValues();
-
-        for (int i = 0; i < momentCount; i++) {
-            ins[i] = k[i];
-        }
-
-        // We append aspect
-        int i = momentCount;
-        /* 10 */ ins[i++] = (double) glyph.getHeight() / glyph.getWidth();
-
-        return ins;
-    }
-
-    //-----------------//
-    // getFeatureIndex //
-    //-----------------//
-    @Override
-    public int getFeatureIndex (String label)
-    {
-        return LabelsHolder.indices.get(label);
-    }
-
-    //------------------//
-    // getFeatureLabels //
-    //------------------//
     @Override
     public String[] getFeatureLabels ()
     {
         return LabelsHolder.labels;
     }
 
-    //---------//
-    // getName //
-    //---------//
     @Override
-    public String getName ()
+    public double[] getFeatures (Glyph glyph,
+                                 int interline)
     {
-        return "GEO";
+        double[] ins = new double[LENGTH];
+
+        // We take all the first moments
+        double[] k = glyph.getGeometricMoments(interline).getValues();
+
+        for (int i = 0; i < MOMENT_COUNT; i++) {
+            ins[i] = k[i];
+        }
+
+        // We append aspect
+        int i = MOMENT_COUNT;
+        /* 10 */ ins[i++] = (double) glyph.getHeight() / glyph.getWidth();
+
+        return ins;
     }
 
-    //--------//
-    // length //
-    //--------//
     @Override
     public int length ()
     {
-        return length;
+        return LENGTH;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -110,31 +89,24 @@ public class ShapeDescriptorGeo
     /**
      * Descriptive strings for glyph characteristics.
      *
-     * NOTA: Keep in sync method {@link #features}
+     * NOTA: Keep in sync method {@link #getFeatures}
      */
     private static class LabelsHolder
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        /** Label -> Index */
-        public static final Map<String, Integer> indices = new HashMap<String, Integer>();
-
         /** Index -> Label */
-        public static final String[] labels = new String[length];
+        public static final String[] labels = new String[LENGTH];
 
         static {
             // We take all the first moments
-            for (int i = 0; i < momentCount; i++) {
+            for (int i = 0; i < MOMENT_COUNT; i++) {
                 labels[i] = GeometricMoments.getLabel(i);
             }
 
             // We append aspect
-            int i = momentCount;
+            int i = MOMENT_COUNT;
             /* 10 */ labels[i++] = "aspect";
-
-            for (int j = 0; j < labels.length; j++) {
-                indices.put(labels[j], j);
-            }
         }
 
         //~ Constructors ---------------------------------------------------------------------------

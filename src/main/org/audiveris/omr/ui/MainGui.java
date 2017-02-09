@@ -24,7 +24,7 @@ package org.audiveris.omr.ui;
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
-import org.audiveris.omr.classifier.NeuralClassifier;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
@@ -427,7 +427,7 @@ public class MainGui
 
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.isSet()) {
-            NeuralClassifier.preload();
+            ShapeClassifier.preload();
             JaiLoader.preload();
             PartwiseBuilder.preload();
         }

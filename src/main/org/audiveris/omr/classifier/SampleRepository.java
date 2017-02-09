@@ -397,6 +397,16 @@ public class SampleRepository
         }
     }
 
+    //-------//
+    // close //
+    //-------//
+    public synchronized void close ()
+    {
+        if (isGlobal()) {
+            GLOBAL = null;
+        }
+    }
+
     //-----------------//
     // diskImageExists //
     //-----------------//
@@ -646,6 +656,19 @@ public class SampleRepository
     // getGlobalInstance //
     //-------------------//
     /**
+     * Report the (loaded) global repository, after creating it if needed.
+     *
+     * @return the global instance of SampleRepository
+     */
+    public static SampleRepository getGlobalInstance ()
+    {
+        return getGlobalInstance(true);
+    }
+
+    //-------------------//
+    // getGlobalInstance //
+    //-------------------//
+    /**
      * Report the global repository, after creating it if needed.
      *
      * @param load true for a loaded repository
@@ -654,11 +677,13 @@ public class SampleRepository
     public static synchronized SampleRepository getGlobalInstance (boolean load)
     {
         if (GLOBAL == null) {
-            GLOBAL = getInstance(WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME), load);
+            GLOBAL = getInstance(
+                    WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME),
+                    load);
         }
 
         if (load && (GLOBAL != null) && !GLOBAL.isLoaded()) {
-            GLOBAL.loadRepository();
+            GLOBAL.loadRepository(null);
         }
 
         return GLOBAL;
@@ -670,8 +695,9 @@ public class SampleRepository
     /**
      * Report the repository specifically related to the provided book.
      *
-     * @param book the provided book
-     * @param load true for a loaded repository
+     * @param book         the provided book
+     * @param load         true for a loaded repository
+     * @param loadListener loading listener, or null
      * @return the specific sample repository for the provided book, or null
      */
     public static synchronized SampleRepository getInstance (Book book,
@@ -690,15 +716,15 @@ public class SampleRepository
      * @param load        true for a loaded repository
      * @return the specific sample repository, or null
      */
-    public static SampleRepository getInstance (Path samplesFile,
-                                                boolean load)
+    public static synchronized SampleRepository getInstance (Path samplesFile,
+                                                             boolean load)
     {
         try {
             final SampleRepository repo = new SampleRepository(samplesFile);
 
             if (load && !repo.isLoaded()) {
                 logger.info("Repository loading...");
-                repo.loadRepository();
+                repo.loadRepository(null);
                 logger.info("Repository loaded.");
             }
 
@@ -849,6 +875,19 @@ public class SampleRepository
         return GLOBAL != null;
     }
 
+    //----------------//
+    // hasSheetImages //
+    //----------------//
+    /**
+     * Check whether file of sheet images is available.
+     *
+     * @return true if images are available
+     */
+    public boolean hasSheetImages ()
+    {
+        return Files.exists(imagesFile);
+    }
+
     //-----------//
     // isSymbols //
     //-----------//
@@ -887,19 +926,6 @@ public class SampleRepository
         }
 
         return exitListener;
-    }
-
-    //----------------//
-    // hasSheetImages //
-    //----------------//
-    /**
-     * Check whether file of sheet images is available.
-     *
-     * @return true if images are available
-     */
-    public boolean hasSheetImages ()
-    {
-        return Files.exists(imagesFile);
     }
 
     //-------------------//
@@ -1090,8 +1116,10 @@ public class SampleRepository
     //----------------//
     /**
      * Load the training material (font-based symbols as well as concrete samples).
+     *
+     * @param loadListener load listener, or null
      */
-    public void loadRepository ()
+    public void loadRepository (LoadListener loadListener)
     {
         final StopWatch watch = new StopWatch("Loading repository");
 
@@ -1112,6 +1140,10 @@ public class SampleRepository
                         }
 
                         sheetContainer = container;
+
+                        if (loadListener != null) {
+                            loadListener.totalSheets(container.getDescriptorCount());
+                        }
                     }
                 }
 
@@ -1119,7 +1151,7 @@ public class SampleRepository
                 //            buildSymbols();
                 //
                 watch.start("loadSamples");
-                loadSamples(samplesRoot);
+                loadSamples(samplesRoot, loadListener);
 
                 // Tribes?
                 if (USE_TRIBES) {
@@ -1176,6 +1208,27 @@ public class SampleRepository
         }
     }
 
+    //-------------------//
+    // purgeSampleSheets //
+    //-------------------//
+    /**
+     * Any empty sample sheet is removed, together with its image if any.
+     */
+    public void purgeSheets ()
+    {
+        int count = 0;
+
+        for (SampleSheet sampleSheet : nameMap.values()) {
+            if (sampleSheet.getAllSamples().isEmpty()) {
+                logger.info("Empty {}", sampleSheet);
+                sheetContainer.removeDescriptor(sampleSheet.getDescriptor());
+                count++;
+            }
+        }
+
+        logger.info("{} empty sheets purged: {}", this, count);
+    }
+
     //----------------//
     // removeListener //
     //----------------//
@@ -1227,6 +1280,40 @@ public class SampleRepository
 
         sheetContainer.removeDescriptor(descriptor);
         fireStateChanged(new SheetRemovalEvent(descriptor));
+    }
+
+    //--------//
+    // shrink //
+    //--------//
+    /**
+     * Shrink the repository, so that there is a maximum of 'maxCount' samples per shape.
+     *
+     * @param maxCount maximum number of samples per shape
+     */
+    public void shrink (int maxCount)
+    {
+        // Gather samples by shape
+        EnumMap<Shape, List<Sample>> shapeSamples = new EnumMap<Shape, List<Sample>>(Shape.class);
+
+        for (Sample sample : getAllSamples()) {
+            Shape shape = sample.getShape();
+            List<Sample> list = shapeSamples.get(shape);
+
+            if (list == null) {
+                shapeSamples.put(shape, list = new ArrayList<Sample>());
+            }
+
+            list.add(sample);
+        }
+
+        for (List<Sample> list : shapeSamples.values()) {
+            Collections.shuffle(list);
+
+            for (int i = maxCount; i < list.size(); i++) {
+                Sample sample = list.get(i);
+                removeSample(sample);
+            }
+        }
     }
 
     //-------------------//
@@ -1483,7 +1570,8 @@ public class SampleRepository
     /**
      * Unmarshal the repository concrete samples.
      */
-    private void loadSamples (final Path root)
+    private void loadSamples (final Path root,
+                              final LoadListener loadListener)
     {
         try {
             Files.walkFileTree(
@@ -1500,6 +1588,7 @@ public class SampleRepository
                     if (fileName.equals(SampleSheet.SAMPLES_FILE_NAME)) {
                         Path folder = file.getParent().getFileName();
                         Descriptor desc = sheetContainer.getDescriptor(folder.toString());
+                        SampleSheet sampleSheet = null;
 
                         if (desc == null) {
                             logger.warn(
@@ -1507,7 +1596,8 @@ public class SampleRepository
                                     folder,
                                     SheetContainer.CONTAINER_ENTRY_NAME);
                         } else {
-                            SampleSheet sampleSheet = SampleSheet.unmarshal(file, desc);
+                            sampleSheet = SampleSheet.unmarshal(file, desc);
+
                             boolean isSymbol = isSymbols(desc.getName());
                             nameMap.put(desc.getName(), sampleSheet);
 
@@ -1515,6 +1605,10 @@ public class SampleRepository
                                 sample.setSymbol(isSymbol);
                                 sampleMap.put(sample, sampleSheet);
                             }
+                        }
+
+                        if (loadListener != null) {
+                            loadListener.loadedSheet(sampleSheet);
                         }
                     }
 
@@ -1580,37 +1674,30 @@ public class SampleRepository
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
-    //---------//
-    // Monitor //
-    //---------//
+    //--------------//
+    // LoadListener //
+    //-------------//
     /**
-     * Interface {@code Monitor} defines the entries to a UI entity
+     * Interface {@code LoadListener} defines the entries to a UI entity
      * which monitors the loading of samples by the sample repository.
      */
-    public static interface Monitor
+    public static interface LoadListener
     {
         //~ Methods --------------------------------------------------------------------------------
 
         /**
-         * Called whenever a new sample has been loaded.
+         * Called whenever a new sample sheet has been loaded.
          *
-         * @param sample the sample loaded
+         * @param sampleSheet the sample sheet loaded
          */
-        void loadedSample (Sample sample);
+        void loadedSheet (SampleSheet sampleSheet);
 
         /**
-         * Called to pass the number of selected samples.
+         * Called to pass the total number of sample sheets in repository
          *
-         * @param selected the size of the selection
+         * @param total total number of sample sheets
          */
-        void setSelectedSamples (int selected);
-
-        /**
-         * Called to pass the total number of available samples in the training material.
-         *
-         * @param total the size of the training material
-         */
-        void setTotalSamples (int total);
+        void totalSheets (int total);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

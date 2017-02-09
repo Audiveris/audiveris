@@ -82,8 +82,8 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
         this.yy = yy;
         this.mass = mass;
 
-        findCenterOfMass();
-        findRadius();
+        center = findCenterOfMass();
+        radius = findRadius();
 
         extractMoments();
     }
@@ -111,7 +111,7 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
     /**
      * Computer the image mass center coordinates.
      */
-    private void findCenterOfMass ()
+    private Point2D findCenterOfMass ()
     {
         int m10 = 0;
         int m01 = 0;
@@ -121,9 +121,7 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
             m01 += yy[i];
         }
 
-        center = new Point2D.Double((double) m10 / (double) mass, (double) m01 / (double) mass);
-
-        ///System.out.println("center: " + center);
+        return new Point2D.Double((double) m10 / (double) mass, (double) m01 / (double) mass);
     }
 
     //------------//
@@ -131,18 +129,19 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
     //------------//
     /**
      * Compute the image contour, centered around its mass center.
+     *
+     * @return the min radius that contains the whole image
      */
-    private void findRadius ()
+    private double findRadius ()
     {
-        radius = Double.MIN_VALUE;
+        double dxMax = Double.MIN_VALUE;
+        double dyMax = Double.MIN_VALUE;
 
         for (int i = 0; i < mass; i++) {
-            double x = xx[i] - center.getX();
-            double y = yy[i] - center.getY();
-            radius = Math.max(radius, Math.abs(x));
-            radius = Math.max(radius, Math.abs(y));
+            dxMax = Math.max(dxMax, Math.abs(xx[i] - center.getX()));
+            dyMax = Math.max(dyMax, Math.abs(yy[i] - center.getY()));
         }
 
-        ///System.out.println("radius:" + radius);
+        return Math.hypot(dxMax, dyMax);
     }
 }

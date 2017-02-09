@@ -26,8 +26,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.classifier.Classifier;
+import org.audiveris.omr.classifier.DeepClassifier;
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.NeuralClassifier;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleSource;
 import org.audiveris.omr.classifier.ui.Trainer.Task;
@@ -93,11 +93,19 @@ public class ValidationPanel
     /** Where samples are got from. */
     private final SampleSource sampleSource;
 
+    /** Validation of train set vs test set?. */
+    private final boolean isTrainSet;
+
+    /** Name of set to validate. */
+    private final String setName;
+
     /** User action to validate the classifier against training base. */
     private final ValidateAction validateAction = new ValidateAction();
 
     /** Display percentage of samples correctly recognized. */
-    private final LLabel pcValue = new LLabel("%:", "Percentage of samples correctly recognized");
+    private final LLabel accuracyValue = new LLabel(
+            "Accuracy:",
+            "Percentage of samples correctly recognized");
 
     /** Display number of samples correctly recognized. */
     private final LLabel positiveValue = new LLabel(
@@ -144,14 +152,19 @@ public class ValidationPanel
      * @param task       the current training activity
      * @param classifier the classifier to validate
      * @param source     source for samples
+     * @param isTrainSet
      */
     public ValidationPanel (Trainer.Task task,
                             Classifier classifier,
-                            SampleSource source)
+                            SampleSource source,
+                            boolean isTrainSet)
     {
         this.classifier = classifier;
         this.sampleSource = source;
         this.task = task;
+        this.isTrainSet = isTrainSet;
+
+        setName = (isTrainSet ? "train" : "test");
 
         if (task != null) {
             task.addObserver(this);
@@ -219,7 +232,8 @@ public class ValidationPanel
 
         // Validation title & progress bar
         int r = 1;
-        builder.addSeparator("Validation", cst.xyw(1, r, 3));
+        String title = "Validation [" + setName + " set]";
+        builder.addSeparator(title, cst.xyw(1, r, 3));
         builder.add(progressBar, cst.xyw(5, r, 7));
         progressBar.setForeground(Colors.PROGRESS_BAR);
 
@@ -237,14 +251,14 @@ public class ValidationPanel
         validateButton.setToolTipText("Validate the classifier on current base of samples");
         builder.add(validateButton, cst.xy(3, r));
 
-        builder.add(pcValue.getLabel(), cst.xy(5, r));
-        builder.add(pcValue.getField(), cst.xy(7, r));
-
         JButton falsePositiveButton = new JButton(falsePositiveAction);
         falsePositiveButton.setToolTipText("Display the impacted samples for verification");
         builder.add(falsePositiveButton, cst.xy(11, r));
 
         r += 2; // ----------------------------
+
+        builder.add(accuracyValue.getLabel(), cst.xy(1, r));
+        builder.add(accuracyValue.getField(), cst.xy(3, r));
 
         builder.add(weakPositiveValue.getLabel(), cst.xyw(4, r, 2));
         builder.add(weakPositiveValue.getField(), cst.xy(7, r));
@@ -261,7 +275,6 @@ public class ValidationPanel
         JButton weakNegativeButton = new JButton(weakNegativeAction);
         weakNegativeButton.setToolTipText("Display the impacted samples for verification");
         builder.add(weakNegativeButton, cst.xy(11, r));
-
     }
 
     //---------------//
@@ -269,13 +282,15 @@ public class ValidationPanel
     //---------------//
     private void runValidation ()
     {
-        logger.info("Validating {} classifier ...", classifier.getName());
+        logger.info("Validating {} on {} set...", classifier.getName(), setName);
 
         // Empty the display
         positiveValue.setText("");
-        pcValue.setText("");
+        accuracyValue.setText("");
         weakPositiveValue.setText("");
         falsePositiveValue.setText("");
+        weakNegativeValue.setText("");
+
         weakPositiveAction.setEnabled(false);
         falsePositiveAction.setEnabled(false);
         weakNegativeAction.setEnabled(false);
@@ -286,7 +301,9 @@ public class ValidationPanel
 
         int positives = 0;
 
-        final List<Sample> samples = sampleSource.getTestSamples();
+        // Validation is performed on TRAIN or TEST set
+        final List<Sample> samples = isTrainSet ? sampleSource.getTrainSamples()
+                : sampleSource.getTestSamples();
 
         progressBar.setValue(0);
         progressBar.setMaximum(samples.size());
@@ -307,18 +324,12 @@ public class ValidationPanel
                     positives++;
                 } else {
                     weakPositives.add(sample);
-//                    System.out.printf("%-35s weakly recognized%n", sample.toString());
                 }
             } else {
                 if (eval.grade >= Grades.validationMinGrade) {
                     falsePositives.add(sample);
-//                    System.out.printf(
-//                            "%-35s mistaken for %s%n",
-//                            sample.toString(),
-//                            eval.shape.getPhysicalShape());
                 } else {
                     weakNegatives.add(sample);
-//                    System.out.printf("%-35s weakly negative%n", sample.toString());
                 }
             }
 
@@ -326,26 +337,23 @@ public class ValidationPanel
         }
 
         int total = samples.size();
-        double pc = ((double) positives * 100) / (double) total;
-        String pcStr = String.format("%.2f%%", pc);
-        logger.info(
-                "{}Classifier ratio= {} : {}/{}",
-                classifier.getName(),
-                pcStr,
-                positives,
-                total);
+        int allPositives = positives + weakPositives.size();
+        double accuracy = allPositives / (double) total;
+        DecimalFormat df = new DecimalFormat("#.####");
+        String accuStr = df.format(accuracy);
+        logger.info("{} accuracy: {}  {}/{}", classifier.getName(), accuStr, allPositives, total);
+        accuracyValue.setText(accuStr);
         positiveValue.setText(Integer.toString(positives));
-        pcValue.setText(String.format("%.2f", pc));
         weakPositiveValue.setText(Integer.toString(weakPositives.size()));
         falsePositiveValue.setText(Integer.toString(falsePositives.size()));
         weakNegativeValue.setText(Integer.toString(weakNegatives.size()));
 
-        // Evaluate
-        if (NeuralClassifier.USE_DL4J) {
-            final NeuralClassifier neuralClassifier = (NeuralClassifier) classifier;
-            final MultiLayerNetwork model = (MultiLayerNetwork) neuralClassifier.getModel();
-            DataSet dataSet = NeuralClassifier.getRawDataSet(samples);
-            neuralClassifier.normalize(dataSet.getFeatures());
+        // Additional evaluation
+        if (classifier instanceof DeepClassifier) {
+            final DeepClassifier deepClassifier = (DeepClassifier) classifier;
+            final MultiLayerNetwork model = deepClassifier.getModel();
+            DataSet dataSet = deepClassifier.getRawDataSet(samples);
+            deepClassifier.normalize(dataSet.getFeatures());
 
             final List<String> names = Arrays.asList(
                     ShapeSet.getPhysicalShapeNames());
@@ -354,7 +362,6 @@ public class ValidationPanel
             eval.eval(dataSet.getLabels(), guesses);
             System.out.println(eval.stats(true));
 
-            DecimalFormat df = new DecimalFormat("#.####");
             logger.info(
                     String.format(
                             "Accuracy: %s Precision: %s Recall: %s F1 Score: %s",
@@ -434,28 +441,6 @@ public class ValidationPanel
     }
 
     //--------------------//
-    // WeakPositiveAction //
-    //--------------------//
-    private class WeakPositiveAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public WeakPositiveAction ()
-        {
-            super("View");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            SampleBrowser.getInstance().displayAll(weakPositives);
-            SampleBrowser.getInstance().setVisible();
-        }
-    }
-
-    //--------------------//
     // WeakNegativeAction //
     //--------------------//
     private class WeakNegativeAction
@@ -473,6 +458,28 @@ public class ValidationPanel
         public void actionPerformed (ActionEvent e)
         {
             SampleBrowser.getInstance().displayAll(weakNegatives);
+            SampleBrowser.getInstance().setVisible();
+        }
+    }
+
+    //--------------------//
+    // WeakPositiveAction //
+    //--------------------//
+    private class WeakPositiveAction
+            extends AbstractAction
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public WeakPositiveAction ()
+        {
+            super("View");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            SampleBrowser.getInstance().displayAll(weakPositives);
             SampleBrowser.getInstance().setVisible();
         }
     }

@@ -310,7 +310,7 @@ public class GeometricMoments
     // getN12 //
     //--------//
     /**
-     * Report the n12 moment (which relates to xy2: > vs <).
+     * Report the n12 moment (which relates to xy2: &gt; vs &lt;).
      *
      * @return the n12 moment
      */

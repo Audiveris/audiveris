@@ -34,11 +34,14 @@ public interface ARTMoments
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Number of angular indices */
+    /** Number of angular indices. */
     public static final int ANGULAR = 20; //16; //12;
 
-    /** Number of radius indices */
+    /** Number of radius indices. */
     public static final int RADIAL = 5; //4; //3;
+
+    /** Number of ART moments. */
+    public static final int MOMENT_COUNT = -1 + (ANGULAR * RADIAL);
 
     //~ Methods ------------------------------------------------------------------------------------
     /**

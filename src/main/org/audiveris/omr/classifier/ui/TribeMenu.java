@@ -94,7 +94,7 @@ public class TribeMenu
     public void addGood (ActionEvent e)
     {
         if (sampleSheet == null) {
-            final SampleRepository repository = SampleRepository.getGlobalInstance(true);
+            final SampleRepository repository = SampleRepository.getGlobalInstance();
             sampleSheet = repository.findSampleSheet(sheet);
         }
 
@@ -114,7 +114,7 @@ public class TribeMenu
     public void addOther (ActionEvent e)
     {
         if (sampleSheet == null) {
-            final SampleRepository repository = SampleRepository.getGlobalInstance(true);
+            final SampleRepository repository = SampleRepository.getGlobalInstance();
             sampleSheet = repository.findSampleSheet(sheet);
         }
 
@@ -170,7 +170,7 @@ public class TribeMenu
     private void selectBest (Shape shape)
     {
         if (sampleSheet == null) {
-            final SampleRepository repository = SampleRepository.getGlobalInstance(true);
+            final SampleRepository repository = SampleRepository.getGlobalInstance();
             sampleSheet = repository.findSampleSheet(sheet);
         }
 

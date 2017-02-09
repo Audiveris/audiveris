@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                               S h a p e D e s c r i p t o r M i x                              //
+//                                   A R T D e s c r i p t o r                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -25,96 +25,70 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.moments.ARTMoments;
 import org.audiveris.omr.moments.GeometricMoments;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Class {@code ShapeDescriptorMix} is a descriptor that mixes ART and Geo moments.
+ * Class {@code ArtGlyphDescriptor} defines glyph features based on ART moments plus
+ * some geometric moments.
  *
  * @author Hervé Bitteur
  */
-public class ShapeDescriptorMix
-        implements ShapeDescription.Descriptor
+public class ArtGlyphDescriptor
+        extends GlyphDescriptor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Number of orthogonal moments used. */
-    private static final int artCount = ShapeDescriptorART.momentCount;
+    /** Use the ART moments + 3 GEO + weight + aspect. */
+    private static final int LENGTH = ARTMoments.MOMENT_COUNT + 5;
 
-    private static final int geoCount = ShapeDescriptorGeo.momentCount;
-
-    /** Use the ART moments + GEO moments + aspect. */
-    private static final int length = artCount + geoCount + 1;
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code ArtGlyphDescriptor} object.
+     */
+    public ArtGlyphDescriptor ()
+    {
+        super("art");
+    }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // features //
-    //----------//
-    @Override
-    public double[] features (Glyph glyph,
-                              int interline)
-    {
-        double[] ins = new double[length];
-        ARTMoments arts = glyph.getARTMoments();
-        int i = 0;
-
-        // We take the ART moments
-        for (int p = 0; p < ARTMoments.ANGULAR; p++) {
-            for (int r = 0; r < ARTMoments.RADIAL; r++) {
-                if ((p != 0) || (r != 0)) {
-                    ins[i++] = arts.getMoment(p, r);
-                }
-            }
-        }
-
-        // We append the geometric moments
-        GeometricMoments geos = glyph.getGeometricMoments(interline);
-        double[] values = geos.getValues();
-
-        for (int k = 0; k < geoCount; k++) {
-            ins[i++] = values[k];
-        }
-
-        // We append (vertical) aspect
-        ins[i++] = (double) glyph.getHeight() / glyph.getWidth();
-
-        return ins;
-    }
-
-    //-----------------//
-    // getFeatureIndex //
-    //-----------------//
-    @Override
-    public int getFeatureIndex (String label)
-    {
-        return LabelsHolder.indices.get(label);
-    }
-
-    //------------------//
-    // getFeatureLabels //
-    //------------------//
     @Override
     public String[] getFeatureLabels ()
     {
         return LabelsHolder.labels;
     }
 
-    //---------//
-    // getName //
-    //---------//
     @Override
-    public String getName ()
+    public double[] getFeatures (Glyph glyph,
+                                 int interline)
     {
-        return "MIX";
+        ARTMoments moments = glyph.getARTMoments();
+        double[] ins = new double[LENGTH];
+        int i = 0;
+
+        // We take the orthogonal moments
+        for (int p = 0; p < ARTMoments.ANGULAR; p++) {
+            for (int r = 0; r < ARTMoments.RADIAL; r++) {
+                if ((p != 0) || (r != 0)) {
+                    ins[i++] = moments.getMoment(p, r);
+                }
+            }
+        }
+
+        // We append 3 geometric moments
+        GeometricMoments geos = glyph.getGeometricMoments(interline);
+        ins[i++] = geos.getN11();
+        ins[i++] = geos.getN21();
+        ins[i++] = geos.getN12();
+
+        // We append weight and aspect
+        ins[i++] = glyph.getNormalizedWeight(interline);
+        ins[i++] = (double) glyph.getHeight() / glyph.getWidth();
+
+        return ins;
     }
 
-    //--------//
-    // length //
-    //--------//
     @Override
     public int length ()
     {
-        return length;
+        return LENGTH;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -124,17 +98,14 @@ public class ShapeDescriptorMix
     /**
      * Descriptive strings for glyph characteristics.
      *
-     * NOTA: Keep in sync method {@link #features}
+     * NOTA: To be kept in sync method {@link #getFeatures}
      */
     private static class LabelsHolder
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        /** Label -> Index */
-        public static final Map<String, Integer> indices = new HashMap<String, Integer>();
-
         /** Index -> Label */
-        public static final String[] labels = new String[length];
+        public static final String[] labels = new String[LENGTH];
 
         static {
             int i = 0;
@@ -148,17 +119,14 @@ public class ShapeDescriptorMix
                 }
             }
 
-            // We append all the geometric moments
-            for (int k = 0; k < geoCount; k++) {
-                labels[i++] = GeometricMoments.getLabel(k);
-            }
+            // We append the 3 geometric moments
+            labels[i++] = "N11";
+            labels[i++] = "N21";
+            labels[i++] = "N12";
 
-            // We append aspect
+            // We append weight and aspect
+            labels[i++] = "weight";
             labels[i++] = "aspect";
-
-            for (int j = 0; j < labels.length; j++) {
-                indices.put(labels[j], j);
-            }
         }
 
         //~ Constructors ---------------------------------------------------------------------------

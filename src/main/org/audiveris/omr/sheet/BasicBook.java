@@ -669,7 +669,7 @@ public class BasicBook
         }
 
         // No specific repository is possible, so use global
-        return SampleRepository.getGlobalInstance(true);
+        return SampleRepository.getGlobalInstance();
     }
 
     //-----------//

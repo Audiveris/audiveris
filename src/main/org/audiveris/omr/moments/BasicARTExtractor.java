@@ -76,7 +76,7 @@ public class BasicARTExtractor
     @Override
     protected void extractMoments ()
     {
-        final LUT anyLut = realLuts[0][0]; // Just for template
+        final LUT anyLut = realLuts[0][0]; // Just for LUT dimensions
         final int lutRadius = anyLut.getRadius();
         final double centerX = center.getX();
         final double centerY = center.getY();
@@ -86,7 +86,7 @@ public class BasicARTExtractor
         final double[][] coeffImag = new double[ANGULAR][RADIAL];
 
         for (int i = 0; i < mass; i++) {
-            // Map image coordinate to LUT coordinates
+            // Map image coordinates to LUT coordinates
             double x = xx[i] - centerX;
             double y = yy[i] - centerY;
             double lx = ((x * lutRadius) / radius) + lutRadius;
@@ -122,7 +122,6 @@ public class BasicARTExtractor
     //---------//
     /**
      * Compute, once for all, the lookup table values.
-     * (Size for each of the 2 tables realLuts & imagLuts is about 2.5 MBytes)
      */
     private static void initLUT ()
     {
@@ -149,7 +148,7 @@ public class BasicARTExtractor
                 double rad = Math.hypot(tx, ty); // [0..sqrt(2)]
 
                 if (rad < 1) {
-                    // We are within circle
+                    // We are within unit circle
                     double angle = Math.atan2(ty, tx);
 
                     for (int p = 0; p < ANGULAR; p++) {
@@ -160,7 +159,7 @@ public class BasicARTExtractor
                         }
                     }
                 } else {
-                    // We are on or outside circle
+                    // We are on or outside unit circle, so let's set value to 0
                     for (int p = 0; p < ANGULAR; p++) {
                         for (int r = 0; r < RADIAL; r++) {
                             realLuts[p][r].assign(x, y, 0);

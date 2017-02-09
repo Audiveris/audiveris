@@ -29,8 +29,8 @@ import org.audiveris.omr.image.Table;
 import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.moments.ARTMoments;
 import org.audiveris.omr.moments.BasicARTExtractor;
+import org.audiveris.omr.moments.BasicARTMoments;
 import org.audiveris.omr.moments.GeometricMoments;
-import org.audiveris.omr.moments.QuantizedARTMoments;
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Predicate;
@@ -319,8 +319,8 @@ public class RunTable
         final PointsCollector collector = new PointsCollector(null, getWeight());
         cumulate(collector, new Point(left, top));
 
-        ///ARTMoments artMoments = new BasicARTMoments();
-        ARTMoments artMoments = new QuantizedARTMoments();
+        ///ARTMoments artMoments = new QuantizedARTMoments();
+        ARTMoments artMoments = new BasicARTMoments();
 
         BasicARTExtractor extractor = new BasicARTExtractor();
         extractor.setDescriptor(artMoments);

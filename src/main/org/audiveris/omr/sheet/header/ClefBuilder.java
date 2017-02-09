@@ -26,7 +26,7 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.GlyphClassifier;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.constant.Constant;
@@ -38,9 +38,13 @@ import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.Shape.*;
+
 import org.audiveris.omr.glyph.Symbol.Group;
+
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Book;
@@ -59,7 +63,9 @@ import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.ui.symbol.Symbol;
 import org.audiveris.omr.ui.symbol.Symbols;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -141,7 +147,7 @@ public class ClefBuilder
     private Rectangle innerRect;
 
     /** Shape classifier to use. */
-    private final Classifier classifier = GlyphClassifier.getInstance();
+    private final Classifier classifier = ShapeClassifier.getInstance();
 
     /** All glyphs submitted to classifier. */
     private final Set<Glyph> glyphCandidates = new HashSet<Glyph>();

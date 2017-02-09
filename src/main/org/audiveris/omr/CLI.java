@@ -942,7 +942,7 @@ public class CLI
         @Override
         protected Book loadBook (Path path)
         {
-            SampleRepository global = SampleRepository.getGlobalInstance(true);
+            SampleRepository global = SampleRepository.getGlobalInstance();
             global.includeSamplesFile(path);
 
             return null;

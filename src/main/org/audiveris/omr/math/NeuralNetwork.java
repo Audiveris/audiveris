@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.math;
 
-import org.audiveris.omr.classifier.NeuralClassifier.Monitor;
+import org.audiveris.omr.classifier.TrainingMonitor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,17 +102,14 @@ public class NeuralNetwork
     @XmlElement(name = "row")
     private double[][] outputWeights;
 
-    /** Learning Rate parameter. */
+    /** Default learning Rate parameter. */
     private transient volatile double learningRate = 0.40;
 
-    /** Max Error parameter. */
-    private transient volatile double maxError = 1E-4;
-
-    /** Momentum for faster convergence. */
+    /** Default momentum for faster convergence. */
     private transient volatile double momentum = 0.25;
 
-    /** Number of epochs when training. */
-    private transient volatile int epochs = 1000;
+    /** Default number of epochs when training. */
+    private transient volatile int epochs = 10;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -177,7 +174,6 @@ public class NeuralNetwork
      * @param outputLabels array of labels for output cells, or null
      * @param learningRate learning rate factor
      * @param momentum     momentum from last adjustment
-     * @param maxError     threshold to stop training
      * @param epochs       number of epochs in training
      */
     public NeuralNetwork (int inputSize,
@@ -188,7 +184,6 @@ public class NeuralNetwork
                           String[] outputLabels,
                           double learningRate,
                           double momentum,
-                          double maxError,
                           int epochs)
     {
         this(inputSize, hiddenSize, outputSize, amplitude, inputLabels, outputLabels);
@@ -196,7 +191,6 @@ public class NeuralNetwork
         // Cache parameters
         this.learningRate = learningRate;
         this.momentum = momentum;
-        this.maxError = maxError;
         this.epochs = epochs;
     }
 
@@ -263,7 +257,6 @@ public class NeuralNetwork
         sb.append(String.format("Network%n"));
         sb.append(String.format("LearningRate = %f%n", learningRate));
         sb.append(String.format("Momentum     = %f%n", momentum));
-        sb.append(String.format("MaxError     = %f%n", maxError));
         sb.append(String.format("Epochs       = %d%n", epochs));
 
         // Input
@@ -450,9 +443,9 @@ public class NeuralNetwork
     // setEpochs //
     //-----------//
     /**
-     * Set the number of iterations for training the network with a given input.
+     * Set the number of epochs for training the network with a given input.
      *
-     * @param epochs number of iterations
+     * @param epochs number of epochs
      */
     public void setEpochs (int epochs)
     {
@@ -474,19 +467,6 @@ public class NeuralNetwork
     }
 
     //-------------//
-    // setMaxError //
-    //-------------//
-    /**
-     * Set the maximum error level.
-     *
-     * @param maxError maximum error
-     */
-    public void setMaxError (double maxError)
-    {
-        this.maxError = maxError;
-    }
-
-    //-------------//
     // setMomentum //
     //-------------//
     /**
@@ -503,24 +483,21 @@ public class NeuralNetwork
     // train //
     //-------//
     /**
-     * Train the neural network on a collection of input patterns,
-     * so that it delivers the expected outputs within maxError.
-     * This method is not optimized for ultimate speed, but rather for being able to keep the best
-     * weights values.
+     * Train the neural network on a collection of input patterns.
      *
      * @param inputs         the provided patterns of values for input cells
      * @param desiredOutputs the corresponding desired values for output cells
-     * @param monitor        a monitor interface to be kept informed (or null)
-     * @param epochPeriod    period for epoch notification
+     * @param listener       listener to be kept informed
+     * @param iterPeriod     period for iteration notification
      */
     public void train (double[][] inputs,
                        double[][] desiredOutputs,
-                       Monitor monitor,
-                       int epochPeriod)
+                       TrainingMonitor listener,
+                       int iterPeriod)
     {
         Objects.requireNonNull(inputs, "inputs array is null");
         Objects.requireNonNull(desiredOutputs, "desiredOutputs array is null");
-        logger.info("Network is being trained...");
+        logger.info("Network is being trained on {} epochs...", epochs);
 
         final int patterns = inputs.length;
         final long startTime = System.currentTimeMillis();
@@ -532,8 +509,15 @@ public class NeuralNetwork
         final double[][] hiddenDeltas = createMatrix(hiddenSize, inputSize + 1, 0);
         final double[][] outputDeltas = createMatrix(outputSize, hiddenSize + 1, 0);
         final double[] hiddens = new double[hiddenSize];
+        int iter = 0;
 
-        for (int ie = 0; ie < epochs; ie++) {
+        for (int ie = 1; ie <= epochs; ie++) {
+            iter++; // For this old engine, iter = epoch
+
+            if (listener != null) {
+                listener.epochStarted(ie);
+            }
+
             // Loop on all input patterns
             for (int ip = 0; ip < patterns; ip++) {
                 // Run the network with input values and current weights
@@ -595,23 +579,23 @@ public class NeuralNetwork
                 }
             }
 
-            if (monitor != null) {
-                if (((ie + 1) % epochPeriod) == 0) {
-                    double mse = 0d; // Mean Square Error
+            if (listener != null) {
+                if ((iter % iterPeriod) == 0) {
+                    double mse = 0d; // Mean Squared Error
 
                     for (int ip = 0; ip < patterns; ip++) {
+                        final double[] patternDesiredOutputs = desiredOutputs[ip];
                         run(inputs[ip], hiddens, gottenOutputs);
 
                         for (int o = outputSize - 1; o >= 0; o--) {
                             double out = gottenOutputs[o];
-                            double dif = desiredOutputs[ip][o] - out;
+                            double dif = patternDesiredOutputs[o] - out;
                             mse += (dif * dif);
                         }
                     }
 
                     mse /= patterns;
-                    mse = Math.sqrt(mse);
-                    monitor.epochPeriodDone(ie + 1, mse);
+                    listener.iterationPeriodDone(iter, mse);
                 }
             }
         }
@@ -619,7 +603,7 @@ public class NeuralNetwork
         final long dur = System.currentTimeMillis() - startTime;
         logger.info(
                 String.format(
-                        "Duration %,d seconds, %d epochs on %d patterns",
+                        "Duration %,d seconds, %d iterations on %d patterns",
                         dur / 1000,
                         epochs,
                         patterns));

@@ -117,36 +117,29 @@ public final class BasicLUT
         final int x = (int) px;
         final int y = (int) py;
 
-        // Beware of point on LUT border
+        // Increment from truncated values
+        final double ix = px - x;
+        final double iy = py - y;
+
         final int max = SIZE - 1;
 
-        // Value at [x,y]
-        final double vxy = table[x][y];
+        final double vxy = table[x][y]; // v[x,y]
 
+        // Beware of point on LUT border
         if (x == max) {
             if (y == max) {
                 return vxy; // v[x,y]
             } else {
-                final double iy = py - y;
-
                 return vxy + (iy * (table[x][y + 1] - vxy)); // v[x,py]
             }
         } else {
-            final double ix = px - x;
-
-            // Value at [px,y]
-            final double vpxy = vxy + (ix * (table[x + 1][y] - vxy));
+            final double vpxy = vxy + (ix * (table[x + 1][y] - vxy)); // v[px,y]
 
             if (y == max) {
                 return vpxy; // v[px,y]
             } else {
-                final double iy = py - y;
-
-                // Value at [x,y+1]
-                final double vxy1 = table[x][y + 1];
-
-                // Value at [px, y+1]
-                final double vpxy1 = vxy1 + (ix * (table[x + 1][y + 1] - vxy1));
+                final double vxy1 = table[x][y + 1]; // v[x,y+1]
+                final double vpxy1 = vxy1 + (ix * (table[x + 1][y + 1] - vxy1)); // v[px, y+1]
 
                 return vpxy + (iy * (vpxy1 - vpxy)); // v[px,py]
             }

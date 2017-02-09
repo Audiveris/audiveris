@@ -22,10 +22,12 @@
 package org.audiveris.omr.glyph.ui;
 
 import org.audiveris.omr.classifier.Classifier;
+
 import static org.audiveris.omr.classifier.Classifier.Condition.ALLOWED;
 import static org.audiveris.omr.classifier.Classifier.Condition.CHECKED;
+
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.GlyphClassifier;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
@@ -42,8 +44,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
+
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
@@ -642,7 +646,7 @@ public class SymbolMenu
 
                 for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
                     if (classifier == null) {
-                        classifier = GlyphClassifier.getInstance();
+                        classifier = ShapeClassifier.getInstance();
                     }
 
                     Evaluation[] evals = classifier.evaluate(

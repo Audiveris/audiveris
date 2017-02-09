@@ -57,12 +57,12 @@ public class LField<C extends JComponent>
                    C field)
     {
         this.label = new JLabel(label, SwingConstants.RIGHT);
+        this.field = field;
 
         if (tip != null) {
             this.label.setToolTipText(tip);
+            this.field.setToolTipText(tip);
         }
-
-        this.field = field;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

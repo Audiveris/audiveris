@@ -25,6 +25,9 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.SystemInfo;
 
+import org.deeplearning4j.optimize.api.IterationListener;
+
+import java.util.Collection;
 import java.util.EnumSet;
 
 /**
@@ -58,6 +61,13 @@ public interface Classifier
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
+     * Add a training listener
+     *
+     * @param listener listener to register
+     */
+    void addListener (IterationListener listener);
+
+    /**
      * Report the sorted sequence of best evaluation(s) found by the classifier on the
      * provided glyph.
      *
@@ -90,6 +100,20 @@ public interface Classifier
                            int count,
                            double minGrade,
                            EnumSet<Condition> conditions);
+
+    /**
+     * Report the underlying glyph descriptor
+     *
+     * @return the glyph descriptor used
+     */
+    GlyphDescriptor getGlyphDescriptor ();
+
+    /**
+     * Selector on the maximum number of training epochs.
+     *
+     * @return the upper limit on epochs counter
+     */
+    int getMaxEpochs ();
 
     /**
      * Report the name of this classifier.
@@ -128,4 +152,30 @@ public interface Classifier
      * @return true if not noise, false otherwise
      */
     boolean isBigEnough (double weight);
+
+    /**
+     * Remove a training listener
+     *
+     * @param listener listener to unregister
+     */
+    void removeListener (IterationListener listener);
+
+    /**
+     * Setter on the maximum number of training epochs.
+     *
+     * @param maxEpochs the upper limit on epochs counter
+     */
+    void setMaxEpochs (int maxEpochs);
+
+    /**
+     * Recreate a classifier from scratch.
+     */
+    void reset ();
+
+    /**
+     * Train the network using the provided collection of shape samples.
+     *
+     * @param samples the provided collection of shapes samples
+     */
+    void train (Collection<Sample> samples);
 }

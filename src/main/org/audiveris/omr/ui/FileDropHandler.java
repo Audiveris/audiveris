@@ -276,7 +276,7 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            SampleRepository global = SampleRepository.getGlobalInstance(true);
+            SampleRepository global = SampleRepository.getGlobalInstance();
             global.includeSamplesFile(file.toPath());
 
             return null;

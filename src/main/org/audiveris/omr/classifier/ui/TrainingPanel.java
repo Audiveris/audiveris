@@ -25,8 +25,10 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.audiveris.omr.classifier.NeuralClassifier;
+import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Sample;
+import org.audiveris.omr.classifier.ShapeClassifier;
+import org.audiveris.omr.classifier.TrainingMonitor;
 import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.*;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -52,9 +54,9 @@ import java.util.Observable;
 import java.util.Observer;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.KeyStroke;
@@ -68,7 +70,7 @@ import javax.swing.SwingUtilities;
  * @author Hervé Bitteur
  */
 class TrainingPanel
-        implements NeuralClassifier.Monitor, Observer
+        implements TrainingMonitor, Observer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -80,40 +82,40 @@ class TrainingPanel
     /** The swing component. */
     protected final Panel component;
 
-    /** Current activity (selecting population, or training engine on selection. */
+    /** Current activity (selecting population, or training classifier on selection. */
     protected final Trainer.Task task;
 
-    /** User action to launch the training. */
+    /** User action to reset the classifier. */
+    protected ResetAction resetAction;
+
+    /** User action to launch incremental training. */
     protected TrainAction trainAction;
 
-    /** The underlying engine to be trained. */
-    protected NeuralClassifier engine;
+    /** The underlying classifier to be trained. */
+    protected Classifier classifier;
 
     /** User progress bar to visualize the training process. */
     protected JProgressBar progressBar = new JProgressBar();
 
-    /**
-     * Flag to indicate that the whole population of recorded samples (and not
-     * just the core ones) is to be considered
-     */
-    private boolean useWhole = true;
-
-    /** Display of cardinality of whole population */
-    private final JLabel wholeNumber = new JLabel();
-
     /** UI panel dealing with samples selection. */
     private final SelectionPanel selectionPanel;
 
-    /** Field for Maximum number of epochs to perform. */
+    /** Field for maximum number of epochs to perform. */
     private final LIntegerField maxEpochs = new LIntegerField(
             "Max Epochs",
             "Maximum number of epochs to perform");
 
-    /** Output for Number of iterations performed so far. */
-    private final LLabel trainIndex = new LLabel("Epoch:", "Number of epochs performed so far");
+    /** Output for number of epochs performed so far. */
+    private final LLabel epochIndex = new LLabel("Epoch:", "Current epoch");
+
+    /** Output for number of iterations performed so far. */
+    private final LLabel iterIndex = new LLabel("Iteration:", "Iterations performed so far");
 
     /** Output for score on last iteration. */
     private final LLabel trainScore = new LLabel("Score:", "Score on last iteration");
+
+    /** Current epoch. */
+    private int epoch;
 
     /** Current iteration count. */
     private long iterCount;
@@ -131,7 +133,7 @@ class TrainingPanel
     public TrainingPanel (Trainer.Task task,
                           SelectionPanel selectionPanel)
     {
-        this.engine = NeuralClassifier.getInstance();
+        this.classifier = ShapeClassifier.getInstance();
         this.task = task;
         this.selectionPanel = selectionPanel;
 
@@ -143,23 +145,24 @@ class TrainingPanel
         component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 KeyStroke.getKeyStroke("ENTER"),
                 "readParams");
-        component.getActionMap().put("readParams", new TrainingPanel.ParamAction());
+        component.getActionMap().put("readParams", new ParamAction());
 
-        trainAction = new TrainAction("Train");
+        resetAction = new ResetAction();
+        trainAction = new TrainAction();
 
         defineLayout();
 
-        engine.setListeners(this);
+        classifier.addListener(this);
+
         displayParams();
+        inputParams();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public void epochPeriodDone (int epoch,
-                                 double score)
+    public void epochStarted (int epoch)
     {
-        logger.info(String.format("epoch:%4d score: %.5f", epoch, score));
-        display(epoch, score);
+        this.epoch = epoch;
     }
 
     public JComponent getComponent ()
@@ -168,7 +171,7 @@ class TrainingPanel
     }
 
     @Override
-    public int getEpochPeriod ()
+    public int getIterationPeriod ()
     {
         return constants.listenerPeriod.getValue();
     }
@@ -197,8 +200,16 @@ class TrainingPanel
             final double score = model.score();
             final int count = (int) iterCount;
             logger.info(String.format("Score at iteration %d is %.5f", count, score));
-            display(count, score);
+            display(epoch, count, score);
         }
+    }
+
+    @Override
+    public void iterationPeriodDone (int iter,
+                                     double score)
+    {
+        logger.info(String.format("iteration:%4d score: %.5f", iter, score));
+        display(epoch, iter, score);
     }
 
     //--------//
@@ -215,20 +226,8 @@ class TrainingPanel
     public void update (Observable obs,
                         Object unused)
     {
+        resetAction.setEnabled(task.getActivity() == INACTIVE);
         trainAction.setEnabled(task.getActivity() == INACTIVE);
-    }
-
-    //----------//
-    // useWhole //
-    //----------//
-    /**
-     * Tell whether the whole sample base is to be used, or just the core base
-     *
-     * @return true if whole, false if core
-     */
-    public boolean useWhole ()
-    {
-        return useWhole;
     }
 
     //-----------------//
@@ -330,25 +329,27 @@ class TrainingPanel
 
         r += 2; // ----------------------------
 
-        builder.add(wholeNumber, cst.xy(5, r)); // ???????????????
+        builder.add(new JButton(resetAction), cst.xy(3, r));
 
         builder.add(maxEpochs.getLabel(), cst.xy(5, r));
         builder.add(maxEpochs.getField(), cst.xy(7, r));
 
+        builder.add(epochIndex.getLabel(), cst.xy(9, r));
+        builder.add(epochIndex.getField(), cst.xy(11, r));
+
         r += 2; // ----------------------------
 
-        JButton trainButton = new JButton(trainAction);
-        trainButton.setToolTipText("Train the classifier from scratch");
-        builder.add(trainButton, cst.xy(3, r));
+        builder.add(new JButton(trainAction), cst.xy(3, r));
 
-        builder.add(trainIndex.getLabel(), cst.xy(5, r));
-        builder.add(trainIndex.getField(), cst.xy(7, r));
+        builder.add(iterIndex.getLabel(), cst.xy(5, r));
+        builder.add(iterIndex.getField(), cst.xy(7, r));
 
         builder.add(trainScore.getLabel(), cst.xy(9, r));
         builder.add(trainScore.getField(), cst.xy(11, r));
     }
 
-    private void display (final int count,
+    private void display (final int epoch,
+                          final int iter,
                           final double score)
     {
         SwingUtilities.invokeLater(
@@ -359,11 +360,12 @@ class TrainingPanel
             public void run ()
             {
                 // Update current values
-                trainIndex.setText(Integer.toString(count));
+                epochIndex.setText(Integer.toString(epoch));
+                iterIndex.setText(Integer.toString(iter));
                 trainScore.setText(String.format("%.4f", score));
 
                 // Update progress bar
-                progressBar.setValue(count);
+                progressBar.setValue(iter);
 
                 component.repaint();
             }
@@ -375,7 +377,7 @@ class TrainingPanel
     //---------------//
     private void displayParams ()
     {
-        maxEpochs.setValue(NeuralClassifier.getMaxEpochs());
+        maxEpochs.setValue(ShapeClassifier.getInstance().getMaxEpochs());
     }
 
     //-------------//
@@ -383,26 +385,24 @@ class TrainingPanel
     //-------------//
     private void inputParams ()
     {
-        engine.setMaxEpochs(maxEpochs.getValue());
+        classifier.setMaxEpochs(maxEpochs.getValue());
 
         progressBar.setMaximum(maxEpochs.getValue());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
-    // TrainAction //
+    // ResetAction //
     //-------------//
-    protected class TrainAction
+    protected class ResetAction
             extends AbstractAction
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        protected boolean confirmationRequired = true;
-
         //~ Constructors ---------------------------------------------------------------------------
-        public TrainAction (String title)
+
+        public ResetAction ()
         {
-            super(title);
+            super("Reset");
+            putValue(Action.SHORT_DESCRIPTION, "Restart from scratch");
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -410,16 +410,32 @@ class TrainingPanel
         public void actionPerformed (ActionEvent e)
         {
             // Ask user confirmation
-            if (confirmationRequired) {
-                int answer = JOptionPane.showConfirmDialog(
-                        component,
-                        "Confirm retrain Neural Network from scratch?");
+            int answer = JOptionPane.showConfirmDialog(component, "Confirm reset of classifier?");
 
-                if (answer != JOptionPane.YES_OPTION) {
-                    return;
-                }
+            if (answer == JOptionPane.YES_OPTION) {
+                classifier.reset();
             }
+        }
+    }
 
+    //-------------//
+    // TrainAction //
+    //-------------//
+    protected class TrainAction
+            extends AbstractAction
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public TrainAction ()
+        {
+            super("Train");
+            putValue(Action.SHORT_DESCRIPTION, "Train the classifier");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
             class Worker
                     extends Thread
             {
@@ -430,7 +446,7 @@ class TrainingPanel
                     task.setActivity(TRAINING);
 
                     List<Sample> samples = selectionPanel.getTrainSamples();
-                    progressBar.setMaximum(NeuralClassifier.getMaxEpochs());
+                    progressBar.setMaximum(ShapeClassifier.getInstance().getMaxEpochs());
                     progressBar.setValue(0);
 
                     // Check that all trainable shapes (and only those ones) are present
@@ -438,7 +454,7 @@ class TrainingPanel
                     samples = checkPopulation(samples);
 
                     // Train on the data set
-                    engine.train(samples, TrainingPanel.this);
+                    classifier.train(samples);
 
                     task.setActivity(INACTIVE);
                 }
@@ -461,7 +477,7 @@ class TrainingPanel
         private final Constant.Integer listenerPeriod = new Constant.Integer(
                 "period",
                 50,
-                "Period (in epochs) between listener calls");
+                "Period (in iterations) between listener calls");
     }
 
     //-------------//

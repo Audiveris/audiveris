@@ -23,11 +23,11 @@ package org.audiveris.omr.classifier.ui;
 
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.NeuralClassifier;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
 import static org.audiveris.omr.classifier.SampleRepository.STANDARD_INTERLINE;
 import org.audiveris.omr.classifier.SampleSheet;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.classifier.SheetContainer;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.run.RunTable;
@@ -742,7 +742,7 @@ class SampleListing
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final Classifier classifier = NeuralClassifier.getInstance();
+        final Classifier classifier = ShapeClassifier.getInstance();
 
         //~ Constructors ---------------------------------------------------------------------------
         public SortByGradeAction ()
@@ -763,6 +763,7 @@ class SampleListing
             final List<GradedSample> list = new ArrayList<GradedSample>();
 
             logger.info("Computing grades...");
+
             for (Enumeration<Sample> en = shapePane.model.elements(); en.hasMoreElements();) {
                 Sample sample = en.nextElement();
                 Evaluation[] evals = classifier.getNaturalEvaluations(

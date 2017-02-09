@@ -258,4 +258,27 @@ public abstract class Zip
 
         return fileSystem.getPath(fileSystem.getSeparator());
     }
+
+    //-----------//
+    // copyEntry //
+    //-----------//
+    /**
+     * Copy the content of an input stream to the provided zip output stream
+     *
+     * @param inputStream input
+     * @param zipStream   output
+     * @throws IOException
+     */
+    public static void copyEntry (InputStream inputStream,
+                                  ZipOutputStream zipStream)
+            throws IOException
+    {
+        final byte[] bytes = new byte[1024];
+        int bytesRead;
+
+        while ((bytesRead = inputStream.read(bytes)) != -1) {
+            zipStream.write(bytes, 0, bytesRead);
+        }
+    }
+
 }

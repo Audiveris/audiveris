@@ -22,7 +22,7 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.classifier.Classifier;
-import org.audiveris.omr.classifier.GlyphClassifier;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.step.Step;
@@ -283,7 +283,7 @@ public class SymbolsModel
         // Test on glyph weight (noise-like)
         // To prevent to assign a non-noise shape to a noise glyph
         /** Standard classifier */
-        final Classifier classifier = GlyphClassifier.getInstance();
+        final Classifier classifier = ShapeClassifier.getInstance();
 
         if ((shape == Shape.NOISE) || classifier.isBigEnough(glyph, interline)) {
             return super.assignGlyph(glyph, interline, shape, grade);

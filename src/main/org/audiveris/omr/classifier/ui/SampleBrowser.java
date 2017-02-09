@@ -21,10 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
-import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.GlyphClassifier;
+import org.audiveris.omr.classifier.GlyphDescriptor;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleRepository.AdditionEvent;
@@ -32,12 +31,11 @@ import org.audiveris.omr.classifier.SampleRepository.RemovalEvent;
 import org.audiveris.omr.classifier.SampleRepository.SheetRemovalEvent;
 import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.classifier.SampleSource.ConstantSource;
-import org.audiveris.omr.classifier.ShapeDescription;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.classifier.SheetContainer.Descriptor;
 import org.audiveris.omr.classifier.Tribe;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ui.EvaluationBoard;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.ui.BoardsPane;
@@ -69,13 +67,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -200,8 +191,7 @@ public class SampleBrowser
 
         if (!standAlone) {
             if (!repository.isLoaded()) {
-                repository.loadRepository();
-                repository.loadAllImages();
+                repository.loadRepository(null);
             }
 
             frame = defineLayout(new JFrame());
@@ -224,7 +214,7 @@ public class SampleBrowser
     public static synchronized SampleBrowser getInstance ()
     {
         if (INSTANCE == null) {
-            INSTANCE = new SampleBrowser(SampleRepository.getGlobalInstance(true));
+            INSTANCE = new SampleBrowser(SampleRepository.getGlobalInstance());
         }
 
         return INSTANCE;
@@ -259,7 +249,7 @@ public class SampleBrowser
         standAlone = true;
 
         // Load repository, with sheet images
-        SampleRepository repo = SampleRepository.getGlobalInstance(true);
+        SampleRepository repo = SampleRepository.getGlobalInstance();
         repo.loadAllImages();
 
         // Set UI Look and Feel
@@ -339,7 +329,7 @@ public class SampleBrowser
     @Action
     public void checkTribes (ActionEvent e)
     {
-        final Classifier classifier = GlyphClassifier.getInstance();
+        final Classifier classifier = ShapeClassifier.getInstance();
 
         for (Descriptor descriptor : repository.getAllDescriptors()) {
             final SampleSheet sampleSheet = repository.getSampleSheet(descriptor);
@@ -434,51 +424,19 @@ public class SampleBrowser
     // exportFeatures //
     //----------------//
     /**
-     * Generate a file (format csv) to be used by deep learning software,
-     * populated by samples features.
+     * Generate a file (using CSV format) to be used by deep learning software,
+     * populated by all samples features.
      *
      * @param e unused
-     * @throws FileNotFoundException
      */
     @Action
     public void exportFeatures (ActionEvent e)
-            throws FileNotFoundException
     {
-        Path path = WellKnowns.TRAIN_FOLDER.resolve("features.csv");
-        OutputStream os = new FileOutputStream(path.toFile());
-        final PrintWriter out = getPrintWriter(os);
-
         List<Sample> samples = repository.getAllSamples();
         logger.info("Samples: {}", samples.size());
 
-        for (Sample sample : samples) {
-            double[] ins = ShapeDescription.features(sample, sample.getInterline());
-
-            for (double in : ins) {
-                out.print((float) in);
-                out.print(",");
-            }
-
-            ///out.println(sample.getShape().getPhysicalShape());
-            out.println(sample.getShape().getPhysicalShape().ordinal());
-        }
-
-        out.flush();
-        out.close();
-        logger.info("Samples features saved in " + path.toAbsolutePath());
-
-        final List<String> names = Arrays.asList(ShapeSet.getPhysicalShapeNames());
-
-        // Shape names
-        StringBuilder sb = new StringBuilder("{ //\n");
-
-        for (int i = 0; i < names.size(); i++) {
-            String comma = (i < (names.size() - 1)) ? "," : "";
-            sb.append(String.format("\"%-18s // %3d\n", names.get(i) + "\"" + comma, i));
-        }
-
-        sb.append("};");
-        System.out.println(sb.toString());
+        GlyphDescriptor desc = ShapeClassifier.getInstance().getGlyphDescriptor();
+        desc.export("all", samples, true);
     }
 
     //---------------------//
@@ -521,6 +479,20 @@ public class SampleBrowser
         sampleContext.refresh();
     }
 
+    //-------------//
+    // purgeSheets //
+    //-------------//
+    /**
+     * Purge the repository sheets
+     *
+     * @param e unused
+     */
+    @Action
+    public void purgeSheets (ActionEvent e)
+    {
+        repository.purgeSheets();
+    }
+
     //----------------//
     // pushRepository //
     //----------------//
@@ -533,7 +505,7 @@ public class SampleBrowser
         if (repository.isGlobal()) {
             logger.warn("You cannot push the global repository to itself!");
         } else {
-            SampleRepository global = SampleRepository.getGlobalInstance(true);
+            SampleRepository global = SampleRepository.getGlobalInstance();
             global.includeRepository(repository);
         }
     }
@@ -653,6 +625,20 @@ public class SampleBrowser
         }
     }
 
+    //------------------//
+    // shrinkRepository //
+    //------------------//
+    /**
+     * Shrink this repository so that no shape has more than maxCount samples.
+     *
+     * @param e unused
+     */
+    @Action
+    public void shrinkRepository (ActionEvent e)
+    {
+        repository.shrink(2000);
+    }
+
     //--------------//
     // stateChanged //
     //--------------//
@@ -702,8 +688,9 @@ public class SampleBrowser
             JFrame frame = new JFrame("Sheets " + sheets);
             ValidationPanel panel = new ValidationPanel(
                     null,
-                    GlyphClassifier.getInstance(),
-                    new ConstantSource(sheetSelector.getTestSamples()));
+                    ShapeClassifier.getInstance(),
+                    new ConstantSource(sheetSelector.getTestSamples()),
+                    false); // false => not TRAIN but Test
             Panel comp = (Panel) panel.getComponent();
             comp.setInsets(5, 5, 5, 5); // TLBR
             frame.add(comp);
@@ -847,6 +834,14 @@ public class SampleBrowser
         // Export to CSV file
         repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("exportFeatures")));
 
+        repoMenu.addSeparator(); // -----------------------
+
+        // Purge sheets
+        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("purgeSheets")));
+
+        //        // Shrink the whole repository
+        //        repoMenu.add(new JMenuItem((ApplicationAction) actionMap.get("shrinkRepository")));
+        //
         return menuBar;
     }
 
@@ -963,23 +958,6 @@ public class SampleBrowser
         return frame;
     }
 
-    //----------------//
-    // getPrintWriter //
-    //----------------//
-    private static PrintWriter getPrintWriter (OutputStream os)
-    {
-        try {
-            final BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(os, WellKnowns.FILE_ENCODING));
-
-            return new PrintWriter(bw);
-        } catch (Exception ex) {
-            logger.warn("Error creating PrintWriter " + ex, ex);
-
-            return null;
-        }
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // TitledPanel //
@@ -1021,6 +999,12 @@ public class SampleBrowser
 
             if (ok) {
                 OmrGui.getApplication().removeExitListener(exitListener);
+
+                if (repository.isGlobal()) {
+                    INSTANCE = null;
+                }
+
+                repository.close();
                 frame.dispose(); // Do close
             }
         }
@@ -1242,7 +1226,7 @@ public class SampleBrowser
 
         public SampleEvaluationBoard (SampleController controller)
         {
-            super(true, null, GlyphClassifier.getInstance(), controller, true);
+            super(true, null, ShapeClassifier.getInstance(), controller, true);
         }
 
         //~ Methods --------------------------------------------------------------------------------

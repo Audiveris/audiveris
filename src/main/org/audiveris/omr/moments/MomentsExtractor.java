@@ -36,8 +36,8 @@ public interface MomentsExtractor<D extends OrthogonalMoments<D>>
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Extract information from provided foreground points and save
-     * the results in the target descriptor.
+     * Extract information from provided foreground points and save the results into
+     * the target descriptor.
      *
      * @param xx   the array of abscissa values
      * @param yy   the array of ordinate values
@@ -55,8 +55,7 @@ public interface MomentsExtractor<D extends OrthogonalMoments<D>>
     void reconstruct (WritableRaster raster);
 
     /**
-     * Assign a target descriptor of this extractor, to receive
-     * extraction results.
+     * Assign a target descriptor of this extractor, to receive extraction results.
      *
      * @param descriptor the target descriptor
      */

@@ -25,7 +25,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.audiveris.omr.classifier.GlyphClassifier;
+import org.audiveris.omr.classifier.Classifier;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.Panel;
@@ -33,7 +34,6 @@ import org.audiveris.omr.ui.util.UILookAndFeel;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
@@ -103,8 +103,11 @@ public class Trainer
     /** Panel for Neural network training. */
     private final TrainingPanel trainingPanel;
 
-    /** Panel for Neural network validation. */
-    private final ValidationPanel validationPanel;
+    /** Panel for train set validation. */
+    private final ValidationPanel trainValidationPanel;
+
+    /** Panel for train set validation. */
+    private final ValidationPanel testValidationPanel;
 
     /** Current task. */
     final Task task = new Task();
@@ -118,7 +121,10 @@ public class Trainer
         // Create the companions
         selectionPanel = new SelectionPanel(task);
         trainingPanel = new TrainingPanel(task, selectionPanel);
-        validationPanel = new ValidationPanel(task, GlyphClassifier.getInstance(), selectionPanel);
+
+        final Classifier classifier = ShapeClassifier.getInstance();
+        trainValidationPanel = new ValidationPanel(task, classifier, selectionPanel, true);
+        testValidationPanel = new ValidationPanel(task, classifier, selectionPanel, false);
 
         // Initial state
         task.setActivity(Task.Activity.INACTIVE);
@@ -246,14 +252,19 @@ public class Trainer
          * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
          * |-------------------------------------------------------------|
          * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . Validation. . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . Validation [train set]. . . . . . . . . . . . . . . . . . |
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * |-------------------------------------------------------------|
+         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . Validation [test set] . . . . . . . . . . . . . . . . . . |
          * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
          * +=============================================================+
          */
         final String panelInterline = Panel.getPanelInterline();
         FormLayout layout = new FormLayout(
                 "pref",
-                "pref," + panelInterline + "," + "pref," + panelInterline + "," + "pref");
+                "pref," + panelInterline + "," + "pref," + panelInterline + "," + "pref,"
+                + panelInterline + "," + "pref");
 
         CellConstraints cst = new CellConstraints();
         PanelBuilder builder = new PanelBuilder(layout, new Panel());
@@ -265,13 +276,19 @@ public class Trainer
         builder.add(trainingPanel.getComponent(), cst.xy(1, r));
 
         r += 2; // --------------------------------
-        builder.add(validationPanel.getComponent(), cst.xy(1, r));
+        builder.add(trainValidationPanel.getComponent(), cst.xy(1, r));
+
+        r += 2; // --------------------------------
+        builder.add(testValidationPanel.getComponent(), cst.xy(1, r));
 
         frame.add(builder.getPanel());
 
-        // Resource injection
-        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
-        resource.injectComponents(frame);
+//        // Resource injection
+//        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
+//        resource.injectComponents(frame);
+//
+        Classifier classifier = ShapeClassifier.getInstance();
+        frame.setTitle(classifier.getName());
 
         return frame;
     }

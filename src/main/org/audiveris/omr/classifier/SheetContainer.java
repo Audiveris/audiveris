@@ -221,6 +221,25 @@ public class SheetContainer
         return null;
     }
 
+    //--------------------//
+    // getDescriptorCount //
+    //--------------------//
+    /**
+     * Report the number of sheet descriptors.
+     *
+     * @return number of sheet descriptors (= number of sample sheets)
+     */
+    public int getDescriptorCount ()
+    {
+        int count = 0;
+
+        for (List<Descriptor> descriptors : hashMap.values()) {
+            count += descriptors.size();
+        }
+
+        return count;
+    }
+
     //----------------//
     // getDescriptors //
     //----------------//

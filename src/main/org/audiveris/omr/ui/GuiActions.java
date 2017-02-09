@@ -312,17 +312,16 @@ public class GuiActions
     @Action
     public void launchTrainer (ActionEvent e)
     {
-        //        CursorController.launchWithDelayedMessage(
-        //                "Launching trainer...",
-        //                new Runnable()
-        //        {
-        //            @Override
-        //            public void run ()
-        //            {
-        Trainer.launch();
-
-        //            }
-        //        });
+        CursorController.launchWithDelayedMessage(
+                "Launching trainer...",
+                new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                Trainer.launch();
+            }
+        });
     }
 
     //-------------------//
@@ -336,7 +335,7 @@ public class GuiActions
     @Action
     public void saveGlobalSamples (ActionEvent e)
     {
-        SampleRepository.getGlobalInstance(true).checkForSave();
+        SampleRepository.getGlobalInstance().checkForSave();
     }
 
     //--------------------//

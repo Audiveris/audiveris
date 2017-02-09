@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  N o r m a l i z e d I m a g e                                 //
+//                                     S c a l e d B u f f e r                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -31,76 +31,64 @@ import org.audiveris.omr.util.ByteUtil;
 import java.awt.Point;
 
 /**
- * Class {@code NormalizedImage} produces a rectangular image, with size normalized by
+ * Class {@code ScaledBuffer} produces a rectangular buffer, with size normalized by
  * reference interline value, and centered on glyph centroid.
  *
  * @author Hervé Bitteur
  */
-public class NormalizedImage
+public class ScaledBuffer
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Normalized interline value. */
-    public static int INTERLINE = 20;
+    /** Scaled interline value. */
+    public static int INTERLINE = 5;
 
     /** Target width. */
-    public static int WIDTH = 80; // 5 * 2**4
+    public static int WIDTH = 24; // 24 = 3 * 2**3
 
     /** Target height. */
-    public static int HEIGHT = 192; // 12 * 2**4
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    public final ByteProcessor buffer;
-
-    //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Creates a new {@code NormalizedImage} object.
-     *
-     * @param buffer the underlying normalized buffer
-     */
-    public NormalizedImage (ByteProcessor buffer)
-    {
-        this.buffer = buffer;
-    }
+    public static int HEIGHT = 48; // 48 = 6 * 2**3
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Compute the normalized image for the provided glyph, using related staff
-     * interline value.
-     * <p>
-     * TODO: This is a first implementation, that could certainly be optimized.
+     * Compute the scaled buffer for the provided glyph, using related staff interline
+     * value.
      *
      * @param glyph     the source glyph
      * @param interline the related staff interline
-     * @return the computed image
+     * @return the computed buffer using 0 for black (foreground) and 255 for white (background)
      */
-    public static NormalizedImage getInstance (Glyph glyph,
-                                               int interline)
+    public static ByteProcessor getBuffer (Glyph glyph,
+                                           int interline)
     {
         final RunTable runTable = glyph.getRunTable();
+        final ByteProcessor glyphBuffer = runTable.getBuffer();
         final double scale = (double) INTERLINE / interline;
 
-        // Build resized buffer, filled by (resized) glyph
-        final int rWidth = (int) Math.rint(runTable.getWidth() * scale);
-        final int rHeight = (int) Math.ceil(runTable.getHeight() * scale);
-        final ByteProcessor glyphBuffer = runTable.getBuffer();
-        final ByteProcessor rBuffer = (ByteProcessor) glyphBuffer.resize(rWidth, rHeight, true);
+        // Build scaled buffer, filled by (scaled) glyph
+        final int scaledWidth = (int) Math.rint(runTable.getWidth() * scale);
+        final int scaledHeight = (int) Math.ceil(runTable.getHeight() * scale);
+        final ByteProcessor scaledBuffer = (ByteProcessor) glyphBuffer.resize(
+                scaledWidth,
+                scaledHeight,
+                true); // True => use averaging when down-scaling
 
-        // Target buffer, of normalized size, centered on glyph centroid
+        // Copy scaledBuffer into a WIDTH*HEIGHT target buffer centered on glyph centroid
         final Point centroid = glyph.getCentroid();
         final Point center = glyph.getCenter();
         final int dx = centroid.x - center.x; // X shift of centroid WRT center
         final int dy = centroid.y - center.y; // Y shift of centroid WRT center
-        final int rDx = (int) Math.rint(dx * scale);
-        final int rDy = (int) Math.rint(dy * scale);
-        final int xOffset = ((WIDTH - rWidth) / 2) - rDx;
-        final int yOffset = ((HEIGHT - rHeight) / 2) - rDy;
+        final int targetDx = (int) Math.rint(dx * scale); // Scaled x shift
+        final int targetDy = (int) Math.rint(dy * scale); // Scaled y shift
+
         final ByteProcessor buffer = new ByteProcessor(WIDTH, HEIGHT); // Same dim for any symbol
         ByteUtil.raz(buffer); // Correct
         ///ByteUtil.fill(targetBuffer, 100); // Not correct, just meant to visualize limits...
 
-        buffer.copyBits(rBuffer, xOffset, yOffset, Blitter.COPY);
+        final int xOffset = ((WIDTH - scaledWidth) / 2) - targetDx;
+        final int yOffset = ((HEIGHT - scaledHeight) / 2) - targetDy;
+        buffer.copyBits(scaledBuffer, xOffset, yOffset, Blitter.COPY);
 
-        return new NormalizedImage(buffer);
+        return buffer;
     }
 }

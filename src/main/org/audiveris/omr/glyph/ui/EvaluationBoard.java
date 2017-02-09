@@ -211,6 +211,8 @@ public class EvaluationBoard
             selector.setEvals(null, null);
         } else if (classifier != null) {
             if (sheet != null) {
+                // TODO: this picks up the first system that may be interested by the glyph!
+                // TODO: there is no support for staff specific scale!
                 SystemManager systemManager = sheet.getSystemManager();
 
                 for (SystemInfo system : systemManager.getSystemsOf(glyph)) {

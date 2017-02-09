@@ -25,12 +25,17 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.audiveris.omr.classifier.GlyphDescriptor;
+import org.audiveris.omr.classifier.ImgGlyphDescriptor;
+import org.audiveris.omr.classifier.MixGlyphDescriptor;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
+import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.classifier.SampleSource;
 import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.*;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.Panel;
@@ -63,7 +68,7 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 class SelectionPanel
-        implements SampleSource, SampleRepository.Monitor, Observer, ChangeListener
+        implements SampleSource, SampleRepository.LoadListener, Observer, ChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -79,7 +84,7 @@ class SelectionPanel
     private final Trainer.Task task;
 
     /** Underlying repository of samples. */
-    private final SampleRepository repository = SampleRepository.getGlobalInstance(true);
+    private final SampleRepository repository = SampleRepository.getGlobalInstance(false);
 
     /** For asynchronous execution of the sample selection. */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -87,25 +92,20 @@ class SelectionPanel
     /** Visual progression of the selection. */
     private final JProgressBar progressBar = new JProgressBar();
 
-    /** To dump the current selection of samples used for training/validation */
-    private final DumpAction dumpAction = new DumpAction();
-
-    /** To refresh the application WRT the training material. */
-    private final RefreshAction refreshAction = new RefreshAction();
+    /** To store the current train/test selections of samples as .csv files. */
+    private final StoreAction storeAction = new StoreAction();
 
     /** To select repository samples. */
     private final SelectAction selectAction = new SelectAction();
 
-    /** Counter on loaded samples */
-    private int nbLoaded;
+    /** Displayed counter on existing samples within repository. */
+    private final LLabel nbRepoSamples = new LLabel("Total:", "Number of samples in repository");
 
-    /** Displayed counter on existing samples. */
-    private final LLabel totalSamples = new LLabel("Total:", "Total number of samples");
+    /** Displayed counter on train samples. */
+    private final LLabel nbTrainSamples = new LLabel("Train set:", "Number of train samples");
 
-    /** Displayed counter on selected samples. */
-    private final LLabel nbSelectedSamples = new LLabel(
-            "Selected:",
-            "Number of selected samples to load");
+    /** Displayed counter on test samples. */
+    private final LLabel nbTestSamples = new LLabel("Test set:", "Number of test samples");
 
     /** Sample collection for training. */
     private List<Sample> trains;
@@ -137,14 +137,26 @@ class SelectionPanel
         defineLayout();
 
         repository.addListener(this);
+
+        if (repository.isLoaded()) {
+            setTotalSamples(repository.getAllSamples().size());
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------------------//
+    // getMinShapeSampleCount //
+    //------------------------//
+    public static int getMinShapeSampleCount ()
+    {
+        return constants.minShapeSampleCount.getValue();
+    }
+
     //--------------//
     // getComponent //
     //--------------//
     /**
-     * Give access to the encapsulated swinb component
+     * Give access to the encapsulated swing component
      *
      * @return the user panel
      */
@@ -183,65 +195,34 @@ class SelectionPanel
     public List<Sample> getTrainSamples ()
     {
         if (trains == null) {
+            progressBar.setValue(0);
             trains = new ArrayList<Sample>();
             tests = new ArrayList<Sample>();
 
             if (!repository.isLoaded()) {
-                progressBar.setValue(0);
-                repository.loadRepository();
+                repository.loadRepository(this);
             }
+
+            setTotalSamples(repository.getAllSamples().size());
 
             final int minCount = constants.minShapeSampleCount.getValue();
             final int maxCount = constants.maxShapeSampleCount.getValue();
             repository.splitTrainAndTest(trains, tests, minCount, maxCount);
-            nbLoaded = trains.size();
-            ///setTotalSamples(nbLoaded);
-            setSelectedSamples(trains.size());
-            progressBar.setValue(nbLoaded);
+            nbTrainSamples.setText(Integer.toString(trains.size()));
+            nbTestSamples.setText(Integer.toString(tests.size()));
+            progressBar.setValue(progressBar.getMaximum());
         }
 
         return trains;
     }
 
-    //------------------------//
-    // getMinShapeSampleCount //
-    //------------------------//
-    public static int getMinShapeSampleCount ()
-    {
-        return constants.minShapeSampleCount.getValue();
-    }
-
-    //--------------//
-    // loadedSample //
-    //--------------//
+    //-------------//
+    // loadedSheet //
+    //-------------//
     @Override
-    public void loadedSample (Sample sample)
+    public void loadedSheet (SampleSheet sampleSheet)
     {
-        progressBar.setValue(nbLoaded);
-    }
-
-    //--------------------//
-    // setSelectedSamples //
-    //--------------------//
-    @Override
-    public void setSelectedSamples (int selected)
-    {
-        nbSelectedSamples.setText(Integer.toString(selected));
-    }
-
-    //-----------------//
-    // setTotalSamples //
-    //-----------------//
-    /**
-     * Notify the total number of samples in the base
-     *
-     * @param total the total number of samples available
-     */
-    @Override
-    public void setTotalSamples (int total)
-    {
-        totalSamples.setText(Integer.toString(total));
-        progressBar.setMaximum(total);
+        progressBar.setValue(progressBar.getValue() + 1);
     }
 
     //--------------//
@@ -250,8 +231,17 @@ class SelectionPanel
     @Override
     public void stateChanged (ChangeEvent e)
     {
-        // Called from repository
-        setTotalSamples(repository.getAllSamples().size());
+        // Called from repository (?)
+        setTotalSamples(repository.getAllSamples().size()); // What for?
+    }
+
+    //-------------//
+    // totalSheets //
+    //-------------//
+    @Override
+    public void totalSheets (int total)
+    {
+        progressBar.setMaximum(total);
     }
 
     //--------//
@@ -286,23 +276,28 @@ class SelectionPanel
         PanelBuilder builder = new PanelBuilder(layout, component);
         CellConstraints cst = new CellConstraints();
 
-        ///builder.setDefaultDialogBorder();
         int r = 1; // ----------------------------
+
         builder.addSeparator("Selection", cst.xyw(1, r, 3));
+
         builder.add(progressBar, cst.xyw(5, r, 7));
 
         r += 2; // ----------------------------
-        //        builder.add(new JButton(dumpAction), cst.xy(3, r));
-        //        builder.add(new JButton(refreshAction), cst.xy(5, r));
-        //
 
-        builder.add(totalSamples.getLabel(), cst.xy(9, r));
-        builder.add(totalSamples.getField(), cst.xy(11, r));
+        builder.add(nbRepoSamples.getLabel(), cst.xy(5, r));
+        builder.add(nbRepoSamples.getField(), cst.xy(7, r));
+
+        builder.add(nbTrainSamples.getLabel(), cst.xy(9, r));
+        builder.add(nbTrainSamples.getField(), cst.xy(11, r));
 
         r += 2; // ----------------------------
+
         builder.add(new JButton(selectAction), cst.xy(3, r));
-        builder.add(nbSelectedSamples.getLabel(), cst.xy(9, r));
-        builder.add(nbSelectedSamples.getField(), cst.xy(11, r));
+
+        builder.add(new JButton(storeAction), cst.xy(5, r));
+
+        builder.add(nbTestSamples.getLabel(), cst.xy(9, r));
+        builder.add(nbTestSamples.getField(), cst.xy(11, r));
     }
 
     //---------------//
@@ -319,6 +314,19 @@ class SelectionPanel
     private void inputParams ()
     {
         ///constants.maxSimilar.setValue(similar.getValue());
+    }
+
+    //-----------------//
+    // setTotalSamples //
+    //-----------------//
+    /**
+     * Notify the total number of samples in the base
+     *
+     * @param total the total number of samples available
+     */
+    private void setTotalSamples (int total)
+    {
+        nbRepoSamples.setText(Integer.toString(total));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -383,51 +391,6 @@ class SelectionPanel
         }
     }
 
-    //------------//
-    // DumpAction //
-    //------------//
-    private class DumpAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public DumpAction ()
-        {
-            super("Dump");
-            putValue(Action.SHORT_DESCRIPTION, "Dump the current sample selection");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            logger.warn("Not implemented");
-
-            //            List<String> gNames = getTrainSamples(trainingPanel.useWhole());
-            //            System.out.println(
-            //                    "Content of " + (trainingPanel.useWhole() ? "whole" : "core") + " population ("
-            //                    + gNames.size() + "):");
-            //            Collections.sort(gNames, SampleRepository.shapeComparator);
-            //
-            //            int sampleNb = 0;
-            //            String prevName = null;
-            //
-            //            for (String gName : gNames) {
-            //                if (prevName != null) {
-            //                    if (!SampleRepository.shapeNameOf(gName).equals(prevName)) {
-            //                        System.out.println(String.format("%4d %s", sampleNb, prevName));
-            //                        sampleNb = 1;
-            //                    }
-            //                }
-            //
-            //                sampleNb++;
-            //                prevName = SampleRepository.shapeNameOf(gName);
-            //            }
-            //
-            //            System.out.println(String.format("%4d %s", sampleNb, prevName));
-        }
-    }
-
     //-------------//
     // ParamAction //
     //-------------//
@@ -443,28 +406,6 @@ class SelectionPanel
         {
             inputParams();
             displayParams();
-        }
-    }
-
-    //---------------//
-    // RefreshAction //
-    //---------------//
-    private class RefreshAction
-            extends AbstractAction
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public RefreshAction ()
-        {
-            super("Disk Refresh");
-            putValue(Action.SHORT_DESCRIPTION, "Refresh trainer with disk information");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            //            repository.refreshBases();
         }
     }
 
@@ -494,12 +435,44 @@ class SelectionPanel
                 {
                     task.setActivity(SELECTION);
 
+                    trains = null;
+                    tests = null;
+
                     getTrainSamples();
 
-                    ///repository.storeCoreBase();
                     task.setActivity(INACTIVE);
                 }
             });
+        }
+    }
+
+    //-------------//
+    // StoreAction //
+    //-------------//
+    private class StoreAction
+            extends AbstractAction
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public StoreAction ()
+        {
+            super("Store");
+            putValue(Action.SHORT_DESCRIPTION, "Store train/test selections as .csv files");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            System.out.println(ShapeSet.getPhysicalShapeNamesString());
+
+            GlyphDescriptor imgDesc = new ImgGlyphDescriptor();
+            imgDesc.export("train", getTrainSamples(), true);
+            imgDesc.export("test", getTestSamples(), false);
+
+            GlyphDescriptor mixDesc = new MixGlyphDescriptor();
+            mixDesc.export("train", getTrainSamples(), true);
+            mixDesc.export("test", getTestSamples(), false);
         }
     }
 }
