@@ -235,7 +235,7 @@ public class VerticalsBuilder
             Point center = stick.getCenter();
             Staff staff = system.getClosestStaff(center);
 
-            if (center.x < staff.getHeaderStop()) {
+            if (staff == null || center.x < staff.getHeaderStop()) {
                 continue;
             }
 

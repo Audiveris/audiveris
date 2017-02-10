@@ -166,14 +166,19 @@ public class BeamStructure
 
         for (BeamLine line : lines) {
             Line2D median = line.median;
-            double itemSlope = LineUtil.getSlope(median);
+            double width = median.getX2() - median.getX1();
 
-            if (prevItemSlope != null) {
-                double beamSlopeGap = Math.abs(itemSlope - prevItemSlope);
-                maxItemGap = Math.max(maxItemGap, beamSlopeGap);
+            // Discard too short line, its slope is not reliable enough
+            if (width > params.maxHookWidth) {
+                double itemSlope = LineUtil.getSlope(median);
+
+                if (prevItemSlope != null) {
+                    double beamSlopeGap = Math.abs(itemSlope - prevItemSlope);
+                    maxItemGap = Math.max(maxItemGap, beamSlopeGap);
+                }
+
+                prevItemSlope = itemSlope;
             }
-
-            prevItemSlope = itemSlope;
         }
 
         return maxItemGap;

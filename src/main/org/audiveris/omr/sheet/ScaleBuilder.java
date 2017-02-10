@@ -268,19 +268,19 @@ public class ScaleBuilder
     // getMaxWhite //
     //-------------//
     /**
-     * Return the typical white gap between (larger) staff lines.
+     * Return the maximum white gap between (larger) staff lines.
      *
      * @return (larger) white gap
      */
     private int getMaxWhite ()
     {
-        int maxCombo = comboPeak.main;
+        int maxCombo = comboPeak.max;
 
         if (comboPeak2 != null) {
-            maxCombo = Math.max(maxCombo, comboPeak2.main);
+            maxCombo = Math.max(maxCombo, comboPeak2.max);
         }
 
-        return maxCombo - blackPeak.main;
+        return maxCombo - blackPeak.min;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
