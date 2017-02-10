@@ -194,7 +194,7 @@ public class SlursBuilder
         g.setColor(SLUR_CURVES);
 
         Stroke lineStroke = new BasicStroke(
-                (float) sheet.getScale().getMainFore(),
+                (float) sheet.getScale().getFore(),
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND);
         g.setStroke(lineStroke);

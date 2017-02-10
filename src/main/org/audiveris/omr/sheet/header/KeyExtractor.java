@@ -920,7 +920,7 @@ public class KeyExtractor
 
             {
                 // Use staff specific interline value
-                final InterlineScale specific = scale.getSpecificInterlineScale(staffSpecific);
+                final InterlineScale specific = scale.getInterlineScale(staffSpecific);
                 minPartWeight = specific.toPixels(constants.minPartWeight);
                 maxPartGap = specific.toPixelsDouble(constants.maxPartGap);
                 minGlyphWidth = specific.toPixelsDouble(constants.minGlyphWidth);

@@ -135,7 +135,7 @@ public abstract class PageCleaner
         final float marginThickness = (float) scale.toPixelsDouble(constants.lineMargin);
         marginStroke = new BasicStroke(marginThickness, CAP_SQUARE, JOIN_MITER);
 
-        float lineThickness = scale.getMainFore() + (2 * marginThickness);
+        float lineThickness = scale.getFore() + (2 * marginThickness);
         lineStroke = new BasicStroke(lineThickness, CAP_SQUARE, JOIN_MITER);
 
         // No anti-aliasing

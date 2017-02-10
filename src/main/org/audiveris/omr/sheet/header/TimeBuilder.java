@@ -1509,7 +1509,7 @@ public abstract class TimeBuilder
         {
             {
                 // Use sheet large interline scale
-                final InterlineScale large = scale.getLargeInterlineScale();
+                final InterlineScale large = scale.getInterlineScale();
                 roiWidth = large.toPixels(constants.roiWidth);
                 maxFirstSpaceWidth = large.toPixels(constants.maxFirstSpaceWidth);
                 maxInnerSpace = large.toPixels(constants.maxInnerSpace);
@@ -1517,7 +1517,7 @@ public abstract class TimeBuilder
 
             {
                 // Use staff specific interline value
-                final InterlineScale specific = scale.getSpecificInterlineScale(staffSpecific);
+                final InterlineScale specific = scale.getInterlineScale(staffSpecific);
                 yMargin = specific.toPixels(constants.yMargin);
                 minTimeWidth = specific.toPixels(constants.minTimeWidth);
                 maxTimeWidth = specific.toPixels(constants.maxTimeWidth);

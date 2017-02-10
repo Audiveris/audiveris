@@ -665,7 +665,7 @@ public class ClefBuilder
 
             {
                 // Use sheet large interline scale
-                final InterlineScale large = scale.getLargeInterlineScale();
+                final InterlineScale large = scale.getInterlineScale();
                 maxClefEnd = large.toPixels(constants.maxClefEnd);
                 beltMargin = large.toPixels(constants.beltMargin);
                 xCoreMargin = large.toPixels(constants.xCoreMargin);
@@ -674,7 +674,7 @@ public class ClefBuilder
 
             {
                 // Use staff specific interline value
-                final InterlineScale specific = scale.getSpecificInterlineScale(staffSpecific);
+                final InterlineScale specific = scale.getInterlineScale(staffSpecific);
                 aboveStaff = specific.toPixels(constants.aboveStaff);
                 belowStaff = specific.toPixels(constants.belowStaff);
                 minPartWeight = specific.toPixels(constants.minPartWeight);

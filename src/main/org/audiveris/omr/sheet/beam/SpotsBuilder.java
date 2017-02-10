@@ -114,7 +114,7 @@ public class SpotsBuilder
             // Retrieve major spots
             watch.start("buildSpots");
 
-            int beam = sheet.getScale().getBeamThicknessMain();
+            int beam = sheet.getScale().getBeamThickness();
             List<Glyph> spots = buildSpots(buffer, null, beam, null);
 
             // Dispatch spots per system(s)

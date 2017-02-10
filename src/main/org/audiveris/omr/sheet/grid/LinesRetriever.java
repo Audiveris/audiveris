@@ -120,7 +120,7 @@ public class LinesRetriever
     /** Long horizontal filaments found, non sorted. */
     private List<StaffFilament> filaments;
 
-    /** Second collection of filaments */
+    /** Second collection of filaments. (for small staves) */
     private List<StaffFilament> secondFilaments;
 
     /** Sloped filaments */
@@ -136,7 +136,7 @@ public class LinesRetriever
     private ClustersRetriever clustersRetriever;
 
     /** Companion in charge of clusters of second interline, if any */
-    private ClustersRetriever secondClustersRetriever;
+    private ClustersRetriever smallClustersRetriever;
 
     /** Companion in charge of bar lines */
     final BarsRetriever barsRetriever;
@@ -349,8 +349,8 @@ public class LinesRetriever
                 clustersRetriever.renderItems(g);
             }
 
-            if (secondClustersRetriever != null) {
-                secondClustersRetriever.renderItems(g);
+            if (smallClustersRetriever != null) {
+                smallClustersRetriever.renderItems(g);
             }
         }
 
@@ -452,21 +452,21 @@ public class LinesRetriever
                     Colors.COMB);
             watch.start("clustersRetriever");
 
-            Integer secondInterline = scale.getInterline2();
-            discardedFilaments = clustersRetriever.buildInfo(secondInterline != null);
+            Integer smallInterline = scale.getSmallInterline();
+            discardedFilaments = clustersRetriever.buildInfo(smallInterline != null);
 
-            // Check for a second interline
-            if ((secondInterline != null) && !discardedFilaments.isEmpty()) {
+            // Check for a small interline
+            if ((smallInterline != null) && !discardedFilaments.isEmpty()) {
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Entities.byId);
-                logger.info("Searching clusters with secondInterline: {}", secondInterline);
-                secondClustersRetriever = new ClustersRetriever(
+                logger.info("Searching clusters with smallInterline: {}", smallInterline);
+                smallClustersRetriever = new ClustersRetriever(
                         sheet,
                         secondFilaments,
-                        scale.getInterlineScale2(),
+                        scale.getSmallInterlineScale(),
                         Colors.COMB_MINOR);
-                watch.start("secondClustersRetriever");
-                discardedFilaments = secondClustersRetriever.buildInfo(false);
+                watch.start("smallClustersRetriever");
+                discardedFilaments = smallClustersRetriever.buildInfo(false);
             }
 
             if (logger.isDebugEnabled()) {
@@ -504,11 +504,11 @@ public class LinesRetriever
 
         Integer smallInterline = null;
 
-        if (secondClustersRetriever != null) {
-            allClusters.addAll(secondClustersRetriever.getClusters());
+        if (smallClustersRetriever != null) {
+            allClusters.addAll(smallClustersRetriever.getClusters());
             smallInterline = Math.min(
                     clustersRetriever.getInterline(),
-                    secondClustersRetriever.getInterline());
+                    smallClustersRetriever.getInterline());
         }
 
         Collections.sort(allClusters, clustersRetriever.byLayout);
@@ -593,7 +593,7 @@ public class LinesRetriever
         double yLine = lineFilament.getPositionAt(xMid, HORIZONTAL);
         double yFil = fil.getPositionAt(xMid, HORIZONTAL);
         double dy = Math.abs(yLine - yFil);
-        double gap = dy - (scale.getMainFore() / 2.0);
+        double gap = dy - (scale.getFore() / 2.0);
 
         if (gap > params.maxStickerGap) {
             if (logger.isDebugEnabled() || isVip) {
@@ -682,7 +682,7 @@ public class LinesRetriever
         // Check entity center gap with theoretical line
         double yFil = filament.getPositionAt(xMid, HORIZONTAL);
         double dy = Math.abs(yFil - section.getCentroid2D().getY());
-        double gap = dy - (scale.getMainFore() / 2.0);
+        double gap = dy - (scale.getFore() / 2.0);
 
         if (gap > params.maxStickerGap) {
             if (logger.isDebugEnabled() || isVip) {
@@ -935,7 +935,7 @@ public class LinesRetriever
                     final double minX = startPt.getX();
                     final double maxX = stopPt.getX();
                     final Rectangle lineBox = filament.getBounds();
-                    lineBox.grow(0, scale.getMainFore());
+                    lineBox.grow(0, scale.getFore());
 
                     final int minY = lineBox.y;
                     final int maxY = lineBox.y + lineBox.height;
@@ -1015,7 +1015,7 @@ public class LinesRetriever
                     final Point2D startPoint = fil.getEndPoint(LEFT);
                     final Point2D stopPoint = fil.getEndPoint(RIGHT);
                     final Rectangle lineBox = fil.getBounds();
-                    lineBox.grow(0, scale.getMainFore());
+                    lineBox.grow(0, scale.getFore());
 
                     final double minX = fil.getStartPoint().getX();
                     final double maxX = fil.getStopPoint().getX();
@@ -1309,7 +1309,7 @@ public class LinesRetriever
             StaffPattern pattern = new StaffPattern(
                     staff.getLineCount(),
                     params.patternWidth,
-                    scale.getMainFore(),
+                    scale.getFore(),
                     scale.getInterline());
 
             // Find the most probable upper left ordinate

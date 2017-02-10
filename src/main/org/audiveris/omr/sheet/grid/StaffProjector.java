@@ -1349,7 +1349,7 @@ public class StaffProjector
         {
             {
                 // Use sheet large interline value
-                final InterlineScale large = scale.getLargeInterlineScale();
+                final InterlineScale large = scale.getInterlineScale();
                 staffAbscissaMargin = large.toPixels(constants.staffAbscissaMargin);
                 barChunkDx = large.toPixels(constants.barChunkDx);
                 barRefineDx = large.toPixels(constants.barRefineDx);
@@ -1363,7 +1363,7 @@ public class StaffProjector
 
             {
                 // Use staff specific interline value
-                final InterlineScale specific = scale.getSpecificInterlineScale(staffSpecific);
+                final InterlineScale specific = scale.getInterlineScale(staffSpecific);
                 minDerivative = specific.toPixels(constants.minDerivative);
                 barThreshold = specific.toPixels(constants.barThreshold);
                 braceThreshold = specific.toPixels(constants.braceThreshold);

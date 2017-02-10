@@ -1858,7 +1858,7 @@ public class StemsBuilder
             maxSeedJitter = constants.maxSeedJitter.getValue() * stemThickness;
             maxSectionJitter = constants.maxSectionJitter.getValue() * stemThickness;
 
-            minChunkWeight = scale.getStemMainThickness(); // TODO: check this
+            minChunkWeight = scale.getStemThickness(); // TODO: check this
 
             Double beamDistance = scale.getBeamMeanDistance();
 

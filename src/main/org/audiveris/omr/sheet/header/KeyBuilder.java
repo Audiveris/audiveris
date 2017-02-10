@@ -2413,7 +2413,7 @@ public class KeyBuilder
 
             {
                 // Use sheet large interline scale
-                final InterlineScale large = scale.getLargeInterlineScale();
+                final InterlineScale large = scale.getInterlineScale();
                 preStaffMargin = large.toPixels(constants.preStaffMargin);
                 maxFirstPeakOffset = large.toPixels(constants.maxFirstPeakOffset);
                 maxFirstSpaceWidth = large.toPixels(constants.maxFirstSpaceWidth);
@@ -2430,7 +2430,7 @@ public class KeyBuilder
 
             {
                 // Use staff specific interline value
-                final InterlineScale specific = scale.getSpecificInterlineScale(staffSpecific);
+                final InterlineScale specific = scale.getInterlineScale(staffSpecific);
                 maxSpaceCumul = specific.toPixels(constants.maxSpaceCumul);
 
                 minPeakDerivative = specific.toPixels(constants.minPeakDerivative);

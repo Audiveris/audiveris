@@ -164,7 +164,7 @@ public class LedgersBuilder
         sig = system.getSig();
         sheet = system.getSheet();
         scale = sheet.getScale();
-        largeScale = scale.getLargeInterlineScale();
+        largeScale = scale.getInterlineScale();
 
         suites = new Suites(scale);
 
@@ -1063,13 +1063,13 @@ public class LedgersBuilder
         //~ Constructors ---------------------------------------------------------------------------
         public Suites (Scale sheetScale)
         {
-            final Integer interline = sheetScale.getInterline();
-            map.put(interline, new LedgerSuite(sheetScale.getInterlineScale()));
+            final Integer large = sheetScale.getInterline();
+            map.put(large, new LedgerSuite(sheetScale.getInterlineScale()));
 
-            final Integer interline2 = sheetScale.getInterline2();
+            final Integer small = sheetScale.getSmallInterline();
 
-            if (interline2 != null) {
-                map.put(interline2, new LedgerSuite(sheetScale.getInterlineScale2()));
+            if (small != null) {
+                map.put(small, new LedgerSuite(sheetScale.getSmallInterlineScale()));
             }
         }
 

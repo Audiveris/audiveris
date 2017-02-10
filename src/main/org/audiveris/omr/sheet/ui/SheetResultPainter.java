@@ -412,7 +412,7 @@ public class SheetResultPainter
 
             if (scale != null) {
                 lineStroke = new BasicStroke(
-                        (float) sheet.getScale().getMainFore(),
+                        (float) sheet.getScale().getFore(),
                         BasicStroke.CAP_ROUND,
                         BasicStroke.JOIN_ROUND);
                 g.setStroke(lineStroke);

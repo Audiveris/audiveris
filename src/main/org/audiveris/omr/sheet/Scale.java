@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -47,9 +48,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Primary informations: This data is always detected, otherwise the current page is detected as not
  * being a music page.<ul>
  * <li><b>Staff line thickness</b> (fore): min, main, max.</li>
- * <li><b>Staff interline</b>: min, main, max.</li>
+ * <li><b>Staff interline</b>: min, main, max. (Vertical distance measured from line center to line
+ * center)</li>
  * </ul>
- * <p>
  * Secondary informations: This data is always made available, either based on detected value or
  * derived from other information.<ul>
  * <li><b>Beam thickness</b>: main. A second peak in the histogram of vertical foreground runs
@@ -57,17 +58,15 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Otherwise it is computed as a ratio of main background length between staff lines.</li>
  * <li><b>Stem thickness</b>: main, max. These values are computed during STEM_SEEDS step.</li>
  * </ul>
- * <p>
- * Optional informations: Some of this data may be detected, according to the page at hand.<ul>
- * <li><b>Staff 2nd interline</b>: min, main, max. A second peak in the histogram of vertical
- * background runs signals the presence of staves with a different interline value.
- * Note this 2nd interline is second in frequency, not necessarily in value (staff interline).</li>
+ * Optional informations: This data may exist or not, according to the sheet at hand.<ul>
+ * <li><b>Small staff interline</b>: min, main, max.
+ * If a second peak is detected in the histogram of background runs, it signals the presence of
+ * staves with a different interline value.
+ * In that case, "small interline" will point to the smaller and "interline" to the larger.</li>
  * </ul>
- * <p>
  * This class also provides methods for converting values based on what the interline and the line
  * thickness are actually worth.
  * There are two different measurements, pixels and fractions:
- *
  * <dl>
  * <dt><b>pixel</b></dt>
  * <dd> This is simply an absolute number of pixels, so generally an integer.</dd>
@@ -98,13 +97,17 @@ public class Scale
     @XmlElement(name = "line")
     private final LineScale lineScale;
 
-    /** Main interline scale. */
+    /** Large interline scale. */
     @XmlElement(name = "interline")
-    private final InterlineScale interlineScale;
+    private InterlineScale interlineScale;
 
-    /** Second interline scale, if any. */
+    /** Small interline scale, if any. */
+    @XmlElement(name = "small-interline")
+    private InterlineScale smallInterlineScale;
+
+    /** Second interline scale, if any. Temporarily kept for compatibility. */
     @XmlElement(name = "second-interline")
-    private final InterlineScale interlineScale2;
+    private InterlineScale interlineScale2;
 
     /** Beam scale. */
     @XmlElement(name = "beam")
@@ -118,20 +121,22 @@ public class Scale
     /**
      * Create a scale entity, meant for a whole sheet.
      *
-     * @param lineScale       scale of line thickness
-     * @param interlineScale  scale of interline
-     * @param interlineScale2 scale of second interline, perhaps null
-     * @param beamScale       beam scale information
+     * @param lineScale           scale of line thickness
+     * @param interlineScale      scale of (large) interline
+     * @param smallInterlineScale scale of small interline, perhaps null
+     * @param beamScale           scale of beam
      */
     public Scale (LineScale lineScale,
                   InterlineScale interlineScale,
-                  InterlineScale interlineScale2,
+                  InterlineScale smallInterlineScale,
                   BeamScale beamScale)
     {
         this.lineScale = lineScale;
         this.interlineScale = interlineScale;
-        this.interlineScale2 = interlineScale2;
+        this.smallInterlineScale = smallInterlineScale;
         this.beamScale = beamScale;
+
+        interlineScale2 = null;
     }
 
     /** No-arg constructor, needed by JAXB. */
@@ -167,19 +172,32 @@ public class Scale
         return beamScale.getDistanceSigma();
     }
 
-    //----------------------//
-    // getBeamThicknessMain //
-    //----------------------//
+    //------------------//
+    // getBeamThickness //
+    //------------------//
     /**
      * Report the main thickness for beams.
      *
      * @return main beam thickness
      */
-    public int getBeamThicknessMain ()
+    public int getBeamThickness ()
     {
         Objects.requireNonNull(beamScale, "This scale instance has no beam information");
 
         return beamScale.getMain();
+    }
+
+    //---------//
+    // getFore //
+    //---------//
+    /**
+     * Report the line thickness this scale is based upon.
+     *
+     * @return the number of black pixels in a staff line
+     */
+    public int getFore ()
+    {
+        return lineScale.main;
     }
 
     //--------------//
@@ -202,45 +220,26 @@ public class Scale
      * Report the main interline value within the small or large family
      *
      * @param small true for small family, false for large family
-     * @return the smaller interline or null
+     * @return the smaller interline value
      */
     public int getInterline (boolean small)
     {
-        if (interlineScale2 == null) {
+        if (!small) {
             return interlineScale.main;
         }
 
-        if (small) {
-            return Math.min(interlineScale2.main, interlineScale.main);
-        } else {
-            return Math.max(interlineScale2.main, interlineScale.main);
+        if (smallInterlineScale != null) {
+            return smallInterlineScale.main;
         }
-    }
 
-    //---------------//
-    // getInterline2 //
-    //---------------//
-    /**
-     * Report the secondary interline value this scale is based upon.
-     * It may be larger or smaller than the main interline value.
-     *
-     * @return the second number if any of pixels (black + white) from one line
-     *         to the other, otherwise null.
-     */
-    public Integer getInterline2 ()
-    {
-        if (interlineScale2 != null) {
-            return interlineScale2.main;
-        } else {
-            return null;
-        }
+        throw new IllegalArgumentException("No small interline value");
     }
 
     //-------------------//
     // getInterlineScale //
     //-------------------//
     /**
-     * Report the main scale. It may be larger or smaller than potential secondary scale.
+     * Report the (large) interline scale.
      *
      * @return the interlineScale
      */
@@ -256,19 +255,11 @@ public class Scale
      * Report the large or small scale, according to boolean value.
      *
      * @param small true for getting small scale, false for getting large scale
-     * @return the desired interlineScale
+     * @return the desired interlineScale, perhaps null if no small exists
      */
     public InterlineScale getInterlineScale (boolean small)
     {
-        if (interlineScale2 == null) {
-            return interlineScale;
-        }
-
-        if (interlineScale2.main < interlineScale.main) {
-            return small ? interlineScale2 : interlineScale;
-        } else {
-            return small ? interlineScale : interlineScale2;
-        }
+        return small ? smallInterlineScale : interlineScale;
     }
 
     //-------------------//
@@ -286,50 +277,24 @@ public class Scale
             return interlineScale;
         }
 
-        if ((interlineScale2 != null) && (interlineScale2.main == interline)) {
-            return interlineScale2;
+        if ((smallInterlineScale != null) && (smallInterlineScale.main == interline)) {
+            return smallInterlineScale;
         }
 
         throw new IllegalArgumentException("No interline scale for provided value " + interline);
-    }
-
-    //--------------------//
-    // getInterlineScale2 //
-    //--------------------//
-    /**
-     * Report the secondary scale if any. It may be larger or smaller than main scale.
-     *
-     * @return the secondInterlineScale
-     */
-    public InterlineScale getInterlineScale2 ()
-    {
-        return interlineScale2;
     }
 
     //------------------------//
     // getLargeInterlineScale //
     //------------------------//
     /**
-     * Convenient method, to report the large interline scale within sheet.
+     * Same as {@link getInterlineScale()}, method defined for completeness.
      *
-     * @return the large interlineScale
+     * @return the (large) interlineScale
      */
     public InterlineScale getLargeInterlineScale ()
     {
-        return getInterlineScale(false);
-    }
-
-    //-------------//
-    // getMainFore //
-    //-------------//
-    /**
-     * Report the line thickness this scale is based upon.
-     *
-     * @return the number of black pixels in a staff line
-     */
-    public int getMainFore ()
-    {
-        return lineScale.main;
+        return interlineScale;
     }
 
     //------------//
@@ -338,7 +303,7 @@ public class Scale
     /**
      * Report the maximum line thickness (using standard percentile).
      *
-     * @return the maxFore value
+     * @return the max fore value
      */
     public int getMaxFore ()
     {
@@ -358,18 +323,18 @@ public class Scale
         return interlineScale.max;
     }
 
-    //-----------------------//
-    // getMaxSecondInterline //
-    //-----------------------//
+    //----------------------//
+    // getMaxSmallInterline //
+    //----------------------//
     /**
-     * Report the maximum second interline (using standard percentile).
+     * Report the maximum value of small interline if any (using standard percentile).
      *
-     * @return the maxSecondInterline if any, otherwise null
+     * @return the max smallInterline if any, otherwise null
      */
-    public Integer getMaxSecondInterline ()
+    public Integer getMaxSmallInterline ()
     {
-        if (interlineScale2 != null) {
-            return interlineScale2.max;
+        if (smallInterlineScale != null) {
+            return smallInterlineScale.max;
         } else {
             return null;
         }
@@ -388,11 +353,24 @@ public class Scale
         return stemScale.getMax();
     }
 
+    //------------//
+    // getMinFore //
+    //------------//
+    /**
+     * Report the minimum line thickness (using standard percentile).
+     *
+     * @return the min fore value
+     */
+    public int getMinFore ()
+    {
+        return lineScale.min;
+    }
+
     //-----------------//
     // getMinInterline //
     //-----------------//
     /**
-     * Report the minimum main interline (using standard percentile).
+     * Report the minimum (large) interline (using standard percentile).
      *
      * @return the minInterline
      */
@@ -401,55 +379,62 @@ public class Scale
         return interlineScale.min;
     }
 
-    //------------------//
-    // getMinInterline2 //
-    //------------------//
+    //----------------------//
+    // getMinSmallInterline //
+    //----------------------//
     /**
-     * Report the minimum second interline (using standard percentile).
+     * Report the minimum value of small interline (using standard percentile).
      *
-     * @return the minSecondInterline if any, otherwise null
+     * @return the min of smallInterline if any, otherwise null
      */
-    public Integer getMinInterline2 ()
+    public Integer getMinSmallInterline ()
     {
-        if (interlineScale2 != null) {
-            return interlineScale2.min;
+        if (smallInterlineScale != null) {
+            return smallInterlineScale.min;
         } else {
             return null;
         }
     }
 
-    //---------------------------//
-    // getSpecificInterlineScale //
-    //---------------------------//
+    //-------------------//
+    // getSmallInterline //
+    //-------------------//
     /**
-     * Report the interline scale that correspond to the provided interline value.
+     * Report the small interline value, if any.
      *
-     * @param specific interline value for a specific staff
-     * @return the desired interlineScale
-     * @throws IllegalArgumentException if the specific value is not known in sheet scale.
+     * @return the small interline, perhaps null.
      */
-    public InterlineScale getSpecificInterlineScale (int specific)
+    public Integer getSmallInterline ()
     {
-        if (interlineScale.main == specific) {
-            return interlineScale;
+        if (smallInterlineScale == null) {
+            return null;
         }
 
-        if ((interlineScale2 != null) && (interlineScale2.main == specific)) {
-            return interlineScale2;
-        }
-
-        throw new IllegalArgumentException("Illegal interline value: " + specific);
+        return smallInterlineScale.main;
     }
 
-    //----------------------//
-    // getStemMainThickness //
-    //----------------------//
+    //------------------------//
+    // getSmallInterlineScale //
+    //------------------------//
+    /**
+     * Report the small interline scale if any.
+     *
+     * @return the smallInterlineScale, perhaps null
+     */
+    public InterlineScale getSmallInterlineScale ()
+    {
+        return smallInterlineScale;
+    }
+
+    //------------------//
+    // getStemThickness //
+    //------------------//
     /**
      * Report the most frequent stem thickness (width).
      *
      * @return the most frequent stem thickness
      */
-    public int getStemMainThickness ()
+    public int getStemThickness ()
     {
         return stemScale.getMain();
     }
@@ -631,8 +616,8 @@ public class Scale
         sb.append("line").append(lineScale);
         sb.append(" interline").append(interlineScale);
 
-        if (interlineScale2 != null) {
-            sb.append(" interline2").append(interlineScale2);
+        if (smallInterlineScale != null) {
+            sb.append(" smallInterline").append(smallInterlineScale);
         }
 
         if (beamScale != null) {
@@ -646,6 +631,29 @@ public class Scale
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Called after all the properties (except IDREF) are unmarshalled for this object,
+     * but before this object is set to the parent object.
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
+    {
+        // Migrate old interline / interline2 to (large) interline / small interline
+        if (interlineScale2 != null) {
+            InterlineScale larger = (interlineScale.main > interlineScale2.main) ? interlineScale
+                    : interlineScale2;
+            InterlineScale smaller = (interlineScale.main < interlineScale2.main) ? interlineScale
+                    : interlineScale2;
+            interlineScale = larger;
+            smallInterlineScale = smaller;
+            interlineScale2 = null;
+        }
     }
 
     //--------------//
@@ -736,7 +744,6 @@ public class Scale
                           boolean extrapolated)
         {
             this.main = main;
-
             this.extra = extrapolated ? true : null;
         }
 
@@ -913,6 +920,18 @@ public class Scale
         }
 
         //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Compute the interline fraction that corresponds to the given number of pixels.
+         *
+         * @param pixels the equivalent in number of pixels
+         * @return the interline fraction
+         * @see #toPixels
+         */
+        public double pixelsToFrac (double pixels)
+        {
+            return pixels / main;
+        }
+
         public static int toPixels (int interline,
                                     Fraction frac)
         {
@@ -931,6 +950,12 @@ public class Scale
                                     AreaFraction areaFrac)
         {
             return (int) Math.rint(interline * interline * areaFrac.getValue());
+        }
+
+        public static double toPixelsDouble (int interline,
+                                             Fraction frac)
+        {
+            return interline * frac.getWrappedValue().doubleValue();
         }
 
         /**
@@ -956,12 +981,6 @@ public class Scale
             return toPixels(main, frac);
         }
 
-        public static double toPixelsDouble (int interline,
-                                             Fraction frac)
-        {
-            return interline * frac.getWrappedValue().doubleValue();
-        }
-
         /**
          * Convenient method, working directly on a constant of interline fraction.
          * Same as toPixels, but the result is a double instead of a rounded integer.
@@ -973,18 +992,6 @@ public class Scale
         public double toPixelsDouble (Fraction frac)
         {
             return toPixelsDouble(main, frac);
-        }
-
-        /**
-         * Compute the interline fraction that corresponds to the given number of pixels.
-         *
-         * @param pixels the equivalent in number of pixels
-         * @return the interline fraction
-         * @see #toPixels
-         */
-        public double pixelsToFrac (double pixels)
-        {
-            return pixels / main;
         }
     }
 

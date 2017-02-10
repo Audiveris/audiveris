@@ -169,8 +169,8 @@ public class ScaleBuilder
         // Here, we keep going on with scale data
         return new Scale(
                 new LineScale(blackPeak),
-                new InterlineScale(comboPeak),
-                (comboPeak2 != null) ? new InterlineScale(comboPeak2) : null,
+                computeInterline(),
+                computeSmallInterline(),
                 computeBeam());
     }
 
@@ -234,6 +234,34 @@ public class ScaleBuilder
         logger.warn("No global scale information available");
 
         return null;
+    }
+
+    //------------------//
+    // computeInterline //
+    //------------------//
+    private InterlineScale computeInterline ()
+    {
+        if ((comboPeak2 == null) || (comboPeak2.main < comboPeak.main)) {
+            return new InterlineScale(comboPeak);
+        } else {
+            return new InterlineScale(comboPeak2);
+        }
+    }
+
+    //-----------------------//
+    // computeSmallInterline //
+    //-----------------------//
+    private InterlineScale computeSmallInterline ()
+    {
+        if (comboPeak2 == null) {
+            return null;
+        }
+
+        if (comboPeak2.main < comboPeak.main) {
+            return new InterlineScale(comboPeak2);
+        } else {
+            return new InterlineScale(comboPeak);
+        }
     }
 
     //-------------//

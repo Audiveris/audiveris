@@ -1543,7 +1543,7 @@ public class BeamsBuilder
             minHookWidthHigh = scale.toPixelsDouble(constants.minHookWidthHigh);
             maxHookWidth = scale.toPixelsDouble(constants.maxHookWidth);
 
-            typicalHeight = scale.getBeamThicknessMain() * ratio;
+            typicalHeight = scale.getBeamThickness() * ratio;
             minHeightLow = typicalHeight * constants.minHeightRatioLow.getValue();
             maxHeightHigh = typicalHeight * constants.maxHeightRatioHigh.getValue();
 
@@ -1925,7 +1925,7 @@ public class BeamsBuilder
                 }
             }
 
-            double beam = params.cueBeamRatio * sheet.getScale().getBeamThicknessMain();
+            double beam = params.cueBeamRatio * sheet.getScale().getBeamThickness();
 
             return new SpotsBuilder(sheet).buildSpots(buf, box.getLocation(), beam, id);
         }

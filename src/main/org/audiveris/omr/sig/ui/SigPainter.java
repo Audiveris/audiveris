@@ -134,17 +134,16 @@ public class SigPainter
         // Determine proper music fonts
         if (scale == null) {
             musicFontLarge = musicFontSmall = null;
-        } else if (scale.getInterline2() == null) {
-            musicFontLarge = MusicFont.getFont(scale.getInterline());
-            musicFontSmall = null;
         } else {
-            musicFontLarge = MusicFont.getFont(scale.getInterline(false));
-            musicFontSmall = MusicFont.getFont(scale.getInterline(true));
+            musicFontLarge = MusicFont.getFont(scale.getInterline());
+
+            Integer small = scale.getSmallInterline();
+            musicFontSmall = (small != null) ? MusicFont.getFont(small) : null;
         }
 
         // Determine staff lines parameters
         lineStroke = new BasicStroke(
-                (scale != null) ? scale.getMainFore() : 2f,
+                (scale != null) ? scale.getFore() : 2f,
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND);
 

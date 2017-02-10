@@ -336,14 +336,7 @@ public class Staff
         try {
             // Specific interline for this staff
             Scale scale = system.getSheet().getScale();
-
-            if (scale.getInterline2() == null) {
-                specificInterline = scale.getInterline(); // Same interline for all staves
-            } else {
-                int smallInterline = Math.min(scale.getInterline(), scale.getInterline2());
-                int largeInterline = Math.max(scale.getInterline(), scale.getInterline2());
-                specificInterline = isSmall() ? smallInterline : largeInterline;
-            }
+            specificInterline = isSmall() ? scale.getSmallInterline() : scale.getInterline();
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
