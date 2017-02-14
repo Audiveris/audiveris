@@ -26,9 +26,9 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -38,13 +38,9 @@ import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.Shape.*;
-
 import org.audiveris.omr.glyph.Symbol.Group;
-
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Book;
@@ -63,9 +59,7 @@ import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.ui.symbol.Symbol;
 import org.audiveris.omr.ui.symbol.Symbols;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -78,6 +72,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -203,7 +198,7 @@ public class ClefBuilder
 
         // Register the remaining clef candidates
         if (!bestMap.isEmpty()) {
-            registerClefs(new ArrayList<ClefInter>(bestMap.values()));
+            registerClefs(bestMap.values());
         }
     }
 
@@ -480,9 +475,9 @@ public class ClefBuilder
      * Beware clef stop is defined as min stop over all remaining clef candidates for this staff,
      * which may be too left shifted.
      *
-     * @param clefs list of remaining candidates
+     * @param clefs collection of remaining candidates
      */
-    private void registerClefs (List<ClefInter> clefs)
+    private void registerClefs (Collection<ClefInter> clefs)
     {
         Integer minClefStop = null;
 

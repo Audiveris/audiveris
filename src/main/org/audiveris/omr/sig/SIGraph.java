@@ -874,16 +874,16 @@ public class SIGraph
      * @param cause  the exclusion cause
      * @return the exclusions inserted
      */
-    public List<Relation> insertExclusions (List<? extends Inter> inters,
+    public List<Relation> insertExclusions (Collection<? extends Inter> inters,
                                             Cause cause)
     {
-        ///logger.warn("insertExclusions for size: {}", inters.size());
+        List<Inter> list = new ArrayList<Inter>(new LinkedHashSet<Inter>(inters));
         List<Relation> exclusions = new ArrayList<Relation>();
 
-        for (int i = 0, iBreak = inters.size(); i < iBreak; i++) {
-            Inter inter = inters.get(i);
+        for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
+            Inter inter = list.get(i);
 
-            for (Inter other : inters.subList(i + 1, inters.size())) {
+            for (Inter other : list.subList(i + 1, inters.size())) {
                 exclusions.add(insertExclusion(inter, other, cause));
             }
         }

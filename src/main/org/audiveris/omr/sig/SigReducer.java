@@ -87,6 +87,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -493,6 +494,49 @@ public class SigReducer
         }
 
         sig.deleteInters(toDelete);
+    }
+
+    //------------------//
+    // analyzeHeadStems //
+    //------------------//
+    /**
+     * Check any head has at most one stem on left side and one stem on right side.
+     * If not, the various stems on a same side are mutually exclusive.
+     */
+    private void analyzeHeadStems ()
+    {
+        final List<Inter> heads = sig.inters(ShapeSet.NoteHeads.getShapes());
+
+        for (Inter head : heads) {
+            // Split connected stems into left and right sides
+            Set<Relation> stemRels = sig.getRelations(
+                    head,
+                    HeadStemRelation.class);
+            Map<HorizontalSide, Set<Inter>> map = new EnumMap<HorizontalSide, Set<Inter>>(
+                    HorizontalSide.class);
+
+            for (Relation relation : stemRels) {
+                HeadStemRelation rel = (HeadStemRelation) relation;
+                HorizontalSide side = rel.getHeadSide();
+                Set<Inter> list = map.get(side);
+
+                if (list == null) {
+                    map.put(side, list = new LinkedHashSet<Inter>());
+                }
+
+                StemInter stem = (StemInter) sig.getEdgeTarget(rel);
+                list.add(stem);
+            }
+
+            // Check each side
+            for (Entry<HorizontalSide, Set<Inter>> entry : map.entrySet()) {
+                Set<Inter> set = entry.getValue();
+
+                if (set.size() > 1) {
+                    sig.insertExclusions(set, Exclusion.Cause.OVERLAP);
+                }
+            }
+        }
     }
 
     //------------------//
@@ -1701,6 +1745,8 @@ public class SigReducer
         @Override
         public void prolog ()
         {
+            analyzeHeadStems(); // Check there is at most one stem on each side of any head
+
             analyzeChords(); // Heads & beams compatibility
         }
     }
