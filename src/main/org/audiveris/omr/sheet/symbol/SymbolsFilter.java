@@ -66,7 +66,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -253,7 +253,7 @@ public class SymbolsFilter
         {
             super(image);
 
-            optionals = new HashSet<Glyph>();
+            optionals = new LinkedHashSet<Glyph>();
 
             for (List<Glyph> glyphs : optionalMap.values()) {
                 optionals.addAll(glyphs);

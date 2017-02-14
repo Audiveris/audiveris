@@ -42,7 +42,6 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -484,7 +483,7 @@ public class TupletsBuilder
         private Set<AbstractChordInter> getBeamSiblings (AbstractChordInter chord)
         {
             SIGraph sig = chord.getSig();
-            Set<AbstractChordInter> set = new HashSet<AbstractChordInter>();
+            Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
             List<AbstractBeamInter> beams = chord.getBeams();
 
             for (AbstractBeamInter beam : beams) {

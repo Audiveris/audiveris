@@ -54,7 +54,6 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -407,7 +406,7 @@ public class Measure
      */
     public Set<AbstractChordInter> getAllChords ()
     {
-        final Set<AbstractChordInter> allChords = new HashSet<AbstractChordInter>();
+        final Set<AbstractChordInter> allChords = new LinkedHashSet<AbstractChordInter>();
         allChords.addAll(headChords);
         allChords.addAll(restChords);
         allChords.addAll(graceChords);
@@ -921,7 +920,7 @@ public class Measure
      */
     public Set<AbstractChordInter> getStandardChords ()
     {
-        final Set<AbstractChordInter> stdChords = new HashSet<AbstractChordInter>();
+        final Set<AbstractChordInter> stdChords = new LinkedHashSet<AbstractChordInter>();
         stdChords.addAll(headChords);
         stdChords.addAll(restChords);
 
@@ -1373,7 +1372,7 @@ public class Measure
     private Set<Inter> filterByStaff (Set<? extends Inter> inters,
                                       Staff staff)
     {
-        Set<Inter> found = new HashSet<Inter>();
+        Set<Inter> found = new LinkedHashSet<Inter>();
 
         for (Inter inter : inters) {
             if (inter.getStaff() == staff) {

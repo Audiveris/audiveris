@@ -112,7 +112,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -281,7 +281,7 @@ public class SigValue
 
             // Dispose of interSet: from now on, any marshalling will go directly to interDefs
             InterSet interSet = sig.getSystem().getInterSet();
-            HashSet<AbstractInter> defined = interSet.getInters();
+            LinkedHashSet<AbstractInter> defined = interSet.getInters();
             sig.getSystem().setInterSet(null);
 
             for (Inter inter : sig.vertexSet()) {
@@ -328,7 +328,7 @@ public class SigValue
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final HashSet<AbstractInter> defined = new HashSet<AbstractInter>();
+        private final LinkedHashSet<AbstractInter> defined = new LinkedHashSet<AbstractInter>();
 
         //~ Methods --------------------------------------------------------------------------------
         public void addInter (AbstractInter inter)
@@ -336,7 +336,7 @@ public class SigValue
             defined.add(inter);
         }
 
-        public HashSet<AbstractInter> getInters ()
+        public LinkedHashSet<AbstractInter> getInters ()
         {
             return defined;
         }

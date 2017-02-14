@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -80,7 +80,7 @@ public class SectionFactory
     private final JunctionPolicy junctionPolicy;
 
     /** Processed sections. true/false */
-    private final Set<Section> processedSections = new HashSet<Section>();
+    private final Set<Section> processedSections = new LinkedHashSet<Section>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

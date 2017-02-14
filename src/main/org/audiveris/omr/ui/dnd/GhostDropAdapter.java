@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.dnd;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -43,7 +43,7 @@ public abstract class GhostDropAdapter<A>
     protected final GhostGlassPane glassPane;
 
     /** The registered listeners */
-    private final Set<GhostDropListener<A>> listeners = new HashSet<GhostDropListener<A>>();
+    private final Set<GhostDropListener<A>> listeners = new LinkedHashSet<GhostDropListener<A>>();
 
     /** The event-carried action */
     protected A action;

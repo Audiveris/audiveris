@@ -176,7 +176,7 @@ public class SymbolsModel
         //         * (GlyphBuilder). Should work on a micro scale : just the former stem
         //         * and the neighboring (non-assigned) glyphs.
         //         */
-        //        Set<SystemInfo> impactedSystems = new HashSet<SystemInfo>();
+        //        Set<SystemInfo> impactedSystems = new LinkedHashSet<SystemInfo>();
         //
         //        for (Glyph stem : stems) {
         //            SystemInfo system = sheet.getSystemOf(stem);

@@ -86,7 +86,6 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -348,7 +347,7 @@ public class SigReducer
                     Set<Inter> set = heads.get(shape);
 
                     if (set == null) {
-                        heads.put(shape, set = new HashSet<Inter>());
+                        heads.put(shape, set = new LinkedHashSet<Inter>());
                     }
 
                     set.add(head);
@@ -358,7 +357,7 @@ public class SigReducer
                     Set<Inter> set = beams.get(size);
 
                     if (set == null) {
-                        beams.put(size, set = new HashSet<Inter>());
+                        beams.put(size, set = new LinkedHashSet<Inter>());
                     }
 
                     set.add(beam);
@@ -473,7 +472,7 @@ public class SigReducer
      */
     private void analyzeFrozenInters ()
     {
-        Set<Inter> toDelete = new HashSet<Inter>();
+        Set<Inter> toDelete = new LinkedHashSet<Inter>();
 
         for (Inter inter : sig.vertexSet()) {
             if (inter.isFrozen()) {
@@ -939,7 +938,7 @@ public class SigReducer
      */
     private Set<Inter> checkSlurOnTuplet ()
     {
-        Set<Inter> deleted = new HashSet<Inter>();
+        Set<Inter> deleted = new LinkedHashSet<Inter>();
         final int maxSlurWidth = scale.toPixels(constants.maxTupletSlurWidth);
         final List<Inter> slurs = sig.inters(
                 new Predicate<Inter>()
@@ -1207,7 +1206,7 @@ public class SigReducer
             final Inter leftMirror = left.getMirror();
 
             if (leftMirror != null) {
-                mirrors = new HashSet<Inter>();
+                mirrors = new LinkedHashSet<Inter>();
                 mirrors.add(leftMirror);
 
                 if (left.getEnsemble() != null) {
@@ -1467,7 +1466,7 @@ public class SigReducer
      */
     private Set<Inter> reduce (Adapter adapter)
     {
-        final Set<Inter> allRemoved = new HashSet<Inter>();
+        final Set<Inter> allRemoved = new LinkedHashSet<Inter>();
 
         logger.debug("S#{} reducing sig ...", system.getId());
 
@@ -1484,8 +1483,8 @@ public class SigReducer
 
         adapter.prolog();
 
-        Set<Inter> reduced = new HashSet<Inter>(); // Reduced inters
-        Set<Inter> deleted = new HashSet<Inter>(); // Deleted inters
+        Set<Inter> reduced = new LinkedHashSet<Inter>(); // Reduced inters
+        Set<Inter> deleted = new LinkedHashSet<Inter>(); // Deleted inters
 
         do {
             reduced.clear();
@@ -1682,9 +1681,9 @@ public class SigReducer
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Set<Inter> deleted = new HashSet<Inter>();
+        Set<Inter> deleted = new LinkedHashSet<Inter>();
 
-        Set<Inter> reduced = new HashSet<Inter>();
+        Set<Inter> reduced = new LinkedHashSet<Inter>();
 
         //~ Methods --------------------------------------------------------------------------------
         public int checkConsistencies ()

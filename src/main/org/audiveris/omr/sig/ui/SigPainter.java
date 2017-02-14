@@ -80,7 +80,7 @@ import java.awt.Stroke;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.CubicCurve2D;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -159,7 +159,7 @@ public class SigPainter
         final int bracketGrowth = 2 * sig.getSystem().getSheet().getInterline();
 
         // Use a COPY of vertices, to reduce risks of concurrent modifications (but not all...)
-        Set<Inter> copy = new HashSet<Inter>(sig.vertexSet());
+        Set<Inter> copy = new LinkedHashSet<Inter>(sig.vertexSet());
 
         for (Inter inter : copy) {
             if (!inter.isDeleted()) {

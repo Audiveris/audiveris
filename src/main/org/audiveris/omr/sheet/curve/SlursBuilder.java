@@ -64,7 +64,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -713,7 +713,7 @@ public class SlursBuilder
      */
     private List<Arc> getSeedArcs ()
     {
-        Set<Arc> set = new HashSet<Arc>();
+        Set<Arc> set = new LinkedHashSet<Arc>();
 
         for (Arc arc : skeleton.arcsMap.values()) {
             if (arc.getLength() >= params.arcMinSeedLength) {
@@ -794,7 +794,7 @@ public class SlursBuilder
 
                 for (HorizontalSide side : HorizontalSide.values()) {
                     // Count ties for this chord on selected slur side
-                    final Set<SlurInter> ties = new HashSet<SlurInter>();
+                    final Set<SlurInter> ties = new LinkedHashSet<SlurInter>();
 
                     for (Inter nInter : chord.getNotes()) {
                         for (Relation rel : sig.getRelations(nInter, SlurHeadRelation.class)) {

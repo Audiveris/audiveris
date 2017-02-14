@@ -44,7 +44,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -66,7 +66,7 @@ public class GlyphService
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Manual and incremental user selection of glyphs. */
-    private final Set<Glyph> basket = new HashSet<Glyph>();
+    private final Set<Glyph> basket = new LinkedHashSet<Glyph>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

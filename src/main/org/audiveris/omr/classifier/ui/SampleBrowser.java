@@ -72,7 +72,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -391,7 +390,7 @@ public class SampleBrowser
         connectSelectors(false); // Disable standard triggers: sheets -> shapes -> samples
 
         // Select proper Sheets
-        Set<Descriptor> descSet = new HashSet<Descriptor>();
+        Set<Descriptor> descSet = new LinkedHashSet<Descriptor>();
 
         for (Sample sample : samples) {
             descSet.add(repository.getDescriptor(sample));

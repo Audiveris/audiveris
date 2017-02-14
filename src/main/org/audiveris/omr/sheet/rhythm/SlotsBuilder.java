@@ -54,7 +54,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -826,7 +825,7 @@ public class SlotsBuilder
     {
         for (Measure measure : stack.getMeasures()) {
             for (BeamGroup group : measure.getBeamGroups()) {
-                Set<AbstractChordInter> chordSet = new HashSet<AbstractChordInter>();
+                Set<AbstractChordInter> chordSet = new LinkedHashSet<AbstractChordInter>();
 
                 for (AbstractBeamInter beam : group.getBeams()) {
                     chordSet.addAll(beam.getChords());
@@ -1003,7 +1002,7 @@ public class SlotsBuilder
                 continue;
             }
 
-            Set<Inter> alignedStems = new HashSet<Inter>();
+            Set<Inter> alignedStems = new LinkedHashSet<Inter>();
 
             for (Relation rel : aligns) {
                 Inter inter = sig.getOppositeInter(stem1, rel);

@@ -53,7 +53,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -221,7 +220,7 @@ public abstract class CurvesBuilder
             points = curve.getAllPoints(arcView, reverse);
         }
 
-        Set<Arc> parts = new HashSet<Arc>(curve.getParts());
+        Set<Arc> parts = new LinkedHashSet<Arc>(curve.getParts());
         parts.add(arcView.getArc());
 
         return createInstance(firstJunction, lastJunction, points, model, parts);
@@ -349,7 +348,7 @@ public abstract class CurvesBuilder
         }
 
         // Combine candidates from both sides
-        Set<Inter> inters = new HashSet<Inter>();
+        Set<Inter> inters = new LinkedHashSet<Inter>();
 
         // Connect lefts & rights
         for (Curve sl : leftClump) {
@@ -411,7 +410,7 @@ public abstract class CurvesBuilder
         }
 
         // Build the set of parts
-        Set<Arc> parts = new HashSet<Arc>(left.getParts());
+        Set<Arc> parts = new LinkedHashSet<Arc>(left.getParts());
         parts.addAll(right.getParts());
 
         return createInstance(
@@ -552,7 +551,7 @@ public abstract class CurvesBuilder
                                      Rectangle box,
                                      boolean crossable)
     {
-        Set<Inter> found = new HashSet<Inter>();
+        Set<Inter> found = new LinkedHashSet<Inter>();
         List<Inter> inters = skeleton.getErasedInters(crossable).get(system);
 
         for (Inter inter : inters) {
@@ -747,7 +746,7 @@ public abstract class CurvesBuilder
      */
     private Set<ArcView> findReachableArcs (Extension ext)
     {
-        final Set<ArcView> reachableArcs = new HashSet<ArcView>();
+        final Set<ArcView> reachableArcs = new LinkedHashSet<ArcView>();
         final Area area = defineExtArea(ext.curve);
 
         if (area != null) {

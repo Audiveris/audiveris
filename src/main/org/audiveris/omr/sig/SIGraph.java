@@ -57,7 +57,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -295,7 +294,7 @@ public class SIGraph
      */
     public Set<Inter> deleteWeakInters ()
     {
-        Set<Inter> removed = new HashSet<Inter>();
+        Set<Inter> removed = new LinkedHashSet<Inter>();
 
         for (Inter inter : vertexSet()) {
             if (inter.getContextualGrade() < Inter.minContextualGrade) {
@@ -337,7 +336,7 @@ public class SIGraph
      */
     public Set<Relation> exclusions ()
     {
-        Set<Relation> exclusions = new HashSet<Relation>();
+        Set<Relation> exclusions = new LinkedHashSet<Relation>();
 
         for (Relation rel : edgeSet()) {
             if (rel instanceof Exclusion) {
@@ -429,7 +428,7 @@ public class SIGraph
 
         for (int i = 0; i < n; i++) {
             Inter inter = inters.get(i);
-            Set<Integer> concurrents = new HashSet<Integer>();
+            Set<Integer> concurrents = new LinkedHashSet<Integer>();
             concurrentSets.add(concurrents);
 
             for (Relation rel : getExclusions(inter)) {
@@ -1021,7 +1020,7 @@ public class SIGraph
     public boolean noSupport (Inter one,
                               Inter two)
     {
-        Set<Relation> rels = new HashSet<Relation>();
+        Set<Relation> rels = new LinkedHashSet<Relation>();
         rels.addAll(getAllEdges(one, two));
         rels.addAll(getAllEdges(two, one));
 
@@ -1067,7 +1066,7 @@ public class SIGraph
      */
     public Set<Inter> reduceExclusions (Collection<? extends Relation> exclusions)
     {
-        final Set<Inter> removed = new HashSet<Inter>();
+        final Set<Inter> removed = new LinkedHashSet<Inter>();
         Relation bestRel;
 
         do {
@@ -1275,7 +1274,7 @@ public class SIGraph
     //----------------//
     private Set<Inter> involvedInters (Collection<? extends Relation> relations)
     {
-        Set<Inter> inters = new HashSet<Inter>();
+        Set<Inter> inters = new LinkedHashSet<Inter>();
 
         for (Relation rel : relations) {
             inters.add(getEdgeSource(rel));

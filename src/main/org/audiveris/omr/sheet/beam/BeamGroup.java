@@ -56,7 +56,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -100,7 +100,7 @@ public class BeamGroup
     @XmlList
     @XmlIDREF
     @XmlElement
-    private final HashSet<AbstractBeamInter> beams = new HashSet<AbstractBeamInter>();
+    private final LinkedHashSet<AbstractBeamInter> beams = new LinkedHashSet<AbstractBeamInter>();
 
     /** Indicates a beam group that is linked to more than one staff. */
     @XmlAttribute(name = "multi-staff")
@@ -353,7 +353,7 @@ public class BeamGroup
     {
         for (Measure measure : stack.getMeasures()) {
             // Retrieve beams in this measure
-            Set<AbstractBeamInter> beams = new HashSet<AbstractBeamInter>();
+            Set<AbstractBeamInter> beams = new LinkedHashSet<AbstractBeamInter>();
 
             for (AbstractChordInter chord : measure.getHeadChords()) {
                 beams.addAll(chord.getBeams());
@@ -647,7 +647,7 @@ public class BeamGroup
      */
     private void countStaves ()
     {
-        Set<Staff> staves = new HashSet<Staff>();
+        Set<Staff> staves = new LinkedHashSet<Staff>();
 
         for (AbstractBeamInter beam : beams) {
             SIGraph sig = beam.getSig();
@@ -795,7 +795,7 @@ public class BeamGroup
             // Check all former beams: any beam linked to the detected alienChord should be
             // moved to the alienGroup.
             // (This cannot apply to beam hooks, they will be processed later)
-            alienBeams = new HashSet<AbstractBeamInter>(alienChord.getBeams());
+            alienBeams = new LinkedHashSet<AbstractBeamInter>(alienChord.getBeams());
 
             // Now apply the move
             for (AbstractBeamInter beam : alienBeams) {

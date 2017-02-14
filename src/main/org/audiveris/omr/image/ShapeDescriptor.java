@@ -39,7 +39,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -588,7 +588,7 @@ public class ShapeDescriptor
     //------------//
     private Set<Point> getBorders (BufferedImage img)
     {
-        final Set<Point> borders = new HashSet<Point>();
+        final Set<Point> borders = new LinkedHashSet<Point>();
 
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {

@@ -69,7 +69,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -108,7 +108,7 @@ public class KeyExtractor
     private final Classifier classifier = ShapeClassifier.getInstance();
 
     /** All glyphs submitted to classifier. */
-    private final Set<Glyph> glyphCandidates = new HashSet<Glyph>();
+    private final Set<Glyph> glyphCandidates = new LinkedHashSet<Glyph>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

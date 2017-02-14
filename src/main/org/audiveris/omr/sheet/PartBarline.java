@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -145,7 +145,7 @@ public class PartBarline
      */
     public List<FermataInter> getFermatas ()
     {
-        Set<FermataInter> fermatas = new HashSet<FermataInter>();
+        Set<FermataInter> fermatas = new LinkedHashSet<FermataInter>();
 
         for (StaffBarline sb : staffBarlines) {
             fermatas.addAll(sb.getFermatas());

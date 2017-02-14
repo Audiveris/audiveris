@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.swing.event.ChangeEvent;
@@ -77,7 +77,7 @@ public class Zoom
     protected LogSlider slider;
 
     /** Collection of event listeners */
-    protected Set<ChangeListener> listeners = new HashSet<ChangeListener>();
+    protected Set<ChangeListener> listeners = new LinkedHashSet<ChangeListener>();
 
     /** Current ratio value */
     protected double ratio;

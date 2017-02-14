@@ -33,7 +33,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -86,7 +86,7 @@ public class GlyphCluster
     {
         // Make a copy of just the subgraph for this set
         SimpleGraph<Glyph, GlyphLink> subGraph = new SimpleGraph<Glyph, GlyphLink>(GlyphLink.class);
-        Set<GlyphLink> edges = new HashSet<GlyphLink>();
+        Set<GlyphLink> edges = new LinkedHashSet<GlyphLink>();
 
         for (Glyph glyph : set) {
             edges.addAll(graph.edgesOf(glyph));
@@ -106,7 +106,7 @@ public class GlyphCluster
      */
     public void decompose ()
     {
-        final Set<Glyph> considered = new HashSet<Glyph>(); // Parts considered so far
+        final Set<Glyph> considered = new LinkedHashSet<Glyph>(); // Parts considered so far
 
         //TODO: we could truncate this list by discarding the smallest items
         // since a too large list would result in explosion of combinations
@@ -129,7 +129,7 @@ public class GlyphCluster
      */
     private Set<Glyph> getOutliers (Set<Glyph> set)
     {
-        Set<Glyph> outliers = new HashSet<Glyph>();
+        Set<Glyph> outliers = new LinkedHashSet<Glyph>();
 
         for (Glyph part : set) {
             outliers.addAll(adapter.getNeighbors(part));
@@ -190,7 +190,7 @@ public class GlyphCluster
 
         ///logger.debug("      {}", Glyphs.ids("outliers", outliers));
         Rectangle setBox = Glyphs.getBounds(parts);
-        Set<Glyph> newConsidered = new HashSet<Glyph>(seen);
+        Set<Glyph> newConsidered = new LinkedHashSet<Glyph>(seen);
 
         for (Glyph outlier : outliers) {
             newConsidered.add(outlier);
@@ -199,7 +199,7 @@ public class GlyphCluster
             Rectangle symBox = outlier.getBounds().union(setBox);
 
             if (!adapter.isTooLarge(symBox)) {
-                Set<Glyph> largerSet = new HashSet<Glyph>(parts);
+                Set<Glyph> largerSet = new LinkedHashSet<Glyph>(parts);
                 largerSet.add(outlier);
                 process(largerSet, newConsidered);
             }

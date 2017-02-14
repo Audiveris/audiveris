@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -71,7 +71,7 @@ public class SigAttic
                          Collection<Inter> seeds)
     {
         // Include chord notes as well
-        Set<Inter> vertices = new HashSet<Inter>(seeds);
+        Set<Inter> vertices = new LinkedHashSet<Inter>(seeds);
 
         for (Inter inter : seeds) {
             if (inter instanceof AbstractChordInter) {
@@ -116,7 +116,7 @@ public class SigAttic
                       Collection<Inter> seeds)
     {
         // Save needed vertices
-        Set<Inter> vertices = new HashSet<Inter>(seeds);
+        Set<Inter> vertices = new LinkedHashSet<Inter>(seeds);
 
         for (Inter seed : seeds) {
             if (seed instanceof AbstractChordInter) {

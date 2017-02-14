@@ -68,7 +68,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -359,7 +359,7 @@ public class SymbolFactory
             Set<Inter> stackSet = timeMap.get(stack);
 
             if (stackSet == null) {
-                timeMap.put(stack, stackSet = new HashSet<Inter>());
+                timeMap.put(stack, stackSet = new LinkedHashSet<Inter>());
             }
 
             stackSet.add(inter);

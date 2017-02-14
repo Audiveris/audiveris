@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -106,7 +105,7 @@ public class StackTuner
     private StackConfig config;
 
     /** Too close RestChordInter's to remove from current config. */
-    private final Set<RestChordInter> toRemove = new HashSet<RestChordInter>();
+    private final Set<RestChordInter> toRemove = new LinkedHashSet<RestChordInter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -587,7 +586,7 @@ public class StackTuner
     //    private void postAlternatives ()
     //    {
     //        // Determine the variables we can play with
-    //        Set<Inter> varSet = new HashSet<Inter>();
+    //        Set<Inter> varSet = new LinkedHashSet<Inter>();
     //        Slot lastSlot = stack.getLastSlot();
     //
     //        for (Slot slot : stack.getSlots()) {

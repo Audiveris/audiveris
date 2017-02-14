@@ -28,7 +28,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -80,7 +80,7 @@ public abstract class GlyphTask
                     getClass().getSimpleName() + " needs at least one glyph");
         }
 
-        this.glyphs = new HashSet<Glyph>(glyphs);
+        this.glyphs = new LinkedHashSet<Glyph>(glyphs);
     }
 
     /**

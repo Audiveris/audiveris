@@ -63,7 +63,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -652,7 +652,7 @@ public class SlursLinker
                 return bestSlur;
             }
 
-            Set<SlurInter> orphans = new HashSet<SlurInter>(map.keySet());
+            Set<SlurInter> orphans = new LinkedHashSet<SlurInter>(map.keySet());
             orphans.removeAll(nonOrphans);
 
             return selectAmong(orphans, map);
@@ -738,7 +738,7 @@ public class SlursLinker
 
             // The same chord cannot be linked to both slur ends
             // Keep it only where it is closer to slur target
-            Set<Inter> commons = new HashSet<Inter>();
+            Set<Inter> commons = new LinkedHashSet<Inter>();
             commons.addAll(lefts.keySet());
             commons.retainAll(rights.keySet());
 
@@ -857,7 +857,7 @@ public class SlursLinker
          */
         private Set<SlurInter> getNonOrphans (Map<SlurInter, Map<HorizontalSide, ChordLink>> map)
         {
-            Set<SlurInter> nonOrphans = new HashSet<SlurInter>();
+            Set<SlurInter> nonOrphans = new LinkedHashSet<SlurInter>();
             EntryLoop:
             for (Entry<SlurInter, Map<HorizontalSide, ChordLink>> entry : map.entrySet()) {
                 Map<HorizontalSide, ChordLink> m = entry.getValue();

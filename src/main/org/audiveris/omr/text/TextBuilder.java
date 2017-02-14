@@ -72,7 +72,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -129,7 +128,7 @@ public class TextBuilder
     private final Set<TextLine> textLines = new LinkedHashSet<TextLine>();
 
     /** Processed sections. true/false */
-    private final Set<Section> processedSections = new HashSet<Section>();
+    private final Set<Section> processedSections = new LinkedHashSet<Section>();
 
     //~ Constructors -------------------------------------------------------------------------------
     //

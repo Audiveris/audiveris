@@ -47,7 +47,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -276,7 +276,7 @@ public class SegmentsBuilder
     private List<Arc> getSeedArcs ()
     {
         final StaffManager staffManager = sheet.getStaffManager();
-        final Set<Arc> set = new HashSet<Arc>();
+        final Set<Arc> set = new LinkedHashSet<Arc>();
 
         ArcLoop:
         for (Arc arc : skeleton.arcsMap.values()) {

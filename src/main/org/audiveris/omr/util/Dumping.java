@@ -28,7 +28,7 @@ import org.audiveris.omr.util.Dumper.Row;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -198,7 +198,7 @@ public class Dumping
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Collection of root packages, to filter non-relevant classes */
-        protected final Set<Package> rootPackages = new HashSet<Package>();
+        protected final Set<Package> rootPackages = new LinkedHashSet<Package>();
 
         //~ Constructors ---------------------------------------------------------------------------
         public PackageRelevance (Collection<Package> rootPackages)

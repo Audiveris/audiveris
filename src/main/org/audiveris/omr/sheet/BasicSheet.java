@@ -74,7 +74,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1114,7 +1114,7 @@ public class BasicSheet
         if (OMR.gui != null) {
             locationService = new SelectionService("locationService", allowedEvents);
             errorsEditor = new ErrorsEditor(this);
-            itemRenderers = new HashSet<ItemRenderer>();
+            itemRenderers = new LinkedHashSet<ItemRenderer>();
             addItemRenderer(staffManager);
         }
 

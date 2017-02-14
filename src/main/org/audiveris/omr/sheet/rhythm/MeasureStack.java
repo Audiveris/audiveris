@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -1111,7 +1110,7 @@ public class MeasureStack
     //--------------------//
     public Set<AbstractChordInter> getWholeRestChords ()
     {
-        Set<AbstractChordInter> set = new HashSet<AbstractChordInter>();
+        Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
 
         for (Measure measure : measures) {
             set.addAll(measure.getWholeRestChords());

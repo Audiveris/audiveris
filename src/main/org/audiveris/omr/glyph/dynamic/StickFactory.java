@@ -43,7 +43,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -211,7 +210,7 @@ public class StickFactory
     private void addStickers (Filament fil)
     {
         final Set<Section> members = fil.getMembers();
-        final Set<Section> stickers = new HashSet<Section>();
+        final Set<Section> stickers = new LinkedHashSet<Section>();
 
         for (boolean reverse : new boolean[]{true, false}) {
             for (Section s : members) {

@@ -64,7 +64,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -611,7 +610,7 @@ public class Staff
                 searchBox.getHeight() + (2 * specificInterline));
 
         // Browse all staff ledgers
-        Set<IndexedLedger> foundLedgers = new HashSet<IndexedLedger>();
+        Set<IndexedLedger> foundLedgers = new LinkedHashSet<IndexedLedger>();
 
         for (Map.Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
             for (LedgerInter ledger : entry.getValue()) {

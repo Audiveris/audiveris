@@ -168,7 +168,7 @@ public class EditorMenu
     //        //~ Instance fields ------------------------------------------------------------------------
     //
     //        /** Selected chords. */
-    //        private final Set<ChordInter> selectedChords = new HashSet<ChordInter>();
+    //        private final Set<ChordInter> selectedChords = new LinkedHashSet<ChordInter>();
     //
     //        //~ Constructors ---------------------------------------------------------------------------
     //        public ChordMenu ()

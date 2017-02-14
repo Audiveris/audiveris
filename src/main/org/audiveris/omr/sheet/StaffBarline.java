@@ -43,7 +43,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -196,7 +196,7 @@ public class StaffBarline
 
             for (Relation rel : sig.getRelations(bar, FermataBarRelation.class)) {
                 if (fermatas == null) {
-                    fermatas = new HashSet<FermataInter>();
+                    fermatas = new LinkedHashSet<FermataInter>();
                 }
 
                 fermatas.add((FermataInter) sig.getOppositeInter(bar, rel));

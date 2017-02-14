@@ -67,7 +67,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -1175,7 +1174,7 @@ public class PeakGraph
      */
     private void purgeAlignments ()
     {
-        Set<BarAlignment> toRemove = new HashSet<BarAlignment>();
+        Set<BarAlignment> toRemove = new LinkedHashSet<BarAlignment>();
 
         for (StaffPeak peak : vertexSet()) {
             if (peak.isVip()) {
@@ -1210,7 +1209,7 @@ public class PeakGraph
      */
     private void purgeCrossAlignments ()
     {
-        final Set<BarAlignment> toRemove = new HashSet<BarAlignment>();
+        final Set<BarAlignment> toRemove = new LinkedHashSet<BarAlignment>();
 
         for (BarAlignment alignment : edgeSet()) {
             final SystemInfo s1 = alignment.getPeak(TOP).getStaff().getSystem();

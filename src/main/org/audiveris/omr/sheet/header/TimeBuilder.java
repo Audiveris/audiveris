@@ -85,7 +85,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -168,7 +168,7 @@ public abstract class TimeBuilder
     protected AbstractTimeInter timeInter;
 
     /** All glyphs submitted to classifier. */
-    protected final Set<Glyph> glyphCandidates = new HashSet<Glyph>();
+    protected final Set<Glyph> glyphCandidates = new LinkedHashSet<Glyph>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -480,7 +480,7 @@ public abstract class TimeBuilder
             super(stack.getSystem());
 
             this.stack = stack;
-            this.timeSet = new HashSet<Inter>(timeSet);
+            this.timeSet = new LinkedHashSet<Inter>(timeSet);
 
             maxDxOffset = stack.getSystem().getSheet().getScale().toPixels(constants.maxDxOffset);
         }

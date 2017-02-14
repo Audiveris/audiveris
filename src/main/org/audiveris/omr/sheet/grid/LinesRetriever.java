@@ -80,7 +80,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -828,7 +828,7 @@ public class LinesRetriever
         // Build pos-based index
         final SectionTally<Section> tally = new SectionTally<Section>(sheet.getHeight(), list);
 
-        Set<Section> connected = new HashSet<Section>();
+        Set<Section> connected = new LinkedHashSet<Section>();
 
         // Detect sections with connections below
         for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
@@ -1086,7 +1086,7 @@ public class LinesRetriever
                 lineId++;
 
                 StaffFilament fil = (StaffFilament) l;
-                Set<Section> toAdd = new HashSet<Section>();
+                Set<Section> toAdd = new LinkedHashSet<Section>();
 
                 for (Section source : fil.getMembers()) {
                     for (VerticalSide side : VerticalSide.values()) {
