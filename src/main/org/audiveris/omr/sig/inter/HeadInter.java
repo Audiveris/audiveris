@@ -480,6 +480,15 @@ public class HeadInter
                 newHeight);
     }
 
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
+
     //--------------//
     // alterationOf //
     //--------------//

@@ -251,5 +251,16 @@ public class BarAlignment
             setImpact(0, align);
             setImpact(1, dWidth);
         }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public double getAlignImpact ()
+        {
+            return impacts[0];
+        }
+
+        public double getWidthImpact ()
+        {
+            return impacts[1];
+        }
     }
 }

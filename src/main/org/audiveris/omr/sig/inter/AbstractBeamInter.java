@@ -355,9 +355,10 @@ public abstract class AbstractBeamInter
         //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{
-            "width", "minHgt", "maxHgt", "core", "belt",
-            "dist"
+            "wdth", "minH", "maxH", "core", "belt", "jit"
         };
+
+        private static final int DIST_INDEX = 5;
 
         private static final double[] WEIGHTS = new double[]{0.5, 1, 1, 2, 2, 2};
 
@@ -381,7 +382,7 @@ public abstract class AbstractBeamInter
         //~ Methods --------------------------------------------------------------------------------
         public double getDistImpact ()
         {
-            return getImpact(3);
+            return getImpact(DIST_INDEX);
         }
     }
 }

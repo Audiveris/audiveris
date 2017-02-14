@@ -557,6 +557,19 @@ public abstract class AbstractInter
         return part;
     }
 
+    //--------------------//
+    // getReallyGoodGrade //
+    //--------------------//
+    /**
+     * Report the minimum grade to consider an interpretation as really good.
+     *
+     * @return the minimum grade value for a really good interpretation
+     */
+    public static double getReallyGoodGrade ()
+    {
+        return goodGrade;
+    }
+
     //----------//
     // getShape //
     //----------//
@@ -674,6 +687,15 @@ public abstract class AbstractInter
     public boolean isGood ()
     {
         return grade >= getGoodGrade();
+    }
+
+    //--------------//
+    // isReallyGood //
+    //--------------//
+    @Override
+    public boolean isReallyGood ()
+    {
+        return grade >= getReallyGoodGrade();
     }
 
     //----------//

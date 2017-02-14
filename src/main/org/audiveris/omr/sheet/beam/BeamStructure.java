@@ -152,6 +152,64 @@ public class BeamStructure
     }
 
     //---------------//
+    // computeJitter //
+    //---------------//
+    /**
+     * Report a measure of border variation around its theoretical line.
+     * <p>
+     * Because the structure element used to retrieve beam spots is shaped like a disk, all the
+     * spots exhibit rounded corners.
+     * Hence, the check of border "straightness" is performed on the border length minus some
+     * abscissa margin on left and rights ends.
+     *
+     * @param beamLine the structure beamLine to measure
+     * @param side     upper or lower side of the beamLine
+     * @return ratio of jitter distance normalized by glyph width
+     */
+    public double computeJitter (BeamLine beamLine,
+                                 VerticalSide side)
+    {
+        // Determine abscissa margin according to beam typical height
+        final int dx = (int) Math.rint(params.cornerMargin);
+        final Line2D median = beamLine.median;
+        final int x1 = (int) Math.rint(median.getX1() + dx);
+        final int x2 = (int) Math.rint(median.getX2() - dx);
+        final BasicLine sectionLine = new BasicLine();
+        int width = 0;
+
+        for (Section section : getGlyphSections()) {
+            Rectangle sctBox = section.getBounds();
+            Point sctCenter = GeoUtil.centerOf(sctBox);
+            int y = (int) Math.rint(LineUtil.yAtX(median, sctCenter.x));
+
+            if (section.contains(sctCenter.x, y)) {
+                int x = section.getFirstPos();
+                width += sctBox.width;
+
+                for (Run run : section.getRuns()) {
+                    if (x >= x1 && x <= x2) {
+                        int end = (side == VerticalSide.TOP) ? run.getStart() : run.getStop();
+                        sectionLine.includePoint(x, end);
+                    }
+                    x++;
+                }
+            }
+        }
+
+        if (glyph.isVip()) {
+            logger.info(
+                    "{} {} pts:{} width:{} gWidth:{}",
+                    side,
+                    sectionLine.getMeanDistance(),
+                    sectionLine.getNumberOfPoints(),
+                    width,
+                    glyph.getWidth());
+        }
+
+        return sectionLine.getMeanDistance() / glyph.getWidth();
+    }
+
+    //---------------//
     // compareSlopes //
     //---------------//
     /**

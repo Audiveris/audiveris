@@ -315,6 +315,7 @@ public class StemsBuilder
 
         for (Inter beam : sig.inters(BeamInter.class)) {
             checkBeamStems(beam);
+            boostBeamSides(beam);
         }
 
         // Check carefully multiple stem links on same head
@@ -327,6 +328,32 @@ public class StemsBuilder
         if (constants.printWatch.isSet()) {
             watch.print();
         }
+    }
+
+    //----------------//
+    // boostBeamSides //
+    //----------------//
+    private void boostBeamSides (Inter beam)
+    {
+        if (!beam.isGood()) {
+            return;
+        }
+
+        List<BeamStemRelation> rels = new ArrayList<BeamStemRelation>();
+
+        for (Relation rel : sig.edgesOf(beam)) {
+            if (rel instanceof BeamStemRelation) {
+                rels.add((BeamStemRelation) rel);
+            }
+        }
+
+        for (BeamStemRelation rel : rels) {
+            if (rel.getBeamPortion() != BeamPortion.CENTER) {
+                StemInter stem = (StemInter) sig.getEdgeTarget(rel);
+                stem.increase(constants.sideStemBoost.getValue());
+            }
+        }
+
     }
 
     //----------------//
@@ -387,6 +414,8 @@ public class StemsBuilder
                         sig.removeEdge(prevRel);
                         prevRel = rel;
                     }
+                } else {
+                    prevRel = rel;
                 }
             } else {
                 prevRel = rel;
@@ -529,6 +558,10 @@ public class StemsBuilder
         private final Scale.Fraction yGapTiny = new Scale.Fraction(
                 0.1,
                 "Maximum vertical tiny gap between stem & head");
+
+        private final Constant.Ratio sideStemBoost = new Constant.Ratio(
+                0.5,
+                "How much do we boost beam side stems");
     }
 
     //------------//
@@ -597,6 +630,10 @@ public class StemsBuilder
         //-----------------//
         public void reuseAllCorners ()
         {
+            if (head.isVip()) {
+                logger.info("VIP reuseAllCorners {}", head);
+            }
+
             neighborStems = getNeighboringInters(systemStems);
 
             for (Corner corner : Corner.values) {
@@ -733,13 +770,6 @@ public class StemsBuilder
                 // Look for suitable beam groups
                 List<List<AbstractBeamInter>> beamGroups = lookupBeamGroups(beamCandidates);
 
-                //TODO: Adjust targetPt ??????????????????????????????????
-                //                // If we have a good beam, stop at the beginning of beam group
-                //                // using the good beam anchor as target point
-                //                if (groupStart != -1) {
-                //                    targetPt = getTargetPt(getLimit(beams.get(groupStart)));
-                //                }
-                //
                 Line2D line = new Line2D.Double(refPt, targetPt);
                 head.addAttachment("t" + corner.getId(), line);
 

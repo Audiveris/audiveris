@@ -94,8 +94,8 @@ import java.util.Set;
  * <li>We cannot fully use stems, since at this time we just have vertical seeds and not all stems
  * will contain seeds. However, if a vertical seed exists nearby we can use it to evaluate a note
  * candidate at proper location.</li>
- * <li>We can reasonably skip the locations where a (good) beam or a (good) bar line has been
- * detected.</li>
+ * <li>We can reasonably skip the locations where a really good beam or a really good bar line has
+ * been detected.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -435,7 +435,7 @@ public class NoteHeadsBuilder
                 GeoOrder.BY_ORDINATE,
                 area);
 
-        // Keep only the "good" competitors
+        // Keep only the "really good" competitors
         List<Inter> kept = new ArrayList<Inter>();
 
         for (Inter inter : rawComps) {
@@ -520,10 +520,10 @@ public class NoteHeadsBuilder
     // getSystemCompetitors //
     //----------------------//
     /**
-     * Retrieve the collection of (good) other interpretations that might compete with
-     * heads and note candidates.
+     * Retrieve the collection of (really good) other interpretations that might compete
+     * with heads and note candidates.
      *
-     * @return the good competitors
+     * @return the really good competitors
      */
     private List<Inter> getSystemCompetitors ()
     {
@@ -1201,7 +1201,7 @@ public class NoteHeadsBuilder
             final ShapeDescriptor desc = catalog.getDescriptor(shape);
             final Rectangle symBox = desc.getSymbolBoundsAt(x, y, anchor);
 
-            // Skip if location already used by good object (beam, etc)
+            // Skip if location already used by really good object (beam, etc)
             //TODO: perhaps use a slightly fattened box?
             if (overlap(symBox, competitors)) {
                 if (useSeeds) {

@@ -36,7 +36,7 @@ public abstract class BasicImpacts
 
     private final double[] weights;
 
-    private final double[] impacts;
+    protected final double[] impacts;
 
     protected double grade = -1;
 

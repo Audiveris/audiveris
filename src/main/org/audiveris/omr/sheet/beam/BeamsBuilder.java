@@ -364,7 +364,8 @@ public class BeamsBuilder
 
         // Compute items grade and create Inter instances when acceptable
         if (isCue) {
-            List<Inter> cues = createSmallBeamInters(structure, meanDist);
+            final double distImpact = 1 - (meanDist / params.maxDistanceToBorder);
+            List<Inter> cues = createSmallBeamInters(structure, distImpact);
 
             if (!cues.isEmpty()) {
                 beams.addAll(cues);
@@ -373,7 +374,7 @@ public class BeamsBuilder
             } else {
                 return "no good item";
             }
-        } else if (createBeamInters(structure, meanDist)) {
+        } else if (createBeamInters(structure)) {
             assignedSpots.add(glyph);
 
             return null; // This means no failure
@@ -466,16 +467,16 @@ public class BeamsBuilder
      * Compute the grade details for the provided BeamItem, targeting
      * a BeamInter.
      *
-     * @param item     the isolated beam item
-     * @param above    true to check above beam item
-     * @param below    true to check below beam item
-     * @param meanDist average distance to border
+     * @param item       the isolated beam item
+     * @param above      true to check above beam item
+     * @param below      true to check below beam item
+     * @param distImpact IMPACT of jitter to border
      * @return the impacts if successful, null otherwise
      */
     private Impacts computeBeamImpacts (BeamItem item,
                                         boolean above,
                                         boolean below,
-                                        double meanDist)
+                                        double distImpact)
     {
         return computeImpacts(
                 item,
@@ -483,22 +484,21 @@ public class BeamsBuilder
                 below,
                 itemParams.minBeamWidthLow,
                 itemParams.minBeamWidthHigh,
-                meanDist);
+                distImpact);
     }
 
     //--------------------//
     // computeHookImpacts //
     //--------------------//
     /**
-     * Compute the grade details for the provided BeamItem, targeting
-     * a BeamHookInter.
+     * Compute the grade details for the provided BeamItem, targeting a BeamHookInter.
      *
-     * @param item     the isolated beam item
-     * @param meanDist average distance to border
+     * @param item       the isolated beam item
+     * @param distImpact IMPACT of jitter to border
      * @return the impacts if successful, null otherwise
      */
     private Impacts computeHookImpacts (BeamItem item,
-                                        double meanDist)
+                                        double distImpact)
     {
         return computeImpacts(
                 item,
@@ -506,7 +506,7 @@ public class BeamsBuilder
                 true,
                 itemParams.minHookWidthLow,
                 itemParams.minHookWidthHigh,
-                meanDist);
+                distImpact);
     }
 
     //----------------//
@@ -520,7 +520,7 @@ public class BeamsBuilder
      * @param below        true to check below beam item
      * @param minWidthLow  low minimum width
      * @param minWidthHigh high minimum width
-     * @param meanDist     average distance to border
+     * @param distImpact   IMPACT of jitter to border
      * @return the impacts if successful, null otherwise
      */
     private Impacts computeImpacts (BeamItem item,
@@ -528,7 +528,7 @@ public class BeamsBuilder
                                     boolean below,
                                     double minWidthLow,
                                     double minWidthHigh,
-                                    double meanDist)
+                                    double distImpact)
     {
         Area coreArea = item.getCoreArea();
         AreaMask coreMask = new AreaMask(coreArea);
@@ -572,7 +572,6 @@ public class BeamsBuilder
                                                                              - itemParams.typicalHeight);
         double coreImpact = (coreRatio - params.minCoreBlackRatio) / (1 - params.minCoreBlackRatio);
         double beltImpact = 1 - (beltRatio / params.maxBeltBlackRatio);
-        double distImpact = 1 - (meanDist / params.maxDistanceToBorder);
 
         return new Impacts(
                 widthImpact,
@@ -593,17 +592,23 @@ public class BeamsBuilder
      * interpretations.
      *
      * @param structure the beam structure retrieved (from a glyph)
-     * @param meanDist  average distance to border
      * @return true if at least one good item was found
      */
-    private boolean createBeamInters (BeamStructure structure,
-                                      double meanDist)
+    private boolean createBeamInters (BeamStructure structure)
     {
         boolean success = false;
-        List<BeamLine> lines = structure.getLines();
+        final List<BeamLine> lines = structure.getLines();
 
-        for (BeamLine line : lines) {
-            final int idx = lines.indexOf(line);
+        // First, retrieve top and bottom jitter
+        final double topJitter = structure.computeJitter(lines.get(0), TOP);
+        final double botJitter = structure.computeJitter(lines.get(lines.size() - 1), BOTTOM);
+        final double meanJitter = 0.5 * (topJitter + botJitter);
+        final double distImpact = 1 - (meanJitter / params.maxJitterRatio);
+
+        ///logger.info("meanJitter:{} for {}", String.format("%.4f", meanJitter), structure);
+        //
+        for (int idx = 0; idx < lines.size(); idx++) {
+            final BeamLine line = lines.get(idx);
 
             for (BeamItem item : line.getItems()) {
                 double itemWidth = item.median.getX2() - item.median.getX1();
@@ -612,7 +617,7 @@ public class BeamsBuilder
                 if (itemWidth <= itemParams.maxHookWidth) {
                     logger.debug("Create hook with {}", line);
 
-                    Impacts impacts = computeHookImpacts(item, meanDist);
+                    Impacts impacts = computeHookImpacts(item, distImpact);
 
                     if ((impacts != null) && (impacts.getGrade() >= BeamHookInter.getMinGrade())) {
                         success = true;
@@ -632,7 +637,7 @@ public class BeamsBuilder
                             item,
                             idx == 0, // Check above only for first item
                             idx == (lines.size() - 1), // Check below only for last item
-                            meanDist);
+                            distImpact);
 
                     if ((impacts != null) && (impacts.getGrade() >= BeamInter.getMinGrade())) {
                         success = true;
@@ -686,12 +691,12 @@ public class BeamsBuilder
      * Create the resulting SmallBeamInter instances, one for each good item.
      * TODO: Should we handle small beam hooks as well?
      *
-     * @param structure the items retrieved (from a glyph)
-     * @param meanDist  average distance to border
+     * @param structure  the items retrieved (from a glyph)
+     * @param distImpact impact of border jitter
      * @return the list of inter instances created
      */
     private List<Inter> createSmallBeamInters (BeamStructure structure,
-                                               double meanDist)
+                                               double distImpact)
     {
         final List<Inter> beams = new ArrayList<Inter>();
         final List<BeamLine> lines = structure.getLines();
@@ -700,12 +705,11 @@ public class BeamsBuilder
             final int idx = lines.indexOf(line);
 
             for (BeamItem item : line.getItems()) {
-                //TODO: test for detecting top/bottom items is not correct
                 Impacts impacts = computeBeamImpacts(
                         item,
                         idx == 0, // Check above only for top items
                         idx == (lines.size() - 1), // Check below only for bottom items
-                        meanDist);
+                        distImpact);
 
                 if ((impacts != null) && (impacts.getGrade() >= SmallBeamInter.getMinGrade())) {
                     SmallBeamInter beam = new SmallBeamInter(impacts, item.median, item.height);
@@ -1529,6 +1533,8 @@ public class BeamsBuilder
 
         final double maxHeightHigh;
 
+        final double cornerMargin;
+
         final double maxItemXGap;
 
         final int coreSectionWidth;
@@ -1546,6 +1552,7 @@ public class BeamsBuilder
             typicalHeight = scale.getBeamThickness() * ratio;
             minHeightLow = typicalHeight * constants.minHeightRatioLow.getValue();
             maxHeightHigh = typicalHeight * constants.maxHeightRatioHigh.getValue();
+            cornerMargin = typicalHeight * constants.cornerMarginRatio.getValue();
 
             maxItemXGap = scale.toPixelsDouble(constants.maxItemXGap);
             coreSectionWidth = scale.toPixels(constants.coreSectionWidth);
@@ -1590,6 +1597,10 @@ public class BeamsBuilder
         private final Constant.Ratio maxHeightRatioHigh = new Constant.Ratio(
                 1.3,
                 "High maximum height for a beam or hook, specified as ratio of typical beam");
+
+        private final Constant.Ratio cornerMarginRatio = new Constant.Ratio(
+                0.2,
+                "Corner margin for a beam or hook, specified as ratio of typical beam");
 
         private final Scale.Fraction maxItemXGap = new Scale.Fraction(
                 0.5,
@@ -1664,6 +1675,10 @@ public class BeamsBuilder
                 0.15,
                 "Maximum mean distance to average beam border");
 
+        private final Constant.Ratio maxJitterRatio = new Constant.Ratio(
+                0.02,
+                "Maximum border jitter ratio");
+
         private final Constant.Ratio maxBeltBlackRatio = new Constant.Ratio(
                 0.4,
                 "Maximum ratio of black pixels around beam");
@@ -1737,6 +1752,8 @@ public class BeamsBuilder
 
         final double maxDistanceToBorder;
 
+        final double maxJitterRatio;
+
         final double maxBeltBlackRatio;
 
         final double minCoreBlackRatio;
@@ -1776,6 +1793,7 @@ public class BeamsBuilder
             maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
             maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
             maxDistanceToBorder = scale.toPixelsDouble(constants.maxDistanceToBorder);
+            maxJitterRatio = constants.maxJitterRatio.getValue();
             maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
             minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
             minExtBlackRatio = constants.minExtBlackRatio.getValue();

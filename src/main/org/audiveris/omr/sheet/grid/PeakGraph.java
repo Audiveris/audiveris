@@ -437,7 +437,9 @@ public class PeakGraph
 
         if ((data.gap <= params.maxConnectionGap)
             && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
-            BarConnection connection = new BarConnection(alignment);
+            double gapImpact = 1 - (data.gap / params.maxConnectionGap);
+            double whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
+            BarConnection connection = new BarConnection(alignment, gapImpact, whiteImpact);
 
             if (logger.isDebugEnabled() || vip) {
                 logger.info("VIP {}", connection);

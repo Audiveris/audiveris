@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.grid;
 
 import org.audiveris.omr.math.AreaUtil;
+import org.audiveris.omr.sig.BasicImpacts;
 
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
@@ -49,11 +50,20 @@ public class BarConnection
     /**
      * Creates a new BarConnection object.
      *
-     * @param align the underlying barline alignment
+     * @param align       the underlying barline alignment
+     * @param gapImpact   impact of gap
+     * @param whiteImpact impact of white ratio
      */
-    public BarConnection (BarAlignment align)
+    public BarConnection (BarAlignment align,
+                          double gapImpact,
+                          double whiteImpact)
     {
-        super(align.topPeak, align.bottomPeak, align.slope, align.dWidth, align.getImpacts());
+        super(
+                align.topPeak,
+                align.bottomPeak,
+                align.slope,
+                align.dWidth,
+                new Impacts((BarAlignment.Impacts) align.getImpacts(), gapImpact, whiteImpact));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -89,5 +99,39 @@ public class BarConnection
     public double getWidth ()
     {
         return (topPeak.getWidth() + bottomPeak.getWidth()) / 2d;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            extends BasicImpacts
+    {
+        //~ Static fields/initializers -------------------------------------------------------------
+
+        private static final String[] NAMES = new String[]{"align", "dWidth", "gap", "white"};
+
+        private static final double[] WEIGHTS = new double[]{2, 1, 2, 2};
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Impacts (double align,
+                        double dWidth,
+                        double gap,
+                        double white)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, align);
+            setImpact(1, dWidth);
+            setImpact(2, gap);
+            setImpact(3, white);
+        }
+
+        public Impacts (BarAlignment.Impacts alignImpacts,
+                        double gap,
+                        double white)
+        {
+            this(alignImpacts.getAlignImpact(), alignImpacts.getWidthImpact(), gap, white);
+        }
     }
 }

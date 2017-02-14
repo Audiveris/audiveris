@@ -254,6 +254,9 @@ public interface Inter
     /** The minimum grade to consider an interpretation as good. */
     static double goodGrade = intrinsicRatio * constants.goodGrade.getValue();
 
+    /** The minimum grade to consider an interpretation as really good. */
+    static double reallyGoodGrade = intrinsicRatio * constants.reallyGoodGrade.getValue();
+
     //~ Methods ------------------------------------------------------------------------------------
     /**
      * Decrease the inter grade.
@@ -443,6 +446,13 @@ public interface Inter
     boolean isGood ();
 
     /**
+     * Report whether the interpretation has a really good (intrinsic) grade.
+     *
+     * @return true if grade is good
+     */
+    boolean isReallyGood ();
+
+    /**
      * Report whether this interpretation represents the same thing as that interpretation
      *
      * @param that the other inter to check
@@ -574,5 +584,9 @@ public interface Inter
         private final Constant.Ratio goodGrade = new Constant.Ratio(
                 0.5,
                 "Default good interpretation grade");
+
+        private final Constant.Ratio reallyGoodGrade = new Constant.Ratio(
+                0.75,
+                "Default really good interpretation grade");
     }
 }
