@@ -22,6 +22,9 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.classifier.Evaluation;
+import org.audiveris.omr.classifier.SampleRepository;
+import org.audiveris.omr.classifier.SampleSheet;
+import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.selection.EntityService;
@@ -98,21 +101,17 @@ public class GlyphsModel
                               boolean compound,
                               double grade)
     {
-        throw new RuntimeException("HB. Not implemented yet");
-
-        //        if (compound) {
-        //            // Build & insert one compound
-        //            Glyph glyph = nest.buildGlyph(glyphs, true);
-        //
-        //            assignGlyph(glyph, shape, grade);
-        //        } else {
-        //            // Assign each glyph individually
-        //            for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
-        //                if (glyph.getShape() != Shape.NOISE) {
-        //                    assignGlyph(glyph, shape, grade);
-        //                }
-        //            }
-        //        }
+        if (compound) {
+            //            // Build & insert one compound
+            //            Glyph glyph = nest.buildGlyph(glyphs, true);
+            //
+            //            assignGlyph(glyph, shape, grade);
+        } else {
+            // Assign each glyph individually
+            for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
+                assignGlyph(glyph, sheet.getScale().getInterline(), shape, grade);
+            }
+        }
     }
 
     //----------------//
@@ -228,7 +227,12 @@ public class GlyphsModel
                                  Shape shape,
                                  double grade)
     {
-        throw new RuntimeException("HB. Not implemented yet");
+        final Book book = sheet.getStub().getBook();
+        final SampleRepository repository = book.getSampleRepository();
+        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
+
+        // TODO: we need staff information (-> interline and pitch)
+        repository.addSample(shape, glyph, interline, sampleSheet, null);
 
         //        if (glyph == null) {
         //            return null;
@@ -267,7 +271,7 @@ public class GlyphsModel
         //            SampleRepository.getInstance().recordOneGlyph(glyph, sheet);
         //        }
         //
-        //        return glyph;
+        return glyph;
     }
 
     //---------------//

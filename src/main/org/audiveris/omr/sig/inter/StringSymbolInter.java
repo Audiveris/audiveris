@@ -35,9 +35,9 @@ package org.audiveris.omr.sig.inter;
  * <li>Word '0' and DIGIT_0</li>
  * <li>Word '1' and DIGIT_1</li>
  * <li>Word '2' and DIGIT_2</li>
- * <li>Word '3' and DIGIT_3 (and TUPLET_3?)</li>
+ * <li>Word '3' and DIGIT_3 (and TUPLET_THREE?)</li>
  * <li>Word '4' and DIGIT_4</li>
- * <li>Word '6' and TUPLET_6?</li>
+ * <li>Word '6' and TUPLET_SIX?</li>
  * <li>Word 'I' and ROMAN_I</li>
  * <li>Word 'II' and ROMAN_II</li>
  * <li>Word 'III' and ROMAN_III</li>

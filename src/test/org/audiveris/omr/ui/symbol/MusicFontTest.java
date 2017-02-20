@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
-import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.ui.symbol.BasicSymbol;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;

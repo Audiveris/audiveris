@@ -21,7 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
+import org.audiveris.omr.classifier.BasicClassifier;
 import org.audiveris.omr.classifier.Classifier;
+import org.audiveris.omr.classifier.DeepClassifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.GlyphDescriptor;
 import org.audiveris.omr.classifier.Sample;
@@ -906,9 +908,13 @@ public class SampleBrowser
         shapeSelector.setName("shapeSelector");
 
         // Center
-        BoardsPane boardsPane = new BoardsPane(
-                new SampleBoard(sampleController),
-                new SampleEvaluationBoard(sampleController));
+        BoardsPane boardsPane = new BoardsPane();
+        boardsPane.addBoard(new SampleBoard(sampleController));
+        boardsPane.addBoard(
+                new SampleEvaluationBoard(sampleController, BasicClassifier.getInstance()));
+        boardsPane.addBoard(
+                new SampleEvaluationBoard(sampleController, DeepClassifier.getInstance()));
+
         JSplitPane centerPane = new JSplitPane(
                 VERTICAL_SPLIT,
                 sheetSelector,
@@ -1223,9 +1229,10 @@ public class SampleBrowser
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public SampleEvaluationBoard (SampleController controller)
+        public SampleEvaluationBoard (SampleController controller,
+                                      Classifier classifier)
         {
-            super(true, null, ShapeClassifier.getInstance(), controller, true);
+            super(true, null, classifier, controller, true);
         }
 
         //~ Methods --------------------------------------------------------------------------------

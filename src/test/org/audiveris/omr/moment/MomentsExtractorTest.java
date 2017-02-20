@@ -5,8 +5,14 @@
 package org.audiveris.omr.moment;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.ShapeSet;
+import org.audiveris.omr.glyph.SymbolSample;
+import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.moments.MomentsExtractor;
 import org.audiveris.omr.moments.OrthogonalMoments;
+import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.Symbols;
 
 import org.junit.Ignore;
 
@@ -50,47 +56,47 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
                                Class<? extends D> classe)
             throws InstantiationException, IllegalAccessException
     {
-        //        temp.mkdirs();
-        //
-        //        // Retrieve descriptor for each physical shape
-        //        for (Shape shape : ShapeSet.allPhysicalShapes) {
-        //            ShapeSymbol symbol = Symbols.getSymbol(shape);
-        //
-        //            // If no plain symbol, use the decorated symbol as plan B
-        //            if (symbol == null) {
-        //                symbol = Symbols.getSymbol(shape, true);
-        //            }
-        //
-        //            if (symbol != null) {
-        //                System.out.println("shape:" + shape);
-        //
-        //                Glyph glyph = new SymbolSample(
-        //                        shape,
-        //                        symbol,
-        //                        MusicFont.DEFAULT_INTERLINE,
-        //                        GlyphLayer.DEFAULT,
-        //                        null);
-        //                PointsCollector collector = glyph.getPointsCollector();
-        //                D descriptor = classe.newInstance();
-        //                extractor.setDescriptor(descriptor);
-        //                extractor.extract(
-        //                        collector.getXValues(),
-        //                        collector.getYValues(),
-        //                        collector.getSize());
-        //                descriptors.put(shape, descriptor);
-        //
-        //                // Reconstruct
-        //                ///reconstruct(shape, extractor);
-        //            } else {
-        //                System.out.println(shape + " no symbol");
-        //            }
-        //        }
-        //
-        //        // Print moments per shape
-        //        printMoments();
-        //
-        //        // Print inter-shape distances
-        //        printRelations();
+        temp.mkdirs();
+
+        // Retrieve descriptor for each physical shape
+        for (Shape shape : ShapeSet.allPhysicalShapes) {
+            ShapeSymbol symbol = Symbols.getSymbol(shape);
+
+            // If no plain symbol, use the decorated symbol as plan B
+            if (symbol == null) {
+                symbol = Symbols.getSymbol(shape, true);
+            }
+
+            if (symbol != null) {
+                System.out.println("shape:" + shape);
+
+                SymbolSample sample = SymbolSample.create(
+                        shape,
+                        symbol,
+                        MusicFont.DEFAULT_INTERLINE);
+                PointsCollector collector = new PointsCollector(null, sample.getWeight());
+                sample.getRunTable().cumulate(collector, null);
+
+                D descriptor = classe.newInstance();
+                extractor.setDescriptor(descriptor);
+                extractor.extract(
+                        collector.getXValues(),
+                        collector.getYValues(),
+                        collector.getSize());
+                descriptors.put(shape, descriptor);
+
+                // Reconstruct
+                ///reconstruct(shape, extractor);
+            } else {
+                System.out.println(shape + " no symbol");
+            }
+        }
+
+        // Print moments per shape
+        printMoments();
+
+        // Print inter-shape distances
+        printRelations();
     }
 
     //--------------//

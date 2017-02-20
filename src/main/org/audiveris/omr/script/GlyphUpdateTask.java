@@ -22,7 +22,6 @@
 package org.audiveris.omr.script;
 
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.SectionSets;
 import org.audiveris.omr.sheet.Sheet;
 
 import java.util.Collection;
@@ -30,7 +29,6 @@ import java.util.LinkedHashSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 
 /**
  * Class {@code GlyphUpdateTask} is applied to a collection of
@@ -57,11 +55,6 @@ import javax.xml.bind.annotation.XmlElement;
 public abstract class GlyphUpdateTask
         extends GlyphTask
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    /** The collection of underlying section sets (representing glyphs) */
-    @XmlElement(name = "glyphs")
-    protected final SectionSets sectionSets;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -74,13 +67,11 @@ public abstract class GlyphUpdateTask
                             Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
-        sectionSets = SectionSets.createFromGlyphs(glyphs);
     }
 
     /** No-arg constructor for JAXB only. */
     protected GlyphUpdateTask ()
     {
-        sectionSets = null; // Dummy value
     }
 
     //~ Methods ------------------------------------------------------------------------------------

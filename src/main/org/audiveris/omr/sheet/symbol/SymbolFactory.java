@@ -176,6 +176,10 @@ public class SymbolFactory
             logger.info("VIP glyph#{} symbol created as {}", glyph.getId(), eval.shape);
         }
 
+        if (shape == Shape.CLUTTER) {
+            return;
+        }
+
         if (Clefs.contains(shape)) {
             addSymbol(ClefInter.create(glyph, shape, grade, closestStaff)); // Staff is OK
         } else if (Rests.contains(shape)) {
@@ -223,6 +227,8 @@ public class SymbolFactory
             addSymbol(FretInter.create(glyph, shape, grade));
         } else if (constants.supportPluckings.isSet() && Pluckings.contains(shape)) {
             addSymbol(PluckingInter.create(glyph, shape, grade));
+        } else {
+            logger.warn("SymbolFactory no support yet for {}", shape);
         }
     }
 

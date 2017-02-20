@@ -145,7 +145,7 @@ public class EvaluationBoard
                             boolean selected)
     {
         super(
-                new Desc("Eval " + classifier.getName(), 700),
+                new Desc(classifier.getName(), 700),
                 glyphController.getGlyphService(),
                 eventsRead,
                 selected,

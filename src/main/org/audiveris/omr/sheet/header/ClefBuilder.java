@@ -239,9 +239,8 @@ public class ClefBuilder
         List<Glyph> parts = getParts(isFirstPass);
 
         // Formalize parts relationships in a global graph
-        SimpleGraph<Glyph, GlyphLink> globalGraph = Glyphs.buildLinks(parts, params.maxPartGap);
-        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(
-                globalGraph).connectedSets();
+        SimpleGraph<Glyph, GlyphLink> graph = Glyphs.buildLinks(parts, params.maxPartGap);
+        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(graph).connectedSets();
         logger.debug("Staff#{} sets: {}", staff.getId(), sets.size());
 
         // Best inter per clef kind
@@ -249,7 +248,7 @@ public class ClefBuilder
 
         for (Set<Glyph> set : sets) {
             // Use only the subgraph for this set
-            SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, globalGraph);
+            SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, graph, false);
             ClefAdapter adapter = new ClefAdapter(subGraph, bestMap);
             new GlyphCluster(adapter, null).decompose();
 

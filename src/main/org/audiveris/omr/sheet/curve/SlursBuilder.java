@@ -837,7 +837,7 @@ public class SlursBuilder
 
                         logger.debug("origins: {}", origins);
 
-                        if (origins.keySet().size() > 1) {
+                        if (origins.keySet().size() > 1 && chord.getNotes().size() > 1) {
                             logger.debug("{} with {} ties on {} side", chord, ties.size(), oppSide);
                             new ChordSplitter(chord, side, origins).process();
                         }

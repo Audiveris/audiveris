@@ -21,7 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
-import org.audiveris.omr.classifier.ShapeClassifier;
+import org.audiveris.omr.classifier.BasicClassifier;
+import org.audiveris.omr.classifier.DeepClassifier;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
@@ -55,9 +56,7 @@ import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
-
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
-
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -70,10 +69,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
-
 import java.awt.Stroke;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -175,10 +172,18 @@ public class SymbolsEditor
         boards.add(new SymbolGlyphBoard(symbolsController, true, true));
         boards.add(new InterBoard(sheet));
         boards.add(new ShapeBoard(sheet, symbolsController, false));
-        boards.add(new EvaluationBoard(
+        boards.add(
+                new EvaluationBoard(
                         true,
                         sheet,
-                        ShapeClassifier.getInstance(),
+                        BasicClassifier.getInstance(),
+                        symbolsController,
+                        false));
+        boards.add(
+                new EvaluationBoard(
+                        true,
+                        sheet,
+                        DeepClassifier.getInstance(),
                         symbolsController,
                         false));
 

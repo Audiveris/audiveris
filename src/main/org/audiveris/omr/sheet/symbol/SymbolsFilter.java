@@ -33,9 +33,6 @@ import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
-import org.audiveris.omr.lag.BasicLag;
-import org.audiveris.omr.lag.Lag;
-import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
@@ -70,11 +67,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
- * Class {@code SymbolsFilter} prepares an image with staff lines sections removed and
- * with all (good) inter instances erased, to allow the retrieval of symbols.
+ * Class {@code SymbolsFilter} prepares a sheet image to allow the retrieval of symbols.
+ * <ul>
+ * <li>Staff lines are removed,
+ * <li>All good inter instances are erased,
+ * <li>All weak instances are also erased but kept apart as optional pixels (so that they can later
+ * be considered by the symbols builder).
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -93,9 +94,6 @@ public class SymbolsFilter
     /** Related sheet. */
     private final Sheet sheet;
 
-    /** Symbols lag. */
-    private Lag symLag;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsFilter object.
@@ -105,14 +103,6 @@ public class SymbolsFilter
     public SymbolsFilter (Sheet sheet)
     {
         this.sheet = sheet;
-
-        // Needs the symLag
-        symLag = sheet.getLagManager().getLag(Lags.SYMBOL_LAG);
-
-        if (symLag == null) {
-            symLag = new BasicLag(Lags.SYMBOL_LAG, SYMBOL_ORIENTATION);
-            sheet.getLagManager().setLag(Lags.SYMBOL_LAG, symLag);
-        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -123,18 +113,17 @@ public class SymbolsFilter
      * Start from the staff-free image, remove all good inters, and from the remaining
      * pixels build the symbols glyphs put in SYMBOL group.
      * <p>
-     * For not good inters (such 'weak' inters have already survived the first REDUCTION step)
+     * For not good inters (some "weak" inters have already survived the first REDUCTION step)
      * we put them aside as optional glyphs that can take part of the symbols glyphs clustering and
      * thus compete for valuable compounds.
      *
-     * @param optionalsMap (output) all weak glyphs per system
+     * @param optionalsMap (output) all weak glyphs gathered per system
      */
     public void process (Map<SystemInfo, List<Glyph>> optionalsMap)
     {
         logger.debug("SymbolsFilter running...");
 
-        Picture picture = sheet.getPicture();
-        ByteProcessor rawBuf = picture.getSource(Picture.SourceKey.NO_STAFF);
+        ByteProcessor rawBuf = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
         BufferedImage img = rawBuf.getBufferedImage();
         ByteProcessor buffer = new ByteProcessor(img);
 
@@ -301,19 +290,13 @@ public class SymbolsFilter
      * well be a symbol. Hence, we consider it as a "weak" inter whatever its assigned grade.
      * <p>
      * TODO: The saving of weak inters is implemented only for glyph-based inters and for notes.
-     * Should it be extended to line-based inters (endings, wedges) and area-based inters (barline,
+     * Should it be extended to line-based inters (endings, wedges) and area-based inters (barlines,
      * brackets, beams)?
      */
     private static class SymbolsCleaner
             extends PageCleaner
     {
         //~ Instance fields ------------------------------------------------------------------------
-
-        /** Lag used by optional sections. */
-        private final Lag symLag;
-
-        /** Map system -> list of weak glyphs. */
-        private final Map<SystemInfo, List<Glyph>> weaksMap = new TreeMap<SystemInfo, List<Glyph>>();
 
         /**
          * Current system list of weak glyphs.
@@ -334,8 +317,6 @@ public class SymbolsFilter
                                Sheet sheet)
         {
             super(buffer, g, sheet);
-
-            symLag = sheet.getLagManager().getLag(Lags.SYMBOL_LAG);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -358,6 +339,7 @@ public class SymbolsFilter
                 // Erase header area on each staff of the system
                 eraseStavesHeader(system, constants.staffVerticalMargin);
 
+                // Partition inters into strongs and weaks
                 final List<Inter> strongs = new ArrayList<Inter>();
                 final List<Inter> weaks = new ArrayList<Inter>();
                 systemWeaks = null;
@@ -375,7 +357,7 @@ public class SymbolsFilter
                     // Special case for one-char sentences: they are not erased
                     // since they might be isolated one-letter symbols
                     // TODO: why not 1-char words as well (even within sentence with several words)?
-                    if (SentenceInter.class.isInstance(inter)) {
+                    if (inter instanceof SentenceInter) {
                         SentenceInter sentence = (SentenceInter) inter;
                         String content = sentence.getValue();
 
@@ -403,7 +385,7 @@ public class SymbolsFilter
                     inter.accept(this);
                 }
 
-                // Erase but save the weaks apart
+                // Save the weaks apart and erase them
                 systemWeaks = new ArrayList<Glyph>();
                 weaksMap.put(system, systemWeaks);
 
@@ -455,7 +437,7 @@ public class SymbolsFilter
             double ctxGrade = inter.getBestGrade();
 
             if (inter instanceof StemInter) {
-                return ctxGrade >= 0.7; // TODO
+                return ctxGrade >= 0.7; // TODO a stem should be protected via its head chord?
             }
 
             if (inter instanceof HeadInter) {
@@ -502,10 +484,6 @@ public class SymbolsFilter
                         glyph.getRunTable(),
                         glyph.getTopLeft(),
                         Group.SYMBOL);
-                //                List<Glyph> glyphs = sheet.getGlyphIndex().buildGlyphs(
-                //                        Arrays.asList(glyph),
-                //                        GlyphLayer.SYMBOL,
-                //                        true);
                 systemWeaks.addAll(glyphs);
             }
         }

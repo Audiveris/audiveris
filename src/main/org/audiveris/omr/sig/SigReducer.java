@@ -304,6 +304,21 @@ public class SigReducer
     }
 
     //---------------//
+    // reduceSymbols //
+    //---------------//
+    /**
+     * Reduce symbols interpretations.
+     * This is meant for the SYMBOLS step.
+     *
+     * @return the removed inters
+     */
+    public Set<Inter> reduceSymbols ()
+    {
+        AdapterForSymbols adapter = new AdapterForSymbols();
+        return reduce(adapter);
+    }
+
+    //---------------//
     // analyzeChords //
     //---------------//
     /**
@@ -1833,6 +1848,34 @@ public class SigReducer
             // All inters of selected classes (with all their relations)
             selected = sig.inters(classes);
             systemPoorFrats.save(selected);
+        }
+    }
+
+    //-------------------//
+    // AdapterForSymbols //
+    //-------------------//
+    private class AdapterForSymbols
+            extends Adapter
+    {
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public int checkConsistencies ()
+        {
+            int modifs = 0;
+
+            modifs += checkDoubleAlters();
+            deleted.addAll(updateAndPurge());
+
+            modifs += checkTimeNumbers();
+            checkTimeSignatures();
+            deleted.addAll(updateAndPurge());
+
+            modifs += checkAugmentationDots();
+            modifs += checkAugmented();
+            deleted.addAll(updateAndPurge());
+
+            return modifs;
         }
     }
 

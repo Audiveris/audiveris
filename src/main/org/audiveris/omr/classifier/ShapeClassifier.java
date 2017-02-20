@@ -75,7 +75,7 @@ public abstract class ShapeClassifier
     /**
      * Report the classifier instance in use.
      *
-     * @return the current classifier
+     * @return the first classifier
      */
     public static Classifier getInstance ()
     {
@@ -83,6 +83,20 @@ public abstract class ShapeClassifier
             return DeepClassifier.getInstance();
         } else {
             return BasicClassifier.getInstance();
+        }
+    }
+
+    /**
+     * Report the second classifier instance in use.
+     *
+     * @return the second classifier
+     */
+    public static Classifier getSecondInstance ()
+    {
+        if (useDeepClassifier()) {
+            return BasicClassifier.getInstance();
+        } else {
+            return DeepClassifier.getInstance();
         }
     }
 

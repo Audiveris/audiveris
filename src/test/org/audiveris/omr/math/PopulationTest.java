@@ -99,13 +99,16 @@ public class PopulationTest
 
         assertEquals("Check mean value.", 7d, p.getMeanValue());
 
-        double v = p.getVariance();
-        //assertEquals("Check variance of 2 values.", 1d, v); // Biased
-        assertEquals("Check variance of 2 values.", 2d, v); // Unbiased
+        final double v = p.getVariance();
+        final double sd = p.getStandardDeviation();
 
-        double sd = p.getStandardDeviation();
-        ///assertNears("Check standard deviation of 2 values.", Math.sqrt(1d), sd); // Biased
-        assertNears("Check standard deviation of 2 values.", Math.sqrt(2d), sd); // Unbiased
+        if (Population.BIASED) {
+            assertEquals("Check biased variance of 2 values.", 1d, v);
+            assertNears("Check biased standard deviation of 2 values.", Math.sqrt(1), sd);
+        } else {
+            assertEquals("Check unbiased variance of 2 values.", 2d, v);
+            assertNears("Check unbiased standard deviation of 2 values.", Math.sqrt(2), sd);
+        }
     }
 
     //-------------//
@@ -124,13 +127,16 @@ public class PopulationTest
 
         assertEquals("Check mean value.", 7d, p.getMeanValue());
 
-        double v = p.getVariance();
-        //assertEquals("Check variance of 4 values.", 2.5, p.getVariance()); // Biased
-        assertEquals("Check variance of 4 values.", 3.33, p.getVariance(), 0.01); // Unbiased
+        final double v = p.getVariance();
+        final double sd = p.getStandardDeviation();
 
-        double sd = p.getStandardDeviation();
-        //assertEquals("Check standard deviation of 4 values.", Math.sqrt(2.5), sd, 0.01); // Biased
-        assertEquals("Check standard deviation of 4 values.", Math.sqrt(3.33), sd, 0.01); // Unbiased
+        if (Population.BIASED) {
+            assertEquals("Check biased variance of 4 values.", 2.5, v);
+            assertNears("Check biased standard deviation of 4 values.", Math.sqrt(2.5), sd);
+        } else {
+            assertNears("Check unbiased variance of 4 values.", 3.33333, v);
+            assertNears("Check unbiased standard deviation of 4 values.", Math.sqrt(3.33333), sd);
+        }
     }
 
     //---------------//

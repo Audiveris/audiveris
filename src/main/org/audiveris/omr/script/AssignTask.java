@@ -51,6 +51,8 @@ public class AssignTask
     @XmlAttribute
     private final boolean compound;
 
+    private final int interline;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an assignment task
@@ -70,6 +72,7 @@ public class AssignTask
         super(sheet, glyphs);
         this.shape = shape;
         this.compound = compound;
+        interline = sheet.getScale().getInterline();
     }
 
     /**
@@ -89,6 +92,7 @@ public class AssignTask
     {
         shape = null;
         compound = false;
+        interline = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

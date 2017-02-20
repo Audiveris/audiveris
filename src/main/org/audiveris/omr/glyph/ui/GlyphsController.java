@@ -25,6 +25,7 @@ import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphsModel;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.script.AssignTask;
 import org.audiveris.omr.script.DeleteTask;
 import org.audiveris.omr.sheet.Sheet;
@@ -112,16 +113,14 @@ public class GlyphsController
             }
         }
 
-        return null;
-
-        //
-        //        if (ShapeSet.Barlines.contains(shape) || Glyphs.containsBarline(glyphs)) {
-        //            // Special case for barlines assignment or deassignment
-        //            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
-        //        } else {
-        //            // Normal symbol processing
-        //            return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
-        //        }
+        if (ShapeSet.Barlines.contains(shape)) {
+            //            // Special case for barlines assignment or deassignment
+            //            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
+            return null;
+        } else {
+            // Normal symbol processing
+            return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
+        }
     }
 
     //---------------------//
@@ -232,8 +231,6 @@ public class GlyphsController
         if (shape != null) { // Assignment
             // Persistent?
             model.assignGlyphs(glyphs, context.getAssignedShape(), compound, Evaluation.MANUAL);
-
-            logger.warn("HB. Not implemented");
 
             //            // Publish modifications (about new glyph)
             //            Glyph firstGlyph = glyphs.iterator().next();

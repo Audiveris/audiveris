@@ -25,9 +25,9 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -40,9 +40,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.IntegerFunction;
-
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Book;
@@ -411,16 +409,15 @@ public class KeyExtractor
         system.registerGlyphs(parts, Group.ALTER_PART);
 
         // Formalize parts relationships in a global graph
-        SimpleGraph<Glyph, GlyphLink> globalGraph = Glyphs.buildLinks(parts, params.maxPartGap);
-        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(
-                globalGraph).connectedSets();
+        SimpleGraph<Glyph, GlyphLink> graph = Glyphs.buildLinks(parts, params.maxPartGap);
+        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(graph).connectedSets();
         logger.debug("Staff#{} sets:{}", id, sets.size());
 
         List<Candidate> allCandidates = new ArrayList<Candidate>();
 
         for (Set<Glyph> set : sets) {
             // Use only the subgraph for this set
-            SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, globalGraph);
+            SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, graph, false);
             MultipleAdapter adapter = new MultipleAdapter(
                     roi,
                     peaks,

@@ -501,10 +501,9 @@ public abstract class AbstractClassifier<M extends Object>
 
             // Successful checks?
             if (conditions.contains(Condition.CHECKED)) {
-                double[] ins = descriptor.getFeatures(glyph, interline);
                 // This may change the eval shape in only one case:
                 // HW_REST_set may be changed for HALF_REST or WHOLE_REST based on pitch
-                glyphChecker.annotate(system, eval, glyph, ins);
+                glyphChecker.annotate(system, eval, glyph);
 
                 if (eval.failure != null) {
                     continue;

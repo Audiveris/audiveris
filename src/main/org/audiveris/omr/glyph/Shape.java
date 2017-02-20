@@ -182,7 +182,7 @@ public enum Shape
     FLAG_5_UP("Quintuple flag up"),
 
     //
-    // Small Flags -------------------------------------------------------------
+    // Small Flags
     //
     SMALL_FLAG("Flag for grace note"),
     SMALL_FLAG_SLASH("Flag for slashed grace note"),
@@ -285,6 +285,12 @@ public enum Shape
     // Miscellaneous -----------------------------------------------------------
     //
     CLUTTER("Pure clutter", new Color(0x999900)),
+
+    /**
+     * =================================================================================
+     * End of physical shapes, beginning of logical shapes.
+     * =============================================================================================
+     */
     TEXT("Sequence of letters & spaces", new Color(0x9999ff)),
     CHARACTER("Any letter"),
 
@@ -555,8 +561,7 @@ public enum Shape
     // isSharpBased //
     //--------------//
     /**
-     * Check whether the shape is a sharp or a key-sig sequence of
-     * sharps.
+     * Check whether the shape is a sharp or a key-sig sequence of sharps.
      *
      * @return true if sharp or sharp key sig
      */
@@ -569,8 +574,7 @@ public enum Shape
     // isFlatBased //
     //-------------//
     /**
-     * Check whether the shape is a flat or a key-sig sequence of
-     * flats.
+     * Check whether the shape is a flat or a key-sig sequence of flats.
      *
      * @return true if flat or flat key sig
      */
@@ -609,8 +613,7 @@ public enum Shape
     // isWellKnown //
     //-------------//
     /**
-     * Report whether this shape is well known, that is a non-garbage
-     * symbol.
+     * Report whether this shape is well known, that is a non-garbage symbol.
      *
      * @return true if non-garbage, false otherwise
      */
@@ -793,7 +796,7 @@ public enum Shape
     /**
      * Report whether this shape can be dragged (in a DnD gesture).
      *
-     * @return true if draggable
+     * @return true if shape can be dragged
      */
     public boolean isDraggable ()
     {

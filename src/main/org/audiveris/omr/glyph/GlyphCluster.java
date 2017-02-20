@@ -81,19 +81,41 @@ public class GlyphCluster
     //-------------//
     // getSubGraph //
     //-------------//
+    /**
+     * Extract a subgraph limited to the provided set of glyphs.
+     *
+     * @param set        the provided set of glyphs
+     * @param graph      the global graph to extract from
+     * @param checkEdges true if glyph edges may point outside the provided set.
+     * @return the graph limited to glyph set and related edges
+     */
     public static SimpleGraph<Glyph, GlyphLink> getSubGraph (Set<Glyph> set,
-                                                             SimpleGraph<Glyph, GlyphLink> graph)
+                                                             SimpleGraph<Glyph, GlyphLink> graph,
+                                                             boolean checkEdges)
     {
-        // Make a copy of just the subgraph for this set
-        SimpleGraph<Glyph, GlyphLink> subGraph = new SimpleGraph<Glyph, GlyphLink>(GlyphLink.class);
-        Set<GlyphLink> edges = new LinkedHashSet<GlyphLink>();
+        // Which edges should be extracted for this set?
+        Set<GlyphLink> setEdges = new LinkedHashSet<GlyphLink>();
 
         for (Glyph glyph : set) {
-            edges.addAll(graph.edgesOf(glyph));
+            Set<GlyphLink> glyphEdges = graph.edgesOf(glyph);
+
+            if (!checkEdges) {
+                setEdges.addAll(glyphEdges); // Take all edges
+            } else {
+                // Keep only the edges that link within the set
+                for (GlyphLink link : glyphEdges) {
+                    Glyph opposite = Graphs.getOppositeVertex(graph, link, glyph);
+
+                    if (set.contains(opposite)) {
+                        setEdges.add(link);
+                    }
+                }
+            }
         }
 
+        SimpleGraph<Glyph, GlyphLink> subGraph = new SimpleGraph<Glyph, GlyphLink>(GlyphLink.class);
         Graphs.addAllVertices(subGraph, set);
-        Graphs.addAllEdges(subGraph, graph, edges);
+        Graphs.addAllEdges(subGraph, graph, setEdges);
 
         return subGraph;
     }

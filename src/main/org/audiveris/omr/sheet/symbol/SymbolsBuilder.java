@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.symbol;
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.ShapeClassifier;
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphCluster;
@@ -40,6 +41,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.StopWatch;
 
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
@@ -50,7 +52,9 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,6 +85,9 @@ public class SymbolsBuilder
 
     /** Shape classifier to use. */
     private final Classifier classifier = ShapeClassifier.getInstance();
+
+    /** Shape second classifier to use. */
+    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
 
     /** Companion factory for symbols inters. */
     private final SymbolFactory factory;
@@ -135,19 +142,30 @@ public class SymbolsBuilder
      */
     public void buildSymbols (Map<SystemInfo, List<Glyph>> optionalsMap)
     {
+        final StopWatch watch = new StopWatch("buildSymbols system #" + system.getId());
         logger.debug("System#{} buildSymbols", system.getId());
 
         // Identify areas for fine glyphs
+        watch.start("retrieveFineBoxes");
         retrieveFineBoxes();
 
         // Retrieve all candidate glyphs
-        List<Glyph> glyphs = getSymbolsGlyphs(optionalsMap);
+        watch.start("getSymbolsGlyphs");
+
+        final List<Glyph> glyphs = getSymbolsGlyphs(optionalsMap);
 
         // Formalize glyphs relationships in a system-level graph
+        watch.start("buildLinks");
+
         final SimpleGraph<Glyph, GlyphLink> systemGraph = Glyphs.buildLinks(glyphs, params.maxGap);
 
         // Process all sets of connected glyphs
+        watch.start("processClusters");
         processClusters(systemGraph);
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
     }
 
     //---------------//
@@ -177,20 +195,39 @@ public class SymbolsBuilder
             return;
         }
 
+        // TODO: checks should be run only AFTER both classifiers have been run
         Evaluation[] evals = classifier.evaluate(
                 glyph,
                 system,
-                10, // Or any high number...
+                2,
                 Grades.symbolMinGrade,
+                EnumSet.of(Classifier.Condition.CHECKED));
+        Evaluation[] evals2 = classifier2.evaluate(
+                glyph,
+                system,
+                2,
+                Grades.symbolMinGrade, // Not OK for deep classifier!
                 EnumSet.of(Classifier.Condition.CHECKED));
 
         if (evals.length > 0) {
-            // Create one interpretation for each acceptable evaluation
-            for (Evaluation eval : evals) {
-                try {
-                    factory.create(eval, glyph, closestStaff);
-                } catch (Exception ex) {
-                    logger.warn("Error in glyph evaluation " + ex, ex);
+            //            // Create one interpretation for each acceptable evaluation
+            //            for (Evaluation eval : evals) {
+            //                try {
+            //                    factory.create(eval, glyph, closestStaff);
+            //                } catch (Exception ex) {
+            //                    logger.warn("Error in glyph evaluation " + ex, ex);
+            //                }
+            //            }
+            //
+            Evaluation eval = evals[0];
+
+            if (evals2.length > 0) {
+                if (eval.shape == evals2[0].shape) {
+                    try {
+                        factory.create(eval, glyph, closestStaff);
+                    } catch (Exception ex) {
+                        logger.warn("Error in glyph evaluation " + ex, ex);
+                    }
                 }
             }
         }
@@ -278,21 +315,38 @@ public class SymbolsBuilder
     private void processClusters (SimpleGraph<Glyph, GlyphLink> systemGraph)
     {
         // Retrieve all the clusters of glyphs (sets of connected glyphs)
-        ConnectivityInspector<Glyph, GlyphLink> inspector = new ConnectivityInspector<Glyph, GlyphLink>(
+        final ConnectivityInspector<Glyph, GlyphLink> inspector = new ConnectivityInspector<Glyph, GlyphLink>(
                 systemGraph);
-        List<Set<Glyph>> sets = inspector.connectedSets();
-        logger.debug("sets: {}", sets.size());
+        final List<Set<Glyph>> sets = inspector.connectedSets();
+        logger.debug("symbols sets: {}", sets.size());
 
         final int interline = sheet.getInterline();
+        final int maxPartCount = constants.maxPartCount.getValue();
 
         for (Set<Glyph> set : sets) {
-            if (set.size() > 1) {
-                // Use just the subgraph for this set
-                SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, systemGraph);
+            final int setSize = set.size();
+            logger.debug("set size: {}", setSize);
+
+            if (setSize > 1) {
+                final Set<Glyph> subSet; // Use an upper limit for set size
+
+                if (setSize <= maxPartCount) {
+                    subSet = set;
+                } else {
+                    List<Glyph> list = new ArrayList<Glyph>(set);
+                    Collections.sort(list, Glyphs.byReverseWeight);
+                    list = list.subList(0, Math.min(list.size(), maxPartCount));
+                    subSet = new LinkedHashSet<Glyph>(list);
+                    logger.info("Symbol parts shrunk from {} to {}", setSize, maxPartCount);
+                }
+
+                // Use just the subgraph for this (sub)set
+                final SimpleGraph<Glyph, GlyphLink> subGraph;
+                subGraph = GlyphCluster.getSubGraph(subSet, systemGraph, true);
                 new GlyphCluster(new SymbolAdapter(subGraph), Group.SYMBOL).decompose();
             } else {
                 // The set is just an isolated glyph, to be evaluated directly
-                Glyph glyph = set.iterator().next();
+                final Glyph glyph = set.iterator().next();
 
                 if (classifier.isBigEnough(glyph, interline)) {
                     evaluateGlyph(glyph);
@@ -309,6 +363,7 @@ public class SymbolsBuilder
         List<Inter> smallChords = system.getSig().inters(SmallChordInter.class);
 
         for (Inter inter : smallChords) {
+            // Define a fine box on the right side of the small chord
             Rectangle box = inter.getBounds();
             Rectangle fineBox = new Rectangle(
                     box.x + box.width,
@@ -328,12 +383,21 @@ public class SymbolsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        private final Constant.Integer maxPartCount = new Constant.Integer(
+                "Glyphs",
+                7,
+                "Maximum number of parts considered for a symbol");
+
         private final Scale.Fraction maxGap = new Scale.Fraction(
                 0.75, // 0.5 is a bit too small for fermata - dot distance
                 "Maximum distance between two compound parts");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
-                0.03, //0.03,
+                0.03,
                 "Minimum weight for glyph consideration");
 
         private final Scale.AreaFraction minFineWeight = new Scale.AreaFraction(
@@ -342,7 +406,7 @@ public class SymbolsBuilder
 
         private final Scale.Fraction smallChordMargin = new Scale.Fraction(
                 1,
-                "Margin to right side of small chords to ");
+                "Margin on right side of small chords to extend fine boxes");
 
         private final Scale.Fraction maxSymbolWidth = new Scale.Fraction(
                 4.0,

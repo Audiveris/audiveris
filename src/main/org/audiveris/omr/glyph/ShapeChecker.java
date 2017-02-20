@@ -27,12 +27,8 @@ import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.glyph.Shape.*;
 import static org.audiveris.omr.glyph.ShapeSet.*;
 import org.audiveris.omr.sheet.Scale;
-import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.text.TextBuilder;
-import org.audiveris.omr.text.TextLine;
-import org.audiveris.omr.util.LiveParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,15 +111,13 @@ public class ShapeChecker
      * from physical shape (such as HW_REST_set) to proper logical shape
      * (HALF_REST or WHOLE_REST).
      *
-     * @param system   the containing system
-     * @param eval     the evaluation to populate
-     * @param glyph    the glyph to check for a shape
-     * @param features the glyph features
+     * @param system the containing system
+     * @param eval   the evaluation to populate
+     * @param glyph  the glyph to check for a shape
      */
     public void annotate (SystemInfo system,
                           Evaluation eval,
-                          Glyph glyph,
-                          double[] features)
+                          Glyph glyph)
     {
         if (!constants.applySpecificCheck.isSet()) {
             return;
@@ -140,7 +134,7 @@ public class ShapeChecker
         }
 
         for (Checker checker : checks) {
-            if (!(checker.check(system, eval, glyph, features))) {
+            if (!(checker.check(system, eval, glyph))) {
                 if (eval.failure != null) {
                     eval.failure = new Evaluation.Failure(checker.name + ":" + eval.failure);
                 } else {
@@ -265,8 +259,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 // They must be within the abscissa bounds of the system
                 // Except a few shapes
@@ -295,8 +288,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 /**
                  * Problem.
@@ -346,8 +338,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 final double pp = system.estimatedPitch(glyph.getCenter());
                 final double pitchAbs = Math.abs(pp);
@@ -367,8 +358,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 // Must be outside staff height
                 final double pp = system.estimatedPitch(glyph.getCenter());
@@ -382,8 +372,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 // Must be on right side of system header
                 return Math.abs(glyph.getCenter().x) > system.getFirstStaff().getHeaderStop();
@@ -429,8 +418,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 // Check reasonable height (Cannot be too tall when close to staff)
                 final double pp = system.estimatedPitch(glyph.getCenter());
@@ -456,8 +444,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 final double pp = system.estimatedPitch(glyph.getCenter());
                 double absPos = Math.abs(pp);
@@ -489,8 +476,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 final double pp = system.estimatedPitch(glyph.getCenter());
                 double absPos = Math.abs(pp);
@@ -517,8 +503,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 // A note / rest / dynamic cannot be too far from a staff
                 Point center = glyph.getCenter();
@@ -579,8 +564,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 // Pedal marks must be below the staff
                 final double pp = system.estimatedPitch(glyph.getCenter());
@@ -601,8 +585,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 // Tuplets cannot be too far from a staff
                 final double pp = system.estimatedPitch(glyph.getCenter());
@@ -613,46 +596,47 @@ public class ShapeChecker
                     return false;
                 }
 
-                // Simply check the tuplet character via OCR, if available
-                // Nota: We should avoid multiple OCR calls on the same glyph
-                if (TextBuilder.getOcr().isAvailable()) {
-                    final Sheet sheet = system.getSheet();
-
-                    if (glyph.isTransient()) {
-                        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                        system.addFreeGlyph(glyph);
-                    }
-
-                    final LiveParam<String> textParam = sheet.getStub().getLanguageParam();
-                    final String language = textParam.getTarget();
-                    final List<TextLine> lines = TextBuilder.scanGlyph(
-                            glyph,
-                            language,
-                            sheet);
-
-                    if ((lines != null) && !lines.isEmpty()) {
-                        TextLine line = lines.get(0);
-                        String str = line.getValue();
-                        Shape shape = eval.shape;
-
-                        if (shape == TUPLET_THREE) {
-                            if (str.equals("3")) {
-                                return true;
-                            }
-                        }
-
-                        if (shape == TUPLET_SIX) {
-                            if (str.equals("6")) {
-                                return true;
-                            }
-                        }
-
-                        eval.failure = new Evaluation.Failure("ocr");
-                    }
-
-                    return false;
-                }
-
+                //                // Simply check the tuplet character via OCR, if available
+                //                // Nota: We should avoid multiple OCR calls on the same glyph
+                //                if (TextBuilder.getOcr().isAvailable()) {
+                //                    logger.info("ocr on glyph#{} eval:{}", glyph, eval);
+                //                    final Sheet sheet = system.getSheet();
+                //
+                //                    if (glyph.isTransient()) {
+                //                        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+                //                        system.addFreeGlyph(glyph);
+                //                    }
+                //
+                //                    final LiveParam<String> textParam = sheet.getStub().getLanguageParam();
+                //                    final String language = textParam.getTarget();
+                //                    final List<TextLine> lines = TextBuilder.scanGlyph(
+                //                            glyph,
+                //                            language,
+                //                            sheet);
+                //
+                //                    if ((lines != null) && !lines.isEmpty()) {
+                //                        TextLine line = lines.get(0);
+                //                        String str = line.getValue();
+                //                        Shape shape = eval.shape;
+                //
+                //                        if (shape == TUPLET_THREE) {
+                //                            if (str.equals("3")) {
+                //                                return true;
+                //                            }
+                //                        }
+                //
+                //                        if (shape == TUPLET_SIX) {
+                //                            if (str.equals("6")) {
+                //                                return true;
+                //                            }
+                //                        }
+                //
+                //                        eval.failure = new Evaluation.Failure("ocr");
+                //                    }
+                //
+                //                    return false;
+                //                }
+                //
                 return true;
             }
         };
@@ -662,8 +646,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 // Must be centered on pitch position 0
                 final double pp = system.estimatedPitch(glyph.getCenter());
@@ -683,8 +666,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 // Must be centered on pitch position -1
                 final double pp = system.estimatedPitch(glyph.getCenter());
@@ -704,8 +686,7 @@ public class ShapeChecker
             @Override
             public boolean check (SystemInfo system,
                                   Evaluation eval,
-                                  Glyph glyph,
-                                  double[] features)
+                                  Glyph glyph)
             {
                 // Check that these markers are just above first system staff
                 Rectangle bounds = glyph.getBounds();
@@ -807,17 +788,15 @@ public class ShapeChecker
         /**
          * Run the specific test.
          *
-         * @param system   the containing system
-         * @param eval     the partially-filled evaluation (eval.shape is an
-         *                 input/output, eval.grade and eval.failure are outputs)
-         * @param glyph    the glyph at hand
-         * @param features the glyph features
+         * @param system the containing system
+         * @param eval   the partially-filled evaluation (eval.shape is an
+         *               input/output, eval.grade and eval.failure are outputs)
+         * @param glyph  the glyph at hand
          * @return true if OK, false otherwise
          */
         public abstract boolean check (SystemInfo system,
                                        Evaluation eval,
-                                       Glyph glyph,
-                                       double[] features);
+                                       Glyph glyph);
 
         @Override
         public String toString ()

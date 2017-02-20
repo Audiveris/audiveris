@@ -36,8 +36,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "population")
 public class Population
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /**
+     * Variance is said "biased" when dividing by n, and said "unbiased" when dividing
+     * by (n-1), known as Bessel's correction.
+     */
+    public static final boolean BIASED = false;
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Sum of measured values */
     @XmlAttribute(name = "sum")
     private double s = 0d;
@@ -139,8 +146,13 @@ public class Population
             return 0;
         }
 
-        return Math.max(0d, (s2 - ((s * s) / n)) / (n - 1)); // Unbiased
-        ///return Math.max(0d, (s2 - ((s * s) / n)) / n); // Biased
+        final double biasedVariance = Math.max(0, (s2 - ((s * s) / n)) / n);
+
+        if (BIASED) {
+            return biasedVariance;
+        } else {
+            return (n * biasedVariance) / (n - 1);
+        }
     }
 
     //-------------------//
