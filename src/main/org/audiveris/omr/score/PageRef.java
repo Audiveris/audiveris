@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code PageRef} represents a page reference with a sheet stub.
+ * Class {@code PageRef} represents a page reference within a sheet stub.
  *
  * @author Hervé Bitteur
  */

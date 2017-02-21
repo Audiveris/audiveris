@@ -47,6 +47,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code Voice} gathers all informations related to a voice within a measure.
@@ -79,6 +80,11 @@ public class Voice
     /** The voice id. */
     @XmlAttribute
     private int id;
+
+    /** Excess voice duration, if any. */
+    @XmlAttribute
+    @XmlJavaTypeAdapter(Rational.Adapter.class)
+    private Rational excess;
 
     /**
      * Whole chord of the voice, if any.
@@ -246,10 +252,14 @@ public class Voice
                     // Insert a forward mark
                     insertForward(delta.opposite(), Mark.Position.AFTER, getLastChord());
                 } else if (delta.compareTo(Rational.ZERO) > 0) {
-                    // Flag the measure as too long
-                    ///measure.addError("Voice #" + getId() + " too long for " + delta);
-                    logger.debug("{} Voice #{} too long {}", stack, getId(), delta);
-                    stack.setExcess(delta);
+                    // Flag the voice as too long
+                    String prefix = stack.getSystem().getLogPrefix();
+                    logger.info("{}{} Voice #{} too long {}", prefix, stack, getId(), delta);
+                    excess = delta; // For voice
+
+                    if ((stack.getExcess() == null) || (delta.compareTo(stack.getExcess()) > 0)) {
+                        stack.setExcess(delta); // For stack
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -726,7 +736,13 @@ public class Voice
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("{Voice#").append(id).append("}");
+        sb.append("{Voice#").append(id);
+
+        if (excess != null) {
+            sb.append(" excess:").append(excess);
+        }
+
+        sb.append("}");
 
         return sb.toString();
     }

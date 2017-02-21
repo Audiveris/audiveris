@@ -150,15 +150,6 @@ public class Score
         constants.defaultVolume.setValue(volume);
     }
 
-    //---------//
-    // addPage //
-    //---------//
-    public void addPage (Page page)
-    {
-        getPages().add(page);
-        page.setScore(this);
-    }
-
     //------------//
     // addPageRef //
     //------------//

@@ -731,10 +731,7 @@ public class BookActions
             return null;
         }
 
-        // Remove .mxl/.xml extension if any
-        final Path sheetPathSansExt = ExportPattern.getPathSansExt(sheetPath);
-
-        return new ExportSheetTask(stub.getSheet(), sheetPathSansExt);
+        return new ExportSheetTask(stub.getSheet(), sheetPath);
     }
 
     //--------------------//
@@ -2083,14 +2080,14 @@ public class BookActions
 
         final Sheet sheet;
 
-        final Path bookExportPathSansExt;
+        final Path sheetExportPath;
 
         //~ Constructors ---------------------------------------------------------------------------
         public ExportSheetTask (Sheet sheet,
-                                Path bookExportPathSansExt)
+                                Path sheetExportPath)
         {
             this.sheet = sheet;
-            this.bookExportPathSansExt = bookExportPathSansExt;
+            this.sheetExportPath = sheetExportPath;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -2100,11 +2097,10 @@ public class BookActions
         {
             try {
                 LogUtil.start(sheet.getStub());
-                sheet.getStub().getBook().setExportPathSansExt(bookExportPathSansExt);
 
                 if (checkParameters(sheet)) {
                     sheet.getStub().reachStep(Step.PAGE, false);
-                    sheet.export();
+                    sheet.export(sheetExportPath);
                 }
             } finally {
                 LogUtil.stopBook();

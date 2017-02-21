@@ -145,6 +145,11 @@ public class MeasureStack
     @XmlJavaTypeAdapter(Rational.Adapter.class)
     private Rational actualDuration;
 
+    /** Excess measure stack duration, if any. */
+    @XmlAttribute(name = "excess")
+    @XmlJavaTypeAdapter(Rational.Adapter.class)
+    private Rational excess;
+
     /** Sequence of time slots within the measure, from left to right. */
     @XmlElement(name = "slot")
     private final List<Slot> slots = new ArrayList<Slot>();
@@ -161,9 +166,6 @@ public class MeasureStack
 
     /** Unassigned tuplets within stack. */
     private final Set<TupletInter> stackTuplets = new LinkedHashSet<TupletInter>();
-
-    /** Excess duration, if any. */
-    private Rational excess;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

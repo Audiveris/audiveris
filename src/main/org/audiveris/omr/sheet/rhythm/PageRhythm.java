@@ -25,7 +25,6 @@ import org.audiveris.omr.math.Histogram;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.SigReducer;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.FlagInter;
@@ -39,9 +38,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Class {@code PageRhythm} handles rhythm data on a sheet page.
@@ -49,7 +46,7 @@ import java.util.Map;
  * Rhythm is governed by time signatures found in staff header, discovered later down the staff, or
  * even inferred from measures content.
  * <p>
- * When the RHYTHM step is launched, we already have valid information which is no longer called
+ * When the RHYTHMS step is launched, we already have valid information which is no longer called
  * into question: head-chords and beams.
  * Additional information comes from some of the symbols candidates discovered during the SYMBOLS
  * step, collectively referred to by the "FRAT" acronym:
@@ -71,7 +68,7 @@ import java.util.Map;
  * first pass to determine expected duration and the second pass to determine time signature and
  * more precise fit.
  * <p>
- * TODO: Key sig changes are still to be implemented.
+ * TODO: Key signature changes are still to be implemented.
  *
  * @author Hervé Bitteur
  */
@@ -112,32 +109,16 @@ public class PageRhythm
     public void process ()
     {
         // Populate all stacks in page with potential time signatures, and derive ranges.
-        populateTimeSignatures();
-
-        // Reduce symbols while saving poor FRAT data for each system
-        // 'poorsMap' is the collection of poor FRAT data discarded via SIG reduction.
-        // It is put aside to be used later as modification options...
-        Map<SystemInfo, SystemBackup> poorsMap = new LinkedHashMap<SystemInfo, SystemBackup>();
-
-        for (SystemInfo system : page.getSystems()) {
-            SystemBackup systemPoorFrats = new SystemBackup(system);
-            new SigReducer(system, true).reduceRhythms(systemPoorFrats, FRAT_CLASSES);
-            poorsMap.put(system, systemPoorFrats);
-        }
-
-        // Check typical duration for each range (w/o any poor FRAT)
-        retrieveDurations();
+        populateTimeSignatures(); // -> ranges
+        retrieveDurations(); // Check typical duration for each range
 
         // For each range, adjust TS if needed, then process each contained measure
         final Iterator<Range> it = ranges.iterator();
-
-        // Current range
-        Range range = it.next();
+        Range range = it.next(); // Current range
 
         for (SystemInfo system : page.getSystems()) {
             // Select relevant rhythm inters at system level
-            List<Inter> systemGoodFrats = system.getSig().inters(FRAT_CLASSES); // Good Frats
-            SystemBackup systemPoorFrats = poorsMap.get(system); // Poor Frats
+            List<Inter> systemGoodFrats = system.getSig().inters(FRAT_CLASSES);
 
             // Process stack after stack
             for (MeasureStack stack : system.getMeasureStacks()) {
@@ -158,10 +139,7 @@ public class PageRhythm
 
                 try {
                     logger.debug("\n--- Processing {} expDur: {} ---", stack, range.duration);
-                    new StackTuner(stack, true).process(
-                            systemGoodFrats,
-                            systemPoorFrats,
-                            range.duration);
+                    new StackTuner(stack, false).process(systemGoodFrats, range.duration);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }
@@ -250,7 +228,7 @@ public class PageRhythm
             for (MeasureStack stack : system.getMeasureStacks()) {
                 try {
                     logger.debug("\n--- Raw processing {} ---", stack);
-                    new StackTuner(stack, false).process(systemGoodFrats, null, null);
+                    new StackTuner(stack, true).process(systemGoodFrats, null);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }
@@ -397,3 +375,74 @@ public class PageRhythm
         }
     }
 }
+//    //---------//
+//    // process //
+//    //---------//
+//    public void process ()
+//    {
+//        // Populate all stacks in page with potential time signatures, and derive ranges.
+//        populateTimeSignatures(); // -> ranges
+//
+//        // Reduce symbols while saving poor FRAT data for each system
+//        // 'poorsMap' is the collection of poor FRAT data discarded via SIG reduction.
+//        // It is put aside to be used later as modification options...
+//        Map<SystemInfo, SystemBackup> poorsMap = new LinkedHashMap<SystemInfo, SystemBackup>();
+//
+//        for (SystemInfo system : page.getSystems()) {
+//            SystemBackup systemPoorFrats = new SystemBackup(system);
+//            new SigReducer(system, true).reduceRhythms(systemPoorFrats, FRAT_CLASSES);
+//            poorsMap.put(system, systemPoorFrats);
+//        }
+//
+//        // Check typical duration for each range (w/o any poor FRAT)
+//        retrieveDurations();
+//
+//        // For each range, adjust TS if needed, then process each contained measure
+//        final Iterator<Range> it = ranges.iterator();
+//        Range range = it.next();// Current range
+//
+//        for (SystemInfo system : page.getSystems()) {
+//            // Select relevant rhythm inters at system level
+//            List<Inter> systemGoodFrats = system.getSig().inters(FRAT_CLASSES); // Good Frats
+//            SystemBackup systemPoorFrats = poorsMap.get(system); // Poor Frats
+//            logger.debug("systemPoorFrats: {}", systemPoorFrats.getSeeds().size()); // NR always 0
+//
+//            // Process stack after stack
+//            for (MeasureStack stack : system.getMeasureStacks()) {
+//                if (stack.getIdValue() == range.startId) {
+//                    logger.debug("Starting {}", range);
+//
+//                    // Adjust time signature?
+//                    if ((range.duration != null)
+//                        && ((range.ts == null)
+//                            || !range.ts.getTimeRational().getValue().equals(range.duration))) {
+//                        logger.info(
+//                                "{}{} should update to {}-based time sig?",
+//                                stack.getSystem().getLogPrefix(),
+//                                range,
+//                                range.duration);
+//                    }
+//                }
+//
+//                try {
+//                    logger.debug("\n--- Processing {} expDur: {} ---", stack, range.duration);
+//                    new StackTuner(stack, true).process(
+//                            systemGoodFrats,
+//                            systemPoorFrats,
+//                            range.duration);
+//                } catch (Exception ex) {
+//                    logger.warn("Error on stack " + stack + " " + ex, ex);
+//                }
+//
+//                // End of range?
+//                if (stack.getIdValue() == range.stopId) {
+//                    if (it.hasNext()) {
+//                        range = it.next();
+//                    }
+//                }
+//            }
+//
+//            // Refine voices IDs (and thus colors) across all measures of the system
+//            Voices.refineSystem(system);
+//        }
+//    }

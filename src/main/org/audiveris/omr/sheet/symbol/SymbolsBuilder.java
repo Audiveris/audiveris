@@ -393,7 +393,7 @@ public class SymbolsBuilder
                 "Maximum number of parts considered for a symbol");
 
         private final Scale.Fraction maxGap = new Scale.Fraction(
-                0.75, // 0.5 is a bit too small for fermata - dot distance
+                0.5, // 0.75 vs 0.5 is a bit too small for fermata - dot distance
                 "Maximum distance between two compound parts");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(

@@ -228,7 +228,7 @@ public class SymbolFactory
         } else if (constants.supportPluckings.isSet() && Pluckings.contains(shape)) {
             addSymbol(PluckingInter.create(glyph, shape, grade));
         } else {
-            logger.warn("SymbolFactory no support yet for {}", shape);
+            logger.info("SymbolFactory no support yet for {} {}", shape, glyph);
         }
     }
 

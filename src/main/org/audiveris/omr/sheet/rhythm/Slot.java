@@ -92,6 +92,10 @@ public class Slot
     @XmlJavaTypeAdapter(Rational.Adapter.class)
     private Rational timeOffset;
 
+    /** Is slot suspicious?. */
+    @XmlAttribute
+    private Boolean suspicious;
+
     // Transient data
     //---------------
     //
@@ -398,6 +402,17 @@ public class Slot
         return xOffset;
     }
 
+    //--------------//
+    // isSuspicious //
+    //--------------//
+    /**
+     * @return the suspicious
+     */
+    public boolean isSuspicious ()
+    {
+        return (suspicious != null) && suspicious;
+    }
+
     //----------//
     // setStack //
     //----------//
@@ -405,6 +420,17 @@ public class Slot
     {
         this.stack = stack;
         computeXOffset();
+    }
+
+    //---------------//
+    // setSuspicious //
+    //---------------//
+    /**
+     * @param suspicious the suspicious to set
+     */
+    public void setSuspicious (boolean suspicious)
+    {
+        this.suspicious = suspicious ? true : null;
     }
 
     //---------------//
@@ -513,6 +539,10 @@ public class Slot
         }
 
         sb.append("]");
+
+        if (isSuspicious()) {
+            sb.append(" SUSPICIOUS");
+        }
 
         sb.append("}");
 

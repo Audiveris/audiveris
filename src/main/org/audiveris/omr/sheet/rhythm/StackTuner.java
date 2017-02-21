@@ -23,23 +23,16 @@ package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.math.Combinations;
 import org.audiveris.omr.math.Rational;
-import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractChordInter;
-import org.audiveris.omr.sig.inter.AugmentationDotInter;
-import org.audiveris.omr.sig.inter.HeadInter;
+import org.audiveris.omr.score.TimeRational;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
-import org.audiveris.omr.sig.relation.AugmentationRelation;
-import org.audiveris.omr.sig.relation.DoubleDotRelation;
-import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -86,20 +79,11 @@ public class StackTuner
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
-    /** Full mode (or raw mode: 1st phase meant to just guess expected duration). */
-    private final boolean fullMode;
+    /** Fail fast mode, just meant to guess expected duration. */
+    private final boolean failFast;
 
     /** To temporarily save inters and their relations, outside of the standard sig. */
     private final StackBackup backup;
-
-    /** All configurations that were tested so far and failed. */
-    private final Set<StackConfig> failures = new LinkedHashSet<StackConfig>();
-
-    /** Configurations still to be tested for this stack. */
-    private final List<StackConfig> candidates = new ArrayList<StackConfig>();
-
-    /** Current index in candidates. */
-    private int candidateIndex;
 
     /** Current configuration in stack. */
     private StackConfig config;
@@ -112,14 +96,13 @@ public class StackTuner
      * Creates a new {@code StackTuner} object.
      *
      * @param stack    the measure stack to process
-     * @param fullMode true for full processing, false for raw processing (meant to guess expected
-     *                 measure duration)
+     * @param failFast true for raw processing (meant only to guess expected measure duration)
      */
     public StackTuner (MeasureStack stack,
-                       boolean fullMode)
+                       boolean failFast)
     {
         this.stack = stack;
-        this.fullMode = fullMode;
+        this.failFast = failFast;
 
         backup = new StackBackup(stack);
     }
@@ -132,11 +115,9 @@ public class StackTuner
      * Process the stack to find out a correct configuration of rhythm data.
      *
      * @param systemGoodFrats The good FRAT inters at system level (non null)
-     * @param systemPoorFrats The poor FRAT data at system level, or null
      * @param initialDuration The expected duration for this stack, or null
      */
     public void process (List<Inter> systemGoodFrats,
-                         SystemBackup systemPoorFrats,
                          Rational initialDuration)
     {
         stack.setExpectedDuration(initialDuration);
@@ -148,66 +129,22 @@ public class StackTuner
         logger.debug("{} goods: {} {}", stack, goods.size(), Inters.ids(goods));
         populateGoodFrats(goods);
 
-        // Poor FRAT data for the stack
-        final List<Inter> poors = filterPoors(systemPoorFrats);
-
         // Initial config
         final StackConfig orgConfig = new StackConfig(goods);
-        candidates.add(orgConfig);
+        backup.save(goods);
 
-        // Determine possible partitions of all FRAT data (goods + poors)
-        if (fullMode && !poors.isEmpty()) {
-            logger.debug("{} poors: {} {}", stack, poors.size(), Inters.ids(poors));
-            systemPoorFrats.restore(poors);
+        try {
+            StackConfig correctConfig = checkConfig(orgConfig);
 
-            final List<Inter> allFrat = new ArrayList<Inter>(goods);
-            allFrat.addAll(poors);
-            backup.save(allFrat);
-
-            final SIGraph sig = stack.getSystem().getSig();
-            List<List<Inter>> partitions = sig.getPartitions(null, allFrat);
-            addCandidates(partitions);
-        } else {
-            backup.save(goods);
-        }
-
-        StackConfig correctConfig = null; // The very first correct config found, if any
-        logger.debug("{} candidates: {}", stack, candidates.size());
-
-        // Process each identified configuration, until a correct one is found
-        for (candidateIndex = 0; candidateIndex < candidates.size(); candidateIndex++) {
-            final StackConfig candidate = candidates.get(candidateIndex);
-            logger.debug("{} config {}/{}", stack, candidateIndex + 1, candidates.size());
-
-            if (!failures.contains(candidate)) {
-                try {
-                    correctConfig = checkConfig(candidate, false);
-
-                    if (correctConfig != null) {
-                        break;
-                    }
-                } catch (Exception ex) {
-                    logger.warn("Error " + ex + " checkConfig " + candidate, ex);
-                }
+            if (correctConfig != null) {
+                // Protect correct rhythm data against other symbols
+                backup.freeze(correctConfig.getInters());
+            } else if (!failFast) {
+                SystemInfo system = stack.getSystem();
+                logger.info("{}{} no correct rhythm", system.getLogPrefix(), stack);
             }
-        }
-
-        if (correctConfig != null) {
-            // Re-install the correctConfig if different from current config
-            if (!correctConfig.equals(config)) {
-                logger.debug("Re-installing correct config {}", correctConfig);
-                backup.install(correctConfig, toRemove, false);
-            }
-
-            // Protect correct rhythm data against other symbols
-            backup.freeze(correctConfig.getInters());
-        } else if (fullMode) {
-            logger.info(
-                    "{}*** {} no correct rhythm config",
-                    stack.getSystem().getLogPrefix(),
-                    stack);
-            // Too bad, simply re-install the original config
-            backup.install(orgConfig, toRemove, false);
+        } catch (Exception ex) {
+            logger.warn("Error " + ex + " checkConfig " + orgConfig, ex);
         }
     }
 
@@ -219,23 +156,6 @@ public class StackTuner
         backup.resetFromSeeds();
     }
 
-    //---------------//
-    // addCandidates //
-    //---------------//
-    private void addCandidates (List<List<Inter>> partitions)
-    {
-        for (List<Inter> partition : partitions) {
-            // Make sure that all inters are relevant in this partition
-            filterPartition(partition);
-
-            StackConfig cfg = new StackConfig(partition);
-
-            if (!candidates.contains(cfg)) {
-                candidates.add(cfg);
-            }
-        }
-    }
-
     //-------------//
     // checkConfig //
     //-------------//
@@ -245,13 +165,10 @@ public class StackTuner
      * If OK we return the configuration.
      * If not OK we return null, perhaps after posting additional config candidates.
      *
-     * @param config      newConfig the configuration to consider
-     * @param improveMode true if we are trying to improve a good configuration (adding rather than
-     *                    removing rhythms items)
+     * @param config newConfig the configuration to consider
      * @return the configuration if successful, null otherwise
      */
-    private StackConfig checkConfig (StackConfig newConfig,
-                                     boolean improveMode)
+    private StackConfig checkConfig (StackConfig newConfig)
     {
         if (logger.isDebugEnabled()) {
             logger.info("Chk{} {}", newConfig.ids(), newConfig);
@@ -261,24 +178,13 @@ public class StackTuner
             config = newConfig;
 
             // Installation computes the time slots, and may fail
-            if (!backup.install(config, toRemove, true)) {
-                for (AbstractChordInter chord : toRemove) {
-                    removeChord(chord);
-                }
-
-                failures.add(config);
-
-                //
-                //                if (fullMode && !improveMode) {
-                //                    postAlternatives();
-                //                }
-                //
+            if (!backup.install(config, toRemove, failFast)) {
                 return null;
             }
         }
 
         // Check that each voice looks correct
-        if ((fullMode || improveMode) && checkVoices()) {
+        if (!failFast && checkVoices()) {
             return newConfig;
         } else {
             return null;
@@ -290,10 +196,8 @@ public class StackTuner
     //-------------//
     /**
      * Check validity of every voice in stack.
-     * At first invalid voice encountered, we may suggest new configs (inserted into candidates
-     * list for later check) and return false;
      *
-     * @return true if all voices are OK, false otherwise (with perhaps additional candidates)
+     * @return true if all voices are OK, false otherwise
      */
     private boolean checkVoices ()
     {
@@ -301,81 +205,38 @@ public class StackTuner
             Rational stackDur = stack.getCurrentDuration();
 
             if (!stackDur.equals(Rational.ZERO)) {
-                // Make sure the stack duration is not bigger than limit
+                // Make sure the stack duration is not bigger than limit (TODO: why???)
                 if (stackDur.compareTo(stack.getExpectedDuration()) <= 0) {
                     stack.setActualDuration(stackDur);
                 } else {
-                    stack.setActualDuration(stack.getExpectedDuration());
+                    stack.setActualDuration(stackDur);
+
+                    ///stack.setActualDuration(stack.getExpectedDuration());
                 }
             }
 
-            // Compute voices terminations
-            stack.checkDuration();
+            stack.checkDuration(); // Compute voices terminations
 
             if (logger.isDebugEnabled()) {
                 stack.printVoices(null);
             }
 
-            Rational actualDuration = stack.getActualDuration();
-            logger.debug(
-                    "{} expected:{} actual:{} current:{}",
-                    stack,
-                    stack.getExpectedDuration(),
-                    actualDuration,
-                    stackDur);
+            Rational expectedDuration = stack.getExpectedDuration();
+            logger.debug("{} expected:{} current:{}", stack, expectedDuration, stackDur);
 
             for (Voice voice : stack.getVoices()) {
                 Rational voiceDur = voice.getDuration();
-
-                logger.debug(
-                        "{} ends at {} ts: {}",
-                        voice,
-                        voiceDur,
-                        voice.getInferredTimeSignature());
+                TimeRational inferred = voice.getInferredTimeSignature();
+                logger.debug("{} ends at {} ts: {}", voice, voiceDur, inferred);
 
                 if (voiceDur != null) {
-                    Rational delta = voiceDur.minus(actualDuration);
+                    Rational delta = voiceDur.minus(expectedDuration);
                     final int sign = delta.compareTo(Rational.ZERO);
 
-                    if (sign == 0) {
-                        // OK for this voice
-                        ///logger.info("OK {}", config.ids());
-                    } else if (sign > 0) {
-                        failures.add(config);
-
-                        // Voice is too long: try to shorten this voice
-                        // Removing a rest
-                        // Removing a dot (TODO)
-                        // Inserting a tuplet (TODO)
-                        List<AbstractChordInter> rests = voice.getRests();
-                        Collections.sort(rests, Inter.byReverseGrade);
-
-                        logger.debug("{} Excess {} in {} from:{}", stack, delta, voice, rests);
-
-                        if (!rests.isEmpty()) {
-                            postRests(rests, delta);
-                        }
-
-                        return false;
-                    } else if (voice.isOnlyRest()) {
-                        failures.add(config);
-
-                        List<AbstractChordInter> rests = voice.getRests();
-                        logger.debug("{} Abnormal rest-only {} rests:{}", stack, voice, rests);
-
-                        StackConfig newConfig = config.copy();
-                        newConfig.getInters().removeAll(rests);
-
-                        if (!failures.contains(newConfig) && !candidates.contains(newConfig)) {
-                            ///candidates.add(candidateIndex + 1, newConfig);
-                            candidates.add(newConfig);
-                        }
-
+                    if (sign > 0) {
                         return false;
                     }
                 }
-
-                // TODO: Suggestion?
             }
 
             return true; // Success!
@@ -386,177 +247,6 @@ public class StackTuner
         return false;
     }
 
-    //-----------------//
-    // filterPartition //
-    //-----------------//
-    /**
-     * Filter the content of a partition for irrelevant inters.
-     * Augmentation dots need their augmented entity (head/rest or first dot)
-     *
-     * @param partition the partition to check and reduce if needed
-     */
-    private void filterPartition (List<Inter> partition)
-    {
-        final SIGraph sig = stack.getSystem().getSig();
-        final List<Inter> allDots = sig.inters(partition, AugmentationDotInter.class);
-        final List<Inter> secondDots = new ArrayList<Inter>();
-
-        if (!allDots.isEmpty()) {
-            logger.trace("filterPartition on {}", allDots);
-        }
-
-        // Pass #1 for simple augmentation of a rest
-        // Make sure the rest augmented by a dot is contained by the partition
-        for (Inter dot : allDots) {
-            Set<Relation> simpleRels = sig.getRelations(dot, AugmentationRelation.class);
-
-            if (simpleRels.isEmpty()) {
-                secondDots.add(dot); // Since this dot must be a second dot
-            } else {
-                boolean augFound = false;
-
-                for (Relation rel : simpleRels) {
-                    Inter augInter = sig.getOppositeInter(dot, rel);
-
-                    // If the augmented entity is a note head, it's OK
-                    if (augInter instanceof HeadInter) {
-                        augFound = true;
-
-                        break;
-                    }
-
-                    // Here, the augmented entity is a rest, make sure its chord is in the partition
-                    Inter restChord = augInter.getEnsemble();
-
-                    if (partition.contains(restChord)) {
-                        augFound = true;
-
-                        break;
-                    }
-                }
-
-                if (!augFound) {
-                    logger.debug("Isolated first {} removed from partition", dot);
-                    partition.remove(dot);
-                }
-            }
-        }
-
-        // Pass #2 for double augmentation
-        // Make sure the first dot (augmented by a second dot) is contained by the partition
-        // If not, remove the second dot.
-        for (Inter dot : secondDots) {
-            Set<Relation> doubleRels = sig.getRelations(dot, DoubleDotRelation.class);
-            boolean augFound = false;
-
-            for (Relation rel : doubleRels) {
-                Inter firstDot = sig.getOppositeInter(dot, rel);
-
-                if (partition.contains(firstDot)) {
-                    augFound = true;
-                }
-            }
-
-            if (!augFound) {
-                logger.debug("Isolated second {} removed from partition", dot);
-                partition.remove(dot);
-            }
-        }
-    }
-
-    //-------------//
-    // filterPoors //
-    //-------------//
-    /**
-     * Retrieve the stack poor data out of the system poor data.
-     * Limit the number of poor rhythms data by all means (this is very questionable!!!)
-     */
-    private List<Inter> filterPoors (SystemBackup systemPoors)
-    {
-        if ((systemPoors == null) || systemPoors.getSeeds().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        final List<Inter> poors = stack.filter(systemPoors.getSeeds());
-        Collections.sort(poors, Inter.byReverseBestGrade);
-
-        final int maxCount = constants.maxPoors.getValue();
-
-        if (poors.size() > maxCount) {
-            // Drop the data with lower grade
-            return poors.subList(0, maxCount);
-        } else {
-            return poors;
-        }
-    }
-
-    //
-    //    //---------------//
-    //    // improveConfig //
-    //    //---------------//
-    //    private StackConfig improveConfig (StackConfig goodConfig,
-    //                                       List<Inter> vars)
-    //    {
-    //        if (logger.isDebugEnabled()) {
-    //            logger.debug("Removed rest chords: {}", Inters.ids(vars));
-    //        }
-    //
-    //        Collections.sort(vars, Inter.byCenterAbscissa);
-    //        candidates.clear();
-    //        candidateIndex = -1;
-    //
-    //        final int n = vars.size();
-    //
-    //        // This should be used only for rather small sizes ...
-    //        final boolean[][] bools = Combinations.getVectors(n);
-    //        int targetIdx = candidateIndex + 1;
-    //
-    //        for (boolean[] vector : bools) {
-    //            StackConfig newConfig = config.copy();
-    //
-    //            for (int i = 0; i < n; i++) {
-    //                if (vector[i]) {
-    //                    newConfig.add(vars.get(i));
-    //                }
-    //            }
-    //
-    //            if (!failures.contains(newConfig)) {
-    //                if (!goodConfig.equals(newConfig)) {
-    //                    logger.debug("Inc{}", newConfig.ids());
-    //                    candidates.add(targetIdx++, newConfig);
-    //                }
-    //            }
-    //        }
-    //
-    //        // Try all combinations
-    //        List<StackConfig> betterConfigs = new ArrayList<StackConfig>();
-    //
-    //        for (candidateIndex = 0; candidateIndex < candidates.size(); candidateIndex++) {
-    //            final StackConfig candidate = candidates.get(candidateIndex);
-    //
-    //            if (!failures.contains(candidate)) {
-    //                StackConfig betterConfig = checkConfig(candidate, true);
-    //
-    //                if (betterConfig != null) {
-    //                    betterConfigs.add(betterConfig);
-    //                }
-    //            }
-    //        }
-    //
-    //        logger.debug("{} better configs: {}", stack, betterConfigs.size());
-    //
-    //        if (!betterConfigs.isEmpty()) {
-    //            // Pick up the longest one?
-    //            if (betterConfigs.size() > 1) {
-    //                Collections.sort(betterConfigs, StackConfig.byReverseSize);
-    //            }
-    //
-    //            return betterConfigs.get(0);
-    //        } else {
-    //            return null;
-    //        }
-    //    }
-    //
     //-------------------//
     // populateGoodFrats //
     //-------------------//
@@ -569,159 +259,6 @@ public class StackTuner
     {
         for (Inter inter : stackGoods) {
             stack.addInter(inter);
-        }
-    }
-
-    //
-    //    //------------------//
-    //    // postAlternatives //
-    //    //------------------//
-    //    /**
-    //     * Try to post relevant alternatives to the current config with incorrect slots.
-    //     * <p>
-    //     * Slots were not correctly built, building stopped at wrong slot.
-    //     * Determine the possible culprits among rhythm inters, typically all rhythm inters until
-    //     * abscissa of wrong slot, plus any tuplet sign even located after wrong slot abscissa!
-    //     */
-    //    private void postAlternatives ()
-    //    {
-    //        // Determine the variables we can play with
-    //        Set<Inter> varSet = new LinkedHashSet<Inter>();
-    //        Slot lastSlot = stack.getLastSlot();
-    //
-    //        for (Slot slot : stack.getSlots()) {
-    //            for (AbstractChordInter chord : slot.getChords()) {
-    //                if (chord instanceof RestChordInter) {
-    //                    varSet.add(chord);
-    //                }
-    //            }
-    //        }
-    //
-    //        for (Inter inter : config.getInters()) {
-    //            if (inter instanceof TupletInter) {
-    //                varSet.add(inter);
-    //            }
-    //        }
-    //
-    //        for (Inter inter : config.getInters()) {
-    //            Staff staff = inter.getStaff();
-    //            Point center = inter.getCenter();
-    //            final double xOffset;
-    //
-    //            if (staff != null) {
-    //                xOffset = stack.getXOffset(center, Arrays.asList(staff));
-    //            } else {
-    //                xOffset = stack.getXOffset(center);
-    //            }
-    //
-    //            if (xOffset <= lastSlot.getXOffset()) {
-    //                varSet.add(inter);
-    //            } else {
-    //                break;
-    //            }
-    //        }
-    //
-    //        List<Inter> vars = new ArrayList<Inter>(varSet);
-    //        final int maxCount = constants.maxTotalRhythm.getValue();
-    //        int n = vars.size();
-    //
-    //        if (n > maxCount) {
-    //            Collections.sort(vars, Inter.byBestGrade);
-    //            vars = vars.subList(0, maxCount);
-    //            n = maxCount;
-    //        }
-    //
-    //        Collections.sort(vars, Inter.byCenterAbscissa);
-    //
-    //        // This should be used only for rather small sizes ...
-    //        final boolean[][] bools = Combinations.getVectors(n);
-    //        int targetIdx = candidateIndex + 1;
-    //
-    //        for (boolean[] vector : bools) {
-    //            StackConfig newConfig = config.copy();
-    //
-    //            for (int i = 0; i < n; i++) {
-    //                if (!vector[i]) {
-    //                    Inter inter = vars.get(i);
-    //                    // Delete inter (and its augmentation dots) from config
-    //                    newConfig.remove(inter);
-    //                }
-    //            }
-    //
-    //            if (!failures.contains(newConfig)) {
-    //                if (!candidates.contains(newConfig)) {
-    //                    logger.debug("Ins{}", newConfig.ids());
-    //                    candidates.add(targetIdx++, newConfig);
-    //                } else {
-    //                    int idx = candidates.indexOf(newConfig);
-    //
-    //                    if (idx > targetIdx) {
-    //                        Collections.swap(candidates, idx, targetIdx++);
-    //                        logger.debug("Pro{}", newConfig.ids());
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-    //
-    //-----------//
-    // postRests //
-    //-----------//
-    /**
-     * Try to augment the global candidates list with configurations derived from the
-     * current one by removing rests.
-     * <p>
-     * The sequence of inserted candidates starts by the most promising ones.
-     *
-     * @param rests the list of rests, sorted by ascending grade
-     * @param delta (not used) the excess time on the voice being checked
-     */
-    private void postRests (List<AbstractChordInter> rests,
-                            Rational delta)
-    {
-        final int n = rests.size();
-
-        // This should be used only for rather small sizes of rests collection ...
-        final boolean[][] bools = Combinations.getVectors(n);
-
-        for (boolean[] vector : bools) {
-            StackConfig newConfig = config.copy();
-
-            for (int i = 0; i < n; i++) {
-                if (!vector[i]) {
-                    // Delete inter (and its augmentation dots) from config
-                    newConfig.remove(rests.get(i));
-                }
-            }
-
-            if (!failures.contains(newConfig)) {
-                if (!candidates.contains(newConfig)) {
-                    candidates.add(newConfig);
-                }
-            }
-        }
-    }
-
-    //-------------//
-    // removeChord //
-    //-------------//
-    /**
-     * Post a candidate, based on current config with the provided chord removed
-     *
-     * @param chord the chord to "remove" before posting a new candidate
-     */
-    private void removeChord (AbstractChordInter chord)
-    {
-        if (logger.isDebugEnabled() || chord.isVip()) {
-            logger.info("VIP removing {} causing close slots", chord);
-        }
-
-        StackConfig newConfig = config.copy();
-        newConfig.getInters().remove(chord);
-
-        if (!failures.contains(newConfig) && !candidates.contains(newConfig)) {
-            ///candidates.add(candidateIndex + 1, newConfig);
-            candidates.add(newConfig);
         }
     }
 
@@ -738,11 +275,414 @@ public class StackTuner
                 "Inter count",
                 5,
                 "Maximum poor rhythm data considered for a measure stack");
-
-        //
-        //        private final Constant.Integer maxTotalRhythm = new Constant.Integer(
-        //                "Inter count",
-        //                5,
-        //                "Maximum total rhythm data considered for a measure stack");
     }
 }
+//    //---------//
+//    // process //
+//    //---------//
+//    /**
+//     * Process the stack to find out a correct configuration of rhythm data.
+//     *
+//     * @param systemGoodFrats The good FRAT inters at system level (non null)
+//     * @param systemPoorFrats The poor FRAT data at system level, or null
+//     * @param initialDuration The expected duration for this stack, or null
+//     */
+//    public void process (List<Inter> systemGoodFrats,
+//                         SystemBackup systemPoorFrats,
+//                         Rational initialDuration)
+//    {
+//        stack.setExpectedDuration(initialDuration);
+//        stack.clearFrats();
+//
+//        // Good FRAT data for the stack
+//        final List<Inter> goods = stack.filter(systemGoodFrats);
+//        Collections.sort(goods, Inter.byAbscissa);
+//        logger.debug("{} goods: {} {}", stack, goods.size(), Inters.ids(goods));
+//        populateGoodFrats(goods);
+//
+//        // Poor FRAT data for the stack
+//        final List<Inter> poors = filterPoors(systemPoorFrats);
+//
+//        // Initial config
+//        final StackConfig orgConfig = new StackConfig(goods);
+//        candidates.add(orgConfig);
+//
+//        // Determine possible partitions of all FRAT data (goods + poors)
+//        if (fullMode && !poors.isEmpty()) {
+//            logger.debug("{} poors: {} {}", stack, poors.size(), Inters.ids(poors));
+//            systemPoorFrats.restore(poors);
+//
+//            final List<Inter> allFrat = new ArrayList<Inter>(goods);
+//            allFrat.addAll(poors);
+//            backup.save(allFrat);
+//
+//            final SIGraph sig = stack.getSystem().getSig();
+//            List<List<Inter>> partitions = sig.getPartitions(null, allFrat);
+//            addCandidates(partitions);
+//        } else {
+//            backup.save(goods);
+//        }
+//
+//        StackConfig correctConfig = null; // The very first correct config found, if any
+//        logger.debug("{} candidates: {}", stack, candidates.size()); // NR: always 1
+//
+//        // Process each identified configuration, until a correct one is found
+//        for (candidateIndex = 0; candidateIndex < candidates.size(); candidateIndex++) {
+//            final StackConfig candidate = candidates.get(candidateIndex);
+//            logger.debug("{} config {}/{}", stack, candidateIndex + 1, candidates.size());
+//
+//            if (!failures.contains(candidate)) {
+//                try {
+//                    correctConfig = checkConfig(candidate, false);
+//
+//                    if (correctConfig != null) {
+//                        break;
+//                    }
+//                } catch (Exception ex) {
+//                    logger.warn("Error " + ex + " checkConfig " + candidate, ex);
+//                }
+//            }
+//        }
+//
+//        if (correctConfig != null) {
+//            // Re-install the correctConfig if different from current config
+//            if (!correctConfig.equals(config)) {
+//                logger.debug("Re-installing correct config {}", correctConfig);
+//                backup.install(correctConfig, toRemove, false);
+//            }
+//
+//            // Protect correct rhythm data against other symbols
+//            backup.freeze(correctConfig.getInters());
+//        } else if (fullMode) {
+//            logger.info(
+//                    "{}*** {} no correct rhythm config",
+//                    stack.getSystem().getLogPrefix(),
+//                    stack);
+//            // Too bad, simply re-install the original config
+//            backup.install(orgConfig, toRemove, false);
+//        }
+//    }
+//    //-----------//
+//    // postRests //
+//    //-----------//
+//    /**
+//     * Try to augment the global candidates list with configurations derived from the
+//     * current one by removing rests.
+//     * <p>
+//     * The sequence of inserted candidates starts by the most promising ones.
+//     *
+//     * @param rests the list of rests, sorted by ascending grade
+//     * @param delta (not used) the excess time on the voice being checked
+//     */
+//    private void postRests (List<AbstractChordInter> rests,
+//                            Rational delta)
+//    {
+//        final int n = rests.size();
+//
+//        // This should be used only for rather small sizes of rests collection ...
+//        final boolean[][] bools = Combinations.getVectors(n);
+//
+//        for (boolean[] vector : bools) {
+//            StackConfig newConfig = config.copy();
+//
+//            for (int i = 0; i < n; i++) {
+//                if (!vector[i]) {
+//                    // Delete inter (and its augmentation dots) from config
+//                    newConfig.remove(rests.get(i));
+//                }
+//            }
+//
+//            if (!failures.contains(newConfig)) {
+//                if (!candidates.contains(newConfig)) {
+//                    candidates.add(newConfig);
+//                }
+//            }
+//        }
+//    }
+//
+//    //-------------//
+//    // removeChord //
+//    //-------------//
+//    /**
+//     * Post a candidate, based on current config with the provided chord removed
+//     *
+//     * @param chord the chord to "remove" before posting a new candidate
+//     */
+//    private void removeChord (AbstractChordInter chord)
+//    {
+//        if (logger.isDebugEnabled() || chord.isVip()) {
+//            logger.info("VIP removing {} causing close slots", chord);
+//        }
+//
+//        StackConfig newConfig = config.copy();
+//        newConfig.getInters().remove(chord);
+//
+//        if (!failures.contains(newConfig) && !candidates.contains(newConfig)) {
+//            ///candidates.add(candidateIndex + 1, newConfig);
+//            candidates.add(newConfig);
+//        }
+//    }
+//
+//    //-----------------//
+//    // filterPartition //
+//    //-----------------//
+//    /**
+//     * Filter the content of a partition for irrelevant inters.
+//     * Augmentation dots need their augmented entity (head/rest or first dot)
+//     *
+//     * @param partition the partition to check and reduce if needed
+//     */
+//    private void filterPartition (List<Inter> partition)
+//    {
+//        final SIGraph sig = stack.getSystem().getSig();
+//        final List<Inter> allDots = sig.inters(partition, AugmentationDotInter.class);
+//        final List<Inter> secondDots = new ArrayList<Inter>();
+//
+//        if (!allDots.isEmpty()) {
+//            logger.trace("filterPartition on {}", allDots);
+//        }
+//
+//        // Pass #1 for simple augmentation of a rest
+//        // Make sure the rest augmented by a dot is contained by the partition
+//        for (Inter dot : allDots) {
+//            Set<Relation> simpleRels = sig.getRelations(dot, AugmentationRelation.class);
+//
+//            if (simpleRels.isEmpty()) {
+//                secondDots.add(dot); // Since this dot must be a second dot
+//            } else {
+//                boolean augFound = false;
+//
+//                for (Relation rel : simpleRels) {
+//                    Inter augInter = sig.getOppositeInter(dot, rel);
+//
+//                    // If the augmented entity is a note head, it's OK
+//                    if (augInter instanceof HeadInter) {
+//                        augFound = true;
+//
+//                        break;
+//                    }
+//
+//                    // Here, the augmented entity is a rest, make sure its chord is in the partition
+//                    Inter restChord = augInter.getEnsemble();
+//
+//                    if (partition.contains(restChord)) {
+//                        augFound = true;
+//
+//                        break;
+//                    }
+//                }
+//
+//                if (!augFound) {
+//                    logger.debug("Isolated first {} removed from partition", dot);
+//                    partition.remove(dot);
+//                }
+//            }
+//        }
+//
+//        // Pass #2 for double augmentation
+//        // Make sure the first dot (augmented by a second dot) is contained by the partition
+//        // If not, remove the second dot.
+//        for (Inter dot : secondDots) {
+//            Set<Relation> doubleRels = sig.getRelations(dot, DoubleDotRelation.class);
+//            boolean augFound = false;
+//
+//            for (Relation rel : doubleRels) {
+//                Inter firstDot = sig.getOppositeInter(dot, rel);
+//
+//                if (partition.contains(firstDot)) {
+//                    augFound = true;
+//                }
+//            }
+//
+//            if (!augFound) {
+//                logger.debug("Isolated second {} removed from partition", dot);
+//                partition.remove(dot);
+//            }
+//        }
+//    }
+//
+//    //-------------//
+//    // filterPoors //
+//    //-------------//
+//    /**
+//     * Retrieve the stack poor data out of the system poor data.
+//     * Limit the number of poor rhythms data by all means (this is very questionable!!!)
+//     */
+//    private List<Inter> filterPoors (SystemBackup systemPoors)
+//    {
+//        if ((systemPoors == null) || systemPoors.getSeeds().isEmpty()) {
+//            return Collections.emptyList();
+//        }
+//
+//        final List<Inter> poors = stack.filter(systemPoors.getSeeds());
+//        Collections.sort(poors, Inter.byReverseBestGrade);
+//
+//        final int maxCount = constants.maxPoors.getValue();
+//
+//        if (poors.size() > maxCount) {
+//            // Drop the data with lower grade
+//            return poors.subList(0, maxCount);
+//        } else {
+//            return poors;
+//        }
+//    }
+//
+//    //------------------//
+//    // postAlternatives //
+//    //------------------//
+//    /**
+//     * Try to post relevant alternatives to the current config with incorrect slots.
+//     * <p>
+//     * Slots were not correctly built, building stopped at wrong slot.
+//     * Determine the possible culprits among rhythm inters, typically all rhythm inters until
+//     * abscissa of wrong slot, plus any tuplet sign even located after wrong slot abscissa!
+//     */
+//    private void postAlternatives ()
+//    {
+//        // Determine the variables we can play with
+//        Set<Inter> varSet = new LinkedHashSet<Inter>();
+//        Slot lastSlot = stack.getLastSlot();
+//
+//        for (Slot slot : stack.getSlots()) {
+//            for (AbstractChordInter chord : slot.getChords()) {
+//                if (chord instanceof RestChordInter) {
+//                    varSet.add(chord);
+//                }
+//            }
+//        }
+//
+//        for (Inter inter : config.getInters()) {
+//            if (inter instanceof TupletInter) {
+//                varSet.add(inter);
+//            }
+//        }
+//
+//        for (Inter inter : config.getInters()) {
+//            Staff staff = inter.getStaff();
+//            Point center = inter.getCenter();
+//            final double xOffset;
+//
+//            if (staff != null) {
+//                xOffset = stack.getXOffset(center, Arrays.asList(staff));
+//            } else {
+//                xOffset = stack.getXOffset(center);
+//            }
+//
+//            if (xOffset <= lastSlot.getXOffset()) {
+//                varSet.add(inter);
+//            } else {
+//                break;
+//            }
+//        }
+//
+//        List<Inter> vars = new ArrayList<Inter>(varSet);
+//        final int maxCount = constants.maxTotalRhythm.getValue();
+//        int n = vars.size();
+//
+//        if (n > maxCount) {
+//            Collections.sort(vars, Inter.byBestGrade);
+//            vars = vars.subList(0, maxCount);
+//            n = maxCount;
+//        }
+//
+//        Collections.sort(vars, Inter.byCenterAbscissa);
+//
+//        // This should be used only for rather small sizes ...
+//        final boolean[][] bools = Combinations.getVectors(n);
+//        int targetIdx = candidateIndex + 1;
+//
+//        for (boolean[] vector : bools) {
+//            StackConfig newConfig = config.copy();
+//
+//            for (int i = 0; i < n; i++) {
+//                if (!vector[i]) {
+//                    Inter inter = vars.get(i);
+//                    // Delete inter (and its augmentation dots) from config
+//                    newConfig.remove(inter);
+//                }
+//            }
+//
+//            if (!failures.contains(newConfig)) {
+//                if (!candidates.contains(newConfig)) {
+//                    logger.debug("Ins{}", newConfig.ids());
+//                    candidates.add(targetIdx++, newConfig);
+//                } else {
+//                    int idx = candidates.indexOf(newConfig);
+//
+//                    if (idx > targetIdx) {
+//                        Collections.swap(candidates, idx, targetIdx++);
+//                        logger.debug("Pro{}", newConfig.ids());
+//                    }
+//                }
+//            }
+//        }
+//    }
+//
+
+//
+//    //---------------//
+//    // improveConfig //
+//    //---------------//
+//    private StackConfig improveConfig (StackConfig goodConfig,
+//                                       List<Inter> vars)
+//    {
+//        if (logger.isDebugEnabled()) {
+//            logger.debug("Removed rest chords: {}", Inters.ids(vars));
+//        }
+//
+//        Collections.sort(vars, Inter.byCenterAbscissa);
+//        candidates.clear();
+//        candidateIndex = -1;
+//
+//        final int n = vars.size();
+//
+//        // This should be used only for rather small sizes ...
+//        final boolean[][] bools = Combinations.getVectors(n);
+//        int targetIdx = candidateIndex + 1;
+//
+//        for (boolean[] vector : bools) {
+//            StackConfig newConfig = config.copy();
+//
+//            for (int i = 0; i < n; i++) {
+//                if (vector[i]) {
+//                    newConfig.add(vars.get(i));
+//                }
+//            }
+//
+//            if (!failures.contains(newConfig)) {
+//                if (!goodConfig.equals(newConfig)) {
+//                    logger.debug("Inc{}", newConfig.ids());
+//                    candidates.add(targetIdx++, newConfig);
+//                }
+//            }
+//        }
+//
+//        // Try all combinations
+//        List<StackConfig> betterConfigs = new ArrayList<StackConfig>();
+//
+//        for (candidateIndex = 0; candidateIndex < candidates.size(); candidateIndex++) {
+//            final StackConfig candidate = candidates.get(candidateIndex);
+//
+//            if (!failures.contains(candidate)) {
+//                StackConfig betterConfig = checkConfig(candidate, true);
+//
+//                if (betterConfig != null) {
+//                    betterConfigs.add(betterConfig);
+//                }
+//            }
+//        }
+//
+//        logger.debug("{} better configs: {}", stack, betterConfigs.size());
+//
+//        if (!betterConfigs.isEmpty()) {
+//            // Pick up the longest one?
+//            if (betterConfigs.size() > 1) {
+//                Collections.sort(betterConfigs, StackConfig.byReverseSize);
+//            }
+//
+//            return betterConfigs.get(0);
+//        } else {
+//            return null;
+//        }
+//    }
+//

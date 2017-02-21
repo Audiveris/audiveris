@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 
+import org.jgrapht.Graphs;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 import org.slf4j.Logger;
@@ -284,13 +285,14 @@ public class SlotsBuilder
             // Case of nearly shared heads (put on slighly different x because deltaPitch = 1)
             // TODO: perhaps check for minimum x overlap?
             if ((xGap < 0) && (ch1.getStemDir() != ch2.getStemDir())) {
-                AbstractNoteInter h1 = ch1.getLeadingNote();
-                AbstractNoteInter h2 = ch2.getLeadingNote();
+                //                AbstractNoteInter h1 = ch1.getLeadingNote();
+                //                AbstractNoteInter h2 = ch2.getLeadingNote();
+                //
+                //                // TODO: perhaps accept deltaPitch of 2 only with very similar abscissae?
+                //                if (Math.abs(h1.getIntegerPitch() - h2.getIntegerPitch()) <= 2) {
+                return true;
 
-                // TODO: perhaps accept deltaPitch of 2 only with very similar abscissae?
-                if (Math.abs(h1.getIntegerPitch() - h2.getIntegerPitch()) <= 2) {
-                    return true;
-                }
+                //                }
             }
 
             // If beam on each side -> false (different groups!)
@@ -326,9 +328,7 @@ public class SlotsBuilder
         Collections.sort(stdChords, Inter.byAbscissa);
 
         // Populate graph with chords
-        for (AbstractChordInter chord : stdChords) {
-            graph.addVertex(chord);
-        }
+        Graphs.addAllVertices(graph, stdChords);
 
         // BeamGroup-based relationships
         inspectBeams();
@@ -408,6 +408,10 @@ public class SlotsBuilder
                 if (!slot.setTimeOffset(term) || !checkInterSlot(slot)) {
                     if (failFast) {
                         return false;
+                    } else {
+                        String prefix = stack.getSystem().getLogPrefix();
+                        slot.setSuspicious(true);
+                        logger.info("{}{} {}", prefix, stack, slot);
                     }
                 }
 

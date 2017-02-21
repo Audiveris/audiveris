@@ -107,8 +107,10 @@ public interface Sheet
      * <li>A multi-page sheet results in one opus output (if useOpus is set) or a series of scores
      * (is useOpus is not set).</li>
      * </ul>
+     *
+     * @param path sheet export path
      */
-    void export ();
+    void export (Path path);
 
     /**
      * Report the cross-system exclusions.

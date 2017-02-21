@@ -56,7 +56,7 @@ public abstract class OMR
     public static final String SCRIPT_EXTENSION = ".script.xml";
 
     /** The suffix used for a single sheet output in a multi-sheet book: {@value}. */
-    public static final String SHEET_SUFFIX = "-sheet#";
+    public static final String SHEET_SUFFIX = "#";
 
     /** OMR engine. */
     public static OmrEngine engine;

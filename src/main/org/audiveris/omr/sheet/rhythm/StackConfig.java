@@ -59,7 +59,7 @@ public class StackConfig
     /**
      * Creates a new {@code RhythmConfig} object.
      *
-     * @param inters DOCUMENT ME!
+     * @param inters good FRAT inters for the stack
      */
     public StackConfig (Collection<? extends Inter> inters)
     {

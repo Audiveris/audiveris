@@ -577,6 +577,11 @@ public class BookManager
             return exportFolder.resolve(book.getRadix());
         }
 
+        // If book already has a target, use it
+        if (book.getBookPath() != null) {
+            return book.getBookPath().getParent().resolve(book.getRadix());
+        }
+
         // Default
         if (useSeparateBookFolders()) {
             // Define target based on base + book folder and book name

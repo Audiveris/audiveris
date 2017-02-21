@@ -33,10 +33,10 @@ import org.audiveris.omr.lag.LagManager;
 import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ui.BookPdfOutput;
-import org.audiveris.omr.script.ExportTask;
 import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
@@ -459,7 +459,7 @@ public class BasicSheet
     // export //
     //--------//
     @Override
-    public void export ()
+    public void export (Path path)
     {
         if (pages.isEmpty()) {
             return;
@@ -467,53 +467,49 @@ public class BasicSheet
 
         final Book book = getBook();
 
-        // path/to/scores/Book
-        Path bookPathSansExt = BookManager.getActualPath(
-                book.getExportPathSansExt(),
-                BookManager.getDefaultExportPathSansExt(book));
-
-        // Determine the output path (sans extension) for the provided sheet
-        final Path sheetPathSansExt = getSheetPathSansExt(bookPathSansExt);
-
         try {
-            if (book.isMultiSheet() && !Files.exists(bookPathSansExt)) {
-                Files.createDirectories(bookPathSansExt);
+            Path folder = path.getParent();
+
+            if (!Files.exists(folder)) {
+                Files.createDirectories(folder);
             }
 
-            final String rootName = sheetPathSansExt.getFileName().toString();
-            final boolean compressed = BookManager.useCompression();
-            final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
-            final boolean sig = BookManager.useSignature();
+            final String ext = FileUtil.getExtension(path);
+            final String sheetName = FileUtil.getNameSansExtension(path.getFileName());
+            final boolean compressed = (ext.equals(OMR.COMPRESSED_SCORE_EXTENSION)) ? true
+                    : ((ext.equals(OMR.SCORE_EXTENSION)) ? false
+                    : BookManager.useCompression());
+            final boolean useSig = BookManager.useSignature();
 
             if (pages.size() > 1) {
-                // Export the sheet multiple pages as separate scores in folder 'sheetPathSansExt'
-                Files.createDirectories(sheetPathSansExt);
-
-                for (Page page : pages) {
+                // One file per page
+                for (PageRef pageRef : stub.getPageRefs()) {
                     final Score score = new Score();
-                    score.addPage(page);
+                    score.setBook(book);
+                    score.addPageRef(stub.getNumber(), pageRef);
 
-                    final int idx = 1 + pages.indexOf(page);
-                    final String scoreName = rootName + OMR.MOVEMENT_EXTENSION + idx;
-                    final Path scorePath = sheetPathSansExt.resolve(scoreName + ext);
-                    new ScoreExporter(score).export(scorePath, scoreName, sig, compressed);
+                    final int idx = pageRef.getId();
+                    final String scoreName = sheetName + OMR.MOVEMENT_EXTENSION + idx;
+                    final Path scorePath = path.resolveSibling(scoreName + ext);
+                    new ScoreExporter(score).export(scorePath, sheetName, useSig, compressed);
                 }
             } else {
                 // Export the sheet single page as a score
                 final Score score = new Score();
                 score.setBook(book);
-                score.addPage(pages.get(0));
+                score.addPageRef(stub.getNumber(), stub.getFirstPageRef());
 
-                final Path scorePath = sheetPathSansExt.resolveSibling(rootName + ext);
-                new ScoreExporter(score).export(scorePath, rootName, sig, compressed);
+                final String scoreName = sheetName;
+                final Path scorePath = path.resolveSibling(scoreName + ext);
+                new ScoreExporter(score).export(scorePath, scoreName, useSig, compressed);
             }
 
-            // Remember the book path in the book itself
-            book.setExportPathSansExt(bookPathSansExt);
+            // Remember the book export path in the book itself
+            book.setExportPathSansExt(folder.resolve(book.getRadix()));
 
-            if (!book.isMultiSheet()) {
-                book.getScript().addTask(new ExportTask(bookPathSansExt, null));
-            }
+            //            if (!book.isMultiSheet()) {
+            //                book.getScript().addTask(new ExportTask(bookPathSansExt, null));
+            //            }
         } catch (Exception ex) {
             logger.warn("Error exporting " + this + ", " + ex, ex);
         }
