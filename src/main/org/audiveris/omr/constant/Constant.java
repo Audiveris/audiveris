@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.constant;
 
+import org.audiveris.omr.util.NamedDouble;
 import net.jcip.annotations.ThreadSafe;
 
 import org.audiveris.omr.util.DoubleValue;
@@ -254,7 +255,7 @@ public abstract class Constant
     // remove //
     //--------//
     /**
-     * Remove a given constant from memory
+     * Remove a given constant from memory.
      */
     public void remove ()
     {
@@ -317,15 +318,13 @@ public abstract class Constant
         }
     }
 
-    //
     //----------//
     // setValue //
     //----------//
     /**
      * Modify the current value of the constant.
-     * This abstract method is actually defined in each subclass, to enforce
-     * validation of the provided string with respect to the target constant
-     * type.
+     * This abstract method is actually defined in each subclass, to enforce validation of the
+     * provided string with respect to the target constant type.
      *
      * @param string the new value, as a string to be checked
      */
@@ -683,6 +682,7 @@ public abstract class Constant
      */
     public static class Double
             extends Constant
+            implements NamedDouble
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
@@ -710,6 +710,7 @@ public abstract class Constant
         }
 
         //~ Methods --------------------------------------------------------------------------------
+        @Override
         public double getValue ()
         {
             return ((DoubleValue) getCachedValue()).doubleValue();
@@ -721,6 +722,7 @@ public abstract class Constant
             return new DoubleValue(getValue());
         }
 
+        @Override
         public void setValue (double val)
         {
             setTuple(java.lang.Double.toString(val), new DoubleValue(val));

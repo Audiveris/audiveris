@@ -39,7 +39,7 @@ public class WrappedBoolean
      */
     public WrappedBoolean (boolean value)
     {
-        set(value);
+        super(value);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

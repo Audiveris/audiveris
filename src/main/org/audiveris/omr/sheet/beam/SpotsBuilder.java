@@ -33,6 +33,7 @@ import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.MorphoProcessor;
 import org.audiveris.omr.image.StructureElement;
+import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
@@ -100,8 +101,10 @@ public class SpotsBuilder
     /**
      * Retrieve all spots from a sheet.
      * All spots are dispatched among their containing system(s).
+     *
+     * @param spotLag lag to index all spot glyph sections
      */
-    public void buildSheetSpots ()
+    public void buildSheetSpots (Lag spotLag)
     {
         final StopWatch watch = new StopWatch("buildSheetSpots");
 
@@ -125,7 +128,7 @@ public class SpotsBuilder
             if ((OMR.gui != null) && constants.displayBeamSpots.isSet()) {
                 watch.start("spotsController");
 
-                SpotsController spotController = new SpotsController(sheet, spots);
+                SpotsController spotController = new SpotsController(sheet, spots, spotLag);
                 spotController.refresh();
             }
         } catch (Exception ex) {

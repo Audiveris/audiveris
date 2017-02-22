@@ -316,10 +316,10 @@ public class SymbolsEditor
         private Slot highlightedSlot;
 
         //~ Constructors ---------------------------------------------------------------------------
-        private MyView (GlyphIndex nest)
+        private MyView (GlyphIndex glyphIndex)
         {
             super(
-                    nest.getEntityService(),
+                    glyphIndex.getEntityService(),
                     Arrays.asList(
                             sheet.getLagManager().getLag(Lags.HLAG),
                             sheet.getLagManager().getLag(Lags.VLAG)),

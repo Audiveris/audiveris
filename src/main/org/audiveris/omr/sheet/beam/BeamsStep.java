@@ -22,6 +22,9 @@
 package org.audiveris.omr.sheet.beam;
 
 import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.lag.BasicLag;
+import org.audiveris.omr.lag.Lag;
+import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -64,7 +67,7 @@ public class BeamsStep
                           Context context)
             throws StepException
     {
-        new BeamsBuilder(system, context.distancemap.get(system)).buildBeams(); // -> Beams
+        new BeamsBuilder(system, context.distancemap.get(system), context.spotLag).buildBeams();
     }
 
     //----------//
@@ -110,8 +113,10 @@ public class BeamsStep
     @Override
     protected Context doProlog (Sheet sheet)
     {
+        Lag spotLag = new BasicLag(Lags.SPOT_LAG, SpotsBuilder.SPOT_ORIENTATION);
+
         // Retrieve significant spots for the whole sheet
-        new SpotsBuilder(sheet).buildSheetSpots();
+        new SpotsBuilder(sheet).buildSheetSpots(spotLag);
 
         // Allocate map to collect vertical distances between beams of the same group
         Map<SystemInfo, Population> distanceMap = new TreeMap<SystemInfo, Population>();
@@ -120,7 +125,7 @@ public class BeamsStep
             distanceMap.put(system, new Population());
         }
 
-        return new Context(distanceMap);
+        return new Context(distanceMap, spotLag);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -134,10 +139,15 @@ public class BeamsStep
         /** Beam group vertical distances, per system. */
         public final Map<SystemInfo, Population> distancemap;
 
+        /** Lag of spot sections. */
+        public final Lag spotLag;
+
         //~ Constructors ---------------------------------------------------------------------------
-        public Context (Map<SystemInfo, Population> distanceMap)
+        public Context (Map<SystemInfo, Population> distanceMap,
+                        Lag spotLag)
         {
             this.distancemap = distanceMap;
+            this.spotLag = spotLag;
         }
     }
 }

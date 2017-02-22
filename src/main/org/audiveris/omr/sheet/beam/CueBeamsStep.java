@@ -52,6 +52,6 @@ public class CueBeamsStep
                           Void context)
             throws StepException
     {
-        new BeamsBuilder(system, null).buildCueBeams(); // -> Cue beams
+        new BeamsBuilder(system, null, null).buildCueBeams(); // -> Cue beams
     }
 }

@@ -58,11 +58,14 @@ import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.UserEvent;
+import org.audiveris.omr.util.BasicNamedDouble;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.NamedDouble;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,6 +153,11 @@ public class LedgersBuilder
     /** Minimum x overlap between successive ledgers. */
     private final int minAbscissaOverlap;
 
+    // Intermediate constants for width check within ledger suite
+    private final NamedDouble minLengthLow;
+
+    private final NamedDouble minLengthHigh;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * @param system   the related system to process
@@ -165,6 +173,9 @@ public class LedgersBuilder
         sheet = system.getSheet();
         scale = sheet.getScale();
         largeScale = scale.getInterlineScale();
+
+        minLengthLow = new BasicNamedDouble("minLengthLow", "fraction", 0, "low length");
+        minLengthHigh = new BasicNamedDouble("minLengthHigh", "fraction", 0, "high length");
 
         suites = new Suites(scale);
 
@@ -357,14 +368,16 @@ public class LedgersBuilder
      * Look for an ordinate reference suitable with provided stick.
      * This may be a ledger on the previous line or the staff line itself
      *
-     * @param staff the staff being processed
-     * @param index the position WRT to staff
-     * @param stick the candidate stick to check
+     * @param staff           the staff being processed
+     * @param index           the position WRT to staff
+     * @param stick           the candidate stick to check
+     * @param previousWrapper wrapper around a previous ledger
      * @return the ordinate reference found, or null if not found
      */
     private Double getYReference (Staff staff,
                                   int index,
-                                  Filament stick)
+                                  Filament stick,
+                                  Wrapper<LedgerInter> previousWrapper)
     {
         final int prevIndex = (index < 0) ? (index + 1) : (index - 1);
 
@@ -395,6 +408,7 @@ public class LedgersBuilder
                     // Use this previous ledger as ordinate reference
                     double xMid = stick.getCenter().x;
                     Glyph ledgerGlyph = ledger.getGlyph();
+                    previousWrapper.value = ledger;
 
                     // Middle of stick may fall outside of ledger width
                     if (GeoUtil.xEmbraces(ledgerBox, xMid)) {
@@ -477,6 +491,7 @@ public class LedgersBuilder
         final LineInfo staffLine = (index < 0) ? staff.getFirstLine()
                 : staff.getLastLine();
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
+        final int minWide = staffScale.toPixels(constants.minWideLedgerLength);
 
         // Define bounds for the virtual line, properly shifted and enlarged
         Rectangle virtualLineBox = staffLine.getBounds();
@@ -500,7 +515,8 @@ public class LedgersBuilder
 
             // Check for presence of ledger on previous line
             // and definition of a reference ordinate (staff line or ledger)
-            final Double yRef = getYReference(staff, index, stick);
+            final Wrapper<LedgerInter> prevWrapper = new Wrapper<LedgerInter>(null);
+            final Double yRef = getYReference(staff, index, stick, prevWrapper);
 
             if (yRef == null) {
                 if (stick.isVip()) {
@@ -512,6 +528,15 @@ public class LedgersBuilder
 
             // Check precise vertical distance WRT the target ordinate
             final double yTarget = yRef + (Integer.signum(index) * interline);
+
+            if ((prevWrapper.value != null) && (prevWrapper.value.getBounds().width >= minWide)) {
+                // A wide reference ledger raises width check for the current candidate ledger
+                minLengthLow.setValue(constants.minLedgerLengthLow2.getValue());
+                minLengthHigh.setValue(constants.minLedgerLengthHigh2.getValue());
+            } else {
+                minLengthLow.setValue(constants.minLedgerLengthLow.getValue());
+                minLengthHigh.setValue(constants.minLedgerLengthHigh.getValue());
+            }
 
             GradeImpacts impacts = suite.getImpacts(new StickContext(stick, yTarget));
 
@@ -686,6 +711,18 @@ public class LedgersBuilder
                 1.0,
                 "Low Minimum length for a ledger");
 
+        private final Scale.Fraction minWideLedgerLength = new Scale.Fraction(
+                1.5,
+                "Minimum length for a wide ledger");
+
+        private final Scale.Fraction minLedgerLengthHigh2 = new Scale.Fraction(
+                2.0,
+                "High Minimum long length for a ledger");
+
+        private final Scale.Fraction minLedgerLengthLow2 = new Scale.Fraction(
+                1.5,
+                "Low Minimum long length for a ledger");
+
         private final Scale.Fraction minThicknessHigh = new Scale.Fraction(
                 0.25,
                 "High Minimum thickness of an interesting stick");
@@ -697,10 +734,6 @@ public class LedgersBuilder
         private final Scale.Fraction maxDistanceHigh = new Scale.Fraction(
                 0.3,
                 "Low Minimum radius for ledger");
-
-        private final Scale.Fraction maxShortLength = new Scale.Fraction(
-                2.0,
-                "Maximum length for 'short' ledgers");
     }
 
     //------------------//
@@ -920,8 +953,8 @@ public class LedgersBuilder
                 super(
                         "Length",
                         "Check that stick is long enough",
-                        constants.minLedgerLengthLow,
-                        constants.minLedgerLengthHigh,
+                        minLengthLow, // Intermediate value
+                        minLengthHigh, // Intermediate value
                         true,
                         TOO_SHORT);
             }

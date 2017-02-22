@@ -852,7 +852,7 @@ public class ClustersRetriever
             // Keep on working while we do have a candidate to check for merge
             CandidateLoop:
             while (true) {
-                Wrapper<Integer> deltaPos = new Wrapper<Integer>();
+                Wrapper<Integer> deltaPos = new Wrapper<Integer>(null);
                 Rectangle candidateBox = candidate.getBounds();
                 candidateBox.grow(params.maxMergeDx, params.clusterYMargin);
 

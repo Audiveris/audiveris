@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.lag.JunctionRatioPolicy;
+import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.SectionFactory;
 import org.audiveris.omr.math.Barycenter;
@@ -32,7 +33,6 @@ import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.sheet.beam.BeamsBuilder.ItemParameters;
 import org.audiveris.omr.util.VerticalSide;
@@ -86,6 +86,9 @@ public class BeamStructure
     /** Underlying glyph. */
     private final Glyph glyph;
 
+    /** Lag, if any, to index glyph section. */
+    private final Lag spotLag;
+
     /** Sections built out of glyph. */
     private List<Section> glyphSections;
 
@@ -105,13 +108,16 @@ public class BeamStructure
     /**
      * Creates a new BeamItems object.
      *
-     * @param glyph  the candidate glyph
-     * @param params context-dependent parameters
+     * @param glyph   the candidate glyph
+     * @param spotLag lag for sections, perhaps null
+     * @param params  context-dependent parameters
      */
     public BeamStructure (Glyph glyph,
+                          Lag spotLag,
                           ItemParameters params)
     {
         this.glyph = glyph;
+        this.spotLag = spotLag;
         this.params = params;
         center = glyph.getCentroid();
     }
@@ -152,6 +158,39 @@ public class BeamStructure
     }
 
     //---------------//
+    // compareSlopes //
+    //---------------//
+    /**
+     * Compare the slopes of beams (when there are several lines)
+     *
+     * @return max slope gap between consecutive beams
+     */
+    public double compareSlopes ()
+    {
+        double maxItemGap = 0;
+        Double prevItemSlope = null;
+
+        for (BeamLine line : lines) {
+            Line2D median = line.median;
+            double width = median.getX2() - median.getX1();
+
+            // Discard too short line, its slope is not reliable enough
+            if (width > params.maxHookWidth) {
+                double itemSlope = LineUtil.getSlope(median);
+
+                if (prevItemSlope != null) {
+                    double beamSlopeGap = Math.abs(itemSlope - prevItemSlope);
+                    maxItemGap = Math.max(maxItemGap, beamSlopeGap);
+                }
+
+                prevItemSlope = itemSlope;
+            }
+        }
+
+        return maxItemGap;
+    }
+
+    //---------------//
     // computeJitter //
     //---------------//
     /**
@@ -187,10 +226,11 @@ public class BeamStructure
                 width += sctBox.width;
 
                 for (Run run : section.getRuns()) {
-                    if (x >= x1 && x <= x2) {
+                    if ((x >= x1) && (x <= x2)) {
                         int end = (side == VerticalSide.TOP) ? run.getStart() : run.getStop();
                         sectionLine.includePoint(x, end);
                     }
+
                     x++;
                 }
             }
@@ -209,51 +249,21 @@ public class BeamStructure
         return sectionLine.getMeanDistance() / glyph.getWidth();
     }
 
-    //---------------//
-    // compareSlopes //
-    //---------------//
-    /**
-     * Compare the slopes of beams (when there are several lines)
-     *
-     * @return max slope gap between consecutive beams
-     */
-    public double compareSlopes ()
-    {
-        double maxItemGap = 0;
-        Double prevItemSlope = null;
-
-        for (BeamLine line : lines) {
-            Line2D median = line.median;
-            double width = median.getX2() - median.getX1();
-
-            // Discard too short line, its slope is not reliable enough
-            if (width > params.maxHookWidth) {
-                double itemSlope = LineUtil.getSlope(median);
-
-                if (prevItemSlope != null) {
-                    double beamSlopeGap = Math.abs(itemSlope - prevItemSlope);
-                    maxItemGap = Math.max(maxItemGap, beamSlopeGap);
-                }
-
-                prevItemSlope = itemSlope;
-            }
-        }
-
-        return maxItemGap;
-    }
-
     //--------------//
     // computeLines //
     //--------------//
     /**
-     * Populate the lines from the retrieved border lines, and measure how straight they
-     * are.
+     * Populate the lines from the retrieved border lines, and measure straightness.
      *
      * @return mean distance from border points to their lines, or null if border pairs are not
      *         consistent
      */
     public Double computeLines ()
     {
+        if (glyph.isVip()) {
+            logger.info("VIP computeLines for {}", glyph);
+        }
+
         List<BasicLine> topLines = getBorderLines(glyph, TOP);
         List<BasicLine> bottomLines = getBorderLines(glyph, BOTTOM);
 
@@ -694,17 +704,10 @@ public class BeamStructure
     private List<Section> getGlyphSections ()
     {
         if (glyphSections == null) {
-            // Sections
-            SectionFactory factory = new SectionFactory(VERTICAL, JunctionRatioPolicy.DEFAULT);
-            List<Section> sections = factory.createSections(glyph.getRunTable());
-
-            final Point offset = glyph.getTopLeft();
-
-            for (Section section : sections) {
-                section.translate(offset);
-            }
-
-            glyphSections = sections;
+            glyphSections = new SectionFactory(spotLag, JunctionRatioPolicy.DEFAULT).createSections(
+                    glyph.getRunTable(),
+                    glyph.getTopLeft(),
+                    false);
         }
 
         return glyphSections;
@@ -863,7 +866,7 @@ public class BeamStructure
 
         private final Constant.Double maxSectionSlopeGap = new Constant.Double(
                 "tangent",
-                0.2,
+                0.3, // 0.2,
                 "Maximum delta slope between sections of same border");
 
         private final Constant.Ratio maxBorderJitter = new Constant.Ratio(

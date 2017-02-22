@@ -22,6 +22,7 @@
 package org.audiveris.omr.check;
 
 import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.util.NamedDouble;
 import org.audiveris.omr.sig.GradeUtil;
 
 import org.slf4j.Logger;
@@ -64,10 +65,10 @@ public abstract class Check<C>
     private final String description;
 
     /** Lower bound for value range. */
-    private Constant.Double low;
+    private NamedDouble low;
 
     /** Higher bound for value range. */
-    private Constant.Double high;
+    private NamedDouble high;
 
     /** Covariant: higher is better, contravariant: lower is better. */
     private final boolean covariant;
@@ -85,8 +86,8 @@ public abstract class Check<C>
      */
     protected Check (String name,
                      String description,
-                     Constant.Double low,
-                     Constant.Double high,
+                     NamedDouble low,
+                     NamedDouble high,
                      boolean covariant,
                      Failure redResult)
     {
@@ -127,15 +128,15 @@ public abstract class Check<C>
         return high.getValue();
     }
 
-    //-----------------//
-    // getHighConstant //
-    //-----------------//
+    //---------------//
+    // getHighDouble //
+    //---------------//
     /**
-     * Report the higher bound constant
+     * Report the higher bound value
      *
-     * @return the high bound constant
+     * @return the high bound value
      */
-    public Constant.Double getHighConstant ()
+    public NamedDouble getHighDouble ()
     {
         return high;
     }
@@ -153,15 +154,15 @@ public abstract class Check<C>
         return low.getValue();
     }
 
-    //----------------//
-    // getLowConstant //
-    //----------------//
+    //--------------//
+    // getLowDouble //
+    //--------------//
     /**
-     * Report the lower bound constant
+     * Report the lower bound value
      *
-     * @return the low bound constant
+     * @return the low bound value
      */
-    public Constant.Double getLowConstant ()
+    public NamedDouble getLowDouble ()
     {
         return low;
     }
@@ -245,8 +246,8 @@ public abstract class Check<C>
      * @param low  the new low value
      * @param high the new high value
      */
-    public void setLowHigh (Constant.Double low,
-                            Constant.Double high)
+    public void setLowHigh (NamedDouble low,
+                            NamedDouble high)
     {
         this.low = low;
         this.high = high;
@@ -287,12 +288,11 @@ public abstract class Check<C>
     //-------------//
     private void verifyRange ()
     {
-        if (low.getValue() > high.getValue()) {
-            logger.error(
-                    "Illegal low {} high {} range for {}",
-                    low.getValue(),
-                    high.getValue(),
-                    this);
+        final double v1 = low.getValue();
+        final double v2 = high.getValue();
+
+        if (v1 > v2) {
+            logger.error("Illegal low {} high {} range for {}", v1, v2, this);
         }
     }
 

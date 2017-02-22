@@ -25,7 +25,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.util.NamedDouble;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.ui.util.Panel;
 
@@ -264,17 +264,17 @@ public class CheckPanel<C>
                 sb.append("<br/>");
 
                 // Tell data unit if relevant
-                String unit = check.getLowConstant().getQuantityUnit();
+                String unit = check.getLowDouble().getQuantityUnit();
 
                 if (unit == null) {
-                    unit = check.getHighConstant().getQuantityUnit();
+                    unit = check.getHighDouble().getQuantityUnit();
                 }
 
                 if (unit != null) {
                     sb.append("Unit=").append(unit);
                 } else {
                     // Otherwise, simply tell the data type
-                    sb.append("Type=").append(check.getHighConstant().getShortTypeName());
+                    sb.append("Type=").append(check.getHighDouble().getShortTypeName());
                 }
 
                 sb.append("</html>");
@@ -319,7 +319,7 @@ public class CheckPanel<C>
                 field.setHorizontalAlignment(JTextField.CENTER);
                 bounds[ic][i] = field;
 
-                Constant.Double constant = (i == 0) ? check.getLowConstant() : check.getHighConstant();
+                NamedDouble constant = (i == 0) ? check.getLowDouble() : check.getHighDouble();
 
                 field.setText(textOf(constant.getValue()));
                 field.setToolTipText(
@@ -443,11 +443,11 @@ public class CheckPanel<C>
             // Any & several bounds may have been modified by the user
             // Since the same constant can be used in several fields, we have to
             // take a snapshot of all constants values, before modifying any one
-            Map<Constant.Double, Double> values = new HashMap<Constant.Double, Double>();
+            Map<NamedDouble, Double> values = new HashMap<NamedDouble, Double>();
 
             for (Check<C> check : suite.getChecks()) {
-                values.put(check.getLowConstant(), check.getLowConstant().getValue());
-                values.put(check.getHighConstant(), check.getHighConstant().getValue());
+                values.put(check.getLowDouble(), check.getLowDouble().getValue());
+                values.put(check.getHighDouble(), check.getHighDouble().getValue());
             }
 
             boolean modified = false;
@@ -458,8 +458,8 @@ public class CheckPanel<C>
 
                 // Check the bounds wrt the corresponding fields
                 for (int i = 0; i < 2; i++) {
-                    final Constant.Double constant = (i == 0) ? check.getLowConstant()
-                            : check.getHighConstant();
+                    final NamedDouble constant = (i == 0) ? check.getLowDouble()
+                            : check.getHighDouble();
 
                     // Simplistic test to detect modification
                     final JTextField field = bounds[ic][i];

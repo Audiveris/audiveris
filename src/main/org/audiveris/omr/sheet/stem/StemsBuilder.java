@@ -353,7 +353,6 @@ public class StemsBuilder
                 stem.increase(constants.sideStemBoost.getValue());
             }
         }
-
     }
 
     //----------------//
@@ -361,13 +360,16 @@ public class StemsBuilder
     //----------------//
     /**
      * Check whether the beam does not have a stem relation too close to another.
-     * If one of the stems is a side stem, we discard the other connection.
-     * If none of the stems is a side stem, we discard the worst connection.
+     * Too close stems are mutually exclusive.
      *
      * @param beam the beam to check
      */
     private void checkBeamStems (Inter beam)
     {
+        if (beam.isVip()) {
+            logger.info("VIP checkBeamStems for {}");
+        }
+
         List<BeamStemRelation> rels = new ArrayList<BeamStemRelation>();
 
         for (Relation rel : sig.edgesOf(beam)) {
@@ -391,34 +393,21 @@ public class StemsBuilder
             }
         });
 
-        BeamStemRelation prevRel = null;
+        final int size = rels.size();
 
-        for (BeamStemRelation rel : rels) {
-            if (prevRel != null) {
-                double dx = rel.getExtensionPoint().getX() - prevRel.getExtensionPoint().getX();
+        for (int i = 0; i < size; i++) {
+            BeamStemRelation rel = rels.get(i);
+            StemInter stem = (StemInter) sig.getEdgeTarget(rel);
+
+            for (BeamStemRelation r : rels.subList(i + 1, size)) {
+                double dx = r.getExtensionPoint().getX() - rel.getExtensionPoint().getX();
 
                 if (dx < params.minBeamStemsGap) {
-                    // Check if there is already an exclusion between the two stems
-                    if (sig.getExclusion(sig.getEdgeTarget(prevRel), sig.getEdgeTarget(rel)) != null) {
-                        prevRel = rel;
-                    } else if (prevRel.getBeamPortion() == BeamPortion.LEFT) {
-                        // Keep side connection
-                        sig.removeEdge(rel);
-                    } else if (rel.getBeamPortion() == BeamPortion.RIGHT) {
-                        // Keep side connection
-                        sig.removeEdge(prevRel);
-                        prevRel = rel;
-                    } else if (rel.getGrade() <= prevRel.getGrade()) {
-                        sig.removeEdge(rel);
-                    } else {
-                        sig.removeEdge(prevRel);
-                        prevRel = rel;
-                    }
+                    StemInter s = (StemInter) sig.getEdgeTarget(r);
+                    sig.insertExclusion(stem, s, Cause.INCOMPATIBLE);
                 } else {
-                    prevRel = rel;
+                    break;
                 }
-            } else {
-                prevRel = rel;
             }
         }
     }
@@ -484,9 +473,12 @@ public class StemsBuilder
                 return;
             }
 
+            Collections.sort(stems, Inter.byAbscissa);
+
             for (int i = 0; i < (size - 1); i++) {
-                Inter one = stems.get(i);
-                Rectangle oneBox = one.getGlyph().getBounds();
+                final Inter one = stems.get(i);
+                final Rectangle oneBox = one.getGlyph().getBounds();
+                final int xBreak = oneBox.x + oneBox.width;
 
                 for (Inter two : stems.subList(i + 1, size)) {
                     Rectangle twoBox = two.getGlyph().getBounds();
@@ -495,6 +487,8 @@ public class StemsBuilder
                     if (oneBox.intersects(twoBox)) {
                         sig.insertExclusion(one, two, Cause.OVERLAP);
                         count++;
+                    } else if (twoBox.x >= xBreak) {
+                        break;
                     }
                 }
             }
@@ -780,7 +774,7 @@ public class StemsBuilder
 
                 // Look for additional chunks built out of sections found.
                 // Assign special role to a fat section part of head (if any)
-                Wrapper<Section> fatHeadSection = new Wrapper<Section>();
+                Wrapper<Section> fatHeadSection = new Wrapper<Section>(null);
                 List<Glyph> chunks = lookupChunks(fatHeadSection);
 
                 // Aggregate seeds and chunks up to the limit

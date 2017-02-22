@@ -30,6 +30,7 @@ import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.image.AreaMask;
+import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
@@ -137,18 +138,24 @@ public class BeamsBuilder
     /** Population of observed vertical distance between grouped beams. */
     private final Population distances;
 
+    /** Lag of glyph sections. */
+    private final Lag spotLag;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamsBuilder object.
      *
      * @param system    the dedicated system
      * @param distances (output) population of vertical beam distances within groups
+     * @param spotLag   (output) lag, if any, to be populated with glyph sections
      */
     public BeamsBuilder (SystemInfo system,
-                         Population distances)
+                         Population distances,
+                         Lag spotLag)
     {
         this.system = system;
         this.distances = distances;
+        this.spotLag = spotLag;
 
         sig = system.getSig();
         sheet = system.getSheet();
@@ -332,7 +339,7 @@ public class BeamsBuilder
         }
 
         // Check straight lines of all north and south borders
-        final BeamStructure structure = new BeamStructure(glyph, itemParams);
+        final BeamStructure structure = new BeamStructure(glyph, spotLag, itemParams);
         final Double meanDist = structure.computeLines();
 
         if ((meanDist == null) || (meanDist > params.maxDistanceToBorder)) {

@@ -115,9 +115,9 @@ public class LagController
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public MyView (GlyphIndex nest)
+        public MyView (GlyphIndex glyphIndex)
         {
-            super(nest.getEntityService(), Arrays.asList(lag), sheet);
+            super(glyphIndex.getEntityService(), Arrays.asList(lag), sheet);
 
             setLocationService(sheet.getLocationService());
 

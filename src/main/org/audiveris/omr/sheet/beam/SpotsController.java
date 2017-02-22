@@ -24,11 +24,14 @@ package org.audiveris.omr.sheet.beam;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.ui.GlyphBoard;
+import org.audiveris.omr.glyph.ui.NestView;
+import org.audiveris.omr.lag.Lag;
+import org.audiveris.omr.lag.SectionService;
+import org.audiveris.omr.lag.ui.SectionBoard;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.ui.BoardsPane;
-import org.audiveris.omr.ui.EntityView;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
 
@@ -39,6 +42,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -63,6 +67,9 @@ public class SpotsController
      */
     private final List<Glyph> spots;
 
+    /** Lag that indexes all glyph sections. */
+    private final Lag spotLag;
+
     /** User display. */
     private MyView view;
 
@@ -70,14 +77,17 @@ public class SpotsController
     /**
      * Creates a new SpotsController object.
      *
-     * @param sheet related sheet
-     * @param spots relevant glyphs
+     * @param sheet   related sheet
+     * @param spots   relevant glyphs
+     * @param spotLag lag of glyph sections
      */
     public SpotsController (Sheet sheet,
-                            List<Glyph> spots)
+                            List<Glyph> spots,
+                            Lag spotLag)
     {
         this.sheet = sheet;
         this.spots = spots;
+        this.spotLag = spotLag;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -102,11 +112,15 @@ public class SpotsController
     private void displayFrame ()
     {
         final GlyphIndex index = sheet.getGlyphIndex();
+        spotLag.setEntityService(new SectionService(spotLag, sheet.getLocationService()));
         view = new MyView(index);
         sheet.getStub().getAssembly().addViewTab(
                 SheetTab.BEAM_SPOT_TAB,
                 new ScrollView(view),
-                new BoardsPane(new PixelBoard(sheet), new GlyphBoard(index.getEntityService(), true)));
+                new BoardsPane(
+                        new PixelBoard(sheet),
+                        new GlyphBoard(index.getEntityService(), true),
+                        new SectionBoard(spotLag, true)));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -114,37 +128,57 @@ public class SpotsController
     // MyView //
     //--------//
     private final class MyView
-            extends EntityView<Glyph>
+            extends NestView
     {
         //~ Constructors ---------------------------------------------------------------------------
 
         public MyView (GlyphIndex glyphIndex)
         {
-            super(glyphIndex.getEntityService());
+            super(glyphIndex.getEntityService(), Arrays.asList(spotLag), sheet);
 
             setLocationService(sheet.getLocationService());
 
-            setName("SpotController-MyView");
+            setName("SpotsController-MyView");
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        //-------------//
-        // renderItems //
-        //-------------//
+        //--------//
+        // render //
+        //--------//
         @Override
-        public void renderItems (Graphics2D g)
+        public void render (Graphics2D g)
         {
             // We render all BEAM_SPOT glyphs
             final Rectangle clip = g.getClipBounds();
             final Color oldColor = g.getColor();
-            final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
             for (Glyph spot : spots) {
                 if ((clip == null) || clip.intersects(spot.getBounds())) {
                     // Draw glyph
                     g.setColor(Color.LIGHT_GRAY);
                     spot.getRunTable().render(g, spot.getTopLeft());
+                }
 
+                g.setColor(oldColor);
+            }
+        }
+
+        //-------------//
+        // renderItems //
+        //-------------//
+        @Override
+        public void renderItems (Graphics2D g)
+        {
+            // Render sections (on top of rendered glyphs)
+            super.render(g);
+
+            // We render BEAM_SPOT glyphs mean line
+            final Rectangle clip = g.getClipBounds();
+            final Color oldColor = g.getColor();
+            final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+
+            for (Glyph spot : spots) {
+                if ((clip == null) || clip.intersects(spot.getBounds())) {
                     // Draw glyph mean line
                     g.setColor(Color.RED);
                     spot.renderLine(g);

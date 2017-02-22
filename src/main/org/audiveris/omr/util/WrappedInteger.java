@@ -39,6 +39,6 @@ public class WrappedInteger
      */
     public WrappedInteger (Integer value)
     {
-        this.value = value;
+        super(value);
     }
 }

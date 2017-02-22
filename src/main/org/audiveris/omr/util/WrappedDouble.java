@@ -39,6 +39,6 @@ public class WrappedDouble
      */
     public WrappedDouble (Double value)
     {
-        this.value = value;
+        super(value);
     }
 }

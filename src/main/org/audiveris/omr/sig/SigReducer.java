@@ -913,7 +913,7 @@ public class SigReducer
 
                     for (LedgerInter ledger : ledgers) {
                         if (ledger.isVip()) {
-                            logger.info("VIP ledger {}", ledger);
+                            logger.info("VIP checkLedger {}", ledger);
                         }
 
                         if (!ledgerHasHeadOrLedger(staff, index, ledger, allHeads)) {

@@ -104,11 +104,6 @@ public class NestView
         // Stroke for borders
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
-        //
-        //        logger.info("NestView render {} glyphs", nest.getEntities().size());
-        //        for (Glyph glyph : nest.getEntities()) {
-        //            glyph.getRunTable().render(g, glyph.getTopLeft());
-        //        }
         for (Lag lag : lags) {
             // Render all sections, using the colors they have been assigned
             for (Section section : lag.getEntities()) {

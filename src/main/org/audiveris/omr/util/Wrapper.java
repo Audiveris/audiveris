@@ -35,6 +35,11 @@ public class Wrapper<T>
     /** The wrapped value */
     public T value;
 
+    public Wrapper (T value)
+    {
+        this.value = value;
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
