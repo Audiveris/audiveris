@@ -204,7 +204,7 @@ public class BeamsBuilder
     /**
      * Find possible cue beams interpretations around identified cue notes and stems.
      */
-    public void buildCueBeams ()
+    public void buildCueBeams (List<Glyph> spots)
     {
         // Select parameters for cue items
         itemParams = new ItemParameters(sheet.getScale(), constants.cueBeamRatio.getValue());
@@ -215,7 +215,7 @@ public class BeamsBuilder
         List<CueAggregate> aggregates = getCueAggregates();
 
         for (CueAggregate aggregate : aggregates) {
-            aggregate.process();
+            aggregate.process(spots);
         }
     }
 
@@ -329,13 +329,17 @@ public class BeamsBuilder
             return "too slim";
         }
 
-        // Maximum slope
-        try {
-            if (Math.abs(LineUtil.getSlope(glyphLine)) > params.maxBeamSlope) {
-                return "too steep";
+        if (!isCue) {
+            // Maximum slope
+            try {
+                double absSlope = Math.abs(LineUtil.getSlope(glyphLine));
+
+                if (absSlope > params.maxBeamSlope) {
+                    return "too steep";
+                }
+            } catch (Exception ignored) {
+                return "vertical";
             }
-        } catch (Exception ignored) {
-            return "vertical";
         }
 
         // Check straight lines of all north and south borders
@@ -1997,7 +2001,7 @@ public class BeamsBuilder
             id = "S" + system.getId() + "A" + (index + 1);
         }
 
-        private void process ()
+        private void process (List<Glyph> spots)
         {
             // Determine stem direction in the aggregate
             globalDir = getDirection();
@@ -2015,7 +2019,8 @@ public class BeamsBuilder
             List<Inter> beams = new ArrayList<Inter>();
 
             for (Glyph glyph : glyphs) {
-                glyph.addGroup(Group.BEAM_SPOT);
+                glyph = system.registerGlyph(glyph, Group.BEAM_SPOT);
+                spots.add(glyph);
 
                 List<Inter> glyphBeams = new ArrayList<Inter>();
                 final String failure = checkBeamGlyph(glyph, true, glyphBeams);

@@ -21,9 +21,20 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.beam;
 
+import org.audiveris.omr.OMR;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.lag.BasicLag;
+import org.audiveris.omr.lag.Lag;
+import org.audiveris.omr.lag.Lags;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class {@code CueBeamsStep} implements <b>CUE_BEAMS</b> step, which attempts to
@@ -32,10 +43,13 @@ import org.audiveris.omr.step.StepException;
  * @author Hervé Bitteur
  */
 public class CueBeamsStep
-        extends AbstractSystemStep<Void>
+        extends AbstractSystemStep<CueBeamsStep.Context>
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new CueBeamsStep object.
      */
@@ -49,9 +63,63 @@ public class CueBeamsStep
     //----------//
     @Override
     public void doSystem (SystemInfo system,
-                          Void context)
+                          Context context)
             throws StepException
     {
-        new BeamsBuilder(system, null, null).buildCueBeams(); // -> Cue beams
+        new BeamsBuilder(system, null, context.spotLag).buildCueBeams(context.spots); // -> Cue beams
+    }
+
+    //----------//
+    // doProlog //
+    //----------//
+    @Override
+    protected Context doProlog (Sheet sheet)
+    {
+        List<Glyph> spots = new ArrayList<Glyph>();
+        Lag spotLag = new BasicLag(Lags.SPOT_LAG, SpotsBuilder.SPOT_ORIENTATION);
+
+        // Display on cue spot glyphs?
+        if ((OMR.gui != null) && constants.displayCueBeamSpots.isSet()) {
+            SpotsController spotController = new SpotsController(sheet, spots, spotLag);
+            spotController.refresh();
+        }
+
+        return new Context(spots, spotLag);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------//
+    // Context //
+    //---------//
+    protected static class Context
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Spot glyphs. */
+        private final List<Glyph> spots;
+
+        /** Lag of spot sections. */
+        public final Lag spotLag;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Context (List<Glyph> spots,
+                        Lag spotLag)
+        {
+            this.spots = spots;
+            this.spotLag = spotLag;
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean displayCueBeamSpots = new Constant.Boolean(
+                false,
+                "Should we display the cue beam Spots view?");
     }
 }

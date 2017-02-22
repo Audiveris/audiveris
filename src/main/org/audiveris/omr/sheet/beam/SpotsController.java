@@ -148,19 +148,18 @@ public class SpotsController
         @Override
         public void render (Graphics2D g)
         {
-            // We render all BEAM_SPOT glyphs
+            // (Phase #1) Render all spots
             final Rectangle clip = g.getClipBounds();
             final Color oldColor = g.getColor();
+            g.setColor(Color.LIGHT_GRAY);
 
             for (Glyph spot : spots) {
                 if ((clip == null) || clip.intersects(spot.getBounds())) {
-                    // Draw glyph
-                    g.setColor(Color.LIGHT_GRAY);
-                    spot.getRunTable().render(g, spot.getTopLeft());
+                    spot.getRunTable().render(g, spot.getTopLeft()); // Draw glyph
                 }
-
-                g.setColor(oldColor);
             }
+
+            g.setColor(oldColor);
         }
 
         //-------------//
@@ -169,24 +168,23 @@ public class SpotsController
         @Override
         public void renderItems (Graphics2D g)
         {
-            // Render sections (on top of rendered glyphs)
+            // (Phase #2) Render sections (on top of rendered spots)
             super.render(g);
 
-            // We render BEAM_SPOT glyphs mean line
+            // (Phase #3) Render spots mean line
             final Rectangle clip = g.getClipBounds();
-            final Color oldColor = g.getColor();
             final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+            final Color oldColor = g.getColor();
+            g.setColor(Color.RED);
 
             for (Glyph spot : spots) {
                 if ((clip == null) || clip.intersects(spot.getBounds())) {
-                    // Draw glyph mean line
-                    g.setColor(Color.RED);
-                    spot.renderLine(g);
+                    spot.renderLine(g); // Draw glyph mean line
                 }
-
-                g.setStroke(oldStroke);
-                g.setColor(oldColor);
             }
+
+            g.setColor(oldColor);
+            g.setStroke(oldStroke);
         }
     }
 }
