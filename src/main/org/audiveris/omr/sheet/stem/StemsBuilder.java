@@ -1922,10 +1922,6 @@ public class StemsBuilder
         //~ Methods --------------------------------------------------------------------------------
         public void check (List<Inter> stems)
         {
-            if (head.isVip()) {
-                logger.info("ShareChecker.check for {}", head);
-            }
-
             // Retrieve stem relations
             rels.clear();
 
@@ -1953,10 +1949,11 @@ public class StemsBuilder
 
             // Do we still have a conflict to solve?
             if (rels.size() == 2) {
-                // If not canonical, discard one of the stem link
+                // If not canonical, try to discard one of the stem link
                 if (!isCanonicalShare()) {
                     if (!discardLargeGap()) {
                         ///discardWeakerStem(); // Weaker stem may not be the good criteria!!!
+                        logger.debug("{} could not decide on stems {}", head, stems);
                     }
                 }
             }

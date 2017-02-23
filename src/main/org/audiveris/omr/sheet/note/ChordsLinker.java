@@ -81,10 +81,10 @@ public class ChordsLinker
     //------------//
     public void linkChords ()
     {
-        // Handle beam relationships
+        // Handle beam - chords relationships
         linkBeams();
 
-        // Allocate beam groups
+        // Allocate beam groups per stack
         for (MeasureStack stack : system.getMeasureStacks()) {
             BeamGroup.populate(stack);
         }
@@ -93,6 +93,9 @@ public class ChordsLinker
     //-----------//
     // linkBeams //
     //-----------//
+    /**
+     * Set up links between beams and chords, both ways.
+     */
     private void linkBeams ()
     {
         List<Inter> beams = sig.inters(AbstractBeamInter.class);
