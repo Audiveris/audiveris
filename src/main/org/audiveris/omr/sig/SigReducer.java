@@ -912,10 +912,6 @@ public class SigReducer
                     List<LedgerInter> toRemove = new ArrayList<LedgerInter>();
 
                     for (LedgerInter ledger : ledgers) {
-                        if (ledger.isVip()) {
-                            logger.info("VIP checkLedger {}", ledger);
-                        }
-
                         if (!ledgerHasHeadOrLedger(staff, index, ledger, allHeads)) {
                             if (ledger.isVip() || logger.isDebugEnabled()) {
                                 logger.info("VIP deleting orphan ledger {}", ledger);

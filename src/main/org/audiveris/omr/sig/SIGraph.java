@@ -298,10 +298,10 @@ public class SIGraph
 
         for (Inter inter : vertexSet()) {
             if (inter.getContextualGrade() < Inter.minContextualGrade) {
-                // Staff headers are preserved, even with low grade
                 Staff staff = inter.getStaff();
 
                 if (staff != null) {
+                    // Staff headers are preserved, even with low grade
                     StaffHeader header = staff.getHeader();
 
                     if ((header.clef == inter) || (header.key == inter) || (header.time == inter)) {
@@ -309,6 +309,11 @@ public class SIGraph
                             logger.info("VIP header {} preserved", inter);
                         }
 
+                        continue;
+                    }
+
+                    // Ledgers are not concerned here, they will get deleted when no head is left
+                    if (inter.getShape() == Shape.LEDGER) {
                         continue;
                     }
                 }
