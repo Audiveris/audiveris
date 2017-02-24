@@ -503,21 +503,6 @@ public class SymbolsEditor
                     g.setStroke(oldStroke);
                 }
 
-                //                } else {
-                //                    // NO_STAFF table if available
-                //                    RunTable noStaffTable = sheet.getPicture().getTable(Picture.TableKey.NO_STAFF);
-                //
-                //                    if (noStaffTable != null) {
-                //                        g.setColor(Color.LIGHT_GRAY);
-                //                        noStaffTable.render(g, new Point(0, 0));
-                //                    }
-                //                }
-                //
-                //                // Glyphs
-                //                ///HB logger.info("SymbolsEditor render {} glyphs", nest.getEntities().size());
-                //                for (Glyph glyph : nest.getEntities()) {
-                //                    glyph.getRunTable().render(g, glyph.getTopLeft());
-                //                }
                 // Inters (with graded colors)
                 new SheetGradedPainter(sheet, g).process();
 

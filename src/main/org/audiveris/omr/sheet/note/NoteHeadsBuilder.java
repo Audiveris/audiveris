@@ -754,8 +754,8 @@ public class NoteHeadsBuilder
     // LineAdapter //
     //-------------//
     /**
-     * Such adapter is needed to interact with staff LineInfo or ledger
-     * glyph line in a consistent way.
+     * Such adapter is needed to interact with staff LineInfo or ledger glyph line in a
+     * consistent way.
      */
     private abstract static class LineAdapter
     {
@@ -1059,6 +1059,8 @@ public class NoteHeadsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        private final int interline;
+
         private final LineAdapter line;
 
         private final LineAdapter line2;
@@ -1109,22 +1111,23 @@ public class NoteHeadsBuilder
             yOffsets = computeYOffsets(isOpen);
 
             final Staff staff = line.getStaff();
+            interline = staff.getSpecificInterline();
             ledgers = getLedgerAdapters(staff, pitch);
 
             {
                 // Horizontal slice to detect stem seeds
                 final double maxGap = scale.toPixelsDouble(HeadStemRelation.getYGapMaximum());
                 final double ratio = constants.pitchMargin.getValue();
-                final double above = ((scale.getInterline() * (dir - ratio)) / 2) - maxGap;
-                final double below = ((scale.getInterline() * (dir + ratio)) / 2) + maxGap;
+                final double above = ((interline * (dir - ratio)) / 2) - maxGap;
+                final double below = ((interline * (dir + ratio)) / 2) + maxGap;
                 seedsArea = line.getArea(above, below);
             }
 
             {
                 // Horizontal slice to detect competitors
                 final double ratio = HeadInter.getShrinkVertRatio();
-                final double above = ((scale.getInterline() * (dir - ratio)) / 2);
-                final double below = ((scale.getInterline() * (dir + ratio)) / 2);
+                final double above = ((interline * (dir - ratio)) / 2);
+                final double below = ((interline * (dir + ratio)) / 2);
                 competitorsArea = line.getArea(above, below);
             }
 
@@ -1241,7 +1244,7 @@ public class NoteHeadsBuilder
         {
             List<Glyph> spots = getGlyphsSlice(systemSpots, competitorsArea);
             boolean[] relevants = new boolean[scanRight - scanLeft + 1];
-            int maxNoteWidth = scale.getInterline(); // Rough value is sufficient
+            int maxNoteWidth = interline; // Rough value is sufficient
 
             for (Glyph spot : spots) {
                 Rectangle spotBox = spot.getBounds();
@@ -1290,10 +1293,10 @@ public class NoteHeadsBuilder
                     }
 
                     if (pitch > 0) {
-                        return (int) Math.rint(line.yAt((double) x) + (scale.getInterline() / 2d));
+                        return (int) Math.rint(line.yAt((double) x) + (interline / 2d));
                     } else {
                         // Bottom is always present
-                        return (int) Math.rint(line.yAt((double) x) - (scale.getInterline() / 2d));
+                        return (int) Math.rint(line.yAt((double) x) - (interline / 2d));
                     }
                 }
             } else if (line2 != null) {

@@ -88,22 +88,31 @@ public class TemplateSymbol
         final MyParams p = new MyParams();
         final int interline = font.getFontInterline();
 
-        final TextLayout stdLayout = layout(font);
-        final int stdWidth = (int) Math.ceil(stdLayout.getBounds().getWidth());
+        final TextLayout fullLayout = layout(font);
+        final Rectangle2D fullRect2d = fullLayout.getBounds();
+        final Rectangle fullRect = fullRect2d.getBounds();
 
         if (isSmall) {
             p.layout = font.layout(getString(), smallAt);
         } else {
-            p.layout = stdLayout;
+            p.layout = fullLayout;
         }
 
-        final Rectangle2D r = p.layout.getBounds();
-        final int symWidth = (int) Math.ceil(r.getWidth());
-        final int symHeight = (int) Math.ceil(r.getHeight());
-        p.rect = new Rectangle(isSmall ? stdWidth : symWidth, isSmall ? interline : symHeight);
+        final Rectangle2D r2d = p.layout.getBounds();
+        final Rectangle r = r2d.getBounds();
+        final int symWidth = r.width;
+        final int symHeight = r.height;
+
+        // Choose carefully the template rectangle, with origin at (0,0), around the symbol
+        // For full size symbol, add a 1-pixel margin on each side of the symbol
+        p.rect = new Rectangle(
+                isSmall ? fullRect.width : (symWidth + 2),
+                isSmall ? interline : (symHeight + 2));
+
+        // Bounds of symbol within template rectangle
         p.symbolRect = new Rectangle(
-                (int) Math.rint((stdLayout.getBounds().getWidth() - symWidth) / 2),
-                (int) Math.rint((stdLayout.getBounds().getHeight() - symHeight) / 2),
+                (int) Math.rint((fullRect2d.getWidth() + 2 - r2d.getWidth()) / 2),
+                (int) Math.rint((fullRect2d.getHeight() + 2 - r2d.getHeight()) / 2),
                 symWidth,
                 symHeight);
 

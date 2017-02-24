@@ -97,9 +97,11 @@ public class ShapeDescriptor
 
     private final Template template;
 
-    private int width = -1; // Template width
+    /** Symbol width. */
+    private int width = -1;
 
-    private int height = -1; // Template height
+    /** Symbol height. */
+    private int height = -1;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -377,17 +379,13 @@ public class ShapeDescriptor
     private void addAnchors (Template template)
     {
         // Symbol bounds (relative to template origin)
-        Rectangle sym = template.getSymbolBounds();
+        final Rectangle sym = template.getSymbolBounds();
+        final double xMiddle = (sym.x + (0.5 * sym.width)) / width;
+        final double yMiddle = (sym.y + (0.5 * sym.height)) / height;
 
         // Define common basic anchors
-        template.addAnchor(
-                Anchor.CENTER,
-                (sym.x + (0.5 * (sym.width - 1))) / width,
-                (sym.y + (0.5 * (sym.height - 1))) / height);
-        template.addAnchor(
-                Anchor.MIDDLE_LEFT,
-                (double) sym.x / width,
-                (sym.y + (0.5 * (sym.height - 1))) / height);
+        template.addAnchor(Anchor.CENTER, xMiddle, yMiddle);
+        template.addAnchor(Anchor.MIDDLE_LEFT, (double) sym.x / width, yMiddle);
 
         // WHOLE_NOTE & WHOLE_NOTE_SMALL are not concerned further
         if (ShapeSet.StemLessHeads.contains(template.getShape())) {
@@ -396,19 +394,19 @@ public class ShapeDescriptor
 
         // Add anchors for potential stems on left and right sides
         final double dx = constants.stemDx.getValue();
-        final double left = (sym.x + (dx * (sym.width - 1))) / width;
-        final double right = (sym.x + ((1 - dx) * (sym.width - 1))) / width;
+        final double left = (sym.x + (dx * sym.width)) / width;
+        final double right = (sym.x + ((1 - dx) * sym.width)) / width;
 
         final double dy = constants.stemDy.getValue();
-        final double top = (sym.y + (dy * (sym.height - 1))) / height;
-        final double bottom = (sym.y + ((1 - dy) * (sym.height - 1))) / height;
+        final double top = (sym.y + (dy * sym.height)) / height;
+        final double bottom = (sym.y + ((1 - dy) * sym.height)) / height;
 
         template.addAnchor(Anchor.TOP_LEFT_STEM, left, top);
-        template.addAnchor(Anchor.LEFT_STEM, left, 0.5);
+        template.addAnchor(Anchor.LEFT_STEM, left, yMiddle);
         template.addAnchor(Anchor.BOTTOM_LEFT_STEM, left, bottom);
 
         template.addAnchor(Anchor.TOP_RIGHT_STEM, right, top);
-        template.addAnchor(Anchor.RIGHT_STEM, right, 0.5);
+        template.addAnchor(Anchor.RIGHT_STEM, right, yMiddle);
         template.addAnchor(Anchor.BOTTOM_RIGHT_STEM, right, bottom);
     }
 
@@ -490,8 +488,6 @@ public class ShapeDescriptor
     //----------------//
     /**
      * Build a template for desired shape and size, based on MusicFont.
-     * TODO: Implement a better way to select representative key points perhaps using a skeleton for
-     * foreground and another skeleton for holes?
      *
      * @param shape     shape of the template
      * @param interline scaling for font
@@ -500,9 +496,9 @@ public class ShapeDescriptor
     private Template createTemplate (Shape shape,
                                      int interline)
     {
-        //TODO: just for a try, since void head templates are generally too small
+        // Void head templates are generally too small, so we cheat on font size
         if (shape == Shape.NOTEHEAD_VOID) {
-            interline++;
+            interline += MusicFont.NOTEHEAD_VOID_EXTENT;
         }
 
         MusicFont font = MusicFont.getFont(interline);

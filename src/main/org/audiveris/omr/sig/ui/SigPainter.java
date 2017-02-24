@@ -395,7 +395,15 @@ public class SigPainter
         setColor(inter);
 
         if (symbol != null) {
-            final MusicFont font = getMusicFont(inter.getStaff());
+            final MusicFont font;
+
+            if (inter.getShape() == Shape.NOTEHEAD_VOID) {
+                font = MusicFont.getFont(
+                        inter.getStaff().getSpecificInterline() + MusicFont.NOTEHEAD_VOID_EXTENT);
+            } else {
+                font = getMusicFont(inter.getStaff());
+            }
+
             final Point center = GeoUtil.centerOf(inter.getBounds());
             symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
         } else {

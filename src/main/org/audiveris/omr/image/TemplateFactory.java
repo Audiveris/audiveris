@@ -102,7 +102,7 @@ public class TemplateFactory
     // Catalog //
     //---------//
     /**
-     * Handles all templates or a given interline value.
+     * Handles all templates for a given interline value.
      */
     public static class Catalog
     {

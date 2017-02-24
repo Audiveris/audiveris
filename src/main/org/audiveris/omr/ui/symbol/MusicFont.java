@@ -73,6 +73,12 @@ public class MusicFont
      */
     public static final String FONT_NAME = "MusicalSymbols";
 
+    /** Interline extension for better results with MusicalSymbols font. */
+    private static final int GLOBAL_INTERLINE_EXTENT = 1;
+
+    /** Interline extension, meant for NOTEHEAD_VOID often too small. */
+    public static final int NOTEHEAD_VOID_EXTENT = 1;
+
     /**
      * Offset for code range.
      * 0xf000 for MusicalSymbols
@@ -187,12 +193,7 @@ public class MusicFont
      */
     public static MusicFont getFont (int interline)
     {
-        /**
-         * Properly scaled music font.
-         * Nota: Adding 1 to interline gives best results with current font.
-         * So this is performed in this central location.
-         */
-        interline += 1;
+        interline += GLOBAL_INTERLINE_EXTENT;
 
         MusicFont font = sizeMap.get(interline);
 

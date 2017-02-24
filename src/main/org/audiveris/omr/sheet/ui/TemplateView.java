@@ -41,6 +41,9 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.util.UIUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
@@ -69,6 +72,8 @@ public class TemplateView
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(TemplateView.class);
 
     private static final AlphaComposite templateComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
@@ -162,9 +167,9 @@ public class TemplateView
                 Composite oldComposite = g.getComposite();
                 g.setComposite(templateComposite);
 
-                MusicFont musicFont = MusicFont.getFont(sheet.getScale().getInterline()); // +1 NO HORRIBLE TRICK
                 ShapeSymbol symbol = Symbols.getSymbol(template.getShape());
                 Rectangle symRect = template.getSymbolBoundsAt(refPoint.x, refPoint.y, anchor);
+                MusicFont musicFont = MusicFont.getFont(template.getInterline());
                 symbol.paintSymbol(g, musicFont, symRect.getLocation(), Alignment.TOP_LEFT);
                 g.setComposite(oldComposite);
 

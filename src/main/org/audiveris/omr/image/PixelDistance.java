@@ -28,7 +28,7 @@ import java.util.Comparator;
  *
  * @author Hervé Bitteur
  */
-public class PixelDistance ///implements Comparable<PixelDistance>
+public class PixelDistance
 
 {
     //~ Static fields/initializers -----------------------------------------------------------------
