@@ -43,12 +43,6 @@ run {
     maxHeapSize = '1g'
 }
 
-// workaround for making Javacpp-presets work with Gradle,
-// see https://github.com/bytedeco/javacv/issues/432
-configurations {
-    all*.exclude group: 'org.bytedeco', module: 'javacpp-presets'
-}
-
 repositories {
     jcenter()
     maven {
@@ -99,9 +93,9 @@ dependencies {
         [group: 'com.itextpdf', name: 'itextpdf', version: '5.5.9'],
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
         [group: 'org.reflections', name: 'reflections', version: '0.9.10'],     
-        [group: 'org.bytedeco', name: 'javacpp', version: '1.2'],
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.2'],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.2'],
+        [group: 'org.bytedeco', name: 'javacpp', version: '1.3'],
+        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3'],
+        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3'],
         [group: 'net.java.dev.jai-imageio', name: 'jai-imageio-core-standalone', version: '1.2-pre-dr-b04-2014-09-13'],
         [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: "${project.ext.dl4jVersion}"],
         [group: 'org.deeplearning4j', name: 'deeplearning4j-ui_2.10', version: "${project.ext.dl4jVersion}"],
@@ -109,8 +103,8 @@ dependencies {
     )
 
     runtime(
-        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.2', classifier: "${project.ext.targetOS}"],
-        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.2', classifier: "${project.ext.targetOS}"],
+        [group: 'org.bytedeco.javacpp-presets', name: 'leptonica', version: '1.73-1.3', classifier: "${project.ext.targetOS}"],
+        [group: 'org.bytedeco.javacpp-presets', name: 'tesseract', version: '3.04.01-1.3', classifier: "${project.ext.targetOS}"],
         [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}", classifier: "${project.ext.targetOS}"]
     )
 
