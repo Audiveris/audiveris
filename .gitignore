@@ -9,7 +9,7 @@ dev/material/tasks-graph.pdf
 dev/material/scale
 dev/material/classifier
 
-.hgignore
+.gitignore
 .gradle/*
 .nb-gradle/*
 *.exe
@@ -43,3 +43,7 @@ target/*
 \.chg\..*$
 \.rej$
 \.conflict\~$
+
+# Ignore system files
+.DS_Store
+Thumb.db
