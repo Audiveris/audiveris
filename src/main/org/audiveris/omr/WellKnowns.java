@@ -67,8 +67,7 @@ public abstract class WellKnowns
     public static final String TOOL_NAME = ProgramId.PROGRAM_NAME;
 
     /** Application reference: {@value}. */
-    public static final String TOOL_REF = ProgramId.PROGRAM_VERSION + "."
-                                          + ProgramId.PROGRAM_REVISION;
+    public static final String TOOL_REF = ProgramId.PROGRAM_VERSION;
 
     /** Application build: {@value}. */
     public static final String TOOL_BUILD = ProgramId.PROGRAM_BUILD;

@@ -151,20 +151,17 @@ if (hasProperty('args_file_name')) {
     }
 }
 
-// create several dynamic tasks querying Mercurial for various infos
-// and setting up appropriate properties
-['revision' : 'rev', 'build' : 'node|short'].each { dict ->
-    task "hg_$dict.key"(type:Exec) {
-        commandLine "hg log -r tip --template '{$dict.value}'".split(' ')
-        standardOutput = new ByteArrayOutputStream()
-    
-        doLast {
-            project.ext."program${dict.key.capitalize()}" = standardOutput.toString().replaceAll("'", '')
-        }
+// retrieve the abbreviated hash for the latest commit from Git
+task "git_build"(type:Exec) {
+    commandLine "git rev-parse --short HEAD".split(' ')
+    standardOutput = new ByteArrayOutputStream()
+
+    doLast {
+        project.ext."programBuild" = standardOutput.toString().replaceAll('\n', '')
     }
 }
 
-task generateProgramId(dependsOn: [hg_build, hg_revision]) << {
+task generateProgramId(dependsOn: git_build) << {
     project.ext.outputDir = file("$buildDir/generated-src/org/audiveris/omr")
 
     def className = "ProgramId"
@@ -176,7 +173,7 @@ task generateProgramId(dependsOn: [hg_build, hg_revision]) << {
     gSrc.append("public class $className {")
     
     ["company_name", "company_id", "program_name", "program_version",\
-        "program_revision", "program_build"].each { str ->
+        "program_build"].each { str ->
         def strParts = str.split("_")
         def propName = strParts[0] + strParts[1].capitalize()
         gSrc.append("\n    /** Precise ${strParts[0]} ${strParts[1]}: {@value} */")
