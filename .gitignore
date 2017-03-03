@@ -19,8 +19,6 @@ dev/material/classifier
 *.orig
 build/*
 dist/*
-audiveris.bat
-installer/build/*
 config/run.properties
 data/benches
 data/campaign
@@ -35,7 +33,6 @@ data/train/*.zip
 data/train/*.csv
 data/www/docs/api
 data/www/docs/guides
-nbproject/configs/*
 private/*
 target/*
 \.orig\..*$

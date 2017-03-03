@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Audiveris
-Comment=Music Scanner
-Exec=/bin/sh "/usr/bin/audiveris"
-Icon=/usr/share/icons/audiveris/audiveris.png
-Terminal=false
-Categories=AudioVideo;
-StartupNotify=true
