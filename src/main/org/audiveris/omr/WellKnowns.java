@@ -454,7 +454,8 @@ public abstract class WellKnowns
             }
         }
 
-        throw new InstallationException("Tesseract-OCR is not installed");
+        throw new InstallationException("Tesseract data could not be found. " +
+                "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".");
     }
 
     //-----------------//
