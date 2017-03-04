@@ -37,9 +37,12 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileOutputStream;
+import java.io.BufferedOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import static java.nio.file.StandardOpenOption.CREATE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,11 +73,11 @@ public class BasicClassifier
     /** The singleton. */
     private static volatile BasicClassifier INSTANCE;
 
-    /** Neural network file name. */
-    public static final String MODEL_FILE_NAME = "basic-model.xml";
+    /** Classifier file name. */
+    public static final String FILE_NAME = "basic-classifier.zip";
 
-    /** Feature norms file name. */
-    public static final String NORMS_FILE_NAME = "basic-norms.zip";
+    /** Model entry name. */
+    public static final String MODEL_ENTRY_NAME = "model.xml";
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying (old) neural network. */
@@ -92,7 +95,7 @@ public class BasicClassifier
         descriptor = new MixGlyphDescriptor();
 
         // Unmarshal from user or default data, if compatible
-        model = load(MODEL_FILE_NAME, NORMS_FILE_NAME);
+        model = load(FILE_NAME);
 
         if (model == null) {
             model = createNetwork();
@@ -208,9 +211,7 @@ public class BasicClassifier
     @Override
     public void reset ()
     {
-
         model = createNetwork();
-
     }
 
     //-------//
@@ -271,7 +272,7 @@ public class BasicClassifier
         model.train(inputs, desiredOutputs, listener, listener.getIterationPeriod());
 
         // Store
-        store(MODEL_FILE_NAME, NORMS_FILE_NAME);
+        store(FILE_NAME);
     }
 
     //--------------//
@@ -284,9 +285,7 @@ public class BasicClassifier
         if (!Arrays.equals(model.getInputLabels(), descriptor.getFeatureLabels())) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Engine inputs: {}", Arrays.toString(model.getInputLabels()));
-                logger.debug(
-                        "Shape  inputs: {}",
-                        Arrays.toString(descriptor.getFeatureLabels()));
+                logger.debug("Shape  inputs: {}", Arrays.toString(descriptor.getFeatureLabels()));
             }
 
             return false;
@@ -310,22 +309,29 @@ public class BasicClassifier
     // loadModel //
     //-----------//
     @Override
-    protected NeuralNetwork loadModel (InputStream is)
+    protected NeuralNetwork loadModel (Path root)
             throws Exception
     {
-        return NeuralNetwork.unmarshal(is);
+        Path modelPath = root.resolve(MODEL_ENTRY_NAME);
+        InputStream is = Files.newInputStream(modelPath);
+        NeuralNetwork nn = NeuralNetwork.unmarshal(is);
+        is.close();
+
+        return nn;
     }
 
     //------------//
     // storeModel //
     //------------//
     @Override
-    protected void storeModel (Path modelPath)
+    protected void storeModel (Path root)
             throws Exception
     {
-        FileOutputStream os = new FileOutputStream(modelPath.toFile());
-        model.marshal(os);
-        os.close();
+        Path modelPath = root.resolve(MODEL_ENTRY_NAME);
+        OutputStream bos = new BufferedOutputStream(Files.newOutputStream(modelPath, CREATE));
+        model.marshal(bos);
+        bos.flush();
+        bos.close();
         logger.info("Engine marshalled to {}", modelPath);
     }
 

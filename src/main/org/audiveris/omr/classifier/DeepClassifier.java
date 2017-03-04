@@ -43,7 +43,6 @@ import org.deeplearning4j.nn.layers.BaseLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.api.IterationListener;
-import org.deeplearning4j.util.ModelSerializer;
 
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -55,7 +54,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,11 +79,8 @@ public class DeepClassifier
     /** The singleton. */
     private static volatile DeepClassifier INSTANCE;
 
-    /** Neural network file name. */
-    public static final String MODEL_FILE_NAME = "deep-model.zip";
-
-    /** Feature norms file name. */
-    public static final String NORMS_FILE_NAME = "deep-norms.zip";
+    /** Classifier file name. */
+    public static final String FILE_NAME = "deep-classifier.zip";
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -98,7 +93,7 @@ public class DeepClassifier
         descriptor = new ImgGlyphDescriptor();
 
         // Unmarshal from user or default data, if compatible
-        model = load(MODEL_FILE_NAME, NORMS_FILE_NAME);
+        model = load(FILE_NAME);
 
         if (model == null) {
             model = createNetwork();
@@ -141,6 +136,9 @@ public class DeepClassifier
         return constants.maxEpochs.getValue();
     }
 
+    //----------//
+    // getModel //
+    //----------//
     /**
      * @return the model
      */
@@ -322,7 +320,7 @@ public class DeepClassifier
         }
 
         // Store
-        store(MODEL_FILE_NAME, NORMS_FILE_NAME);
+        store(FILE_NAME);
     }
 
     //--------------//
@@ -373,28 +371,20 @@ public class DeepClassifier
     // loadModel //
     //-----------//
     @Override
-    protected MultiLayerNetwork loadModel (InputStream is)
+    protected MultiLayerNetwork loadModel (Path root)
             throws IOException
     {
-        try {
-            return ModelSerializer.restoreMultiLayerNetwork(is, false);
-        } catch (Throwable ex) {
-            logger.warn("Error restoring network {}", ex.toString(), ex);
-
-            return null;
-        } finally {
-            is.close();
-        }
+        return ModelSystemSerializer.restoreMultiLayerNetwork(root, false);
     }
 
     //------------//
     // storeModel //
     //------------//
     @Override
-    protected void storeModel (Path modelPath)
+    protected void storeModel (Path root)
             throws IOException
     {
-        ModelSerializer.writeModel(model, modelPath.toFile(), false);
+        ModelSystemSerializer.writeModel(model, root, false);
     }
 
     //---------//

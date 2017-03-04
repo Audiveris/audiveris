@@ -54,7 +54,7 @@ import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.Param;
 import org.audiveris.omr.util.StopWatch;
-import org.audiveris.omr.util.Zip;
+import org.audiveris.omr.util.ZipFileSystem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -893,7 +893,7 @@ public class BasicBook
             watch.start("book");
 
             // Open book file
-            Path rootPath = Zip.openFileSystem(bookPath);
+            Path rootPath = ZipFileSystem.open(bookPath);
 
             // Load book internals (just the stubs) out of book.xml
             Path internalsPath = rootPath.resolve(Book.BOOK_INTERNALS);
@@ -1003,7 +1003,7 @@ public class BasicBook
     public Path openBookFile ()
             throws IOException
     {
-        return Zip.openFileSystem(bookPath);
+        return ZipFileSystem.open(bookPath);
     }
 
     //-----------------//
@@ -1274,6 +1274,7 @@ public class BasicBook
                        boolean withBackup)
     {
         Memory.gc(); // Launch garbage collection, to save on weak glyph references ...
+
         boolean diskWritten = false; // Has disk actually been written?
 
         // Backup existing book file?
@@ -1294,10 +1295,10 @@ public class BasicBook
             if ((this.bookPath == null)
                 || this.bookPath.toAbsolutePath().equals(bookPath.toAbsolutePath())) {
                 if (this.bookPath == null) {
-                    root = Zip.createFileSystem(bookPath);
+                    root = ZipFileSystem.create(bookPath);
                     diskWritten = true;
                 } else {
-                    root = Zip.openFileSystem(bookPath);
+                    root = ZipFileSystem.open(bookPath);
                 }
 
                 if (modified) {
@@ -1596,7 +1597,7 @@ public class BasicBook
         zos.close();
 
         // Finally open the book file just created
-        return Zip.openFileSystem(bookPath);
+        return ZipFileSystem.open(bookPath);
     }
 
     //----------------//

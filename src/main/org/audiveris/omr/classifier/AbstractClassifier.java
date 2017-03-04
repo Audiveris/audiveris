@@ -30,7 +30,7 @@ import org.audiveris.omr.glyph.ShapeChecker;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.util.UriUtil;
-import org.audiveris.omr.util.Zip;
+import org.audiveris.omr.util.ZipFileSystem;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -39,28 +39,22 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import static java.nio.file.StandardOpenOption.CREATE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import javax.xml.bind.JAXBException;
 
@@ -94,6 +88,12 @@ public abstract class AbstractClassifier<M extends Object>
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractClassifier.class);
+
+    /** Entry name for mean values. */
+    public static final String MEANS_ENTRY_NAME = "means.bin";
+
+    /** Entry name for standard deviation values. */
+    public static final String STDS_ENTRY_NAME = "stds.bin";
 
     /** A special evaluation array, used to report NOISE. */
     protected static final Evaluation[] noiseEvaluations = {
@@ -223,12 +223,13 @@ public abstract class AbstractClassifier<M extends Object>
     //-----------//
     /**
      * Load classifier model out of the provided input stream.
+     * Method to be provided by subclass.
      *
-     * @param is non-null input stream
+     * @param root non-null root path of file system
      * @return the loaded model
      * @throws Exception
      */
-    protected abstract M loadModel (InputStream is)
+    protected abstract M loadModel (Path root)
             throws Exception;
 
     //----------------------//
@@ -261,40 +262,38 @@ public abstract class AbstractClassifier<M extends Object>
     // load //
     //------//
     /**
-     * Load model and norms from the most suitable data files.
+     * Load model and norms from the most suitable classifier data files.
      * If user files do not exist or cannot be unmarshalled, the default files are used.
      *
-     * @param modelFileName file name for model data
-     * @param normsFileName file name for norms data
+     * @param fileName file name for classifier data
      * @return the model loaded
      */
-    protected M load (String modelFileName,
-                      String normsFileName)
+    protected M load (String fileName)
     {
         // First, try user data, if any, in local EVAL folder
         logger.debug("Trying user data");
 
         {
-            final Path modelPath = WellKnowns.TRAIN_FOLDER.resolve(modelFileName);
-            final Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(normsFileName);
+            final Path path = WellKnowns.TRAIN_FOLDER.resolve(fileName);
 
-            if (Files.exists(modelPath) && Files.exists(normsPath)) {
+            if (Files.exists(path)) {
                 try {
+                    Path root = ZipFileSystem.open(path);
                     logger.debug("loadModel...");
 
-                    M model = loadModel(new FileInputStream(modelPath.toFile()));
+                    M model = loadModel(root);
                     logger.debug("loadNorms...");
-                    norms = loadNorms(new FileInputStream(normsPath.toFile()));
+                    norms = loadNorms(root);
                     logger.debug("loaded.");
+                    root.getFileSystem().close();
 
                     if (!isCompatible(model, norms)) {
-                        final String msg = "Obsolete neural user data in " + modelPath
+                        final String msg = "Obsolete classifier user data in " + path
                                            + ", trying default data";
                         logger.warn(msg);
                     } else {
                         // Tell user we are not using the default
-                        logger.info("Classifier model loaded from local {}", modelPath);
-                        logger.info("Classifier norms loaded from local {}", normsPath);
+                        logger.info("Classifier data loaded from local {}", path);
 
                         return model; // Normal exit
                     }
@@ -308,20 +307,20 @@ public abstract class AbstractClassifier<M extends Object>
         // Second, use default data (in program RES folder)
         logger.debug("Trying default data");
 
-        final URI modelUri = UriUtil.toURI(WellKnowns.RES_URI, modelFileName);
-        final URI normsUri = UriUtil.toURI(WellKnowns.RES_URI, normsFileName);
+        final URI uri = UriUtil.toURI(WellKnowns.RES_URI, fileName);
 
         try {
-            M model = loadModel(modelUri.toURL().openStream());
-            norms = loadNorms(normsUri.toURL().openStream());
+            Path root = ZipFileSystem.open(new File(uri).toPath());
+            M model = loadModel(root);
+            norms = loadNorms(root);
+            root.getFileSystem().close();
 
             if (!isCompatible(model, norms)) {
-                final String msg = "Obsolete neural default data in " + modelUri
+                final String msg = "Obsolete classifier default data in " + uri
                                    + ", please retrain from scratch";
                 logger.warn(msg);
             } else {
-                logger.info("Classifier model loaded from default {}", modelUri);
-                logger.info("Classifier norms loaded from default {}", normsUri);
+                logger.info("Classifier data loaded from default {}", uri);
 
                 return model; // Normal exit
             }
@@ -338,70 +337,55 @@ public abstract class AbstractClassifier<M extends Object>
     // loadNorms //
     //-----------//
     /**
-     * Try to load Norms data from the provided input stream.
+     * Try to load Norms data from the provided input file.
      *
-     * @param is the input stream
+     * @param root the root path to file system
      * @return the loaded Norms instance, or exception is thrown
      * @throws IOException
      * @throws JAXBException
      */
-    protected Norms loadNorms (InputStream is)
+    protected Norms loadNorms (Path root)
             throws IOException, JAXBException
     {
         INDArray means = null;
         INDArray stds = null;
 
-        try {
-            final ZipInputStream zis = new ZipInputStream(is);
-            ZipEntry entry;
+        final Path meansEntry = root.resolve(MEANS_ENTRY_NAME);
 
-            while ((entry = zis.getNextEntry()) != null) {
-                switch (entry.getName()) {
-                case "means.bin": {
-                    DataInputStream dis = new DataInputStream(zis);
-                    means = Nd4j.read(dis);
-                }
-
-                break;
-
-                case "stds.bin": {
-                    DataInputStream dis = new DataInputStream(zis);
-                    stds = Nd4j.read(dis);
-                }
-
-                break;
-                }
-
-                zis.closeEntry();
-            }
-
-            zis.close();
-
-            if ((means != null) && (stds != null)) {
-                return new Norms(means, stds);
-            }
-        } finally {
-            is.close();
+        if (meansEntry != null) {
+            InputStream is = Files.newInputStream(meansEntry); // READ by default
+            DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
+            means = Nd4j.read(dis);
+            dis.close();
         }
 
-        throw new IllegalStateException(
-                "Norms wasnt found within file, means: " + means + ", stds: " + stds);
+        final Path stdsEntry = root.resolve(STDS_ENTRY_NAME);
+
+        if (stdsEntry != null) {
+            InputStream is = Files.newInputStream(stdsEntry); // READ by default
+            DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
+            stds = Nd4j.read(dis);
+            dis.close();
+        }
+
+        if ((means != null) && (stds != null)) {
+            return new Norms(means, stds);
+        }
+
+        throw new IllegalStateException("Norms were not found");
     }
 
     //-------//
     // store //
     //-------//
     /**
-     * Store the engine internals (model + norms), always as user files.
+     * Store the engine internals, always as user files.
      *
-     * @param modelFileName file name for model
-     * @param normsFileName file name for norms
+     * @param fileName file name for classifier data (model & norms)
      */
-    protected void store (String modelFileName,
-                          String normsFileName)
+    protected void store (String fileName)
     {
-        final Path modelPath = WellKnowns.TRAIN_FOLDER.resolve(modelFileName);
-        final Path normsPath = WellKnowns.TRAIN_FOLDER.resolve(normsFileName);
+        final Path path = WellKnowns.TRAIN_FOLDER.resolve(fileName);
 
         try {
             if (!Files.exists(WellKnowns.TRAIN_FOLDER)) {
@@ -409,10 +393,14 @@ public abstract class AbstractClassifier<M extends Object>
                 logger.info("Created directory {}", WellKnowns.TRAIN_FOLDER);
             }
 
-            storeModel(modelPath);
-            storeNorms(normsPath);
+            Path root = ZipFileSystem.create(path); // Delete if already exists
 
-            logger.info("{} data stored to folder {}", getName(), WellKnowns.TRAIN_FOLDER);
+            storeModel(root);
+            storeNorms(root);
+
+            root.getFileSystem().close();
+
+            logger.info("{} data stored to {}", getName(), path);
         } catch (Exception ex) {
             logger.warn("Error storing {} {}", getName(), ex.toString(), ex);
         }
@@ -436,47 +424,29 @@ public abstract class AbstractClassifier<M extends Object>
     /**
      * Store the norms based on training samples.
      *
-     * @param normsPath path to the norms file
-     * @throws FileNotFoundException
+     * @param root path to root of file system
      * @throws IOException
-     * @throws JAXBException
      */
-    protected void storeNorms (Path normsPath)
-            throws FileNotFoundException, IOException, JAXBException
+    protected void storeNorms (Path root)
+            throws IOException
     {
-        OutputStream stream = new BufferedOutputStream(new FileOutputStream(normsPath.toFile()));
-        ZipOutputStream zos = new ZipOutputStream(stream);
-
         {
-            ZipEntry means = new ZipEntry("means.bin");
-            zos.putNextEntry(means);
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(bos);
+            Path means = root.resolve(MEANS_ENTRY_NAME);
+            DataOutputStream dos = new DataOutputStream(
+                    new BufferedOutputStream(Files.newOutputStream(means, CREATE)));
             Nd4j.write(norms.means, dos);
             dos.flush();
             dos.close();
-
-            InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
-            Zip.copyEntry(inputStream, zos);
         }
 
         {
-            ZipEntry stds = new ZipEntry("stds.bin");
-            zos.putNextEntry(stds);
-
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(bos);
+            Path stds = root.resolve(STDS_ENTRY_NAME);
+            DataOutputStream dos = new DataOutputStream(
+                    new BufferedOutputStream(Files.newOutputStream(stds, CREATE)));
             Nd4j.write(norms.stds, dos);
             dos.flush();
             dos.close();
-
-            InputStream inputStream = new ByteArrayInputStream(bos.toByteArray());
-            Zip.copyEntry(inputStream, zos);
         }
-
-        zos.flush();
-        zos.close();
     }
 
     //----------//
@@ -500,7 +470,7 @@ public abstract class AbstractClassifier<M extends Object>
             }
 
             // Successful checks?
-            if (conditions.contains(Condition.CHECKED)) {
+            if (conditions != null && conditions.contains(Condition.CHECKED)) {
                 // This may change the eval shape in only one case:
                 // HW_REST_set may be changed for HALF_REST or WHOLE_REST based on pitch
                 glyphChecker.annotate(system, eval, glyph);

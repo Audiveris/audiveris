@@ -34,12 +34,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Enumeration;
-import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -62,37 +57,6 @@ public abstract class Zip
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // createFileSystem //
-    //------------------//
-    /**
-     * Create a new zip file system at the location provided by '{@code path}' parameter.
-     * If such file already exists, it is deleted beforehand.
-     * <p>
-     * When IO operations are finished, the file system must be closed via {@link FileSystem#close}
-     *
-     * @param path path to zip file system
-     * @return the root path of the (zipped) file system
-     * @throws java.io.IOException
-     */
-    public static Path createFileSystem (Path path)
-            throws IOException
-    {
-        Objects.requireNonNull(path, "Zip.createFileSystem: path is null");
-
-        Files.deleteIfExists(path);
-
-        // Make sure the containing folder exists
-        Files.createDirectories(path.getParent());
-
-        // Make it a zip file
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path.toFile()));
-        zos.close();
-
-        // Finally open the file system just created
-        return openFileSystem(path);
-    }
-
     //--------------------//
     // createInputStream //
     //-------------------//
@@ -235,50 +199,4 @@ public abstract class Zip
 
         return !zf.entries().hasMoreElements();
     }
-
-    //----------------//
-    // openFileSystem //
-    //----------------//
-    /**
-     * Open a zip file system (supposed to already exist at location provided by
-     * '{@code path}' parameter) for reading or writing.
-     * <p>
-     * When IO operations are finished, the file system must be closed via {@link FileSystem#close}
-     *
-     * @param path (zip) file path
-     * @return the root path of the (zipped) file system
-     * @throws java.io.IOException
-     */
-    public static Path openFileSystem (Path path)
-            throws IOException
-    {
-        Objects.requireNonNull(path, "Zip.openFileSystem: path is null");
-
-        FileSystem fileSystem = FileSystems.newFileSystem(path, null);
-
-        return fileSystem.getPath(fileSystem.getSeparator());
-    }
-
-    //-----------//
-    // copyEntry //
-    //-----------//
-    /**
-     * Copy the content of an input stream to the provided zip output stream
-     *
-     * @param inputStream input
-     * @param zipStream   output
-     * @throws IOException
-     */
-    public static void copyEntry (InputStream inputStream,
-                                  ZipOutputStream zipStream)
-            throws IOException
-    {
-        final byte[] bytes = new byte[1024];
-        int bytesRead;
-
-        while ((bytesRead = inputStream.read(bytes)) != -1) {
-            zipStream.write(bytes, 0, bytesRead);
-        }
-    }
-
 }

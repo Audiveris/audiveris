@@ -41,7 +41,7 @@ import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.StopWatch;
-import org.audiveris.omr.util.Zip;
+import org.audiveris.omr.util.ZipFileSystem;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
@@ -423,7 +423,7 @@ public class SampleRepository
         }
 
         try {
-            Path imagesRoot = Zip.openFileSystem(imagesFile);
+            Path imagesRoot = ZipFileSystem.open(imagesFile);
 
             try {
                 Path folderPath = imagesRoot.resolve(descriptor.getName());
@@ -516,7 +516,7 @@ public class SampleRepository
 
                 if (!descs.isEmpty()) {
                     try {
-                        final Path root = Zip.openFileSystem(imagesFile);
+                        final Path root = ZipFileSystem.open(imagesFile);
 
                         for (Descriptor desc : descs) {
                             final Path file = root.resolve(desc.getName()).resolve(
@@ -677,9 +677,7 @@ public class SampleRepository
     public static synchronized SampleRepository getGlobalInstance (boolean load)
     {
         if (GLOBAL == null) {
-            GLOBAL = getInstance(
-                    WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME),
-                    load);
+            GLOBAL = getInstance(WellKnowns.TRAIN_FOLDER.resolve(SAMPLES_FILE_NAME), load);
         }
 
         if (load && (GLOBAL != null) && !GLOBAL.isLoaded()) {
@@ -1061,7 +1059,7 @@ public class SampleRepository
             logger.info("Images file {} not found.", imagesFile);
         } else {
             try {
-                final Path imagesRoot = Zip.openFileSystem(imagesFile);
+                final Path imagesRoot = ZipFileSystem.open(imagesFile);
                 logger.info("Loading all images from {} ...", imagesFile);
                 loadAllImages(imagesRoot);
                 imagesRoot.getFileSystem().close();
@@ -1081,7 +1079,7 @@ public class SampleRepository
         RunTable runTable = null;
 
         try {
-            final Path imagesRoot = Zip.openFileSystem(imagesFile);
+            final Path imagesRoot = ZipFileSystem.open(imagesFile);
 
             try {
                 Path folderPath = imagesRoot.resolve(descriptor.getName());
@@ -1127,7 +1125,7 @@ public class SampleRepository
             if (Files.exists(samplesFile)) {
                 watch.start("open samples.zip");
 
-                final Path samplesRoot = Zip.openFileSystem(samplesFile);
+                final Path samplesRoot = ZipFileSystem.open(samplesFile);
 
                 watch.start("loadContainer");
 
@@ -1371,10 +1369,10 @@ public class SampleRepository
     public void storeRepository ()
     {
         try {
-            final Path samplesRoot = Files.exists(samplesFile) ? Zip.openFileSystem(samplesFile)
-                    : Zip.createFileSystem(samplesFile);
-            final Path imagesRoot = Files.exists(imagesFile) ? Zip.openFileSystem(imagesFile)
-                    : Zip.createFileSystem(imagesFile);
+            final Path samplesRoot = Files.exists(samplesFile) ? ZipFileSystem.open(samplesFile)
+                    : ZipFileSystem.create(samplesFile);
+            final Path imagesRoot = Files.exists(imagesFile) ? ZipFileSystem.open(imagesFile)
+                    : ZipFileSystem.create(imagesFile);
 
             // Container
             if (sheetContainer.isModified()) {
