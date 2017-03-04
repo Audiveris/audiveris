@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AbstractStemConnection;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
+import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
@@ -45,11 +46,15 @@ import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -66,6 +71,8 @@ public class StemInter
         extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(StemInter.class);
 
     /** Anchor vertical margin, relative to head height. */
     private static final double ANCHOR_MARGIN_RATIO = 0.67;
@@ -287,6 +294,46 @@ public class StemInter
         return new Line2D.Double(extTop, extBottom);
     }
 
+    //--------//
+    // delete //
+    //--------//
+    @Override
+    public void delete ()
+    {
+        if (deleted) {
+            return;
+        }
+
+        if (isGood()) {
+            // Discard head-head relations that are based only on this stem instance
+            Set<HeadInter> stemHeads = getHeads(); // Heads linked to this stem
+
+            for (HeadInter head : stemHeads) {
+                // Other stems this head is linked to
+                Set<StemInter> otherStems = head.getStems();
+                otherStems.remove(this);
+
+                for (Relation rel : sig.getRelations(head, HeadHeadRelation.class)) {
+                    HeadInter similarHead = (HeadInter) sig.getOppositeInter(head, rel);
+
+                    if (stemHeads.contains(similarHead)) {
+                        // Head - otherHead are both on this stem
+                        // Keep HH support only if they are on same good stem (different of this)
+                        Set<StemInter> similarStems = similarHead.getStems();
+                        similarStems.retainAll(otherStems);
+
+                        if (!Inters.hasGoodMember(similarStems)) {
+                            logger.debug("Removing head-head within {} & {}", head, similarHead);
+                            sig.removeEdge(rel);
+                        }
+                    }
+                }
+            }
+        }
+
+        super.delete();
+    }
+
     //-----------//
     // duplicate //
     //-----------//
@@ -435,5 +482,24 @@ public class StemInter
         }
 
         return null;
+    }
+
+    //----------//
+    // getHeads //
+    //----------//
+    /**
+     * Report the heads linked to this stem, whatever the side.
+     *
+     * @return set of linked heads
+     */
+    public Set<HeadInter> getHeads ()
+    {
+        final Set<HeadInter> set = new LinkedHashSet<HeadInter>();
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            set.add((HeadInter) sig.getEdgeSource(relation));
+        }
+
+        return set;
     }
 }

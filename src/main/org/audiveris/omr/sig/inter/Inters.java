@@ -175,4 +175,25 @@ public abstract class Inters
 
         return sb.toString();
     }
+
+    //---------------//
+    // hasGoodMember //
+    //---------------//
+    /**
+     * Check whether the provided collection of Inter instance contains at least one
+     * good inter.
+     *
+     * @param inters the collection to check
+     * @return true if a good inter was found
+     */
+    public static boolean hasGoodMember (Collection<? extends Inter> inters)
+    {
+        for (Inter inter : inters) {
+            if (inter.isGood()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

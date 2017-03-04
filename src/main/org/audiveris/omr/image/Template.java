@@ -216,7 +216,7 @@ public class Template
         final double foreWeight = constants.foreWeight.getValue();
         final double backWeight = constants.backWeight.getValue();
         double weights = 0; // Sum of weights
-        double total = 0; // Sum of weighted square distances
+        double total = 0; // Sum of weighted squared distances
 
         for (PixelDistance pix : keyPoints) {
             int nx = ul.x + pix.x;
@@ -224,15 +224,17 @@ public class Template
 
             // Ignore tested point if located out of image
             if ((nx >= 0) && (nx < imgWidth) && (ny >= 0) && (ny < imgHeight)) {
-                int tableDist = distances.getValue(nx, ny);
+                int actualDist = distances.getValue(nx, ny);
 
                 // Ignore neutralized locations in distance table
-                if (tableDist != ChamferDistance.VALUE_UNKNOWN) {
+                if (actualDist != ChamferDistance.VALUE_UNKNOWN) {
+                    // pix.d == 0 for expected foreground
+                    // pix.d > 0 for expected background (expected distance to nearest foreground)
                     double weight = (pix.d > 0) ? backWeight : foreWeight;
+                    double dist = actualDist - pix.d;
+                    double weightedDistSquared = weight * (dist * dist);
+                    total += weightedDistSquared;
                     weights += weight;
-
-                    double dist = tableDist - pix.d;
-                    total += (weight * (dist * dist)); // Square
                 }
             }
         }
@@ -240,9 +242,9 @@ public class Template
         return Math.sqrt(total / weights) / distances.getNormalizer();
     }
 
-    //-----------------//
-    // getDescLocation //
-    //-----------------//
+    //-----------//
+    // getBounds //
+    //-----------//
     /**
      * Report the bounds of descriptor knowing the symbol box.
      *

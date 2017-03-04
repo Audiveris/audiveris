@@ -125,7 +125,7 @@ public abstract class AbstractInter
     protected SIGraph sig;
 
     /** Deleted flag, if any. */
-    private boolean deleted;
+    protected boolean deleted;
 
     /** Containing ensemble, if any. */
     protected InterEnsemble ensemble;

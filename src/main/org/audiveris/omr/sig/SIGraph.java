@@ -868,6 +868,61 @@ public class SIGraph
         return exc;
     }
 
+    //---------------//
+    // insertSupport //
+    //---------------//
+    /**
+     * Insert a support between two provided inters, unless an exclusion exists or
+     * unless such relation already exists between them.
+     * <p>
+     * Nota: We always insert such support from lower id to higher id.
+     *
+     * @param inter1       provided inter #1
+     * @param inter2       provided inter #2
+     * @param supportClass precise support to insert
+     * @return the concrete support relation, found or created
+     */
+    public Support insertSupport (Inter inter1,
+                                  Inter inter2,
+                                  Class<? extends Support> supportClass)
+    {
+        final boolean direct = inter1.getId() < inter2.getId();
+        final Inter source = direct ? inter1 : inter2;
+        final Inter target = direct ? inter2 : inter1;
+
+        // Look for existing exclusion
+        Relation exc = getRelation(source, target, Exclusion.class);
+
+        if (exc != null) {
+            logger.debug("No support possible between exclusive {} & {}", source, target);
+
+            return null;
+        }
+
+        // Look for existing support
+        Relation rel = getRelation(source, target, supportClass);
+
+        if (rel != null) {
+            return (Support) rel;
+        }
+
+        // Do insert a support
+        Support sup = null;
+
+        try {
+            sup = supportClass.newInstance();
+            addEdge(source, target, sup);
+
+            if (inter1.isVip() || inter2.isVip()) {
+                logger.info("VIP support {}", sup.toLongString(this));
+            }
+        } catch (Exception ex) {
+            logger.error("Could not instantiate {}", supportClass);
+        }
+
+        return sup;
+    }
+
     //------------------//
     // insertExclusions //
     //------------------//

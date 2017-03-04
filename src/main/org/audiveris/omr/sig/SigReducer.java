@@ -65,6 +65,7 @@ import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.CrossExclusion;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
+import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
@@ -315,6 +316,7 @@ public class SigReducer
     public Set<Inter> reduceSymbols ()
     {
         AdapterForSymbols adapter = new AdapterForSymbols();
+
         return reduce(adapter);
     }
 
@@ -389,6 +391,20 @@ public class SigReducer
                 for (Shape c2 : headShapes.subList(ic + 1, headShapes.size())) {
                     Set<Inter> set2 = heads.get(c2);
                     exclude(set1, set2);
+                }
+            }
+
+            // Mutual head support within same shape
+            for (Shape shape : heads.keySet()) {
+                List<Inter> list = new ArrayList<Inter>(heads.get(shape));
+
+                for (int i = 0; i < list.size(); i++) {
+                    HeadInter h1 = (HeadInter) list.get(i);
+
+                    for (Inter other : list.subList(i + 1, list.size())) {
+                        HeadInter h2 = (HeadInter) other;
+                        sig.insertSupport(h1, h2, HeadHeadRelation.class);
+                    }
                 }
             }
 
@@ -521,30 +537,15 @@ public class SigReducer
     {
         final List<Inter> heads = sig.inters(ShapeSet.NoteHeads.getShapes());
 
-        for (Inter head : heads) {
-            // Split connected stems into left and right sides
-            Set<Relation> stemRels = sig.getRelations(
-                    head,
-                    HeadStemRelation.class);
-            Map<HorizontalSide, Set<Inter>> map = new EnumMap<HorizontalSide, Set<Inter>>(
-                    HorizontalSide.class);
+        for (Inter hi : heads) {
+            HeadInter head = (HeadInter) hi;
 
-            for (Relation relation : stemRels) {
-                HeadStemRelation rel = (HeadStemRelation) relation;
-                HorizontalSide side = rel.getHeadSide();
-                Set<Inter> list = map.get(side);
-
-                if (list == null) {
-                    map.put(side, list = new LinkedHashSet<Inter>());
-                }
-
-                StemInter stem = (StemInter) sig.getEdgeTarget(rel);
-                list.add(stem);
-            }
+            // Retrieve connected stems into left and right sides
+            Map<HorizontalSide, Set<StemInter>> map = head.getSideStems();
 
             // Check each side
-            for (Entry<HorizontalSide, Set<Inter>> entry : map.entrySet()) {
-                Set<Inter> set = entry.getValue();
+            for (Entry<HorizontalSide, Set<StemInter>> entry : map.entrySet()) {
+                Set<StemInter> set = entry.getValue();
 
                 if (set.size() > 1) {
                     sig.insertExclusions(set, Exclusion.Cause.OVERLAP);
@@ -852,7 +853,7 @@ public class SigReducer
      * Perform checks on isolated alterations.
      * <p>
      * They are discarded is there is no relation with a nearby head (or turn sign?).
-     * TODO: rework this when stand-along key signatures are supported.
+     * TODO: rework this when stand-alone key signatures are supported.
      *
      * @return the count of modifications done
      */
@@ -1853,8 +1854,8 @@ public class SigReducer
     private class AdapterForSymbols
             extends Adapter
     {
-
         //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public int checkConsistencies ()
         {
