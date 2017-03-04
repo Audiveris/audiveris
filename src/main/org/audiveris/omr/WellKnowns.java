@@ -442,6 +442,8 @@ public abstract class WellKnowns
             final String pf32 = OS_ARCH.equals("x86") ? "ProgramFiles" : "ProgramFiles(x86)";
 
             return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
+        } else if (MAC_OS_X) {
+            return Paths.get("/usr/local/opt/tesseract/share");
         } else {
             throw new InstallationException("Tesseract-OCR is not installed");
         }
