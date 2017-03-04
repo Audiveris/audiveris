@@ -443,10 +443,18 @@ public abstract class WellKnowns
 
             return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
         } else if (MAC_OS_X) {
-            return Paths.get("/usr/local/opt/tesseract/share");
-        } else {
-            throw new InstallationException("Tesseract-OCR is not installed");
+            // Default path when installed with homebrew
+            final Path brewPath = Paths.get("/usr/local/opt/tesseract/share");
+            // Default path when installed with macports
+            Path portPath = Paths.get("/opt/local/share");
+            if (Files.exists(brewPath.resolve("tessdata"))) {
+                return brewPath;
+            } else if (Files.exists(portPath.resolve("tessdata"))) {
+                return portPath;
+            }
         }
+
+        throw new InstallationException("Tesseract-OCR is not installed");
     }
 
     //-----------------//
