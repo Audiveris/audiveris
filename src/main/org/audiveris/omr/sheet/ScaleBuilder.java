@@ -460,7 +460,7 @@ public class ScaleBuilder
             double minBeamLineRatio = constants.minBeamLineRatio.getValue();
             int minHeight = (int) Math.floor(minBeamLineRatio * blackPeak.main);
             int maxHeight = getMaxWhite();
-            List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight - 1, maxHeight + 1);
+            List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight, maxHeight);
 
             for (int local : localMaxima) {
                 if ((local >= minHeight) && (local <= maxHeight)) {
