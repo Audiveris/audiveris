@@ -66,7 +66,7 @@ public class ScaledBuffer
         final double scale = (double) INTERLINE / interline;
 
         // Build scaled buffer, filled by (scaled) glyph
-        final int scaledWidth = (int) Math.rint(runTable.getWidth() * scale);
+        final int scaledWidth = (int) Math.ceil(runTable.getWidth() * scale);
         final int scaledHeight = (int) Math.ceil(runTable.getHeight() * scale);
         final ByteProcessor scaledBuffer = (ByteProcessor) glyphBuffer.resize(
                 scaledWidth,
