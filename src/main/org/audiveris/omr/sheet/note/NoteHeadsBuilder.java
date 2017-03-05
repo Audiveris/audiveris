@@ -831,7 +831,7 @@ public class NoteHeadsBuilder
 
         private final Constant.Double maxMatchingDistance = new Constant.Double(
                 "distance",
-                1.5,
+                1.75, // 1.5,
                 "Maximum matching distance");
 
         private final Constant.Double reallyBadDistance = new Constant.Double(
@@ -1314,7 +1314,8 @@ public class NoteHeadsBuilder
          * <p>
          * For a staff line, if every abscissa in range were checked, the cost of lookupRange()
          * would be about 3 times the cost of lookupSeed().
-         * Hence, to limit the number of abscissa values to browse, we first check with note spots.
+         * Hence, to limit the number of abscissa values to browse for black heads, we first check
+         * with note spots. Void notes however can exist without detected note spots.
          * <p>
          * Regarding the template shapes, it would be tempting to restrain range browsing to
          * stem-less shapes (wholes & cue wholes).
@@ -1337,33 +1338,32 @@ public class NoteHeadsBuilder
             }
 
             // Use the note spots to limit the abscissae to be checked
+            // OK for blacks, not for voids
             boolean[] relevants = getRelevantAbscissae(scanLeft, scanRight);
 
             // Scan from left to right
             for (int x0 = scanLeft; x0 <= scanRight; x0++) {
-                // Skip non-relevant abscissa values
-                if (!relevants[x0 - scanLeft]) {
-                    continue;
-                }
-
                 final int y0 = getTheoreticalOrdinate(x0);
 
+                // Shapes to try depend on whether location belongs to a black spot
+                EnumSet<Shape> shapeSet = relevants[x0 - scanLeft] ? ShapeSet.TemplateNotes
+                        : ShapeSet.VoidTemplateNotes;
                 ShapeLoop:
-                for (Shape shape : ShapeSet.TemplateNotes) {
-                    PixelDistance bestLoc = null;
+                for (Shape shape : shapeSet) {
+                    PixelDistance bestDist = null;
 
                     for (int yOffset : yOffsets) {
                         final int y = y0 + yOffset;
-                        PixelDistance loc = eval(shape, x0, y, MIDDLE_LEFT);
+                        PixelDistance dist = eval(shape, x0, y, MIDDLE_LEFT);
 
-                        if ((loc != null) && (loc.d <= params.maxMatchingDistance)) {
-                            if ((bestLoc == null) || (bestLoc.d > loc.d)) {
-                                bestLoc = loc;
+                        if ((dist != null) && (dist.d <= params.maxMatchingDistance)) {
+                            if ((bestDist == null) || (bestDist.d > dist.d)) {
+                                bestDist = dist;
                             }
                         } else if (y == y0) {
                             // This is the very first (best guess) location tried.
                             // If eval is really bad, stop immediately
-                            if ((loc == null) || (loc.d >= params.reallyBadDistance)) {
+                            if ((dist == null) || (dist.d >= params.reallyBadDistance)) {
                                 rangePerf.abandons++;
 
                                 continue ShapeLoop;
@@ -1371,9 +1371,9 @@ public class NoteHeadsBuilder
                         }
                     }
 
-                    if (bestLoc != null) {
+                    if (bestDist != null) {
                         HeadInter inter = createInter(
-                                bestLoc,
+                                bestDist,
                                 MIDDLE_LEFT,
                                 shape,
                                 line.getStaff(),

@@ -220,8 +220,30 @@ public class ShapeSet
         }
     }
 
-    /** Fermatas. */
-    public static final EnumSet<Shape> Fermatas = EnumSet.of(FERMATA, FERMATA_BELOW);
+    /** All black notes handled by template matching. */
+    public static final EnumSet<Shape> BlackTemplateNotes = EnumSet.noneOf(Shape.class);
+
+    static {
+        BlackTemplateNotes.addAll(Arrays.asList(NOTEHEAD_BLACK));
+
+        if (constants.supportSmallHeadNotes.isSet()) {
+            BlackTemplateNotes.add(NOTEHEAD_BLACK_SMALL);
+        }
+    }
+
+    /** All void notes handled by template matching. */
+    public static final EnumSet<Shape> VoidTemplateNotes = EnumSet.noneOf(Shape.class);
+
+    static {
+        VoidTemplateNotes.addAll(Arrays.asList(NOTEHEAD_VOID, WHOLE_NOTE));
+
+        if (constants.supportSmallVoidNotes.isSet()) {
+            VoidTemplateNotes.add(NOTEHEAD_VOID_SMALL);
+        }
+    }
+
+    /** FermataArcs. */
+    public static final EnumSet<Shape> FermataArcs = EnumSet.of(FERMATA_ARC, FERMATA_ARC_BELOW);
 
     /** Core shapes for barlines. */
     public static final EnumSet<Shape> CoreBarlines = EnumSet.copyOf(
@@ -318,7 +340,15 @@ public class ShapeSet
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
             new Color(0x888888),
-            shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK, CAESURA, FERMATA, FERMATA_BELOW));
+            shapesOf(
+                    DAL_SEGNO,
+                    DA_CAPO,
+                    SEGNO,
+                    CODA,
+                    BREATH_MARK,
+                    CAESURA,
+                    FERMATA_ARC,
+                    FERMATA_ARC_BELOW));
 
     public static final ShapeSet StemLessHeads = new ShapeSet(
             BREVE,
