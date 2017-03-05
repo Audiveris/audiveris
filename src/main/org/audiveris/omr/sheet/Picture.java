@@ -250,7 +250,13 @@ public class Picture
     //-------------------//
     public RunTable buildNoStaffTable ()
     {
-        return new RunTableFactory(VERTICAL).createTable(getSource(SourceKey.NO_STAFF));
+        ByteProcessor source = getSource(SourceKey.NO_STAFF);
+
+        if (source == null) {
+            return null;
+        }
+
+        return new RunTableFactory(VERTICAL).createTable(source);
     }
 
     //---------------------------//
@@ -874,6 +880,7 @@ public class Picture
     //--------------------//
     private ByteProcessor buildNoStaffBuffer ()
     {
+        boolean linesErased = false;
         ByteProcessor src = getSource(SourceKey.BINARY);
         ByteProcessor buf = (ByteProcessor) src.duplicate();
         BufferedImage img = buf.getBufferedImage();
@@ -892,12 +899,18 @@ public class Picture
                         logger.warn("glyph runtable is null");
                     }
 
+                    linesErased = true;
                     glyph.getRunTable().render(g, glyph.getTopLeft());
                 }
             }
         }
 
         g.dispose();
+
+        if (!linesErased) {
+            logger.warn("No system lines to build NO_STAFF buffer"); // Should not happen!
+            return null;
+        }
 
         return new ByteProcessor(img);
     }

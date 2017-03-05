@@ -44,7 +44,7 @@ import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
-import org.audiveris.omr.util.Zip;
+import org.audiveris.omr.util.ZipFileSystem;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -593,15 +593,20 @@ public class BasicStub
         logger.info("Sheet#{} reset as valid.", number);
 
         if (OMR.gui != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
+            ///SwingUtilities.invokeLater(
+            try {
+                SwingUtilities.invokeAndWait(
+                        new Runnable()
                 {
-                    StubsController.getInstance().reDisplay(BasicStub.this);
-                }
-            });
+                    @Override
+                    public void run ()
+                    {
+                        StubsController.getInstance().reDisplay(BasicStub.this);
+                    }
+                });
+            } catch (Throwable ex) {
+                logger.warn("Could not reset {}", ex.toString(), ex);
+            }
         }
     }
 
@@ -632,7 +637,8 @@ public class BasicStub
             logger.info("Sheet#{} reset to BINARY.", number);
 
             if (OMR.gui != null) {
-                SwingUtilities.invokeLater(
+                ///SwingUtilities.invokeLater(
+                SwingUtilities.invokeAndWait(
                         new Runnable()
                 {
                     @Override
@@ -683,7 +689,7 @@ public class BasicStub
             Path bookPath = BookManager.getDefaultBookPath(book);
 
             try {
-                Path root = Zip.openFileSystem(bookPath);
+                Path root = ZipFileSystem.open(bookPath);
                 book.storeBookInfo(root); // Book info (book.xml)
 
                 Path sheetFolder = root.resolve(INTERNALS_RADIX + getNumber());
@@ -800,11 +806,6 @@ public class BasicStub
                         StepMonitoring.notifyStep(BasicStub.this, step); // Start monitoring
                         setModified(true); // At beginning of processing
                         sheet.reset(step); // Reset sheet relevant data
-
-                        if ((OMR.gui != null) && (step.ordinal() >= Step.GRID.ordinal())) {
-                            sheet.getSymbolsEditor(); // Display sheet UI
-                        }
-
                         step.doit(sheet); // Standard processing on an existing sheet
                         done(step); // Full completion
                     } finally {

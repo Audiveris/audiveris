@@ -246,6 +246,11 @@ public class LagManager
     {
         // Build tables
         RunTable sourceTable = sheet.getPicture().buildNoStaffTable();
+
+        if (sourceTable == null) {
+            return;
+        }
+
         RunTable horiTable = filterRuns(sourceTable, null);
 
         // Repopulate hLag
@@ -339,6 +344,11 @@ public class LagManager
     {
         // Build tables
         RunTable sourceTable = sheet.getPicture().buildNoStaffTable();
+
+        if (sourceTable == null) {
+            return;
+        }
+
         RunTable vertTable = new RunTable(VERTICAL, sheet.getWidth(), sheet.getHeight());
         RunTable horiTable = filterRuns(sourceTable, vertTable);
 
