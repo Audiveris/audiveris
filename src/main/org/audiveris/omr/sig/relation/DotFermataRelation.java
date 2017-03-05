@@ -31,8 +31,8 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code DotFermataRelation} represents the relation between a dot in the middle
- * of a fermata half-circle and the fermata symbol (perhaps just the half-circle).
+ * Class {@code DotFermataRelation} represents the relation between a dot and a
+ * compatible fermata arc.
  *
  * @author Hervé Bitteur
  */
@@ -86,7 +86,7 @@ public class DotFermataRelation
     @Override
     protected double getTargetCoeff ()
     {
-        return constants.fermataSupportCoeff.getValue();
+        return constants.arcSupportCoeff.getValue();
     }
 
     @Override
@@ -114,7 +114,7 @@ public class DotFermataRelation
                 5,
                 "Supporting coeff for (source) dot");
 
-        private final Constant.Ratio fermataSupportCoeff = new Constant.Ratio(
+        private final Constant.Ratio arcSupportCoeff = new Constant.Ratio(
                 5,
                 "Supporting coeff for (target) fermata");
 

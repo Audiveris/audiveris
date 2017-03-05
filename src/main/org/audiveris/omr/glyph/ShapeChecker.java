@@ -353,7 +353,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("WithinStaffHeight", Dynamics.getShapes(), Fermatas)
+        new Checker("WithinStaffHeight", Dynamics.getShapes(), FermataArcs)
         {
             @Override
             public boolean check (SystemInfo system,

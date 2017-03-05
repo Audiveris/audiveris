@@ -197,11 +197,11 @@ public abstract class Symbols
         map(WHOLE_REST, 238);
         map(HALF_REST, 238);
         map(REPEAT_DOT_PAIR, 123);
+        map(FERMATA_DOT, 46);
 
         // Other instances, in any order
         map(DOT_set, 46);
         map(AUGMENTATION_DOT, 46);
-        map(FERMATA_DOT, 46);
         map(STACCATO, 46);
         map(REPEAT_DOT, 46);
 
@@ -265,7 +265,9 @@ public abstract class Symbols
         //        map(ENDING_HORIZONTAL);
         //        map(ENDING_VERTICAL);
         map(FERMATA, 85);
+        sym.put(FERMATA_ARC, new FermataArcSymbol(FERMATA_ARC, false, 85));
         map(FERMATA_BELOW, 117);
+        sym.put(FERMATA_ARC_BELOW, new FermataArcSymbol(FERMATA_ARC_BELOW, false, 117));
         map(FINAL_BARLINE, 211);
         sym.put(FLAT, new FlatSymbol(FLAT, 98));
         map(F_CLEF, 63);

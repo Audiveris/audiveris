@@ -43,7 +43,7 @@ import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.CodaInter;
 import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.DynamicsInter;
-import org.audiveris.omr.sig.inter.FermataInter;
+import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FingeringInter;
 import org.audiveris.omr.sig.inter.FretInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -68,8 +68,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -200,13 +200,8 @@ public class SymbolFactory
             addSymbol(new DynamicsInter(glyph, shape, grade));
         } else if (Tuplets.contains(shape)) {
             addSymbol(TupletInter.create(glyph, shape, grade, system, systemHeadChords));
-        } else if (Fermatas.contains(shape)) {
-            FermataInter fermata = FermataInter.create(glyph, shape, grade, system);
-
-            if (fermata != null) {
-                addSymbol(fermata);
-                fermata.linkWithBarline();
-            }
+        } else if (FermataArcs.contains(shape)) {
+            addSymbol(FermataArcInter.create(glyph, shape, grade, system));
         } else if (shape == Shape.DOT_set) {
             dotFactory.instantDotChecks(eval, glyph);
         } else if (Pedals.contains(shape)) {
@@ -308,13 +303,6 @@ public class SymbolFactory
             return;
         }
 
-        //
-        //        Glyph glyph = inter.getGlyph();
-        //
-        //        if ((glyph != null) && (glyph.getId() == 0)) {
-        //            sheet.getGlyphIndex().register(glyph);
-        //        }
-        //
         sig.addVertex(inter);
     }
 

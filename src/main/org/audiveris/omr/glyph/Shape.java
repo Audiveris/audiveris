@@ -97,8 +97,8 @@ public enum Shape
     CODA("Closing section"),
     BREATH_MARK("Breath Mark"),
     CAESURA("Caesura"),
-    FERMATA("Fermata"),
-    FERMATA_BELOW("Fermata Below"),
+    FERMATA_ARC("Fermata arc, without dot"),
+    FERMATA_ARC_BELOW("Fermata arc below, without dot"),
 
     //
     // Clefs -------------------------------------------------------------------
@@ -389,6 +389,12 @@ public enum Shape
     //
     GRACE_NOTE_SLASH("Grace Note with a Slash"),
     GRACE_NOTE("Grace Note with no slash"),
+
+    //
+    // Full fermatas -----------------------------------------------------------
+    //
+    FERMATA("Fermata with dot"),
+    FERMATA_BELOW("Fermata below with dot"),
 
     //
     // Other stuff -------------------------------------------------------------

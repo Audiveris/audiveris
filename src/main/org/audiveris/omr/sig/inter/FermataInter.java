@@ -22,7 +22,6 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
@@ -31,19 +30,23 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FermataNoteRelation;
+import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code FermataInter} represents a fermata interpretation, either upright or
- * inverted.
+ * Class {@code FermataInter} represents a full fermata interpretation, either upright
+ * or inverted, combining an arc and a dot.
  * <p>
  * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Urlinie_in_G_with_fermata.png/220px-Urlinie_in_G_with_fermata.png">
  * <p>
@@ -59,26 +62,42 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "fermata")
 public class FermataInter
         extends AbstractNotationInter
+        implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(FermataInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            FermataInter.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    // Persistent data
+    //----------------
+    //
+    /** Arc then dot. */
+    @XmlElement(name = "member")
+    private final List<Inter> members = new ArrayList<Inter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FermataInter} object.
      *
-     * @param glyph the fermata glyph
-     * @param shape FERMATA or FERMATA_BELOW
-     * @param grade the interpretation quality
+     * @param arc    the fermata arc (of shape FERMATA_ARC or FERMATA_ARC_BELOW)
+     * @param shape  the fermata shape (FERMATA or FERMATA_BELOW)
+     * @param dot    the fermata dot
+     * @param bounds bounding box
+     * @param grade  the interpretation quality
      */
-    private FermataInter (Glyph glyph,
+    private FermataInter (FermataArcInter arc,
                           Shape shape,
+                          FermataDotInter dot,
+                          Rectangle bounds,
                           double grade)
     {
-        super(glyph, glyph.getBounds(), shape, grade);
+        super(null, bounds, shape, grade);
+        members.add(arc);
+        members.add(dot);
     }
 
     /**
@@ -90,35 +109,86 @@ public class FermataInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //--------//
     // create //
     //--------//
     /**
      * (Try to) create a fermata inter.
      *
-     * @param glyph  the fermata glyph
-     * @param shape  FERMATA or FERMATA_BELOW
-     * @param grade  the interpretation quality
+     * @param arc    the fermata arc (shape: FERMATA_ARC or FERMATA_ARC_BELOW)
+     * @param dot    the fermata dot
      * @param system the related system
      * @return the created instance or null
      */
-    public static FermataInter create (Glyph glyph,
-                                       Shape shape,
-                                       double grade,
+    public static FermataInter create (FermataArcInter arc,
+                                       FermataDotInter dot,
                                        SystemInfo system)
     {
         // Look for proper staff
-        final Point center = glyph.getCenter();
-        final Staff staff = (shape == Shape.FERMATA) ? system.getStaffAtOrBelow(center)
+        final Point center = arc.getGlyph().getCenter();
+        final Shape arcShape = arc.getShape();
+        final Staff staff = (arcShape == Shape.FERMATA_ARC) ? system.getStaffAtOrBelow(center)
                 : system.getStaffAtOrAbove(center);
 
         if (staff == null) {
             return null;
         }
 
-        final FermataInter fermata = new FermataInter(glyph, shape, grade);
+        final double grade = 0.5 * (arc.getContextualGrade() + dot.getContextualGrade());
+        final Shape shape = (arcShape == Shape.FERMATA_ARC) ? Shape.FERMATA : Shape.FERMATA_BELOW;
+        final Rectangle box = arc.getBounds();
+        box.add(dot.getBounds());
+
+        final FermataInter fermata = new FermataInter(arc, shape, dot, box, grade);
         fermata.setStaff(staff);
 
         return fermata;
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (bounds == null) {
+            bounds = Entities.getBounds(getMembers());
+        }
+
+        return bounds;
+    }
+
+    //------------//
+    // getMembers //
+    //------------//
+    @Override
+    public List<? extends Inter> getMembers ()
+    {
+        return members;
+    }
+
+    //--------//
+    // getArc //
+    //--------//
+    public FermataArcInter getArc ()
+    {
+        return (FermataArcInter) members.get(0);
+    }
+
+    //--------//
+    // getDot //
+    //--------//
+    public FermataDotInter getDot ()
+    {
+        return (FermataDotInter) members.get(1);
     }
 
     //-----------------//

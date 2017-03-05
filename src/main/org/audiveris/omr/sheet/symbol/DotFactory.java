@@ -40,8 +40,8 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.DeletedInterException;
+import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
-import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
@@ -422,7 +422,7 @@ public class DotFactory
                           + ((box.height / 8d) * Integer.signum(dotPt.y - barCenter.y));
             double barX = LineUtil.xAtY(bar.getMedian(), barY)
                           + ((bar.getWidth() / 2) * Integer.signum(
-                            dotPt.x - barCenter.x));
+                    dotPt.x - barCenter.x));
 
             double xGap = Math.abs(barX - dotPt.x);
             double yGap = Math.abs(barY - dotPt.y);
@@ -553,10 +553,10 @@ public class DotFactory
      */
     private void lateFermataChecks ()
     {
-        // Collection of fermata candidates in the system
-        List<Inter> fermatas = sig.inters(FermataInter.class);
+        // Collection of fermata arc candidates in the system
+        List<Inter> arcs = sig.inters(FermataArcInter.class);
 
-        if (fermatas.isEmpty()) {
+        if (arcs.isEmpty()) {
             return;
         }
 
@@ -564,12 +564,12 @@ public class DotFactory
             Rectangle dotBox = dot.glyph.getBounds();
             FermataDotInter dotInter = null;
 
-            for (Inter fermata : fermatas) {
-                // Box: use lower half for FERMATA and upper half for FERMATA_BELOW
-                Rectangle halfBox = fermata.getBounds();
+            for (Inter arc : arcs) {
+                // Box: use lower half for FERMATA_ARC and upper half for FERMATA_ARC_BELOW
+                Rectangle halfBox = arc.getBounds();
                 halfBox.height /= 2;
 
-                if (fermata.getShape() == Shape.FERMATA) {
+                if (arc.getShape() == Shape.FERMATA_ARC) {
                     halfBox.y += halfBox.height;
                 }
 
@@ -577,7 +577,7 @@ public class DotFactory
                     final Point dotCenter = dot.glyph.getCenter();
                     double xGap = Math.abs(
                             dotCenter.x - (halfBox.x + (halfBox.width / 2)));
-                    double yTarget = (fermata.getShape() == Shape.FERMATA_BELOW)
+                    double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW)
                             ? (halfBox.y + (halfBox.height * 0.25))
                             : (halfBox.y + (halfBox.height * 0.75));
                     double yGap = Math.abs(dotCenter.y - yTarget);
@@ -592,8 +592,8 @@ public class DotFactory
                             logger.debug("Created {}", dotInter);
                         }
 
-                        sig.addEdge(dotInter, fermata, rel);
-                        logger.debug("{} matches dot glyph#{}", fermata, dot.glyph.getId());
+                        sig.addEdge(dotInter, arc, rel);
+                        logger.debug("{} matches dot glyph#{}", arc, dot.glyph.getId());
                     }
                 }
             }
@@ -783,7 +783,6 @@ public class DotFactory
     //-----//
     /**
      * Remember a dot candidate, for late processing.
-     * For augmentation dot, for fermata dot. TODO: Perhaps others
      */
     private static class Dot
             implements Comparable<Dot>

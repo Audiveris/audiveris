@@ -28,6 +28,8 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
+import org.audiveris.omr.sig.inter.FermataArcInter;
+import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -42,7 +44,7 @@ import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
-import org.audiveris.omr.sig.relation.FermataBarRelation;
+import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.TextRole;
@@ -125,26 +127,46 @@ public class SymbolsLinker
      */
     private void linkFermatas ()
     {
-        List<Inter> fermatas = sig.inters(FermataInter.class);
+        // At this point a fermata arc exists only if it is related to a fermata dot
+        List<Inter> arcs = sig.inters(FermataArcInter.class);
 
-        for (Inter inter : fermatas) {
-            FermataInter fermata = (FermataInter) inter;
+        for (Inter arcInter : arcs) {
+            FermataArcInter arc = (FermataArcInter) arcInter;
+            FermataDotInter dot = null;
+
+            for (Relation rel : sig.getRelations(arc, DotFermataRelation.class)) {
+                dot = (FermataDotInter) sig.getOppositeInter(arcInter, rel);
+
+                break;
+            }
+
+            if (dot == null) {
+                arc.delete();
+
+                continue;
+            }
+
+            FermataInter fermata = FermataInter.create(arc, dot, system);
+            sig.addVertex(fermata);
 
             if (fermata.isVip()) {
                 logger.info("VIP linkFermatas on {}", fermata);
             }
 
-            // Look for a chord (head or rest) related to this fermata
-            final Point center = fermata.getCenter();
-            final MeasureStack stack = system.getMeasureStackAt(center);
-            final Collection<AbstractChordInter> chords = (fermata.getShape() == Shape.FERMATA_BELOW)
-                    ? stack.getStandardChordsAbove(center)
-                    : stack.getStandardChordsBelow(center);
+            // Look for a related barline
+            if (!fermata.linkWithBarline()) {
+                // Look for a chord (head or rest) related to this fermata
+                final Point center = fermata.getCenter();
+                final MeasureStack stack = system.getMeasureStackAt(center);
+                final Collection<AbstractChordInter> chords = (fermata.getShape() == Shape.FERMATA_BELOW)
+                        ? stack.getStandardChordsAbove(
+                                center) : stack.getStandardChordsBelow(center);
 
-            if (!fermata.linkWithChords(chords)) {
-                // Check whether this fermata has a link to a barline
-                if (!sig.hasRelation(fermata, FermataBarRelation.class)) {
-                    fermata.delete(); // No link at all
+                if (!fermata.linkWithChords(chords)) {
+                    // No link to barline, no link to chord, discard it
+                    fermata.delete();
+                    arc.delete();
+                    dot.delete();
                 }
             }
         }
