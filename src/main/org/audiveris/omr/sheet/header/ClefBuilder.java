@@ -470,17 +470,18 @@ public class ClefBuilder
     //---------------//
     /**
      * Register the clefs into SIG and update staff clef abscissa stop.
-     * <p>
-     * Beware clef stop is defined as min stop over all remaining clef candidates for this staff,
-     * which may be too left shifted.
      *
-     * @param clefs collection of remaining candidates
+     * @param clefSet collection of remaining candidates
      */
-    private void registerClefs (Collection<ClefInter> clefs)
+    private void registerClefs (Collection<ClefInter> clefSet)
     {
-        Integer minClefStop = null;
+        // Sort clefs by decreasing grade
+        final List<ClefInter> clefList = new ArrayList<ClefInter>(clefSet);
+        Collections.sort(clefList, Inter.byReverseGrade);
 
-        for (ClefInter inter : clefs) {
+        for (int idx = 0; idx < clefList.size(); idx++) {
+            final ClefInter inter = clefList.get(idx);
+
             // Unerased staff line chunks may shift the symbol in abscissa,
             // so use glyph centroid for a better positioning
             // For inter bounds, use font-based symbol bounds rather than glyph bounds
@@ -500,13 +501,15 @@ public class ClefBuilder
             sig.addVertex(inter);
             logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, clefBox);
 
-            Rectangle box = inter.getGlyph().getBounds().intersection(clefBox);
-            int end = (box.x + box.width) - 1;
-            minClefStop = (minClefStop == null) ? end : Math.min(minClefStop, end);
+            if (idx == 0) {
+                // Case of best clef
+                Rectangle box = inter.getGlyph().getBounds().intersection(clefBox);
+                int end = (box.x + box.width) - 1;
+                staff.setClefStop(end);
+            }
         }
 
-        sig.insertExclusions(clefs, Exclusion.Cause.OVERLAP);
-        staff.setClefStop(minClefStop);
+        sig.insertExclusions(clefList, Exclusion.Cause.OVERLAP);
     }
 
     //------------//
@@ -625,6 +628,8 @@ public class ClefBuilder
 
         final int maxPartCount;
 
+        final int maxEvalRank;
+
         // Sheet scale dependent
         //----------------------
         //
@@ -656,6 +661,7 @@ public class ClefBuilder
                            int staffSpecific)
         {
             maxPartCount = constants.maxPartCount.getValue();
+            maxEvalRank = constants.maxEvalRank.getValue();
 
             {
                 // Use sheet large interline scale
@@ -718,16 +724,18 @@ public class ClefBuilder
 
             logger.debug("ClefAdapter evaluateGlyph on {}", glyph);
 
-            // TODO: use some checking, such as pitch position?
-            Evaluation[] evals = classifier.getNaturalEvaluations(
+            Evaluation[] evals = classifier.evaluate(
                     glyph,
-                    staff.getSpecificInterline());
+                    staff.getSpecificInterline(),
+                    params.maxEvalRank,
+                    Grades.clefMinGrade / Inter.intrinsicRatio,
+                    null);
 
-            for (Shape shape : HEADER_CLEF_SHAPES) {
-                Evaluation eval = evals[shape.ordinal()];
-                double grade = Inter.intrinsicRatio * eval.grade;
+            for (Evaluation eval : evals) {
+                final Shape shape = eval.shape;
 
-                if (grade >= Grades.clefMinGrade) {
+                if (HEADER_CLEF_SHAPES.contains(shape)) {
+                    final double grade = Inter.intrinsicRatio * eval.grade;
                     ClefKind kind = ClefInter.kindOf(glyph, shape, staff);
                     ClefInter bestInter = bestMap.get(kind);
 
@@ -811,5 +819,10 @@ public class ClefBuilder
         private final Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
                 1.0,
                 "Minimum weight for clef glyph");
+
+        private final Constant.Integer maxEvalRank = new Constant.Integer(
+                "none",
+                3,
+                "Maximum acceptable rank in clef evaluation");
     }
 }

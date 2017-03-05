@@ -772,13 +772,17 @@ public class KeyExtractor
 
             glyphCandidates.add(glyph);
 
-            Evaluation[] evals = classifier.getNaturalEvaluations(glyph, sheet.getInterline());
+            Evaluation[] evals = classifier.evaluate(
+                    glyph,
+                    sheet.getInterline(),
+                    params.maxEvalRank,
+                    minGrade / Inter.intrinsicRatio,
+                    null);
 
-            for (Shape shape : targetShapes) {
-                Evaluation eval = evals[shape.ordinal()];
-                double grade = Inter.intrinsicRatio * eval.grade;
+            for (Evaluation eval : evals) {
+                final Shape shape = eval.shape;
 
-                if (grade >= minGrade) {
+                if (targetShapes.contains(shape)) {
                     logger.debug("glyph#{} width:{} {}", glyph.getId(), glyph.getWidth(), eval);
                     keepCandidate(glyph, parts, eval);
                 }
@@ -802,6 +806,11 @@ public class KeyExtractor
                 "Glyphs",
                 8,
                 "Maximum number of parts considered for an alter symbol");
+
+        private final Constant.Integer maxEvalRank = new Constant.Integer(
+                "none",
+                3,
+                "Maximum acceptable rank in key alter evaluation");
 
         private final Scale.AreaFraction minPartWeight = new Scale.AreaFraction(
                 0.01,
@@ -890,6 +899,8 @@ public class KeyExtractor
 
         final int maxPartCount;
 
+        final int maxEvalRank;
+
         // Staff scale dependent
         //----------------------
         //
@@ -914,6 +925,7 @@ public class KeyExtractor
                            int staffSpecific)
         {
             maxPartCount = constants.maxPartCount.getValue();
+            maxEvalRank = constants.maxEvalRank.getValue();
 
             {
                 // Use staff specific interline value

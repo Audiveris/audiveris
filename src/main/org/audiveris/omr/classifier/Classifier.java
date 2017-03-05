@@ -75,7 +75,7 @@ public interface Classifier
      * @param system     the system containing the glyph to evaluate
      * @param count      the desired maximum sequence length, min 1 and max SHAPE_COUNT
      * @param minGrade   the minimum evaluation grade to be acceptable
-     * @param conditions optional conditions, perhaps empty
+     * @param conditions optional conditions, perhaps null or empty
      * @return the sequence of evaluations, perhaps empty but not null
      */
     Evaluation[] evaluate (Glyph glyph,
@@ -92,7 +92,7 @@ public interface Classifier
      * @param interline  the relevant scaling information
      * @param count      the desired maximum sequence length min 1 and max SHAPE_COUNT
      * @param minGrade   the minimum evaluation grade to be acceptable
-     * @param conditions optional conditions, perhaps empty
+     * @param conditions optional conditions, perhaps null or empty
      * @return the sequence of evaluations, perhaps empty but not null
      */
     Evaluation[] evaluate (Glyph glyph,

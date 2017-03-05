@@ -25,9 +25,9 @@ import ij.process.Blitter;
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
+import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -40,9 +40,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.math.IntegerFunction;
-
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.score.TimeRational;
@@ -54,9 +52,7 @@ import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-
 import static org.audiveris.omr.sheet.header.TimeBuilder.TimeKind.*;
-
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
@@ -85,8 +81,8 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -1475,6 +1471,8 @@ public abstract class TimeBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        final int maxEvalRank;
+
         // Sheet scale dependent
         //----------------------
         //
@@ -1507,6 +1505,8 @@ public abstract class TimeBuilder
         public Parameters (Scale scale,
                            int staffSpecific)
         {
+            maxEvalRank = constants.maxEvalRank.getValue();
+
             {
                 // Use sheet large interline scale
                 final InterlineScale large = scale.getInterlineScale();
@@ -1537,6 +1537,11 @@ public abstract class TimeBuilder
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Integer maxEvalRank = new Constant.Integer(
+                "none",
+                3,
+                "Maximum acceptable rank in time evaluation");
 
         private final Constant.Boolean recordPositiveSamples = new Constant.Boolean(
                 false,
@@ -1661,34 +1666,34 @@ public abstract class TimeBuilder
         {
             trials++;
 
-            final Sheet sheet = system.getSheet();
-
             if (glyph.getId() == 0) {
                 glyph = system.registerGlyph(glyph, null);
             }
 
             glyphCandidates.add(glyph);
 
-            Evaluation[] evals = ShapeClassifier.getInstance()
-                    .getNaturalEvaluations(
-                            glyph,
-                            staff.getSpecificInterline());
+            Evaluation[] evals = ShapeClassifier.getInstance().evaluate(
+                    glyph,
+                    staff.getSpecificInterline(),
+                    params.maxEvalRank,
+                    Grades.timeMinGrade / Inter.intrinsicRatio,
+                    null);
 
-            for (Shape shape : halfShapes) {
-                Evaluation eval = evals[shape.ordinal()];
-                double grade = Inter.intrinsicRatio * eval.grade;
+            for (Evaluation eval : evals) {
+                final Shape shape = eval.shape;
 
-                if (grade >= Grades.timeMinGrade) {
-                    if (glyph.getId() == 0) {
-                        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                    }
-
+                if (halfShapes.contains(shape)) {
+                    final double grade = Inter.intrinsicRatio * eval.grade;
                     logger.debug("   {} eval {} for glyph#{}", half, eval, glyph.getId());
 
                     Inter bestInter = bestMap.get(shape);
 
                     if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        TimeNumberInter inter = TimeNumberInter.create(glyph, shape, grade, staff);
+                        TimeNumberInter inter = TimeNumberInter.create(
+                                glyph,
+                                shape,
+                                grade,
+                                staff);
 
                         if (inter != null) {
                             bestMap.put(shape, inter);
@@ -1774,28 +1779,24 @@ public abstract class TimeBuilder
             //TODO: check glyph centroid for a whole symbol is not too far from staff middle line
             trials++;
 
-            final Sheet sheet = system.getSheet();
-
             if (glyph.getId() == 0) {
                 glyph = system.registerGlyph(glyph, null);
             }
 
             glyphCandidates.add(glyph);
 
-            Evaluation[] evals = ShapeClassifier.getInstance()
-                    .getNaturalEvaluations(
-                            glyph,
-                            staff.getSpecificInterline());
+            Evaluation[] evals = ShapeClassifier.getInstance().evaluate(
+                    glyph,
+                    staff.getSpecificInterline(),
+                    params.maxEvalRank,
+                    Grades.timeMinGrade / Inter.intrinsicRatio,
+                    null);
 
-            for (Shape shape : wholeShapes) {
-                Evaluation eval = evals[shape.ordinal()];
-                double grade = Inter.intrinsicRatio * eval.grade;
+            for (Evaluation eval : evals) {
+                final Shape shape = eval.shape;
 
-                if (grade >= Grades.timeMinGrade) {
-                    if (glyph.getId() == 0) {
-                        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-                    }
-
+                if (wholeShapes.contains(shape)) {
+                    final double grade = Inter.intrinsicRatio * eval.grade;
                     logger.debug("   WHOLE eval {} for glyph#{}", eval, glyph.getId());
 
                     Inter bestInter = bestMap.get(shape);
