@@ -16,6 +16,8 @@ First of all, you'll need the following dependencies installed and working from
 the command line:
 
 + [Java Development Kit (JDK) version 7 or later (version 8 is recommended)][1].
+  **Please ensure you're running a 64-bit JVM. Audiveris doesn't support a 32-bit
+  JVM because deeplearning4j is 64-bit only.**
 + [Git](https://git-scm.com) version control system.
 + [Gradle command line tool](https://gradle.org) for building Audiveris from source
 
