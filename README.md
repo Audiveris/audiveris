@@ -1,7 +1,7 @@
 # audiveris
 
 This repository contains source code for the latest generation of Audiveris optical
-music recognition engine.
+music recognition (OMR) engine.
 
 ## CAUTION!
 
@@ -9,6 +9,21 @@ music recognition engine.
 Github. This will take approx. two weeks. We won't be able to accept pull
 requests until this transition is finished (this message will disappear then).
 Thank you for your patience!**
+
+## Main features
+
+As opposed to Audiveris [earlier generation][6], which was a stand-alone OMR application composed
+of an engine and a (limited) user interface, this repository is focused on the OMR engine.
+
+The internals of OMR engine are made publicly available, either directly by XML-based ".omr" 
+project files or via the Java API of this software.
+
+The engine can directly export data using [MusicXML][8] 3.0 format, via an integrated exporter.
+Other exporters could build upon the engine to support other target formats.
+
+NOTA: The engine provides a small integrated UI which is meant for the developer to analyze, 
+tune or train the various parts of the engine, but not to correct the final score.
+Full GUIs, meant for the end-user, are expected to be provided by external editors.
 
 ## Building and running
 
@@ -50,4 +65,7 @@ Developers are encouraged to read our (still incomplete) [developers documentati
 [2]: https://github.com/tesseract-ocr/tesseract
 [3]: https://github.com/tesseract-ocr/tesseract/wiki
 [4]: https://www.freetype.org
-[5]: https://github.com/Audiveris/audiveris-v5/wiki
+[5]: https://github.com/Audiveris/audiveris/wiki
+[6]: https://github.com/Audiveris/audiveris-eg
+[7]: https://github.com/Audiveris
+[8]: http://www.musicxml.com/
