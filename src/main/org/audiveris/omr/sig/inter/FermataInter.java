@@ -37,11 +37,12 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -75,9 +76,15 @@ public class FermataInter
     // Persistent data
     //----------------
     //
-    /** Arc then dot. */
-    @XmlElement(name = "member")
-    private final List<Inter> members = new ArrayList<Inter>();
+    /** Arc. */
+    @XmlIDREF
+    @XmlAttribute(name = "arc")
+    private final FermataArcInter arc;
+
+    /** Dot. */
+    @XmlIDREF
+    @XmlAttribute(name = "dot")
+    private final FermataDotInter dot;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -96,8 +103,8 @@ public class FermataInter
                           double grade)
     {
         super(null, bounds, shape, grade);
-        members.add(arc);
-        members.add(dot);
+        this.arc = arc;
+        this.dot = dot;
     }
 
     /**
@@ -105,6 +112,8 @@ public class FermataInter
      */
     private FermataInter ()
     {
+        arc = null;
+        dot = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -172,7 +181,7 @@ public class FermataInter
     @Override
     public List<? extends Inter> getMembers ()
     {
-        return members;
+        return Arrays.asList(arc, dot);
     }
 
     //--------//
@@ -180,7 +189,7 @@ public class FermataInter
     //--------//
     public FermataArcInter getArc ()
     {
-        return (FermataArcInter) members.get(0);
+        return arc;
     }
 
     //--------//
@@ -188,7 +197,7 @@ public class FermataInter
     //--------//
     public FermataDotInter getDot ()
     {
-        return (FermataDotInter) members.get(1);
+        return dot;
     }
 
     //-----------------//
