@@ -1,7 +1,7 @@
-# audiveris-ng
+# audiveris
 
-This repository contains source code for the new generation of Audiveris optical
-music recognition software.
+This repository contains source code for the latest generation of Audiveris optical
+music recognition engine.
 
 ## CAUTION!
 
@@ -33,12 +33,12 @@ Moreover, opening PDFs containing vector graphics on Unix-like platforms
 (including the Mac) requires [FreeType library][4] to be available in your $PATH.
 Fortunately, every known OS distribution already contains a package for FreeType.
 
-To build audiveris-ng from source, run the following command from the source code
+To build audiveris from source, run the following command from the source code
 directory:
 
 `gradle build`
 
-To run audiveris-ng as GUI tool, just issue
+To run audiveris as GUI tool, just issue
 
 `gradle run`
 
