@@ -373,6 +373,9 @@ public class SlotsBuilder
         List<AbstractChordInter> pendings = getPendingChords();
 
         // Assign chords to time slots, until no chord is left pending
+        // CAUTION: avoid endless loop!
+        Rational prevTerm = null;
+
         while (!pendings.isEmpty()) {
             dump("actives", actives);
 
@@ -417,6 +420,10 @@ public class SlotsBuilder
 
                 // Determine the voice of each chord in the slot
                 slot.buildVoices(freeEndings);
+            } else if (term.equals(prevTerm)) {
+                logger.info("Stack#{} endless loop detected", stack.getIdValue());
+                stack.setAbnormal();
+                break;
             }
 
             // Prepare for next iteration
@@ -425,6 +432,8 @@ public class SlotsBuilder
 
             actives.removeAll(freeEndings);
             actives.removeAll(endings);
+
+            prevTerm = term;
         }
 
         // Check that no staff is left empty
@@ -667,16 +676,16 @@ public class SlotsBuilder
         int length = stdChords.size();
 
         for (int ix = 0; ix < length; ix++) {
-            sb.append(String.format(" %4s", stdChords.get(ix).getId()));
+            sb.append(String.format(" %5s", stdChords.get(ix).getId()));
         }
 
         for (int iy = 0; iy < length; iy++) {
             AbstractChordInter chy = stdChords.get(iy);
             sb.append("\n");
-            sb.append(String.format("%4s", chy.getId()));
+            sb.append(String.format("%5s", chy.getId()));
 
             for (int ix = 0; ix < length; ix++) {
-                sb.append("  ");
+                sb.append("   ");
 
                 AbstractChordInter chx = stdChords.get(ix);
 

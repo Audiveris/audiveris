@@ -150,6 +150,10 @@ public class MeasureStack
     @XmlJavaTypeAdapter(Rational.Adapter.class)
     private Rational excess;
 
+    /** Anomaly detected, if any. */
+    @XmlAttribute(name = "abnormal")
+    private Boolean abnormal;
+
     /** Sequence of time slots within the measure, from left to right. */
     @XmlElement(name = "slot")
     private final List<Slot> slots = new ArrayList<Slot>();
@@ -187,6 +191,30 @@ public class MeasureStack
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // isAbnormal //
+    //------------//
+    /**
+     * Report whether this stack is abnormal.
+     *
+     * @return the abnormal status
+     */
+    public boolean isAbnormal ()
+    {
+        return (abnormal != null) && abnormal;
+    }
+
+    //-------------//
+    // setAbnormal //
+    //-------------//
+    /**
+     * Mark this stack as being abnormal.
+     */
+    public void setAbnormal ()
+    {
+        abnormal = Boolean.TRUE;
+    }
+
     //----------//
     // addInter //
     //----------//
@@ -1377,6 +1405,7 @@ public class MeasureStack
     public void setExcess (Rational excess)
     {
         this.excess = excess;
+        setAbnormal();
     }
 
     //---------------------//
