@@ -861,7 +861,7 @@ public class NoteHeadsBuilder
                 "Vertical margin for intercepting stem seed around a target pitch");
 
         private final Constant.Ratio wholeBoost = new Constant.Ratio(
-                0.5,
+                0.4, // 0.5,
                 "How much do we boost whole notes (always isolated)");
 
         private final Scale.Fraction minBeamWidth = new Scale.Fraction(
