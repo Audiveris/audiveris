@@ -357,7 +357,7 @@ public class SegmentsBuilder
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
-                1.5,
+                1.25,
                 "Minimum arc length for starting a wedge build");
 
         private final Constant.Double maxWedgeAngle = new Constant.Double(

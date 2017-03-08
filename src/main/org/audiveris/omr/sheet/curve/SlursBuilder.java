@@ -1065,7 +1065,7 @@ public class SlursBuilder
 
         private final Constant.Double maxIncidence = new Constant.Double(
                 "degree",
-                10,
+                15,
                 "Maximum incidence angle (in degrees) for staff tangency");
 
         private final Scale.Fraction arcMinSeedLength = new Scale.Fraction(

@@ -628,7 +628,7 @@ public class ArcRetriever
                 "Maximum angle (in degrees) for 3 points colinearity");
 
         private final Scale.Fraction arcMinQuorum = new Scale.Fraction(
-                1.5,
+                1.75,
                 "Minimum arc length for quorum");
 
         private final Scale.Fraction maxLineDistance = new Scale.Fraction(

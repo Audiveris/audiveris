@@ -351,23 +351,10 @@ public abstract class CurvesBuilder
         Set<Inter> inters = new LinkedHashSet<Inter>();
 
         // Connect lefts & rights
+        // Both endings must be OK, hence none of the side clumps is allowed to be empty
         for (Curve sl : leftClump) {
             for (Curve sr : rightClump) {
                 Curve curve = (sl == sr) ? sl : createCurve(sl, sr);
-                createInter(curve, inters);
-            }
-        }
-
-        // Case of left clump empty (but not right)
-        if (leftClump.isEmpty() && !rightClump.isEmpty()) {
-            for (Curve curve : rightClump) {
-                createInter(curve, inters);
-            }
-        }
-
-        // Case of right clump empty (but not left)
-        if (!leftClump.isEmpty() && rightClump.isEmpty()) {
-            for (Curve curve : leftClump) {
                 createInter(curve, inters);
             }
         }

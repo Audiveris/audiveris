@@ -63,8 +63,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -123,9 +123,20 @@ public class SlursLinker
     public SlurInter prune (Set<Inter> clump)
     {
         // Compute lookup areas for each slur in clump
-        for (Inter inter : clump) {
-            SlurInter slur = (SlurInter) inter;
-            defineAreaPair(slur);
+        // If we cannot compute areas for a slur, we simply discard the slur
+        for (Iterator<Inter> it = clump.iterator(); it.hasNext();) {
+            SlurInter slur = (SlurInter) it.next();
+
+            try {
+                defineAreaPair(slur);
+            } catch (Exception ex) {
+                logger.debug("No lookup area for {} at {}", slur, slur.getBounds());
+                it.remove();
+            }
+        }
+
+        if (clump.isEmpty()) {
+            return null;
         }
 
         // Define global clump bounds
