@@ -1390,7 +1390,7 @@ public class SampleRepository
             imagesRoot.getFileSystem().close();
 
             setModified(false);
-            logger.info("{} stored.", this);
+            logger.info("{} stored to {}", this, samplesFile);
         } catch (Throwable ex) {
             logger.warn("Error storing " + this + " to " + samplesFile + " " + ex, ex);
         }
