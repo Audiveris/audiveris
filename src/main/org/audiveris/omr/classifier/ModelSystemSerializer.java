@@ -175,7 +175,7 @@ public abstract class ModelSystemSerializer
             return network;
         } else {
             throw new IllegalStateException(
-                    "Model wasnt found within file: gotConfig: [" + gotConfig
+                    "Model wasn't found within file: gotConfig: [" + gotConfig
                     + "], gotCoefficients: [" + gotCoefficients + "], gotUpdater: [" + gotUpdaterState
                     + "]");
         }

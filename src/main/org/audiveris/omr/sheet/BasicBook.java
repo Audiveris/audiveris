@@ -277,7 +277,7 @@ public class BasicBook
             //                //                // If needed, we can trigger a reprocessing of this page
             //                //                page.accept(new MeasureFixer());
             //                //
-            //                // Check whether time signatures are consistent accross all pages in score
+            //                // Check whether time signatures are consistent across all pages in score
             //                // TODO: to be implemented
             //                //
             //                // Connect slurs across pages

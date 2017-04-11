@@ -282,7 +282,7 @@ public class SlotsBuilder
                 return false;
             }
 
-            // Case of nearly shared heads (put on slighly different x because deltaPitch = 1)
+            // Case of nearly shared heads (put on slightly different x because deltaPitch = 1)
             // TODO: perhaps check for minimum x overlap?
             if ((xGap < 0) && (ch1.getStemDir() != ch2.getStemDir())) {
                 //                AbstractNoteInter h1 = ch1.getLeadingNote();
