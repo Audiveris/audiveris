@@ -1202,7 +1202,7 @@ public abstract class TimeBuilder
     //--------//
     /**
      * This abstract class provides the basis for management of a system-level column
-     * of staff-level TimeBuilder instances since, within a system, a colum of time
+     * of staff-level TimeBuilder instances since, within a system, a column of time
      * signatures must be complete and contain only identical signatures.
      * <p>
      * Subclass {@link HeaderColumn} works for system header, while subclass {@link BasicColumn}

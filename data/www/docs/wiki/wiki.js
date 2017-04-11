@@ -3322,7 +3322,7 @@ TiddlyWiki.prototype.search = function(searchRegExp,sortField,excludeTag)
 	return results;
 }
 
-// Return an array of all the tags in use. Each member of the array is another array where [0] is the name of the tag and [1] is the number of occurances
+// Return an array of all the tags in use. Each member of the array is another array where [0] is the name of the tag and [1] is the number of occurrences
 TiddlyWiki.prototype.getTags = function()
 {
 	var results = [];

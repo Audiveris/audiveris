@@ -68,7 +68,7 @@ public class TestImage3
     //RenderedImage image;
     PlanarImage image;
 
-    // Affine tranform
+    // Affine transform
     final float ratio = 4f;
 
     AffineTransform scaleXform = AffineTransform.getScaleInstance(ratio, ratio);
