@@ -63,6 +63,13 @@ public interface OCR
     boolean isAvailable ();
 
     /**
+     * Return OCR engine identification.
+     *
+     * @return string containing the name and the version of the OCR engine.
+     */
+    String identify();
+
+    /**
      * Launch the recognition of the provided image, whose language is specified.
      *
      * @param interline    typical interline value

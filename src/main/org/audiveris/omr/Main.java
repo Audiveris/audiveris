@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.util.ClassUtil;
@@ -378,13 +379,14 @@ public class Main
         if (constants.showEnvironment.isSet()) {
             logger.info(
                     "Environment:\n" + "- Audiveris:    {}\n" + "- OS:           {}\n"
-                    + "- Architecture: {}\n" + "- Java VM:      {}",
+                    + "- Architecture: {}\n" + "- Java VM:      {}\n" + "- OCR Engine:   {}",
                     WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD,
                     System.getProperty("os.name") + " " + System.getProperty("os.version"),
                     System.getProperty("os.arch"),
                     System.getProperty("java.vm.name") + " (build "
                     + System.getProperty("java.vm.version") + ", " + System.getProperty("java.vm.info")
-                    + ")");
+                    + ")",
+                    TesseractOCR.getInstance().identify());
         }
     }
 

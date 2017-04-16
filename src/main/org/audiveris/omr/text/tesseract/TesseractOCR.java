@@ -141,6 +141,19 @@ public class TesseractOCR
         return constants.useOCR.isSet();
     }
 
+    //----------//
+    // identify //
+    //----------//
+    @Override
+    public String identify()
+    {
+        if (isAvailable()) {
+            return "Tesseract OCR, version " + TessBaseAPI.Version().getString();
+        } else {
+            return "OCR engine not available";
+        }
+    }
+
     //-----------//
     // recognize //
     //-----------//
