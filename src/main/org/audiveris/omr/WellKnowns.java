@@ -417,11 +417,42 @@ public abstract class WellKnowns
         return FileTime.fromMillis(millis);
     }
 
+    private static final String ocrNotFoundMsg = "Tesseract data could not be found. " +
+                "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
+
+    //------------------//
+    // scanOcrLocations //
+    //------------------//
+    private static Path scanOcrLocations(String[] locations)
+    {
+        for (String loc: locations) {
+            final Path path = Paths.get(loc);
+            if (Files.exists(path.resolve("tessdata"))) {
+                return path;
+            }
+        }
+
+        throw new InstallationException(ocrNotFoundMsg);
+    }
+
     //--------------//
     // getOcrFolder //
     //--------------//
     private static Path getOcrFolder ()
     {
+        // common Macintosh TESSDATA locations
+        final String[] macOcrLocations = {
+            "/opt/local/share", // Macports
+            "/usr/local/opt/tesseract/share" // Homebrew
+        };
+
+        // common Linux TESSDATA locations
+        final String[] linuxOcrLocations = {
+            "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
+            "/usr/share", // OpenSUSE
+            "/usr/share/tesseract" // Fedora
+        };
+
         // First, try to use TESSDATA_PREFIX environment variable
         // which might denote a Tesseract installation
         final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
@@ -435,27 +466,20 @@ public abstract class WellKnowns
             }
         }
 
-        // Fallback to default directory
-        if (LINUX) {
-            return Paths.get("/usr/share/tesseract-ocr");
-        } else if (WINDOWS) {
+        // Fallback to default directory on Windows
+        if (WINDOWS) {
             final String pf32 = OS_ARCH.equals("x86") ? "ProgramFiles" : "ProgramFiles(x86)";
 
             return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
+
+        // scan common locations on Mac and Linux
+        } else if (LINUX) {
+            return scanOcrLocations(linuxOcrLocations);
         } else if (MAC_OS_X) {
-            // Default path when installed with homebrew
-            final Path brewPath = Paths.get("/usr/local/opt/tesseract/share");
-            // Default path when installed with macports
-            Path portPath = Paths.get("/opt/local/share");
-            if (Files.exists(brewPath.resolve("tessdata"))) {
-                return brewPath;
-            } else if (Files.exists(portPath.resolve("tessdata"))) {
-                return portPath;
-            }
+            return scanOcrLocations(macOcrLocations);
         }
 
-        throw new InstallationException("Tesseract data could not be found. " +
-                "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".");
+        throw new InstallationException(ocrNotFoundMsg);
     }
 
     //-----------------//
