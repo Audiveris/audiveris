@@ -837,7 +837,7 @@ public class ShapeChecker
 
         private final Constant.Double maxTupletPitchPosition = new Constant.Double(
                 "PitchPosition",
-                15.0,
+                17.0,
                 "Maximum absolute pitch position for a tuplet");
 
         private final Constant.Double maxTimePitchPositionMargin = new Constant.Double(
