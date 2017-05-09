@@ -48,6 +48,7 @@ import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordStaccatoRelation;
+import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -314,6 +315,11 @@ public class SheetResultPainter
                 for (Relation bRel : sig.getRelations(stem, BeamStemRelation.class)) {
                     sig.getOppositeInter(stem, bRel).accept(sigPainter);
                 }
+            }
+
+            // Related tuplet, if any
+            for (Relation tRel : sig.getRelations(chord, ChordTupletRelation.class)) {
+                sig.getOppositeInter(chord, tRel).accept(sigPainter);
             }
 
             sigPainter.visit(chord);
