@@ -1125,7 +1125,15 @@ public class TextBuilder
      */
     private int getWordGap (TextLine line)
     {
-        return line.isChordName() ? params.maxChordDx : params.maxWordDx;
+        // Chord name
+        if (line.isChordName()) {
+            return params.maxChordDx;
+        }
+
+        // Standard line, adapt inter-word gap to font size
+        int pointSize = line.getMeanFont().pointsize;
+
+        return (int) Math.rint(params.maxWordDxFontRatio * pointSize);
     }
 
     //-------------//
@@ -1374,6 +1382,8 @@ public class TextBuilder
     private void mergeStandardWords (TextLine line)
     {
         ///logger.debug("  mergeStandardWords for {}", line);
+        final int minWordDx = (int) Math.rint(
+                line.getMeanFont().pointsize * params.minWordDxFontRatio);
         List<TextWord> toAdd = new ArrayList<TextWord>();
         List<TextWord> toRemove = new ArrayList<TextWord>();
         TextWord prevWord = null;
@@ -1385,7 +1395,7 @@ public class TextBuilder
                 int prevStop = prevBounds.x + prevBounds.width;
                 int gap = word.getBounds().x - prevStop;
 
-                if (gap < params.minWordDx) {
+                if (gap < minWordDx) {
                     toRemove.add(prevWord);
                     toRemove.add(word);
 
@@ -1638,7 +1648,7 @@ public class TextBuilder
 
         private final Constant.Double minConfidence = new Constant.Double(
                 "0..1",
-                0.68,
+                0.65,
                 "Minimum confidence for OCR validity");
 
         private final Constant.Double lowConfidence = new Constant.Double(
@@ -1675,7 +1685,7 @@ public class TextBuilder
                 "Minimum font size with respect to interline");
 
         private final Scale.Fraction maxFontSize = new Scale.Fraction(
-                7.0,
+                8.0,
                 "Maximum font size with respect to interline");
 
         private final Scale.Fraction maxLyricsDy = new Scale.Fraction(
@@ -1686,13 +1696,13 @@ public class TextBuilder
                 1.0,
                 "Max horizontal gap between two chars in a word");
 
-        private final Scale.Fraction maxWordDx = new Scale.Fraction(
-                3.0,
-                "Max horizontal gap between two non-lyrics words");
+        private final Constant.Ratio maxWordDxFontRatio = new Constant.Ratio(
+                1.5,
+                "Max horizontal gap between two non-lyrics words as font ratio");
 
-        private final Scale.Fraction minWordDx = new Scale.Fraction(
-                0.25,
-                "Min horizontal gap between two non-lyrics words");
+        private final Constant.Ratio minWordDxFontRatio = new Constant.Ratio(
+                0.125,
+                "Min horizontal gap between two non-lyrics words as font ratio");
 
         private final Scale.Fraction maxChordDx = new Scale.Fraction(
                 1.0,
@@ -1714,9 +1724,9 @@ public class TextBuilder
 
         final int maxCharDx;
 
-        final int maxWordDx;
+        final double maxWordDxFontRatio;
 
-        final int minWordDx;
+        final double minWordDxFontRatio;
 
         final int maxChordDx;
 
@@ -1739,8 +1749,8 @@ public class TextBuilder
             maxFontSize = scale.toPixels(constants.maxFontSize);
             maxLyricsDy = scale.toPixels(constants.maxLyricsDy);
             maxCharDx = scale.toPixels(constants.maxCharDx);
-            maxWordDx = scale.toPixels(constants.maxWordDx);
-            minWordDx = scale.toPixels(constants.minWordDx);
+            maxWordDxFontRatio = constants.maxWordDxFontRatio.getValue();
+            minWordDxFontRatio = constants.minWordDxFontRatio.getValue();
             maxChordDx = scale.toPixels(constants.maxChordDx);
             minWidthForCheck = scale.toPixels(constants.minWidthForCheck);
             minHeightForCheck = scale.toPixels(constants.minHeightForCheck);
