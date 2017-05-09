@@ -29,7 +29,6 @@ import static org.audiveris.omr.math.GeoOrder.*;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
@@ -297,27 +296,17 @@ public class SIGraph
         Set<Inter> removed = new LinkedHashSet<Inter>();
 
         for (Inter inter : vertexSet()) {
+            // Skip frozen inters
+            if (inter.isFrozen()) {
+                continue;
+            }
+
+            // Ledgers are not concerned here, they will get deleted when no head is left
+            if (inter.getShape() == Shape.LEDGER) {
+                continue;
+            }
+
             if (inter.getContextualGrade() < Inter.minContextualGrade) {
-                Staff staff = inter.getStaff();
-
-                if (staff != null) {
-                    // Staff headers are preserved, even with low grade
-                    StaffHeader header = staff.getHeader();
-
-                    if ((header.clef == inter) || (header.key == inter) || (header.time == inter)) {
-                        if (inter.isVip()) {
-                            logger.info("VIP header {} preserved", inter);
-                        }
-
-                        continue;
-                    }
-
-                    // Ledgers are not concerned here, they will get deleted when no head is left
-                    if (inter.getShape() == Shape.LEDGER) {
-                        continue;
-                    }
-                }
-
                 if (inter.isVip()) {
                     logger.info("VIP deleted weak {}", inter);
                 }
@@ -861,7 +850,7 @@ public class SIGraph
         Exclusion exc = new BasicExclusion(cause);
         addEdge(source, target, exc);
 
-        if (inter1.isVip() || inter2.isVip()) {
+        if (inter1.isVip() && inter2.isVip()) {
             logger.info("VIP exclusion {}", exc.toLongString(this));
         }
 

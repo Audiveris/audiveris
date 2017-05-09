@@ -207,6 +207,9 @@ public class HeaderBuilder
 
         // Purge barline inters found within headers
         purgeBarlines();
+
+        // Freeze header inters
+        freezeHeaders();
     }
 
     //---------------------//
@@ -248,6 +251,19 @@ public class HeaderBuilder
 
                 staff.setHeader(new StaffHeader(start));
             }
+        }
+    }
+
+    //---------------//
+    // freezeHeaders //
+    //---------------//
+    /**
+     * Freeze headers components.
+     */
+    private void freezeHeaders ()
+    {
+        for (Staff staff : system.getStaves()) {
+            staff.getHeader().freeze();
         }
     }
 

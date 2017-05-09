@@ -80,8 +80,8 @@ public class StaffHeader
 
     /** Time-sig found, if any. */
     @XmlElementRefs({
-        @XmlElementRef(type = TimePairInter.class),
-        @XmlElementRef(type = TimeWholeInter.class)
+        @XmlElementRef(type = TimePairInter.class)
+        , @XmlElementRef(type = TimeWholeInter.class)
     })
     public AbstractTimeInter time;
 
@@ -154,6 +154,27 @@ public class StaffHeader
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //--------//
+    // freeze //
+    //--------//
+    /**
+     * Freeze all component inters of this header.
+     */
+    public void freeze ()
+    {
+        if (clef != null) {
+            clef.freeze();
+        }
+
+        if (key != null) {
+            key.freeze();
+        }
+
+        if (time != null) {
+            time.freeze();
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
