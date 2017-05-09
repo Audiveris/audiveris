@@ -548,7 +548,10 @@ public class SigReducer
                 Set<StemInter> set = entry.getValue();
 
                 if (set.size() > 1) {
-                    sig.insertExclusions(set, Exclusion.Cause.OVERLAP);
+                    //////////////////////////////////////////////////HB sig.insertExclusions(set, Exclusion.Cause.OVERLAP);
+                    //TODO:
+                    // Instead of stem exclusion, we should disconnect head from some of these stems
+                    // Either all the stems above or all the stems below
                 }
             }
         }
