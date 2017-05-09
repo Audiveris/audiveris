@@ -993,6 +993,14 @@ public class SlursLinker
             return dist / n;
         }
 
+        private double weightedDist (SlurInter slur,
+                                     Map<HorizontalSide, ChordLink> map)
+        {
+            final double dist = meanEuclidianDist(map);
+            final int nbPoints = slur.getInfo().getPoints().size();
+            return dist / nbPoints;
+        }
+
         /**
          * Filter the chords that could be relevant for clump.
          */
@@ -1049,8 +1057,10 @@ public class SlursLinker
                                     SlurInter s2)
                 {
                     return Double.compare(
-                            meanEuclidianDist(map.get(s1)),
-                            meanEuclidianDist(map.get(s2)));
+                            ///meanEuclidianDist(map.get(s1)),
+                            weightedDist(s1, map.get(s1)),
+                            ///meanEuclidianDist(map.get(s2)));
+                            weightedDist(s2, map.get(s2)));
                 }
             });
 
@@ -1067,7 +1077,8 @@ public class SlursLinker
                     bestSlur = slur;
                     bestLeft = m.get(LEFT);
                     bestRight = m.get(RIGHT);
-                    bestDist = meanEuclidianDist(m);
+                    ///bestDist = meanEuclidianDist(m);
+                    bestDist = weightedDist(slur, m);
                     logger.debug("   {} {} euclide:{}", slur, slur.getInfo(), bestDist);
                 } else {
                     // Check whether embraced chords are still the same
@@ -1084,7 +1095,8 @@ public class SlursLinker
                     }
 
                     // We do have the same embraced chords as slurs above, so use Euclidian distance
-                    double dist = meanEuclidianDist(m);
+                    ///double dist = meanEuclidianDist(m);
+                    double dist = weightedDist(slur, m);
                     logger.debug("   {} {} euclide:{}", slur, slur.getInfo(), dist);
 
                     if (dist < bestDist) {
@@ -1155,7 +1167,7 @@ public class SlursLinker
                 "Internal abscissa of horizontal slur coverage");
 
         private final Scale.Fraction coverageHDepth = new Scale.Fraction(
-                2.5,
+                3.0,
                 "Vertical extension of horizontal slur coverage");
 
         private final Scale.Fraction coverageVExt = new Scale.Fraction(
