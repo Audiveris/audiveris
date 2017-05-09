@@ -64,7 +64,7 @@ public class ImgGlyphDescriptor
         final ByteProcessor buffer = ScaledBuffer.getBuffer(glyph, interline);
         buffer.invert(); // 0 for background, 255 for foreground
 
-        // Layout: column by column (and not row by row!)
+        // Layout: row by row
         final double[] doubles = new double[length()];
         int i = 0;
 

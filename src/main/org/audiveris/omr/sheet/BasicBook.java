@@ -394,7 +394,7 @@ public class BasicBook
                         if ((focus > 0) && (focus <= stubs.size())) {
                             focusStub = stubs.get(focus - 1);
                         } else {
-                            logger.warn("Illegal focus id: {}", focus);
+                            logger.warn("Illegal focus sheet id: {}", focus);
                         }
                     }
 
