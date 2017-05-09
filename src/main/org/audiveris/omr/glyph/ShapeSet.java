@@ -999,7 +999,7 @@ public class ShapeSet
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean supportSmallHeadNotes = new Constant.Boolean(
-                true,
+                false, //true,
                 "Should we support NOTEHEAD_BLACK_SMALL shape?");
 
         private final Constant.Boolean supportSmallVoidNotes = new Constant.Boolean(
