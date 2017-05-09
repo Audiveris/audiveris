@@ -383,6 +383,13 @@ public abstract class TimeBuilder
             }
         }
 
+        // Compute contextual grades of nums & dens
+        for (List<Inter> list : Arrays.asList(nums, dens)) {
+            for (Inter inter : list) {
+                sig.computeContextualGrade(inter);
+            }
+        }
+
         return !wholes.isEmpty() || !nums.isEmpty();
     }
 

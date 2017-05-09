@@ -314,6 +314,9 @@ public class BarsRetriever
         watch.start("createParts");
         createParts(); // Build parts
 
+        watch.start("contextualize");
+        contextualize(); // Compute contextual grades
+
         if (constants.printWatch.isSet()) {
             watch.print();
         }
@@ -706,6 +709,19 @@ public class BarsRetriever
             return (Filament) CompoundFactory.buildCompoundFromParts(compounds, serifConstructor);
         } else {
             return (Filament) compounds.get(0);
+        }
+    }
+
+    //---------------//
+    // contextualize //
+    //---------------//
+    /**
+     * Compute contextual grades for barlines.
+     */
+    private void contextualize ()
+    {
+        for (SystemInfo system : sheet.getSystems()) {
+            system.getSig().contextualize();
         }
     }
 
