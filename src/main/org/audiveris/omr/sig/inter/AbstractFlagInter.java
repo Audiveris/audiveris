@@ -118,7 +118,7 @@ public abstract class AbstractFlagInter
         final boolean isSmall = SmallFlags.contains(shape);
         final int stemWidth = system.getSheet().getScale().getMaxStem();
         final Rectangle flagBox = glyph.getBounds();
-        final int footHeight = (int) Math.rint(flagBox.height / 3.0);
+        final int footHeight = (int) Math.rint(flagBox.height / 2.5); // was 3.0
 
         // We need a flag ref point to compute x and y distances to stem
         final Point refPt = new Point(
