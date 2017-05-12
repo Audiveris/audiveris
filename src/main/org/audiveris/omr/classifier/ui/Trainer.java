@@ -25,6 +25,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.ConstantManager;
@@ -73,6 +74,11 @@ public class Trainer
         extends SingleFrameApplication
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    static {
+        // We need class WellKnowns to be elaborated before anything else (when in standalone mode)
+        WellKnowns.ensureLoaded();
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(Trainer.class);
 
