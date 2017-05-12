@@ -688,8 +688,7 @@ public class SampleBrowser
         if (size > 0) {
             JFrame frame = new JFrame("Sheets " + sheets);
             ValidationPanel panel = new ValidationPanel(
-                    null,
-                    ShapeClassifier.getInstance(),
+                    new Trainer.Task(ShapeClassifier.getInstance()),
                     new ConstantSource(sheetSelector.getTestSamples()),
                     false); // false => not TRAIN but Test
             Panel comp = (Panel) panel.getComponent();

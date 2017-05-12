@@ -32,7 +32,6 @@ import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.classifier.SampleSource;
-import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.*;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.ShapeSet;
@@ -47,8 +46,6 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -63,12 +60,14 @@ import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code SelectionPanel} handles a user panel to select samples from repository.
+ * <p>
  * This class is a dedicated companion of {@link Trainer}.
+ * It handles the current selection among samples (both the training set and the test set).
  *
  * @author Hervé Bitteur
  */
 class SelectionPanel
-        implements SampleSource, SampleRepository.LoadListener, Observer, ChangeListener
+        implements SampleSource, SampleRepository.LoadListener, ChangeListener
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -79,9 +78,6 @@ class SelectionPanel
     //~ Instance fields ----------------------------------------------------------------------------
     /** Swing component. */
     private final Panel component;
-
-    /** Current activity. */
-    private final Trainer.Task task;
 
     /** Underlying repository of samples. */
     private final SampleRepository repository = SampleRepository.getGlobalInstance(false);
@@ -116,14 +112,9 @@ class SelectionPanel
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SelectionPanel object.
-     *
-     * @param task the common training task object
      */
-    public SelectionPanel (Trainer.Task task)
+    public SelectionPanel ()
     {
-        this.task = task;
-        task.addObserver(this);
-
         component = new Panel();
         component.setNoInsets();
 
@@ -174,7 +165,7 @@ class SelectionPanel
      * @return the collection of selected samples
      */
     @Override
-    public List<Sample> getTestSamples ()
+    public synchronized List<Sample> getTestSamples ()
     {
         if (tests == null) {
             getTrainSamples();
@@ -192,7 +183,7 @@ class SelectionPanel
      * @return the collection of selected samples
      */
     @Override
-    public List<Sample> getTrainSamples ()
+    public synchronized List<Sample> getTrainSamples ()
     {
         if (trains == null) {
             progressBar.setValue(0);
@@ -242,22 +233,6 @@ class SelectionPanel
     public void totalSheets (int total)
     {
         progressBar.setMaximum(total);
-    }
-
-    //--------//
-    // update //
-    //--------//
-    /**
-     * Method triggered whenever the activity changes
-     *
-     * @param obs    the new current task activity
-     * @param unused not used
-     */
-    @Override
-    public void update (Observable obs,
-                        Object unused)
-    {
-        selectAction.setEnabled(task.getActivity() == INACTIVE);
     }
 
     //--------------//
@@ -433,14 +408,11 @@ class SelectionPanel
                 @Override
                 public void run ()
                 {
-                    task.setActivity(SELECTION);
-
                     trains = null;
                     tests = null;
 
+                    // Get a fresh collection
                     getTrainSamples();
-
-                    task.setActivity(INACTIVE);
                 }
             });
         }

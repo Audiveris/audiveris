@@ -38,6 +38,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
@@ -191,7 +192,9 @@ public abstract class OmrFont
             InputStream input = null;
 
             try {
-                input = UriUtil.toURI(WellKnowns.RES_URI, fontName + ".ttf").toURL().openStream();
+                URL url = UriUtil.toURI(WellKnowns.RES_URI, fontName + ".ttf").toURL();
+                logger.debug("Font url={}", url);
+                input = url.openStream();
                 font = Font.createFont(Font.TRUETYPE_FONT, input);
                 fontCache.put(fontName, font);
                 ge.registerFont(font);
@@ -204,7 +207,7 @@ public abstract class OmrFont
                 }
             }
         } catch (Exception ex) {
-            logger.debug("Could not create custom font {} {}", fontName, ex);
+            logger.debug("Could not create custom font {} " + ex, fontName);
         }
 
         // Finally, try a platform font

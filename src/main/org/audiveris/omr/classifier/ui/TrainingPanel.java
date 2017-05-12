@@ -25,7 +25,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.classifier.TrainingMonitor;
@@ -91,9 +90,6 @@ class TrainingPanel
     /** User action to launch incremental training. */
     protected TrainAction trainAction;
 
-    /** The underlying classifier to be trained. */
-    protected Classifier classifier;
-
     /** User progress bar to visualize the training process. */
     protected JProgressBar progressBar = new JProgressBar();
 
@@ -133,7 +129,6 @@ class TrainingPanel
     public TrainingPanel (Trainer.Task task,
                           SelectionPanel selectionPanel)
     {
-        this.classifier = ShapeClassifier.getInstance();
         this.task = task;
         this.selectionPanel = selectionPanel;
 
@@ -152,7 +147,7 @@ class TrainingPanel
 
         defineLayout();
 
-        classifier.addListener(this);
+        task.classifier.addListener(this);
 
         displayParams();
         inputParams();
@@ -385,7 +380,7 @@ class TrainingPanel
     //-------------//
     private void inputParams ()
     {
-        classifier.setMaxEpochs(maxEpochs.getValue());
+        task.classifier.setMaxEpochs(maxEpochs.getValue());
 
         progressBar.setMaximum(maxEpochs.getValue());
     }
@@ -413,7 +408,7 @@ class TrainingPanel
             int answer = JOptionPane.showConfirmDialog(component, "Confirm reset of classifier?");
 
             if (answer == JOptionPane.YES_OPTION) {
-                classifier.reset();
+                task.classifier.reset();
             }
         }
     }
@@ -454,7 +449,7 @@ class TrainingPanel
                     samples = checkPopulation(samples);
 
                     // Train on the data set
-                    classifier.train(samples);
+                    task.classifier.train(samples);
 
                     task.setActivity(INACTIVE);
                 }

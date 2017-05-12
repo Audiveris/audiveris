@@ -34,6 +34,7 @@ import org.audiveris.omr.ui.util.UILookAndFeel;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
@@ -44,18 +45,26 @@ import java.awt.event.WindowEvent;
 import java.util.Locale;
 import java.util.Observable;
 
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 
 /**
  * Class {@code Trainer} handles a User Interface dedicated to the
  * training and testing of a glyph classifier.
  * <p>
- * The frame is divided vertically in 3 parts:
- * <ol>
- * <li>The selection in repository of samples ({@link SelectionPanel})
- * <li>The training of the neural network classifier ({@link TrainingPanel})
- * <li>The validation of the neural network classifier ({@link ValidationPanel})
- * </ol>
+ * The frame is divided vertically in several parts:
+ * <ul>
+ * <li>The selection of samples ({@link SelectionPanel})
+ * <li>For each classifier:
+ * <ul>
+ * <li>Training ({@link TrainingPanel})
+ * <li>Validation on train set ({@link ValidationPanel})
+ * <li>Validation on test set ({@link ValidationPanel})
+ * </ul>
+ * </ul>
  * This class can be launched as a stand-alone program.
  *
  * @author Hervé Bitteur
@@ -100,18 +109,6 @@ public class Trainer
     /** Panel for selection in repository. */
     private final SelectionPanel selectionPanel;
 
-    /** Panel for Neural network training. */
-    private final TrainingPanel trainingPanel;
-
-    /** Panel for train set validation. */
-    private final ValidationPanel trainValidationPanel;
-
-    /** Panel for train set validation. */
-    private final ValidationPanel testValidationPanel;
-
-    /** Current task. */
-    final Task task = new Task();
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an instance of Glyph Trainer (there should be just one)
@@ -119,15 +116,7 @@ public class Trainer
     public Trainer ()
     {
         // Create the companions
-        selectionPanel = new SelectionPanel(task);
-        trainingPanel = new TrainingPanel(task, selectionPanel);
-
-        final Classifier classifier = ShapeClassifier.getInstance();
-        trainValidationPanel = new ValidationPanel(task, classifier, selectionPanel, true);
-        testValidationPanel = new ValidationPanel(task, classifier, selectionPanel, false);
-
-        // Initial state
-        task.setActivity(Task.Activity.INACTIVE);
+        selectionPanel = new SelectionPanel();
 
         // Specific ending if stand alone
         if (!standAlone) {
@@ -244,53 +233,61 @@ public class Trainer
         /*
          * +=============================================================+
          * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . Selection . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . . . . . . . . . Selection . . . . . . . . . . . . . |
          * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
          * |-------------------------------------------------------------|
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . Training. . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * |-------------------------------------------------------------|
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . Validation [train set]. . . . . . . . . . . . . . . . . . |
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * |-------------------------------------------------------------|
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
-         * | . Validation [test set] . . . . . . . . . . . . . . . . . . |
-         * | . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . |
+         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
+         * | . Training. . . . . . . . . || . Training. . . . . . . . . .|
+         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
+         * |-----------------------------||------------------------------|
+         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
+         * | . Validation [train set]. . || . Validation [train set]. . .|
+         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
+         * |-----------------------------||------------------------------|
+         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
+         * | . Validation [test set] . . || . Validation [test set] . . .|
+         * | . . . . . . . . . . . . . . || . . . . . . . . . . . . . . .|
          * +=============================================================+
          */
-        final String panelInterline = Panel.getPanelInterline();
-        FormLayout layout = new FormLayout(
-                "pref",
-                "pref," + panelInterline + "," + "pref," + panelInterline + "," + "pref,"
-                + panelInterline + "," + "pref");
-
+        FormLayout layout = new FormLayout("pref, 10dlu, pref", "pref, 10dlu, pref");
         CellConstraints cst = new CellConstraints();
         PanelBuilder builder = new PanelBuilder(layout, new Panel());
 
         int r = 1; // --------------------------------
-        builder.add(selectionPanel.getComponent(), cst.xy(1, r));
+        builder.add(selectionPanel.getComponent(), cst.xyw(1, r, 3, "center, fill"));
 
         r += 2; // --------------------------------
-        builder.add(trainingPanel.getComponent(), cst.xy(1, r));
-
-        r += 2; // --------------------------------
-        builder.add(trainValidationPanel.getComponent(), cst.xy(1, r));
-
-        r += 2; // --------------------------------
-        builder.add(testValidationPanel.getComponent(), cst.xy(1, r));
+        builder.add(definePanel(ShapeClassifier.getInstance()), cst.xy(1, r));
+        builder.add(definePanel(ShapeClassifier.getSecondInstance()), cst.xy(3, r));
 
         frame.add(builder.getPanel());
 
-//        // Resource injection
-//        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
-//        resource.injectComponents(frame);
-//
-        Classifier classifier = ShapeClassifier.getInstance();
-        frame.setTitle(classifier.getName());
+        // Resource injection
+        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
+        resource.injectComponents(frame);
 
         return frame;
+    }
+
+    private JPanel definePanel (Classifier classifier)
+    {
+        final String pi = Panel.getPanelInterline();
+        FormLayout layout = new FormLayout("pref", "pref," + pi + ",pref," + pi + ",pref");
+
+        CellConstraints cst = new CellConstraints();
+        PanelBuilder builder = new PanelBuilder(layout, new TitledPanel(classifier.getName()));
+        Task task = new Task(classifier);
+
+        int r = 1; // --------------------------------
+        builder.add(new TrainingPanel(task, selectionPanel).getComponent(), cst.xy(1, r));
+
+        r += 2; // --------------------------------
+        builder.add(new ValidationPanel(task, selectionPanel, true).getComponent(), cst.xy(1, r));
+
+        r += 2; // --------------------------------
+        builder.add(new ValidationPanel(task, selectionPanel, false).getComponent(), cst.xy(1, r));
+
+        return builder.getPanel();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -298,17 +295,16 @@ public class Trainer
     // Task //
     //------//
     /**
-     * Class {@code Task} handles which activity is currently being carried
-     * out, only one being current at any time.
+     * Class {@code Task} handles, for a given classifier, which activity is currently
+     * being carried out, only one being current at any time.
      */
-    static class Task
+    public static class Task
             extends Observable
     {
         //~ Enumerations ---------------------------------------------------------------------------
 
         /**
-         * Enum {@code Activity} defines the possible activities in
-         * training.
+         * Enum {@code Activity} defines all activities in training.
          */
         static enum Activity
         {
@@ -316,8 +312,6 @@ public class Trainer
 
             /** No ongoing activity */
             INACTIVE,
-            /** Selecting samples */
-            SELECTION,
             /** Training on samples */
             TRAINING,
             /** Validating classifier */
@@ -325,13 +319,19 @@ public class Trainer
         }
 
         //~ Instance fields ------------------------------------------------------------------------
+        /** Managed classifier. */
+        public final Classifier classifier;
+
         /** Current activity. */
         private Activity activity = Activity.INACTIVE;
 
+        //~ Constructors ---------------------------------------------------------------------------
+        public Task (Classifier classifier)
+        {
+            this.classifier = classifier;
+        }
+
         //~ Methods --------------------------------------------------------------------------------
-        //-------------//
-        // getActivity //
-        //-------------//
         /**
          * Report the current training activity
          *
@@ -342,9 +342,6 @@ public class Trainer
             return activity;
         }
 
-        //-------------//
-        // setActivity //
-        //-------------//
         /**
          * Assign a new current activity and notify all observers
          *
@@ -355,6 +352,26 @@ public class Trainer
             this.activity = activity;
             setChanged();
             notifyObservers();
+        }
+    }
+
+    //-------------//
+    // TitledPanel //
+    //-------------//
+    private static class TitledPanel
+            extends Panel
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public TitledPanel (String title)
+        {
+            setBorder(
+                    BorderFactory.createTitledBorder(
+                            new EtchedBorder(),
+                            title,
+                            TitledBorder.CENTER,
+                            TitledBorder.TOP));
+            setInsets(30, 10, 10, 10); // TLBR
         }
     }
 }

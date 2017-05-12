@@ -116,7 +116,7 @@ public interface Classifier
     int getMaxEpochs ();
 
     /**
-     * Report the name of this classifier.
+     * Report the declared name of this classifier.
      *
      * @return the classifier declared name
      */

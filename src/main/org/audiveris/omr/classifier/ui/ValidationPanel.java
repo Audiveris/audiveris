@@ -84,9 +84,6 @@ public class ValidationPanel
     /** Dedicated executor for validation. */
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    /** The classifier to validate. */
-    private final Classifier classifier;
-
     /** User progress bar to visualize the validation process. */
     private final JProgressBar progressBar = new JProgressBar();
 
@@ -150,16 +147,13 @@ public class ValidationPanel
      * Creates a new ValidationPanel object.
      *
      * @param task       the current training activity
-     * @param classifier the classifier to validate
      * @param source     source for samples
      * @param isTrainSet
      */
     public ValidationPanel (Trainer.Task task,
-                            Classifier classifier,
                             SampleSource source,
                             boolean isTrainSet)
     {
-        this.classifier = classifier;
         this.sampleSource = source;
         this.task = task;
         this.isTrainSet = isTrainSet;
@@ -282,7 +276,7 @@ public class ValidationPanel
     //---------------//
     private void runValidation ()
     {
-        logger.info("Validating {} on {} set...", classifier.getName(), setName);
+        logger.info("Validating {} on {} set...", task.classifier.getName(), setName);
 
         // Empty the display
         positiveValue.setText("");
@@ -311,7 +305,7 @@ public class ValidationPanel
         int index = 0;
 
         for (Sample sample : samples) {
-            Evaluation[] evals = classifier.evaluate(
+            Evaluation[] evals = task.classifier.evaluate(
                     sample,
                     sample.getInterline(),
                     1,
@@ -341,7 +335,12 @@ public class ValidationPanel
         double accuracy = allPositives / (double) total;
         DecimalFormat df = new DecimalFormat("#.####");
         String accuStr = df.format(accuracy);
-        logger.info("{} accuracy: {}  {}/{}", classifier.getName(), accuStr, allPositives, total);
+        logger.info(
+                "{} accuracy: {}  {}/{}",
+                task.classifier.getName(),
+                accuStr,
+                allPositives,
+                total);
         accuracyValue.setText(accuStr);
         positiveValue.setText(Integer.toString(positives));
         weakPositiveValue.setText(Integer.toString(weakPositives.size()));
@@ -349,8 +348,8 @@ public class ValidationPanel
         weakNegativeValue.setText(Integer.toString(weakNegatives.size()));
 
         // Additional evaluation
-        if (classifier instanceof DeepClassifier) {
-            final DeepClassifier deepClassifier = (DeepClassifier) classifier;
+        if (task.classifier instanceof DeepClassifier) {
+            final DeepClassifier deepClassifier = (DeepClassifier) task.classifier;
             final MultiLayerNetwork model = deepClassifier.getModel();
             DataSet dataSet = deepClassifier.getRawDataSet(samples);
             deepClassifier.normalize(dataSet.getFeatures());
