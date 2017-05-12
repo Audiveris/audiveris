@@ -27,7 +27,7 @@ if (!hasProperty('mainClass')) {
     ext.mainClass = ext.programName
 }
 
-mainClassName = ext.programName
+mainClassName = ext.mainClass
 
 // Useful for turning on deprecation warnings
 // Just uncomment the appropriate option
