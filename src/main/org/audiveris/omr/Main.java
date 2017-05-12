@@ -31,7 +31,6 @@ import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.MainGui;
 import org.audiveris.omr.ui.symbol.MusicFont;
-import org.audiveris.omr.util.ClassUtil;
 import org.audiveris.omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
@@ -228,47 +227,6 @@ public class Main
     {
         // (re) Open the executor services
         OmrExecutors.restart();
-    }
-
-    //---------------------//
-    // loadNativeLibraries //
-    //---------------------//
-    /**
-     * Explicitly load all the needed native libraries.
-     */
-    private static void loadNativeLibraries ()
-    {
-        boolean verbose = constants.showNatives.isSet();
-
-        // Explicitly load all native libs resources and in proper order
-        if (verbose) {
-            logger.info("Loading native libraries ...");
-        }
-
-        boolean success = true;
-
-        if (WellKnowns.WINDOWS) {
-            // For Windows, drop only the ".dll" suffix
-            success &= ClassUtil.loadLibrary("jniTessBridge", verbose);
-            success &= ClassUtil.loadLibrary("libtesseract302", verbose);
-            success &= ClassUtil.loadLibrary("liblept168", verbose);
-        } else if (WellKnowns.LINUX) {
-            // For Linux, drop both the "lib" prefix and the ".so" suffix
-            success &= ClassUtil.loadLibrary("jniTessBridge", verbose);
-        }
-
-        if (success) {
-            logger.info("All native libraries loaded.");
-        } else {
-            // Inform user of OCR installation problem
-            String msg = "Tesseract OCR is not installed properly";
-
-            if (OMR.gui != null) {
-                OMR.gui.displayError(msg);
-            } else {
-                logger.warn(msg);
-            }
-        }
     }
 
     //----------//
