@@ -72,9 +72,9 @@ public class TesseractOrder
     static {
         IIORegistry registry = IIORegistry.getDefaultInstance();
         registry.registerServiceProvider(
-                new com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriterSpi());
+                new com.github.jaiimageio.impl.plugins.tiff.TIFFImageWriterSpi());
         registry.registerServiceProvider(
-                new com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi());
+                new com.github.jaiimageio.impl.plugins.tiff.TIFFImageReaderSpi());
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
