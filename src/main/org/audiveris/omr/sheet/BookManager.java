@@ -722,7 +722,12 @@ public class BookManager
     private static Path getTargetFolder (Book book)
     {
         if (useSeparateBookFolders()) {
-            // Define target based on base + book folder and book name
+            // Use book folder if defined
+            if (book.getBookPath() != null) {
+                return book.getBookPath().getParent();
+            }
+
+            // Define target based on base + book folder name and book name
             Path folder = getBaseFolder().resolve(book.getRadix());
 
             try {

@@ -507,14 +507,7 @@ public class BasicBook
                 logger.warn("Could not export opus " + opusPath, ex);
             }
         } else {
-            // Check all target file(s) can be (over)written
-            for (Score score : scores) {
-                final String scoreName = (!multiMovements) ? bookName
-                        : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
-                final Path scorePath = bookPathSansExt.resolveSibling(scoreName + ext);
-            }
-
-            // Do export the book as one or several movement files
+            // Export the book as one or several movement files
             makeReadyForExport();
 
             for (Score score : scores) {

@@ -23,6 +23,7 @@ package org.audiveris.omr.ui.util;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.Arrays;
 
 import javax.swing.filechooser.FileFilter;
 
@@ -78,8 +79,7 @@ public class OmrFileFilter
                           String... extensions)
     {
         if (description == null) {
-            // Use first extension and # of extensions as desc.
-            this.description = extensions[0] + "{" + extensions.length + "}";
+            this.description = (extensions.length > 1) ? Arrays.toString(extensions) : extensions[0];
         } else {
             this.description = description;
         }

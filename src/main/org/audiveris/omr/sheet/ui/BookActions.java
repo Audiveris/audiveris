@@ -645,7 +645,7 @@ public class BookActions
             return null;
         }
 
-        final Path exportPathSansExt = book.getExportPathSansExt();
+        final Path exportPathSansExt = BookManager.getDefaultExportPathSansExt(book);
 
         if (exportPathSansExt != null) {
             return new ExportBookTask(book, exportPathSansExt);
@@ -1029,13 +1029,13 @@ public class BookActions
             return null;
         }
 
-        final Path bookPrintPath = book.getPrintPath();
+        final Path bookPrintPath = BookManager.getDefaultPrintPath(book);
 
-        if (bookPrintPath == null) {
-            return printBookAs(e);
+        if (bookPrintPath != null && confirmed(bookPrintPath)) {
+            return new PrintBookTask(book, bookPrintPath);
         }
 
-        return new PrintBookTask(book, bookPrintPath);
+        return printBookAs(e);
     }
 
     //-------------//
@@ -1064,7 +1064,7 @@ public class BookActions
                 new OmrFileFilter(OMR.PDF_EXTENSION),
                 "Choose book print target");
 
-        if (bookPrintPath == null) {
+        if ((bookPrintPath == null) || !confirmed(bookPrintPath)) {
             return null;
         }
 
@@ -1097,18 +1097,18 @@ public class BookActions
         final String suffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
 
-        final Path sheetPath = UIUtil.pathChooser(
+        final Path sheetPrintPath = UIUtil.pathChooser(
                 true,
                 OMR.gui.getFrame(),
                 defaultSheetPath,
                 filter(ext),
                 "Choose sheet print target");
 
-        if ((sheetPath == null) || !confirmed(sheetPath)) {
+        if ((sheetPrintPath == null) || !confirmed(sheetPrintPath)) {
             return null;
         }
 
-        return new PrintSheetTask(stub.getSheet(), sheetPath);
+        return new PrintSheetTask(stub.getSheet(), sheetPrintPath);
     }
 
     //--------------//
@@ -1196,14 +1196,13 @@ public class BookActions
             return null;
         }
 
-        // Ask user confirmation for overwriting if file already exists
         final Path bookPath = BookManager.getDefaultBookPath(book);
 
         if ((book.getBookPath() != null) && confirmed(bookPath)) {
             return new StoreBookTask(book, bookPath);
-        } else {
-            return saveBookAs(e);
         }
+
+        return saveBookAs(e);
     }
 
     //------------//
@@ -1774,11 +1773,6 @@ public class BookActions
             try {
                 LogUtil.start(book);
                 book.setPrintPath(bookPrintPath);
-                //
-                //            for (Sheet sheet : book.getStubs()) {
-                //                sheet.reachBookStep(Step.PAGE, false, null);
-                //            }
-                //
                 book.print();
             } finally {
                 LogUtil.stopBook();
