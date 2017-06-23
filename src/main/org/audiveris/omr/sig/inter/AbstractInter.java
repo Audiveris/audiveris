@@ -28,10 +28,12 @@ import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigValue.InterSet;
+import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
@@ -48,6 +50,7 @@ import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -56,6 +59,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -90,6 +94,10 @@ public abstract class AbstractInter
     @XmlAttribute(name = "glyph")
     protected Glyph glyph;
 
+    /** Object bounds, perhaps different from glyph bounds. */
+    @XmlElement(name = "bounds")
+    protected Rectangle bounds;
+
     /** The quality of this interpretation. */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
@@ -106,7 +114,7 @@ public abstract class AbstractInter
 
     /** The contextual grade of this interpretation, if any. */
     @XmlAttribute(name = "ctx-grade")
-    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double3Adapter.class)
+    @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
     protected Double ctxGrade;
 
     /** Related staff, if any. Marshalled via its ID */
@@ -129,9 +137,6 @@ public abstract class AbstractInter
 
     /** Containing ensemble, if any. */
     protected InterEnsemble ensemble;
-
-    /** Object bounds, perhaps different from glyph bounds. */
-    protected Rectangle bounds;
 
     /** Object precise area, if any. */
     protected Area area;
@@ -227,11 +232,6 @@ public abstract class AbstractInter
     {
         Rectangle bounds = getBounds();
 
-        //
-        //        if (bounds == null) {
-        //            logger.info("No bounds for {}", this);
-        //        }
-        //
         if ((bounds != null) && !bounds.contains(point)) {
             return false;
         }
@@ -570,6 +570,15 @@ public abstract class AbstractInter
         return goodGrade;
     }
 
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    @Override
+    public Point getRelationCenter ()
+    {
+        return getCenter(); // By default
+    }
+
     //----------//
     // getShape //
     //----------//
@@ -806,6 +815,16 @@ public abstract class AbstractInter
         }
     }
 
+    //--------------------//
+    // searchPartnerships //
+    //--------------------//
+    @Override
+    public Collection<Partnership> searchPartnerships (SystemInfo system,
+                                                       boolean doit)
+    {
+        return Collections.emptySet(); // By default
+    }
+
     //-----------//
     // setBounds //
     //-----------//
@@ -965,6 +984,7 @@ public abstract class AbstractInter
      *
      * @return a string on internal values
      */
+    @Override
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());

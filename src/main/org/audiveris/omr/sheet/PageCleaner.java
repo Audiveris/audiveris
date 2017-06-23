@@ -140,28 +140,7 @@ public abstract class PageCleaner
 
         // No anti-aliasing
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        //        g.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
-        //        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-        //        g.setRenderingHint(
-        //                RenderingHints.KEY_ALPHA_INTERPOLATION,
-        //                RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-        //        g.setRenderingHint(
-        //                RenderingHints.KEY_COLOR_RENDERING,
-        //                RenderingHints.VALUE_COLOR_RENDER_SPEED);
-        //        g.setRenderingHint(
-        //                RenderingHints.KEY_FRACTIONALMETRICS,
-        //                RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
-        //        g.setRenderingHint(
-        //                RenderingHints.KEY_INTERPOLATION,
-        //                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        //        g.setRenderingHint(
-        //                RenderingHints.KEY_TEXT_ANTIALIASING,
-        //                RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-        //        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-        //        g.setRenderingHint(
-        //                RenderingHints.KEY_STROKE_CONTROL,
-        //                RenderingHints.VALUE_STROKE_NORMALIZE);
-        //
+
         // Paint in background color
         g.setColor(Color.WHITE);
     }
@@ -174,9 +153,11 @@ public abstract class PageCleaner
     }
 
     @Override
-    public void visit (HeadInter inter)
+    public void visit (AbstractChordInter inter)
     {
-        visit((Inter) inter);
+        for (Inter member : inter.getNotes()) {
+            member.accept(this);
+        }
     }
 
     @Override
@@ -216,14 +197,6 @@ public abstract class PageCleaner
     }
 
     @Override
-    public void visit (AbstractChordInter inter)
-    {
-        for (Inter member : inter.getNotes()) {
-            member.accept(this);
-        }
-    }
-
-    @Override
     public void visit (EndingInter ending)
     {
         g.setStroke(lineStroke);
@@ -236,6 +209,12 @@ public abstract class PageCleaner
         if (ending.getRightLeg() != null) {
             g.draw(ending.getRightLeg());
         }
+    }
+
+    @Override
+    public void visit (HeadInter inter)
+    {
+        visit((Inter) inter);
     }
 
     /**
@@ -297,17 +276,17 @@ public abstract class PageCleaner
     }
 
     @Override
-    public void visit (TimeWholeInter inter)
-    {
-        processGlyph(inter.getGlyph());
-    }
-
-    @Override
     public void visit (TimePairInter pair)
     {
         for (Inter member : pair.getMembers()) {
             processGlyph(member.getGlyph());
         }
+    }
+
+    @Override
+    public void visit (TimeWholeInter inter)
+    {
+        processGlyph(inter.getGlyph());
     }
 
     @Override

@@ -48,15 +48,13 @@ public class FingeringInter
      * @param glyph underlying glyph
      * @param shape precise shape
      * @param grade evaluation value
-     * @param value number value
      */
     public FingeringInter (Glyph glyph,
                            Shape shape,
-                           double grade,
-                           int value)
+                           double grade)
     {
         super(glyph, null, shape, grade);
-        this.value = value;
+        this.value = (shape != null) ? valueOf(shape) : (-1);
     }
 
     /**
@@ -68,24 +66,6 @@ public class FingeringInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create a Fingering inter.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @return the created instance or null if failed
-     */
-    public static Inter create (Glyph glyph,
-                                Shape shape,
-                                double grade)
-    {
-        return new FingeringInter(glyph, shape, grade, valueOf(shape));
-    }
-
     //--------//
     // accept //
     //--------//
@@ -160,6 +140,6 @@ public class FingeringInter
         //            return 9;
         }
 
-        return -1;
+        throw new IllegalArgumentException("No fingering value for " + shape);
     }
 }

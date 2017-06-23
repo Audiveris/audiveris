@@ -53,9 +53,10 @@ public abstract class ShapeClassifier
                 throws Exception
         {
             try {
-                logger.debug("Allocating instance for ShapeClassifier...");
+                logger.debug("Allocating instances for ShapeClassifier...");
                 ShapeClassifier.getInstance();
-                logger.debug("ShapeClassifier allocated.");
+                ShapeClassifier.getSecondInstance();
+                logger.debug("ShapeClassifier instances allocated.");
             } catch (Exception ex) {
                 logger.warn("Error pre-loading ShapeClassifier", ex);
                 throw ex;

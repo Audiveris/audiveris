@@ -48,8 +48,8 @@ import javax.swing.JMenuItem;
  * gathers all rest shapes from MULTI_REST down to ONE_128TH_REST.
  * <p>
  * It handles additional properties over a simple EnumSet, especially assigned colors and its
- * automatic insertion in shape menu hierarchy. So don't remove any of the ShapeSet's, unless you
- * know what you are doing.
+ * automatic insertion in shape menus and palette hierarchy.
+ * So don't remove any of the ShapeSet's, unless you know what you are doing.
  */
 public class ShapeSet
 {
@@ -186,6 +186,29 @@ public class ShapeSet
         }
     }
 
+    /** All heads without a stem. */
+    public static final EnumSet<Shape> StemLessHeads = EnumSet.of(
+            BREVE,
+            WHOLE_NOTE,
+            WHOLE_NOTE_SMALL);
+
+    /** All heads with a stem. */
+    public static final EnumSet<Shape> StemHeads = EnumSet.of(
+            NOTEHEAD_BLACK,
+            NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_VOID,
+            NOTEHEAD_VOID_SMALL);
+
+    /** All heads. */
+    public static final List<Shape> Heads = Arrays.asList(
+            BREVE,
+            WHOLE_NOTE,
+            WHOLE_NOTE_SMALL,
+            NOTEHEAD_BLACK,
+            NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_VOID,
+            NOTEHEAD_VOID_SMALL);
+
     /** All notes handled by template matching. */
     public static final EnumSet<Shape> TemplateNotes = EnumSet.noneOf(Shape.class);
 
@@ -253,26 +276,36 @@ public class ShapeSet
                     Shape.THIN_BARLINE,
                     Shape.THIN_CONNECTOR));
 
-    /**
-     * Predefined instances of ShapeSet.
-     * Double-check before removing any one of them.
-     * Nota: Do not use EnumSet.range() since this could lead to subtle errors should Shape enum
-     * order be modified. Prefer the use of shapesOf() which lists precisely all set members.
-     */
-    public static final ShapeSet Alterations = new ShapeSet(
+    //----------------------------------------------------------------------------------------------
+    // Below are predefined instances of ShapeSet, meant mainly for UI packaging.
+    //
+    // By being defined here, they will lead to corresponding gathering in user menus & palette.
+    // So, double-check before removing or modifying any one of them.
+    //
+    // Nota: Do not use EnumSet.range() since this could lead to subtle errors should Shape enum
+    // order be modified. Prefer the use of shapesOf() which lists precisely all set members.
+    //----------------------------------------------------------------------------------------------
+    public static final ShapeSet Accidentals = new ShapeSet(
             SHARP,
             new Color(0x9933ff),
             shapesOf(FLAT, NATURAL, SHARP, DOUBLE_SHARP, DOUBLE_FLAT));
 
     public static final ShapeSet Articulations = new ShapeSet(
-            ARPEGGIATO,
+            ACCENT,
             new Color(0xff6699),
-            shapesOf(ACCENT, TENUTO, STACCATO, STACCATISSIMO, STRONG_ACCENT, ARPEGGIATO));
+            shapesOf(ACCENT, TENUTO, STACCATO, STACCATISSIMO, STRONG_ACCENT));
 
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
             new Color(0x000000),
-            shapesOf(OTTAVA_ALTA, OTTAVA_BASSA, PEDAL_MARK, PEDAL_UP_MARK, TUPLET_THREE, TUPLET_SIX));
+            shapesOf(
+                    OTTAVA_ALTA,
+                    OTTAVA_BASSA,
+                    PEDAL_MARK,
+                    PEDAL_UP_MARK,
+                    TUPLET_THREE,
+                    TUPLET_SIX,
+                    ARPEGGIATO));
 
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,
@@ -288,7 +321,8 @@ public class ShapeSet
                             BACK_TO_BACK_REPEAT_SIGN,
                             BRACE,
                             BRACKET,
-                            BRACKET_CONNECTOR)));
+                            BRACKET_CONNECTOR,
+                            REPEAT_DOT)));
 
     public static final ShapeSet Beams = new ShapeSet(
             BEAM,
@@ -325,35 +359,27 @@ public class ShapeSet
     public static final ShapeSet Flags = new ShapeSet(
             FLAG_1,
             new Color(0x99cc00),
-            shapesOf(FlagsDown, FlagsUp, SmallFlags));
+            shapesOf(new ArrayList<Shape>(FlagsDown), SmallFlags, FlagsUp));
+
+    public static final ShapeSet Holds = new ShapeSet(
+            FERMATA,
+            new Color(0x888888),
+            shapesOf(BREATH_MARK, CAESURA, FERMATA, FERMATA_BELOW));
 
     public static final ShapeSet Keys = new ShapeSet(
             KEY_SHARP_3,
             new Color(0x00ffff),
-            shapesOf(FlatKeys, SharpKeys));
+            shapesOf(new ArrayList<Shape>(FlatKeys), SharpKeys));
 
-    public static final ShapeSet NoteHeads = new ShapeSet(
+    public static final ShapeSet HeadsAndDot = new ShapeSet(
             NOTEHEAD_BLACK,
             new Color(0xffcc00),
-            shapesOf(BlackNoteHeads, VoidNoteHeads));
+            shapesOf(Heads, shapesOf(AUGMENTATION_DOT)));
 
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
             new Color(0x888888),
-            shapesOf(
-                    DAL_SEGNO,
-                    DA_CAPO,
-                    SEGNO,
-                    CODA,
-                    BREATH_MARK,
-                    CAESURA,
-                    FERMATA_ARC,
-                    FERMATA_ARC_BELOW));
-
-    public static final ShapeSet StemLessHeads = new ShapeSet(
-            BREVE,
-            new Color(0xff66cc),
-            shapesOf(BREVE, WHOLE_NOTE, WHOLE_NOTE_SMALL));
+            shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA));
 
     public static final ShapeSet Ornaments = new ShapeSet(
             MORDENT,
@@ -387,7 +413,7 @@ public class ShapeSet
     public static final ShapeSet Times = new ShapeSet(
             TIME_FOUR_FOUR,
             new Color(0xcc3300),
-            shapesOf(PartialTimes, WholeTimes, shapesOf(TIME_ZERO, TIME_ONE, CUSTOM_TIME)));
+            shapesOf(PartialTimes, WholeTimes)); //, shapesOf(TIME_ZERO, TIME_ONE, CUSTOM_TIME)));
 
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,
@@ -430,17 +456,7 @@ public class ShapeSet
     public static final ShapeSet Physicals = new ShapeSet(
             LEDGER,
             new Color(0x9999ff),
-            shapesOf(
-                    TEXT,
-                    CHARACTER,
-                    CLUTTER,
-                    SLUR,
-                    LEDGER,
-                    STEM,
-                    ENDING,
-                    DOT_set,
-                    REPEAT_DOT,
-                    AUGMENTATION_DOT));
+            shapesOf(TEXT, CHARACTER, CLUTTER, SLUR, LEDGER, STEM, ENDING));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.
@@ -451,9 +467,9 @@ public class ShapeSet
             Shape.values()[0],
             LAST_PHYSICAL_SHAPE);
 
-    /** Symbols that can be attached to a stem */
+    /** Symbols that can be attached to a stem. */
     public static final EnumSet<Shape> StemSymbols = EnumSet.copyOf(
-            shapesOf(NoteHeads.getShapes(), Flags.getShapes(), Beams.getShapes()));
+            shapesOf(StemHeads, Flags.getShapes(), Beams.getShapes()));
 
     /** Pedals */
     public static final EnumSet<Shape> Pedals = EnumSet.of(PEDAL_MARK, PEDAL_UP_MARK);

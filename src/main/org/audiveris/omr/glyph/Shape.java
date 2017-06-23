@@ -115,7 +115,7 @@ public enum Shape
     PERCUSSION_CLEF("Percussion Clef"),
 
     //
-    // Alterations -------------------------------------------------------------
+    // Accidentals -------------------------------------------------------------
     //
     FLAT("Minus one half step", new Color(0x00aaaa)),
     NATURAL("Natural value", new Color(0x0066ff)),
@@ -336,6 +336,8 @@ public enum Shape
     KEY_FLAT_4("Four Flats"),
     KEY_FLAT_3("Three Flats"),
     KEY_FLAT_2("Two Flats"),
+    KEY_FLAT_1("One Flat"),
+    KEY_SHARP_1("One Sharp"),
     KEY_SHARP_2("Two Sharps"),
     KEY_SHARP_3("Three Sharps"),
     KEY_SHARP_4("Four Sharps"),
@@ -379,11 +381,6 @@ public enum Shape
     // Stems
     //
     STEM("Stem", new Color(0xccff66)),
-    //
-    // Key signatures ----------------------------------------------------------
-    //
-    KEY_FLAT_1("One Flat"),
-    KEY_SHARP_1("One Sharp"),
     //
     // Ornaments ---------------------------------------------------------------
     //
@@ -547,7 +544,7 @@ public enum Shape
     public boolean isPersistent ()
     {
         return ShapeSet.Clefs.contains(this) || ShapeSet.Times.contains(this)
-               || ShapeSet.Alterations.contains(this);
+               || ShapeSet.Accidentals.contains(this);
     }
 
     //--------//

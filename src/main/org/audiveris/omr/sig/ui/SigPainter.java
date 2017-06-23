@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.run.Orientation;
@@ -31,6 +32,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
+import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BraceInter;
@@ -114,11 +116,10 @@ public class SigPainter
     /** Global stroke for stems. */
     private final Stroke stemStroke;
 
+    /** Global stroke for ledgers, with no glyph. */
+    private final Stroke ledgerStroke;
+
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //    /** Global stroke for ledgers. */
-    //    private Stroke ledgerStroke;
-    //
     /**
      * Creates a new {@code SigPainter} object.
      *
@@ -141,13 +142,13 @@ public class SigPainter
             musicFontSmall = (small != null) ? MusicFont.getFont(small) : null;
         }
 
-        // Determine staff lines parameters
+        // Determine lines parameters
         lineStroke = new BasicStroke(
                 (scale != null) ? scale.getFore() : 2f,
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND);
-
         stemStroke = new BasicStroke(3f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
+        ledgerStroke = new BasicStroke(2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -186,8 +187,12 @@ public class SigPainter
     @Override
     public void visit (AbstractBeamInter beam)
     {
-        setColor(beam);
-        g.fill(beam.getArea());
+        try {
+            setColor(beam);
+            g.fill(beam.getArea());
+        } catch (Exception ex) {
+            logger.warn("Error painting {} {}", beam, ex.toString());
+        }
     }
 
     //-------//
@@ -226,6 +231,34 @@ public class SigPainter
                 logger.error("No symbol to paint {}", flag);
             }
         }
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (ArpeggiatoInter arpeggiato)
+    {
+        setColor(arpeggiato);
+
+        final Rectangle bx = arpeggiato.getBounds();
+        Point location = new Point(bx.x + (bx.width / 2), bx.y);
+        ShapeSymbol symbol = Symbols.getSymbol(arpeggiato.getShape());
+        MusicFont font = getMusicFont(arpeggiato.getStaff());
+        Dimension dim = symbol.getDimension(font);
+
+        bx.grow(dim.width, 0); // To avoid any clipping on x
+        g.setClip(clip.intersection(bx));
+
+        // Nb of symbols to draw, one below the other
+        int nb = (int) Math.ceil((double) bx.height / dim.height);
+
+        for (int i = 0; i < nb; i++) {
+            symbol.paintSymbol(g, font, location, Alignment.TOP_CENTER);
+            location.y += dim.height;
+        }
+
+        g.setClip(clip);
     }
 
     //-------//
@@ -453,13 +486,27 @@ public class SigPainter
     @Override
     public void visit (LedgerInter ledger)
     {
-        setColor(ledger);
-        g.setStroke(
-                new BasicStroke(
-                        (float) Math.rint(ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL)),
-                        BasicStroke.CAP_BUTT,
-                        BasicStroke.JOIN_ROUND));
-        ledger.getGlyph().renderLine(g);
+        try {
+            setColor(ledger);
+
+            final Glyph glyph = ledger.getGlyph();
+
+            if (glyph != null) {
+                g.setStroke(
+                        new BasicStroke(
+                                (float) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL)),
+                                BasicStroke.CAP_BUTT,
+                                BasicStroke.JOIN_ROUND));
+                glyph.renderLine(g);
+            } else {
+                g.setStroke(ledgerStroke);
+
+                final Rectangle b = ledger.getBounds();
+                g.drawLine(b.x, b.y + (b.height / 2), b.x + b.width, b.y + (b.height / 2));
+            }
+        } catch (Exception ex) {
+            logger.warn("Error painting {} {}", ledger, ex, ex);
+        }
     }
 
     //-------//
@@ -615,8 +662,6 @@ public class SigPainter
     {
         if (lineMeanFont != null) {
             Font font = new TextFont(lineMeanFont);
-
-            ///Font font = new TextFont(word.getFontInfo());
             FontRenderContext frc = g.getFontRenderContext();
             TextLayout layout = new TextLayout(word.getValue(), font, frc);
 

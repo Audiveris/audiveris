@@ -104,7 +104,7 @@ public abstract class AbstractNoteInter
                               Shape shape,
                               GradeImpacts impacts,
                               Staff staff,
-                              double pitch)
+                              Double pitch)
     {
         super(glyph, bounds, shape, impacts, staff, pitch);
     }
@@ -124,7 +124,7 @@ public abstract class AbstractNoteInter
                               Shape shape,
                               double grade,
                               Staff staff,
-                              double pitch)
+                              Double pitch)
     {
         super(glyph, bounds, shape, grade, staff, pitch);
     }

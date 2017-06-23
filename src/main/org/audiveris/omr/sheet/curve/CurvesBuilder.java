@@ -35,6 +35,7 @@ import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.SystemInfo;
 import static org.audiveris.omr.sheet.curve.Skeleton.*;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.InterIndex;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.util.Dumping;
@@ -872,6 +873,20 @@ public abstract class CurvesBuilder
         logger.debug("{} {} rev:{} {} hole:{}", curve, arcView.getArc(), reverse, vector, hole);
 
         return hole <= params.gapMaxLength;
+    }
+
+    /**
+     * Kept for debugging
+     *
+     * @param inters
+     */
+    private void register (Set<Inter> inters)
+    {
+        final InterIndex index = sheet.getInterIndex();
+
+        for (Inter inter : inters) {
+            index.register(inter);
+        }
     }
 
     //---------//

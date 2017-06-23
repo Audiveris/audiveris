@@ -23,13 +23,14 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.FilamentIndex;
-import org.audiveris.omr.glyph.ui.SymbolsController;
+import org.audiveris.omr.glyph.ui.GlyphsController;
 import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.lag.LagManager;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sig.InterIndex;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.CrossExclusion;
+import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.ErrorsEditor;
 import org.audiveris.omr.ui.selection.SelectionService;
@@ -141,6 +142,13 @@ public interface Sheet
     GlyphIndex getGlyphIndex ();
 
     /**
+     * In non batch mode, report the UI module for symbol assignment in this sheet
+     *
+     * @return the glyphs controller
+     */
+    GlyphsController getGlyphsController ();
+
+    /**
      * Report the picture height in pixels
      *
      * @return the picture height
@@ -167,6 +175,13 @@ public interface Sheet
      * @return the scale interline value
      */
     int getInterline ();
+
+    /**
+     * In non batch mode, report the UI module for inter management in this sheet
+     *
+     * @return the inter controller
+     */
+    InterController getInterController ();
 
     /**
      * Access to the lag manager for this sheet
@@ -238,13 +253,6 @@ public interface Sheet
      * @return the related stub (non null)
      */
     SheetStub getStub ();
-
-    /**
-     * In non batch mode, report the UI module for symbol assignment in this sheet
-     *
-     * @return the symbols controller
-     */
-    SymbolsController getSymbolsController ();
 
     /**
      * In non batch mode, report the editor dealing with symbols recognition in this sheet

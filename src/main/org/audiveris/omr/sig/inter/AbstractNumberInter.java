@@ -52,15 +52,13 @@ public abstract class AbstractNumberInter
      * @param glyph underlying glyph
      * @param shape precise shape
      * @param grade evaluation value
-     * @param value number value
      */
     public AbstractNumberInter (Glyph glyph,
                                 Shape shape,
-                                double grade,
-                                int value)
+                                double grade)
     {
         super(glyph, null, shape, grade);
-        this.value = value;
+        this.value = (shape != null) ? valueOf(shape) : (-1);
     }
 
     /**
@@ -69,15 +67,13 @@ public abstract class AbstractNumberInter
      * @param bounds bounding box of the number
      * @param shape  precise shape
      * @param grade  evaluation value
-     * @param value  number value
      */
     public AbstractNumberInter (Rectangle bounds,
                                 Shape shape,
-                                double grade,
-                                int value)
+                                double grade)
     {
         super(null, bounds, shape, grade);
-        this.value = value;
+        this.value = (shape != null) ? valueOf(shape) : (-1);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -141,8 +137,7 @@ public abstract class AbstractNumberInter
             return 16;
         }
 
-        // Not a predefined value
-        return -1;
+        throw new IllegalArgumentException("No integer value defined for " + shape);
     }
 
     //-----------//

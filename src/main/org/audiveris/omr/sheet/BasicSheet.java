@@ -24,9 +24,9 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
-import org.audiveris.omr.glyph.SymbolsModel;
+import org.audiveris.omr.glyph.GlyphsModel;
 import org.audiveris.omr.glyph.dynamic.FilamentIndex;
-import org.audiveris.omr.glyph.ui.SymbolsController;
+import org.audiveris.omr.glyph.ui.GlyphsController;
 import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.image.ImageFormatException;
 import org.audiveris.omr.lag.LagManager;
@@ -45,6 +45,7 @@ import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.InterIndex;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.CrossExclusion;
+import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.BoardsPane;
@@ -196,7 +197,10 @@ public class BasicSheet
     private ErrorsEditor errorsEditor;
 
     /** Specific builder dealing with glyphs. */
-    private volatile SymbolsController symbolsController;
+    private volatile GlyphsController glyphsController;
+
+    /** Specific UI manager dealing with inters. */
+    private volatile InterController interController;
 
     /** Related symbols editor, if any. */
     private SymbolsEditor symbolsEditor;
@@ -411,7 +415,7 @@ public class BasicSheet
     public void displayDataTab ()
     {
         try {
-            symbolsEditor = new SymbolsEditor(this, getSymbolsController());
+            getSymbolsEditor();
         } catch (Throwable ex) {
             logger.warn("Error in displayDataTab " + ex, ex);
         }
@@ -562,6 +566,19 @@ public class BasicSheet
         return glyphIndex;
     }
 
+    //----------------------//
+    // getGlyphsController //
+    //----------------------//
+    @Override
+    public GlyphsController getGlyphsController ()
+    {
+        if (glyphsController == null) {
+            createGlyphsController();
+        }
+
+        return glyphsController;
+    }
+
     //-----------//
     // getHeight //
     //-----------//
@@ -600,6 +617,19 @@ public class BasicSheet
     public int getInterline ()
     {
         return scale.getInterline();
+    }
+
+    //--------------------//
+    // getInterController //
+    //--------------------//
+    @Override
+    public InterController getInterController ()
+    {
+        if (interController == null) {
+            interController = new InterController(this);
+        }
+
+        return interController;
     }
 
     //---------------//
@@ -683,15 +713,6 @@ public class BasicSheet
         return scale;
     }
 
-    //---------------//
-    // getSheetDelta //
-    //---------------//
-    @Override
-    public SheetDiff getSheetDelta ()
-    {
-        return sheetDelta;
-    }
-
     //----------//
     // setImage //
     //----------//
@@ -723,6 +744,39 @@ public class BasicSheet
         }
     }
 
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding sheet.
+     *
+     * @param in the input stream that contains the sheet in XML format.
+     *           The stream is not closed by this method
+     *
+     * @return the allocated sheet.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static BasicSheet unmarshal (InputStream in)
+            throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+
+        ///um.setListener(new Jaxb.UnmarshalLogger());
+        BasicSheet sheet = (BasicSheet) um.unmarshal(in);
+        logger.debug("Sheet unmarshalled");
+
+        return sheet;
+    }
+
+    //---------------//
+    // getSheetDelta //
+    //---------------//
+    @Override
+    public SheetDiff getSheetDelta ()
+    {
+        return sheetDelta;
+    }
+
     //---------//
     // getSkew //
     //---------//
@@ -750,19 +804,6 @@ public class BasicSheet
         return stub;
     }
 
-    //----------------------//
-    // getSymbolsController //
-    //----------------------//
-    @Override
-    public SymbolsController getSymbolsController ()
-    {
-        if (symbolsController == null) {
-            createSymbolsController();
-        }
-
-        return symbolsController;
-    }
-
     //------------------//
     // getSymbolsEditor //
     //------------------//
@@ -770,7 +811,9 @@ public class BasicSheet
     public SymbolsEditor getSymbolsEditor ()
     {
         if (symbolsEditor == null) {
-            symbolsEditor = new SymbolsEditor(this, getSymbolsController());
+            interController = new InterController(this);
+            symbolsEditor = new SymbolsEditor(this, getGlyphsController(), interController);
+            interController.setSymbolsEditor(symbolsEditor);
         }
 
         return symbolsEditor;
@@ -919,30 +962,6 @@ public class BasicSheet
         return "Sheet{" + getId() + "}";
     }
 
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding sheet.
-     *
-     * @param in the input stream that contains the sheet in XML format.
-     *           The stream is not closed by this method
-     *
-     * @return the allocated sheet.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static BasicSheet unmarshal (InputStream in)
-            throws JAXBException
-    {
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-
-        ///um.setListener(new Jaxb.UnmarshalLogger());
-        BasicSheet sheet = (BasicSheet) um.unmarshal(in);
-        logger.debug("Sheet unmarshalled");
-
-        return sheet;
-    }
-
     //-------//
     // reset //
     //-------//
@@ -973,7 +992,7 @@ public class BasicSheet
 
             staffManager.reset();
             systemManager.reset();
-            symbolsController = null;
+            glyphsController = null;
             symbolsEditor = null;
 
         default:
@@ -1040,13 +1059,13 @@ public class BasicSheet
         return jaxbContext;
     }
 
-    //-------------------------//
-    // createSymbolsController //
-    //-------------------------//
-    private void createSymbolsController ()
+    //------------------------//
+    // createGlyphsController //
+    //------------------------//
+    private void createGlyphsController ()
     {
-        SymbolsModel model = new SymbolsModel(this);
-        symbolsController = new SymbolsController(model);
+        GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
+        glyphsController = new GlyphsController(model);
     }
 
     //-----------//

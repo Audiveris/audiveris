@@ -61,7 +61,7 @@ public class ClefInter
             Shape.G_CLEF,
             1,
             null,
-            +2,
+            +2.0,
             ClefKind.TREBLE);
 
     //~ Enumerations -------------------------------------------------------------------------------
@@ -111,7 +111,7 @@ public class ClefInter
                       Shape shape,
                       double grade,
                       Staff staff,
-                      double pitch,
+                      Double pitch,
                       ClefKind kind)
     {
         super(glyph, null, shape, grade, staff, pitch);
@@ -123,7 +123,7 @@ public class ClefInter
      */
     private ClefInter ()
     {
-        super(null, null, null, null, null, 0);
+        super(null, null, null, null, null, null);
         this.kind = null;
     }
 
@@ -150,14 +150,14 @@ public class ClefInter
         case G_CLEF_SMALL:
         case G_CLEF_8VA:
         case G_CLEF_8VB:
-            return new ClefInter(glyph, shape, grade, staff, 2, ClefKind.TREBLE);
+            return new ClefInter(glyph, shape, grade, staff, 2.0, ClefKind.TREBLE);
 
         case C_CLEF:
 
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2)
             Point center = glyph.getCenter();
-            int pp = (int) Math.rint(staff.pitchPositionOf(center));
+            double pp = Math.rint(staff.pitchPositionOf(center));
             ClefKind kind = (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
 
             return new ClefInter(glyph, shape, grade, staff, pp, kind);
@@ -166,10 +166,10 @@ public class ClefInter
         case F_CLEF_SMALL:
         case F_CLEF_8VA:
         case F_CLEF_8VB:
-            return new ClefInter(glyph, shape, grade, staff, -2, ClefKind.BASS);
+            return new ClefInter(glyph, shape, grade, staff, -2.0, ClefKind.BASS);
 
         case PERCUSSION_CLEF:
-            return new ClefInter(glyph, shape, grade, staff, 0, ClefKind.PERCUSSION);
+            return new ClefInter(glyph, shape, grade, staff, 0.0, ClefKind.PERCUSSION);
 
         default:
             return null;

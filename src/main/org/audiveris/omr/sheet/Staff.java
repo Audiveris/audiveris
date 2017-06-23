@@ -947,13 +947,32 @@ public class Staff
     /**
      * Report the ordered set of ledgers, if any, for a given index.
      *
-     * @param lineIndex the precise line index that specifies algebraic
-     *                  distance from staff
-     * @return the proper abscissa-ordered set of ledgers, or null
+     * @param lineIndex the precise line index that specifies algebraic distance from staff
+     * @return the proper set of ledgers, or null
      */
     public List<LedgerInter> getLedgers (int lineIndex)
     {
         return ledgerMap.get(lineIndex);
+    }
+
+    //----------------//
+    // getLedgerIndex //
+    //----------------//
+    /**
+     * Report the index in ledgerMap for the provided ledger
+     *
+     * @param ledger the provided ledger
+     * @return the related index value or null if not found
+     */
+    public Integer getLedgerIndex (LedgerInter ledger)
+    {
+        for (Map.Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
+            if (entry.getValue().contains(ledger)) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
     }
 
     //----------//

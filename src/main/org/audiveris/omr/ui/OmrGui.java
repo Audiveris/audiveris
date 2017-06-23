@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
-import org.audiveris.omr.ui.dnd.GhostGlassPane;
-
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
 
@@ -104,7 +102,7 @@ public abstract class OmrGui
      *
      * @return the ghost glass pane
      */
-    public abstract GhostGlassPane getGlassPane ();
+    public abstract OmrGlassPane getGlassPane ();
 
     /**
      * Notify that one or several new log records are available for display.

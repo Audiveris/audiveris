@@ -24,11 +24,16 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.relation.BarGroupRelation;
+import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.util.HorizontalSide;
 
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.Collection;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -182,5 +187,62 @@ public class BarlineInter
     protected String internals ()
     {
         return super.internals() + " " + shape;
+    }
+
+    //------------//
+    // getSibling //
+    //------------//
+    /**
+     * Report the sibling barline within a double group, if any
+     *
+     * @return sibling barline or null
+     */
+    public BarlineInter getSibling ()
+    {
+        if (shape == Shape.THIN_BARLINE) {
+            for (Relation bgRel : sig.getRelations(this, BarGroupRelation.class)) {
+                BarlineInter other = (BarlineInter) sig.getOppositeInter(this, bgRel);
+
+                if (other.getShape() == Shape.THIN_BARLINE) {
+                    return other;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Report the sequence of items (barlines and repeat dots if any) this barline
+     * is part of.
+     *
+     * @return the items sequence, composed of at least this barline
+     */
+    public SortedSet<Inter> getGroupItems ()
+    {
+        SortedSet<Inter> items = new TreeSet<Inter>(Inter.byFullAbscissa);
+        items.add(this);
+        browseGroup(this, items);
+
+        return items;
+    }
+
+    private void browseGroup (BarlineInter bar,
+                              SortedSet<Inter> items)
+    {
+        for (Relation rel : sig.getRelations(
+                bar,
+                BarGroupRelation.class,
+                RepeatDotBarRelation.class)) {
+            Inter other = sig.getOppositeInter(bar, rel);
+
+            if (!items.contains(other)) {
+                items.add(other);
+
+                if (other instanceof BarlineInter) {
+                    browseGroup((BarlineInter) other, items);
+                }
+            }
+        }
     }
 }

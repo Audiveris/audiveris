@@ -27,14 +27,19 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
+import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -179,6 +184,26 @@ public class DynamicsInter
         }
     }
 
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff == null) {
+            // Chord -> Dynamic
+            for (Relation cdRel : sig.getRelations(this, ChordDynamicsRelation.class)) {
+                AbstractChordInter chord = (AbstractChordInter) sig.getOppositeInter(this, cdRel);
+
+                if (chord.getStaff() != null) {
+                    return staff = chord.getStaff();
+                }
+            }
+        }
+
+        return staff;
+    }
+
     //-----------------//
     // getSymbolString //
     //-----------------//
@@ -202,9 +227,17 @@ public class DynamicsInter
             logger.info("VIP linkWithChord for {}", this);
         }
 
+        return !searchPartnerships(sig.getSystem(), true).isEmpty();
+    }
+
+    //-------------------//
+    // lookupPartnership //
+    //-------------------//
+    public Partnership lookupPartnership (SystemInfo system)
+    {
         // Look for a suitable chord related to this dynamics element
         final Point center = getCenter();
-        final MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+        final MeasureStack stack = system.getMeasureStackAt(center);
         getBounds();
 
         for (VerticalSide side : VerticalSide.values()) {
@@ -232,7 +265,7 @@ public class DynamicsInter
             }
 
             // Check vertical distance between element and chord
-            final Scale scale = sig.getSystem().getSheet().getScale();
+            final Scale scale = system.getSheet().getScale();
             final int maxDy = scale.toPixels(constants.maxDy);
 
             if (dyChord > maxDy) {
@@ -248,12 +281,30 @@ public class DynamicsInter
             }
 
             // For dynamics & for chord
-            sig.addEdge(chord, this, new ChordDynamicsRelation());
-
-            return true;
+            return new Partnership(chord, new ChordDynamicsRelation(), false);
         }
 
-        return false;
+        return null;
+    }
+
+    //--------------------//
+    // searchPartnerships //
+    //--------------------//
+    @Override
+    public Collection<Partnership> searchPartnerships (SystemInfo system,
+                                                       boolean doit)
+    {
+        Partnership partnership = lookupPartnership(system);
+
+        if (partnership != null) {
+            if (doit) {
+                partnership.applyTo(this);
+            }
+
+            return Collections.singleton(partnership);
+        }
+
+        return Collections.emptySet();
     }
 
     //-----------//
@@ -275,7 +326,7 @@ public class DynamicsInter
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxDy = new Scale.Fraction(
-                3.5,
+                4.5,
                 "Maximum vertical distance between dynamics center and related chord/staff");
     }
 }

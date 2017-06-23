@@ -52,7 +52,7 @@ public abstract class AbstractVerticalInter
 
     /** Line width. */
     @XmlAttribute
-    @XmlJavaTypeAdapter(value = Jaxb.Double1Adapter.class, type = double.class)
+    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
     protected final double width;
 
     /** Median line. */

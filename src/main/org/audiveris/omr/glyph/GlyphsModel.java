@@ -21,19 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
-import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.SampleRepository;
-import org.audiveris.omr.classifier.SampleSheet;
-import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.step.Step;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.ui.selection.EntityService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -58,9 +52,6 @@ public class GlyphsModel
     /** Related Sheet, if any. */
     protected final Sheet sheet;
 
-    /** Related Step, if any. */
-    protected final Step step;
-
     /** Latest shape assigned, if any. */
     protected Shape latestShape;
 
@@ -70,145 +61,17 @@ public class GlyphsModel
      *
      * @param sheet        the related sheet (can be null)
      * @param glyphService the related sheetService (cannot be null)
-     * @param step         the step after which update should be perform (can be null)
      */
     public GlyphsModel (Sheet sheet,
-                        EntityService<? extends Glyph> glyphService,
-                        Step step)
+                        EntityService<? extends Glyph> glyphService)
     {
         Objects.requireNonNull(glyphService, "Attempt to create a GlyphsModel with null service");
 
         this.sheet = sheet; // Null sheet is allowed (for SampleVerifier use)
         this.glyphService = glyphService;
-        this.step = step;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // assignGlyphs //
-    //--------------//
-    /**
-     * Assign a shape to the selected collection of glyphs.
-     *
-     * @param glyphs   the collection of glyphs to be assigned
-     * @param shape    the shape to be assigned
-     * @param compound flag to build one compound, rather than assign each
-     *                 individual glyph
-     * @param grade    the grade we have wrt the assigned shape
-     */
-    public void assignGlyphs (Collection<Glyph> glyphs,
-                              Shape shape,
-                              boolean compound,
-                              double grade)
-    {
-        if (compound) {
-            //            // Build & insert one compound
-            //            Glyph glyph = nest.buildGlyph(glyphs, true);
-            //
-            //            assignGlyph(glyph, shape, grade);
-        } else {
-            // Assign each glyph individually
-            for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
-                assignGlyph(glyph, sheet.getScale().getInterline(), shape, grade);
-            }
-        }
-    }
-
-    //----------------//
-    // deassignGlyphs //
-    //----------------//
-    /**
-     * De-Assign a collection of glyphs.
-     *
-     * @param glyphs the collection of glyphs to be de-assigned
-     */
-    public void deassignGlyphs (Collection<Glyph> glyphs)
-    {
-        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
-            deassignGlyph(glyph);
-        }
-    }
-
-    //--------------//
-    // deleteGlyphs //
-    //--------------//
-    public void deleteGlyphs (Collection<Glyph> glyphs)
-    {
-        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
-            deleteGlyph(glyph);
-        }
-    }
-
-    //-----------------//
-    // getGlyphService //
-    //-----------------//
-    /**
-     * Report the underlying glyph glyphService.
-     *
-     * @return the related glyph glyphService
-     */
-    public EntityService<? extends Glyph> getGlyphService ()
-    {
-        return glyphService;
-    }
-
-    //----------------//
-    // getLatestShape //
-    //----------------//
-    /**
-     * Report the latest non null shape that was assigned, or null if
-     * none.
-     *
-     * @return latest shape assigned, or null if none
-     */
-    public Shape getLatestShape ()
-    {
-        return latestShape;
-    }
-
-    //----------------//
-    // getRelatedStep //
-    //----------------//
-    /**
-     * Report the step this GlyphsModel is used for, so that we know
-     * from which step updates must be propagated.
-     * (we have to update the steps that follow this one)
-     *
-     * @return the step related to this glyphs model
-     */
-    public Step getRelatedStep ()
-    {
-        return step;
-    }
-
-    //----------//
-    // getSheet //
-    //----------//
-    /**
-     * Report the model underlying sheet.
-     *
-     * @return the underlying sheet instance
-     */
-    public Sheet getSheet ()
-    {
-        return sheet;
-    }
-
-    //----------------//
-    // setLatestShape //
-    //----------------//
-    /**
-     * Assign the latest useful shape.
-     *
-     * @param shape the current / latest shape
-     */
-    public void setLatestShape (Shape shape)
-    {
-        if (shape != Shape.GLYPH_PART) {
-            latestShape = shape;
-        }
-    }
-
     //-------------//
     // assignGlyph //
     //-------------//
@@ -217,23 +80,46 @@ public class GlyphsModel
      * system and nest if it is still transient.
      *
      * @param glyph     the glyph to be assigned
-     * @param interline global sheet interline
+     * @param staff     the related staff
+     * @param interline interline to use
      * @param shape     the assigned shape, which may be null
      * @param grade     the grade about shape
      * @return the assigned glyph (perhaps an original glyph)
      */
-    protected Glyph assignGlyph (Glyph glyph,
-                                 int interline,
-                                 Shape shape,
-                                 double grade)
+    public Glyph assignGlyph (Glyph glyph,
+                              Staff staff,
+                              int interline,
+                              Shape shape,
+                              double grade)
     {
-        final Book book = sheet.getStub().getBook();
-        final SampleRepository repository = book.getSampleRepository();
-        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
-
-        // TODO: we need staff information (-> interline and pitch)
-        repository.addSample(shape, glyph, interline, sampleSheet, null);
-
+        logger.error("HB. Not yet implemented");
+//
+//        final Inter ghost = SymbolFactory.createGhost(shape, grade);
+//        final SystemInfo system = staff.getSystem();
+//        ghost.setStaff(staff);
+//        ghost.setGlyph(glyph);
+//        ghost.setBounds(glyph.getBounds());
+//        system.getSig().addVertex(ghost);
+//        sheet.getStub().setModified(true);
+//
+//        // Edges? this depends on ghost class...
+//        Collection<Partnership> partnerships = ghost.searchPartnerships(system, true);
+//
+//        if (partnerships.isEmpty()) {
+//            logger.info("No partners for {}", ghost);
+//        }
+//
+//        sheet.getGlyphIndex().publish(null);
+//        sheet.getInterIndex().publish(ghost);
+//        logger.info("Added {}", ghost);
+//
+        //        final Book book = sheet.getStub().getBook();
+        //        final SampleRepository repository = book.getSampleRepository();
+        //        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
+        //
+        //        // TODO: we need staff information (-> interline and pitch)
+        //        repository.addSample(shape, glyph, interline, sampleSheet, null);
+        //
         //        if (glyph == null) {
         //            return null;
         //        }
@@ -274,6 +160,81 @@ public class GlyphsModel
         return glyph;
     }
 
+    //    //-------------//
+    //    // assignGlyph //
+    //    //-------------//
+    //    /**
+    //     * Assign a shape to the selected collection of glyphs.
+    //     *
+    //     * @param glyph the glyph to be assigned
+    //     * @param shape the shape to be assigned
+    //     * @param staff the related staff
+    //     * @param grade the grade we have wrt the assigned shape
+    //     */
+    //    public void assignGlyph (Glyph glyph,
+    //                             Shape shape,
+    //                             Staff staff,
+    //                             double grade)
+    //    {
+    //        // NO! interline is wrong!!!
+    //        assignGlyph(glyph, sheet.getScale().getInterline(), shape, grade);
+    //    }
+    //
+    //-----------------//
+    // getGlyphService //
+    //-----------------//
+    /**
+     * Report the underlying glyph glyphService.
+     *
+     * @return the related glyph glyphService
+     */
+    public EntityService<? extends Glyph> getGlyphService ()
+    {
+        return glyphService;
+    }
+
+    //----------------//
+    // getLatestShape //
+    //----------------//
+    /**
+     * Report the latest non null shape that was assigned, or null if
+     * none.
+     *
+     * @return latest shape assigned, or null if none
+     */
+    public Shape getLatestShape ()
+    {
+        return latestShape;
+    }
+
+    //----------//
+    // getSheet //
+    //----------//
+    /**
+     * Report the model underlying sheet.
+     *
+     * @return the underlying sheet instance
+     */
+    public Sheet getSheet ()
+    {
+        return sheet;
+    }
+
+    //----------------//
+    // setLatestShape //
+    //----------------//
+    /**
+     * Assign the latest useful shape.
+     *
+     * @param shape the current / latest shape
+     */
+    public void setLatestShape (Shape shape)
+    {
+        if (shape != Shape.GLYPH_PART) {
+            latestShape = shape;
+        }
+    }
+
     //---------------//
     // deassignGlyph //
     //---------------//
@@ -285,7 +246,7 @@ public class GlyphsModel
     protected void deassignGlyph (Glyph glyph)
     {
         // Assign the null shape to the glyph
-        assignGlyph(glyph, sheet.getInterline(), null, Evaluation.ALGORITHM);
+        ///assignGlyph(glyph, sheet.getInterline(), null, Evaluation.ALGORITHM);
     }
 
     //-------------//

@@ -23,7 +23,6 @@ package org.audiveris.omr.score.ui;
 
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.TribesMenu;
-import org.audiveris.omr.glyph.ui.SymbolMenu;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -48,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
@@ -66,51 +64,23 @@ public class EditorMenu
 
     private static final Logger logger = LoggerFactory.getLogger(EditorMenu.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Glyph sub-menu. */
-    private final SymbolMenu symbolMenu;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the editor page menu.
      *
-     * @param sheet      the related sheet
-     * @param symbolMenu already allocated symbol menu
+     * @param sheet the related sheet
      */
-    public EditorMenu (Sheet sheet,
-                       SymbolMenu symbolMenu)
+    public EditorMenu (Sheet sheet)
     {
         super(sheet);
-        this.symbolMenu = symbolMenu;
-        defineLayout(symbolMenu.getMenu());
+        defineLayout();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // updateMenu //
-    //------------//
-    /**
-     * Update the pop-up menu according to the currently selected items.
-     *
-     * @param rect the selected rectangle, if any
-     * @return true if not empty
-     */
-    @Override
-    public boolean updateMenu (Rectangle rect)
-    {
-        if (symbolMenu != null) {
-            // Update symbol menu (which is a specific case)
-            int symbolNb = symbolMenu.updateMenu(sheet.getGlyphIndex().getSelectedGlyphList());
-            symbolMenu.getMenu().setVisible(symbolNb > 0);
-        }
-
-        return super.updateMenu(rect);
-    }
-
     //--------------//
     // defineLayout //
     //--------------//
-    private void defineLayout (JMenu symbolMenu)
+    private void defineLayout ()
     {
         addMenu(new InterMenu(sheet));
         addMenu(new GlyphMenu(sheet));
@@ -121,8 +91,6 @@ public class EditorMenu
 
         addMenu(new MeasureMenu());
         addMenu(new SlotMenu());
-        ///addMenu(new ChordMenu());
-        ///addMenu(symbolMenu);
         addMenu(new StaffMenu());
         addMenu(new ExtractionMenu(sheet));
     }
@@ -181,7 +149,7 @@ public class EditorMenu
     //        @Override
     //        public void updateUserLocation (Rectangle rect)
     //        {
-    //            SymbolsController controller = sheet.getSymbolsController();
+    //            SymbolsController controller = sheet.getGlyphsController();
     //            Set<Glyph> glyphs = controller.getNest().getSelectedGlyphSet();
     //            selectedChords.clear();
     //            setText("");

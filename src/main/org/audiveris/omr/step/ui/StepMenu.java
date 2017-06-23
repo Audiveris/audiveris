@@ -184,7 +184,8 @@ public class StepMenu
                         if ((sofar != null) & (sofar.compareTo(step) >= 0)) {
                             int answer = JOptionPane.showConfirmDialog(
                                     OMR.gui.getFrame(),
-                                    "About to redo step " + step + ", do you confirm?",
+                                    "About to re-perform step " + step
+                                    + " from scratch, do you confirm?",
                                     "Redo confirmation",
                                     JOptionPane.YES_NO_CANCEL_OPTION,
                                     JOptionPane.WARNING_MESSAGE);

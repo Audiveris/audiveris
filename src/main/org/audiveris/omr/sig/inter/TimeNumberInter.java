@@ -30,7 +30,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.util.VerticalSide;
 
 import java.awt.Point;
-import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -51,7 +50,7 @@ public class TimeNumberInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Top or bottom. */
     @XmlAttribute
-    protected final VerticalSide side;
+    protected VerticalSide side;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -60,40 +59,14 @@ public class TimeNumberInter
      * @param glyph underlying glyph
      * @param shape precise shape
      * @param grade evaluation value
-     * @param value number value
      * @param side  top or bottom
      */
     public TimeNumberInter (Glyph glyph,
                             Shape shape,
                             double grade,
-                            int value,
                             VerticalSide side)
     {
-        super(glyph, shape, grade, value);
-
-        if (!ShapeSet.PartialTimes.contains(shape)) {
-            throw new IllegalArgumentException(shape + " not allowed as TimeNumberInter shape");
-        }
-
-        this.side = side;
-    }
-
-    /**
-     * Creates a new TimeNumberInter object.
-     *
-     * @param bounds bounding box of the number
-     * @param shape  precise shape
-     * @param grade  evaluation value
-     * @param value  number value
-     * @param side   top or bottom
-     */
-    public TimeNumberInter (Rectangle bounds,
-                            Shape shape,
-                            double grade,
-                            int value,
-                            VerticalSide side)
-    {
-        super(bounds, shape, grade, value);
+        super(glyph, shape, grade);
 
         if (!ShapeSet.PartialTimes.contains(shape)) {
             throw new IllegalArgumentException(shape + " not allowed as TimeNumberInter shape");
@@ -107,8 +80,7 @@ public class TimeNumberInter
      */
     private TimeNumberInter ()
     {
-        super((Glyph) null, null, 0, 0);
-        this.side = null;
+        super((Glyph) null, null, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -138,14 +110,7 @@ public class TimeNumberInter
 
         VerticalSide side = (pitch < 0) ? VerticalSide.TOP : VerticalSide.BOTTOM;
 
-        // Check value
-        int value = valueOf(shape);
-
-        if (value == -1) {
-            return null;
-        }
-
-        TimeNumberInter inter = new TimeNumberInter(glyph, shape, grade, value, side);
+        TimeNumberInter inter = new TimeNumberInter(glyph, shape, grade, side);
         inter.setStaff(staff);
 
         return inter;
@@ -166,6 +131,17 @@ public class TimeNumberInter
     protected String internals ()
     {
         return super.internals() + " " + shape;
+    }
+
+    //---------//
+    // setSide //
+    //---------//
+    /**
+     * @param side the side to set
+     */
+    public void setSide (VerticalSide side)
+    {
+        this.side = side;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

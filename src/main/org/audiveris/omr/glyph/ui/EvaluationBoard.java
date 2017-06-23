@@ -36,8 +36,10 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
+import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.selection.EntityListEvent;
+import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.UserEvent;
@@ -53,7 +55,6 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -93,8 +94,8 @@ public class EvaluationBoard
     /** Underlying glyph classifier. */
     protected final Classifier classifier;
 
-    /** Related glyphs controller */
-    protected final GlyphsController glyphsController;
+    /** Related inters controller */
+    protected final InterController intersController;
 
     /** Related sheet */
     @Navigable(false)
@@ -110,21 +111,6 @@ public class EvaluationBoard
     protected final boolean isActive;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /**
-     * Create a simplified passive evaluation board with one neural network classifier.
-     *
-     * @param classifier      the classifier to use
-     * @param glyphController the related glyph controller
-     * @param selected        true for pre-selection
-     */
-    public EvaluationBoard (Classifier classifier,
-                            GlyphsController glyphController,
-                            boolean selected)
-    {
-        this(false, null, classifier, glyphController, selected);
-        useAnnotations = false;
-    }
-
     //-----------------//
     // EvaluationBoard //
     //-----------------//
@@ -132,21 +118,23 @@ public class EvaluationBoard
      * Create an evaluation board with one neural network classifier and the ability to
      * force glyph shape.
      *
-     * @param isActive        true for active buttons
-     * @param sheet           the related sheet, or null
-     * @param classifier      the classifier to use
-     * @param glyphController the related glyph controller
-     * @param selected        true for pre-selection
+     * @param isActive         true for active buttons
+     * @param sheet            the related sheet, or null
+     * @param classifier       the classifier to use
+     * @param glyphService     the service to get glyphs
+     * @param intersController the related inters controller
+     * @param selected         true for pre-selection
      */
     public EvaluationBoard (boolean isActive,
                             Sheet sheet,
                             Classifier classifier,
-                            GlyphsController glyphController,
+                            EntityService<Glyph> glyphService,
+                            InterController intersController,
                             boolean selected)
     {
         super(
                 new Desc(classifier.getName(), 700),
-                glyphController.getGlyphService(),
+                glyphService,
                 eventsRead,
                 selected,
                 false,
@@ -154,7 +142,7 @@ public class EvaluationBoard
                 false);
 
         this.classifier = classifier;
-        this.glyphsController = glyphController;
+        this.intersController = intersController;
         this.isActive = isActive;
         this.sheet = sheet;
 
@@ -430,16 +418,16 @@ public class EvaluationBoard
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            // Assign current glyph with selected shape
-            if (glyphsController != null) {
-                Glyph glyph = glyphsController.getGlyphService().getSelectedEntity();
+            // Assign inter on current glyph with selected shape
+            if (intersController != null) {
+                Glyph glyph = ((EntityService<Glyph>) getSelectionService()).getSelectedEntity();
 
                 if (glyph != null) {
                     String str = button.getText();
                     Shape shape = Shape.valueOf(str);
 
                     // Actually assign the shape
-                    glyphsController.asyncAssignGlyphs(Arrays.asList(glyph), shape, false);
+                    intersController.addInter(glyph, shape);
                 }
             }
         }

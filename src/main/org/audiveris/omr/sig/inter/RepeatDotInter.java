@@ -49,7 +49,7 @@ public class RepeatDotInter
     public RepeatDotInter (Glyph glyph,
                            double grade,
                            Staff staff,
-                           int pitch)
+                           Double pitch)
     {
         super(glyph, null, Shape.REPEAT_DOT, grade, staff, pitch);
     }

@@ -54,7 +54,7 @@ public abstract class AbstractEntity
     /** Identity for debugging. */
     @XmlID
     @XmlAttribute(name = "id")
-    @XmlJavaTypeAdapter(value = Jaxb.StringIntegerAdapter.class, type = int.class)
+    @XmlJavaTypeAdapter(type = int.class, value = Jaxb.StringIntegerAdapter.class)
     protected int id;
 
     // Transient data

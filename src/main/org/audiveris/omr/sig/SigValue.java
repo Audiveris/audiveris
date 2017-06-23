@@ -23,6 +23,8 @@ package org.audiveris.omr.sig;
 
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AlterInter;
+import org.audiveris.omr.sig.inter.ArpeggiatoInter;
+import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
@@ -31,9 +33,10 @@ import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.BracketConnectorInter;
 import org.audiveris.omr.sig.inter.BracketInter;
+import org.audiveris.omr.sig.inter.BreathMarkInter;
+import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.ClefInter;
-import org.audiveris.omr.sig.inter.CodaInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
@@ -50,19 +53,18 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SegmentInter;
-import org.audiveris.omr.sig.inter.SegnoInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
-import org.audiveris.omr.sig.inter.StaccatoInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
@@ -78,16 +80,16 @@ import org.audiveris.omr.sig.relation.BarGroupRelation;
 import org.audiveris.omr.sig.relation.BasicExclusion;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
+import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
-import org.audiveris.omr.sig.relation.ChordStaccatoRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
-import org.audiveris.omr.sig.relation.CodaBarRelation;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
@@ -99,11 +101,11 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.KeyAltersRelation;
+import org.audiveris.omr.sig.relation.MarkerBarRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
-import org.audiveris.omr.sig.relation.SegnoBarRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
@@ -162,6 +164,8 @@ public class SigValue
     @XmlElementRefs({
         @XmlElementRef(type = AlterInter.class)
         , @XmlElementRef(type = AugmentationDotInter.class)
+        , @XmlElementRef(type = ArpeggiatoInter.class)
+        , @XmlElementRef(type = ArticulationInter.class)
         , @XmlElementRef(type = BarConnectorInter.class)
         , @XmlElementRef(type = BarlineInter.class)
         , @XmlElementRef(type = BeamHookInter.class)
@@ -169,9 +173,10 @@ public class SigValue
         , @XmlElementRef(type = BraceInter.class)
         , @XmlElementRef(type = BracketConnectorInter.class)
         , @XmlElementRef(type = BracketInter.class)
+        , @XmlElementRef(type = BreathMarkInter.class)
+        , @XmlElementRef(type = CaesuraInter.class)
         , @XmlElementRef(type = ChordNameInter.class)
         , @XmlElementRef(type = ClefInter.class)
-        , @XmlElementRef(type = CodaInter.class)
         , @XmlElementRef(type = DynamicsInter.class)
         , @XmlElementRef(type = EndingInter.class)
         , @XmlElementRef(type = FermataDotInter.class)
@@ -188,19 +193,18 @@ public class SigValue
         , // Cannot occur ???
         @XmlElementRef(type = LyricItemInter.class)
         , @XmlElementRef(type = LyricLineInter.class)
+        , @XmlElementRef(type = MarkerInter.class)
         , @XmlElementRef(type = PedalInter.class)
         , @XmlElementRef(type = PluckingInter.class)
         , @XmlElementRef(type = RepeatDotInter.class)
         , @XmlElementRef(type = RestChordInter.class)
         , @XmlElementRef(type = RestInter.class)
         , @XmlElementRef(type = SegmentInter.class)
-        , @XmlElementRef(type = SegnoInter.class)
         , @XmlElementRef(type = SentenceInter.class)
         , @XmlElementRef(type = SlurInter.class)
         , @XmlElementRef(type = SmallBeamInter.class)
         , @XmlElementRef(type = SmallChordInter.class)
         , @XmlElementRef(type = SmallFlagInter.class)
-        , @XmlElementRef(type = StaccatoInter.class)
         , @XmlElementRef(type = StemInter.class)
         , @XmlElementRef(type = TimeNumberInter.class)
         , @XmlElementRef(type = TimePairInter.class)
@@ -378,16 +382,16 @@ public class SigValue
             , @XmlElementRef(type = BasicExclusion.class)
             , @XmlElementRef(type = BeamHeadRelation.class)
             , @XmlElementRef(type = BeamStemRelation.class)
+            , @XmlElementRef(type = ChordArpeggiatoRelation.class)
+            , @XmlElementRef(type = ChordArticulationRelation.class)
             , @XmlElementRef(type = ChordDynamicsRelation.class)
             , @XmlElementRef(type = ChordNameRelation.class)
             , @XmlElementRef(type = ChordPedalRelation.class)
             , @XmlElementRef(type = ChordSentenceRelation.class)
-            , @XmlElementRef(type = ChordStaccatoRelation.class)
             , @XmlElementRef(type = ChordSyllableRelation.class)
             , @XmlElementRef(type = ChordTupletRelation.class)
             , @XmlElementRef(type = ChordWedgeRelation.class)
             , @XmlElementRef(type = ClefKeyRelation.class)
-            , @XmlElementRef(type = CodaBarRelation.class)
             , @XmlElementRef(type = DotFermataRelation.class)
             , @XmlElementRef(type = DoubleDotRelation.class)
             , @XmlElementRef(type = EndingBarRelation.class)
@@ -399,10 +403,10 @@ public class SigValue
             , @XmlElementRef(type = HeadHeadRelation.class)
             , @XmlElementRef(type = HeadStemRelation.class)
             , @XmlElementRef(type = KeyAltersRelation.class)
+            , @XmlElementRef(type = MarkerBarRelation.class)
             , @XmlElementRef(type = NoExclusion.class)
             , @XmlElementRef(type = RepeatDotBarRelation.class)
             , @XmlElementRef(type = RepeatDotPairRelation.class)
-            , @XmlElementRef(type = SegnoBarRelation.class)
             , @XmlElementRef(type = SlurHeadRelation.class)
             , @XmlElementRef(type = StemAlignmentRelation.class)
             , @XmlElementRef(type = TimeTopBottomRelation.class)

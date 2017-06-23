@@ -73,7 +73,7 @@ public class RestInter
                       Shape shape,
                       double grade,
                       Staff staff,
-                      double pitch)
+                      Double pitch)
     {
         super(glyph, null, shape, grade, staff, pitch);
     }

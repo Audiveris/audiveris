@@ -70,6 +70,18 @@ public class LedgerInter
     }
 
     /**
+     * Creates a new LedgerInter object.
+     *
+     * @param glyph the underlying glyph
+     * @param grade quality
+     */
+    public LedgerInter (Glyph glyph,
+                        double grade)
+    {
+        super(glyph, null, Shape.LEDGER, grade);
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
     private LedgerInter ()

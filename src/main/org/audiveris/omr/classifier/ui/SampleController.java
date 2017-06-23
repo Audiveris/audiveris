@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -108,14 +107,11 @@ public class SampleController
     }
 
     @Override
-    public Task<Void, Void> asyncAssignGlyphs (Collection<Glyph> glyphs,
-                                               Shape shape,
-                                               boolean compound)
+    public Task<Void, Void> asyncAssignGlyph (Glyph glyph,
+                                              Shape shape)
     {
-        for (Glyph glyph : glyphs) {
-            Sample sample = (Sample) glyph;
-            assignSample(sample, shape);
-        }
+        Sample sample = (Sample) glyph;
+        assignSample(sample, shape);
 
         return null;
     }

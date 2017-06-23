@@ -26,6 +26,8 @@ import org.audiveris.omr.glyph.Shape;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -118,5 +120,28 @@ public class HeadChordInter
     public String shapeString ()
     {
         return "HeadChord";
+    }
+
+    //----------------//
+    // getHeadsBounds //
+    //----------------//
+    /**
+     * Report the bounding box of just the chord heads, without the stem if any.
+     *
+     * @return the heads bounding box
+     */
+    public Rectangle getHeadsBounds ()
+    {
+        Rectangle box = null;
+
+        for (Inter head : notes) {
+            if (box == null) {
+                box = head.getBounds();
+            } else {
+                box = box.union(head.getBounds());
+            }
+        }
+
+        return box;
     }
 }

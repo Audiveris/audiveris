@@ -50,7 +50,7 @@ public class SampleModel
     public SampleModel (SampleRepository repository,
                         EntityService<Sample> sampleService)
     {
-        super(null, sampleService, null);
+        super(null, sampleService);
         this.repository = repository;
     }
 

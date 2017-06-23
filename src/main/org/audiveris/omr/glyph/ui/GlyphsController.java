@@ -21,14 +21,19 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
-import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphsModel;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.script.AssignTask;
-import org.audiveris.omr.script.DeleteTask;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.StaffManager;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.symbol.SymbolFactory;
+import org.audiveris.omr.sig.inter.BraceInter;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.SelectionHint;
@@ -39,9 +44,11 @@ import org.jdesktop.application.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Class {@code GlyphsController} is a common basis for interactive glyph handling,
@@ -91,59 +98,101 @@ public class GlyphsController
     // asyncAssignGlyphs //
     //-------------------//
     /**
-     * Asynchronously assign a shape to the selected collection of glyphs
-     * and record this action in the script.
+     * Asynchronously assign a shape to the selected glyph.
+     * (and record this action in the script.???)
      *
-     * @param glyphs   the collection of glyphs to be assigned
-     * @param shape    the shape to be assigned
-     * @param compound flag to build one compound, rather than assign each
-     *                 individual glyph
+     * @param glyph the glyph to interpret
+     * @param shape the shape to be assigned
      * @return the task that carries out the processing
      */
-    public Task<Void, Void> asyncAssignGlyphs (Collection<Glyph> glyphs,
-                                               Shape shape,
-                                               boolean compound)
+    public Task<Void, Void> asyncAssignGlyph (Glyph glyph,
+                                              Shape shape)
     {
-        // Safety check: we cannot alter virtual glyphs
-        for (Glyph glyph : glyphs) {
-            if (glyph.isVirtual()) {
-                logger.warn("Cannot alter VirtualGlyph#{}", glyph.getId());
+        try {
+            StaffManager staffManager = sheet.getStaffManager();
+            glyph = sheet.getGlyphIndex().registerOriginal(glyph);
 
-                return null;
+            if (ShapeSet.Barlines.contains(shape)) {
+                //            // Special case for barlines assignment or deassignment
+                //            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
+                if (shape == Shape.BRACE) {
+                    Inter brace = new BraceInter(glyph, 1);
+                    Rectangle box = glyph.getBounds();
+                    Point top = new Point(box.x + (box.width / 2), box.y);
+                    Staff topStaff = staffManager.getClosestStaff(top);
+                    Point bot = new Point(box.x + (box.width / 2), box.y + box.height);
+                    Staff botStaff = staffManager.getClosestStaff(bot);
+
+                    if (topStaff.getSystem() == botStaff.getSystem()) {
+                        SystemInfo system = topStaff.getSystem();
+                        system.getSig().addVertex(brace);
+                        sheet.getStub().setModified(true);
+                        sheet.getGlyphIndex().publish(null);
+                        sheet.getInterIndex().publish(brace);
+                        logger.info("Added specific {}", brace);
+                    }
+                } else {
+                    return null;
+                }
+            } else {
+                // TODO: while interacting with user, make sure we have the related staff & system
+                SystemInfo system = null;
+                Staff staff = null;
+                Point center = glyph.getCenter();
+                List<Staff> staves = staffManager.getStavesOf(center);
+
+                if (staves.isEmpty()) {
+                    throw new IllegalStateException("No staff for " + center);
+                }
+
+                Inter ghost = SymbolFactory.createGhost(shape, 1);
+                ghost.setGlyph(glyph);
+                ghost.setBounds(glyph.getBounds());
+
+                if (staves.size() == 1) {
+                    // We are within one staff height
+                    staff = staves.get(0);
+                    system = staff.getSystem();
+                } else {
+                    // We are between two staves
+                    SystemInfo prevSystem = null;
+                    StaffLoop:
+                    for (int i = 0; i < 2; i++) {
+                        system = staves.get(i).getSystem();
+
+                        if (system != prevSystem) {
+                            Collection<Partnership> partnerships = ghost.searchPartnerships(
+                                    system,
+                                    false);
+
+                            for (Partnership p : partnerships) {
+                                if (p.partner.getStaff() != null) {
+                                    staff = p.partner.getStaff();
+
+                                    break StaffLoop;
+                                }
+                            }
+                        }
+
+                        prevSystem = system;
+                    }
+
+                    if (staff == null) {
+                        // TODO: Ask user!
+                    }
+                }
+
+                if (staff != null) {
+                    return new AssignTask(sheet, system, staff, shape, glyph).launch(sheet);
+                } else {
+                    logger.warn("No staff known at {}", center);
+                }
             }
+        } catch (Exception ex) {
+            logger.warn("Error assigning " + shape + " {}", ex);
         }
 
-        if (ShapeSet.Barlines.contains(shape)) {
-            //            // Special case for barlines assignment or deassignment
-            //            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
-            return null;
-        } else {
-            // Normal symbol processing
-            return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
-        }
-    }
-
-    //---------------------//
-    // asyncDeassignGlyphs //
-    //---------------------//
-    /**
-     * Asynchronously de-Assign a collection of glyphs and record this
-     * action in the script.
-     *
-     * @param glyphs the collection of glyphs to be de-assigned
-     * @return the task that carries out the processing
-     */
-    public Task<Void, Void> asyncDeassignGlyphs (Collection<Glyph> glyphs)
-    {
-        return asyncAssignGlyphs(glyphs, null, false);
-    }
-
-    //--------------------------//
-    // asyncDeleteVirtualGlyphs //
-    //--------------------------//
-    public Task<Void, Void> asyncDeleteVirtualGlyphs (Collection<Glyph> glyphs)
-    {
-        return new DeleteTask(sheet, glyphs).launch(sheet);
+        return null;
     }
 
     //-----------------//
@@ -222,45 +271,15 @@ public class GlyphsController
      */
     public void syncAssign (AssignTask context)
     {
-        final boolean compound = context.isCompound();
-        final Shape shape = context.getAssignedShape();
-        logger.debug("syncAssign {} compound:{}", context, compound);
+        logger.debug("syncAssign {}", context);
 
-        Set<Glyph> glyphs = context.getInitialGlyphs();
-
-        if (shape != null) { // Assignment
-            // Persistent?
-            model.assignGlyphs(glyphs, context.getAssignedShape(), compound, Evaluation.MANUAL);
-
-            //            // Publish modifications (about new glyph)
-            //            Glyph firstGlyph = glyphs.iterator().next();
-            //
-            //            if (firstGlyph != null) {
-            //                publish(firstGlyph.getMembers().first().getCompound());
-            //            }
-        } else { // Deassignment
-            model.deassignGlyphs(glyphs);
-
-            // Publish modifications (about current glyph)
-            publish(glyphs.iterator().next());
-        }
-    }
-
-    //------------//
-    // syncDelete //
-    //------------//
-    /**
-     * Process synchronously the deletion defined in the provided context.
-     *
-     * @param context the context of the deletion
-     */
-    public void syncDelete (DeleteTask context)
-    {
-        logger.debug("syncDelete{}", context);
-
-        model.deleteGlyphs(context.getInitialGlyphs());
-
-        publish((Glyph) null);
+        Glyph glyph = context.getGlyph();
+        model.assignGlyph(
+                glyph,
+                context.getStaff(),
+                context.getInterline(),
+                context.getAssignedShape(),
+                1.0);
     }
 
     //---------//

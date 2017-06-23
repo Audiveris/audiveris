@@ -28,9 +28,12 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
+import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -39,7 +42,11 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -62,7 +69,7 @@ public class AlterInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Measured pitch value. */
-    private final double measuredPitch;
+    private Double measuredPitch;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -79,8 +86,8 @@ public class AlterInter
                        Shape shape,
                        double grade,
                        Staff staff,
-                       int pitch,
-                       double measuredPitch)
+                       Double pitch,
+                       Double measuredPitch)
     {
         super(glyph, null, shape, grade, staff, pitch);
         this.measuredPitch = measuredPitch;
@@ -100,8 +107,8 @@ public class AlterInter
                        Shape shape,
                        GradeImpacts impacts,
                        Staff staff,
-                       int pitch,
-                       double measuredPitch)
+                       Double pitch,
+                       Double measuredPitch)
     {
         super(glyph, null, shape, impacts, staff, pitch);
         this.measuredPitch = measuredPitch;
@@ -112,8 +119,8 @@ public class AlterInter
      */
     private AlterInter ()
     {
-        super(null, null, null, null, null, 0);
-        this.measuredPitch = 0;
+        super(null, null, null, null, null, null);
+        this.measuredPitch = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -130,7 +137,7 @@ public class AlterInter
     // create //
     //--------//
     /**
-     * Create an Alter inter.
+     * Create an Alter inter, with a grade value,determining pitch WRT provided staff.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
@@ -152,7 +159,7 @@ public class AlterInter
     // create //
     //--------//
     /**
-     * Create an Alter inter.
+     * Create an Alter inter, with impacts data, determining pitch WRT provided staff.
      *
      * @param glyph   underlying glyph
      * @param shape   precise shape
@@ -171,60 +178,20 @@ public class AlterInter
     }
 
     //--------------------//
-    // detectNoteRelation //
+    // detectHeadRelation //
     //--------------------//
     /**
-     * Try to detect a relation between this Alter instance and a note nearby.
+     * Try to detect a relation between this Alter instance and a head nearby (perhaps
+     * with its mirror).
      *
      * @param systemHeads ordered collection of notes in system
      */
-    public void detectNoteRelation (List<Inter> systemHeads)
+    public void detectHeadRelation (List<Inter> systemHeads)
     {
-        // Look for notes nearby on the right side of accidental
-        final Scale scale = sig.getSystem().getSheet().getScale();
-        final int xGapMax = scale.toPixels(AlterHeadRelation.getXOutGapMaximum());
-        final int yGapMax = scale.toPixels(AlterHeadRelation.getYGapMaximum());
+        Collection<Partnership> partnerships = searchPartnerships(systemHeads);
 
-        // Accid ref point is on accid right side and precise y depends on accid shape
-        Rectangle accidBox = getBounds();
-        Point accidPt = new Point(
-                accidBox.x + accidBox.width,
-                ((shape != Shape.FLAT) && (shape != Shape.DOUBLE_FLAT))
-                        ? (accidBox.y + (accidBox.height / 2))
-                        : (accidBox.y + ((3 * accidBox.height) / 4)));
-        Rectangle luBox = new Rectangle(accidPt.x, accidPt.y - yGapMax, xGapMax, 2 * yGapMax);
-        List<Inter> notes = sig.intersectedInters(systemHeads, GeoOrder.BY_ABSCISSA, luBox);
-
-        if (!notes.isEmpty()) {
-            if (getGlyph().isVip()) {
-                logger.info("accid {} glyph#{} notes:{}", this, getGlyph().getId(), notes);
-            }
-
-            AlterHeadRelation bestRel = null;
-            Inter bestNote = null;
-            double bestYGap = Double.MAX_VALUE;
-
-            for (Inter note : notes) {
-                // Note ref point is on note left side and y is at note mid height
-                // We are strict on pitch concordance (through yGapMax value)
-                Point notePt = note.getCenterLeft();
-                double xGap = notePt.x - accidPt.x;
-                double yGap = Math.abs(notePt.y - accidPt.y);
-                AlterHeadRelation rel = new AlterHeadRelation();
-                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-
-                if (rel.getGrade() >= rel.getMinGrade()) {
-                    if ((bestRel == null) || (bestYGap > yGap)) {
-                        bestRel = rel;
-                        bestNote = note;
-                        bestYGap = yGap;
-                    }
-                }
-            }
-
-            if (bestRel != null) {
-                sig.addEdge(this, bestNote, bestRel);
-            }
+        for (Partnership partnership : partnerships) {
+            partnership.applyTo(this);
         }
     }
 
@@ -234,14 +201,18 @@ public class AlterInter
     @Override
     public String getDetails ()
     {
-        return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
+        if (measuredPitch != null) {
+            return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
+        }
+
+        return super.getDetails();
     }
 
     //-------------------//
     // getFlatAreaOffset //
     //-------------------//
     /**
-     * Report for a flat sign the vertical offset of pitch ordinate WRT sign top ordinate.
+     * Report for a flat sign the center offset WRT area center.
      *
      * @return height offset of pitch
      */
@@ -253,6 +224,11 @@ public class AlterInter
     //--------------------//
     // getFlatPitchOffset //
     //--------------------//
+    /**
+     * Report for a flat sign the vertical offset of pitch ordinate WRT sign top ordinate.
+     *
+     * @return height offset of pitch
+     */
     public static double getFlatPitchOffset ()
     {
         return constants.flatPitchOffset.getValue();
@@ -266,6 +242,26 @@ public class AlterInter
         return measuredPitch;
     }
 
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    @Override
+    public Point getRelationCenter ()
+    {
+        Point center = getCenter();
+
+        switch (shape) {
+        case FLAT:
+        case DOUBLE_FLAT:
+            return new Point(
+                    center.x,
+                    (int) Math.rint(center.y + (getFlatAreaOffset() * getBounds().height)));
+
+        default:
+            return center;
+        }
+    }
+
     //----------//
     // getVoice //
     //----------//
@@ -277,6 +273,28 @@ public class AlterInter
         }
 
         return null;
+    }
+
+    //--------------------//
+    // searchPartnerships //
+    //--------------------//
+    @Override
+    public Collection<Partnership> searchPartnerships (SystemInfo system,
+                                                       boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
+        Collections.sort(systemHeads, Inter.byAbscissa);
+
+        Collection<Partnership> partnerships = searchPartnerships(systemHeads);
+
+        if (doit) {
+            for (Partnership partnership : partnerships) {
+                partnership.applyTo(this);
+            }
+        }
+
+        return partnerships;
     }
 
     //--------------//
@@ -315,8 +333,9 @@ public class AlterInter
 
             // Heuristic center WRT glyph box
             Rectangle box = glyph.getBounds();
+            Point center = glyph.getCenter();
             double geoPitch = staff.pitchPositionOf(
-                    new Point2D.Double(centroid.x, box.y + (getFlatAreaOffset() * box.height)));
+                    new Point2D.Double(center.x, center.y + (getFlatAreaOffset() * box.height)));
 
             // Average value of both heuristics
             double mix = 0.5 * (massPitch + geoPitch);
@@ -340,6 +359,81 @@ public class AlterInter
         return super.internals() + " " + shape;
     }
 
+    //--------------------//
+    // searchPartnerships //
+    //--------------------//
+    /**
+     * Try to detect partnership between this Alter instance and a head nearby (and its
+     * mirror head if any)
+     *
+     * @param systemHeads ordered collection of notes in system
+     * @return the collection of partnerships found, perhaps null
+     */
+    private Collection<Partnership> searchPartnerships (List<Inter> systemHeads)
+    {
+        if (systemHeads.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        // Look for notes nearby on the right side of accidental
+        final SystemInfo system = systemHeads.get(0).getSig().getSystem();
+        final Scale scale = system.getSheet().getScale();
+        final int xGapMax = scale.toPixels(AlterHeadRelation.getXOutGapMaximum());
+        final int yGapMax = scale.toPixels(AlterHeadRelation.getYGapMaximum());
+
+        // Accid ref point is on accid right side and precise y depends on accid shape
+        Rectangle accidBox = getBounds();
+        Point accidPt = new Point(
+                accidBox.x + accidBox.width,
+                ((shape != Shape.FLAT) && (shape != Shape.DOUBLE_FLAT))
+                        ? (accidBox.y + (accidBox.height / 2))
+                        : (accidBox.y + ((3 * accidBox.height) / 4)));
+        Rectangle luBox = new Rectangle(accidPt.x, accidPt.y - yGapMax, xGapMax, 2 * yGapMax);
+        List<Inter> notes = SIGraph.intersectedInters(systemHeads, GeoOrder.BY_ABSCISSA, luBox);
+
+        if (!notes.isEmpty()) {
+            if ((getGlyph() != null) && getGlyph().isVip()) {
+                logger.info("accid {} glyph#{} notes:{}", this, getGlyph().getId(), notes);
+            }
+
+            AlterHeadRelation bestRel = null;
+            Inter bestHead = null;
+            double bestYGap = Double.MAX_VALUE;
+
+            for (Inter head : notes) {
+                // Note ref point is on head left side and y is at head mid height
+                // We are strict on pitch concordance (through yGapMax value)
+                Point notePt = head.getCenterLeft();
+                double xGap = notePt.x - accidPt.x;
+                double yGap = Math.abs(notePt.y - accidPt.y);
+                AlterHeadRelation rel = new AlterHeadRelation();
+                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+
+                if (rel.getGrade() >= rel.getMinGrade()) {
+                    if ((bestRel == null) || (bestYGap > yGap)) {
+                        bestRel = rel;
+                        bestHead = head;
+                        bestYGap = yGap;
+                    }
+                }
+            }
+
+            if (bestRel != null) {
+                Set<Partnership> set = new LinkedHashSet<Partnership>();
+                set.add(new Partnership(bestHead, bestRel, true));
+
+                // If any, include head mirror as well
+                if (bestHead.getMirror() != null) {
+                    set.add(new Partnership(bestHead.getMirror(), bestRel.duplicate(), true));
+                }
+
+                return set;
+            }
+        }
+
+        return Collections.emptySet();
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Pitches //
@@ -348,12 +442,12 @@ public class AlterInter
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        public final int pitch;
+        public final double pitch;
 
         public final double measuredPitch;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Pitches (int pitch,
+        public Pitches (double pitch,
                         double measuredPitch)
         {
             this.pitch = pitch;
@@ -375,7 +469,7 @@ public class AlterInter
                 "Pitch offset of flat WRT centroid-based pitch");
 
         private final Constant.Ratio flatAreaOffset = new Constant.Ratio(
-                0.65,
-                "Area offset of flat WRT glyph height");
+                0.25,
+                "Center offset of flat WRT area center");
     }
 }

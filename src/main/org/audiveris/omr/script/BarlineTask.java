@@ -25,8 +25,6 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
 
-import java.util.Collection;
-
 /**
  * Class {@code BarlineTask} assigns (or deassigns) a barline shape to a collection of
  * glyphs.
@@ -44,30 +42,16 @@ public class BarlineTask
     /**
      * Create a barline assignment task.
      *
-     * @param sheet    the containing sheet
-     * @param shape    the assigned shape (or null for a de-assignment)
-     * @param compound true if all glyphs are to be merged into one compound
-     *                 which is assigned to the given shape, false if each and
-     *                 every glyph is to be assigned to the given shape
-     * @param glyphs   the collection of concerned glyphs
+     * @param sheet the containing sheet
+     * @param shape the assigned shape (or null for a de-assignment)
+     * @param glyph the concerned glyph
      */
     public BarlineTask (Sheet sheet,
                         Shape shape,
-                        boolean compound,
-                        Collection<Glyph> glyphs)
+                        Glyph glyph)
     {
-        super(sheet, shape, compound, glyphs);
-    }
-
-    /**
-     * Convenient way to create a barline deassignment task.
-     *
-     * @param glyphs the collection of glyphs to deassign
-     */
-    public BarlineTask (Sheet sheet,
-                        Collection<Glyph> glyphs)
-    {
-        super(sheet, glyphs);
+        super(sheet, null, null, shape, glyph);
+        /* WRONG */
     }
 
     /** No-arg constructor for JAXB only. */

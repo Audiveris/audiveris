@@ -46,8 +46,13 @@ import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SheetGradedPainter;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.relation.NoExclusion;
+import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.InterBoard;
+import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
@@ -72,6 +77,8 @@ import java.awt.Rectangle;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import java.awt.Stroke;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -115,30 +122,18 @@ public class SymbolsEditor
      * Create a view in the sheet assembly tabs, dedicated to the
      * display and handling of glyphs.
      *
-     * @param sheet             the sheet whose glyph instances are considered
-     * @param symbolsController the symbols controller for this sheet
+     * @param sheet            the sheet whose glyph instances are considered
+     * @param glyphsController the symbols controller for this sheet
+     * @param interController  the inter controller for this sheet
      */
     public SymbolsEditor (Sheet sheet,
-                          SymbolsController symbolsController)
+                          GlyphsController glyphsController,
+                          InterController interController)
     {
         this.sheet = sheet;
 
         focus = null;
-        ///HB
-        //        focus = new ShapeFocusBoard(
-        //                sheet,
-        //                symbolsController,
-        //                new ActionListener()
-        //                {
-        //                    @Override
-        //                    public void actionPerformed (ActionEvent e)
-        //                    {
-        //                        view.repaint();
-        //                    }
-        //                },
-        //                false);
-        //
-        pageMenu = new EditorMenu(sheet, new SymbolMenu(symbolsController, focus));
+        pageMenu = new EditorMenu(sheet);
 
         List<Board> boards = new ArrayList<Board>();
         boards.add(new PixelBoard(sheet));
@@ -169,22 +164,24 @@ public class SymbolsEditor
             boards.add(new SectionBoard(vLag, false));
         }
 
-        boards.add(new SymbolGlyphBoard(symbolsController, true, true));
+        boards.add(new SymbolGlyphBoard(glyphsController, true, true));
         boards.add(new InterBoard(sheet));
-        boards.add(new ShapeBoard(sheet, symbolsController, false));
+        // boards.add(new ShapeBoard(sheet, false)); // Use of ShapeBoard is disabled for 5.0
         boards.add(
                 new EvaluationBoard(
                         true,
                         sheet,
                         BasicClassifier.getInstance(),
-                        symbolsController,
+                        sheet.getGlyphIndex().getEntityService(),
+                        interController,
                         false));
         boards.add(
                 new EvaluationBoard(
                         true,
                         sheet,
                         DeepClassifier.getInstance(),
-                        symbolsController,
+                        sheet.getGlyphIndex().getEntityService(),
+                        interController,
                         false));
 
         BoardsPane boardsPane = new BoardsPane(boards);
@@ -246,6 +243,11 @@ public class SymbolsEditor
         }
 
         return null;
+    }
+
+    public NestView getView ()
+    {
+        return view;
     }
 
     //-----------//
@@ -451,7 +453,6 @@ public class SymbolsEditor
             }
         }
 
-        //
         //------------//
         // pointAdded //
         //------------//
@@ -474,6 +475,9 @@ public class SymbolsEditor
         {
             // Cancel slot highlighting
             highLight(null);
+
+            // Request focus to allow key handling
+            requestFocusInWindow();
 
             super.pointSelected(pt, movement);
         }
@@ -557,13 +561,21 @@ public class SymbolsEditor
                     }
                 }
 
-                // Inter: attachments for selected inter, if any
                 Inter inter = (Inter) sheet.getInterIndex().getEntityService().getSelectedEntity();
 
                 if (inter != null) {
+                    // Inter: attachments for selected inter, if any
                     Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
                     inter.renderAttachments(g);
                     g.setStroke(oldStroke);
+
+                    // Inter: main partnerships
+                    SIGraph sig = inter.getSig();
+
+                    for (Relation rel : sig.getRelations(inter, Support.class)) {
+                        Inter opp = sig.getOppositeInter(inter, rel);
+                        drawSupport(g, inter, opp, rel);
+                    }
                 }
             }
 
@@ -579,88 +591,24 @@ public class SymbolsEditor
             }
         }
 
-        //
-        //        //-------------//
-        //        // handleEvent //
-        //        //-------------//
-        //        /**
-        //         * Interest in SectionSetEvent => transient Glyph.
-        //         *
-        //         * On reception of SECTION_SET information, we build a transient
-        //         * compound glyph which is then dispatched.
-        //         * Such glyph is always generated (a null glyph if the set is null or
-        //         * empty, a simple glyph if the set contains just one glyph, and a true
-        //         * compound glyph when the set contains several glyph instances)
-        //         *
-        //         * @param sectionSetEvent
-        //         */
-        //        @SuppressWarnings("unchecked")
-        //        private void handleEvent (SectionSetEvent sectionSetEvent)
-        //        {
-        //            if (!ViewParameters.getInstance().isSectionMode()) {
-        //                // Glyph selection mode
-        //                return;
-        //            }
-        //
-        //            // Section selection mode
-        //            MouseMovement movement = sectionSetEvent.movement;
-        //
-        //            if (sectionSetEvent.hint.isLocation()) {
-        //                //                // Collect section sets from all lags
-        //                //                List<Section> allSections = new ArrayList<>();
-        //                //
-        //                //                for (Lag lag : lags) {
-        //                //                    Set<Section> selected = lag.getSelectedSectionSet();
-        //                //
-        //                //                    if (selected != null) {
-        //                //                        allSections.addAll(selected);
-        //                //                    }
-        //                //                }
-        //                //
-        //                //                try {
-        //                //                    Glyph compound = null;
-        //                //
-        //                //                    if (!allSections.isEmpty()) {
-        //                //                        SystemInfo system = sheet.getSystemOfSections(
-        //                //                                allSections);
-        //                //
-        //                //                        if (system != null) {
-        //                //                            compound = system.buildTransientGlyph(allSections);
-        //                //                        }
-        //                //                    }
-        //                //
-        //                //                    logger.debug("Editor. Publish glyph {}", compound);
-        //                //                    publish(
-        //                //                            new GlyphEvent(
-        //                //                                    this,
-        //                //                                    GLYPH_TRANSIENT,
-        //                //                                    movement,
-        //                //                                    compound));
-        //                //
-        //                //                    if (compound != null) {
-        //                //                        publish(
-        //                //                                new GlyphSetEvent(
-        //                //                                        this,
-        //                //                                        GLYPH_TRANSIENT,
-        //                //                                        movement,
-        //                //                                        Glyphs.sortedSet(compound)));
-        //                //                    } else {
-        //                //                        publish(
-        //                //                                new GlyphSetEvent(
-        //                //                                        this,
-        //                //                                        GLYPH_TRANSIENT,
-        //                //                                        movement,
-        //                //                                        null));
-        //                //                    }
-        //                //                } catch (IllegalArgumentException ex) {
-        //                //                    // All sections do not belong to the same system
-        //                //                    // No compound is allowed and displayed
-        //                //                    logger.warn(
-        //                //                            "Sections from different systems {}",
-        //                //                            Sections.toString(allSections));
-        //                //                }
-        //            }
-        //        }
+        private void drawSupport (Graphics2D g,
+                                  Inter one,
+                                  Inter two,
+                                  Relation rel)
+        {
+            final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+            g.setColor((rel instanceof NoExclusion) ? Color.GRAY : Color.GREEN);
+
+            final double r = 2; // Radius
+            final Point oneCenter = one.getRelationCenter();
+            Ellipse2D e1 = new Ellipse2D.Double(oneCenter.x - r, oneCenter.y - r, 2 * r, 2 * r);
+            final Point twoCenter = two.getRelationCenter();
+            Ellipse2D e2 = new Ellipse2D.Double(twoCenter.x - r, twoCenter.y - r, 2 * r, 2 * r);
+            g.fill(e1);
+            g.fill(e2);
+            g.draw(new Line2D.Double(oneCenter, twoCenter));
+        }
+
         //---------------//
         // showPagePopup //
         //---------------//

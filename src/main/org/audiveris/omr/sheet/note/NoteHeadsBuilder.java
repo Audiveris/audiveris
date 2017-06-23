@@ -376,7 +376,7 @@ public class NoteHeadsBuilder
                                    Anchor anchor,
                                    Shape shape,
                                    Staff staff,
-                                   int pitch)
+                                   double pitch)
     {
         final double distImpact = 1 - (loc.d / params.maxMatchingDistance);
         final GradeImpacts impacts = new HeadInter.Impacts(distImpact);

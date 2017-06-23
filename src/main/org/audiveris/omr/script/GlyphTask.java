@@ -22,15 +22,12 @@
 package org.audiveris.omr.script;
 
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
 
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -56,31 +53,31 @@ public abstract class GlyphTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The collection of glyphs which are concerned by this task */
-    protected Set<Glyph> glyphs;
+    /** The glyph concerned by this task. */
+    protected Glyph glyph;
 
-    /** The set of (pre) impacted systems, using status before action */
+    /** The set of (pre) impacted systems, using status before action. */
     protected SortedSet<SystemInfo> initialSystems;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GlyphTask object.
      *
-     * @param sheet  the sheet impacted
-     * @param glyphs the collection of glyphs concerned by this task
+     * @param sheet the sheet impacted
+     * @param glyph the glyph concerned by this task
      */
     protected GlyphTask (Sheet sheet,
-                         Collection<Glyph> glyphs)
+                         Glyph glyph)
     {
         super(sheet);
 
         // Check parameters
-        if ((glyphs == null) || glyphs.isEmpty()) {
+        if (glyph == null) {
             throw new IllegalArgumentException(
-                    getClass().getSimpleName() + " needs at least one glyph");
+                    getClass().getSimpleName() + " needs a non-null glyph");
         }
 
-        this.glyphs = new LinkedHashSet<Glyph>(glyphs);
+        this.glyph = glyph;
     }
 
     /**
@@ -126,17 +123,17 @@ public abstract class GlyphTask
         return impactedSystems;
     }
 
-    //------------------//
-    // getInitialGlyphs //
-    //------------------//
+    //----------//
+    // getGlyph //
+    //----------//
     /**
-     * Report the collection of initial glyphs
+     * Report the impacted glyph
      *
-     * @return the impactedGlyphs
+     * @return the impacted glyph
      */
-    public Set<Glyph> getInitialGlyphs ()
+    public Glyph getGlyph ()
     {
-        return glyphs;
+        return glyph;
     }
 
     //------------------//
@@ -159,11 +156,6 @@ public abstract class GlyphTask
         super.prolog(sheet);
         this.sheet = sheet;
 
-        // Make sure the concrete sections and glyphs are available
-        if (glyphs == null) {
-            retrieveGlyphs();
-        }
-
         initialSystems = retrieveCurrentImpact(sheet);
     }
 
@@ -175,10 +167,10 @@ public abstract class GlyphTask
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
-        if (glyphs != null) {
-            sb.append(" ").append(Glyphs.ids(glyphs));
+        if (glyph != null) {
+            sb.append(" ").append(glyph);
         } else {
-            sb.append(" no-glyphs");
+            sb.append(" no-glyph");
         }
 
         return sb.toString();
@@ -205,7 +197,7 @@ public abstract class GlyphTask
     //-----------------------//
     /**
      * Report the set of systems that are impacted by the action, as determined
-     * by the *current status* of the glyphs *currently* pointed by the sections
+     * by the *current status* of the glyph.
      *
      * @param sheet the containing sheet
      * @return the ordered set of impacted systems
@@ -215,31 +207,20 @@ public abstract class GlyphTask
         SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
         SystemManager systemManager = sheet.getSystemManager();
 
-        for (Glyph glyph : glyphs) {
-            if (glyph != null) {
-                for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                    impactedSystems.add(system);
+        if (glyph != null) {
+            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                impactedSystems.add(system);
 
-                    //                    Shape shape = glyph.getShape();
-                    //
-                    //                    if ((shape != null) && shape.isPersistent()) {
-                    // Include all following systems
-                    impactedSystems.addAll(remaining(system));
+                //                    Shape shape = glyph.getShape();
+                //
+                //                    if ((shape != null) && shape.isPersistent()) {
+                // Include all following systems
+                impactedSystems.addAll(remaining(system));
 
-                    //                    }
-                }
+                //                    }
             }
         }
 
         return impactedSystems;
     }
-
-    //----------------//
-    // retrieveGlyphs //
-    //----------------//
-    /**
-     * This method is in charge of retrieving the glyphs to be handled, using
-     * either their composing sections ids or their shape and locations.
-     */
-    protected abstract void retrieveGlyphs ();
 }

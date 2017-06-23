@@ -38,14 +38,7 @@ public class ScreenPoint
     //~ Constructors -------------------------------------------------------------------------------
 
     /**
-     * Create a new ScreenPoint object.
-     */
-    public ScreenPoint ()
-    {
-    }
-
-    /**
-     * Creates a new ScreenPoint object, by cloning an untyped point
+     * Creates a new ScreenPoint object, from provided coordinates.
      *
      * @param x abscissa
      * @param y ordinate
@@ -57,8 +50,7 @@ public class ScreenPoint
     }
 
     /**
-     * Creates a new ScreenPoint object, using a local component-based
-     * point.
+     * Creates a new ScreenPoint object, using a local component-based point.
      *
      * @param component  the component to use as the base
      * @param localPoint the component-based point
@@ -75,10 +67,10 @@ public class ScreenPoint
     // getLocalPoint //
     //---------------//
     /**
-     * Get the corresponding local point wrt a containing component
+     * Get the corresponding local point relative to the containing component.
      *
      * @param component the provided component
-     * @return the local point, wrt component top left corner
+     * @return the local point, relative to component top left corner
      */
     public Point getLocalPoint (Component component)
     {
@@ -92,8 +84,7 @@ public class ScreenPoint
     // isInComponent //
     //---------------//
     /**
-     * Check whether this screen point lies within the bound of the
-     * provided component.
+     * Check whether this screen point lies within the bound of the provided component.
      *
      * @param component the provided component
      * @return true if within the component, false otherwise

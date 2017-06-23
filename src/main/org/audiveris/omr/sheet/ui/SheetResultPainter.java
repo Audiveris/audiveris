@@ -45,9 +45,10 @@ import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
+import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.ChordStaccatoRelation;
+import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
@@ -345,10 +346,11 @@ public class SheetResultPainter
                 }
             }
 
-            // Paint chord related stuff: staccato dot(s) if any
-            for (Relation sRel : sig.getRelations(chord, ChordStaccatoRelation.class)) {
-                Inter dot = sig.getOppositeInter(chord, sRel);
-                dot.accept(sigPainter);
+            // Paint chord related stuff: articulation & arpeggiato if any
+            for (Relation aRel : sig.getRelations(chord,
+                                                  ChordArticulationRelation.class,
+                                                  ChordArpeggiatoRelation.class)) {
+                sig.getOppositeInter(chord, aRel).accept(sigPainter);
             }
         }
 

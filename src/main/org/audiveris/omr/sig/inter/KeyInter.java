@@ -113,12 +113,32 @@ public class KeyInter
                      List<KeyAlterInter> alters)
     {
         super(null, bounds, null, grade);
-        this.alters.addAll(alters);
+
         this.fifths = fifths;
 
-        for (KeyAlterInter alter : alters) {
-            alter.setEnsemble(this);
+        if (alters != null) {
+            this.alters.addAll(alters);
+
+            for (KeyAlterInter alter : alters) {
+                alter.setEnsemble(this);
+            }
         }
+    }
+
+    /**
+     * Creates a new KeyInter object.
+     *
+     * @param bounds the bounding bounds
+     * @param grade  the interpretation quality
+     * @param shape  the key shape
+     * @param alters sequence of alteration inters
+     */
+    public KeyInter (Rectangle bounds,
+                     double grade,
+                     Shape shape,
+                     List<KeyAlterInter> alters)
+    {
+        this(bounds, grade, (shape != null) ? valueOf(shape) : 0, alters);
     }
 
     /**
@@ -127,7 +147,6 @@ public class KeyInter
     private KeyInter ()
     {
         super(null, null, null, null);
-        this.fifths = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -483,5 +502,58 @@ public class KeyInter
         sb.append(" fifths:").append(getFifths());
 
         return sb.toString();
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    private static int valueOf (Shape shape)
+    {
+        switch (shape) {
+        case KEY_FLAT_1:
+            return -1;
+
+        case KEY_FLAT_2:
+            return -2;
+
+        case KEY_FLAT_3:
+            return -3;
+
+        case KEY_FLAT_4:
+            return -4;
+
+        case KEY_FLAT_5:
+            return -5;
+
+        case KEY_FLAT_6:
+            return -6;
+
+        case KEY_FLAT_7:
+            return -7;
+
+        case KEY_SHARP_1:
+            return 1;
+
+        case KEY_SHARP_2:
+            return 2;
+
+        case KEY_SHARP_3:
+            return 3;
+
+        case KEY_SHARP_4:
+            return 4;
+
+        case KEY_SHARP_5:
+            return 5;
+
+        case KEY_SHARP_6:
+            return 6;
+
+        case KEY_SHARP_7:
+            return 7;
+
+        default:
+            throw new IllegalArgumentException("No fifth value for " + shape);
+        }
     }
 }

@@ -26,6 +26,8 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+import static org.audiveris.omr.glyph.Shape.CODA;
+import static org.audiveris.omr.glyph.Shape.SEGNO;
 import org.audiveris.omr.math.Rational;
 import static org.audiveris.omr.score.MusicXML.*;
 import org.audiveris.omr.sheet.Book;
@@ -50,7 +52,6 @@ import static org.audiveris.omr.sig.inter.AbstractNoteInter.QUARTER_DURATION;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ClefInter;
-import org.audiveris.omr.sig.inter.CodaInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataInter;
@@ -59,9 +60,9 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
+import org.audiveris.omr.sig.inter.MarkerInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
-import org.audiveris.omr.sig.inter.SegnoInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
@@ -76,6 +77,7 @@ import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
+import org.audiveris.omr.sig.relation.MarkerBarRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.FontInfo;
@@ -1014,7 +1016,7 @@ public class PartwiseBuilder
 
                             pmEnding.setType(
                                     (ending.getRightLeg() != null) ? StartStopDiscontinue.STOP
-                                            : StartStopDiscontinue.DISCONTINUE);
+                                    : StartStopDiscontinue.DISCONTINUE);
                             //TODO: number?
                             pmBarline.setEnding(pmEnding);
                         }
@@ -1028,14 +1030,16 @@ public class PartwiseBuilder
             }
 
             if (location == RightLeftMiddle.LEFT) {
-                // Coda? Segno? Check staffBarline of top staff of top part in current stack
+                // Marker(Coda,Segno)? (TODO: add daCapo & dalSegno?)
+                // Check staffBarline of top staff of top part in current stack
                 Part part = current.measure.getPart();
                 Measure topMeasure = current.measure.getStack().getFirstMeasure();
                 PartBarline topPartBarline = getBarlineOnLeft(topMeasure);
                 StaffBarline topBarline = topPartBarline.getBarline(part, part.getFirstStaff());
 
-                processCoda(topBarline.getCoda());
-                processSegno(topBarline.getSegno());
+                for (Inter marker : topBarline.getRelatedInters(MarkerBarRelation.class)) {
+                    processMarker((MarkerInter) marker);
+                }
             }
         } catch (Exception ex) {
             logger.warn("Error visiting " + partBarline, ex);
@@ -1067,50 +1071,6 @@ public class PartwiseBuilder
             }
         } catch (Exception ex) {
             logger.warn("Error visiting " + clef + " " + ex, ex);
-        }
-    }
-
-    //-------------//
-    // processCoda //
-    //-------------//
-    private void processCoda (CodaInter coda)
-    {
-        if (coda == null) {
-            return;
-        }
-
-        try {
-            logger.debug("Visiting {}", coda);
-
-            Direction direction = factory.createDirection();
-
-            // Staff? We use top staff of current measure, perhaps not the coda staff.
-            insertStaffId(direction, current.measure.getPart().getFirstStaff());
-
-            EmptyPrintStyleAlign empty = factory.createEmptyPrintStyleAlign();
-
-            //
-            //            // default-x
-            //            empty.setDefaultX(
-            //                    toTenths(coda.getCenterLeft().x - current.measure.getAbscissa(LEFT, staff)));
-            //
-            //            // default-y
-            //            empty.setDefaultY(yOf(coda.getCenterLeft(), staff));
-            //
-            DirectionType directionType = new DirectionType();
-            directionType.getCoda().add(empty);
-            direction.getDirectionType().add(directionType);
-
-            // Need also a Sound element
-            Sound sound = factory.createSound();
-            direction.setSound(sound);
-            sound.setCoda("" + current.measure.getStack().getScoreId(score));
-            sound.setDivisions(new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
-
-            // Everything is now OK
-            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
-        } catch (Exception ex) {
-            logger.warn("Error visiting " + coda, ex);
         }
     }
 
@@ -1351,7 +1311,7 @@ public class PartwiseBuilder
             // Type
             pmFermata.setType(
                     (fermata.getShape() == Shape.FERMATA) ? UprightInverted.UPRIGHT
-                            : UprightInverted.INVERTED);
+                    : UprightInverted.INVERTED);
 
             // Everything is now OK
             if (pmBarline != null) {
@@ -1470,6 +1430,60 @@ public class PartwiseBuilder
         // Process all systems in page
         for (SystemInfo system : current.page.getSystems()) {
             processSystem(system);
+        }
+    }
+
+    //---------------//
+    // processMarker //
+    //---------------//
+    private void processMarker (MarkerInter marker)
+    {
+        if (marker == null) {
+            return;
+        }
+
+        try {
+            logger.debug("Visiting {}", marker);
+
+            String measureId = current.measure.getStack().getScoreId(score);
+            Direction direction = factory.createDirection();
+            EmptyPrintStyleAlign empty = factory.createEmptyPrintStyleAlign();
+            DirectionType directionType = factory.createDirectionType();
+            direction.getDirectionType().add(directionType);
+
+            // Staff? We use top staff of current measure, perhaps not the marker staff.
+            insertStaffId(direction, current.measure.getPart().getFirstStaff());
+
+            //            // default-x
+            //            empty.setDefaultX(
+            //                    toTenths(marker.getCenterLeft().x - current.measure.getAbscissa(LEFT, staff)));
+            //
+            //            // default-y
+            //            empty.setDefaultY(yOf(marker.getCenterLeft(), staff));
+            //
+            // Need also a Sound element (TODO: We don't do anything with sound!)
+            Sound sound = factory.createSound();
+            direction.setSound(sound);
+            sound.setDivisions(new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
+
+            switch (marker.getShape()) {
+            case CODA:
+                sound.setCoda(measureId);
+                directionType.getCoda().add(empty);
+
+                break;
+
+            case SEGNO:
+                sound.setSegno(measureId);
+                directionType.getSegno().add(empty);
+
+                break;
+            }
+
+            // Everything is now OK
+            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
+        } catch (Exception ex) {
+            logger.warn("Error visiting " + marker, ex);
         }
     }
 
@@ -2277,49 +2291,6 @@ public class PartwiseBuilder
     //            logger.warn("Error visiting " + ornament, ex);
     //        }
     //    }
-    //--------------//
-    // processSegno //
-    //--------------//
-    private void processSegno (SegnoInter segno)
-    {
-        if (segno == null) {
-            return;
-        }
-
-        try {
-            logger.debug("Visiting {}", segno);
-
-            Direction direction = new Direction();
-            DirectionType directionType = factory.createDirectionType();
-
-            EmptyPrintStyleAlign empty = factory.createEmptyPrintStyleAlign();
-
-            // Staff? We use top staff of current measure, perhaps not the segno staff.
-            insertStaffId(direction, current.measure.getPart().getFirstStaff());
-
-            //
-            //            // default-x
-            //            empty.setDefaultX(
-            //                    toTenths(segno.getCenterLeft().x - current.measure.getAbscissa(LEFT, staff)));
-            //
-            //            // default-y
-            //            empty.setDefaultY(yOf(segno.getCenterLeft(), staff));
-            //
-            // Need also a Sound element (TODO: We don't do anything with sound!)
-            Sound sound = factory.createSound();
-            sound.setSegno("" + current.measure.getStack().getScoreId(score));
-            sound.setDivisions(new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
-            direction.setSound(sound);
-
-            // Everything is OK
-            directionType.getSegno().add(empty);
-            direction.getDirectionType().add(directionType);
-            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
-        } catch (Exception ex) {
-            logger.warn("Error visiting " + segno, ex);
-        }
-    }
-
     //-----------------//
     // processSentence //
     //-----------------//
@@ -2649,7 +2620,7 @@ public class PartwiseBuilder
             if (tuplet.getChords().get(0) == current.note.getChord()) {
                 pmTuplet.setPlacement(
                         (tuplet.getCenter().y <= current.note.getCenter().y) ? AboveBelow.ABOVE
-                                : AboveBelow.BELOW);
+                        : AboveBelow.BELOW);
             }
 
             // Type
@@ -2719,7 +2690,7 @@ public class PartwiseBuilder
                 // Placement
                 direction.setPlacement(
                         (refPoint.getY() < current.note.getCenter().y) ? AboveBelow.ABOVE
-                                : AboveBelow.BELOW);
+                        : AboveBelow.BELOW);
 
                 // default-y
                 pmWedge.setDefaultY(yOf(refPoint, staff));

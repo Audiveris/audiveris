@@ -48,15 +48,13 @@ public class FretInter
      * @param glyph underlying glyph
      * @param shape precise shape
      * @param grade evaluation value
-     * @param value fret number
      */
     public FretInter (Glyph glyph,
                       Shape shape,
-                      double grade,
-                      int value)
+                      double grade)
     {
         super(glyph, null, shape, grade);
-        this.value = value;
+        this.value = valueOf(shape);
     }
 
     /**
@@ -68,16 +66,6 @@ public class FretInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // create //
-    //--------//
-    public static FretInter create (Glyph glyph,
-                                    Shape shape,
-                                    double grade)
-    {
-        return new FretInter(glyph, shape, grade, valueOf(shape));
-    }
-
     //-----------------//
     // getSymbolString //
     //-----------------//

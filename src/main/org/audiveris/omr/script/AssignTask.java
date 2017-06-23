@@ -24,22 +24,22 @@ package org.audiveris.omr.script;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
-
-import java.util.Collection;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code AssignTask} assigns (or deassign) a shape to a collection of glyphs.
+ * Class {@code AssignTask} assigns (or deassign) an inter to a collection of glyphs.
  *
  * <p>
- * Il the compound flag is set, a compound glyph is composed from the provided glyphs and assigned
- * the shape. Otherwise, each provided glyph is assigned the shape.</p>
+ * If the compound flag is set, a compound glyph is composed from the provided glyphs and assigned
+ * the inter. Otherwise, each provided glyph is assigned an inter.</p>
  *
  * @author Hervé Bitteur
  */
 public class AssignTask
-        extends GlyphUpdateTask
+        extends GlyphTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -47,9 +47,9 @@ public class AssignTask
     @XmlAttribute
     private final Shape shape;
 
-    /** True for a compound building */
-    @XmlAttribute
-    private final boolean compound;
+    private final SystemInfo system;
+
+    private final Staff staff;
 
     private final int interline;
 
@@ -57,41 +57,36 @@ public class AssignTask
     /**
      * Create an assignment task
      *
-     * @param sheet    the containing sheet
-     * @param shape    the assigned shape (or null for a de-assignment)
-     * @param compound true if all glyphs are to be merged into one compound
-     *                 which is assigned to the given shape, false if each and
-     *                 every glyph is to be assigned to the given shape
-     * @param glyphs   the collection of concerned glyphs
-     */
-    public AssignTask (Sheet sheet,
-                       Shape shape,
-                       boolean compound,
-                       Collection<Glyph> glyphs)
-    {
-        super(sheet, glyphs);
-        this.shape = shape;
-        this.compound = compound;
-        interline = sheet.getScale().getInterline();
-    }
-
-    /**
-     * Convenient way to create an deassignment task
-     *
      * @param sheet  the containing sheet
-     * @param glyphs the collection of glyphs to deassign
+     * @param system the related system
+     * @param staff  the related staff (if any)
+     * @param shape  the assigned shape
+     * @param glyph  the concerned glyph
      */
     public AssignTask (Sheet sheet,
-                       Collection<Glyph> glyphs)
+                       SystemInfo system,
+                       Staff staff,
+                       Shape shape,
+                       Glyph glyph)
     {
-        this(sheet, null, false, glyphs);
+        super(sheet, glyph);
+        this.staff = staff;
+        this.system = system;
+        this.shape = shape;
+
+        if (staff != null) {
+            interline = staff.getSpecificInterline();
+        } else {
+            interline = sheet.getScale().getInterline();
+        }
     }
 
     /** No-arg constructor for JAXB only. */
     protected AssignTask ()
     {
         shape = null;
-        compound = false;
+        system = null;
+        staff = null;
         interline = 0;
     }
 
@@ -107,7 +102,7 @@ public class AssignTask
     public void core (Sheet sheet)
             throws Exception
     {
-        sheet.getSymbolsController().syncAssign(this);
+        sheet.getGlyphsController().syncAssign(this);
     }
 
     //--------//
@@ -131,26 +126,28 @@ public class AssignTask
     // getAssignedShape //
     //------------------//
     /**
-     * Report the assigned shape (for an assignment impact)
+     * Report the assigned shape
      *
-     * @return the assignedShape (null for a deassignment)
+     * @return the assignedShape
      */
     public Shape getAssignedShape ()
     {
         return shape;
     }
 
-    //------------//
-    // isCompound //
-    //------------//
-    /**
-     * Report whether the assignment is a compound
-     *
-     * @return true for a compound assignment, false otherwise
-     */
-    public boolean isCompound ()
+    public int getInterline ()
     {
-        return compound;
+        return interline;
+    }
+
+    public Staff getStaff ()
+    {
+        return staff;
+    }
+
+    public SystemInfo getSystem ()
+    {
+        return system;
     }
 
     //-----------//
@@ -161,10 +158,6 @@ public class AssignTask
     {
         StringBuilder sb = new StringBuilder(super.internals());
         sb.append(" assign");
-
-        if (compound) {
-            sb.append(" compound");
-        }
 
         if (shape != null) {
             sb.append(" ").append(shape);

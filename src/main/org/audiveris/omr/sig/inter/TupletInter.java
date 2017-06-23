@@ -28,6 +28,7 @@ import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.DurationFactor;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
@@ -80,11 +81,11 @@ public class TupletInter
      * @param shape TUPLET_THREE or TUPLET_SIX
      * @param grade the inter quality
      */
-    private TupletInter (Glyph glyph,
-                         Shape shape,
-                         double grade)
+    public TupletInter (Glyph glyph,
+                        Shape shape,
+                        double grade)
     {
-        super(glyph, glyph.getBounds(), shape, grade);
+        super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
 
     /**
@@ -236,6 +237,26 @@ public class TupletInter
 
             return null;
         }
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff == null) {
+            // Chord -> Tuplet
+            for (Relation ctRel : sig.getRelations(this, ChordTupletRelation.class)) {
+                AbstractChordInter chord = (AbstractChordInter) sig.getOppositeInter(this, ctRel);
+
+                if (chord.getStaff() != null) {
+                    return staff = chord.getStaff();
+                }
+            }
+        }
+
+        return staff;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

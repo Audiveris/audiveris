@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.util.Jaxb;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +32,7 @@ import java.awt.geom.Point2D;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code Skew} handles the skew angle of a given sheet picture.
@@ -40,7 +43,8 @@ public class Skew
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Skew.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Skew.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -49,6 +53,7 @@ public class Skew
     //
     /** Skew slope as measured. */
     @XmlAttribute(name = "slope")
+    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double5Adapter.class)
     private final double slope;
 
     // Transient data

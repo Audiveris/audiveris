@@ -44,9 +44,9 @@ public class SmallFlagInter
      * @param shape precise shape
      * @param grade evaluation value
      */
-    protected SmallFlagInter (Glyph glyph,
-                              Shape shape,
-                              double grade)
+    public SmallFlagInter (Glyph glyph,
+                           Shape shape,
+                           double grade)
     {
         super(glyph, shape, grade);
     }

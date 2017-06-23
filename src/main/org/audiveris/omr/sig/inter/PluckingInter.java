@@ -47,18 +47,16 @@ public class PluckingInter
     /**
      * Creates a new {@code PluckingInter} object.
      *
-     * @param glyph  underlying glyph
-     * @param shape  precise shape
-     * @param grade  evaluation value
-     * @param letter finger name
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
      */
     public PluckingInter (Glyph glyph,
                           Shape shape,
-                          double grade,
-                          char letter)
+                          double grade)
     {
         super(glyph, null, shape, grade);
-        this.letter = letter;
+        this.letter = valueOf(shape);
     }
 
     /**
@@ -70,24 +68,6 @@ public class PluckingInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // create //
-    //--------//
-    /**
-     * (Try to) create a Plucking inter.
-     *
-     * @param glyph underlying glyph
-     * @param shape precise shape
-     * @param grade evaluation value
-     * @return the created instance or null if failed
-     */
-    public static PluckingInter create (Glyph glyph,
-                                        Shape shape,
-                                        double grade)
-    {
-        return new PluckingInter(glyph, shape, grade, valueOf(shape));
-    }
-
     //-----------------//
     // getSymbolString //
     //-----------------//

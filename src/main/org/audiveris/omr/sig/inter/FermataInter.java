@@ -91,16 +91,16 @@ public class FermataInter
      * Creates a new {@code FermataInter} object.
      *
      * @param arc    the fermata arc (of shape FERMATA_ARC or FERMATA_ARC_BELOW)
-     * @param shape  the fermata shape (FERMATA or FERMATA_BELOW)
-     * @param dot    the fermata dot
      * @param bounds bounding box
+     * @param shape  the fermata shape (FERMATA or FERMATA_BELOW)
      * @param grade  the interpretation quality
+     * @param dot    the fermata dot
      */
-    private FermataInter (FermataArcInter arc,
-                          Shape shape,
-                          FermataDotInter dot,
-                          Rectangle bounds,
-                          double grade)
+    public FermataInter (FermataArcInter arc,
+                         Rectangle bounds,
+                         Shape shape,
+                         double grade,
+                         FermataDotInter dot)
     {
         super(null, bounds, shape, grade);
         this.arc = arc;
@@ -156,7 +156,7 @@ public class FermataInter
         final Rectangle box = arc.getBounds();
         box.add(dot.getBounds());
 
-        final FermataInter fermata = new FermataInter(arc, shape, dot, box, grade);
+        final FermataInter fermata = new FermataInter(arc, box, shape, grade, dot);
         fermata.setStaff(staff);
 
         return fermata;

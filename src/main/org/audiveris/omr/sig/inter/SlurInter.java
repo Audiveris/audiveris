@@ -42,6 +42,7 @@ import org.audiveris.omr.util.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
 import java.util.Comparator;
@@ -365,6 +366,30 @@ public class SlurInter
     public SlurInfo getInfo ()
     {
         return info;
+    }
+
+    //-------------------//
+    // getRelationCenter //
+    //-------------------//
+    /**
+     * We use curve middle point rather than bounds center.
+     * P: middle of segment P1..P2
+     * C: middle of segment CP1..CP2
+     * M: middle of curve
+     * PM = 3/4 * PC
+     *
+     * @return curve middle point
+     */
+    @Override
+    public Point getRelationCenter ()
+    {
+        final Point2D m = new Point2D.Double(
+                (0.125 * curve.getX1()) + (0.125 * curve.getX2()) + (0.375 * curve.getCtrlX1())
+                + (0.375 * curve.getCtrlX2()),
+                ((0.125 * curve.getY1()) + (0.125 * curve.getY2()))
+                + ((0.375 * curve.getCtrlY1()) + (0.375 * curve.getCtrlY2())));
+
+        return PointUtil.rounded(m);
     }
 
     //---------//

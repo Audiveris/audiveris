@@ -53,7 +53,7 @@ public class KeyAlterInter
                           Shape shape,
                           double grade,
                           Staff staff,
-                          int pitch,
+                          double pitch,
                           double measuredPitch)
     {
         super(glyph, shape, grade, staff, pitch, measuredPitch);
@@ -64,15 +64,24 @@ public class KeyAlterInter
      */
     private KeyAlterInter ()
     {
-        super(null, null, 0, null, 0, 0);
+        super(null, null, 0, null, null, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //--------//
     // create //
     //--------//
     /**
-     * Create an Alter inter.
+     * Create an Alter inter, with a grade value, determining pitch WRT provided staff.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
@@ -88,37 +97,5 @@ public class KeyAlterInter
         Pitches p = computePitch(glyph, shape, staff);
 
         return new KeyAlterInter(glyph, shape, grade, staff, p.pitch, p.measuredPitch);
-    }
-
-    //
-    //    //--------//
-    //    // create //
-    //    //--------//
-    //    /**
-    //     * Create an Alter inter.
-    //     *
-    //     * @param glyph   underlying glyph
-    //     * @param shape   precise shape
-    //     * @param impacts assignment details
-    //     * @param staff   related staff
-    //     * @return the created instance or null if failed
-    //     */
-    //    public static KeyAlterInter create (Glyph glyph,
-    //                                        Shape shape,
-    //                                        GradeImpacts impacts,
-    //                                        Staff staff)
-    //    {
-    //        Pitches p = computePitch(glyph, shape, staff);
-    //
-    //        return new KeyAlterInter(glyph, shape, impacts, staff, p.pitch, p.measuredPitch);
-    //    }
-    //
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
     }
 }

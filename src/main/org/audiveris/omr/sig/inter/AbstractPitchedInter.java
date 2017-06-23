@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.util.Jaxb;
@@ -64,8 +65,8 @@ public abstract class AbstractPitchedInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** The assigned pitch. */
     @XmlAttribute
-    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
-    protected double pitch;
+    @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
+    protected Double pitch;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -83,11 +84,11 @@ public abstract class AbstractPitchedInter
                                  Shape shape,
                                  GradeImpacts impacts,
                                  Staff staff,
-                                 double pitch)
+                                 Double pitch)
     {
         super(glyph, bounds, shape, impacts);
-        setStaff(staff);
         this.pitch = pitch;
+        setStaff(staff);
     }
 
     /**
@@ -105,11 +106,11 @@ public abstract class AbstractPitchedInter
                                  Shape shape,
                                  double grade,
                                  Staff staff,
-                                 double pitch)
+                                 Double pitch)
     {
         super(glyph, bounds, shape, grade);
-        setStaff(staff);
         this.pitch = pitch;
+        setStaff(staff);
     }
 
     /**
@@ -141,9 +142,22 @@ public abstract class AbstractPitchedInter
      *
      * @return the pitch
      */
-    public double getPitch ()
+    public Double getPitch ()
     {
         return pitch;
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        super.setBounds(bounds);
+
+        if (staff != null) {
+            setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)));
+        }
     }
 
     //----------//
@@ -155,6 +169,19 @@ public abstract class AbstractPitchedInter
     public void setPitch (double pitch)
     {
         this.pitch = pitch;
+    }
+
+    //----------//
+    // setStaff //
+    //----------//
+    @Override
+    public void setStaff (Staff staff)
+    {
+        super.setStaff(staff);
+
+        if ((pitch == null) && (staff != null) && (bounds != null)) {
+            setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)));
+        }
     }
 
     //-----------//

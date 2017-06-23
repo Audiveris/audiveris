@@ -48,13 +48,13 @@ public class PedalInter
                        Shape shape,
                        double grade)
     {
-        super(glyph, glyph.getBounds(), shape, grade);
+        super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
     }
 
     /**
      * No-arg constructor meant for JAXB.
      */
-    public PedalInter ()
+    private PedalInter ()
     {
         super(null, null, null, 0);
     }

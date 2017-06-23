@@ -672,6 +672,7 @@ public class SlursLinker
         /**
          * Make sure a chord exhibits at least one head on the desired side on the
          * provided slur.
+         * First, if chord has a stem, make sure stem abscissa is on proper side WRT slur center.
          *
          * @param chord chord to check
          * @param slur  provided slur
@@ -688,6 +689,19 @@ public class SlursLinker
             Point2D center = model.getCircle().getCenter();
             int ccw = model.ccw();
             int expected = (side == LEFT) ? ccw : (-ccw);
+
+            if (chord.getStem() != null) {
+                int xStem = chord.getStem().getCenter().x;
+                double toStem = xStem - mid.getX();
+
+                if ((side == LEFT) && (toStem > 0)) {
+                    return false;
+                }
+
+                if ((side == RIGHT) && (toStem < 0)) {
+                    return false;
+                }
+            }
 
             for (Inter hInter : chord.getNotes()) {
                 if (hInter instanceof HeadInter) {
@@ -998,6 +1012,7 @@ public class SlursLinker
         {
             final double dist = meanEuclidianDist(map);
             final int nbPoints = slur.getInfo().getPoints().size();
+
             return dist / nbPoints;
         }
 

@@ -73,7 +73,7 @@ public abstract class AbstractBeamInter
     //
     /** Beam height. */
     @XmlAttribute
-    @XmlJavaTypeAdapter(value = Jaxb.Double1Adapter.class, type = double.class)
+    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
     private final double height;
 
     /** Median line. */

@@ -55,6 +55,9 @@ public class SymbolGlyphBoard
     private static final Logger logger = LoggerFactory.getLogger(SymbolGlyphBoard.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    // NOTA: all these commented fields are no longer relevant for a glyph, they should be
+    // handled in the InterBoard if they are still interesting.
+    ///
     //    /** Numerator of time signature */
     //    private final LIntegerField timeNum;
     //
@@ -273,7 +276,7 @@ public class SymbolGlyphBoard
     ////                            roleCombo.getSelectedItem());
     ////
     ////                    TextRole role = roleCombo.getSelectedItem();
-    ////                    SheetsController.getCurrentSheet().getSymbolsController().asyncAssignTexts(
+    ////                    SheetsController.getCurrentSheet().getGlyphsController().asyncAssignTexts(
     ////                            glyphs,
     ////                            role,
     ////                            textField.getText());
@@ -282,7 +285,7 @@ public class SymbolGlyphBoard
     ////                    int den = timeDen.getValue();
     ////
     ////                    if ((num != 0) && (den != 0)) {
-    ////                        SheetsController.getCurrentSheet().getSymbolsController().asyncAssignRationals(
+    ////                        SheetsController.getCurrentSheet().getGlyphsController().asyncAssignRationals(
     ////                                glyphs,
     ////                                new TimeRational(num, den));
     ////                    } else {

@@ -59,17 +59,17 @@ public class GhostGlassPane
             0.2f);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The image to be dragged */
-    private BufferedImage draggedImage = null;
+    /** The image to be dragged. */
+    protected BufferedImage draggedImage = null;
 
-    /** The previous display bounds */
-    private Rectangle prevRectangle = null;
+    /** The previous display bounds. */
+    protected Rectangle prevRectangle = null;
 
-    /** The current location within this glasspane */
-    private Point localPoint = null;
+    /** The current location relative to this glasspane. */
+    protected Point localPoint = null;
 
-    /** Are we over a droppable target? */
-    private boolean overTarget = false;
+    /** Are we over a droppable target?. */
+    protected boolean overTarget = false;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -135,16 +135,29 @@ public class GhostGlassPane
     // setPoint //
     //----------//
     /**
+     * Assign the current point, where the dragged image is to be displayed
+     *
+     * @param screenPoint the current location (screen-based)
+     */
+    public void setPoint (ScreenPoint screenPoint)
+    {
+        setLocalPoint(screenPoint.getLocalPoint(this));
+    }
+
+    //---------------//
+    // setLocalPoint //
+    //---------------//
+    /**
      * Assign the current point, where the dragged image is to be displayed,
      * and repaint as few as possible of the glass pane.
      *
      * @param localPoint the current location (glasspane-based)
      */
-    public void setPoint (Point localPoint)
+    private void setLocalPoint (Point localPoint)
     {
         // Anything to repaint since last time the point was set?
         if (draggedImage != null) {
-            Rectangle rect = getImageBounds(localPoint);
+            Rectangle rect = getSceneBounds(localPoint);
             Rectangle dirty = new Rectangle(rect);
 
             if (prevRectangle != null) {
@@ -164,23 +177,16 @@ public class GhostGlassPane
         }
     }
 
-    //----------//
-    // setPoint //
-    //----------//
-    /**
-     * Assign the current point, where the dragged image is to be displayed
-     *
-     * @param screenPoint the current location (screen-based)
-     */
-    public void setPoint (ScreenPoint screenPoint)
-    {
-        setPoint(screenPoint.getLocalPoint(this));
-    }
-
     //----------------//
     // getImageBounds //
     //----------------//
-    private Rectangle getImageBounds (Point center)
+    /**
+     * Report the bounds of just the image.
+     *
+     * @param center image center
+     * @return image bounds
+     */
+    protected Rectangle getImageBounds (Point center)
     {
         Rectangle rect = new Rectangle(center);
         rect.grow(draggedImage.getWidth() / 2, draggedImage.getHeight() / 2);
@@ -195,5 +201,19 @@ public class GhostGlassPane
         }
 
         return rect;
+    }
+
+    //----------------//
+    // getSceneBounds //
+    //----------------//
+    /**
+     * Report the bounds of whole scene (image + items).
+     *
+     * @param center location for image center (not necessarily scene center)
+     * @return the bounds of whole scene
+     */
+    protected Rectangle getSceneBounds (Point center)
+    {
+        return getImageBounds(center); // By default
     }
 }

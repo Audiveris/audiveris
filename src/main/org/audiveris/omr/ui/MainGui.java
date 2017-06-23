@@ -41,7 +41,6 @@ import org.audiveris.omr.step.ui.StepMenu;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.ui.action.ActionManager;
 import org.audiveris.omr.ui.action.Actions;
-import org.audiveris.omr.ui.dnd.GhostGlassPane;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.StubEvent;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -123,7 +122,7 @@ public class MainGui
     private BoardsScrollPane boardsScrollPane;
 
     /** GlassPane needed to handle drag and drop from shape palette. */
-    private final GhostGlassPane glassPane = new GhostGlassPane();
+    private final OmrGlassPane glassPane = new OmrGlassPane();
 
     /** Main pane with Sheet on top and Log+Errors on bottom. */
     private JSplitPane mainPane;
@@ -231,7 +230,7 @@ public class MainGui
     // getGlassPane //
     //--------------//
     @Override
-    public GhostGlassPane getGlassPane ()
+    public OmrGlassPane getGlassPane ()
     {
         return glassPane;
     }

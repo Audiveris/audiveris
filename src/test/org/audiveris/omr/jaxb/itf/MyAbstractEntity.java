@@ -45,7 +45,7 @@ public class MyAbstractEntity
     /** Identity for debugging. */
     @XmlID
     @XmlAttribute(name = "id")
-    @XmlJavaTypeAdapter(type = int.class, value = Jaxb.StringIntegerAdapter.class)
+    @XmlJavaTypeAdapter(Jaxb.StringIntegerAdapter.class)
     protected int id;
 
     //~ Methods ------------------------------------------------------------------------------------

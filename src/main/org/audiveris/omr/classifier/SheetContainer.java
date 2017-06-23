@@ -75,8 +75,8 @@ public class SheetContainer
     // Persistent data
     //----------------
     /** Map (RunTable Hash code => list of sheet descriptors). */
-    @XmlJavaTypeAdapter(Adapter.class)
     @XmlElement(name = "sheets")
+    @XmlJavaTypeAdapter(Adapter.class)
     private HashMap<Integer, List<Descriptor>> hashMap = new HashMap<Integer, List<Descriptor>>();
 
     // Transient data

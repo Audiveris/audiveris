@@ -148,7 +148,7 @@ public class GlyphIndex
 
         // User glyph service?
         if (OMR.gui != null) {
-            SelectionService locationService = (sheet != null) ? sheet.getLocationService() : null;
+            SelectionService locationService = sheet.getLocationService();
             setEntityService(new GlyphService(this, locationService));
         }
     }

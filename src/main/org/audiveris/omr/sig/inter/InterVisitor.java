@@ -23,6 +23,8 @@ package org.audiveris.omr.sig.inter;
 
 /**
  * Interface {@code InterVisitor} is used to visit any instance of shape interpretation.
+ * <p>
+ * Listed by alphabetic order for easier manual browsing.
  *
  * @author Hervé Bitteur
  */
@@ -32,7 +34,11 @@ public interface InterVisitor
 
     void visit (AbstractBeamInter inter);
 
+    void visit (AbstractChordInter inter);
+
     void visit (AbstractFlagInter inter);
+
+    void visit (ArpeggiatoInter inter);
 
     void visit (BarConnectorInter inter);
 
@@ -43,8 +49,6 @@ public interface InterVisitor
     void visit (BracketConnectorInter inter);
 
     void visit (BracketInter inter);
-
-    void visit (AbstractChordInter inter);
 
     void visit (ClefInter inter);
 
@@ -66,9 +70,9 @@ public interface InterVisitor
 
     void visit (StemInter inter);
 
-    void visit (TimeWholeInter inter);
-
     void visit (TimePairInter inter);
+
+    void visit (TimeWholeInter inter);
 
     void visit (WedgeInter inter);
 

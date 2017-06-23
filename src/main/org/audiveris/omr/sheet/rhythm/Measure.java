@@ -203,7 +203,7 @@ public class Measure
         chord.setStaff(staff);
         chord.setTimeOffset(Rational.ZERO);
 
-        RestInter whole = new RestInter(null, Shape.WHOLE_REST, 0, staff, -1);
+        RestInter whole = new RestInter(null, Shape.WHOLE_REST, 0, staff, -1.0);
         chord.addMember(whole);
         addInter(chord);
 

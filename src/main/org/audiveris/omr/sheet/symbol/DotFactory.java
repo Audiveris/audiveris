@@ -37,6 +37,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.DeletedInterException;
@@ -45,9 +46,7 @@ import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
-import org.audiveris.omr.sig.inter.StaccatoInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
-import org.audiveris.omr.sig.relation.ChordStaccatoRelation;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -441,7 +440,7 @@ public class DotFactory
         if (bestRel != null) {
             final Staff staff = system.getClosestStaff(center); // Staff is OK
             double grade = Inter.intrinsicRatio * dot.eval.grade;
-            int pitch = (pp > 0) ? 1 : (-1);
+            double pitch = (pp > 0) ? 1 : (-1);
             RepeatDotInter repeat = new RepeatDotInter(dot.glyph, grade, staff, pitch);
             sig.addVertex(repeat);
             sig.addEdge(repeat, bestBar, bestRel);
@@ -459,67 +458,17 @@ public class DotFactory
      * Try to interpret the provided glyph as a staccato sign related to note head.
      * This method can be called during symbols step, since only head-chords (not rest-chords) are
      * concerned and head-based chords are already available.
-     * <p>
-     * TODO: Use the method for staccatissimo glyph as well
      *
      * @param dot the candidate dot
      */
     private void instantCheckStaccato (Dot dot)
     {
-        final int maxDx = scale.toPixels(ChordStaccatoRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(ChordStaccatoRelation.getYGapMaximum());
-        final Rectangle dotBox = dot.glyph.getBounds();
-        final Point dotPt = dot.glyph.getCenter();
-        final Rectangle luBox = new Rectangle(dotPt);
-        luBox.grow(maxDx, maxDy);
-
-        final List<Inter> chords = sig.intersectedInters(
-                symbolFactory.getSystemHeadChords(),
-                GeoOrder.BY_ABSCISSA,
-                luBox);
-
-        if (chords.isEmpty()) {
-            return;
-        }
-
-        ChordStaccatoRelation bestRel = null;
-        Inter bestChord = null;
-        double bestYGap = Double.MAX_VALUE;
-
-        for (Inter chord : chords) {
-            Rectangle chordBox = chord.getBounds();
-
-            // The staccato dot cannot intersect the chord
-            if (chordBox.intersects(dotBox)) {
-                continue;
-            }
-
-            Point center = chord.getCenter();
-
-            // Select proper chord reference point (top or bottom)
-            int yRef = (dotPt.y > center.y) ? (chordBox.y + chordBox.height)
-                    : chordBox.y;
-            double xGap = Math.abs(center.x - dotPt.x);
-            double yGap = Math.abs(yRef - dotPt.y);
-            ChordStaccatoRelation rel = new ChordStaccatoRelation();
-            rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-
-            if (rel.getGrade() >= rel.getMinGrade()) {
-                if ((bestRel == null) || (bestYGap > yGap)) {
-                    bestRel = rel;
-                    bestChord = chord;
-                    bestYGap = yGap;
-                }
-            }
-        }
-
-        if (bestRel != null) {
-            double grade = Inter.intrinsicRatio * dot.eval.grade;
-            StaccatoInter staccato = new StaccatoInter(dot.glyph, grade);
-            sig.addVertex(staccato);
-            sig.addEdge(bestChord, staccato, bestRel);
-            logger.debug("Created {}", staccato);
-        }
+        ArticulationInter.create(
+                dot.glyph,
+                Shape.STACCATO,
+                Inter.intrinsicRatio * dot.eval.grade,
+                system,
+                symbolFactory.getSystemHeadChords());
     }
 
     //------------------------//

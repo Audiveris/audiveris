@@ -27,9 +27,11 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
 
@@ -37,6 +39,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
 import java.util.Comparator;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -375,6 +378,13 @@ public interface Inter
     Part getPart ();
 
     /**
+     * Report the inter center for relation drawing.
+     *
+     * @return center for relation
+     */
+    Point getRelationCenter ();
+
+    /**
      * Report the shape related to interpretation.
      *
      * @return the shape
@@ -482,6 +492,16 @@ public interface Inter
      */
     boolean overlaps (Inter that)
             throws DeletedInterException;
+
+    /**
+     * Look for additional partners around this inter instance.
+     *
+     * @param system containing system
+     * @param doit   if true, relations are actually added to the sig
+     * @return the collection of additional partnerships found, perhaps empty
+     */
+    Collection<Partnership> searchPartnerships (SystemInfo system,
+                                                boolean doit);
 
     /**
      * Assign the bounding box for this interpretation.

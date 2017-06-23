@@ -27,17 +27,13 @@ import org.audiveris.omr.sheet.PartBarline.Style;
 import static org.audiveris.omr.sheet.PartBarline.Style.*;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.BarlineInter;
-import org.audiveris.omr.sig.inter.CodaInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.SegnoInter;
-import org.audiveris.omr.sig.relation.CodaBarRelation;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
-import org.audiveris.omr.sig.relation.SegnoBarRelation;
 import org.audiveris.omr.util.HorizontalSide;
 
 import java.awt.Point;
@@ -140,19 +136,6 @@ public class StaffBarline
         }
     }
 
-    //---------//
-    // getCoda //
-    //---------//
-    /**
-     * Convenient method to report the related coda, if any
-     *
-     * @return coda inter or null
-     */
-    public CodaInter getCoda ()
-    {
-        return (CodaInter) getRelated(CodaBarRelation.class);
-    }
-
     //-----------//
     // getEnding //
     //-----------//
@@ -241,26 +224,36 @@ public class StaffBarline
         throw new IllegalStateException("No abscissa computable for " + this);
     }
 
-    //------------//
-    // getRelated //
-    //------------//
+    //------------------//
+    // getRelatedInters //
+    //------------------//
     /**
-     * Report the first barline-related entity found, if any
+     * Report the barline-related entities found.
      *
      * @param relationClass the desired class for bar-entity relation
-     * @return the first related entity found or null
+     * @return the list of related entities found (perhaps empty)
      */
-    public Inter getRelated (Class<?> relationClass)
+    public List<Inter> getRelatedInters (Class<?> relationClass)
     {
+        List<Inter> related = null;
+
         for (BarlineInter bar : bars) {
             SIGraph sig = bar.getSig();
 
             for (Relation rel : sig.getRelations(bar, relationClass)) {
-                return sig.getOppositeInter(bar, rel);
+                if (related == null) {
+                    related = new ArrayList<Inter>();
+                }
+
+                related.add(sig.getOppositeInter(bar, rel));
             }
         }
 
-        return null;
+        if (related == null) {
+            return Collections.emptyList();
+        }
+
+        return related;
     }
 
     //-------------//
@@ -292,19 +285,6 @@ public class StaffBarline
         }
 
         throw new IllegalStateException("No abscissa computable for " + this);
-    }
-
-    //----------//
-    // getSegno //
-    //----------//
-    /**
-     * Convenient method to report the related segno, if any
-     *
-     * @return segno inter or null
-     */
-    public SegnoInter getSegno ()
-    {
-        return (SegnoInter) getRelated(SegnoBarRelation.class);
     }
 
     //----------//

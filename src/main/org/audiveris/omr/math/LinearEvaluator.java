@@ -89,8 +89,8 @@ public class LinearEvaluator
     private final Parameter[] parameters;
 
     /** A descriptor for each output category. */
-    @XmlJavaTypeAdapter(CategoryMapAdapter.class)
     @XmlElement(name = "categories")
+    @XmlJavaTypeAdapter(CategoryMapAdapter.class)
     private final SortedMap<String, Category> categories;
 
     /**

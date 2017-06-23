@@ -207,7 +207,7 @@ public abstract class Symbols
 
         map(ACCENT, 62);
         map(ARPEGGIATO, 103);
-        //        sym.put(ARPEGGIATO, new ArpeggiatosSymbol(2, false));
+        sym.put(ARPEGGIATO, new ArpeggiatosSymbol(2, false));
         sym.put(BACK_TO_BACK_REPEAT_SIGN, new BackToBackSymbol(false));
         map(BREATH_MARK, 44);
         map(BREVE, 87);

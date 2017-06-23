@@ -39,13 +39,19 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
+    public void visit (AbstractChordInter inter)
+    {
+        // Void by default
+    }
+
+    @Override
     public void visit (AbstractFlagInter inter)
     {
         // Void by default
     }
 
     @Override
-    public void visit (HeadInter inter)
+    public void visit (ArpeggiatoInter inter)
     {
         // Void by default
     }
@@ -81,12 +87,6 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
-    public void visit (AbstractChordInter inter)
-    {
-        // Void by default
-    }
-
-    @Override
     public void visit (ClefInter inter)
     {
         // Void by default
@@ -94,6 +94,12 @@ public abstract class AbstractInterVisitor
 
     @Override
     public void visit (EndingInter inter)
+    {
+        // Void by default
+    }
+
+    @Override
+    public void visit (HeadInter inter)
     {
         // Void by default
     }
@@ -141,13 +147,13 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
-    public void visit (TimeWholeInter inter)
+    public void visit (TimePairInter inter)
     {
         // Void by default
     }
 
     @Override
-    public void visit (TimePairInter inter)
+    public void visit (TimeWholeInter inter)
     {
         // Void by default
     }

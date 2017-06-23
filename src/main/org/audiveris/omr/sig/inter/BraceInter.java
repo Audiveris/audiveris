@@ -110,4 +110,54 @@ public class BraceInter
 
         return null;
     }
+
+    //---------------//
+    // getFirstStaff //
+    //---------------//
+    /**
+     * Report the first staff embraced by this brace.
+     *
+     * @return first staff or null
+     */
+    public Staff getFirstStaff ()
+    {
+        if (glyph != null) {
+            final SystemInfo system = sig.getSystem();
+            final Rectangle box = glyph.getBounds();
+            final int xRight = box.x + box.width;
+
+            try {
+                return system.getClosestStaff(new Point(xRight, box.y));
+            } catch (Exception ex) {
+                logger.warn("Error in getFirstStaff for {}", this, ex);
+            }
+        }
+
+        return null;
+    }
+
+    //--------------//
+    // getLastStaff //
+    //--------------//
+    /**
+     * Report the last staff embraced by this brace.
+     *
+     * @return first staff or null
+     */
+    public Staff getLastStaff ()
+    {
+        if (glyph != null) {
+            final SystemInfo system = sig.getSystem();
+            final Rectangle box = glyph.getBounds();
+            final int xRight = box.x + box.width;
+
+            try {
+                return system.getClosestStaff(new Point(xRight, (box.y + box.height) - 1));
+            } catch (Exception ex) {
+                logger.warn("Error in getLastStaff for {}", this, ex);
+            }
+        }
+
+        return null;
+    }
 }

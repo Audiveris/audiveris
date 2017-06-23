@@ -24,7 +24,7 @@ package org.audiveris.omr.sig;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import static org.audiveris.omr.glyph.ShapeSet.Alterations;
+import static org.audiveris.omr.glyph.ShapeSet.Accidentals;
 import static org.audiveris.omr.glyph.ShapeSet.CoreBarlines;
 import static org.audiveris.omr.glyph.ShapeSet.Flags;
 import org.audiveris.omr.math.GeoOrder;
@@ -134,7 +134,7 @@ public class SigReducer
     private static final EnumSet<Shape> slurCompShapes = EnumSet.noneOf(Shape.class);
 
     static {
-        slurCompShapes.addAll(Alterations.getShapes());
+        slurCompShapes.addAll(Accidentals.getShapes());
         slurCompShapes.addAll(CoreBarlines);
         slurCompShapes.addAll(Flags.getShapes());
     }
@@ -535,7 +535,7 @@ public class SigReducer
      */
     private void analyzeHeadStems ()
     {
-        final List<Inter> heads = sig.inters(ShapeSet.NoteHeads.getShapes());
+        final List<Inter> heads = sig.inters(ShapeSet.StemHeads);
 
         for (Inter hi : heads) {
             HeadInter head = (HeadInter) hi;
@@ -800,7 +800,7 @@ public class SigReducer
     private int checkHeads ()
     {
         int modifs = 0;
-        final List<Inter> heads = sig.inters(ShapeSet.NoteHeads.getShapes());
+        final List<Inter> heads = sig.inters(ShapeSet.StemHeads);
 
         for (Inter head : heads) {
             // Check if the head has a stem relation
@@ -855,7 +855,7 @@ public class SigReducer
     /**
      * Perform checks on isolated alterations.
      * <p>
-     * They are discarded is there is no relation with a nearby head (or turn sign?).
+     * They are discarded if there is no relation with a nearby head (or turn sign?).
      * TODO: rework this when stand-alone key signatures are supported.
      *
      * @return the count of modifications done
@@ -863,7 +863,7 @@ public class SigReducer
     private int checkIsolatedAlters ()
     {
         int modifs = 0;
-        final List<Inter> alters = sig.inters(ShapeSet.Alterations.getShapes());
+        final List<Inter> alters = sig.inters(ShapeSet.Accidentals.getShapes());
 
         for (Inter inter : alters) {
             if (inter instanceof KeyAlterInter) {
@@ -897,8 +897,7 @@ public class SigReducer
     private int checkLedgers ()
     {
         // All system note heads, sorted by abscissa
-        List<Inter> allHeads = sig.inters(
-                ShapeSet.shapesOf(ShapeSet.NoteHeads.getShapes(), ShapeSet.StemLessHeads.getShapes()));
+        List<Inter> allHeads = sig.inters(ShapeSet.Heads);
         Collections.sort(allHeads, Inter.byAbscissa);
 
         final List<LedgerInter> toDelete = new ArrayList<LedgerInter>();
@@ -1386,7 +1385,7 @@ public class SigReducer
                                            LedgerInter ledger,
                                            List<Inter> allHeads)
     {
-        Rectangle ledgerBox = new Rectangle(ledger.getBounds());
+        Rectangle ledgerBox = ledger.getBounds();
         ledgerBox.grow(0, scale.getInterline()); // Very high box, but that's OK
 
         // Check for another ledger on next line

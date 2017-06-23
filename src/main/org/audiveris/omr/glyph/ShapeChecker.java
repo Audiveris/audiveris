@@ -495,7 +495,6 @@ public class ShapeChecker
 
         new Checker(
                 "StaffGap",
-                StemLessHeads.getShapes(),
                 Rests.getShapes(),
                 Dynamics.getShapes(),
                 Articulations.getShapes())
@@ -509,7 +508,6 @@ public class ShapeChecker
                 Point center = glyph.getCenter();
                 Staff staff = system.getClosestStaff(center);
 
-                // Staff may be null when we are modifying system boundaries
                 if (staff == null) {
                     return false;
                 }
@@ -574,6 +572,27 @@ public class ShapeChecker
                 }
 
                 // Pedal marks cannot intersect the staff
+                Staff staff = system.getClosestStaff(glyph.getCenter());
+
+                return staff.gapTo(glyph.getBounds()) > 0;
+            }
+        };
+
+        new Checker("AboveStaff", Markers)
+        {
+            @Override
+            public boolean check (SystemInfo system,
+                                  Evaluation eval,
+                                  Glyph glyph)
+            {
+                // Markers must be above the staff
+                final double pp = system.estimatedPitch(glyph.getCenter());
+
+                if (pp >= -4) {
+                    return false;
+                }
+
+                // Markers cannot intersect the staff
                 Staff staff = system.getClosestStaff(glyph.getCenter());
 
                 return staff.gapTo(glyph.getBounds()) > 0;

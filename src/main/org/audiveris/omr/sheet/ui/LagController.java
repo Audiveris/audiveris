@@ -67,8 +67,7 @@ public class LagController
                           Lag lag,
                           SheetTab tab)
     {
-        super(
-                new GlyphsModel(sheet, (GlyphService) sheet.getGlyphIndex().getEntityService(), null));
+        super(new GlyphsModel(sheet, (GlyphService) sheet.getGlyphIndex().getEntityService()));
         this.lag = lag;
         this.tab = tab;
     }

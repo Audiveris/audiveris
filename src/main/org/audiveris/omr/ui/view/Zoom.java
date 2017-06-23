@@ -247,6 +247,24 @@ public class Zoom
     /**
      * Coordinate computation, Source -> Display
      *
+     * @param pt source point
+     *
+     * @return the corresponding (scaled) point
+     */
+    public Point scaled (Point pt)
+    {
+        Point p = new Point(pt);
+        scale(p);
+
+        return p;
+    }
+
+    //--------//
+    // scaled //
+    //--------//
+    /**
+     * Coordinate computation, Source -> Display
+     *
      * @param dim source dimension
      *
      * @return the corresponding (scaled) dimension
@@ -411,6 +429,20 @@ public class Zoom
     public int unscaled (double val)
     {
         return (int) Math.rint(val / ratio);
+    }
+
+    //----------//
+    // unscaled //
+    //----------//
+    /**
+     * Point computation Display -> Source
+     *
+     * @param pt a display point
+     * @return the corresponding (unscaled) source point
+     */
+    public Point unscaled (Point pt)
+    {
+        return new Point((int) Math.rint(pt.x / ratio), (int) Math.rint(pt.y / ratio));
     }
 
     //------------//

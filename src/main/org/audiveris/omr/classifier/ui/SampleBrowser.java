@@ -1231,7 +1231,13 @@ public class SampleBrowser
         public SampleEvaluationBoard (SampleController controller,
                                       Classifier classifier)
         {
-            super(true, null, classifier, controller, true);
+            super(
+                    true,
+                    null,
+                    classifier,
+                    (EntityService<Glyph>) controller.getGlyphService(),
+                    null,
+                    true);
         }
 
         //~ Methods --------------------------------------------------------------------------------

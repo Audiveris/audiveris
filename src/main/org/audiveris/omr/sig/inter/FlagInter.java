@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -48,9 +49,9 @@ public class FlagInter
      * @param shape precise shape
      * @param grade evaluation value
      */
-    protected FlagInter (Glyph glyph,
-                         Shape shape,
-                         double grade)
+    public FlagInter (Glyph glyph,
+                      Shape shape,
+                      double grade)
     {
         super(glyph, shape, grade);
     }
@@ -84,6 +85,29 @@ public class FlagInter
         }
 
         return part;
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff == null) {
+            // Flag -> Stem
+            for (Relation fsRel : sig.getRelations(this, FlagStemRelation.class)) {
+                StemInter stem = (StemInter) sig.getOppositeInter(this, fsRel);
+
+                // Stem -> Head
+                for (Relation hsRel : sig.getRelations(stem, HeadStemRelation.class)) {
+                    Inter head = sig.getOppositeInter(stem, hsRel);
+
+                    return staff = head.getStaff();
+                }
+            }
+        }
+
+        return staff;
     }
 
     //-----------//

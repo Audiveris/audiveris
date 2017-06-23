@@ -125,9 +125,22 @@ public class HeadInter
                       Shape shape,
                       GradeImpacts impacts,
                       Staff staff,
-                      double pitch)
+                      Double pitch)
     {
         super(null, bounds, shape, impacts, staff, pitch);
+        this.pivot = pivot;
+        this.anchor = anchor;
+    }
+
+    public HeadInter (Point pivot,
+                      Anchor anchor,
+                      Rectangle bounds,
+                      Shape shape,
+                      double grade,
+                      Staff staff,
+                      Double pitch)
+    {
+        super(null, bounds, shape, grade, staff, pitch);
         this.pivot = pivot;
         this.anchor = anchor;
     }

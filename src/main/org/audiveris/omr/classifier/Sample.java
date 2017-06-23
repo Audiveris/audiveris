@@ -114,6 +114,9 @@ public class Sample
     @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
     protected Double pitch;
 
+    // Transient data
+    //---------------
+    //
     /** True for artificial (font-based) sample. */
     private boolean symbol;
 
