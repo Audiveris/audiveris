@@ -729,7 +729,7 @@ public class PartwiseBuilder
         return ornaments;
     }
 
-    //    //---------------//
+    //---------------//
     // getSlurNumber //
     //---------------//
     private Integer getSlurNumber (SlurInter slur)

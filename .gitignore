@@ -12,6 +12,7 @@ dev/material/classifier
 .gitignore
 .gradle/*
 .nb-gradle/*
+.nb-gradle-properties
 *.exe
 *.lnk
 *.log

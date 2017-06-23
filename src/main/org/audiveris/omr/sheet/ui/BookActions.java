@@ -648,6 +648,7 @@ public class BookActions
         final Path exportPathSansExt = BookManager.getDefaultExportPathSansExt(book);
 
         if (exportPathSansExt != null) {
+            //TODO: check/prompt for overwrite??? (perhaps several files)
             return new ExportBookTask(book, exportPathSansExt);
         } else {
             return exportBookAs(e);
@@ -674,6 +675,8 @@ public class BookActions
         }
 
         // Let user select book export target
+        //TODO: if we have several movements in this book, export will result in several files...
+        //TODO: so, how can we check/prompt for overwrite?
         final String ext = BookManager.getExportExtension();
         final Path sansExt = BookManager.getDefaultExportPathSansExt(book);
         final Path targetPath = Paths.get(sansExt + ext);

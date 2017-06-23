@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
@@ -411,13 +412,15 @@ public class ChordsBuilder
                     sig.removeEdge(rel);
                     sig.addEdge(beam, rightHead, rel);
                 }
+            } else if (rel instanceof HeadHeadRelation) {
+                // Supporting head must be on *same* stem
+                HeadInter otherHead = (HeadInter) sig.getOppositeInter(leftHead, rel);
 
-                // Since head-chords are now built BEFORE slurs, this case no longer applies.
-                //            } else if (rel instanceof SlurHeadRelation) {
-                //                // Connect the slur to both heads (this will be disambiguated later)
-                //                SlurInter slur = (SlurInter) sig.getOppositeInter(leftHead, rel);
-                //                HorizontalSide side = ((SlurHeadRelation) rel).getSide();
-                //                sig.addEdge(slur, rightHead, new SlurHeadRelation(side));
+                if (otherHead.getCenter().y < head.getCenter().y) {
+                    // Migrate this relation from left mirror to right mirror
+                    sig.removeEdge(rel);
+                    sig.insertSupport(otherHead, rightHead, HeadHeadRelation.class);
+                }
             } else if (rel instanceof AlterHeadRelation) {
                 // TODO
             } else if (rel instanceof AugmentationRelation) {
