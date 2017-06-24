@@ -28,8 +28,6 @@ import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractChordInter;
-import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -102,13 +100,13 @@ public class ChordSplitter
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The large chord to be split. */
-    private final AbstractChordInter chord;
+    private final HeadChordInter chord;
 
     /** The location of this chord WRT conflicting ties. */
     private final HorizontalSide side;
 
     /** The originating chords for the conflicting ties. */
-    private final Map<AbstractChordInter, List<SlurInter>> origins;
+    private final Map<HeadChordInter, List<SlurInter>> origins;
 
     /** Minimum length for a sub-stem to be extracted from chord stem. */
     private final int minSubStemLength;
@@ -134,9 +132,9 @@ public class ChordSplitter
      * @param side    the ties side where the chord is linked
      * @param origins the originating chords for the ties
      */
-    public ChordSplitter (AbstractChordInter chord,
+    public ChordSplitter (HeadChordInter chord,
                           HorizontalSide side,
-                          Map<AbstractChordInter, List<SlurInter>> origins)
+                          Map<HeadChordInter, List<SlurInter>> origins)
     {
         this.chord = chord;
         this.side = side;
@@ -200,7 +198,7 @@ public class ChordSplitter
     private List<Partition> getAllPartitions ()
     {
         // Collection of tied heads
-        final List<AbstractNoteInter> tiedHeads = new ArrayList<AbstractNoteInter>();
+        final List<HeadInter> tiedHeads = new ArrayList<HeadInter>();
 
         // Detect the partitions of consistent heads in this chord
         List<Partition> partitions = new ArrayList<Partition>();
@@ -301,7 +299,7 @@ public class ChordSplitter
     /**
      * Inject each head left over (not tied) into closest partition.
      */
-    private void injectStandardHeads (Collection<AbstractNoteInter> tiedHeads)
+    private void injectStandardHeads (Collection<HeadInter> tiedHeads)
     {
         List<HeadInter> stdHeads = new ArrayList<HeadInter>();
 
@@ -313,7 +311,7 @@ public class ChordSplitter
             }
         }
 
-        Collections.sort(stdHeads, AbstractChordInter.noteHeadComparator);
+        Collections.sort(stdHeads, HeadChordInter.headComparator);
 
         HeadLoop:
         for (HeadInter head : stdHeads) {
@@ -405,14 +403,14 @@ public class ChordSplitter
 
         public Partition ()
         {
-            super(AbstractChordInter.noteHeadComparator);
+            super(HeadChordInter.headComparator);
         }
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
         public int compareTo (Partition that)
         {
-            return AbstractChordInter.noteHeadComparator.compare(this.first(), that.first());
+            return HeadChordInter.headComparator.compare(this.first(), that.first());
         }
 
         /**

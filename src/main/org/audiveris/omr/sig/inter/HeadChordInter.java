@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.util.Comparator;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -41,7 +42,32 @@ public class HeadChordInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(HeadChordInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            HeadChordInter.class);
+
+    /**
+     * Compare two heads of the same chord, ordered by increasing distance from chord
+     * head ordinate.
+     */
+    public static final Comparator<HeadInter> headComparator = new Comparator<HeadInter>()
+    {
+        @Override
+        public int compare (HeadInter n1,
+                            HeadInter n2)
+        {
+            if (n1 == n2) {
+                return 0;
+            }
+
+            HeadChordInter c1 = (HeadChordInter) n1.getEnsemble();
+
+            if (c1 != n2.getEnsemble()) {
+                logger.error("Comparing notes from different chords");
+            }
+
+            return c1.getStemDir() * (n1.getCenter().y - n2.getCenter().y);
+        }
+    };
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -113,15 +139,6 @@ public class HeadChordInter
         return clone;
     }
 
-    //-------------//
-    // shapeString //
-    //-------------//
-    @Override
-    public String shapeString ()
-    {
-        return "HeadChord";
-    }
-
     //----------------//
     // getHeadsBounds //
     //----------------//
@@ -143,5 +160,14 @@ public class HeadChordInter
         }
 
         return box;
+    }
+
+    //-------------//
+    // shapeString //
+    //-------------//
+    @Override
+    public String shapeString ()
+    {
+        return "HeadChord";
     }
 }

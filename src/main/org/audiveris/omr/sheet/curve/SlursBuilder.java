@@ -33,7 +33,7 @@ import static org.audiveris.omr.sheet.curve.ArcShape.STAFF_ARC;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -64,8 +64,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -777,70 +777,83 @@ public class SlursBuilder
     /**
      * Check and resolve collisions of ties on a chord.
      * <p>
+     * Assumption: Incoming ties may originate from different chords, but not departing ties.
+     * <p>
      * A significant problem is that heads & stems are rather reliable, whereas slurs are not.
      */
     private void handleTieCollisions ()
     {
+        // We consider only left side of slurs
+        final HorizontalSide slurSide = HorizontalSide.LEFT;
+
         for (SystemInfo system : sheet.getSystems()) {
             final SIGraph sig = system.getSig();
-            final List<Inter> chords = sig.inters(AbstractChordInter.class);
+            final List<Inter> chords = sig.inters(HeadChordInter.class);
 
             for (Inter cInter : chords) {
-                final AbstractChordInter chord = (AbstractChordInter) cInter;
+                final HeadChordInter chord = (HeadChordInter) cInter;
+
+                if (chord.getNotes().size() < 2) {
+                    continue;
+                }
 
                 if (chord.isVip()) {
                     logger.info("VIP handleTieCollisions on {}", chord);
                 }
 
-                for (HorizontalSide side : HorizontalSide.values()) {
-                    // Count ties for this chord on selected slur side
-                    final Set<SlurInter> ties = new LinkedHashSet<SlurInter>();
+                // Count ties for this chord on relevant *slur* side (LEFT)
+                final Set<SlurInter> ties = new LinkedHashSet<SlurInter>();
 
-                    for (Inter nInter : chord.getNotes()) {
-                        for (Relation rel : sig.getRelations(nInter, SlurHeadRelation.class)) {
-                            final SlurHeadRelation shRel = (SlurHeadRelation) rel;
+                for (Inter nInter : chord.getNotes()) {
+                    for (Relation rel : sig.getRelations(nInter, SlurHeadRelation.class)) {
+                        final SlurHeadRelation shRel = (SlurHeadRelation) rel;
 
-                            if (shRel.getSide() == side) {
-                                SlurInter slur = (SlurInter) sig.getOppositeInter(nInter, rel);
+                        if (shRel.getSide() == slurSide) {
+                            SlurInter slur = (SlurInter) sig.getOppositeInter(nInter, rel);
 
-                                if (slur.isTie()) {
-                                    ties.add(slur);
+                            if (slur.isTie()) {
+                                ties.add(slur);
+                            }
+                        }
+                    }
+                }
+
+                if (ties.size() > 1) {
+                    HorizontalSide oppSide = slurSide.opposite();
+                    Map<HeadChordInter, List<SlurInter>> origins;
+                    origins = new HashMap<HeadChordInter, List<SlurInter>>();
+
+                    // Check whether the ties are linked to different chords
+                    for (SlurInter tie : ties) {
+                        for (Relation rel : sig.getRelations(tie, SlurHeadRelation.class)) {
+                            if (((SlurHeadRelation) rel).getSide() == oppSide) {
+                                Inter head = sig.getOppositeInter(tie, rel);
+                                HeadChordInter ch = (HeadChordInter) head.getEnsemble();
+
+                                if (ch != null) {
+                                    List<SlurInter> list = origins.get(ch);
+
+                                    if (list == null) {
+                                        origins.put(ch, list = new ArrayList<SlurInter>());
+                                    }
+
+                                    list.add(tie);
                                 }
                             }
                         }
                     }
 
-                    if (ties.size() > 1) {
-                        HorizontalSide oppSide = side.opposite();
-                        Map<AbstractChordInter, List<SlurInter>> origins;
-                        origins = new HashMap<AbstractChordInter, List<SlurInter>>();
+                    logger.debug("origins: {}", origins);
 
-                        // Check whether the ties are linked to different chords
-                        for (SlurInter tie : ties) {
-                            for (Relation rel : sig.getRelations(tie, SlurHeadRelation.class)) {
-                                if (((SlurHeadRelation) rel).getSide() == oppSide) {
-                                    Inter head = sig.getOppositeInter(tie, rel);
-                                    AbstractChordInter ch = (AbstractChordInter) head.getEnsemble();
+                    if (origins.keySet().size() > 1) {
+                        // This may result from a mirrored head
+                        HeadInter mirror = (HeadInter) chord.getLeadingNote().getMirror();
 
-                                    if (ch != null) {
-                                        List<SlurInter> list = origins.get(ch);
-
-                                        if (list == null) {
-                                            origins.put(ch, list = new ArrayList<SlurInter>());
-                                        }
-
-                                        list.add(tie);
-                                    }
-                                }
-                            }
+                        if (mirror != null) {
                         }
 
-                        logger.debug("origins: {}", origins);
-
-                        if (origins.keySet().size() > 1 && chord.getNotes().size() > 1) {
-                            logger.debug("{} with {} ties on {} side", chord, ties.size(), oppSide);
-                            new ChordSplitter(chord, side, origins).process();
-                        }
+                        logger.debug("{} with {} ties on {} side", chord, ties.size(), oppSide);
+                        new ChordSplitter(chord, slurSide, origins).process();
                     }
                 }
             }

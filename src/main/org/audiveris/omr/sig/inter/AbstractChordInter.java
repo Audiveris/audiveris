@@ -78,30 +78,6 @@ public abstract class AbstractChordInter
 
     private static final List<AbstractBeamInter> NO_BEAM = Collections.emptyList();
 
-    /**
-     * Compare two notes of the same chord, ordered by increasing distance from chord
-     * head ordinate.
-     */
-    public static final Comparator<AbstractNoteInter> noteHeadComparator = new Comparator<AbstractNoteInter>()
-    {
-        @Override
-        public int compare (AbstractNoteInter n1,
-                            AbstractNoteInter n2)
-        {
-            if (n1 == n2) {
-                return 0;
-            }
-
-            AbstractChordInter c1 = (AbstractChordInter) n1.getEnsemble();
-
-            if (c1 != n2.getEnsemble()) {
-                logger.error("Comparing notes from different chords");
-            }
-
-            return c1.getStemDir() * (n1.getCenter().y - n2.getCenter().y);
-        }
-    };
-
     //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
