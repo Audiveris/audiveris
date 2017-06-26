@@ -41,6 +41,11 @@ allprojects {
 run {
     minHeapSize = '512m'
     maxHeapSize = '1g'
+    
+    // Retrieve CLI arguments from cmdLineArgs property if any
+    if (project.hasProperty("cmdLineArgs")) {
+        args(cmdLineArgs.split(','))
+    }
 }
 
 repositories {
