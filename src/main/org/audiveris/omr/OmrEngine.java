@@ -33,7 +33,6 @@ import java.util.List;
  * <p>
  * A Book instance can be obtained from:<ul>
  * <li>An input image file, via {@link #loadInput(java.nio.file.Path)},</li>
- * <li>A script file, via {@link #loadScript(java.nio.file.Path)},</li>
  * <li>A book file, via {@link #loadBook(java.nio.file.Path)}.</li>
  * </ul>
  * <p>
@@ -67,14 +66,6 @@ public interface OmrEngine
      * @return the allocated book
      */
     Book loadInput (Path path);
-
-    /**
-     * Build a book out of a script file.
-     *
-     * @param path path to the input script file
-     * @return the allocated book
-     */
-    Book loadScript (Path path);
 
     /**
      * Remove the provided book from OMR service.

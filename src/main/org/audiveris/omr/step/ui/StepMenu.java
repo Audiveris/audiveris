@@ -22,8 +22,6 @@
 package org.audiveris.omr.step.ui;
 
 import org.audiveris.omr.OMR;
-import org.audiveris.omr.script.SheetStepTask;
-import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.ProcessingCancellationException;
@@ -42,6 +40,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.event.MenuEvent;
+import org.audiveris.omr.log.LogUtil;
 
 /**
  * Class {@code StepMenu} encapsulates the user interface needed to deal with
@@ -195,9 +194,14 @@ public class StepMenu
                             }
                         }
 
-                        // Work on the sheet
-                        final Sheet sheet = stub.getSheet();
-                        new SheetStepTask(sheet, step).run(sheet);
+                        try {
+                            LogUtil.start(stub);
+                            stub.reachStep(step, true);
+                            logger.info("End of sheet step {}", step);
+                        } finally {
+                            LogUtil.stopStub();
+                        }
+
                     } catch (ProcessingCancellationException pce) {
                         logger.info("ProcessingCancellationException detected");
                     }

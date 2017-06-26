@@ -27,7 +27,6 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.score.Score;
-import org.audiveris.omr.script.ScriptManager;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.PathHistory;
 
@@ -133,9 +132,6 @@ public class BookManager
 
     /** Book file history. (filled only when books are successfully loaded or saved) */
     private PathHistory bookHistory;
-
-    /** Script file history. (filled only when scripts are successfully loaded or saved) */
-    private PathHistory scriptHistory;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -297,24 +293,6 @@ public class BookManager
         return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.PDF_EXTENSION);
     }
 
-    //----------------------//
-    // getDefaultScriptPath //
-    //----------------------//
-    /**
-     * Report the default path where the script should be written to
-     *
-     * @param book the containing book
-     * @return the default path for saving the script
-     */
-    public static Path getDefaultScriptPath (Book book)
-    {
-        if (book.getScriptPath() != null) {
-            return book.getScriptPath();
-        }
-
-        return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.SCRIPT_EXTENSION);
-    }
-
     //-------------//
     // getInstance //
     //-------------//
@@ -330,27 +308,6 @@ public class BookManager
         }
 
         return INSTANCE;
-    }
-
-    //------------------//
-    // getScriptHistory //
-    //------------------//
-    /**
-     * Get access to the list of previous scripts.
-     *
-     * @return the history set of script files
-     */
-    public PathHistory getScriptHistory ()
-    {
-        if (scriptHistory == null) {
-            scriptHistory = new PathHistory(
-                    "Script History",
-                    constants.scriptHistory,
-                    null,
-                    constants.historySize.getValue());
-        }
-
-        return scriptHistory;
     }
 
     //-------------//
@@ -381,15 +338,6 @@ public class BookManager
         }
 
         return book;
-    }
-
-    //------------//
-    // loadScript //
-    //------------//
-    @Override
-    public Book loadScript (Path path)
-    {
-        return ScriptManager.getInstance().loadAndRun(path.toFile(), false);
     }
 
     //---------//

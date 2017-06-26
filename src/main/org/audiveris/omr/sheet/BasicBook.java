@@ -36,11 +36,9 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
-import org.audiveris.omr.script.BookStepTask;
-import org.audiveris.omr.script.ExportTask;
-import org.audiveris.omr.script.PrintTask;
-import org.audiveris.omr.script.Script;
+
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
+
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sheet.ui.BookBrowser;
 import org.audiveris.omr.sheet.ui.StubsController;
@@ -167,12 +165,6 @@ public class BasicBook
 
     /** File path where the book is printed. */
     private Path printPath;
-
-    /** File path where the script is stored. */
-    private Path scriptPath;
-
-    /** The script of user actions on this book. */
-    private Script script;
 
     /** File path (without extension) where the MusicXML output is stored. */
     private Path exportPathSansExt;
@@ -522,9 +514,6 @@ public class BasicBook
                 }
             }
         }
-
-        // Save task into book script
-        getScript().addTask(new ExportTask(bookPathSansExt, null));
     }
 
     //----------//
@@ -672,28 +661,6 @@ public class BasicBook
     public List<Score> getScores ()
     {
         return Collections.unmodifiableList(scores);
-    }
-
-    //-----------//
-    // getScript //
-    //-----------//
-    @Override
-    public Script getScript ()
-    {
-        if (script == null) {
-            script = new Script(this);
-        }
-
-        return script;
-    }
-
-    //---------------//
-    // getScriptPath //
-    //---------------//
-    @Override
-    public Path getScriptPath ()
-    {
-        return scriptPath;
     }
 
     //-----------------------------//
@@ -1026,7 +993,6 @@ public class BasicBook
             LogUtil.start(BasicBook.this);
             new BookPdfOutput(BasicBook.this, pdfPath.toFile()).write(null);
             setPrintPath(pdfPath);
-            getScript().addTask(new PrintTask(pdfPath, null));
         } catch (Exception ex) {
             logger.warn("Cannot write PDF to " + pdfPath, ex);
         } finally {
@@ -1147,9 +1113,6 @@ public class BasicBook
 
                 long stopTime = System.currentTimeMillis();
                 logger.debug("End of step set in {} ms.", (stopTime - startTime));
-
-                // Record the step task into script
-                getScript().addTask(new BookStepTask(target));
             }
         } catch (ProcessingCancellationException pce) {
             throw pce;
@@ -1234,11 +1197,6 @@ public class BasicBook
     public void setOffset (Integer offset)
     {
         this.offset = offset;
-
-        if (script != null) {
-            // Forward to related script
-            script.setOffset(offset);
-        }
     }
 
     //--------------//
@@ -1248,15 +1206,6 @@ public class BasicBook
     public void setPrintPath (Path printPath)
     {
         this.printPath = printPath;
-    }
-
-    //---------------//
-    // setScriptPath //
-    //---------------//
-    @Override
-    public void setScriptPath (Path scriptPath)
-    {
-        this.scriptPath = scriptPath;
     }
 
     //-------//
@@ -1628,7 +1577,7 @@ public class BasicBook
             radix = newRadix;
 
             // We are really changing the radix, so nullify all other paths
-            exportPathSansExt = printPath = scriptPath = null;
+            exportPathSansExt = printPath = null;
 
             if (OMR.gui != null) {
                 // Update UI first sheet tab

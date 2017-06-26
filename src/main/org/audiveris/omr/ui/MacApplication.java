@@ -23,22 +23,15 @@ package org.audiveris.omr.ui;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
-import org.audiveris.omr.script.Script;
-import org.audiveris.omr.script.ScriptManager;
 import org.audiveris.omr.sheet.Book;
-import org.audiveris.omr.sheet.BookManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.nio.file.Paths;
-
-import javax.swing.SwingWorker;
 
 /**
  * Class {@code MacApplication} provides dynamic hooks into the
@@ -112,42 +105,10 @@ public class MacApplication
         case "handleOpenFile":
             logger.debug(filename);
 
-            if (filename.toLowerCase().endsWith(".script")) {
-                final File file = new File(filename);
-                final SwingWorker<?, ?> worker = new SwingWorker<Object, Object>()
-                {
-                    @Override
-                    protected Object doInBackground ()
-                    {
-                        // Actually load the script
-                        logger.info("Loading script file {} ...", file);
-
-                        try {
-                            final Script script = ScriptManager.getInstance().load(
-                                    new FileInputStream(file));
-                            BookManager.getInstance().getScriptHistory().add(file.toPath());
-
-                            if (logger.isDebugEnabled()) {
-                                script.dump();
-                            }
-
-                            script.run();
-                        } catch (Exception ex) {
-                            logger.warn("Error loading script file {}", file);
-                        }
-
-                        return null;
-                    }
-                };
-
-                worker.execute();
-            } else {
-                // Actually load the book
-                Book book = OMR.engine.loadInput(Paths.get(filename));
-                book.createStubs(null);
-                book.createStubsTabs(null); // Tabs are now accessible
-            }
-
+            // Actually load the book
+            Book book = OMR.engine.loadInput(Paths.get(filename));
+            book.createStubs(null);
+            book.createStubsTabs(null); // Tabs are now accessible
             break;
         }
 

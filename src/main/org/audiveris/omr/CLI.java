@@ -105,7 +105,7 @@ public class CLI
     // getCliTasks //
     //-------------//
     /**
-     * Prepare the collection of CLI tasks (inputs, books, scripts, samples).
+     * Prepare the collection of CLI tasks (inputs, books, samples).
      *
      * @return the collection of tasks
      */
@@ -120,9 +120,7 @@ public class CLI
             if (!str.isEmpty()) {
                 final Path path = Paths.get(str);
 
-                if (str.endsWith(OMR.SCRIPT_EXTENSION)) {
-                    tasks.add(new ScriptTask(path));
-                } else if (str.endsWith(OMR.BOOK_EXTENSION)) {
+                if (str.endsWith(OMR.BOOK_EXTENSION)) {
                     tasks.add(new BookTask(path));
                 } else if (str.endsWith("-" + SampleRepository.SAMPLES_FILE_NAME)) {
                     tasks.add(new SamplesTask(path));
@@ -253,7 +251,6 @@ public class CLI
 
         buf.append("\nInput file extensions:");
         buf.append("\n   .omr        : book file");
-        buf.append("\n   .script.xml : script file");
         buf.append("\n   [any other] : image file");
         buf.append("\n");
 
@@ -273,7 +270,7 @@ public class CLI
     // CliTask //
     //---------//
     /**
-     * Define a CLI task on a book (input, book or script).
+     * Define a CLI task on a book (input or book).
      */
     public abstract static class CliTask
             implements Callable<Void>
@@ -816,36 +813,6 @@ public class CLI
             global.includeSamplesFile(path);
 
             return null;
-        }
-    }
-
-    //------------//
-    // ScriptTask //
-    //------------//
-    /**
-     * Processing a script file.
-     */
-    private static class ScriptTask
-            extends CliTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public ScriptTask (Path path)
-        {
-            super(path);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String toString ()
-        {
-            return "Script \"" + path + "\"";
-        }
-
-        @Override
-        protected Book loadBook (Path path)
-        {
-            return OMR.engine.loadScript(path);
         }
     }
 }

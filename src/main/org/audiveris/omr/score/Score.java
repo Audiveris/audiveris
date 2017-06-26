@@ -23,7 +23,6 @@ package org.audiveris.omr.score;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.script.ParametersTask.PartData;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;

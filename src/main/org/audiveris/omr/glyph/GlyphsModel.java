@@ -119,44 +119,45 @@ public class GlyphsModel
         //
         //        // TODO: we need staff information (-> interline and pitch)
         //        repository.addSample(shape, glyph, interline, sampleSheet, null);
-        //
-        //        if (glyph == null) {
-        //            return null;
-        //        }
-        //
-        //        if (shape != null) {
-        //            List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(glyph);
-        //
-        //            //            if (system != null) {
-        //            //                glyph = system.register(glyph); // System then nest
-        //            //            } else {
-        //            //                // Insert in nest directly, which assigns an id to the glyph
-        //            glyph = nest.register(glyph);
-        //
-        //            //            }
-        //            boolean isTransient = glyph.isTransient();
-        //            logger.debug(
-        //                    "Assign {}{} to {}",
-        //                    isTransient ? "compound " : "",
-        //                    glyph.idString(),
-        //                    shape);
-        //
-        //            // Remember the latest shape assigned
-        //            setLatestShape(shape);
-        //        }
-        //
-        //        // Do the assignment of the shape to the glyph
-        //        glyph.setShape(shape);
-        //
-        //        // Should we persist the assigned glyph?
-        //        if ((shape != null)
-        //            && (grade == Evaluation.MANUAL)
-        //            && (OMR.gui != null)
-        //            && ScoreActions.getInstance().isManualPersisted()) {
-        //            // Record the glyph description to disk
-        //            SampleRepository.getInstance().recordOneGlyph(glyph, sheet);
-        //        }
-        //
+
+//
+//                if (glyph == null) {
+//                    return null;
+//                }
+//
+//                if (shape != null) {
+//                    List<SystemInfo> systems = sheet.getSystemManager().getSystemsOf(glyph);
+//
+//                    //            if (system != null) {
+//                    //                glyph = system.register(glyph); // System then nest
+//                    //            } else {
+//                    //                // Insert in nest directly, which assigns an id to the glyph
+//                    glyph = nest.register(glyph);
+//
+//                    //            }
+//                    boolean isTransient = glyph.isTransient();
+//                    logger.debug(
+//                            "Assign {}{} to {}",
+//                            isTransient ? "compound " : "",
+//                            glyph.idString(),
+//                            shape);
+//
+//                    // Remember the latest shape assigned
+//                    setLatestShape(shape);
+//                }
+//
+//                // Do the assignment of the shape to the glyph
+//                glyph.setShape(shape);
+//
+//                // Should we persist the assigned glyph?
+//                if ((shape != null)
+//                    && (grade == Evaluation.MANUAL)
+//                    && (OMR.gui != null)
+//                    && ScoreActions.getInstance().isManualPersisted()) {
+//                    // Record the glyph description to disk
+//                    SampleRepository.getInstance().recordOneGlyph(glyph, sheet);
+//                }
+//
         return glyph;
     }
 

@@ -24,7 +24,6 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.score.Score;
-import org.audiveris.omr.script.Script;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Param;
 
@@ -102,9 +101,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getPrintPath}</li>
  * <li>{@link #setPrintPath}</li>
  * <li>{@link #print}</li>
- * <li>{@link #getScript}</li>
- * <li>{@link #getScriptPath}</li>
- * <li>{@link #setScriptPath}</li>
  * <li>{@link #getBookPath}</li>
  * <li>{@link #store}</li>
  * </ul></dd>
@@ -267,20 +263,6 @@ public interface Book
      * @return the immutable list of scores
      */
     List<Score> getScores ();
-
-    /**
-     * Report the script of actions performed on this book.
-     *
-     * @return the book script
-     */
-    Script getScript ();
-
-    /**
-     * Report the path, if any, where the book script should be written.
-     *
-     * @return the related script path or null
-     */
-    Path getScriptPath ();
 
     /**
      * Report (after allocation if needed) the book <b>specific</b> sample repository
@@ -446,13 +428,6 @@ public interface Book
      * @param printPath the print path
      */
     void setPrintPath (Path printPath);
-
-    /**
-     * Remember the path where the book script is written.
-     *
-     * @param scriptPath the related script path
-     */
-    void setScriptPath (Path scriptPath);
 
     /**
      * Store book to disk.

@@ -30,12 +30,6 @@ import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.Plugin;
 import org.audiveris.omr.plugin.PluginManager;
 import org.audiveris.omr.score.ui.ScoreParameters;
-import org.audiveris.omr.script.InvalidateTask;
-import org.audiveris.omr.script.ResetBinaryTask;
-import org.audiveris.omr.script.ResetTask;
-import org.audiveris.omr.script.SaveTask;
-import org.audiveris.omr.script.Script;
-import org.audiveris.omr.script.ScriptManager;
 import org.audiveris.omr.sheet.BasicSheet;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
@@ -53,6 +47,7 @@ import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;
+import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.util.CursorController;
 import org.audiveris.omr.ui.util.OmrFileFilter;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -74,10 +69,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -89,7 +80,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.xml.bind.JAXBException;
 
 /**
  * Class {@code BookActions} gathers all UI actions related to current book.
@@ -140,9 +130,6 @@ public class BookActions
     /** Sub-menu on books history. */
     private final HistoryMenu bookHistoryMenu;
 
-    /** Sub-menu on scripts history. */
-    private final HistoryMenu scriptHistoryMenu;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BookActions object.
@@ -152,7 +139,6 @@ public class BookActions
         final BookManager mgr = BookManager.getInstance();
         imageHistoryMenu = new HistoryMenu(mgr.getImageHistory(), LoadImageTask.class);
         bookHistoryMenu = new HistoryMenu(mgr.getBookHistory(), LoadBookTask.class);
-        scriptHistoryMenu = new HistoryMenu(mgr.getScriptHistory(), LoadScriptTask.class);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -196,46 +182,6 @@ public class BookActions
         //            ///return fillParametersWithDefaults(sheet.getBook());
         //        }
         return true;
-    }
-
-    //-------------//
-    // checkStored //
-    //-------------//
-    /**
-     * Check whether the provided script has been safely saved if needed
-     * (and therefore, if the sheet can be closed)
-     *
-     * @param script the script to check
-     * @return true if close is allowed, false if not
-     */
-    public static boolean checkStored (Script script)
-    {
-        if (script.isModified() && defaultPrompt.getSpecific()) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "Save script for book " + script.getBook().getRadix() + "?");
-
-            if (answer == JOptionPane.YES_OPTION) {
-                Task<Void, Void> task = getInstance().storeScript(null);
-
-                if (task != null) {
-                    task.execute();
-                }
-
-                // Here user has saved the script
-                return true;
-            }
-
-            if (answer == JOptionPane.NO_OPTION) {
-                // Here user specifically chooses NOT to save the script
-                return true;
-            }
-
-            // // Here user says Oops!, cancelling the current close request
-            return false;
-        } else {
-            return true;
-        }
     }
 
     //-------------//
@@ -592,28 +538,6 @@ public class BookActions
     }
 
     //-------------------//
-    // dumpCurrentScript //
-    //-------------------//
-    /**
-     * Dump the script of the sheet currently selected.
-     */
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public void dumpCurrentScript ()
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-
-        if (stub == null) {
-            return;
-        }
-
-        Script script = stub.getBook().getScript();
-
-        if (script != null) {
-            script.dump();
-        }
-    }
-
-    //-------------------//
     // dumpEventServices //
     //-------------------//
     /**
@@ -753,14 +677,6 @@ public class BookActions
         return imageHistoryMenu;
     }
 
-    //----------------------//
-    // getScriptHistoryMenu //
-    //----------------------//
-    public HistoryMenu getScriptHistoryMenu ()
-    {
-        return scriptHistoryMenu;
-    }
-
     //-----------------//
     // invalidateSheet //
     //-----------------//
@@ -781,7 +697,13 @@ public class BookActions
 
             if (answer == JOptionPane.YES_OPTION) {
                 final Sheet sheet = stub.getSheet();
-                new InvalidateTask(sheet).launch(sheet);
+                final StubsController controller = StubsController.getInstance();
+
+                if (ViewParameters.getInstance().isInvalidSheetDisplay() == false) {
+                    controller.removeAssembly(sheet.getStub());
+                } else {
+                    controller.callAboutStub(sheet.getStub());
+                }
             }
         }
     }
@@ -829,25 +751,6 @@ public class BookActions
     public boolean isRebuildAllowed ()
     {
         return rebuildAllowed;
-    }
-
-    //------------//
-    // loadScript //
-    //------------//
-    @Action
-    public Task<Void, Void> loadScript (ActionEvent e)
-    {
-        final Path path = UIUtil.pathChooser(
-                false,
-                OMR.gui.getFrame(),
-                BookManager.getBaseFolder(),
-                new OmrFileFilter("Score script files", new String[]{OMR.SCRIPT_EXTENSION}));
-
-        if (path != null) {
-            return new LoadScriptTask(path);
-        } else {
-            return null;
-        }
     }
 
     //----------//
@@ -1034,7 +937,7 @@ public class BookActions
 
         final Path bookPrintPath = BookManager.getDefaultPrintPath(book);
 
-        if (bookPrintPath != null && confirmed(bookPrintPath)) {
+        if ((bookPrintPath != null) && confirmed(bookPrintPath)) {
             return new PrintBookTask(book, bookPrintPath);
         }
 
@@ -1150,8 +1053,7 @@ public class BookActions
                     "Do you confirm resetting sheet " + stub.getId() + " to its initial state?");
 
             if (answer == JOptionPane.YES_OPTION) {
-                final Sheet sheet = stub.getSheet();
-                new ResetTask(sheet).launch(sheet);
+                stub.reset();
             }
         }
     }
@@ -1175,8 +1077,7 @@ public class BookActions
                     "Do you confirm resetting sheet " + stub.getId() + " to BINARY step?");
 
             if (answer == JOptionPane.YES_OPTION) {
-                final Sheet sheet = stub.getSheet();
-                new ResetBinaryTask(sheet).launch(sheet);
+                stub.resetToBinary();
             }
         }
     }
@@ -1281,53 +1182,6 @@ public class BookActions
         boolean oldValue = this.rebuildAllowed;
         this.rebuildAllowed = value;
         firePropertyChange(REBUILD_ALLOWED, oldValue, value);
-    }
-
-    //-------------//
-    // storeScript //
-    //-------------//
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public Task<Void, Void> storeScript (ActionEvent e)
-    {
-        final Book book = StubsController.getCurrentBook();
-
-        if (book == null) {
-            return null;
-        }
-
-        final Path scriptPath = book.getScriptPath();
-
-        if (scriptPath != null) {
-            return new StoreScriptTask(book.getScript(), scriptPath);
-        } else {
-            return storeScriptAs(e);
-        }
-    }
-
-    //---------------//
-    // storeScriptAs //
-    //---------------//
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public Task<Void, Void> storeScriptAs (ActionEvent e)
-    {
-        final Book book = StubsController.getCurrentBook();
-
-        if (book == null) {
-            return null;
-        }
-
-        // Let the user select a script output file
-        Path scriptPath = UIUtil.pathChooser(
-                true,
-                OMR.gui.getFrame(),
-                BookManager.getDefaultScriptPath(book),
-                new OmrFileFilter("Script files", new String[]{OMR.SCRIPT_EXTENSION}));
-
-        if (scriptPath != null) {
-            return new StoreScriptTask(book.getScript(), scriptPath);
-        } else {
-            return null;
-        }
     }
 
     //------------//
@@ -1688,60 +1542,6 @@ public class BookActions
                 }
             } else {
                 logger.warn("Path {} does not exist", path);
-            }
-
-            return null;
-        }
-    }
-
-    //----------------//
-    // LoadScriptTask //
-    //----------------//
-    public static class LoadScriptTask
-            extends PathTask
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public LoadScriptTask (Path path)
-        {
-            super(path);
-        }
-
-        public LoadScriptTask ()
-        {
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            // Actually run the script
-            logger.info("Running script file {} ...", path);
-
-            FileInputStream is = null;
-
-            try {
-                is = new FileInputStream(path.toFile());
-
-                final Script script = ScriptManager.getInstance().load(is);
-
-                if (logger.isDebugEnabled()) {
-                    script.dump();
-                }
-
-                BookManager.getInstance().getScriptHistory().add(path);
-                script.run();
-            } catch (FileNotFoundException ex) {
-                logger.warn("Cannot find script file {}", path);
-            } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException ignored) {
-                        logger.warn("Error closing script file {}", path);
-                    }
-                }
             }
 
             return null;
@@ -2195,71 +1995,7 @@ public class BookActions
                 LogUtil.start(book);
                 book.store(bookPath, false);
                 BookActions.getInstance().setBookModified(false);
-                book.getScript().addTask(new SaveTask(bookPath, null));
             } finally {
-                LogUtil.stopBook();
-            }
-
-            return null;
-        }
-    }
-
-    //-----------------//
-    // StoreScriptTask //
-    //-----------------//
-    private static class StoreScriptTask
-            extends VoidTask
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Script script;
-
-        private final Path path;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        StoreScriptTask (Script script,
-                         Path path)
-        {
-            this.script = script;
-            this.path = path;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            FileOutputStream fos = null;
-
-            try {
-                final Book book = script.getBook();
-                LogUtil.start(book);
-
-                Path folder = path.getParent();
-
-                if (!Files.exists(folder)) {
-                    Files.createDirectories(folder);
-                    logger.info("Creating folder {}", folder);
-                }
-
-                fos = new FileOutputStream(path.toFile());
-                org.audiveris.omr.script.ScriptManager.getInstance().store(script, fos);
-                logger.info("Script stored as {}", path);
-                book.setScriptPath(path);
-            } catch (FileNotFoundException ex) {
-                logger.warn("Cannot find script file " + path + ", " + ex, ex);
-            } catch (JAXBException ex) {
-                logger.warn("Cannot marshal script, " + ex, ex);
-            } catch (IOException ex) {
-                logger.warn("Error storing script, " + ex, ex);
-            } finally {
-                if (fos != null) {
-                    try {
-                        fos.close();
-                    } catch (IOException ignored) {
-                    }
-                }
-
                 LogUtil.stopBook();
             }
 

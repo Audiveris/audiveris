@@ -52,9 +52,6 @@ public abstract class OMR
     /** The extension used for score output files: {@value}. */
     public static final String SCORE_EXTENSION = ".xml";
 
-    /** The (double) extension used for script files: {@value}. */
-    public static final String SCRIPT_EXTENSION = ".script.xml";
-
     /** The suffix used for a single sheet output in a multi-sheet book: {@value}. */
     public static final String SHEET_SUFFIX = "#";
 

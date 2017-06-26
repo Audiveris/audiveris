@@ -32,11 +32,9 @@ import org.audiveris.omr.image.GlobalDescriptor;
 import org.audiveris.omr.plugin.PluginManager;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.MidiAbstractions;
-import org.audiveris.omr.script.ParametersTask;
-import org.audiveris.omr.script.ParametersTask.PartData;
+import org.audiveris.omr.score.PartData;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OCR.UnavailableOcrException;
@@ -86,7 +84,6 @@ import javax.swing.event.ListSelectionListener;
  * <li>Text language specification</li>
  * <li>Binarization parameters</li>
  * <li>Step triggered by drag and drop</li>
- * <li>Prompt for saving script on closing</li>
  * <li>Call-stack printed on exception</li>
  * <li>Parallelism allowed or not</li>
  * <li>Name and instrument related to each score part</li>
@@ -135,9 +132,6 @@ public class ScoreParameters
     /** The panel dedicated to setting of defaults. */
     private final MyPanel defaultPanel;
 
-    /** Related script task. */
-    private ParametersTask task;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a ScoreParameters object.
@@ -177,7 +171,6 @@ public class ScoreParameters
                 ///defaultTempoPane,
                 new PluginPane(),
                 new DnDPane(),
-                new ScriptPane(),
                 new ParallelPane());
 
         component.addTab("Default", null, defaultPanel, defaultPanel.getName());
@@ -256,11 +249,6 @@ public class ScoreParameters
                 //logger.info("{}", panel.getName());
                 for (Pane pane : panel.panes) {
                     pane.commit();
-                }
-
-                // Launch the prepared task (for score & pages)
-                if (stub != null) {
-                    task.launch(stub.getSheet());
                 }
             } catch (Exception ex) {
                 logger.warn("Could not run ParametersTask", ex);
@@ -346,16 +334,12 @@ public class ScoreParameters
      */
     private boolean dataIsValid ()
     {
-        task = new ParametersTask();
-
         // Loop on all panes of all panels
         for (int t = 0, tBreak = component.getTabCount(); t < tBreak; t++) {
             MyPanel panel = (MyPanel) component.getComponentAt(t);
 
             for (Pane pane : panel.panes) {
                 if (pane.isSelected() && !pane.isValid()) {
-                    task = null; // Cleaner
-
                     return false;
                 }
             }
@@ -851,8 +835,6 @@ public class ScoreParameters
         @Override
         public boolean isValid ()
         {
-            task.setFilter(read(), stub);
-
             return true;
         }
 
@@ -1001,8 +983,6 @@ public class ScoreParameters
 
                 return false;
             } else {
-                task.addPart(name.getText(), midiBox.getSelectedIndex() + 1);
-
                 return true;
             }
         }
@@ -1205,29 +1185,6 @@ public class ScoreParameters
         }
     }
 
-    //------------//
-    // ScriptPane //
-    //------------//
-    /**
-     * Should we prompt the user for saving the script when sheet is
-     * closed?.
-     * Scope can be: default.
-     */
-    private class ScriptPane
-            extends BooleanPane
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public ScriptPane ()
-        {
-            super(
-                    "Script",
-                    "Prompt for save",
-                    "Should we prompt for saving the script on score closing",
-                    BookActions.defaultPrompt);
-        }
-    }
-
     //----------//
     // SpinData //
     //----------//
@@ -1413,8 +1370,6 @@ public class ScoreParameters
         @Override
         public boolean isValid ()
         {
-            task.setLanguage(read(), stub);
-
             return true;
         }
 

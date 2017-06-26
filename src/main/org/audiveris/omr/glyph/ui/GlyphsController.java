@@ -25,7 +25,6 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphsModel;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import org.audiveris.omr.script.AssignTask;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
@@ -38,6 +37,7 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.SelectionService;
+import org.audiveris.omr.util.VoidTask;
 
 import org.jdesktop.application.Task;
 
@@ -99,7 +99,6 @@ public class GlyphsController
     //-------------------//
     /**
      * Asynchronously assign a shape to the selected glyph.
-     * (and record this action in the script.???)
      *
      * @param glyph the glyph to interpret
      * @param shape the shape to be assigned
@@ -183,7 +182,7 @@ public class GlyphsController
                 }
 
                 if (staff != null) {
-                    return new AssignTask(sheet, system, staff, shape, glyph).launch(sheet);
+                    new AssignTask(system, staff, shape, glyph).execute();
                 } else {
                     logger.warn("No staff known at {}", center);
                 }
@@ -261,27 +260,6 @@ public class GlyphsController
         model.setLatestShape(shape);
     }
 
-    //------------//
-    // syncAssign //
-    //------------//
-    /**
-     * Process synchronously the assignment defined in the provided context.
-     *
-     * @param context the context of the assignment
-     */
-    public void syncAssign (AssignTask context)
-    {
-        logger.debug("syncAssign {}", context);
-
-        Glyph glyph = context.getGlyph();
-        model.assignGlyph(
-                glyph,
-                context.getStaff(),
-                context.getInterline(),
-                context.getAssignedShape(),
-                1.0);
-    }
-
     //---------//
     // publish //
     //---------//
@@ -295,6 +273,52 @@ public class GlyphsController
                             SelectionHint.GLYPH_MODIFIED,
                             null,
                             Arrays.asList(glyph)));
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------//
+    // AssignTask //
+    //------------//
+    private class AssignTask
+            extends VoidTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final SystemInfo system;
+
+        private final Staff staff;
+
+        private final Shape shape;
+
+        private final Glyph glyph;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public AssignTask (SystemInfo system,
+                           Staff staff,
+                           Shape shape,
+                           Glyph glyph)
+        {
+            this.system = system;
+            this.staff = staff;
+            this.shape = shape;
+            this.glyph = glyph;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws Exception
+        {
+            final int interline = (staff != null) ? staff.getSpecificInterline()
+                    : sheet.getScale().getInterline();
+
+            model.assignGlyph(glyph, staff, interline, shape, 1.0);
+
+            // Plus other impacted items...
+            //TODO
+            //
+            return null;
         }
     }
 }
