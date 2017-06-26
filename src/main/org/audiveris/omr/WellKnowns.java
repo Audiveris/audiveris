@@ -193,7 +193,7 @@ public abstract class WellKnowns
     }
 
     static {
-        /** Disable DirecDraw by default. */
+        /** Disable DirectDraw by default. */
         disableDirectDraw();
     }
 
@@ -201,6 +201,9 @@ public abstract class WellKnowns
         /** Disable use of JAI native MediaLib, by default. */
         disableMediaLib();
     }
+
+    private static final String ocrNotFoundMsg = "Tesseract data could not be found. "
+                                                 + "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
 
     //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
@@ -417,24 +420,6 @@ public abstract class WellKnowns
         return FileTime.fromMillis(millis);
     }
 
-    private static final String ocrNotFoundMsg = "Tesseract data could not be found. " +
-                "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
-
-    //------------------//
-    // scanOcrLocations //
-    //------------------//
-    private static Path scanOcrLocations(String[] locations)
-    {
-        for (String loc: locations) {
-            final Path path = Paths.get(loc);
-            if (Files.exists(path.resolve("tessdata"))) {
-                return path;
-            }
-        }
-
-        throw new InstallationException(ocrNotFoundMsg);
-    }
-
     //--------------//
     // getOcrFolder //
     //--------------//
@@ -472,7 +457,7 @@ public abstract class WellKnowns
 
             return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
 
-        // scan common locations on Mac and Linux
+            // scan common locations on Mac and Linux
         } else if (LINUX) {
             return scanOcrLocations(linuxOcrLocations);
         } else if (MAC_OS_X) {
@@ -516,6 +501,22 @@ public abstract class WellKnowns
     private static boolean runningFromJar ()
     {
         return CLASS_CONTAINER.toString().toLowerCase().endsWith(".jar");
+    }
+
+    //------------------//
+    // scanOcrLocations //
+    //------------------//
+    private static Path scanOcrLocations (String[] locations)
+    {
+        for (String loc : locations) {
+            final Path path = Paths.get(loc);
+
+            if (Files.exists(path.resolve("tessdata"))) {
+                return path;
+            }
+        }
+
+        throw new InstallationException(ocrNotFoundMsg);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

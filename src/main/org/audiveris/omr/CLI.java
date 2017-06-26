@@ -23,9 +23,6 @@ package org.audiveris.omr;
 
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.log.LogUtil;
-import org.audiveris.omr.script.ExportTask;
-import org.audiveris.omr.script.PrintTask;
-import org.audiveris.omr.script.SaveTask;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.step.ProcessingCancellationException;
@@ -70,61 +67,6 @@ import java.util.concurrent.Callable;
  * NOTA: each line of such referred file is taken as a whole and interpreted as a single item,
  * hence please make sure to put only one item per line.
  * Note also that a blank line is interpreted as an empty ("") item.
- * <p>
- * The command line options can be (order is not relevant):
- * <dl>
- *
- * <dt><b>-batch</b></dt>
- * <dd>Runs with no graphical user interface</dd>
- *
- * <dt><b>-export</b></dt>
- * <dd>Exports MusicXML</dd>
- *
- * <dt><b>-exportAs FILE</b></dt>
- * <dd>Exports MusicXML to specific file</dd>
- *
- * <dt><b>-exportDir DIR</b></dt>
- * <dd>Exports MusicXML to specific folder (ignored if -exportAs is used)</dd>
- *
- * <dt><b>-help</b></dt>
- * <dd>Displays general help then stops</dd>
- *
- * <dt><b>-option KEY=VALUE</b></dt>
- * <dd>Defines an application constant (that could also be set via the pull-down menu
- * "Tools|Options" in the GUI)</dd>
- *
- * <dt><b>-print</b></dt>
- * <dd>Prints out book</dd>
- *
- * <dt><b>-printAs FILE</b></dt>
- * <dd>Prints out book to specific file</dd>
- *
- * <dt><b>-printDir DIR</b></dt>
- * <dd>Prints out book to specific folder (ignored if -printAs is used)</dd>
- *
- * <dt><b>-run className</b></dt>
- * <dd>Specifies a class to run on each valid sheet</dd>
- *
- * <dt><b>-save</b></dt>
- * <dd>Saves book</dd>
- *
- * <dt><b>-saveAs FILE</b></dt>
- * <dd>Saves book to specific file</dd>
- *
- * <dt><b>-saveDir DIR</b></dt>
- * <dd>Saves book to specific folder (ignored if -saveAs is used)</dd>
- *
- * <dt><b>-sheets N...</b></dt>
- * <dd>Selects specific sheets numbers and ranges (like 1-9)</dd>
- *
- * <dt><b>-step STEP</b></dt>
- * <dd>Defines a specific transcription step (to be performed on each input referenced from the
- * command line)</dd>
- *
- * <dt><b>--</b></dt>
- * <dd>This optional item marks the end of options and indicates that all following items are
- * plain file arguments.</dd>
- * </dl>
  *
  * @author Hervé Bitteur
  */
@@ -194,30 +136,17 @@ public class CLI
         return tasks;
     }
 
-    //-------------//
-    // getExportAs //
-    //-------------//
-    /**
-     * Report the target export file if present on the CLI
-     *
-     * @return the CLI export file, or null
-     */
-    public Path getExportAs ()
-    {
-        return params.exportAs;
-    }
-
     //-----------------//
-    // getExportFolder //
+    // getOutputFolder //
     //-----------------//
     /**
-     * Report the export folder if present on the CLI
+     * Report the output folder if present on the CLI
      *
-     * @return the CLI export path, or null
+     * @return the CLI output path, or null
      */
-    public Path getExportFolder ()
+    public Path getOutputFolder ()
     {
-        return params.exportFolder;
+        return params.outputFolder;
     }
 
     //------------//
@@ -264,58 +193,6 @@ public class CLI
         }
 
         return params;
-    }
-
-    //------------//
-    // getPrintAs //
-    //------------//
-    /**
-     * Report the target print file if present on the CLI
-     *
-     * @return the CLI print file, or null
-     */
-    public Path getPrintAs ()
-    {
-        return params.printAs;
-    }
-
-    //----------------//
-    // getPrintFolder //
-    //----------------//
-    /**
-     * Report the print folder if present on the CLI
-     *
-     * @return the CLI print path, or null
-     */
-    public Path getPrintFolder ()
-    {
-        return params.printFolder;
-    }
-
-    //-----------//
-    // getSaveAs //
-    //-----------//
-    /**
-     * Report the target save file if present on the CLI
-     *
-     * @return the CLI save file, or null
-     */
-    public Path getSaveAs ()
-    {
-        return params.saveAs;
-    }
-
-    //---------------//
-    // getSaveFolder //
-    //---------------//
-    /**
-     * Report the save folder if present on the CLI
-     *
-     * @return the CLI save path, or null
-     */
-    public Path getSaveFolder ()
-    {
-        return params.saveFolder;
     }
 
     //-------------//
@@ -487,7 +364,7 @@ public class CLI
         @Override
         public String getDefaultMetaVariable ()
         {
-            return "qualified class name";
+            return "<qualified-class-name>";
         }
 
         @Override
@@ -587,75 +464,63 @@ public class CLI
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Help mode. */
-        @Option(name = "-help", help = true, usage = "Displays general help then stops")
-        boolean helpMode;
-
+        //
+        //        /** Should annotations be produced?. */
+        //        @Option(name = "-annotate", usage = "Annotates book symbols")
+        //        boolean annotate;
+        //
         /** Batch mode. */
         @Option(name = "-batch", usage = "Runs with no graphic user interface")
         boolean batchMode;
-
-        /** Specific step. */
-        @Option(name = "-step", usage = "Defines a specific processing step")
-        Step step;
-
-        /** Force step re-processing. */
-        @Option(name = "-force", usage = "Force step reprocessing")
-        boolean force;
-
-        @Option(name = "-run", usage = "Class to run on valid sheets", handler = ClassOptionHandler.class)
-        Class runClass;
-
-        /** The map of application options. */
-        @Option(name = "-option", usage = "Defines an application constant", handler = PropertyOptionHandler.class)
-        Properties options;
-
-        /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Selects specific sheets numbers and ranges (like 1-9)", handler = IntArrayOptionHandler.class)
-        private ArrayList<Integer> sheets;
 
         /** Should MusicXML data be produced?. */
         @Option(name = "-export", usage = "Exports MusicXML")
         boolean export;
 
-        /** Full target file for MusicXML data. */
-        @Option(name = "-exportAs", usage = "Exports MusicXML to specific file", metaVar = "<export-file>")
-        Path exportAs;
+        /** Force step re-processing. */
+        @Option(name = "-force", usage = "Force step re-processing")
+        boolean force;
 
-        /** Target directory for MusicXML data. */
-        @Option(name = "-exportDir", usage = "Exports MusicXML to specific folder"
-                                             + " (ignored if -exportAs is used)", metaVar = "<export-folder>")
-        Path exportFolder;
+        /** Help mode. */
+        @Option(name = "-help", help = true, usage = "Displays general help then stops")
+        boolean helpMode;
+
+        /** The map of application options. */
+        @Option(name = "-option", usage = "Defines an application constant", handler = PropertyOptionHandler.class)
+        Properties options;
+
+        /** Output directory. */
+        @Option(name = "-output", usage = "Defines base output folder", metaVar = "<output-folder>")
+        Path outputFolder;
 
         /** Should book be printed?. */
         @Option(name = "-print", usage = "Prints out book")
         boolean print;
 
-        /** Full target file for print. */
-        @Option(name = "-printAs", usage = "Prints out book to specific file", metaVar = "<print-file>")
-        Path printAs;
+        /** Ability to run a class on each valid sheet. */
+        @Option(name = "-run", usage = "Class to run on valid sheets", handler = ClassOptionHandler.class)
+        Class runClass;
 
-        /** Target directory for print. */
-        @Option(name = "-printDir", usage = "Prints out book to specific folder"
-                                            + " (ignored if -printAs is used)", metaVar = "<print-folder>")
-        Path printFolder;
+        /** Should samples be produced?. */
+        @Option(name = "-sample", usage = "Samples book symbols")
+        boolean sample;
 
         /** Should book be saved?. */
         @Option(name = "-save", usage = "Saves book")
         boolean save;
 
-        /** Full target file for save. */
-        @Option(name = "-saveAs", usage = "Saves book to specific file", metaVar = "<book-file>")
-        Path saveAs;
+        /** The set of sheet IDs to load. */
+        @Option(name = "-sheets", usage = "Selects specific sheets numbers and ranges (like 1-9)", handler = IntArrayOptionHandler.class)
+        private ArrayList<Integer> sheets;
 
-        /** Target directory for save. */
-        @Option(name = "-saveDir", usage = "Saves book to specific folder"
-                                           + " (ignored if -saveAs is used)", metaVar = "<book-folder>")
-        Path saveFolder;
+        /** Specific step. */
+        @Option(name = "-step", usage = "Defines a specific processing step")
+        Step step;
 
-        /** Final arguments, with optional "--" separator. */
+        /** Optional "--" separator. */
         @Argument
         @Option(name = "--", handler = StopOptionHandler.class)
+        /** Final arguments. */
         List<Path> arguments = new ArrayList<Path>();
 
         //~ Constructors ---------------------------------------------------------------------------
@@ -817,7 +682,7 @@ public class CLI
         @Override
         protected void processBook (Book book)
         {
-            final Path folder = BookManager.getDefaultBookPath(book).getParent();
+            final Path folder = BookManager.getDefaultBookFolder(book);
             boolean cancelled = false;
 
             try {
@@ -840,7 +705,7 @@ public class CLI
 
                     // Save book to disk (global book info)
                     if (OMR.gui == null) {
-                        book.store(BookManager.getDefaultBookPath(book), false);
+                        book.store(BookManager.getDefaultSavePath(book), false);
                     }
                 }
 
@@ -871,21 +736,26 @@ public class CLI
                 }
 
                 // Book print?
-                if (params.print || (params.printAs != null) || (params.printFolder != null)) {
-                    logger.debug("Print output");
-                    new PrintTask(params.printAs, params.printFolder).core(book);
+                if (params.print) {
+                    logger.debug("Print book");
+                    book.print();
                 }
 
                 // Book export?
-                if (params.export || (params.exportAs != null) || (params.exportFolder != null)) {
-                    logger.debug("Export output");
-                    new ExportTask(params.exportAs, params.exportFolder).core(book);
+                if (params.export) {
+                    logger.debug("Export book");
+                    book.export();
                 }
 
                 // Book save?
-                if (params.save || (params.saveAs != null) || (params.saveFolder != null)) {
+                if (params.save) {
                     logger.debug("Save book");
-                    new SaveTask(params.saveAs, params.saveFolder).core(book);
+
+                    if (book.isModified()) {
+                        book.store(BookManager.getDefaultSavePath(book), false);
+                    } else {
+                        logger.info("No need to save {}", book);
+                    }
                 }
             } catch (ProcessingCancellationException pce) {
                 logger.warn("Cancelled " + book);
@@ -899,9 +769,9 @@ public class CLI
                 if (OMR.gui == null) {
                     if (cancelled) {
                         // Make a backup if needed, then save book "in its current status"
-                        book.store(BookManager.getDefaultBookPath(book), true);
+                        book.store(BookManager.getDefaultSavePath(book), true);
                     } else {
-                        book.store(BookManager.getDefaultBookPath(book), false);
+                        book.store(BookManager.getDefaultSavePath(book), false);
                     }
 
                     book.close();

@@ -84,7 +84,7 @@ public class SaveTask
                             : null);
 
             if (bookPath == null) {
-                bookPath = BookManager.getDefaultBookPath(book);
+                bookPath = BookManager.getDefaultSavePath(book);
             }
 
             book.store(bookPath, false);

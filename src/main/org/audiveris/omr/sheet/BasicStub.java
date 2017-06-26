@@ -686,7 +686,7 @@ public class BasicStub
         if (modified) {
             book.getLock().lock();
 
-            Path bookPath = BookManager.getDefaultBookPath(book);
+            Path bookPath = BookManager.getDefaultSavePath(book);
 
             try {
                 Path root = ZipFileSystem.open(bookPath);

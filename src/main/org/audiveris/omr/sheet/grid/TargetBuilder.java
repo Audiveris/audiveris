@@ -393,8 +393,7 @@ public class TargetBuilder
     {
         String sheetId = sheet.getId();
         Book book = sheet.getStub().getBook();
-        final Path bookPath = BookManager.getDefaultBookPath(book);
-        final Path bookFolder = bookPath.getParent();
+        final Path bookFolder = BookManager.getDefaultBookFolder(book);
         final Path path = bookFolder.resolve(sheetId + ".dewarped.png");
 
         try {

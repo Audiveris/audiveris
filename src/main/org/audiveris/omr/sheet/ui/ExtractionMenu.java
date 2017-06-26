@@ -87,8 +87,7 @@ public class ExtractionMenu
     {
         // Let the user select an output file
         final Book book = sheet.getStub().getBook();
-        final Path bookPath = BookManager.getDefaultBookPath(book);
-        final Path bookFolder = bookPath.getParent();
+        final Path bookFolder = BookManager.getDefaultBookFolder(book);
         final File file = UIUtil.fileChooser(
                 true,
                 OMR.gui.getFrame(),

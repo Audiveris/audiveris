@@ -260,12 +260,12 @@ public class BookActions
 
                 if (book.getBookPath() == null) {
                     // Find a suitable target file
-                    bookPath = BookManager.getDefaultBookPath(book);
+                    bookPath = BookManager.getDefaultSavePath(book);
 
                     // Check the target is fine
                     if (!confirmed(bookPath)) {
                         // Let the user select an alternate output file
-                        bookPath = selectBookPath(true, BookManager.getDefaultBookPath(book));
+                        bookPath = selectBookPath(true, BookManager.getDefaultSavePath(book));
 
                         if ((bookPath == null) || !confirmed(bookPath)) {
                             return false; // No suitable target found
@@ -1199,7 +1199,7 @@ public class BookActions
             return null;
         }
 
-        final Path bookPath = BookManager.getDefaultBookPath(book);
+        final Path bookPath = BookManager.getDefaultSavePath(book);
 
         if ((book.getBookPath() != null) && confirmed(bookPath)) {
             return new StoreBookTask(book, bookPath);
@@ -1221,7 +1221,7 @@ public class BookActions
         }
 
         // Let the user select a book output file
-        final Path defaultBookPath = BookManager.getDefaultBookPath(book);
+        final Path defaultBookPath = BookManager.getDefaultSavePath(book);
         final Path targetPath = selectBookPath(true, defaultBookPath);
         final Path ownPath = book.getBookPath();
 
