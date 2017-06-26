@@ -68,7 +68,7 @@ public abstract class StubDependent
     protected boolean stubAvailable = false;
 
     /** Indicates whether the current sheet stub is valid. */
-    protected boolean stubValid = true;
+    protected boolean stubValid = false;
 
     /** Indicates whether current sheet is idle. */
     protected boolean stubIdle = false;

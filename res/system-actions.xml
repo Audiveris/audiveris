@@ -17,10 +17,6 @@
     
     <action domain="FILE" section="10" class="org.audiveris.omr.sheet.ui.BookActions" menu="inputHistory"         button="javax.swing.JButton"/>
     <action domain="FILE" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="openImageFile"      button="javax.swing.JButton"/>
-    <action domain="FILE" section="20" class="org.audiveris.omr.sheet.ui.BookActions" menu="scriptHistory"        button="javax.swing.JButton"/>
-    <action domain="FILE" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="loadScript"/>
-    <action domain="FILE" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="storeScript"/>
-    <action domain="FILE" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="storeScriptAs"/>
     <action domain="FILE" section="70" class="org.audiveris.omr.ui.GuiActions"        method="exit"/>
 
     <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" menu="bookHistory"          button="javax.swing.JButton"/>
