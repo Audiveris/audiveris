@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.OmrEngine;
 import org.audiveris.omr.WellKnowns;
@@ -48,19 +49,18 @@ import java.util.List;
  * It handles the collection of all book instances currently loaded, as well as the list of books
  * most recently loaded.
  * <p>
- * It handles where and how to handle inputs (images, books, scripts) and outputs (books, exports,
- * prints and scripts).
+ * It handles where and how to handle inputs (images, books) and outputs (save, export, print,
+ * sample).
  * <br>
  * Default input folder:<ul>
  * <li>(image) input: last image input folder used
  * <li>(book) input: base
- * <li>(script) input: base
  * </ul>
  * Default output folder and file:<ul>
- * <li>book: base/radix/radix.omr
+ * <li>save: base/radix/radix.omr
  * <li>export: base/radix/radix.mxl
  * <li>print: base/radix/radix.pdf
- * <li>script: base/radix/radix.script.xml
+ * <li>sample: base/radix/radix-samples.zip + base/radix/radix-images.zip
  * </ul>
  * <p>
  * The way books and sheets are exported depends on whether we allow the use of MusicXML
@@ -259,7 +259,13 @@ public class BookManager
      */
     public static Path getBaseFolder ()
     {
-        return Paths.get(getBaseFolderString());
+        final Path cliOutput = Main.getCli().getOutputFolder();
+
+        if (cliOutput != null) {
+            return cliOutput;
+        } else {
+            return Paths.get(getBaseFolderString());
+        }
     }
 
     //---------------------//
@@ -393,24 +399,21 @@ public class BookManager
             return book.getBookPath().getParent();
         }
 
-        if (useSeparateBookFolders()) {
-            // Define folder based on base + book radix
-            Path bookFolder = getBaseFolder().resolve(book.getRadix());
+        // Define folder based on global base folder + book radix
+        // Or use global base folder directly
+        final Path bookFolder = useSeparateBookFolders() ? getBaseFolder().resolve(book.getRadix())
+                : getBaseFolder();
 
-            try {
-                if (!Files.exists(bookFolder)) {
-                    Files.createDirectories(bookFolder);
-                }
-
-                return bookFolder;
-            } catch (IOException ex) {
-                logger.warn("Cannot create {}", bookFolder, ex);
-
-                return null;
+        try {
+            if (!Files.exists(bookFolder)) {
+                Files.createDirectories(bookFolder);
             }
-        } else {
-            // Use global base folder
-            return getBaseFolder();
+
+            return bookFolder;
+        } catch (IOException ex) {
+            logger.warn("Cannot create folder {}", bookFolder, ex);
+
+            return null;
         }
     }
 
