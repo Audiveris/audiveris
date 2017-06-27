@@ -1017,21 +1017,34 @@ public class BookActions
         return new PrintSheetTask(stub.getSheet(), sheetPrintPath);
     }
 
-    //--------------//
-    // recordGlyphs //
-    //--------------//
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public RecordGlyphsTask recordGlyphs ()
+    //------------//
+    // sampleBook //
+    //------------//
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> sampleBook (ActionEvent e)
     {
-        int answer = JOptionPane.showConfirmDialog(
-                OMR.gui.getFrame(),
-                "Are you sure of all the symbols of this sheet ?");
+        final Book book = StubsController.getCurrentBook();
 
-        if (answer == JOptionPane.YES_OPTION) {
-            return new RecordGlyphsTask();
-        } else {
+        if (book == null) {
             return null;
         }
+
+        return new SampleBookTask(book);
+    }
+
+    //-------------//
+    // sampleSheet //
+    //-------------//
+    @Action(enabledProperty = STUB_IDLE)
+    public Task<Void, Void> sampleSheet (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        return new SampleSheetTask(stub.getSheet());
     }
 
     //------------//
@@ -1621,6 +1634,38 @@ public class BookActions
         }
     }
 
+    //-----------------//
+    // SampleSheetTask //
+    //-----------------//
+    public static class SampleSheetTask
+            extends VoidTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Sheet sheet;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public SampleSheetTask (Sheet sheet)
+        {
+            this.sheet = sheet;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                LogUtil.start(sheet.getStub());
+                sheet.sample();
+            } finally {
+                LogUtil.stopStub();
+            }
+
+            return null;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -1939,24 +1984,35 @@ public class BookActions
         }
     }
 
-    //------------------//
-    // RecordGlyphsTask //
-    //------------------//
-    private static class RecordGlyphsTask
+    //----------------//
+    // SampleBookTask //
+    //----------------//
+    private static class SampleBookTask
             extends VoidTask
     {
-        //~ Methods --------------------------------------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
+        final Book book;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public SampleBookTask (Book book)
+        {
+            this.book = book;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            throw new RuntimeException("No longer implemented!");
+            try {
+                LogUtil.start(book);
+                book.sample();
+            } finally {
+                LogUtil.stopBook();
+            }
 
-            //            SheetStub stub = StubsController.getCurrentStub();
-            //            SampleRepository.getInstance().recordSheetGlyphs(stub.getSheet(), false);
-            //
-            //            return null;
+            return null;
         }
     }
 

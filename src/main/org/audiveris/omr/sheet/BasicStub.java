@@ -592,17 +592,21 @@ public class BasicStub
         logger.info("Sheet#{} reset as valid.", number);
 
         if (OMR.gui != null) {
-            ///SwingUtilities.invokeLater(
             try {
-                SwingUtilities.invokeAndWait(
-                        new Runnable()
+                Runnable runnable = new Runnable()
                 {
                     @Override
                     public void run ()
                     {
                         StubsController.getInstance().reDisplay(BasicStub.this);
                     }
-                });
+                };
+
+                if (SwingUtilities.isEventDispatchThread()) {
+                    runnable.run();
+                } else {
+                    SwingUtilities.invokeAndWait(runnable);
+                }
             } catch (Throwable ex) {
                 logger.warn("Could not reset {}", ex.toString(), ex);
             }
@@ -636,9 +640,7 @@ public class BasicStub
             logger.info("Sheet#{} reset to BINARY.", number);
 
             if (OMR.gui != null) {
-                ///SwingUtilities.invokeLater(
-                SwingUtilities.invokeAndWait(
-                        new Runnable()
+                Runnable runnable = new Runnable()
                 {
                     @Override
                     public void run ()
@@ -646,7 +648,13 @@ public class BasicStub
                         sheet.createBinaryView();
                         StubsController.getInstance().reDisplay(BasicStub.this);
                     }
-                });
+                };
+
+                if (SwingUtilities.isEventDispatchThread()) {
+                    runnable.run();
+                } else {
+                    SwingUtilities.invokeAndWait(runnable);
+                }
             }
         } catch (Throwable ex) {
             logger.warn("Could not reset to BINARY {}", ex.toString(), ex);

@@ -166,6 +166,11 @@ public interface Book
     void export ();
 
     /**
+     * Write the book symbol samples into its sample repository.
+     */
+    void sample ();
+
+    /**
      * Report the book name alias if any.
      *
      * @return book alias or null

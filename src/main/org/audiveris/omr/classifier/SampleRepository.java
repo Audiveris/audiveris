@@ -255,8 +255,10 @@ public class SampleRepository
     {
         shape = Sample.getRecordableShape(shape);
 
-        final Sample sample = new Sample(glyph, interline, shape, pitch);
-        addSample(sample, sampleSheet);
+        if (shape != null) {
+            final Sample sample = new Sample(glyph, interline, shape, pitch);
+            addSample(sample, sampleSheet);
+        }
     }
 
     //-----------//
@@ -360,7 +362,7 @@ public class SampleRepository
                         conflictings.add(sample);
                         conflictings.add(s);
                     } else {
-                        logger.info(
+                        logger.debug(
                                 "Same runtable for {}/{} & {}/{}",
                                 getSheetName(sample),
                                 sample,

@@ -933,7 +933,7 @@ public class BasicBook
             }
 
             BufferedImage img = loader.getImage(id);
-            logger.info("Loaded image size: {}x{}", img.getWidth(), img.getHeight());
+            logger.info("Loaded image {} {}x{} from {}", id, img.getWidth(), img.getHeight(), path);
 
             loader.dispose();
 
@@ -1201,6 +1201,18 @@ public class BasicBook
     public void setPrintPath (Path printPath)
     {
         this.printPath = printPath;
+    }
+
+    //--------//
+    // sample //
+    //--------//
+    @Override
+    public void sample ()
+    {
+        for (SheetStub stub : getValidStubs()) {
+            Sheet sheet = stub.getSheet();
+            sheet.sample();
+        }
     }
 
     //-------//

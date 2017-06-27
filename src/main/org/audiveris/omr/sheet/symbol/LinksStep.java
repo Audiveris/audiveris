@@ -98,7 +98,7 @@ public class LinksStep
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean removeFreeGlyphs = new Constant.Boolean(
-                true,
+                false,
                 "Should we remove all free glyphs?");
     }
 }

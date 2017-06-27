@@ -745,6 +745,12 @@ public class CLI
                     book.export();
                 }
 
+                // Book sample?
+                if (params.sample) {
+                    logger.debug("Sample book");
+                    book.sample();
+                }
+
                 // Book save?
                 if (params.save) {
                     logger.debug("Save book");

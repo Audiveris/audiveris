@@ -334,4 +334,9 @@ public interface Sheet
      */
     void store (Path sheetPath,
                 Path oldSheetPath);
+
+    /**
+     * Save sheet samples into book repository.
+     */
+    void sample ();
 }

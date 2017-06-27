@@ -29,6 +29,7 @@
     <action domain="BOOK" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printBookAs"/>
     <action domain="BOOK" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportBook"/>
     <action domain="BOOK" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportBookAs"/>
+    <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="sampleBook"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="viewBookRepository"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookRepository"/>
     <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBook"           button="javax.swing.JButton"/>
@@ -47,6 +48,7 @@
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayNoStaff"/>
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayStaffLineGlyphs"/>
     <action domain="SHEET" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printSheetAs"/>
+    <action domain="SHEET" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="sampleSheet"/>
     <action domain="SHEET" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportSheetAs"/>
 
 <!--    STEP menu is generated automatically -->
@@ -70,8 +72,6 @@
     <action domain="VIEW" section="50" class="org.audiveris.omr.ui.GuiActions"               method="toggleLog"           item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="50" class="org.audiveris.omr.ui.GuiActions"               method="toggleErrors"        item="javax.swing.JCheckBoxMenuItem"/>
 
-<!--    <action domain="TOOL" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="togglePersist" item="javax.swing.JCheckBoxMenuItem"/>-->
-<!--    <action domain="TOOL" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="recordGlyphs" />-->
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="browseGlobalSamples" />
     <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="saveGlobalSamples" />
     <action domain="TOOL" section="15" class="org.audiveris.omr.ui.GuiActions"        method="browseLocalSamples" />

@@ -22,9 +22,12 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.OMR;
+import org.audiveris.omr.classifier.SampleRepository;
+import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.GlyphsModel;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.dynamic.FilamentIndex;
 import org.audiveris.omr.glyph.ui.GlyphsController;
 import org.audiveris.omr.glyph.ui.SymbolsEditor;
@@ -43,6 +46,8 @@ import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.InterIndex;
+import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.CrossExclusion;
 import org.audiveris.omr.sig.ui.InterController;
@@ -913,6 +918,38 @@ public class BasicSheet
     public void setSkew (Skew skew)
     {
         this.skew = skew;
+    }
+
+    //--------//
+    // sample //
+    //--------//
+    @Override
+    public void sample ()
+    {
+        final Book book = getBook();
+        final SampleRepository repository = book.getSpecificSampleRepository();
+        final SampleSheet sampleSheet = repository.findSampleSheet(this);
+
+        for (SystemInfo system : getSystems()) {
+            SIGraph sig = system.getSig();
+
+            for (Inter inter : sig.vertexSet()) {
+                Shape shape = inter.getShape();
+                Staff staff = inter.getStaff();
+                Glyph glyph = inter.getGlyph();
+
+                if ((shape != null) && (staff != null) && (glyph != null)) {
+                    Double pitch = (inter instanceof AbstractPitchedInter)
+                            ? ((AbstractPitchedInter) inter).getPitch() : null;
+                    repository.addSample(
+                            inter.getShape(),
+                            glyph,
+                            staff.getSpecificInterline(),
+                            sampleSheet,
+                            pitch);
+                }
+            }
+        }
     }
 
     //-------//
