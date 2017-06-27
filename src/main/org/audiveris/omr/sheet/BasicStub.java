@@ -443,7 +443,6 @@ public class BasicStub
                             // Complete sheet reload
                             watch.start("afterReload");
                             sheet.afterReload(this);
-                            LogUtil.start(this);
                             logger.info("Loaded {}", sheetFile);
                         } catch (Exception ex) {
                             logger.warn("Error in loading sheet structure " + ex, ex);
@@ -809,7 +808,7 @@ public class BasicStub
                         step.doit(sheet); // Standard processing on an existing sheet
                         done(step); // Full completion
                     } finally {
-                        LogUtil.stopBook();
+                        LogUtil.stopStub();
                     }
 
                     return null;

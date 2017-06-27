@@ -172,7 +172,7 @@ public class PictureView
 
                             return sheet.getPicture().getTable(Picture.TableKey.BINARY);
                         } finally {
-                            LogUtil.stopBook();
+                            LogUtil.stopStub();
                         }
                     }
 

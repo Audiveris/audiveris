@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
-import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -43,7 +42,6 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -241,6 +239,9 @@ public class PartwiseBuilder
     /** Default page vertical margin. */
     private static final BigDecimal pageVerticalMargin = new BigDecimal(
             constants.pageVerticalMargin.getValue());
+
+    /** Should be 6, but is 12 to cope with slurs not closed for lack of time slot. */
+    private static final int MAX_SLUR_NUMBER = 12;
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The ScorePartwise instance to be populated. */
@@ -743,7 +744,7 @@ public class PartwiseBuilder
             return num;
         } else {
             // Determine first available number
-            for (int i = 1; i <= 6; i++) {
+            for (int i = 1; i <= MAX_SLUR_NUMBER; i++) {
                 if (!slurNumbers.containsValue(i)) {
                     if (slur.getExtension(RIGHT) != null) {
                         slurNumbers.put(slur.getExtension(RIGHT), i);
@@ -2014,11 +2015,6 @@ public class PartwiseBuilder
         // Then, stub by stub, populate all ScorePartwise.Part instances in parallel
         for (SheetStub stub : score.getStubs()) {
             processStub(stub, partMap);
-
-            // Lean management of sheet instances ...
-            if ((OMR.gui == null) || (StubsController.getCurrentStub() != stub)) {
-                stub.swapSheet();
-            }
         }
     }
 

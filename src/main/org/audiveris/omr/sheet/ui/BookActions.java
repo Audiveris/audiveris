@@ -1614,7 +1614,7 @@ public class BookActions
                 LogUtil.start(sheet.getStub());
                 sheet.print(sheetPrintPath);
             } finally {
-                LogUtil.stopBook();
+                LogUtil.stopStub();
             }
 
             return null;
@@ -1747,7 +1747,7 @@ public class BookActions
             } catch (Exception ex) {
                 logger.warn("Could not build page", ex);
             } finally {
-                LogUtil.stopBook();
+                LogUtil.stopStub();
             }
 
             return null;
@@ -1900,7 +1900,7 @@ public class BookActions
                     sheet.export(sheetExportPath);
                 }
             } finally {
-                LogUtil.stopBook();
+                LogUtil.stopStub();
             }
 
             return null;

@@ -687,6 +687,7 @@ public class CLI
                     Files.createDirectories(folder);
                 }
 
+                // In batch, log into specific log file within book folder
                 if (OMR.gui == null) {
                     LogUtil.addAppender(book.getRadix(), folder);
                 }

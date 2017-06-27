@@ -36,9 +36,7 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
-
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
-
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sheet.ui.BookBrowser;
 import org.audiveris.omr.sheet.ui.StubsController;
@@ -990,13 +988,10 @@ public class BasicBook
                 BookManager.getDefaultPrintPath(this));
 
         try {
-            LogUtil.start(BasicBook.this);
             new BookPdfOutput(BasicBook.this, pdfPath.toFile()).write(null);
             setPrintPath(pdfPath);
         } catch (Exception ex) {
             logger.warn("Cannot write PDF to " + pdfPath, ex);
-        } finally {
-            LogUtil.stopBook();
         }
     }
 
@@ -1228,8 +1223,9 @@ public class BasicBook
             }
         }
 
+        Path root = null; // Root of the zip file system
+
         try {
-            final Path root;
             getLock().lock();
             checkRadixChange(bookPath);
             logger.debug("Storing book...");
@@ -1287,7 +1283,6 @@ public class BasicBook
                 oldRoot.getFileSystem().close(); // Close old book file
             }
 
-            root.getFileSystem().close();
             this.bookPath = bookPath;
 
             BookManager.getInstance().getBookHistory().add(bookPath); // Insert in history
@@ -1298,6 +1293,13 @@ public class BasicBook
         } catch (Throwable ex) {
             logger.warn("Error storing " + this + " to " + bookPath + " ex:" + ex, ex);
         } finally {
+            if (root != null) {
+                try {
+                    root.getFileSystem().close();
+                } catch (IOException ignored) {
+                }
+            }
+
             getLock().unlock();
         }
     }
