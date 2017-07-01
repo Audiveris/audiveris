@@ -1203,6 +1203,28 @@ public class BasicBook
         this.printPath = printPath;
     }
 
+    //-------//
+    // reset //
+    //-------//
+    @Override
+    public void reset ()
+    {
+        for (SheetStub stub : getValidStubs()) {
+            stub.reset();
+        }
+    }
+
+    //---------------//
+    // resetToBinary //
+    //---------------//
+    @Override
+    public void resetToBinary ()
+    {
+        for (SheetStub stub : getValidStubs()) {
+            stub.resetToBinary();
+        }
+    }
+
     //--------//
     // sample //
     //--------//

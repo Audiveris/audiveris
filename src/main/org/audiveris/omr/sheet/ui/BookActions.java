@@ -121,9 +121,6 @@ public class BookActions
     /** Flag to allow automatic book rebuild on every user edition action. */
     private boolean rebuildAllowed = true;
 
-    /** Flag to indicate that manual assignments must be persisted. */
-    private boolean manualPersisted = false;
-
     /** Sub-menu on images history. */
     private final HistoryMenu imageHistoryMenu;
 
@@ -737,14 +734,6 @@ public class BookActions
         }
     }
 
-    //-------------------//
-    // isManualPersisted //
-    //-------------------//
-    public boolean isManualPersisted ()
-    {
-        return manualPersisted;
-    }
-
     //------------------//
     // isRebuildAllowed //
     //------------------//
@@ -1047,6 +1036,56 @@ public class BookActions
         return new SampleSheetTask(stub.getSheet());
     }
 
+    //-----------//
+    // resetBook //
+    //-----------//
+    /**
+     * Action that resets the currently selected book.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public void resetBook (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book != null) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "Do you confirm resetting all valid sheets of " + book.getRadix()
+                    + " to their initial state?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                book.reset();
+            }
+        }
+    }
+
+    //-------------------//
+    // resetBookToBinary //
+    //-------------------//
+    /**
+     * Action that resets to BINARY all valid sheets of selected book.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public void resetBookToBinary (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book != null) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "Do you confirm resetting all valid sheets of " + book.getRadix()
+                    + " to their BINARY step?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                book.resetToBinary();
+            }
+        }
+    }
+
     //------------//
     // resetSheet //
     //------------//
@@ -1177,16 +1216,6 @@ public class BookActions
         return null;
     }
 
-    //--------------------//
-    // setManualPersisted //
-    //--------------------//
-    public void setManualPersisted (boolean value)
-    {
-        boolean oldValue = this.manualPersisted;
-        this.manualPersisted = value;
-        firePropertyChange(MANUAL_PERSISTED, oldValue, value);
-    }
-
     //-------------------//
     // setRebuildAllowed //
     //-------------------//
@@ -1215,20 +1244,6 @@ public class BookActions
         }
 
         book.swapAllSheets();
-    }
-
-    //---------------//
-    // togglePersist //
-    //---------------//
-    /**
-     * Action that toggles the persistency of manual assignments
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = MANUAL_PERSISTED)
-    public void togglePersist (ActionEvent e)
-    {
-        logger.info("Persistency mode is {}", (isManualPersisted() ? "on" : "off"));
     }
 
     //---------------//
@@ -1666,27 +1681,6 @@ public class BookActions
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean promptParameters = new Constant.Boolean(
-                false,
-                "Should we prompt the user for score parameters?");
-
-        private final Constant.String validImageExtensions = new Constant.String(
-                ".bmp .gif .jpg .png .tiff .tif .pdf",
-                "Valid image file extensions, whitespace-separated");
-
-        private final Constant.Boolean closeConfirmation = new Constant.Boolean(
-                true,
-                "Should we ask confirmation for closing an unsaved book?");
-    }
-
     //---------------//
     // BuildBookTask //
     //---------------//
@@ -1834,6 +1828,27 @@ public class BookActions
 
             return null;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean promptParameters = new Constant.Boolean(
+                false,
+                "Should we prompt the user for score parameters?");
+
+        private final Constant.String validImageExtensions = new Constant.String(
+                ".bmp .gif .jpg .png .tiff .tif .pdf",
+                "Valid image file extensions, whitespace-separated");
+
+        private final Constant.Boolean closeConfirmation = new Constant.Boolean(
+                true,
+                "Should we ask confirmation for closing an unsaved book?");
     }
 
     //---------//

@@ -120,6 +120,16 @@ public interface Book
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
+     * Reset all valid sheets of this book to their initial state.
+     */
+    void reset ();
+
+    /**
+     * Reset all valid sheets of this book to their BINARY step.
+     */
+    void resetToBinary ();
+
+    /**
      * Determine the logical parts of each score.
      */
     void buildScores ();
