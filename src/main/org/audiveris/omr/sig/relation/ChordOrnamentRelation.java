@@ -26,7 +26,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 
 /**
- * Class {@code ChordOrnamentRelation}represents the relation between a head-chord and
+ * Class {@code ChordOrnamentRelation} represents the relation between a head-chord and
  * an ornament.
  *
  * @author Hervé Bitteur

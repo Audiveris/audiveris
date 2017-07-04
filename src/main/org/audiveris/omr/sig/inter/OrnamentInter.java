@@ -32,9 +32,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code OrnamentInter} represents an ornament interpretation.
- * (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED)
- * <p>
- * GRACE_NOTE_SLASH, GRACE_NOTE
+ * (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED, GRACE_NOTE_SLASH,
+ * GRACE_NOTE)
  *
  * @author Hervé Bitteur
  */

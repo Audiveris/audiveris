@@ -41,18 +41,30 @@ Moreover, opening PDFs containing vector graphics on Unix-like platforms
 (including the Mac) requires [FreeType library][4] to be available in your $PATH.
 Fortunately, every known OS distribution already contains a package for FreeType.
 
-To build audiveris from source, run the following command from the source code
-directory:
+To download Audiveris project, use the following command in a directory of your choice:
 
-`gradle build`
+`git clone https://github.com/Audiveris/audiveris.git` 
 
-To run audiveris as GUI tool, just issue
+This will create a sub-directory named "audiveris" in your current directory and populate it with
+project material (notably source code and build procedure). 
 
-`gradle run`
+Now move to this "audiveris" project directory:
 
-## Developers guide
+`cd audiveris` 
 
-Developers are encouraged to read our (still incomplete) [developers documentation][5].
+Once in this "audiveris" project directory, you can:
+
+* Build the software via the command:
+
+    `gradle build`
+
+* Run the software, as GUI tool, via the command:
+
+    `gradle run`
+
+## Further Information
+
+Users and Developers are encouraged to read our [wiki][5].
 
 [1]: http://www.oracle.com/technetwork/java/javase/downloads/index.html
 [2]: https://github.com/tesseract-ocr/tesseract

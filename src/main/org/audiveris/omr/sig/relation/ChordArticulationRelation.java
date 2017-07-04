@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code ChordArticulationRelation} is a connection between a head-based chord
- * and an articulation sign (tenuto, accent, staccato, staccatissimo, mercato).
+ * and an articulation sign (tenuto, accent, staccato, staccatissimo, marcato).
  *
  * @author Hervé Bitteur
  */
