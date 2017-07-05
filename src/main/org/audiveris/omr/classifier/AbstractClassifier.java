@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
+import org.apache.commons.io.FileUtils;
+
 import org.audiveris.omr.WellKnowns;
 import static org.audiveris.omr.classifier.Classifier.SHAPE_COUNT;
 import org.audiveris.omr.constant.ConstantSet;
@@ -49,6 +51,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import static java.nio.file.StandardOpenOption.CREATE;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -271,7 +274,7 @@ public abstract class AbstractClassifier<M extends Object>
     protected M load (String fileName)
     {
         // First, try user data, if any, in local EVAL folder
-        logger.debug("Trying user data");
+        logger.debug("AbstractClassifier. Trying user data");
 
         {
             final Path path = WellKnowns.TRAIN_FOLDER.resolve(fileName);
@@ -305,12 +308,32 @@ public abstract class AbstractClassifier<M extends Object>
         }
 
         // Second, use default data (in program RES folder)
-        logger.debug("Trying default data");
+        logger.debug("AbstractClassifier. Trying default data");
 
         final URI uri = UriUtil.toURI(WellKnowns.RES_URI, fileName);
 
         try {
-            Path root = ZipFileSystem.open(new File(uri).toPath());
+            // Must be a path to a true zip *file*
+            final Path zipPath;
+            logger.debug("uri={}", uri);
+
+            if (uri.toString().startsWith("jar:")) {
+                // We have a .zip within a .jar
+                // Quick fix: copy the .zip into a separate temp file
+                // TODO: investigate a better solution!
+                File tmpFile = File.createTempFile("AbstractClassifier-", ".tmp");
+                logger.debug("tmpFile={}", tmpFile);
+                tmpFile.deleteOnExit();
+
+                InputStream is = uri.toURL().openStream();
+                FileUtils.copyInputStreamToFile(is, tmpFile);
+                is.close();
+                zipPath = tmpFile.toPath();
+            } else {
+                zipPath = Paths.get(uri);
+            }
+
+            final Path root = ZipFileSystem.open(zipPath);
             M model = loadModel(root);
             norms = loadNorms(root);
             root.getFileSystem().close();
@@ -320,12 +343,12 @@ public abstract class AbstractClassifier<M extends Object>
                                    + ", please retrain from scratch";
                 logger.warn(msg);
             } else {
-                logger.info("Classifier data loaded from default {}", uri);
+                logger.info("Classifier data loaded from default uri {}", uri);
 
                 return model; // Normal exit
             }
         } catch (Exception ex) {
-            logger.warn("Load error {}", ex.toString(), ex);
+            logger.warn("Load error on {} {}", uri, ex.toString(), ex);
         }
 
         norms = null; // No norms
@@ -470,7 +493,7 @@ public abstract class AbstractClassifier<M extends Object>
             }
 
             // Successful checks?
-            if (conditions != null && conditions.contains(Condition.CHECKED)) {
+            if ((conditions != null) && conditions.contains(Condition.CHECKED)) {
                 // This may change the eval shape in only one case:
                 // HW_REST_set may be changed for HALF_REST or WHOLE_REST based on pitch
                 glyphChecker.annotate(system, eval, glyph);

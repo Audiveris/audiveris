@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Example of a user logback.xml file
+-->
+<configuration>
+
+    <!-- Include pre-defined logback elements. One of the following include's should work: -->
+    <include optional="true" resource="res/logback-elements.xml"/>  <!-- from .jar archive -->
+    <include optional="true"     file="res/logback-elements.xml"/>  <!-- from devel. files -->
+    
+    <!-- You can define additional loggers here below: -->
+<!--        <logger name="org.audiveris.omr.sheet.ScaleBuilder" level="DEBUG"/>-->
+
+</configuration>

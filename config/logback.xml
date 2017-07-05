@@ -7,41 +7,10 @@ Predefined MDC keys:
 -->
 
 <configuration>
-    <!--    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />  -->
-    <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss" timeReference="contextBirth"/>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <!--            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>-->
-<!--            <pattern>%-5level %caller{1} [%X{BOOK}%X{SHEET}] [%thread] %msg%n%ex</pattern>-->
-<!--            <pattern>%-5level [%X{BOOK}%X{SHEET}] %25file:%-4line | %msg%n%ex</pattern>-->
-            <pattern>%-5level [%X{BOOK}%X{SHEET}] %25replace(%file){'\.java$',''} %-4line | %msg%n%ex</pattern>
-<!--            <pattern>%-5level [%X{BOOK}%X{SHEET}] at \(%file:%line\)| %msg%n%ex</pattern>-->
-<!--            <pattern>%-5level [%X{BOOK}%X{SHEET}] D:/soft/audiveris-ng/src/main/%replace(%class){'\.','/'}.java:%line  |%n %msg%n%ex</pattern>-->
-            <!--            <pattern>%-5level %msg%n %ex</pattern>-->
-        </encoder>
-    </appender>
-    
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <append>true</append>
-        <file>${user.home}/audiveris-${bySecond}.log</file>
-        <encoder>
-            <pattern>%date %-5level [%-18thread] [%X{BOOK}%X{SHEET}] %25file:%-4line | %msg%n%ex</pattern>
-<!--            <pattern>%date %level \(%file:%line\) [%X{BOOK}%X{SHEET}] %msg%n%ex</pattern>-->
-        </encoder>
-    </appender>
-
-    <!-- GUI appender is dynamically allocated & appended only when not running in batch -->
-    <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
-    </root>
+    <include optional="true" resource="logback-elements.xml"/>    
     
     <!-- Define DEBUG loggers here below: -->
-        <logger name="org.nd4j.nativeblas.Nd4jBlas" level="WARN"/>
-        <logger name="org.nd4j.nativeblas.NativeOps" level="WARN"/>
-        <logger name="org.reflections.Reflections" level="WARN"/>
-        
 <!--        <logger name="org.audiveris.omr.sheet.ScaleBuilder" level="DEBUG"/>-->
 
 </configuration>

@@ -200,7 +200,7 @@ public class ActionManager
      */
     public void loadAllDescriptors ()
     {
-        // Load classes first for system actions, then for user actions
+        // Load classes first for system actions, then for user actions if any
         URI[] uris = new URI[]{
             UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
             WellKnowns.CONFIG_FOLDER.resolve("user-actions.xml").toUri().normalize()
@@ -213,6 +213,7 @@ public class ActionManager
                 URL url = uri.toURL();
                 InputStream input = url.openStream();
                 Actions.loadActionDescriptors(input);
+                input.close();
             } catch (IOException ex) {
                 // Item does not exist
                 if (i == 0) {

@@ -30,12 +30,18 @@ import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.util.StatusPrinter;
 
+import org.apache.commons.io.FileUtils;
+
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.util.UriUtil;
 
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -128,42 +134,74 @@ public abstract class LogUtil
      * any logging request is sent.
      *
      * @param CONFIG_FOLDER Config folder which may contain a logback.xml file
+     * @param RES_URI       uri to 'res' folder (within .jar or development hierarchy)
      */
-    public static void initialize (Path CONFIG_FOLDER)
+    public static void initialize (Path CONFIG_FOLDER,
+                                   URI RES_URI)
     {
         // 1/ Check if system property is set and points to a real file
         final String loggingProp = System.getProperty(LOGBACK_LOGGING_KEY);
 
         if (loggingProp != null) {
-            Path configFile = Paths.get(loggingProp);
+            Path configPath = Paths.get(loggingProp).toAbsolutePath();
 
-            if (Files.exists(configFile)) {
+            if (Files.exists(configPath)) {
                 // Everything seems OK, let LogBack use the config file
-                System.out.println("Using " + configFile.toAbsolutePath());
+                System.out.println("LogUtil. Using " + configPath);
 
                 return;
             } else {
-                System.out.println("File " + configFile.toAbsolutePath() + " does not exist.");
+                System.out.println("LogUtil. File " + configPath + " does not exist.");
             }
         } else {
-            System.out.println("Property " + LOGBACK_LOGGING_KEY + " not defined.");
+            System.out.println("LogUtil. Property " + LOGBACK_LOGGING_KEY + " not defined.");
         }
 
-        // 2/ Look for well-known location
-        Path configFile = CONFIG_FOLDER.resolve(LOGBACK_FILE_NAME);
+        // 2/ Look for well-known location (user Audiveris config folder)
+        Path configPath = CONFIG_FOLDER.resolve(LOGBACK_FILE_NAME).toAbsolutePath();
 
-        if (Files.exists(configFile)) {
-            System.out.println("Using " + configFile.toAbsolutePath());
-
-            // Set property for logback
-            System.setProperty(LOGBACK_LOGGING_KEY, configFile.toString());
+        if (Files.exists(configPath)) {
+            System.out.println("LogUtil. Using " + configPath);
+            System.setProperty(LOGBACK_LOGGING_KEY, configPath.toString());
 
             return;
         } else {
-            System.out.println("Could not find " + configFile);
+            System.out.println("LogUtil. Could not find " + configPath);
         }
 
-        // 3/ We need a default configuration
+        // 3/ Look for suitable file within 'res' folder or resource
+        try {
+            final URI configUri = UriUtil.toURI(RES_URI, LOGBACK_FILE_NAME);
+            final Path localPath;
+
+            if (configUri.toString().startsWith("jar:")) {
+                // Make a temporary copy off .jar archive
+                File tmpFile = File.createTempFile("logback-", ".xml");
+                tmpFile.deleteOnExit();
+
+                InputStream is = configUri.toURL().openStream();
+                FileUtils.copyInputStreamToFile(is, tmpFile);
+                is.close();
+                localPath = tmpFile.toPath();
+            } else {
+                localPath = Paths.get(configUri);
+            }
+
+            if (Files.exists(localPath)) {
+                System.out.println("LogUtil. Using " + configUri);
+                System.setProperty(LOGBACK_LOGGING_KEY, localPath.toString());
+
+                return;
+            } else {
+                System.out.println("LogUtil. Could not find " + localPath);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        // 4/ We need a default configuration
+        System.out.println("LogUtil. Building a minimal Logging configuration");
+
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
                 Logger.ROOT_LOGGER_NAME);
@@ -204,7 +242,7 @@ public abstract class LogUtil
         // OPTIONAL: print logback internal status messages
         StatusPrinter.print(loggerContext);
 
-        root.info("Logging to file {}", logFile.toAbsolutePath());
+        root.info("LogUtil. Logging to file {}", logFile.toAbsolutePath());
     }
 
     //----------------//

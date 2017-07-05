@@ -22,6 +22,7 @@
 package org.audiveris.omr.classifier;
 
 import static org.audiveris.omr.classifier.Classifier.SHAPE_COUNT;
+
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;

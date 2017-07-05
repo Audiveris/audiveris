@@ -22,6 +22,7 @@
 package org.audiveris.omr;
 
 import org.audiveris.omr.log.LogUtil;
+
 import static org.audiveris.omr.util.UriUtil.toURI;
 
 import org.slf4j.Logger;
@@ -35,7 +36,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.jar.JarFile;
@@ -126,13 +126,7 @@ public abstract class WellKnowns
      */
     public static final boolean RUNNING_FROM_JAR = runningFromJar();
 
-    /** Containing jar file, if any. */
-    public static final JarFile JAR_FILE = RUNNING_FROM_JAR ? getJarFile() : null;
-
-    /** Time of last modification of jar file, if any. */
-    public static final FileTime JAR_TIME = RUNNING_FROM_JAR ? getJarTime() : null;
-
-    /** The uri where resource data is stored. */
+    /** The uri where read-only resources are stored. */
     public static final URI RES_URI = RUNNING_FROM_JAR
             ? toURI(WellKnowns.class.getClassLoader().getResource("res"))
             : Paths.get("res").toUri();
@@ -144,9 +138,8 @@ public abstract class WellKnowns
     // USER CONFIG // Configuration files the user can edit on his own
     //-------------//
     //
-    /** The config folder where global configuration data is stored. */
-    public static final Path CONFIG_FOLDER = RUNNING_FROM_JAR ? getConfigFolder()
-            : Paths.get("config");
+    /** The folder where global configuration data is stored. */
+    public static final Path CONFIG_FOLDER = getConfigFolder();
 
     /** The folder where plugin scripts are found. */
     public static final Path PLUGINS_FOLDER = CONFIG_FOLDER.resolve("plugins");
@@ -156,7 +149,7 @@ public abstract class WellKnowns
     //-----------//
     //
     /** Base folder for data. */
-    public static final Path DATA_FOLDER = RUNNING_FROM_JAR ? getDataFolder() : Paths.get("data");
+    public static final Path DATA_FOLDER = getDataFolder();
 
     /**
      * The folder where documentations files are installed.
@@ -181,7 +174,7 @@ public abstract class WellKnowns
 
     static {
         /** Logging configuration. */
-        LogUtil.initialize(CONFIG_FOLDER);
+        LogUtil.initialize(CONFIG_FOLDER, RES_URI);
 
         /** Log declared data (debug). */
         logDeclaredData();
@@ -410,16 +403,6 @@ public abstract class WellKnowns
         return null;
     }
 
-    //------------//
-    // getJarTime //
-    //------------//
-    private static FileTime getJarTime ()
-    {
-        long millis = JAR_FILE.getEntry("META-INF/MANIFEST.MF").getTime();
-
-        return FileTime.fromMillis(millis);
-    }
-
     //--------------//
     // getOcrFolder //
     //--------------//
@@ -472,17 +455,8 @@ public abstract class WellKnowns
     //-----------------//
     private static void logDeclaredData ()
     {
+        // Note: Logger initialization has been differed until now
         final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
-
-        // To check updates
-        ///logger.info("Token #{}", 2);
-        if (!RUNNING_FROM_JAR) {
-            // Just to remind the developer we are NOT running in normal mode
-            logger.info("Not running from jar.");
-        } else {
-            // Debug, to identify this jar
-            logger.debug("JarTime: {} JarFile: {}", JAR_TIME, JAR_FILE.getName());
-        }
 
         if (logger.isDebugEnabled()) {
             for (Field field : WellKnowns.class.getDeclaredFields()) {

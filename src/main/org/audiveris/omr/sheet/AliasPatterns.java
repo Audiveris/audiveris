@@ -24,11 +24,14 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.util.UriUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -58,6 +62,8 @@ public class AliasPatterns
 
     private static final Logger logger = LoggerFactory.getLogger(AliasPatterns.class);
 
+    private static final String ALIAS_PATTERNS_FILENAME = "alias-patterns.xml";
+
     //~ Instance fields ----------------------------------------------------------------------------
     private final List<Pattern> patterns = loadAliasPatterns();
 
@@ -73,10 +79,6 @@ public class AliasPatterns
      */
     public String getAlias (String name)
     {
-        if (patterns == null) {
-            return null;
-        }
-
         for (Pattern pattern : patterns) {
             Matcher matcher = pattern.matcher(name);
 
@@ -103,37 +105,59 @@ public class AliasPatterns
     //-------------------//
     // loadAliasPatterns //
     //-------------------//
+    /**
+     * Try to load alias patterns.
+     * <p>
+     * User 'config' is first searched for patterns file, followed by program 'res'.
+     *
+     * @return the list of patterns found, perhaps empty
+     */
     private List<Pattern> loadAliasPatterns ()
     {
+        final List<Pattern> patternList = new ArrayList<Pattern>();
+
         if (useAliasPatterns()) {
-            try {
-                // Retrieve the raw strings
-                URL url = WellKnowns.CONFIG_FOLDER.resolve("alias-patterns.xml").toUri()
-                        .normalize().toURL();
-                JAXBContext jaxbContext = JAXBContext.newInstance(Strings.class);
-                Unmarshaller um = jaxbContext.createUnmarshaller();
-                InputStream input = url.openStream();
-                Strings strings = (Strings) um.unmarshal(input);
-                List<String> stringList = strings.list;
+            URI[] uris = new URI[]{
+                WellKnowns.CONFIG_FOLDER.resolve(ALIAS_PATTERNS_FILENAME).toUri()
+                .normalize(),
+                UriUtil.toURI(WellKnowns.RES_URI, ALIAS_PATTERNS_FILENAME)
+            };
 
-                // Compile strings into patterns
-                if (!stringList.isEmpty()) {
-                    logger.info("Alias patterns: {}", stringList);
+            for (int i = 0; i < uris.length; i++) {
+                URI uri = uris[i];
 
-                    List<Pattern> patternList = new ArrayList<Pattern>();
+                try {
+                    URL url = uri.toURL();
 
-                    for (String raw : stringList) {
-                        patternList.add(Pattern.compile(raw));
+                    // Retrieve the raw strings
+                    JAXBContext jaxbContext = JAXBContext.newInstance(Strings.class);
+                    InputStream input = url.openStream();
+                    Unmarshaller um = jaxbContext.createUnmarshaller();
+                    Strings strings = (Strings) um.unmarshal(input);
+                    input.close();
+
+                    List<String> stringList = strings.list;
+
+                    // Compile strings into patterns
+                    if (!stringList.isEmpty()) {
+                        logger.info("Alias patterns: {}", stringList);
+
+                        for (String raw : stringList) {
+                            patternList.add(Pattern.compile(raw));
+                        }
                     }
-
-                    return patternList;
+                } catch (IOException ex) {
+                    if (i != 0) {
+                        // First item (user) is optional
+                        logger.error("Mandatory file not found {}", uri, ex);
+                    }
+                } catch (JAXBException ex) {
+                    logger.warn("Error unmarshalling " + uri, ex);
                 }
-            } catch (Exception ex) {
-                logger.warn("Error loading alias patterns " + ex, ex);
             }
         }
 
-        return null;
+        return patternList;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
