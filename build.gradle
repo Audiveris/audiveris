@@ -46,6 +46,11 @@ run {
     if (project.hasProperty("cmdLineArgs")) {
         args(cmdLineArgs.split(','))
     }
+    
+    // Retrieve JVM arguments from jvmLineArgs property if any
+    if (project.hasProperty("jvmLineArgs")) {
+        jvmArgs(jvmLineArgs.split(','))
+    }
 }
 
 repositories {
@@ -141,14 +146,6 @@ task(debug, dependsOn: 'classes', type: JavaExec) {
     main = mainClassName
     classpath = sourceSets.main.runtimeClasspath
     debug true
-}
-
-// Populate application arguments for 'run' & 'debug' tasks?
-if (hasProperty('args_file_name')) {
-    new File("$projectDir/$args_file_name").eachLine { line ->
-        run.args(line)
-        debug.args(line)
-    }
 }
 
 // retrieve the abbreviated hash for the latest commit from Git

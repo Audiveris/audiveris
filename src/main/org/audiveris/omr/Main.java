@@ -117,6 +117,13 @@ public class Main
         // Process CLI parameters
         processCli(args);
 
+        // Help?
+        if (cli.isHelpMode()) {
+            cli.printUsage();
+
+            return;
+        }
+
         // Initialize tool parameters
         initialize();
 
@@ -126,17 +133,17 @@ public class Main
         // Environment
         showEnvironment();
 
-        // Native libs
-        //loadNativeLibraries();
         // Engine
         OMR.engine = BookManager.getInstance();
 
         if (!cli.isBatchMode()) {
-            // Here we are in interactive mode
+            logger.debug("Running in interactive mode");
+            LogUtil.addGuiAppender();
             logger.debug("Main. Launching MainGui");
             Application.launch(MainGui.class, args);
         } else {
-            // Here we are in batch mode
+            ///System.setProperty("java.awt.headless", "true"); //TODO: Useful?
+            logger.info("Running in batch mode");
 
             // Check MusicFont is loaded
             MusicFont.checkMusicFont();
@@ -255,16 +262,6 @@ public class Main
             // First get the provided parameters if any
             cli = new CLI(WellKnowns.TOOL_NAME);
             cli.getParameters(args);
-
-            // Interactive or Batch mode ?
-            if (cli.isBatchMode()) {
-                logger.info("Running in batch mode");
-
-                ///System.setProperty("java.awt.headless", "true"); //TODO: Useful?
-            } else {
-                logger.debug("Running in interactive mode");
-                LogUtil.addGuiAppender();
-            }
         } catch (CmdLineException ex) {
             logger.warn("Error in command line: {}", ex.getLocalizedMessage(), ex);
             logger.warn("Exiting ...");

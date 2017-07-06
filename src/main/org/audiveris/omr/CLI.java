@@ -186,10 +186,6 @@ public class CLI
             new Dumping().dump(params);
         }
 
-        if (params.helpMode) {
-            printUsage();
-        }
-
         return params;
     }
 
@@ -204,6 +200,19 @@ public class CLI
     public boolean isBatchMode ()
     {
         return params.batchMode;
+    }
+
+    //------------//
+    // isHelpMode //
+    //------------//
+    /**
+     * Report whether we are running in help mode (to stop immediately).
+     *
+     * @return true for help mode
+     */
+    public boolean isHelpMode ()
+    {
+        return params.helpMode;
     }
 
     //------------------//
@@ -241,7 +250,7 @@ public class CLI
         // Print syntax
         buf.append("\n");
         buf.append("\nSyntax:");
-        buf.append("\n   audiveris [OPTIONS] [INPUT_FILES]\n");
+        buf.append("\n   audiveris [OPTIONS] [--] [INPUT_FILES]\n");
 
         buf.append("\nOptions:\n");
 
@@ -507,7 +516,7 @@ public class CLI
         boolean save;
 
         /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Selects specific sheets numbers and ranges (like 1-9)", handler = IntArrayOptionHandler.class)
+        @Option(name = "-sheets", usage = "Selects specific sheets numbers and ranges (like 2-5)", handler = IntArrayOptionHandler.class)
         private ArrayList<Integer> sheets;
 
         /** Specific step. */

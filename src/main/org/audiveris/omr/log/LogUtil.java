@@ -166,7 +166,7 @@ public abstract class LogUtil
 
             return;
         } else {
-            System.out.println("LogUtil. Could not find " + configPath);
+            System.out.println("LogUtil. No " + configPath);
         }
 
         // 3/ Look for suitable file within 'res' folder or resource
@@ -193,7 +193,7 @@ public abstract class LogUtil
 
                 return;
             } else {
-                System.out.println("LogUtil. Could not find " + localPath);
+                System.out.println("LogUtil. No " + localPath);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
