@@ -62,7 +62,6 @@ import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.CrossExclusion;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
@@ -186,80 +185,6 @@ public class SigReducer
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------------//
-    // detectCrossOverlaps //
-    //---------------------//
-    //    /**
-    //     * Detect all cases where 2 Inters actually overlap and, if there is no support
-    //     * relation between them, insert a mutual exclusion.
-    //     * <p>
-    //     * This method is key!
-    //     *
-    //     * @param list1 the collection of inters to process from one system
-    //     * @param list2 the collection of inters to process from another system
-    //     */
-    public static void detectCrossOverlaps (List<Inter> list1,
-                                            List<Inter> list2)
-    {
-        Collections.sort(list2, Inter.byAbscissa);
-
-        NextLeft:
-        for (Inter left : list1) {
-            if (left.isDeleted()) {
-                continue;
-            }
-
-            final Rectangle leftBox = left.getBounds();
-
-            final double xMax = leftBox.getMaxX();
-
-            for (Inter right : list2) {
-                if (right.isDeleted()) {
-                    continue;
-                }
-
-                // Overlap is accepted in some cases
-                if (compatible(new Inter[]{left, right})) {
-                    continue;
-                }
-
-                Rectangle rightBox = right.getBounds();
-
-                if (leftBox.intersects(rightBox)) {
-                    // Have a more precise look
-                    if (left.isVip() && right.isVip()) {
-                        ////////logger.info("VIP check overlap {} vs {}", left, right);
-                    }
-
-                    try {
-                        if (left.overlaps(right) && right.overlaps(left)) {
-                            // Specific case: Word vs "string" Symbol
-                            if (left instanceof WordInter && right instanceof StringSymbolInter) {
-                                if (wordMatchesSymbol((WordInter) left, (StringSymbolInter) right)) {
-                                    left.decrease(0.5);
-                                }
-                            } else if (left instanceof StringSymbolInter
-                                       && right instanceof WordInter) {
-                                if (wordMatchesSymbol((WordInter) right, (StringSymbolInter) left)) {
-                                    right.decrease(0.5);
-                                }
-                            }
-
-                            logger.info("crossExclusion {} & {}", left, right);
-                            CrossExclusion.insert(left, right); // Cross-system
-                        }
-                    } catch (DeletedInterException diex) {
-                        if (diex.inter == left) {
-                            continue NextLeft;
-                        }
-                    }
-                } else if (rightBox.x > xMax) {
-                    break; // Since right list is sorted by abscissa
-                }
-            }
-        }
-    }
-
     //-------------------//
     // reduceFoundations //
     //-------------------//
@@ -1725,6 +1650,23 @@ public class SigReducer
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
+                3,
+                "Maximum width for slur around tuplet");
+
+        private final Scale.Fraction minStemExtension = new Scale.Fraction(
+                1.5,
+                "Minimum vertical extension of a stem beyond last head");
+    }
+
     //---------//
     // Adapter //
     //---------//
@@ -1916,22 +1858,5 @@ public class SigReducer
 
             return modifs;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
-                3,
-                "Maximum width for slur around tuplet");
-
-        private final Scale.Fraction minStemExtension = new Scale.Fraction(
-                1.5,
-                "Minimum vertical extension of a stem beyond last head");
     }
 }
