@@ -1026,6 +1026,43 @@ public class SigReducer
         return modifs;
     }
 
+    //------------------//
+    // checkStemLengths //
+    //------------------//
+    /**
+     * Perform checks on stem length from tail to head anchor.
+     *
+     * @return the count of modifications done
+     */
+    private int checkStemLengths ()
+    {
+        final int minStemExtension = scale.toPixels(constants.minStemExtension);
+        final List<Inter> stems = sig.inters(Shape.STEM);
+        int modifs = 0;
+
+        for (Inter inter : stems) {
+            final StemInter stem = (StemInter) inter;
+            final Rectangle stemBox = stem.getBounds();
+            int extension = 0;
+
+            for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
+                final HeadInter head = (HeadInter) sig.getOppositeInter(stem, rel);
+                final Rectangle headBox = head.getBounds();
+                final int above = headBox.y - stemBox.y;
+                final int below = (stemBox.y + stemBox.height) - (headBox.y + headBox.width);
+                extension = Math.max(extension, above);
+                extension = Math.max(extension, below);
+            }
+
+            if (extension < minStemExtension) {
+                stem.delete();
+                modifs += 1;
+            }
+        }
+
+        return modifs;
+    }
+
     //------------//
     // checkStems //
     //------------//
@@ -1737,6 +1774,9 @@ public class SigReducer
             modifs += checkStemEndingHeads();
             deleted.addAll(updateAndPurge());
 
+            modifs += checkStemLengths();
+            deleted.addAll(updateAndPurge());
+
             modifs += checkHeads();
             deleted.addAll(updateAndPurge());
 
@@ -1889,5 +1929,9 @@ public class SigReducer
         private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
                 3,
                 "Maximum width for slur around tuplet");
+
+        private final Scale.Fraction minStemExtension = new Scale.Fraction(
+                1.5,
+                "Minimum vertical extension of a stem beyond last head");
     }
 }
