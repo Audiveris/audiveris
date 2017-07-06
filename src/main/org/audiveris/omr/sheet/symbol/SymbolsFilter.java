@@ -220,6 +220,11 @@ public class SymbolsFilter
         private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.5,
                 "Margin erased above & below staff header area");
+
+        private final Constant.Integer minSentenceLength = new Constant.Integer(
+                "letter count",
+                3,
+                "Minimum number of chars in a sentence");
     }
 
     //--------//
@@ -333,6 +338,8 @@ public class SymbolsFilter
          */
         public void eraseInters (Map<SystemInfo, List<Glyph>> weaksMap)
         {
+            final int minSentenceLength = constants.minSentenceLength.getValue();
+
             for (SystemInfo system : sheet.getSystems()) {
                 final SIGraph sig = system.getSig();
 
@@ -354,21 +361,14 @@ public class SymbolsFilter
                         continue;
                     }
 
-                    // Special case for one-char sentences: they are not erased
-                    // since they might be isolated one-letter symbols
-                    // TODO: why not 1-char words as well (even within sentence with several words)?
+                    // Special case for very small sentences: they are not erased
+                    // since they might be mistaken for text-like symbols
                     if (inter instanceof SentenceInter) {
                         SentenceInter sentence = (SentenceInter) inter;
                         String content = sentence.getValue();
 
-                        // One-char sentence
-                        if (content.length() == 1) {
-                            continue;
-                        }
-
-                        // Sentence with a '3' or a '6'
-                        //TODO: check the letter is close enough to a chord
-                        if ((content.indexOf('3') != -1) || (content.indexOf('6') != -1)) {
+                        // Two short sentence
+                        if (content.length() < minSentenceLength) {
                             continue;
                         }
                     }
