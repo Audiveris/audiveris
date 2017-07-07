@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<script file="data/examples/autothreshold_test.JPG">
-    <parameters>
-        <adaptive-filter mean-coeff="0.7" std-dev-coeff="0.9"/>
-        <language>eng</language>
-        <tempo>120</tempo>
-    </parameters>
-    <step name="EXPORT"/>
-</script>

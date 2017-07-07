@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<script file="data/examples/chula.png">
-    <parameters>
-        <language>fra</language>
-        <tempo>120</tempo>
-    </parameters>
-    <step name="EXPORT" />
-</script>

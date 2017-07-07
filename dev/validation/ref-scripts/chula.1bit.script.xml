@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<script file="data/examples/chula.1bit.bmp">
-    <parameters>
-        <adaptive-filter mean-coeff="0.7" std-dev-coeff="0.9"/>
-        <language>fra</language>
-        <tempo>120</tempo>
-    </parameters>
-    <step name="EXPORT"/>
-</script>

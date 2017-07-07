@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<script file="data/examples/Dichterliebe01.pdf">
-    <parameters>
-        <language>deu</language>
-        <tempo>120</tempo>
-    </parameters>
-    <step name="EXPORT"/>
-</script>
