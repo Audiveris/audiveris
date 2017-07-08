@@ -894,7 +894,7 @@ public class SlotsBuilder
                 Rectangle box2 = ch2.getBounds();
                 int yOverlap = GeoUtil.yOverlap(box1, box2);
 
-                if (yOverlap > 0) {
+                if (yOverlap > params.maxVerticalOverlap) {
                     // Boxes overlap vertically
                     if (areAdjacent(ch1, ch2)) {
                         setRel(ch1, ch2, EQUAL);
@@ -1191,6 +1191,10 @@ public class SlotsBuilder
         private final Scale.Fraction maxAdjacencyXGap = new Scale.Fraction(
                 0.5,
                 "Maximum horizontal gap between adjacent chords bounds");
+
+        private final Scale.Fraction maxVerticalOverlap = new Scale.Fraction(
+                0.25,
+                "Maximum vertical overlap tolerated");
     }
 
     //-----------//
@@ -1242,12 +1246,15 @@ public class SlotsBuilder
 
         private final int maxAdjacencyXGap;
 
+        private final int maxVerticalOverlap;
+
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             maxSlotDx = scale.toPixels(constants.maxSlotDx);
             minInterSlotDx = scale.toPixels(constants.minInterSlotDx);
             maxAdjacencyXGap = scale.toPixels(constants.maxAdjacencyXGap);
+            maxVerticalOverlap = scale.toPixels(constants.maxVerticalOverlap);
         }
     }
 }
