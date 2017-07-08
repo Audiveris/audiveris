@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="13.3">
+<diagram program="umlet" version="14.2">
   <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
@@ -17,14 +17,16 @@
   <element>
     <type>com.baselet.element.old.element.Database</type>
     <coordinates>
-      <x>261</x>
-      <y>351</y>
-      <w>108</w>
-      <h>72</h>
+      <x>306</x>
+      <y>504</y>
+      <w>117</w>
+      <h>99</h>
     </coordinates>
-    <panel_attributes>*model.zip*
+    <panel_attributes>*deep-classifier.zip*
 configuration.json
-coefficients.bin</panel_attributes>
+coefficients.bin
+means.bin
+stds.bin</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -51,15 +53,18 @@ getNaturalEvaluations(glyph)</panel_attributes>
       <x>27</x>
       <y>153</y>
       <w>180</w>
-      <h>81</h>
+      <h>126</h>
     </coordinates>
     <panel_attributes>*AbstractClassifier*
 bg=#aaffaa
 --
 glyphChecker
+norms
 --
 evaluate(glyph, conditions)
-isBigEnough(glyph)</panel_attributes>
+isBigEnough(glyph)
+loadNorms()
+storeNorms()</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -76,30 +81,29 @@ isBigEnough(glyph)</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>27</x>
-      <y>270</y>
+      <x>72</x>
+      <y>315</y>
       <w>180</w>
-      <h>153</h>
+      <h>135</h>
     </coordinates>
-    <panel_attributes>*NeuralClassifier*
+    <panel_attributes>*BasicClassifier*
 bg=#ff6666
 --
-model
-norms
+model: NeuralNetwork
 iterations
 learningRate
 --
 getNaturalEvaluations(glyph)
-load()
+loadModel()
 train()
-store()</panel_attributes>
+storeModel()</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>108</x>
-      <y>225</y>
+      <x>90</x>
+      <y>270</y>
       <w>27</w>
       <h>63</h>
     </coordinates>
@@ -107,14 +111,36 @@ store()</panel_attributes>
     <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
   </element>
   <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>27</x>
+      <y>468</y>
+      <w>180</w>
+      <h>135</h>
+    </coordinates>
+    <panel_attributes>*DeepClassifier*
+bg=#ff6666
+--
+model: MultiLayerNetwork
+iterations
+learningRate
+--
+getNaturalEvaluations(glyph)
+loadModel()
+train()
+storeModel()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
     <type>com.baselet.element.old.element.Database</type>
     <coordinates>
-      <x>261</x>
-      <y>270</y>
-      <w>108</w>
-      <h>72</h>
+      <x>306</x>
+      <y>369</y>
+      <w>117</w>
+      <h>81</h>
     </coordinates>
-    <panel_attributes>*norms.zip*
+    <panel_attributes>*basic-classifier.zip*
+model.xml
 means.bin
 stds.bin</panel_attributes>
     <additional_attributes/>
@@ -122,8 +148,8 @@ stds.bin</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>207</x>
-      <y>378</y>
+      <x>252</x>
+      <y>405</y>
       <w>63</w>
       <h>27</h>
     </coordinates>
@@ -133,12 +159,23 @@ stds.bin</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
+      <x>45</x>
+      <y>270</y>
+      <w>27</w>
+      <h>216</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;220.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
       <x>207</x>
-      <y>297</y>
-      <w>63</w>
+      <y>549</y>
+      <w>108</w>
       <h>27</h>
     </coordinates>
     <panel_attributes>lt=[&lt;]-[&gt;]</panel_attributes>
-    <additional_attributes>10.0;10.0;51.0;10.0</additional_attributes>
+    <additional_attributes>10.0;10.0;101.0;10.0</additional_attributes>
   </element>
 </diagram>
