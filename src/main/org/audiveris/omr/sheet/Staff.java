@@ -1307,14 +1307,17 @@ public class Staff
     public boolean removeLedger (LedgerInter ledger)
     {
         Objects.requireNonNull(ledger, "Cannot remove a null ledger");
-        logger.debug("removing {}", ledger);
+
+        if (ledger.isVip()) {
+            logger.info("VIP removing {}", ledger);
+        }
 
         // Browse all staff ledger indices
         for (Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
-            List<LedgerInter> ledgerSet = entry.getValue();
+            List<LedgerInter> ledgerList = entry.getValue();
 
-            if (ledgerSet.remove(ledger)) {
-                if (ledgerSet.isEmpty()) {
+            if (ledgerList.remove(ledger)) {
+                if (ledgerList.isEmpty()) {
                     // No ledger is left on this line index, thus remove the map entry
                     ledgerMap.remove(entry.getKey());
                 }

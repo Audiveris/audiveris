@@ -834,25 +834,25 @@ public class SigReducer
             for (Staff staff : system.getStaves()) {
                 SortedMap<Integer, List<LedgerInter>> map = staff.getLedgerMap();
 
-                for (Entry<Integer, List<LedgerInter>> entry : map.entrySet()) {
-                    int index = entry.getKey();
-                    List<LedgerInter> ledgers = entry.getValue();
-                    List<LedgerInter> toRemove = new ArrayList<LedgerInter>();
+                // Need a set copy to avoid concurrent modifications
+                Set<Entry<Integer, List<LedgerInter>>> setCopy;
+                setCopy = new LinkedHashSet<Entry<Integer, List<LedgerInter>>>(map.entrySet());
 
-                    for (LedgerInter ledger : ledgers) {
+                for (Entry<Integer, List<LedgerInter>> entry : setCopy) {
+                    int index = entry.getKey();
+
+                    // Need a list copy to avoid concurrent modifications
+                    List<LedgerInter> ledgersCopy = new ArrayList<LedgerInter>(entry.getValue());
+
+                    for (LedgerInter ledger : ledgersCopy) {
                         if (!ledgerHasHeadOrLedger(staff, index, ledger, allHeads)) {
                             if (ledger.isVip() || logger.isDebugEnabled()) {
                                 logger.info("VIP deleting orphan ledger {}", ledger);
                             }
 
-                            toDelete.add(ledger);
-                            toRemove.add(ledger);
+                            ledger.delete();
                             modified = true;
                         }
-                    }
-
-                    if (!toRemove.isEmpty()) {
-                        ledgers.removeAll(toRemove);
                     }
                 }
             }
