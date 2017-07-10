@@ -850,10 +850,11 @@ public class SlursBuilder
                         HeadInter mirror = (HeadInter) chord.getLeadingNote().getMirror();
 
                         if (mirror != null) {
+                            // TODO: what to do???
+                        } else {
+                            logger.debug("{} with {} ties on {} side", chord, ties.size(), oppSide);
+                            new ChordSplitter(chord, slurSide, origins).process();
                         }
-
-                        logger.debug("{} with {} ties on {} side", chord, ties.size(), oppSide);
-                        new ChordSplitter(chord, slurSide, origins).process();
                     }
                 }
             }
