@@ -30,7 +30,6 @@ import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
-import org.audiveris.omr.ui.selection.GroupEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
@@ -55,12 +54,6 @@ public class GlyphBoard
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(GlyphBoard.class);
-
-    /** Events this board is interested in.
-     * TODO: not correctly used, need GroupEvent!!!!!!!!!!!!!!!!!!!!!! */
-    private static final Class<?>[] eventClasses = new Class<?>[]{
-        EntityListEvent.class, GroupEvent.class
-    };
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The related glyph model. */

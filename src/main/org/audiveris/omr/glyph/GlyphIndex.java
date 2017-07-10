@@ -29,9 +29,6 @@ import org.audiveris.omr.glyph.ui.GlyphService;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
-import org.audiveris.omr.ui.selection.GroupEvent;
-import org.audiveris.omr.ui.selection.IdEvent;
-import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.SelectionService;
@@ -78,15 +75,6 @@ public class GlyphIndex
 
     private static final Logger logger = LoggerFactory.getLogger(
             GlyphIndex.class);
-
-    /** Events read on location service. */
-    public static final Class<?>[] locEventsRead = new Class<?>[]{LocationEvent.class};
-
-    /** Events read on glyph service. */
-    public static final Class<?>[] eventsRead = new Class<?>[]{
-        IdEvent.class, EntityListEvent.class,
-        GroupEvent.class
-    };
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -276,19 +264,6 @@ public class GlyphIndex
     public List<Glyph> getSelectedGlyphList ()
     {
         return (List<Glyph>) glyphService.getSelection(EntityListEvent.class);
-    }
-
-    //------------------//
-    // getSelectedGroup //
-    //------------------//
-    /**
-     * Report the glyph group currently selected, if any.
-     *
-     * @return the current glyph group, or null
-     */
-    public Group getSelectedGroup ()
-    {
-        return (Group) glyphService.getSelection(GroupEvent.class);
     }
 
     //-------------------//
