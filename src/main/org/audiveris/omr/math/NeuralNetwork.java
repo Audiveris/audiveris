@@ -22,17 +22,18 @@
 package org.audiveris.omr.math;
 
 import org.audiveris.omr.classifier.TrainingMonitor;
+import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -41,6 +42,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code NeuralNetwork} implements a back-propagation neural
@@ -345,14 +347,14 @@ public class NeuralNetwork
      * Marshal the NeuralNetwork to its XML file
      *
      * @param os the XML output stream, which is not closed by this method
-     * @exception JAXBException raised when marshalling goes wrong
+     * @throws JAXBException
+     * @throws XMLStreamException
+     * @throws IOException
      */
     public void marshal (OutputStream os)
-            throws JAXBException
+            throws JAXBException, XMLStreamException, IOException
     {
-        Marshaller m = getJaxbContext().createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(this, os);
+        Jaxb.marshal(this, os, getJaxbContext());
         logger.debug("Network marshalled");
     }
 

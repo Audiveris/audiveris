@@ -23,17 +23,18 @@ package org.audiveris.omr.jaxb.refs;
 
 import org.audiveris.omr.util.BaseTestCase;
 import org.audiveris.omr.util.Dumping;
+import org.audiveris.omr.util.Jaxb;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code TestRefs}
@@ -53,7 +54,7 @@ public class TestRefs
 
     //~ Methods ------------------------------------------------------------------------------------
     public void testInSequence ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, XMLStreamException, IOException
     {
         marshall();
         unmarshall();
@@ -68,7 +69,7 @@ public class TestRefs
     }
 
     private void marshall ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, XMLStreamException, IOException
     {
         Universe universe = new Universe();
         File target = new File(dir, fileName);
@@ -113,14 +114,10 @@ public class TestRefs
         new Dumping().dump(basket);
 
         System.out.println("Marshalling ...");
-
-        Marshaller m = jaxbContext.createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-        m.marshal(universe, new FileOutputStream(target));
+        Jaxb.marshal(universe, target.toPath(), jaxbContext);
         System.out.println("Marshalled   to   " + target);
         System.out.println("=========================================================");
-        m.marshal(universe, System.out);
+        Jaxb.marshal(universe, System.out, jaxbContext);
     }
 
     private void unmarshall ()

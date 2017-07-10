@@ -73,11 +73,9 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -89,7 +87,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -606,6 +603,19 @@ public class BasicSheet
         return null;
     }
 
+    //--------------------//
+    // getInterController //
+    //--------------------//
+    @Override
+    public InterController getInterController ()
+    {
+        if (interController == null) {
+            interController = new InterController(this);
+        }
+
+        return interController;
+    }
+
     //---------------//
     // getInterIndex //
     //---------------//
@@ -622,19 +632,6 @@ public class BasicSheet
     public int getInterline ()
     {
         return scale.getInterline();
-    }
-
-    //--------------------//
-    // getInterController //
-    //--------------------//
-    @Override
-    public InterController getInterController ()
-    {
-        if (interController == null) {
-            interController = new InterController(this);
-        }
-
-        return interController;
     }
 
     //---------------//
@@ -894,32 +891,6 @@ public class BasicSheet
         }
     }
 
-    //----------//
-    // setScale //
-    //----------//
-    @Override
-    public void setScale (Scale scale)
-    {
-        this.scale = scale;
-    }
-
-    //---------------//
-    // setSheetDelta //
-    //---------------//
-    public void setSheetDelta (SheetDiff sheetDelta)
-    {
-        this.sheetDelta = sheetDelta;
-    }
-
-    //---------//
-    // setSkew //
-    //---------//
-    @Override
-    public void setSkew (Skew skew)
-    {
-        this.skew = skew;
-    }
-
     //--------//
     // sample //
     //--------//
@@ -952,6 +923,32 @@ public class BasicSheet
         }
     }
 
+    //----------//
+    // setScale //
+    //----------//
+    @Override
+    public void setScale (Scale scale)
+    {
+        this.scale = scale;
+    }
+
+    //---------------//
+    // setSheetDelta //
+    //---------------//
+    public void setSheetDelta (SheetDiff sheetDelta)
+    {
+        this.sheetDelta = sheetDelta;
+    }
+
+    //---------//
+    // setSkew //
+    //---------//
+    @Override
+    public void setSkew (Skew skew)
+    {
+        this.skew = skew;
+    }
+
     //-------//
     // store //
     //-------//
@@ -977,12 +974,7 @@ public class BasicSheet
             Path structurePath = sheetFolder.resolve(getSheetFileName(stub.getNumber()));
             Files.deleteIfExists(structurePath);
             Files.createDirectories(sheetFolder);
-
-            OutputStream os = Files.newOutputStream(structurePath, StandardOpenOption.CREATE);
-            Marshaller m = getJaxbContext().createMarshaller();
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            m.marshal(this, os);
-            os.close();
+            Jaxb.marshal(this, structurePath, getJaxbContext());
             stub.setModified(false);
             logger.info("Stored {}", structurePath);
         } catch (Exception ex) {
@@ -1062,26 +1054,6 @@ public class BasicSheet
         return stub.getBook();
     }
 
-    //----------------------//
-    // getGlyphIndexContent //
-    //----------------------//
-    /**
-     * Mean for JAXB marshalling only.
-     *
-     * @return collection of glyphs from glyphIndex.weakIndex
-     */
-    @SuppressWarnings("unchecked")
-    @XmlElement(name = "glyph-index")
-    @XmlJavaTypeAdapter(GlyphListAdapter.class)
-    private ArrayList<Glyph> getGlyphIndexContent ()
-    {
-        if (glyphIndex == null) {
-            return null;
-        }
-
-        return glyphIndex.getEntities();
-    }
-
     //----------------//
     // getJaxbContext //
     //----------------//
@@ -1103,6 +1075,26 @@ public class BasicSheet
     {
         GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
         glyphsController = new GlyphsController(model);
+    }
+
+    //----------------------//
+    // getGlyphIndexContent //
+    //----------------------//
+    /**
+     * Mean for JAXB marshalling only.
+     *
+     * @return collection of glyphs from glyphIndex.weakIndex
+     */
+    @SuppressWarnings("unchecked")
+    @XmlElement(name = "glyph-index")
+    @XmlJavaTypeAdapter(GlyphListAdapter.class)
+    private ArrayList<Glyph> getGlyphIndexContent ()
+    {
+        if (glyphIndex == null) {
+            return null;
+        }
+
+        return glyphIndex.getEntities();
     }
 
     //-----------//

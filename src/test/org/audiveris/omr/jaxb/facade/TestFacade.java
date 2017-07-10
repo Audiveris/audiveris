@@ -23,19 +23,20 @@ package org.audiveris.omr.jaxb.facade;
 
 import org.audiveris.omr.util.BaseTestCase;
 import org.audiveris.omr.util.Dumping;
+import org.audiveris.omr.util.Jaxb;
 
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code TestFacade}
@@ -55,7 +56,7 @@ public class TestFacade
 
     //~ Methods ------------------------------------------------------------------------------------
     public void testInSequence ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, IOException, XMLStreamException
     {
         marshall();
         unmarshall();
@@ -70,7 +71,7 @@ public class TestFacade
     }
 
     private void marshall ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, IOException, XMLStreamException
     {
         File target = new File(dir, fileName);
         MyClass mc = new MyClass("TheName", new Point(10, 20), new Rectangle(2, 3, 40, 50));
@@ -87,12 +88,9 @@ public class TestFacade
         new Dumping().dump(mc);
 
         System.out.println("Marshalling ...");
-
-        Marshaller m = jaxbContext.createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(mc, new FileOutputStream(target));
+        Jaxb.marshal(mc, target.toPath(), jaxbContext);
         System.out.println("Marshalled   to   " + target);
-        m.marshal(mc, System.out);
+        Jaxb.marshal(mc, System.out, jaxbContext);
     }
 
     private void unmarshall ()

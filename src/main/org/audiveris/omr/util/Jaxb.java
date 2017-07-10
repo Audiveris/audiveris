@@ -46,13 +46,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Class {@code Jaxb} provides a collection of type adapters and facades for JAXB.
@@ -72,20 +74,36 @@ public abstract class Jaxb
     public static void marshal (Object object,
                                 Path path,
                                 JAXBContext jaxbContext)
-            throws IOException, PropertyException, JAXBException
+            throws IOException, JAXBException, XMLStreamException
     {
         OutputStream os = null;
 
         try {
             Marshaller m = jaxbContext.createMarshaller();
-            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             os = Files.newOutputStream(path, CREATE);
-            m.marshal(object, os);
+
+            XMLStreamWriter writer = new IndentingXMLStreamWriter(
+                    XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8"));
+            m.marshal(object, writer);
         } finally {
             if (os != null) {
                 os.close();
             }
         }
+    }
+
+    //---------//
+    // marshal //
+    //---------//
+    public static void marshal (Object object,
+                                OutputStream os,
+                                JAXBContext jaxbContext)
+            throws JAXBException, XMLStreamException
+    {
+        Marshaller m = jaxbContext.createMarshaller();
+        XMLStreamWriter writer = new IndentingXMLStreamWriter(
+                XMLOutputFactory.newInstance().createXMLStreamWriter(os, "UTF-8"));
+        m.marshal(object, writer);
     }
 
     //-----------//

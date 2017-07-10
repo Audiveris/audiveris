@@ -22,9 +22,8 @@
 package org.audiveris.omr.run;
 
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
-import org.audiveris.omr.run.Run;
-import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.util.BaseTestCase;
+import org.audiveris.omr.util.Jaxb;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,14 +32,14 @@ import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * Class {@code RunTableBindingTest} tests the (un-)marshalling of RunTable.
@@ -70,18 +69,16 @@ public class RunTableBindingTest
 
     @Test
     public void testMarshalTable ()
-            throws PropertyException, JAXBException, FileNotFoundException
+            throws PropertyException, JAXBException, FileNotFoundException, IOException,
+                   XMLStreamException
     {
         RunTable table = createHorizontalInstance();
         table.dumpSequences();
         System.out.println("table: " + table.dumpOf());
-
-        Marshaller m = jaxbContext.createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(table, new FileOutputStream(fileTable));
+        Jaxb.marshal(table, fileTable.toPath(), jaxbContext);
         System.out.println("Marshalled to " + fileTable);
         System.out.println("===========================================");
-        m.marshal(table, System.out);
+        Jaxb.marshal(table, System.out, jaxbContext);
 
         Unmarshaller um = jaxbContext.createUnmarshaller();
         InputStream is = new FileInputStream(fileTable);

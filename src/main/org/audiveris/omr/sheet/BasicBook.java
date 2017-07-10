@@ -46,6 +46,7 @@ import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.util.FileUtil;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.Param;
@@ -60,7 +61,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -83,7 +83,6 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -885,6 +884,32 @@ public class BasicBook
         }
     }
 
+    //----------------//
+    // loadSheetImage //
+    //----------------//
+    @Override
+    public BufferedImage loadSheetImage (int id)
+    {
+        try {
+            final ImageLoading.Loader loader = ImageLoading.getLoader(path);
+
+            if (loader == null) {
+                return null;
+            }
+
+            BufferedImage img = loader.getImage(id);
+            logger.info("Loaded image {} {}x{} from {}", id, img.getWidth(), img.getHeight(), path);
+
+            loader.dispose();
+
+            return img;
+        } catch (IOException ex) {
+            logger.warn("Error in book.loadSheetImage", ex);
+
+            return null;
+        }
+    }
+
     //--------------//
     // openBookFile //
     //--------------//
@@ -917,32 +942,6 @@ public class BasicBook
         }
 
         return null;
-    }
-
-    //----------------//
-    // loadSheetImage //
-    //----------------//
-    @Override
-    public BufferedImage loadSheetImage (int id)
-    {
-        try {
-            final ImageLoading.Loader loader = ImageLoading.getLoader(path);
-
-            if (loader == null) {
-                return null;
-            }
-
-            BufferedImage img = loader.getImage(id);
-            logger.info("Loaded image {} {}x{} from {}", id, img.getWidth(), img.getHeight(), path);
-
-            loader.dispose();
-
-            return img;
-        } catch (IOException ex) {
-            logger.warn("Error in book.loadSheetImage", ex);
-
-            return null;
-        }
     }
 
     //--------------//
@@ -1127,6 +1126,40 @@ public class BasicBook
         return stubs.remove(stub);
     }
 
+    //-------//
+    // reset //
+    //-------//
+    @Override
+    public void reset ()
+    {
+        for (SheetStub stub : getValidStubs()) {
+            stub.reset();
+        }
+    }
+
+    //---------------//
+    // resetToBinary //
+    //---------------//
+    @Override
+    public void resetToBinary ()
+    {
+        for (SheetStub stub : getValidStubs()) {
+            stub.resetToBinary();
+        }
+    }
+
+    //--------//
+    // sample //
+    //--------//
+    @Override
+    public void sample ()
+    {
+        for (SheetStub stub : getValidStubs()) {
+            Sheet sheet = stub.getSheet();
+            sheet.sample();
+        }
+    }
+
     //----------//
     // setAlias //
     //----------//
@@ -1201,40 +1234,6 @@ public class BasicBook
     public void setPrintPath (Path printPath)
     {
         this.printPath = printPath;
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    @Override
-    public void reset ()
-    {
-        for (SheetStub stub : getValidStubs()) {
-            stub.reset();
-        }
-    }
-
-    //---------------//
-    // resetToBinary //
-    //---------------//
-    @Override
-    public void resetToBinary ()
-    {
-        for (SheetStub stub : getValidStubs()) {
-            stub.resetToBinary();
-        }
-    }
-
-    //--------//
-    // sample //
-    //--------//
-    @Override
-    public void sample ()
-    {
-        for (SheetStub stub : getValidStubs()) {
-            Sheet sheet = stub.getSheet();
-            sheet.sample();
-        }
     }
 
     //-------//
@@ -1360,13 +1359,7 @@ public class BasicBook
     {
         Path bookInternals = root.resolve(Book.BOOK_INTERNALS);
         Files.deleteIfExists(bookInternals);
-
-        OutputStream os = Files.newOutputStream(bookInternals, StandardOpenOption.CREATE);
-        Marshaller m = getJaxbContext().createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(this, os);
-        os.close();
-
+        Jaxb.marshal(this, bookInternals, getJaxbContext());
         setModified(false);
         logger.info("Stored {}", bookInternals);
     }
@@ -1541,57 +1534,6 @@ public class BasicBook
         return null;
     }
 
-    //----------------//
-    // createBookFile //
-    //----------------//
-    /**
-     * Create a new book file system dedicated to this book at the location provided
-     * by '{@code bookpath}' member.
-     * If such file already exists, it is deleted beforehand.
-     * <p>
-     * When IO operations are finished, the book file must be closed via
-     * {@link #closeFileSystem(java.nio.file.FileSystem)}
-     *
-     * @return the root path of the (zipped) book file system
-     */
-    private static Path createBookFile (Path bookPath)
-            throws IOException
-    {
-        if (bookPath == null) {
-            throw new IllegalStateException("bookPath is null");
-        }
-
-        try {
-            Files.deleteIfExists(bookPath);
-        } catch (IOException ex) {
-            logger.warn("Error deleting book: " + bookPath, ex);
-        }
-
-        // Make sure the containing folder exists
-        Files.createDirectories(bookPath.getParent());
-
-        // Make it a zip file
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(bookPath.toFile()));
-        zos.close();
-
-        // Finally open the book file just created
-        return ZipFileSystem.open(bookPath);
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
-        }
-
-        return jaxbContext;
-    }
-
     //------------------//
     // checkRadixChange //
     //------------------//
@@ -1645,6 +1587,57 @@ public class BasicBook
                 break;
             }
         }
+    }
+
+    //----------------//
+    // createBookFile //
+    //----------------//
+    /**
+     * Create a new book file system dedicated to this book at the location provided
+     * by '{@code bookpath}' member.
+     * If such file already exists, it is deleted beforehand.
+     * <p>
+     * When IO operations are finished, the book file must be closed via
+     * {@link #closeFileSystem(java.nio.file.FileSystem)}
+     *
+     * @return the root path of the (zipped) book file system
+     */
+    private static Path createBookFile (Path bookPath)
+            throws IOException
+    {
+        if (bookPath == null) {
+            throw new IllegalStateException("bookPath is null");
+        }
+
+        try {
+            Files.deleteIfExists(bookPath);
+        } catch (IOException ex) {
+            logger.warn("Error deleting book: " + bookPath, ex);
+        }
+
+        // Make sure the containing folder exists
+        Files.createDirectories(bookPath.getParent());
+
+        // Make it a zip file
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(bookPath.toFile()));
+        zos.close();
+
+        // Finally open the book file just created
+        return ZipFileSystem.open(bookPath);
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
+        }
+
+        return jaxbContext;
     }
 
     //--------------//

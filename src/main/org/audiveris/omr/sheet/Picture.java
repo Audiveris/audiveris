@@ -42,6 +42,7 @@ import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.PixelEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
@@ -58,18 +59,15 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.EnumMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.media.jai.JAI;
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -782,13 +780,8 @@ public class Picture
                 try {
                     Files.deleteIfExists(tablepath);
 
-                    OutputStream os = Files.newOutputStream(tablepath, StandardOpenOption.CREATE);
-                    Marshaller m = JAXBContext.newInstance(RunTable.class).createMarshaller();
-                    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
                     RunTable table = holder.getData(sheet.getStub());
-                    m.marshal(table, os);
-                    os.close();
+                    Jaxb.marshal(table, tablepath, JAXBContext.newInstance(RunTable.class));
                     holder.setModified(false);
                     logger.info("Stored {}", tablepath);
                 } catch (Exception ex) {
@@ -909,6 +902,7 @@ public class Picture
 
         if (!linesErased) {
             logger.warn("No system lines to build NO_STAFF buffer"); // Should not happen!
+
             return null;
         }
 

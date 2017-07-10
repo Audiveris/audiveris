@@ -23,13 +23,16 @@ package org.audiveris.omr.jaxb.basic;
 
 import org.audiveris.omr.util.BaseTestCase;
 import org.audiveris.omr.util.Dumping;
+import org.audiveris.omr.util.Jaxb;
 
 import java.awt.Point;
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.xml.bind.*;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * DOCUMENT ME!
@@ -42,13 +45,13 @@ public class BasicTest
     //~ Methods ------------------------------------------------------------------------------------
 
     public static void main (String... args)
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, IOException, XMLStreamException
     {
         new BasicTest().play(args[0]);
     }
 
     public void play (String fileName)
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, IOException, XMLStreamException
     {
         JAXBContext jaxbContext = JAXBContext.newInstance(Waiter.class);
 
@@ -109,15 +112,12 @@ public class BasicTest
         }
 
         System.out.println("Marshalling ...");
-
-        Marshaller m = jaxbContext.createMarshaller();
-        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-        m.marshal(waiter, new FileOutputStream(fileName));
+        Jaxb.marshal(waiter, Paths.get(fileName), jaxbContext);
         System.out.println("Marshalled to " + fileName);
     }
 
     public void testMarshall ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, IOException, XMLStreamException
     {
         File dir = new File("data/temp");
         dir.mkdirs();
