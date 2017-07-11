@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="13.3">
+<diagram program="umlet" version="14.2">
   <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
@@ -42,7 +42,7 @@ areaRight</panel_attributes>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>170</x>
-      <y>370</y>
+      <y>310</y>
       <w>100</w>
       <h>110</h>
     </coordinates>
@@ -60,7 +60,7 @@ slurs
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>150</x>
-      <y>540</y>
+      <y>480</y>
       <w>80</w>
       <h>200</h>
     </coordinates>
@@ -84,16 +84,16 @@ sideBars</panel_attributes>
       <x>130</x>
       <y>230</y>
       <w>50</w>
-      <h>330</h>
+      <h>270</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;30;310</additional_attributes>
+    <additional_attributes>30;30;30;250</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>180</x>
-      <y>450</y>
+      <y>390</y>
       <w>50</w>
       <h>110</h>
     </coordinates>
@@ -104,9 +104,9 @@ sideBars</panel_attributes>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>320</x>
-      <y>370</y>
+      <y>310</y>
       <w>120</w>
-      <h>200</h>
+      <h>260</h>
     </coordinates>
     <panel_attributes>*Measure*
 --
@@ -116,18 +116,21 @@ rightBarline
 --
 dummy?
 clefs
-keySigs
+keys
 timeSigs
-chords
-otherTimings
-wholeChords</panel_attributes>
+beamGroups
+headChords
+graceChords
+restChords
+wholeRestChords
+otherRhythms</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>240</x>
-      <y>350</y>
+      <y>290</y>
       <w>100</w>
       <h>50</h>
     </coordinates>
@@ -167,7 +170,7 @@ incomings</panel_attributes>
       <x>320</x>
       <y>40</y>
       <w>120</w>
-      <h>270</h>
+      <h>210</h>
     </coordinates>
     <panel_attributes>*MeasureStack*
 --
@@ -178,14 +181,10 @@ right
 special
 repeat
 expectedDuration
-beamgroups
-chords
-graceChords
-restChords
-wholeRestChords
-rhythms
 actualDuration
-excess</panel_attributes>
+excess
+abnormal
+stackTuplets</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -204,7 +203,7 @@ stacks</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>350</x>
-      <y>280</y>
+      <y>220</y>
       <w>50</w>
       <h>110</h>
     </coordinates>
@@ -214,27 +213,27 @@ stacks</panel_attributes>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
-      <x>160</x>
+      <x>180</x>
       <y>230</y>
-      <w>88</w>
-      <h>160</h>
+      <w>50</w>
+      <h>100</h>
     </coordinates>
-    <panel_attributes>lt=&lt;&lt;&lt;&lt;-
-parts</panel_attributes>
-    <additional_attributes>50;30;50;140</additional_attributes>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;30;80</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>490</x>
-      <y>290</y>
+      <y>230</y>
       <w>110</w>
-      <h>100</h>
+      <h>120</h>
     </coordinates>
     <panel_attributes>*Voice*
 --
 id
-wholeChord
+excess
+wholeRestChord
 termination
 inferredTimeSig</panel_attributes>
     <additional_attributes/>
@@ -243,7 +242,7 @@ inferredTimeSig</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>410</x>
-      <y>270</y>
+      <y>210</y>
       <w>100</w>
       <h>50</h>
     </coordinates>
@@ -254,7 +253,7 @@ inferredTimeSig</panel_attributes>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>680</x>
-      <y>290</y>
+      <y>230</y>
       <w>80</w>
       <h>70</h>
     </coordinates>
@@ -270,16 +269,16 @@ status</panel_attributes>
       <x>690</x>
       <y>110</y>
       <w>50</w>
-      <h>200</h>
+      <h>140</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;30;180</additional_attributes>
+    <additional_attributes>30;30;30;120</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>570</x>
-      <y>270</y>
+      <y>210</y>
       <w>130</w>
       <h>50</h>
     </coordinates>
@@ -291,7 +290,7 @@ m2=slotTable</panel_attributes>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>30</x>
-      <y>540</y>
+      <y>480</y>
       <w>90</w>
       <h>120</h>
     </coordinates>
@@ -308,7 +307,7 @@ abbreviation</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>90</x>
-      <y>520</y>
+      <y>460</y>
       <w>82</w>
       <h>70</h>
     </coordinates>
@@ -320,7 +319,7 @@ first</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>90</x>
-      <y>560</y>
+      <y>500</y>
       <w>80</w>
       <h>70</h>
     </coordinates>
@@ -334,16 +333,16 @@ last</panel_attributes>
       <x>80</x>
       <y>230</y>
       <w>50</w>
-      <h>330</h>
+      <h>270</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;30;310</additional_attributes>
+    <additional_attributes>30;30;30;250</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>410</x>
-      <y>350</y>
+      <y>290</y>
       <w>100</w>
       <h>50</h>
     </coordinates>
