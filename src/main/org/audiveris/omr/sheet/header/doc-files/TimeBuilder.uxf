@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="13.3">
+<diagram program="umlet" version="14.2">
   <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
@@ -18,9 +18,9 @@
     <id>UMLClass</id>
     <coordinates>
       <x>369</x>
-      <y>333</y>
+      <y>342</y>
       <w>108</w>
-      <h>198</h>
+      <h>189</h>
     </coordinates>
     <panel_attributes>/TimeBuilder/
 --
@@ -34,7 +34,6 @@ glyphCandidates
 createTimeSig()
 discardOthers()
 filterCandidates()
-recordSamples()
 --
 /findCandidates()/
 </panel_attributes>
