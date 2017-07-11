@@ -480,51 +480,51 @@ public class CLI
         //        boolean annotate;
         //
         /** Batch mode. */
-        @Option(name = "-batch", usage = "Runs with no graphic user interface")
+        @Option(name = "-batch", usage = "Run with no graphic user interface")
         boolean batchMode;
 
         /** Should MusicXML data be produced?. */
-        @Option(name = "-export", usage = "Exports MusicXML")
+        @Option(name = "-export", usage = "Export MusicXML")
         boolean export;
 
         /** Force step re-processing. */
-        @Option(name = "-force", usage = "Forces step re-processing")
+        @Option(name = "-force", usage = "Force step re-processing")
         boolean force;
 
         /** Help mode. */
-        @Option(name = "-help", help = true, usage = "Displays general help then stops")
+        @Option(name = "-help", help = true, usage = "Display general help then stops")
         boolean helpMode;
 
         /** The map of application options. */
-        @Option(name = "-option", usage = "Defines an application constant", handler = PropertyOptionHandler.class)
+        @Option(name = "-option", usage = "Define an application constant", handler = PropertyOptionHandler.class)
         Properties options;
 
         /** Output directory. */
-        @Option(name = "-output", usage = "Defines base output folder", metaVar = "<output-folder>")
+        @Option(name = "-output", usage = "Define base output folder", metaVar = "<output-folder>")
         Path outputFolder;
 
         /** Should book be printed?. */
-        @Option(name = "-print", usage = "Prints out book")
+        @Option(name = "-print", usage = "Print out book")
         boolean print;
 
         /** Ability to run a class on each valid sheet. */
-        @Option(name = "-run", usage = "Runs provided class on valid sheets", handler = ClassOptionHandler.class)
+        @Option(name = "-run", usage = "Run provided class on valid sheets", handler = ClassOptionHandler.class)
         Class runClass;
 
         /** Should samples be produced?. */
-        @Option(name = "-sample", usage = "Samples book symbols")
+        @Option(name = "-sample", usage = "Sample all book symbols")
         boolean sample;
 
         /** Should book be saved?. */
-        @Option(name = "-save", usage = "Saves book")
+        @Option(name = "-save", usage = "Save book")
         boolean save;
 
         /** The set of sheet IDs to load. */
-        @Option(name = "-sheets", usage = "Selects specific sheets numbers and ranges (like 2-5)", handler = IntArrayOptionHandler.class)
+        @Option(name = "-sheets", usage = "Select specific sheets numbers and ranges (like 2-5)", handler = IntArrayOptionHandler.class)
         private ArrayList<Integer> sheets;
 
         /** Specific step. */
-        @Option(name = "-step", usage = "Defines a specific processing step")
+        @Option(name = "-step", usage = "Define a specific processing step")
         Step step;
 
         /** Optional "--" separator. */
