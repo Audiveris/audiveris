@@ -1,37 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="11.5.1">
-    <help_text>
+<diagram program="umlet" version="14.2">
+  <help_text>
         fontsize=14
 
         // My own comments
     </help_text>
-    <zoom_level>10</zoom_level>
-    <element>
-        <type>com.umlet.element.Class</type>
-        <coordinates>
-            <x>500</x>
-            <y>270</y>
-            <w>80</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>*TextChar*
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>500</x>
+      <y>270</y>
+      <w>80</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>*TextChar*
 bg=#ffffaa
 --</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.umlet.element.Class</type>
-        <coordinates>
-            <x>150</x>
-            <y>270</y>
-            <w>130</w>
-            <h>260</h>
-        </coordinates>
-        <panel_attributes>*TextLine*
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>150</x>
+      <y>270</y>
+      <w>120</w>
+      <h>270</h>
+    </coordinates>
+    <panel_attributes>*TextLine*
 bg=#ffffaa
 --
-roleInfo
-dskOrigin
+role
+meanFont
 --
 translate()
 getValue()
@@ -39,58 +39,52 @@ getBounds()
 getBaseline()
 getConfidence()
 isLyrics()
+isChordName()
 getFirstWord()
 addWords()
 removeWords()
-getMeanFontSize()
+getMeanFont()
 getSystemPart()</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.umlet.element.Relation</type>
-        <coordinates>
-            <x>250</x>
-            <y>250</y>
-            <w>90</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;70;30</additional_attributes>
-    </element>
-    <element>
-        <type>com.umlet.element.Class</type>
-        <coordinates>
-            <x>320</x>
-            <y>540</y>
-            <w>130</w>
-            <h>140</h>
-        </coordinates>
-        <panel_attributes>*Glyph (Content)*
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>240</x>
+      <y>250</y>
+      <w>100</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;80;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>320</x>
+      <y>540</y>
+      <w>130</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>*Glyph*
 bg=#aaffff
 --
-manualValue
-manualRole
-ocrLanguage
---
-getTextLocation()
-getTextRole()
-getTextValue()</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.umlet.element.Class</type>
-        <coordinates>
-            <x>320</x>
-            <y>270</y>
-            <w>140</w>
-            <h>170</h>
-        </coordinates>
-        <panel_attributes>*TextWord*
+--</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>320</x>
+      <y>270</y>
+      <w>140</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>*TextWord*
 bg=#ffffaa
 --
 fontInfo
 preciseFontSize
-chordInfo
 --
 translate()
 getInternalValue()
@@ -98,39 +92,39 @@ getValue()
 getLength()
 --
 createManualWord()</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.umlet.element.Relation</type>
-        <coordinates>
-            <x>430</x>
-            <y>250</y>
-            <w>90</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
-        <additional_attributes>30;30;70;30</additional_attributes>
-    </element>
-    <element>
-        <type>com.umlet.element.Relation</type>
-        <coordinates>
-            <x>360</x>
-            <y>410</y>
-            <w>50</w>
-            <h>150</h>
-        </coordinates>
-        <panel_attributes>lt=-</panel_attributes>
-        <additional_attributes>30;130;30;30</additional_attributes>
-    </element>
-    <element>
-        <type>com.umlet.element.Class</type>
-        <coordinates>
-            <x>330</x>
-            <y>10</y>
-            <w>200</w>
-            <h>100</h>
-        </coordinates>
-        <panel_attributes>/TextItem/
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>430</x>
+      <y>250</y>
+      <w>90</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>30;30;70;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>360</x>
+      <y>400</y>
+      <w>50</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>30;140;30;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>330</x>
+      <y>10</y>
+      <w>200</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>/TextItem/
 bg=#ffffee
 --
 value
@@ -138,17 +132,17 @@ bounds
 --
 translate()
 getValue()</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.umlet.element.Class</type>
-        <coordinates>
-            <x>240</x>
-            <y>140</y>
-            <w>120</w>
-            <h>100</h>
-        </coordinates>
-        <panel_attributes>/TextBasedItem/
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>240</x>
+      <y>140</y>
+      <w>120</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>/TextBasedItem/
 bg=#ffffee
 --
 baseline
@@ -156,109 +150,85 @@ confidence
 --
 translate()
 getLocation()</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.umlet.element.Relation</type>
-        <coordinates>
-            <x>320</x>
-            <y>80</y>
-            <w>50</w>
-            <h>80</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;60</additional_attributes>
-    </element>
-    <element>
-        <type>com.umlet.element.Relation</type>
-        <coordinates>
-            <x>480</x>
-            <y>80</y>
-            <w>50</w>
-            <h>210</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;190</additional_attributes>
-    </element>
-    <element>
-        <type>com.umlet.element.Relation</type>
-        <coordinates>
-            <x>310</x>
-            <y>210</y>
-            <w>50</w>
-            <h>80</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;60</additional_attributes>
-    </element>
-    <element>
-        <type>com.umlet.element.Relation</type>
-        <coordinates>
-            <x>230</x>
-            <y>210</y>
-            <w>50</w>
-            <h>80</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;60</additional_attributes>
-    </element>
-    <element>
-        <type>com.umlet.element.Class</type>
-        <coordinates>
-            <x>490</x>
-            <y>540</y>
-            <w>80</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>*Section*
-bg=#aaffff
---</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.umlet.element.Relation</type>
-        <coordinates>
-            <x>420</x>
-            <y>520</y>
-            <w>90</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;70;30</additional_attributes>
-    </element>
-    <element>
-        <type>com.umlet.element.Class</type>
-        <coordinates>
-            <x>10</x>
-            <y>270</y>
-            <w>90</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>*SystemInfo*
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>320</x>
+      <y>80</y>
+      <w>50</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;30;60</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>480</x>
+      <y>80</y>
+      <w>50</w>
+      <h>210</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;30;190</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>310</x>
+      <y>210</y>
+      <w>50</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;30;60</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>230</x>
+      <y>210</y>
+      <w>50</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;30;60</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Class</type>
+    <coordinates>
+      <x>10</x>
+      <y>270</y>
+      <w>90</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>*SystemInfo*
 bg=#eeffff
 --</panel_attributes>
-        <additional_attributes/>
-    </element>
-    <element>
-        <type>com.umlet.element.Relation</type>
-        <coordinates>
-            <x>70</x>
-            <y>250</y>
-            <w>100</w>
-            <h>50</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;80;30</additional_attributes>
-    </element>
-    <element>
-        <type>com.umlet.element.Relation</type>
-        <coordinates>
-            <x>50</x>
-            <y>290</y>
-            <w>290</w>
-            <h>280</h>
-        </coordinates>
-        <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-        <additional_attributes>30;30;30;260;270;260</additional_attributes>
-    </element>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>70</x>
+      <y>250</y>
+      <w>100</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes>
+    <additional_attributes>30;30;80;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.baselet.element.old.element.Relation</type>
+    <coordinates>
+      <x>50</x>
+      <y>290</y>
+      <w>290</w>
+      <h>280</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;&lt;-&gt;</panel_attributes>
+    <additional_attributes>30;30;30;260;270;260</additional_attributes>
+  </element>
 </diagram>

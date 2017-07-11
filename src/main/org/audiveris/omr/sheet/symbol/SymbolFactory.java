@@ -526,10 +526,10 @@ public class SymbolFactory
         return systemRests;
     }
 
-    //-------------//
-    // linkSymbols //
-    //-------------//
-    public void linkSymbols ()
+    //------------//
+    // lateChecks //
+    //------------//
+    public void lateChecks ()
     {
         // Conflicting dot interpretations
         dotFactory.lateDotChecks();

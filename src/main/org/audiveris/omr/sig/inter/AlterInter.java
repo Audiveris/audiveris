@@ -375,6 +375,10 @@ public class AlterInter
             return Collections.emptySet();
         }
 
+        if (isVip()) {
+            logger.info("VIP searchPartnerships for {}", this);
+        }
+
         // Look for notes nearby on the right side of accidental
         final SystemInfo system = systemHeads.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();

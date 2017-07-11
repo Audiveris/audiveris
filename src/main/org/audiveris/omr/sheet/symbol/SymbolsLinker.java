@@ -231,14 +231,6 @@ public class SymbolsLinker
         }
     }
 
-    //------------//
-    // linkSegnos //
-    //------------//
-    private void linkSegnos ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     //-----------//
     // linkTexts //
     //-----------//

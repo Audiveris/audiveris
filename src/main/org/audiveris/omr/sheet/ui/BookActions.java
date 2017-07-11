@@ -690,7 +690,7 @@ public class BookActions
         if (stub != null) {
             int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
-                    "Do you confirm sheet " + stub.getId() + " is invalid?");
+                    "About to set sheet " + stub.getId() + " as invalid." + "\nDo you confirm?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 final Sheet sheet = stub.getSheet();
@@ -1006,6 +1006,106 @@ public class BookActions
         return new PrintSheetTask(stub.getSheet(), sheetPrintPath);
     }
 
+    //-----------//
+    // resetBook //
+    //-----------//
+    /**
+     * Action that resets the currently selected book.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public void resetBook (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book != null) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to reset all valid sheets of " + book.getRadix()
+                    + " to their initial state." + "\nDo you confirm?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                book.reset();
+            }
+        }
+    }
+
+    //-------------------//
+    // resetBookToBinary //
+    //-------------------//
+    /**
+     * Action that resets to BINARY all valid sheets of selected book.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public void resetBookToBinary (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book != null) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to reset all valid sheets of " + book.getRadix()
+                    + " to their BINARY state." + "\nDo you confirm?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                book.resetToBinary();
+            }
+        }
+    }
+
+    //------------//
+    // resetSheet //
+    //------------//
+    /**
+     * Action that resets the currently selected sheet.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void resetSheet (ActionEvent e)
+    {
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub != null) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to reset sheet " + stub.getId() + " to its initial state."
+                    + "\nDo you confirm?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                stub.reset();
+            }
+        }
+    }
+
+    //--------------------//
+    // resetSheetToBinary //
+    //--------------------//
+    /**
+     * Action that resets the currently selected sheet to the binary step.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void resetSheetToBinary (ActionEvent e)
+    {
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub != null) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to reset sheet " + stub.getId() + " to its BINARY state."
+                    + "\nDo you confirm?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                stub.resetToBinary();
+            }
+        }
+    }
+
     //------------//
     // sampleBook //
     //------------//
@@ -1034,104 +1134,6 @@ public class BookActions
         }
 
         return new SampleSheetTask(stub.getSheet());
-    }
-
-    //-----------//
-    // resetBook //
-    //-----------//
-    /**
-     * Action that resets the currently selected book.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = BOOK_IDLE)
-    public void resetBook (ActionEvent e)
-    {
-        final Book book = StubsController.getCurrentBook();
-
-        if (book != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "Do you confirm resetting all valid sheets of " + book.getRadix()
-                    + " to their initial state?");
-
-            if (answer == JOptionPane.YES_OPTION) {
-                book.reset();
-            }
-        }
-    }
-
-    //-------------------//
-    // resetBookToBinary //
-    //-------------------//
-    /**
-     * Action that resets to BINARY all valid sheets of selected book.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = BOOK_IDLE)
-    public void resetBookToBinary (ActionEvent e)
-    {
-        final Book book = StubsController.getCurrentBook();
-
-        if (book != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "Do you confirm resetting all valid sheets of " + book.getRadix()
-                    + " to their BINARY step?");
-
-            if (answer == JOptionPane.YES_OPTION) {
-                book.resetToBinary();
-            }
-        }
-    }
-
-    //------------//
-    // resetSheet //
-    //------------//
-    /**
-     * Action that resets the currently selected sheet.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public void resetSheet (ActionEvent e)
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-
-        if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "Do you confirm resetting sheet " + stub.getId() + " to its initial state?");
-
-            if (answer == JOptionPane.YES_OPTION) {
-                stub.reset();
-            }
-        }
-    }
-
-    //--------------------//
-    // resetSheetToBinary //
-    //--------------------//
-    /**
-     * Action that resets the currently selected sheet to the binary step.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public void resetSheetToBinary (ActionEvent e)
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-
-        if (stub != null) {
-            int answer = JOptionPane.showConfirmDialog(
-                    OMR.gui.getFrame(),
-                    "Do you confirm resetting sheet " + stub.getId() + " to BINARY step?");
-
-            if (answer == JOptionPane.YES_OPTION) {
-                stub.resetToBinary();
-            }
-        }
     }
 
     //----------//

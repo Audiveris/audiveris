@@ -100,7 +100,7 @@ public class SheetAssembly
         public boolean tabAboutToClose (int tabIndex)
         {
             return OMR.gui.displayConfirmation(
-                    getTitleAt(tabIndex) + " tab is about to close.\nDo you confirm?");
+                    getTitleAt(tabIndex) + " tab is about to close." + "\nDo you confirm?");
         }
     };
 

@@ -29,8 +29,9 @@ import javax.swing.SwingConstants;
  * Class {@code LField} is a kind of "Labeled Field", a logical composition of a label
  * and a component, which are handled as a whole.
  *
- * @param <C> the precise subtype of the JComponent field
- * <img src="doc-files/Fields.png" />
+ * @param <C> precise subtype of JComponent field
+ * <br>
+ * <img src="doc-files/Fields.png">
  *
  * @author Hervé Bitteur
  */

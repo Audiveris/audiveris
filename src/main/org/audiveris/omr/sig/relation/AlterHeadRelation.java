@@ -145,7 +145,7 @@ public class AlterHeadRelation
                 "Supporting coeff for (source) accidental");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.4,
+                0.45,
                 "Maximum vertical gap between accid & note head");
 
         private final Scale.Fraction xInGapMax = new Scale.Fraction(

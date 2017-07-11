@@ -252,6 +252,10 @@ public class CLI
         buf.append("\nSyntax:");
         buf.append("\n   audiveris [OPTIONS] [--] [INPUT_FILES]\n");
 
+        buf.append("\n@file:");
+        buf.append("\n   Content to be extended in line");
+        buf.append("\n");
+
         buf.append("\nOptions:\n");
 
         StringWriter writer = new StringWriter();
@@ -484,7 +488,7 @@ public class CLI
         boolean export;
 
         /** Force step re-processing. */
-        @Option(name = "-force", usage = "Force step re-processing")
+        @Option(name = "-force", usage = "Forces step re-processing")
         boolean force;
 
         /** Help mode. */
@@ -504,7 +508,7 @@ public class CLI
         boolean print;
 
         /** Ability to run a class on each valid sheet. */
-        @Option(name = "-run", usage = "Class to run on valid sheets", handler = ClassOptionHandler.class)
+        @Option(name = "-run", usage = "Runs provided class on valid sheets", handler = ClassOptionHandler.class)
         Class runClass;
 
         /** Should samples be produced?. */

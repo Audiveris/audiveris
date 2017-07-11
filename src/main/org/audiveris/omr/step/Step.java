@@ -58,15 +58,15 @@ public enum Step
     LEDGERS("Retrieve ledgers", new LedgersStep()),
     HEADS("Retrieve note heads & whole notes", new HeadsStep()),
     STEMS("Build stems connected to heads & beams", new StemsStep()),
-    REDUCTION("Reduce structures of heads, stems & beams", new ReductionStep()),
+    REDUCTION("Reduce conflicts in heads, stems & beams", new ReductionStep()),
     CUE_BEAMS("Retrieve cue beams", new CueBeamsStep()),
     TEXTS("Call OCR on textual items", new TextsStep()),
     MEASURES("Retrieve raw measures from groups of bar lines", new MeasuresStep()),
     CHORDS("Gather notes heads into chords", new ChordsStep()),
     CURVES("Retrieve slurs, wedges & endings", new CurvesStep()),
     SYMBOLS("Retrieve fixed-shape symbols", new SymbolsStep()),
+    LINKS("Link and reduce symbols", new LinksStep()),
     RHYTHMS("Handle rhythms within measures", new RhythmsStep()),
-    LINKS("Link symbols", new LinksStep()),
     PAGE("Connect systems within page", new PageStep());
 
     /** Description of the step. */

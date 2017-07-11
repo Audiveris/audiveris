@@ -29,6 +29,7 @@ import org.audiveris.omr.sig.CrossDetector;
 import org.audiveris.omr.sig.SigReducer;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
+import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,14 +66,25 @@ public class LinksStep
                           Void context)
             throws StepException
     {
+        StopWatch watch = new StopWatch("LinksStep doSystem #" + system.getId());
+
+        watch.start("SymbolsLinker");
         new SymbolsLinker(system).process();
+
+        // Reduction
+        watch.start("reduceLinks");
         new SigReducer(system, false).reduceLinks();
 
+        //TODO: Check usefulness of this:
         new InterCleaner(system).purgeContainers();
 
         // Remove all free glyphs?
         if (constants.removeFreeGlyphs.isSet()) {
             system.clearFreeGlyphs();
+        }
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
         }
     }
 
@@ -97,7 +109,11 @@ public class LinksStep
     private static final class Constants
             extends ConstantSet
     {
+
         //~ Instance fields ------------------------------------------------------------------------
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
         private final Constant.Boolean removeFreeGlyphs = new Constant.Boolean(
                 false,

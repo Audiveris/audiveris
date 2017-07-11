@@ -21,18 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.symbol;
 
-import org.audiveris.omr.classifier.SampleRepository;
-import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.note.ChordsBuilder;
-import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.SigReducer;
-import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
@@ -43,10 +37,8 @@ import org.audiveris.omr.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -102,10 +94,6 @@ public class SymbolsStep
             throws StepException
     {
         StopWatch watch = new StopWatch("SymbolsStep doSystem #" + system.getId());
-        watch.start("initialInters");
-
-        SIGraph sig = system.getSig();
-        Set<Inter> initialInters = new LinkedHashSet<Inter>(sig.vertexSet());
         watch.start("factory");
 
         final SymbolFactory factory = new SymbolFactory(system);
@@ -118,22 +106,9 @@ public class SymbolsStep
         watch.start("buildRestChords");
         new ChordsBuilder(system).buildRestChords();
 
-        // Retrieve relations between symbols inters
-        watch.start("linkSymbols");
-        factory.linkSymbols();
-
-        // Symbols reduction
-        watch.start("reduceSymbols");
-        new SigReducer(system, false).reduceSymbols();
-
-        if (constants.recordPositiveSamples.isSet()) {
-            watch.start("recordSamples");
-
-            // Pure symbol inters
-            Set<Inter> finalInters = new LinkedHashSet<Inter>(sig.vertexSet());
-            finalInters.removeAll(initialInters);
-            recordSamples(system, finalInters);
-        }
+        // Some checks that need presence of other symbols
+        watch.start("lateChecks");
+        factory.lateChecks();
 
         if (constants.printWatch.isSet()) {
             watch.print();
@@ -155,35 +130,6 @@ public class SymbolsStep
         new SymbolsFilter(sheet).process(context.optionalsMap);
 
         return context;
-    }
-
-    //---------------//
-    // recordSamples //
-    //---------------//
-    private void recordSamples (SystemInfo system,
-                                Set<Inter> inters)
-    {
-        final Sheet sheet = system.getSheet();
-        final Book book = sheet.getStub().getBook();
-        final SampleRepository repository = book.getSampleRepository();
-
-        if (repository == null) {
-            return;
-        }
-
-        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
-
-        //final int interline = staff.getSpecificInterline();
-        final int interline = sheet.getInterline();
-
-        for (Inter inter : inters) {
-            final Glyph glyph = inter.getGlyph();
-
-            // RestChordInter has no glyph
-            if ((glyph != null) && inter.isGood()) {
-                repository.addSample(inter.getShape(), glyph, interline, sampleSheet, null);
-            }
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -209,9 +155,5 @@ public class SymbolsStep
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
-
-        private final Constant.Boolean recordPositiveSamples = new Constant.Boolean(
-                false,
-                "Should we record positive samples from SymbolsStep?");
     }
 }

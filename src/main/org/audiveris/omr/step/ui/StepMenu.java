@@ -22,6 +22,7 @@
 package org.audiveris.omr.step.ui;
 
 import org.audiveris.omr.OMR;
+import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.ProcessingCancellationException;
@@ -40,7 +41,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.event.MenuEvent;
-import org.audiveris.omr.log.LogUtil;
 
 /**
  * Class {@code StepMenu} encapsulates the user interface needed to deal with
@@ -83,6 +83,19 @@ public class StepMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // getMenu //
+    //---------//
+    /**
+     * Report the concrete UI menu.
+     *
+     * @return the menu entity
+     */
+    public JMenu getMenu ()
+    {
+        return menu;
+    }
+
     //------------//
     // updateMenu //
     //------------//
@@ -99,51 +112,7 @@ public class StepMenu
         }
     }
 
-    //---------//
-    // getMenu //
-    //---------//
-    /**
-     * Report the concrete UI menu.
-     *
-     * @return the menu entity
-     */
-    public JMenu getMenu ()
-    {
-        return menu;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
-    //----------------//
-    // MyMenuListener //
-    //----------------//
-    /**
-     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
-     * This is done with respect to currently displayed sheet.
-     * The steps already done are flagged as such.
-     */
-    private class MyMenuListener
-            extends AbstractMenuListener
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public void menuSelected (MenuEvent e)
-        {
-            SheetStub stub = StubsController.getCurrentStub();
-            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
-
-            for (int i = 0; i < menu.getItemCount(); i++) {
-                JMenuItem menuItem = menu.getItem(i);
-
-                // Adjust the status for each step
-                if (menuItem instanceof StepItem) {
-                    StepItem item = (StepItem) menuItem;
-                    item.displayState(stub, isIdle);
-                }
-            }
-        }
-    }
-
     //------------//
     // StepAction //
     //------------//
@@ -183,8 +152,8 @@ public class StepMenu
                         if ((sofar != null) & (sofar.compareTo(step) >= 0)) {
                             int answer = JOptionPane.showConfirmDialog(
                                     OMR.gui.getFrame(),
-                                    "About to re-perform step " + step
-                                    + " from scratch, do you confirm?",
+                                    "About to re-perform step " + step + " from scratch."
+                                    + "\nDo you confirm?",
                                     "Redo confirmation",
                                     JOptionPane.YES_NO_CANCEL_OPTION,
                                     JOptionPane.WARNING_MESSAGE);
@@ -201,7 +170,6 @@ public class StepMenu
                         } finally {
                             LogUtil.stopStub();
                         }
-
                     } catch (ProcessingCancellationException pce) {
                         logger.info("ProcessingCancellationException detected");
                     }
@@ -254,6 +222,37 @@ public class StepMenu
 
                 if (!isIdle) {
                     action.setEnabled(false);
+                }
+            }
+        }
+    }
+
+    //----------------//
+    // MyMenuListener //
+    //----------------//
+    /**
+     * Class {@code MyMenuListener} is triggered when the whole sub-menu is entered.
+     * This is done with respect to currently displayed sheet.
+     * The steps already done are flagged as such.
+     */
+    private class MyMenuListener
+            extends AbstractMenuListener
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void menuSelected (MenuEvent e)
+        {
+            SheetStub stub = StubsController.getCurrentStub();
+            boolean isIdle = (stub != null) && (stub.getCurrentStep() == null);
+
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                JMenuItem menuItem = menu.getItem(i);
+
+                // Adjust the status for each step
+                if (menuItem instanceof StepItem) {
+                    StepItem item = (StepItem) menuItem;
+                    item.displayState(stub, isIdle);
                 }
             }
         }

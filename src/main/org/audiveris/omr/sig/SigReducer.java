@@ -29,10 +29,12 @@ import static org.audiveris.omr.glyph.ShapeSet.CoreBarlines;
 import static org.audiveris.omr.glyph.ShapeSet.Flags;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.header.StaffHeader;
+import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.SystemBackup;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -78,6 +80,7 @@ import org.audiveris.omr.util.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
@@ -214,12 +217,14 @@ public class SigReducer
     // reduceRhythms //
     //---------------//
     /**
+     * NOT USED!
      * Reduce interpretations while saving reduced rhythm data.
      * This is meant for the RHYTHMS step.
      *
      * @param systemPoorFrats (output) where selected inters must be backed up
      * @param classes         FRAT classes
      */
+    @Deprecated
     public void reduceRhythms (SystemBackup systemPoorFrats,
                                Class<?>... classes)
     {
@@ -227,22 +232,6 @@ public class SigReducer
         Set<Inter> allRemoved = reduce(adapter);
         allRemoved.retainAll(adapter.selected);
         systemPoorFrats.setSeeds(allRemoved);
-    }
-
-    //---------------//
-    // reduceSymbols //
-    //---------------//
-    /**
-     * Reduce symbols interpretations.
-     * This is meant for the SYMBOLS step.
-     *
-     * @return the removed inters
-     */
-    public Set<Inter> reduceSymbols ()
-    {
-        AdapterForSymbols adapter = new AdapterForSymbols();
-
-        return reduce(adapter);
     }
 
     //---------------//
@@ -780,7 +769,13 @@ public class SigReducer
     /**
      * Perform checks on isolated alterations.
      * <p>
-     * They are discarded if there is no relation with a nearby head (or turn sign?).
+     * An isolated (not head-related) alter should be allowed only in some cases:
+     * <ul>
+     * <li>turn sign
+     * <li>part of stand-alone key signature
+     * <li>key signature cancel in cautionary measure
+     * </ul>
+     * They are discarded if there is no relation with a nearby head (or ).
      * TODO: rework this when stand-alone key signatures are supported.
      *
      * @return the count of modifications done
@@ -797,15 +792,37 @@ public class SigReducer
 
             final AlterInter alter = (AlterInter) inter;
 
-            // Check whether the alter is connected to a note head
-            if (!sig.hasRelation(alter, AlterHeadRelation.class)) {
-                if (alter.isVip() || logger.isDebugEnabled()) {
-                    logger.info("VIP deleting {} lacking note head", alter);
-                }
-
-                alter.delete();
-                modifs++;
+            // Connected to a note head?
+            if (sig.hasRelation(alter, AlterHeadRelation.class)) {
+                continue;
             }
+
+            // Within a cautionary measure?
+            Point center = inter.getCenter();
+            Staff staff = alter.getStaff();
+
+            if (staff == null) {
+                List<Staff> stavesAround = system.getStavesAround(center); // 1 or 2 staves
+                staff = stavesAround.get(0);
+            }
+
+            Part part = staff.getPart();
+            Measure measure = part.getMeasureAt(center);
+
+            if ((measure != null)
+                && (measure == part.getLastMeasure())
+                && (measure.getBarline(HorizontalSide.RIGHT) == null)) {
+                // Empty measure?
+                // Measure width?
+                continue;
+            }
+
+            if (alter.isVip() || logger.isDebugEnabled()) {
+                logger.info("VIP deleting isolated {}", alter);
+            }
+
+            alter.delete();
+            modifs++;
         }
 
         return modifs;
@@ -1147,6 +1164,32 @@ public class SigReducer
                     return true;
                 }
             }
+        }
+
+        return false;
+    }
+
+    //-------------------//
+    // wordMatchesSymbol //
+    //-------------------//
+    /**
+     * Check whether the word and the symbol might represent the same thing, after all.
+     *
+     * @param wordInter text word
+     * @param symbol    symbol
+     */
+    private static boolean wordMatchesSymbol (WordInter wordInter,
+                                              StringSymbolInter symbol)
+    {
+        logger.debug("Comparing {} and {}", wordInter, symbol);
+
+        final String symbolString = symbol.getSymbolString();
+
+        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
+            logger.debug("Math found");
+
+            //TODO: Perhaps more checks on word/sentence?
+            return true;
         }
 
         return false;
@@ -1623,50 +1666,7 @@ public class SigReducer
         return Collections.emptySet();
     }
 
-    //-------------------//
-    // wordMatchesSymbol //
-    //-------------------//
-    /**
-     * Check whether the word and the symbol might represent the same thing, after all.
-     *
-     * @param wordInter text word
-     * @param symbol    symbol
-     */
-    private static boolean wordMatchesSymbol (WordInter wordInter,
-                                              StringSymbolInter symbol)
-    {
-        logger.debug("Comparing {} and {}", wordInter, symbol);
-
-        final String symbolString = symbol.getSymbolString();
-
-        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
-            logger.debug("Math found");
-
-            //TODO: Perhaps more checks on word/sentence?
-            return true;
-        }
-
-        return false;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
-                3,
-                "Maximum width for slur around tuplet");
-
-        private final Scale.Fraction minStemExtension = new Scale.Fraction(
-                1.5,
-                "Minimum vertical extension of a stem beyond last head");
-    }
-
     //---------//
     // Adapter //
     //---------//
@@ -1759,6 +1759,17 @@ public class SigReducer
         {
             int modifs = 0;
 
+            modifs += checkDoubleAlters();
+            deleted.addAll(updateAndPurge());
+
+            modifs += checkTimeNumbers();
+            checkTimeSignatures();
+            deleted.addAll(updateAndPurge());
+
+            modifs += checkAugmentationDots();
+            modifs += checkAugmented();
+            deleted.addAll(updateAndPurge());
+
             modifs += checkIsolatedAlters();
             deleted.addAll(updateAndPurge());
 
@@ -1775,6 +1786,13 @@ public class SigReducer
     //-------------------//
     // AdapterForRhythms //
     //-------------------//
+    /**
+     * NOT USED.
+     * Adapter meant for RHYTHMS step.
+     *
+     * @deprecated no longer used
+     */
+    @Deprecated
     private class AdapterForRhythms
             extends Adapter
     {
@@ -1832,31 +1850,20 @@ public class SigReducer
         }
     }
 
-    //-------------------//
-    // AdapterForSymbols //
-    //-------------------//
-    private class AdapterForSymbols
-            extends Adapter
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
     {
-        //~ Methods --------------------------------------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        @Override
-        public int checkConsistencies ()
-        {
-            int modifs = 0;
+        private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
+                3,
+                "Maximum width for slur around tuplet");
 
-            modifs += checkDoubleAlters();
-            deleted.addAll(updateAndPurge());
-
-            modifs += checkTimeNumbers();
-            checkTimeSignatures();
-            deleted.addAll(updateAndPurge());
-
-            modifs += checkAugmentationDots();
-            modifs += checkAugmented();
-            deleted.addAll(updateAndPurge());
-
-            return modifs;
-        }
+        private final Scale.Fraction minStemExtension = new Scale.Fraction(
+                1.5,
+                "Minimum vertical extension of a stem beyond last head");
     }
 }

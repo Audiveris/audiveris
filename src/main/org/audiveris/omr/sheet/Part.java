@@ -520,12 +520,6 @@ public class Part
                     return measure;
                 }
             }
-
-            //
-            //            // Ending (curtesy?) measure with no ending barline
-            //            if (!measures.isEmpty()) {
-            //                return measures.get(measures.size() - 1);
-            //            }
         }
 
         return null;
