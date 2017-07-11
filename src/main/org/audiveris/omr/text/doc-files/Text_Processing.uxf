@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="13.2">
+<diagram program="umlet" version="14.2">
   <help_text>
         fontsize=14
 
@@ -10,7 +10,7 @@
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>10</x>
-      <y>60</y>
+      <y>80</y>
       <w>130</w>
       <h>70</h>
     </coordinates>
@@ -27,15 +27,16 @@ nameOf(lan)</panel_attributes>
       <x>450</x>
       <y>10</y>
       <w>170</w>
-      <h>120</h>
+      <h>140</h>
     </coordinates>
     <panel_attributes>&lt;&lt;interface&gt;&gt;
 */OCR/*
 --
 UnavailableOcrException
 --
-isAvailable()
 getLanguages()
+identify()
+isAvailable()
 recognize()
         </panel_attributes>
     <additional_attributes/>
@@ -44,7 +45,7 @@ recognize()
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>450</x>
-      <y>160</y>
+      <y>180</y>
       <w>170</w>
       <h>30</h>
     </coordinates>
@@ -56,7 +57,7 @@ bg=#ffffaa</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>500</x>
-      <y>100</y>
+      <y>120</y>
       <w>50</w>
       <h>80</h>
     </coordinates>
@@ -67,7 +68,7 @@ bg=#ffffaa</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>380</x>
-      <y>140</y>
+      <y>160</y>
       <w>90</w>
       <h>50</h>
     </coordinates>
@@ -78,7 +79,7 @@ bg=#ffffaa</panel_attributes>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>670</x>
-      <y>160</y>
+      <y>180</y>
       <w>120</w>
       <h>30</h>
     </coordinates>
@@ -90,7 +91,7 @@ bg=#ffffaa</panel_attributes>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>670</x>
-      <y>230</y>
+      <y>250</y>
       <w>120</w>
       <h>30</h>
     </coordinates>
@@ -102,7 +103,7 @@ bg=#ffcccc</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>700</x>
-      <y>160</y>
+      <y>180</y>
       <w>50</w>
       <h>90</h>
     </coordinates>
@@ -113,7 +114,7 @@ bg=#ffcccc</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>590</x>
-      <y>140</y>
+      <y>160</y>
       <w>100</w>
       <h>50</h>
     </coordinates>
@@ -124,24 +125,25 @@ bg=#ffcccc</panel_attributes>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>190</x>
-      <y>140</y>
+      <y>160</y>
       <w>220</w>
-      <h>260</h>
+      <h>280</h>
     </coordinates>
     <panel_attributes>*TextBuilder*
 bg=#ffffaa
 --
 ocr
 system
+textLines
 --
 isMainlyItalic(line)
-isValid(line)
-isValid(word)
-mapGlyphs(lines, sections)
+checkValidity(line)
+checkValidity(word)
+isValidFontSize(line)
 mergeLines(lines)
 recomposeLines(lines)
 recutStandardWords(line)
-retrieveOcrLine(glyph, lan)
+retrieveLines()
 retrieveSections(chars, sections)
 splitWords(words, line)
 switchLanguageTexts()</panel_attributes>
@@ -151,7 +153,7 @@ switchLanguageTexts()</panel_attributes>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>10</x>
-      <y>250</y>
+      <y>270</y>
       <w>130</w>
       <h>50</h>
     </coordinates>
@@ -166,7 +168,7 @@ scanSystem()</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>110</x>
-      <y>230</y>
+      <y>250</y>
       <w>100</w>
       <h>50</h>
     </coordinates>
@@ -177,33 +179,7 @@ scanSystem()</panel_attributes>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>10</x>
-      <y>320</y>
-      <w>130</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>*TextPattern*
-bg=#ff8888
---
---
-runPattern()</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.baselet.element.old.element.Relation</type>
-    <coordinates>
-      <x>110</x>
-      <y>300</y>
-      <w>100</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>80;30;30;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.baselet.element.old.element.Class</type>
-    <coordinates>
-      <x>10</x>
-      <y>170</y>
+      <y>190</y>
       <w>130</w>
       <h>50</h>
     </coordinates>
@@ -218,7 +194,7 @@ langCombo
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>110</x>
-      <y>150</y>
+      <y>170</y>
       <w>100</w>
       <h>50</h>
     </coordinates>
@@ -229,7 +205,7 @@ langCombo
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>80</x>
-      <y>100</y>
+      <y>120</y>
       <w>50</w>
       <h>90</h>
     </coordinates>
@@ -240,7 +216,7 @@ langCombo
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
       <x>670</x>
-      <y>300</y>
+      <y>320</y>
       <w>120</w>
       <h>60</h>
     </coordinates>
@@ -252,7 +228,7 @@ bg=#bbbbbb</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>700</x>
-      <y>230</y>
+      <y>250</y>
       <w>50</w>
       <h>90</h>
     </coordinates>
