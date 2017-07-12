@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="13.2">
+<diagram program="umlet" version="14.2">
   <zoom_level>10</zoom_level>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
@@ -33,7 +33,7 @@
     </coordinates>
     <panel_attributes>*whole-vert*
 bg=blue
-RunsTable</panel_attributes>
+RunTable</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -57,7 +57,7 @@ RunsTable</panel_attributes>
     </coordinates>
     <panel_attributes>*short-vert*
 bg=blue
-RunsTable</panel_attributes>
+RunTable</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -70,7 +70,7 @@ RunsTable</panel_attributes>
     </coordinates>
     <panel_attributes>*purged-vert*
 bg=blue
-RunsTable</panel_attributes>
+RunTable</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -119,7 +119,7 @@ m2=Height &lt;= 1.75 * Line</panel_attributes>
     </coordinates>
     <panel_attributes>*whole-hori*
 bg=red
-RunsTable</panel_attributes>
+RunTable</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -167,7 +167,7 @@ m2=Length &gt;= min</panel_attributes>
     </coordinates>
     <panel_attributes>*long-hori*
 bg=red
-RunsTable</panel_attributes>
+RunTable</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -204,7 +204,7 @@ bg=pink</panel_attributes>
     </coordinates>
     <panel_attributes>*purged-hori*
 bg=red
-RunsTable</panel_attributes>
+RunTable</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
