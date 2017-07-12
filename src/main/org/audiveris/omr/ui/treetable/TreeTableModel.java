@@ -3,7 +3,6 @@
 //                        T r e e T a b l e M o d e l                         //
 //                                                                            //
 //----------------------------------------------------------------------------//
-//      $Id$
 package org.audiveris.omr.ui.treetable;
 
 
