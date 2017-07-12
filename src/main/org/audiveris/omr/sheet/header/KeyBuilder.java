@@ -499,23 +499,6 @@ public class KeyBuilder
         selectBestClef(); // In case staff clef has not yet been selected
     }
 
-    //---------------//
-    // recordSamples //
-    //---------------//
-    /**
-     * Record glyphs used in key building as training samples.
-     *
-     * @param recordPositives true to record positive glyphs
-     * @param recordNegatives true to retrieve negative glyphs
-     */
-    public void recordSamples (boolean recordPositives,
-                               boolean recordNegatives)
-    {
-        for (ShapeBuilder shapeBuilder : shapeBuilders.values()) {
-            shapeBuilder.recordSamples(recordPositives, recordNegatives);
-        }
-    }
-
     //----------//
     // toString //
     //----------//
@@ -2032,15 +2015,6 @@ public class KeyBuilder
             }
 
             peaks.retainAll(sortedPeaks);
-        }
-
-        //---------------//
-        // recordSamples //
-        //---------------//
-        private void recordSamples (boolean recordPositives,
-                                    boolean recordNegatives)
-        {
-            extractor.recordSamples(recordPositives, recordNegatives, roi, keyShape);
         }
 
         //-----------------//

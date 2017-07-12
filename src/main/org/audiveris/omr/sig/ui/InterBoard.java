@@ -28,9 +28,13 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
+import org.audiveris.omr.ui.field.LComboBox;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -47,6 +51,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 /**
@@ -81,6 +86,22 @@ public class InterBoard
 
     /** To delete/deassign. */
     private final DeassignAction deassignAction = new DeassignAction();
+
+    //
+    //    /** Numerator of time signature */
+    //    private final LIntegerField timeNum;
+    //
+    //    /** Denominator of time signature */
+    //    private final LIntegerField timeDen;
+    //
+    /** ComboBox for text role */
+    private final LComboBox<TextRole> roleCombo = new LComboBox<TextRole>(
+            "Role",
+            "Role of the Text",
+            TextRole.values());
+
+    /** Input/Output : textual content */
+    private final LTextField textField = new LTextField(true, "Text", "Content of textual item");
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -193,7 +214,16 @@ public class InterBoard
 
         r += 2; // --------------------------------
 
-        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
+        roleCombo.getField().setMaximumRowCount(TextRole.values().length);
+        ///paramAction = new ParamAction();
+        ///roleCombo.addActionListener(paramAction);
+        roleCombo.setVisible(false);
+        builder.add(roleCombo.getField(), cst.xyw(3, r, 4));
+
+        // Text field
+        textField.getField().setHorizontalAlignment(JTextField.LEFT);
+        textField.setVisible(false);
+        builder.add(textField.getField(), cst.xyw(7, r, 5));
 
         r += 2; // --------------------------------
 
@@ -224,6 +254,11 @@ public class InterBoard
         }
 
         // Inter characteristics
+        textField.setVisible(false);
+        textField.setEnabled(false); // TEMPORARY
+        roleCombo.setVisible(false);
+        roleCombo.setEnabled(false); // TEMPORARY
+
         if (inter != null) {
             vip.getLabel().setEnabled(true);
             vip.getField().setEnabled(!inter.isVip());
@@ -239,6 +274,19 @@ public class InterBoard
 
             details.setText((inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
             deassignAction.putValue(Action.NAME, inter.isDeleted() ? "deleted" : "Deassign");
+
+            if (inter instanceof WordInter) {
+                WordInter word = (WordInter) inter;
+                textField.setText(word.getValue());
+                textField.setVisible(true);
+            } else if (inter instanceof SentenceInter) {
+                SentenceInter sentence = (SentenceInter) inter;
+                textField.setText(sentence.getValue());
+                textField.setVisible(true);
+                roleCombo.setSelectedItem(sentence.getRole());
+                roleCombo.setVisible(true);
+            } else {
+            }
         } else {
             vip.setEnabled(false);
             vip.getField().setSelected(false);
@@ -248,7 +296,8 @@ public class InterBoard
             deassignAction.putValue(Action.NAME, " ");
         }
 
-        deassignAction.setEnabled((inter != null) && !inter.isDeleted());
+        ///TEMPORARY deassignAction.setEnabled((inter != null) && !inter.isDeleted());
+        ///
         grade.setEnabled(inter != null);
         shapeField.setEnabled(inter != null);
         details.setEnabled(inter != null);

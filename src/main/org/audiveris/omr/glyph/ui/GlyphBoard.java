@@ -161,7 +161,7 @@ public class GlyphBoard
     @Override
     protected FormLayout getFormLayout ()
     {
-        return Panel.makeFormLayout(6, 3);
+        return Panel.makeFormLayout(3, 3);
     }
 
     //--------------//
@@ -175,10 +175,7 @@ public class GlyphBoard
         final CellConstraints cst = new CellConstraints();
 
         int r = 1; // --------------------------------
-        // Shape Icon (start, spans several rows) + layer + Deassign button
 
-        ///builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
-        ///builder.add(groupSpinner, cst.xyw(5, r, 3));
         builder.add(groupField, cst.xyw(5, r, 3));
 
         r += 2; // --------------------------------

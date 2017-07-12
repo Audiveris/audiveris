@@ -54,13 +54,6 @@ import java.util.List;
  * Class {@code GlyphsController} is a common basis for interactive glyph handling,
  * used by any user interface which needs to act on the actual glyph data.
  * <p>
- * There are two main methods in this class ({@link #asyncAssignGlyphs} and
- * {@link #asyncDeassignGlyphs}). They share common characteristics:
- * <ul>
- * <li>They are processed asynchronously</li>
- * <li>Their action is recorded in the sheet script</li>
- * <li>They update the following steps, if any</li>
- * </ul>
  * Since the bus of user selections is used, the methods of this class are meant to be used from
  * within a user action, otherwise you must use a direct access to similar synchronous actions in
  * the underlying {@link GlyphsModel}.

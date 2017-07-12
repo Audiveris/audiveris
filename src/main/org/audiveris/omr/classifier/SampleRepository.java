@@ -695,9 +695,8 @@ public class SampleRepository
     /**
      * Report the repository specifically related to the provided book.
      *
-     * @param book         the provided book
-     * @param load         true for a loaded repository
-     * @param loadListener loading listener, or null
+     * @param book the provided book
+     * @param load true for a loaded repository
      * @return the specific sample repository for the provided book, or null
      */
     public static synchronized SampleRepository getInstance (Book book,

@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.header;
 
-import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.Clustering;
 import org.audiveris.omr.math.Population;
@@ -193,13 +192,6 @@ public class KeyColumn
         // A staff may have no key-sig while the others have some in the same system
         for (KeyBuilder builder : builders.values()) {
             builder.finalizeKey();
-        }
-
-        // Record samples? both positive and negative ones
-        if (params.recordPositives || params.recordNegatives) {
-            for (KeyBuilder builder : builders.values()) {
-                builder.recordSamples(params.recordPositives, params.recordNegatives);
-            }
         }
 
         // Push header key stop
@@ -490,14 +482,6 @@ public class KeyColumn
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean recordPositiveSamples = new Constant.Boolean(
-                false,
-                "Should we record positive samples from KeyBuilder?");
-
-        private final Constant.Boolean recordNegativeSamples = new Constant.Boolean(
-                false,
-                "Should we record negative samples from KeyBuilder?");
-
         private final Scale.Fraction maxSliceDist = new Scale.Fraction(
                 0.5,
                 "Maximum abscissa distance to theoretical slice");
@@ -510,17 +494,11 @@ public class KeyColumn
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final boolean recordPositives;
-
-        final boolean recordNegatives;
-
         final int maxSliceDist;
 
         //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
-            recordPositives = constants.recordPositiveSamples.isSet();
-            recordNegatives = constants.recordNegativeSamples.isSet();
             maxSliceDist = scale.toPixels(constants.maxSliceDist);
         }
     }

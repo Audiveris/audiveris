@@ -5,7 +5,7 @@
  * their persistency on disk.
  * <p>
  * <img src="doc-files/Constant.png" alt="Persistency of constants"
- * title="Persistency of constants" />
+ * title="Persistency of constants">
  * <p>
  * <a href="Constant.html">Constant</a> instances represent a logical application constant,
  * whose persistency is to be managed from one application run to the other.

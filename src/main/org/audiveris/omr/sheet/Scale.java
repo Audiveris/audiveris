@@ -288,7 +288,7 @@ public class Scale
     // getLargeInterlineScale //
     //------------------------//
     /**
-     * Same as {@link getInterlineScale()}, method defined for completeness.
+     * Same as {@link #getInterlineScale()}, method defined for completeness.
      *
      * @return the (large) interlineScale
      */

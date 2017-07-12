@@ -26,8 +26,6 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.SampleRepository;
-import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -38,12 +36,15 @@ import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.Shape.*;
+
 import org.audiveris.omr.glyph.Symbol.Group;
+
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
-import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
@@ -59,7 +60,9 @@ import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.ui.symbol.Symbol;
 import org.audiveris.omr.ui.symbol.Symbols;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -428,44 +431,6 @@ public class ClefBuilder
     }
 
     //---------------//
-    // recordSamples //
-    //---------------//
-    private void recordSamples ()
-    {
-        final Book book = sheet.getStub().getBook();
-        final SampleRepository repository = book.getSampleRepository();
-
-        if (repository == null) {
-            return;
-        }
-
-        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
-        final int interline = staff.getSpecificInterline();
-
-        // Positive samples (assigned to keyShape)
-        ClefInter clef = staff.getHeader().clef;
-
-        if (clef != null) {
-            final Glyph glyph = clef.getGlyph();
-
-            if (constants.recordPositiveSamples.isSet()) {
-                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-                repository.addSample(clef.getShape(), glyph, interline, sampleSheet, pitch);
-            }
-
-            glyphCandidates.remove(glyph);
-        }
-
-        if (constants.recordNegativeSamples.isSet()) {
-            // Negative samples (assigned to CLUTTER)
-            for (Glyph glyph : glyphCandidates) {
-                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-                repository.addSample(Shape.CLUTTER, glyph, interline, sampleSheet, pitch);
-            }
-        }
-    }
-
-    //---------------//
     // registerClefs //
     //---------------//
     /**
@@ -537,11 +502,6 @@ public class ClefBuilder
             // Delete the other clef candidates
             for (Inter other : clefs.subList(1, clefs.size())) {
                 other.delete();
-            }
-
-            // Record samples? both positive and negative ones
-            if (constants.recordPositiveSamples.isSet() || constants.recordNegativeSamples.isSet()) {
-                recordSamples();
             }
         }
     }
@@ -766,14 +726,6 @@ public class ClefBuilder
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean recordPositiveSamples = new Constant.Boolean(
-                false,
-                "Should we record positive samples from ClefBuilder?");
-
-        private final Constant.Boolean recordNegativeSamples = new Constant.Boolean(
-                false,
-                "Should we record negative samples from ClefBuilder?");
 
         private final Scale.Fraction maxClefEnd = new Scale.Fraction(
                 4.5,

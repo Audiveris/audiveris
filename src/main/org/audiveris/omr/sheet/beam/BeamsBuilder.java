@@ -86,7 +86,7 @@ import java.util.Set;
  * typical beam height.
  * <ol>
  * <li>{@link #buildBeams()} retrieves standard beams.</li>
- * <li>{@link #buildCueBeams()} retrieves cue beams.</li>
+ * <li>{@link #buildCueBeams(java.util.List)} retrieves cue beams.</li>
  * </ol>
  *
  * @author Hervé Bitteur
@@ -203,6 +203,8 @@ public class BeamsBuilder
     //---------------//
     /**
      * Find possible cue beams interpretations around identified cue notes and stems.
+     *
+     * @param spots candidate spots for cue beams
      */
     public void buildCueBeams (List<Glyph> spots)
     {

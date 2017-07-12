@@ -106,7 +106,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * </ul></dd>
  * </dl>
  * <p>
- * <img src="doc-files/Book.png">
+ * <img src="doc-files/Book-Detail.png">
  *
  * @author Hervé Bitteur
  */

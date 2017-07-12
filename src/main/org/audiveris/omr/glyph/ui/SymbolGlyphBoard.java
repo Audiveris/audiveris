@@ -55,24 +55,6 @@ public class SymbolGlyphBoard
     private static final Logger logger = LoggerFactory.getLogger(SymbolGlyphBoard.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    // NOTA: all these commented fields are no longer relevant for a glyph, they should be
-    // handled in the InterBoard if they are still interesting.
-    ///
-    //    /** Numerator of time signature */
-    //    private final LIntegerField timeNum;
-    //
-    //    /** Denominator of time signature */
-    //    private final LIntegerField timeDen;
-    //
-    //    /** ComboBox for text role */
-    //    private final LComboBox<TextRole> roleCombo;
-    //
-    //    /** Output : textual confidence */
-    //    protected LDoubleField confField;
-    //
-    //    /** Input/Output : textual content */
-    //    protected LTextField textField;
-    //
     /** Glyph characteristics : normalized weight. */
     private final LDoubleField weight = new LDoubleField(
             false,
@@ -180,19 +162,13 @@ public class SymbolGlyphBoard
         final CellConstraints cst = new CellConstraints();
 
         int r = 1; // --------------------------------
-        // Glyph ---
-
-        r += 2; // --------------------------------
-        // id + deassign
-
-        r += 2; // --------------------------------
-        // Glyph characteristics, first line
+        // id + width
 
         builder.add(width.getLabel(), cst.xy(9, r));
         builder.add(width.getField(), cst.xy(11, r));
 
         r += 2; // --------------------------------
-        // Glyph characteristics, second line
+        // weight + height
 
         builder.add(weight.getLabel(), cst.xy(5, r));
         builder.add(weight.getField(), cst.xy(7, r));

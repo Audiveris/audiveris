@@ -25,8 +25,6 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.SampleRepository;
-import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -40,10 +38,11 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.IntegerFunction;
+
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
-import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
@@ -326,57 +325,6 @@ public class KeyExtractor
         }
 
         return false;
-    }
-
-    //---------------//
-    // recordSamples //
-    //---------------//
-    /**
-     * Record glyphs used in key building as training samples.
-     *
-     * @param recordPositives true to record positive glyphs
-     * @param recordNegatives true to retrieve negative glyphs
-     * @param roi             key roi
-     * @param keyShape        key shape (SHARP or FLAT)
-     */
-    public void recordSamples (boolean recordPositives,
-                               boolean recordNegatives,
-                               KeyRoi roi,
-                               Shape keyShape)
-    {
-        final Book book = sheet.getStub().getBook();
-        final SampleRepository repository = book.getSampleRepository();
-
-        if (repository == null) {
-            return;
-        }
-
-        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
-        final int interline = staff.getSpecificInterline();
-
-        // Positive samples (assigned to keyShape)
-        for (KeySlice slice : roi) {
-            KeyAlterInter alter = slice.getAlter();
-
-            if (alter != null) {
-                final Glyph glyph = alter.getGlyph();
-
-                if (recordPositives) {
-                    final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-                    repository.addSample(keyShape, glyph, interline, sampleSheet, pitch);
-                }
-
-                glyphCandidates.remove(glyph);
-            }
-        }
-
-        if (recordNegatives) {
-            // Negative samples (assigned to CLUTTER)
-            for (Glyph glyph : glyphCandidates) {
-                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-                repository.addSample(Shape.CLUTTER, glyph, interline, sampleSheet, pitch);
-            }
-        }
     }
 
     //--------------------//

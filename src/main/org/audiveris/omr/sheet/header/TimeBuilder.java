@@ -25,8 +25,6 @@ import ij.process.Blitter;
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.SampleRepository;
-import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -40,19 +38,22 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.math.IntegerFunction;
+
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.score.TimeValue;
-import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+
 import static org.audiveris.omr.sheet.header.TimeBuilder.TimeKind.*;
+
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
@@ -330,7 +331,6 @@ public abstract class TimeBuilder
         }
 
         glyphCandidates.removeAll(compatibles.values());
-        recordSamples(compatibles);
     }
 
     //------------------//
@@ -391,62 +391,6 @@ public abstract class TimeBuilder
         }
 
         return !wholes.isEmpty() || !nums.isEmpty();
-    }
-
-    //---------------//
-    // recordSamples //
-    //---------------//
-    /**
-     * If desired, record positive and/or negative samples.
-     */
-    protected void recordSamples (Map<Shape, Glyph> compatibles)
-    {
-        if (!constants.recordPositiveSamples.isSet() && !constants.recordNegativeSamples.isSet()) {
-            return;
-        }
-
-        final Sheet sheet = staff.getSystem().getSheet();
-        final Book book = sheet.getStub().getBook();
-        final SampleRepository repository = book.getSampleRepository();
-
-        if (repository == null) {
-            return;
-        }
-
-        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
-        final int interline = staff.getSpecificInterline();
-
-        // Positive samples
-        if (constants.recordPositiveSamples.isSet()) {
-            if (timeInter instanceof TimeWholeInter) {
-                final Glyph glyph = timeInter.getGlyph();
-                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-                repository.addSample(timeInter.getShape(), glyph, interline, sampleSheet, pitch);
-            } else if (timeInter instanceof TimePairInter) {
-                TimePairInter pair = (TimePairInter) timeInter;
-
-                for (Inter member : pair.getMembers()) {
-                    final Glyph glyph = member.getGlyph();
-                    final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-                    repository.addSample(member.getShape(), glyph, interline, sampleSheet, pitch);
-                }
-            }
-
-            // Include compatibles as positives
-            for (Entry<Shape, Glyph> entry : compatibles.entrySet()) {
-                final Glyph glyph = entry.getValue();
-                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-                repository.addSample(entry.getKey(), glyph, interline, sampleSheet, pitch);
-            }
-        }
-
-        // Negative samples (assigned to CLUTTER)
-        if (constants.recordNegativeSamples.isSet()) {
-            for (Glyph glyph : glyphCandidates) {
-                final double pitch = staff.pitchPositionOf(glyph.getCentroid());
-                repository.addSample(Shape.CLUTTER, glyph, interline, sampleSheet, pitch);
-            }
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1549,14 +1493,6 @@ public abstract class TimeBuilder
                 "none",
                 3,
                 "Maximum acceptable rank in time evaluation");
-
-        private final Constant.Boolean recordPositiveSamples = new Constant.Boolean(
-                false,
-                "Should we record positive samples from TimeBuilder?");
-
-        private final Constant.Boolean recordNegativeSamples = new Constant.Boolean(
-                false,
-                "Should we record negative samples from TimeBuilder?");
 
         private final Scale.Fraction roiWidth = new Scale.Fraction(
                 4.0,
