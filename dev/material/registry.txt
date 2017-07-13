@@ -6,21 +6,27 @@
 
 see https://social.msdn.microsoft.com/Forums/vstudio/en-US/630ed1d9-73f1-4cc0-bc84-04f29cffc13b/what-registry-keys-are-responsible-for-file-extension-association?forum=netfxbcl
 
+see https://msdn.microsoft.com/en-us/library/windows/desktop/hh127427(v=vs.85).aspx
+
 under HKEY_LOCAL_MACHINE\SOFTWARE\Classes
 -----------------------------------------
 created key: .omr Default: Audiveris.omr
 
 created key: Audiveris.omr Default: Audiveris Book
-    created subkey: DefaultIcon Default: d:\soft\audiveris-ng\res\icon-256.ico
+    created subkey: DefaultIcon Default: d:\Audiveris\icon-256.ico
     created subkey: shell
-        created subkey: Open
-            created subkey: Command Default: c:\cygwin\bin\bash.exe -li d:\prog\Audiveris\bin\Audiveris "%1"
-(TODO: this command is much too specific!)
+        created subkey: open
+            created subkey: command Default: c:\cygwin\bin\bash.exe -li d:\Audiveris\bin\Audiveris "%1"
+(NOTA: We must use full path for bash.exe and Audiveris command file, because even if bash.exe and 
+Audiveris[.sh] are on the PATH, bash.exe -li Audiveris "%1" won't work!)
+
+Beware, if .omr and Audiveris.omr are also defined in HKEY_CURRENT_USER... these USER definitions
+will silently overwrite the MACHINE definitions!
 
 
 -- 2/ HKEY_CLASSES_ROOT --
 Not to be used directly, since it is just a merged view of:
-    HKEY_CURRENT_USER\SOFTWARE\Classes 
+    HKEY_CURRENT_USER\SOFTWARE\Classes   <== Let's not put anything there!
     HKEY_LOCAL_MACHINE\SOFTWARE\Classes
 
 
