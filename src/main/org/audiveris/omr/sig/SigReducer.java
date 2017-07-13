@@ -514,18 +514,32 @@ public class SigReducer
         int modifs = 0;
         final List<Inter> dots = sig.inters(AugmentationDotInter.class);
 
+        DotLoop:
         for (Inter inter : dots) {
             final AugmentationDotInter dot = (AugmentationDotInter) inter;
 
-            // Check whether the augmentation dot has a target (note or rest or other dot)
-            if (!sig.hasRelation(dot, AugmentationRelation.class, DoubleDotRelation.class)) {
-                if (dot.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Deleting augmentation dot lacking target {}", dot);
-                }
-
-                dot.delete();
-                modifs++;
+            // Look for a target head or rest
+            if (sig.hasRelation(dot, AugmentationRelation.class)) {
+                continue;
             }
+
+            // Look for a target dot on left side
+            final int dotCenterX = dot.getCenter().x;
+
+            for (Relation rel : sig.getRelations(dot, DoubleDotRelation.class)) {
+                Inter opposite = sig.getOppositeInter(dot, rel);
+
+                if (opposite.getCenter().x < dotCenterX) {
+                    continue DotLoop;
+                }
+            }
+
+            if (dot.isVip() || logger.isDebugEnabled()) {
+                logger.info("Deleting {} lacking target", dot);
+            }
+
+            dot.delete();
+            modifs++;
         }
 
         return modifs;

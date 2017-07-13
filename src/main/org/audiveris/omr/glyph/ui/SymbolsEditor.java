@@ -563,7 +563,7 @@ public class SymbolsEditor
 
                 Inter inter = (Inter) sheet.getInterIndex().getEntityService().getSelectedEntity();
 
-                if (inter != null) {
+                if (inter != null && !inter.isDeleted()) {
                     // Inter: attachments for selected inter, if any
                     Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
                     inter.renderAttachments(g);

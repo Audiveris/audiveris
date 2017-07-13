@@ -105,7 +105,7 @@ public abstract class CurvesBuilder
     protected boolean reverse;
 
     /** To sort Extension instances by decreasing grade. */
-    private Comparator<Extension> byReverseGrade = new Comparator<Extension>()
+    private final Comparator<Extension> byReverseGrade = new Comparator<Extension>()
     {
         @Override
         public int compare (Extension e1,

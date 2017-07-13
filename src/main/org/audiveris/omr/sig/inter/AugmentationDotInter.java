@@ -29,6 +29,9 @@ import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.Relation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -40,8 +43,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AugmentationDotInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(AugmentationDotInter.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AugmentationDotInter} object.
      *
@@ -69,11 +75,23 @@ public class AugmentationDotInter
     public Part getPart ()
     {
         if (part == null) {
-            for (Relation rel : sig.getRelations(
-                    this,
-                    AugmentationRelation.class,
-                    DoubleDotRelation.class)) {
-                return part = sig.getOppositeInter(this, rel).getPart();
+            // Beware, we may have two dots that refer to one another
+            // First dot
+            for (Relation rel : sig.getRelations(this, AugmentationRelation.class)) {
+                Inter opposite = sig.getOppositeInter(this, rel);
+
+                return part = opposite.getPart();
+            }
+
+            final int dotCenterX = getCenter().x;
+
+            // Perhaps a second dot, let's look for a first dot
+            for (Relation rel : sig.getRelations(this, DoubleDotRelation.class)) {
+                Inter opposite = sig.getOppositeInter(this, rel);
+
+                if (opposite.getCenter().x < dotCenterX) {
+                    return part = opposite.getPart();
+                }
             }
         }
 
