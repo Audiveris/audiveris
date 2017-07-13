@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.curve;
 
 import ij.process.ByteProcessor;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.image.PixelSource.BACKGROUND;
 import org.audiveris.omr.math.AreaUtil;
@@ -613,6 +614,13 @@ public abstract class CurvesBuilder
                 }
             }
 
+            // To avoid endless extensions...
+            if (rookies.size() >= params.maxExtensionRookies) {
+                logger.info("Curve: {} Too many rookies: {}, giving up!", trunk, rookies.size());
+
+                break;
+            }
+
             if (rookies.size() > 1) {
                 Collections.sort(rookies, byReverseGrade);
             }
@@ -1061,6 +1069,11 @@ public abstract class CurvesBuilder
         private final Scale.Fraction lineBoxDeltaOut = new Scale.Fraction(
                 0.3,
                 "Delta for line box on extension side");
+
+        private final Constant.Integer maxExtensionRookies = new Constant.Integer(
+                "extensions",
+                50,
+                "Maximum rookies when extending a curve");
     }
 
     //------------//
@@ -1089,6 +1102,8 @@ public abstract class CurvesBuilder
 
         final double lineBoxDeltaOut;
 
+        final int maxExtensionRookies;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -1105,6 +1120,7 @@ public abstract class CurvesBuilder
             lineBoxIn = scale.toPixels(constants.lineBoxIn);
             lineBoxDeltaIn = scale.toPixels(constants.lineBoxDeltaIn);
             lineBoxDeltaOut = scale.toPixels(constants.lineBoxDeltaOut);
+            maxExtensionRookies = constants.maxExtensionRookies.getValue();
 
             if (logger.isDebugEnabled()) {
                 new Dumping().dump(this);
