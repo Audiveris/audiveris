@@ -214,6 +214,10 @@ public class InterBoard
 
         r += 2; // --------------------------------
 
+        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
+
+        r += 2; // --------------------------------
+
         roleCombo.getField().setMaximumRowCount(TextRole.values().length);
         ///paramAction = new ParamAction();
         ///roleCombo.addActionListener(paramAction);
