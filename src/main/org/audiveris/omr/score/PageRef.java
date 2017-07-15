@@ -76,7 +76,7 @@ public class PageRef
         this.sheetNumber = sheetNumber;
         this.id = id;
         this.deltaMeasureId = deltaMeasureId;
-        this.movementStart = movementStart ? Boolean.TRUE : null;
+        this.movementStart = movementStart;
     }
 
     /**
