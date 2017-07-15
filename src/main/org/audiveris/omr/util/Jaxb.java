@@ -151,6 +151,43 @@ public abstract class Jaxb
         }
     }
 
+    //------------------------//
+    // BooleanPositiveAdapter //
+    //------------------------//
+    /**
+     * Only true value is marshalled into the output, false value is not marshalled.
+     */
+    public static class BooleanPositiveAdapter
+            extends XmlAdapter<String, Boolean>
+    {
+        //~ Static fields/initializers -------------------------------------------------------------
+
+        private static final String TRUE = Boolean.toString(true);
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String marshal (Boolean b)
+                throws Exception
+        {
+            if (b == null) {
+                return null;
+            }
+
+            return b ? TRUE : null;
+        }
+
+        @Override
+        public Boolean unmarshal (String s)
+                throws Exception
+        {
+            if (s == null) {
+                return false;
+            }
+
+            return Boolean.parseBoolean(s);
+        }
+    }
+
     //--------------//
     // CubicAdapter //
     //--------------//
@@ -630,40 +667,6 @@ public abstract class Jaxb
             {
                 return new Point(x, y);
             }
-        }
-    }
-
-    //------------------------//
-    // BooleanPositiveAdapter //
-    //------------------------//
-    /**
-     * Only true value is marshalled into the output, false value is not marshalled.
-     */
-    public static class BooleanPositiveAdapter
-            extends XmlAdapter<String, Boolean>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public String marshal (Boolean b)
-                throws Exception
-        {
-            if (b == null) {
-                return null;
-            }
-
-            return b ? "true" : null;
-        }
-
-        @Override
-        public Boolean unmarshal (String s)
-                throws Exception
-        {
-            if (s == null) {
-                return false;
-            }
-
-            return Boolean.parseBoolean(s);
         }
     }
 

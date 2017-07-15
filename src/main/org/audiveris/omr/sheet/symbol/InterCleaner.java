@@ -29,7 +29,7 @@ import org.audiveris.omr.sheet.SystemInfo;
  * deleted from SIG but still referenced from some containers.
  * <p>
  * This accounts for:<ul>
- * <li>Part -> slurs</li>
+ * <li>Part -> lyrics</li>
  * </ul>
  *
  * @author Hervé Bitteur
