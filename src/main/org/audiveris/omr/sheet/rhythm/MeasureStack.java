@@ -38,6 +38,7 @@ import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -152,7 +153,8 @@ public class MeasureStack
 
     /** Anomaly detected, if any. */
     @XmlAttribute(name = "abnormal")
-    private Boolean abnormal;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean abnormal;
 
     /** Sequence of time slots within the measure, from left to right. */
     @XmlElement(name = "slot")
@@ -191,30 +193,6 @@ public class MeasureStack
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // isAbnormal //
-    //------------//
-    /**
-     * Report whether this stack is abnormal.
-     *
-     * @return the abnormal status
-     */
-    public boolean isAbnormal ()
-    {
-        return (abnormal != null) && abnormal;
-    }
-
-    //-------------//
-    // setAbnormal //
-    //-------------//
-    /**
-     * Mark this stack as being abnormal.
-     */
-    public void setAbnormal ()
-    {
-        abnormal = Boolean.TRUE;
-    }
-
     //----------//
     // addInter //
     //----------//
@@ -395,6 +373,13 @@ public class MeasureStack
     //--------//
     // filter //
     //--------//
+    /**
+     * From the provided list of system inters, keep only the ones that are located
+     * within this measure stack.
+     *
+     * @param systemInters the provided list of inters at system level
+     * @return the inters kept
+     */
     public List<Inter> filter (Collection<Inter> systemInters)
     {
         List<Inter> kept = new ArrayList<Inter>();
@@ -1220,6 +1205,19 @@ public class MeasureStack
         }
     }
 
+    //------------//
+    // isAbnormal //
+    //------------//
+    /**
+     * Report whether this stack is abnormal.
+     *
+     * @return the abnormal status
+     */
+    public boolean isAbnormal ()
+    {
+        return abnormal;
+    }
+
     //--------------//
     // isCautionary //
     //--------------//
@@ -1371,6 +1369,17 @@ public class MeasureStack
         for (Measure measure : measures) {
             measure.resetRhythm();
         }
+    }
+
+    //-------------//
+    // setAbnormal //
+    //-------------//
+    /**
+     * Mark this stack as being abnormal.
+     */
+    public void setAbnormal ()
+    {
+        abnormal = Boolean.TRUE;
     }
 
     //-------------------//

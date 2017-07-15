@@ -32,6 +32,7 @@ import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.step.PageStep;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 
@@ -53,6 +54,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code Part} is the <b>physical</b> gathering of {@link Staff} instances in an
@@ -117,7 +119,8 @@ public class Part
 
     /** Indicate a dummy physical part. */
     @XmlAttribute
-    private Boolean dummy;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean dummy;
 
     /** Staves in this part. */
     @XmlElement(name = "staff")
@@ -682,7 +685,7 @@ public class Part
     //---------//
     public boolean isDummy ()
     {
-        return (dummy != null) && dummy;
+        return dummy;
     }
 
     //-----------------//

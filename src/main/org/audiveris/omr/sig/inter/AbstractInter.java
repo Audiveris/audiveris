@@ -110,7 +110,8 @@ public abstract class AbstractInter
 
     /** Frozen flag, if any. */
     @XmlAttribute(name = "frozen")
-    private Boolean frozen;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean frozen;
 
     /** The contextual grade of this interpretation, if any. */
     @XmlAttribute(name = "ctx-grade")
@@ -321,7 +322,7 @@ public abstract class AbstractInter
     @Override
     public void freeze ()
     {
-        frozen = Boolean.TRUE;
+        frozen = true;
 
         // Freeze members if any
         if (this instanceof InterEnsemble) {
@@ -686,7 +687,7 @@ public abstract class AbstractInter
     @Override
     public boolean isFrozen ()
     {
-        return (frozen != null) && frozen;
+        return frozen;
     }
 
     //--------//

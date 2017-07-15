@@ -23,7 +23,9 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
+
 import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
+
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.FilterDescriptor;
@@ -31,7 +33,9 @@ import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.sheet.Picture.TableKey;
+
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
+
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.ProcessingCancellationException;
@@ -75,6 +79,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.util.Jaxb;
 
 /**
  * Class {@code BasicStub} is the implementation of SheetStub.
@@ -103,7 +109,8 @@ public class BasicStub
 
     /** Indicate a sheet that contains no music. */
     @XmlAttribute
-    private Boolean invalid;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean invalid;
 
     /** All steps already performed on this sheet. */
     @XmlList
@@ -514,7 +521,7 @@ public class BasicStub
     @Override
     public boolean isValid ()
     {
-        return (invalid == null) || !invalid;
+        return !invalid;
     }
 
     //-----------//
@@ -866,7 +873,7 @@ public class BasicStub
     {
         doneSteps.clear();
         pageRefs.clear();
-        invalid = null;
+        invalid = false;
         sheet = null;
 
         if (assembly != null) {

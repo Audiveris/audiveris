@@ -28,6 +28,7 @@ import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -43,6 +44,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code Page} represents a page in the score hierarchy, and corresponds to a
@@ -73,7 +75,8 @@ public class Page
 
     /** Does this page start a movement?. */
     @XmlAttribute(name = "movement-start")
-    private Boolean movementStart;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean movementStart;
 
     /** Number of measures counted in this page. */
     @XmlAttribute(name = "measure-count")
@@ -417,7 +420,7 @@ public class Page
      */
     public boolean isMovementStart ()
     {
-        return (movementStart != null) && movementStart;
+        return movementStart;
     }
 
     //----------------//

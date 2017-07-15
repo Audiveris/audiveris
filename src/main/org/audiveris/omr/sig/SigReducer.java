@@ -1795,6 +1795,19 @@ public class SigReducer
         {
             analyzeFrozenInters();
         }
+
+        @Override
+        public Set<Inter> checkSlurs ()
+        {
+            return checkSlurOnTuplet();
+        }
+
+        @Override
+        public void prolog ()
+        {
+            // Still needed because of cue beams
+            analyzeChords();
+        }
     }
 
     //-------------------//

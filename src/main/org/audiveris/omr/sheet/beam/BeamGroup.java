@@ -45,6 +45,7 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Vip;
 
@@ -67,6 +68,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code BeamGroup} represents a group of related beams.
@@ -104,7 +106,8 @@ public class BeamGroup
 
     /** Indicates a beam group that is linked to more than one staff. */
     @XmlAttribute(name = "multi-staff")
-    private Boolean multiStaff;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean multiStaff;
 
     // Transient data
     //---------------
@@ -329,7 +332,7 @@ public class BeamGroup
      */
     public boolean isMultiStaff ()
     {
-        return (multiStaff != null) && multiStaff;
+        return multiStaff;
     }
 
     //-------//

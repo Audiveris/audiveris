@@ -171,7 +171,8 @@ public class SlurInter
 
     /** Is this a tie?. (rather than a plain slur) */
     @XmlAttribute
-    private Boolean tie;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean tie;
 
     /** The precise Bézier curve. */
     @XmlElement
@@ -413,7 +414,7 @@ public class SlurInter
      */
     public boolean isTie ()
     {
-        return (tie != null) && tie;
+        return tie;
     }
 
     //--------------//

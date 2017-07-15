@@ -146,11 +146,13 @@ public class Staff
 
     /** Flag for short staff. (With a neighbor staff on left or right side) */
     @XmlAttribute(name = "short")
-    private Boolean isShort;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean isShort;
 
     /** Flag for small staff. (height lower than others) */
     @XmlAttribute(name = "small")
-    private Boolean isSmall;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean isSmall;
 
     /** Sequence of staff lines. (from top to bottom) */
     @XmlElement(name = "line")
@@ -906,6 +908,26 @@ public class Staff
         return lines.get(lines.size() - 1);
     }
 
+    //----------------//
+    // getLedgerIndex //
+    //----------------//
+    /**
+     * Report the index in ledgerMap for the provided ledger
+     *
+     * @param ledger the provided ledger
+     * @return the related index value or null if not found
+     */
+    public Integer getLedgerIndex (LedgerInter ledger)
+    {
+        for (Map.Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
+            if (entry.getValue().contains(ledger)) {
+                return entry.getKey();
+            }
+        }
+
+        return null;
+    }
+
     //--------------//
     // getLedgerMap //
     //--------------//
@@ -953,26 +975,6 @@ public class Staff
     public List<LedgerInter> getLedgers (int lineIndex)
     {
         return ledgerMap.get(lineIndex);
-    }
-
-    //----------------//
-    // getLedgerIndex //
-    //----------------//
-    /**
-     * Report the index in ledgerMap for the provided ledger
-     *
-     * @param ledger the provided ledger
-     * @return the related index value or null if not found
-     */
-    public Integer getLedgerIndex (LedgerInter ledger)
-    {
-        for (Map.Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
-            if (entry.getValue().contains(ledger)) {
-                return entry.getKey();
-            }
-        }
-
-        return null;
     }
 
     //----------//
@@ -1208,7 +1210,7 @@ public class Staff
      */
     public boolean isShort ()
     {
-        return (isShort != null) && (isShort == true);
+        return isShort;
     }
 
     //---------//
@@ -1221,7 +1223,7 @@ public class Staff
      */
     public boolean isSmall ()
     {
-        return (isSmall != null) && (isSmall == true);
+        return isSmall;
     }
 
     //-----------------//

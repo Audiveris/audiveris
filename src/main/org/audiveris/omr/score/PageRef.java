@@ -22,11 +22,13 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.util.Jaxb;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code PageRef} represents a page reference within a sheet stub.
@@ -46,7 +48,8 @@ public class PageRef
     private final int id;
 
     @XmlAttribute(name = "movement-start")
-    private final Boolean movementStart;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private final boolean movementStart;
 
     @XmlAttribute(name = "delta-measure-id")
     private Integer deltaMeasureId;
@@ -82,7 +85,7 @@ public class PageRef
     private PageRef ()
     {
         id = 0;
-        movementStart = null;
+        movementStart = false;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -157,7 +160,7 @@ public class PageRef
      */
     public boolean isMovementStart ()
     {
-        return (movementStart != null) && movementStart;
+        return movementStart;
     }
 
     /**

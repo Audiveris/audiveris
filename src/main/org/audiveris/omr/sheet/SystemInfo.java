@@ -41,6 +41,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -67,6 +68,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code SystemInfo} gathers information from the original picture about a
@@ -114,7 +116,8 @@ public class SystemInfo
 
     /** Indentation flag. */
     @XmlAttribute(name = "indented")
-    private Boolean indented;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean indented;
 
     /** Measure stacks in this system. */
     @XmlElement(name = "stack")
@@ -1114,7 +1117,7 @@ public class SystemInfo
      */
     public boolean isIndented ()
     {
-        return (indented != null) && indented;
+        return indented;
     }
 
     //--------------//

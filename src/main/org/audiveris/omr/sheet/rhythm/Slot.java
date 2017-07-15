@@ -33,6 +33,7 @@ import org.audiveris.omr.sheet.rhythm.Voice.SlotVoice;
 import static org.audiveris.omr.sheet.rhythm.Voice.Status.BEGIN;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -94,7 +95,8 @@ public class Slot
 
     /** Is slot suspicious?. */
     @XmlAttribute
-    private Boolean suspicious;
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean suspicious;
 
     // Transient data
     //---------------
@@ -410,7 +412,7 @@ public class Slot
      */
     public boolean isSuspicious ()
     {
-        return (suspicious != null) && suspicious;
+        return suspicious;
     }
 
     //----------//
