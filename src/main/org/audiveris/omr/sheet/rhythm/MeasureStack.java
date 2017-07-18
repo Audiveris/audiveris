@@ -370,6 +370,14 @@ public class MeasureStack
         //        }
     }
 
+    //----------//
+    // contains //
+    //----------//
+    public boolean contains (Point2D point)
+    {
+        return system.getMeasureStackAt(point) == this;
+    }
+
     //--------//
     // filter //
     //--------//

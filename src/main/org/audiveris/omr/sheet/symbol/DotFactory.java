@@ -62,6 +62,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -367,6 +368,19 @@ public class DotFactory
         } while (modified);
     }
 
+    //---------------//
+    // filterOnStack //
+    //---------------//
+    private void filterOnStack (List<Inter> inters,
+                                MeasureStack dotStack)
+    {
+        for (Iterator<Inter> it = inters.iterator(); it.hasNext();) {
+            if (!dotStack.contains(it.next().getCenter())) {
+                it.remove();
+            }
+        }
+    }
+
     //--------------------//
     // instantCheckRepeat //
     //--------------------//
@@ -563,29 +577,35 @@ public class DotFactory
      */
     private void lateFirstAugmentationCheck (Dot dot)
     {
-        // Look for entities (notes and rests) reachable from this glyph
+        // Look for entities (heads and rests) reachable from this glyph
+        final Point dotCenter = dot.glyph.getCenter();
+        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
         final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
         final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
-        final Point dotCenter = dot.glyph.getCenter();
         final Rectangle luBox = new Rectangle(dotCenter);
         luBox.grow(0, maxDy);
         luBox.x -= maxDx;
         luBox.width += maxDx;
 
-        // Relevant heads? (must be in same measure)
-        final List<Inter> notes = SIGraph.intersectedInters(
+        // Relevant heads?
+        final List<Inter> heads = SIGraph.intersectedInters(
                 symbolFactory.getSystemHeads(),
                 GeoOrder.BY_ABSCISSA,
                 luBox);
+        filterOnStack(heads, dotStack);
 
         // Beware of mirrored heads: link only to the head with longer duration
-        filterMirrorHeads(notes);
+        filterMirrorHeads(heads);
 
         // Relevant rests?
-        notes.addAll(
-                SIGraph.intersectedInters(symbolFactory.getSystemRests(), GeoOrder.BY_ABSCISSA, luBox));
+        final List<Inter> rests = SIGraph.intersectedInters(
+                symbolFactory.getSystemRests(),
+                GeoOrder.BY_ABSCISSA,
+                luBox);
+        filterOnStack(rests, dotStack);
+        heads.addAll(rests);
 
-        if (notes.isEmpty()) {
+        if (heads.isEmpty()) {
             return;
         }
 
@@ -594,7 +614,7 @@ public class DotFactory
         // This will be later solved by the sig reducer.
         AugmentationDotInter augInter = null;
 
-        for (Inter note : notes) {
+        for (Inter note : heads) {
             // Select proper note reference point (center right)
             Point refPt = note.getCenterRight();
             double xGap = dotCenter.x - refPt.x;
