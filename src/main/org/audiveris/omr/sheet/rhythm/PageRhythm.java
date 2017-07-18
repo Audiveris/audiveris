@@ -29,6 +29,7 @@ import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 
@@ -57,9 +58,12 @@ import java.util.List;
  * <li><b>T</b>: Tuplets for head & rest chords.</li>
  * </ul>
  * <p>
- * These FRAT symbols provide the adjustment variables used when checking the precise rhythm content
- * of each measure.
- * To do so, processing is done system per system <b>sequentially</b> because of impact of potential
+ * <p>
+ * We have tried very hard to use the FRATs as adjustment variables to come up with a "good"
+ * configuration within each stack. Unfortunately, this turned out to be impractical.
+ * So now we check the "time correctness" of each stack regarding its time slots and voices.
+ * <p>
+ * Processing is done system per system <b>sequentially</b> because of impact of potential
  * key-sig changes on the following systems. Hence, parallelism is NOT provided for this step.
  * Consistently, within a system, processing is done measure stack after measure stack.
  * <p>
@@ -106,54 +110,44 @@ public class PageRhythm
     //---------//
     // process //
     //---------//
+    /**
+     * Process rhythm information in this page.
+     */
     public void process ()
     {
         // Populate all stacks in page with potential time signatures, and derive ranges.
-        populateTimeSignatures(); // -> ranges
-        retrieveDurations(); // Check typical duration for each range
+        populateTimeSignatures(); // -> ranges (ts are assigned to their containing measure)
+
+        // Populate all stacks/measures in page with their FRATs
+        populateFRATs();
+
+        // Check typical duration for each range
+        retrieveRangeDurations();
 
         // For each range, adjust TS if needed, then process each contained measure
-        final Iterator<Range> it = ranges.iterator();
-        Range range = it.next(); // Current range
+        processRanges();
+    }
 
+    //---------------//
+    // populateFRATs //
+    //---------------//
+    /**
+     * Add all FRAT inters to their proper stack (and measure).
+     */
+    private void populateFRATs ()
+    {
         for (SystemInfo system : page.getSystems()) {
-            // Select relevant rhythm inters at system level
-            List<Inter> systemGoodFrats = system.getSig().inters(FRAT_CLASSES);
+            List<Inter> systemFrats = system.getSig().inters(FRAT_CLASSES);
+            Collections.sort(systemFrats, Inter.byAbscissa);
 
-            // Process stack after stack
             for (MeasureStack stack : system.getMeasureStacks()) {
-                if (stack.getIdValue() == range.startId) {
-                    logger.debug("Starting {}", range);
+                final List<Inter> frats = stack.filter(systemFrats);
+                logger.debug("{} frats: {} {}", stack, frats.size(), Inters.ids(frats));
 
-                    // Adjust time signature?
-                    if ((range.duration != null)
-                        && ((range.ts == null)
-                            || !range.ts.getTimeRational().getValue().equals(range.duration))) {
-                        logger.info(
-                                "{}{} should update to {}-based time sig?",
-                                stack.getSystem().getLogPrefix(),
-                                range,
-                                range.duration);
-                    }
-                }
-
-                try {
-                    logger.debug("\n--- Processing {} expDur: {} ---", stack, range.duration);
-                    new StackTuner(stack, false).process(systemGoodFrats, range.duration);
-                } catch (Exception ex) {
-                    logger.warn("Error on stack " + stack + " " + ex, ex);
-                }
-
-                // End of range?
-                if (stack.getIdValue() == range.stopId) {
-                    if (it.hasNext()) {
-                        range = it.next();
-                    }
+                for (Inter inter : frats) {
+                    stack.addInter(inter);
                 }
             }
-
-            // Refine voices IDs (and thus colors) across all measures of the system
-            Voices.refineSystem(system);
         }
     }
 
@@ -161,8 +155,8 @@ public class PageRhythm
     // populateTimeSignatures //
     //------------------------//
     /**
-     * Populate page stacks with the time signatures found and define ranges.
-     * This is performed before symbol reduction.
+     * Populate page stacks with the time signatures found and derive ranges where each
+     * time signature applies.
      */
     private void populateTimeSignatures ()
     {
@@ -204,46 +198,51 @@ public class PageRhythm
                 .getIdValue();
     }
 
-    //-------------------//
-    // retrieveDurations //
-    //-------------------//
+    //---------------//
+    // processRanges //
+    //---------------//
     /**
-     * Analyze a range of stacks governed by a time signature (if any for the start).
-     * Retrieve typical stack duration and check with the time signature.
+     * Within each range, build the time slots and voices for each stack.
      */
-    private void retrieveDurations ()
+    private void processRanges ()
     {
-        // Launch a raw processing to determine expected measure duration
-        // on the range of first system & stacks before first time signature
         final Iterator<Range> it = ranges.iterator();
-
-        // Current range
-        Range range = it.next();
+        Range range = it.next(); // Current range
 
         for (SystemInfo system : page.getSystems()) {
-            // Select good FRAT inters at system level
-            List<Inter> systemGoodFrats = system.getSig().inters(FRAT_CLASSES);
-
-            // Process stack after stack
             for (MeasureStack stack : system.getMeasureStacks()) {
+                if (stack.getIdValue() == range.startId) {
+                    logger.debug("Starting {}", range);
+
+                    // Adjust time signature?
+                    if ((range.duration != null)
+                        && ((range.ts == null)
+                            || !range.ts.getTimeRational().getValue().equals(range.duration))) {
+                        logger.info(
+                                "{}{} should update to {}-based time sig?",
+                                stack.getSystem().getLogPrefix(),
+                                range,
+                                range.duration);
+                    }
+                }
+
                 try {
-                    logger.debug("\n--- Raw processing {} ---", stack);
-                    new StackTuner(stack, true).process(systemGoodFrats, null);
+                    logger.debug("\n--- Processing {} expDur: {} ---", stack, range.duration);
+                    new StackTuner(stack, false).process(range.duration);
                 } catch (Exception ex) {
                     logger.warn("Error on stack " + stack + " " + ex, ex);
                 }
 
                 // End of range?
                 if (stack.getIdValue() == range.stopId) {
-                    // Use CURRENT MATERIAL of voices to determine expected duration on this range
-                    Rational duration = retrieveExpectedDuration(range);
-                    range.duration = duration;
-
                     if (it.hasNext()) {
                         range = it.next();
                     }
                 }
             }
+
+            // Refine voices IDs (and thus colors) across all measures of the system
+            Voices.refineSystem(system);
         }
     }
 
@@ -317,12 +316,50 @@ public class PageRhythm
                 range,
                 avgGuess,
                 topGuess,
-                val,
+                String.format("%.2f", val),
                 stackNb,
                 voiceNb,
                 histo);
 
         return avgGuess;
+    }
+
+    //------------------------//
+    // retrieveRangeDurations //
+    //------------------------//
+    /**
+     * Analyze the ranges of stacks, each range being governed by a time signature
+     * (if any for the start), to retrieve typical stack duration and check with the
+     * time signature.
+     */
+    private void retrieveRangeDurations ()
+    {
+        // Launch a raw processing to determine expected measure duration
+        // on the range of first system & stacks before first time signature
+        final Iterator<Range> it = ranges.iterator();
+        Range range = it.next(); // Current range
+
+        for (SystemInfo system : page.getSystems()) {
+            for (MeasureStack stack : system.getMeasureStacks()) {
+                try {
+                    logger.debug("\n--- Raw processing {} ---", stack);
+                    new StackTuner(stack, true).process(null);
+                } catch (Exception ex) {
+                    logger.warn("Error on stack " + stack + " " + ex, ex);
+                }
+
+                // End of range?
+                if (stack.getIdValue() == range.stopId) {
+                    // Use CURRENT MATERIAL of voices to determine expected duration on this range
+                    Rational duration = retrieveExpectedDuration(range);
+                    range.duration = duration;
+
+                    if (it.hasNext()) {
+                        range = it.next();
+                    }
+                }
+            }
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -331,7 +368,7 @@ public class PageRhythm
     //-------//
     /**
      * Describes a range of stack governed by a time signature.
-     * The very first range may have no time signature.
+     * The very first range in sheet may have no time signature.
      */
     private static class Range
     {
@@ -375,74 +412,3 @@ public class PageRhythm
         }
     }
 }
-//    //---------//
-//    // process //
-//    //---------//
-//    public void process ()
-//    {
-//        // Populate all stacks in page with potential time signatures, and derive ranges.
-//        populateTimeSignatures(); // -> ranges
-//
-//        // Reduce symbols while saving poor FRAT data for each system
-//        // 'poorsMap' is the collection of poor FRAT data discarded via SIG reduction.
-//        // It is put aside to be used later as modification options...
-//        Map<SystemInfo, SystemBackup> poorsMap = new LinkedHashMap<SystemInfo, SystemBackup>();
-//
-//        for (SystemInfo system : page.getSystems()) {
-//            SystemBackup systemPoorFrats = new SystemBackup(system);
-//            new SigReducer(system, true).reduceRhythms(systemPoorFrats, FRAT_CLASSES);
-//            poorsMap.put(system, systemPoorFrats);
-//        }
-//
-//        // Check typical duration for each range (w/o any poor FRAT)
-//        retrieveDurations();
-//
-//        // For each range, adjust TS if needed, then process each contained measure
-//        final Iterator<Range> it = ranges.iterator();
-//        Range range = it.next();// Current range
-//
-//        for (SystemInfo system : page.getSystems()) {
-//            // Select relevant rhythm inters at system level
-//            List<Inter> systemGoodFrats = system.getSig().inters(FRAT_CLASSES); // Good Frats
-//            SystemBackup systemPoorFrats = poorsMap.get(system); // Poor Frats
-//            logger.debug("systemPoorFrats: {}", systemPoorFrats.getSeeds().size()); // NR always 0
-//
-//            // Process stack after stack
-//            for (MeasureStack stack : system.getMeasureStacks()) {
-//                if (stack.getIdValue() == range.startId) {
-//                    logger.debug("Starting {}", range);
-//
-//                    // Adjust time signature?
-//                    if ((range.duration != null)
-//                        && ((range.ts == null)
-//                            || !range.ts.getTimeRational().getValue().equals(range.duration))) {
-//                        logger.info(
-//                                "{}{} should update to {}-based time sig?",
-//                                stack.getSystem().getLogPrefix(),
-//                                range,
-//                                range.duration);
-//                    }
-//                }
-//
-//                try {
-//                    logger.debug("\n--- Processing {} expDur: {} ---", stack, range.duration);
-//                    new StackTuner(stack, true).process(
-//                            systemGoodFrats,
-//                            systemPoorFrats,
-//                            range.duration);
-//                } catch (Exception ex) {
-//                    logger.warn("Error on stack " + stack + " " + ex, ex);
-//                }
-//
-//                // End of range?
-//                if (stack.getIdValue() == range.stopId) {
-//                    if (it.hasNext()) {
-//                        range = it.next();
-//                    }
-//                }
-//            }
-//
-//            // Refine voices IDs (and thus colors) across all measures of the system
-//            Voices.refineSystem(system);
-//        }
-//    }

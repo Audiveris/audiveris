@@ -552,7 +552,7 @@ public abstract class AbstractClassifier<M extends Object>
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
-                0.08,
+                0.04,
                 "Minimum normalized weight to be considered not a noise");
     }
 }

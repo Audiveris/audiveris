@@ -731,6 +731,9 @@ public class SigReducer
         final List<Inter> heads = sig.inters(ShapeSet.StemHeads);
 
         for (Inter head : heads) {
+            if (head.isVip()) {
+                logger.info("VIP checkheads for {}", head);
+            }
             // Check if the head has a stem relation
             if (!sig.hasRelation(head, HeadStemRelation.class)) {
                 if (head.isVip() || logger.isDebugEnabled()) {
@@ -1772,6 +1775,12 @@ public class SigReducer
         public int checkConsistencies ()
         {
             int modifs = 0;
+
+            modifs += checkStemEndingHeads();
+            deleted.addAll(updateAndPurge());
+
+            modifs += checkHeads();
+            deleted.addAll(updateAndPurge());
 
             modifs += checkDoubleAlters();
             deleted.addAll(updateAndPurge());

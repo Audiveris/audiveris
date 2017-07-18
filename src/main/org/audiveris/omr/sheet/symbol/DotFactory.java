@@ -572,7 +572,7 @@ public class DotFactory
         luBox.x -= maxDx;
         luBox.width += maxDx;
 
-        // Relevant heads?
+        // Relevant heads? (must be in same measure)
         final List<Inter> notes = SIGraph.intersectedInters(
                 symbolFactory.getSystemHeads(),
                 GeoOrder.BY_ABSCISSA,

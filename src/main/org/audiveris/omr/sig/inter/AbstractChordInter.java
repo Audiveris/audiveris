@@ -299,6 +299,11 @@ public abstract class AbstractChordInter
                         if (count != 0) {
                             for (Relation dn : sig.getRelations(note, AugmentationRelation.class)) {
                                 Inter dot = sig.getOppositeInter(note, dn);
+
+                                if (measure != null) {
+                                    measure.removeInter(dot);
+                                }
+
                                 dot.delete();
                             }
                         }

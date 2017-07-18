@@ -108,25 +108,6 @@ public class StackBackup
                             Set<RestChordInter> toRemove,
                             boolean failFast)
     {
-        // Clear the stack
-        for (Inter inter : seeds) {
-            stack.removeInter(inter);
-            inter.delete();
-
-            if (inter instanceof AbstractChordInter) {
-                for (Inter member : ((AbstractChordInter) inter).getNotes()) {
-                    member.delete();
-                }
-            }
-        }
-
-        // Restore just the configuration content
-        attic.restore(sig, config.getInters());
-
-        for (Inter inter : config.getInters()) {
-            stack.addInter(inter);
-        }
-
         // Reset all rhythm data within the stack
         stack.resetRhythm();
 
@@ -143,7 +124,7 @@ public class StackBackup
         }
 
         // Build slots & voices
-        return new SlotsBuilder(stack, toRemove, failFast).process();
+        return new SlotsBuilder(stack, failFast).process();
     }
 
     //----------------//

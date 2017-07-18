@@ -162,7 +162,7 @@ public class ChordsBuilder
             chord.getBounds(); // To make sure chord box is computed
 
             // Insert rest chord into measure (TODO: rest location is questionable)
-            dispatchChord(chord);
+            ///dispatchChord(chord);
         }
     }
 

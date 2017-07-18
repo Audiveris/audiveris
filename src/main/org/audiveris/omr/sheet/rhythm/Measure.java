@@ -117,7 +117,7 @@ public class Measure
     @XmlElement(name = "small-chord")
     private final Set<SmallChordInter> graceChords = new LinkedHashSet<SmallChordInter>();
 
-    /** Rest chords, populated by SYMBOLS step & adjusted by RHYTHMS step. */
+    /** Rest chords, populated by RHYTHMS step. */
     @XmlElement(name = "rest-chord")
     private final Set<RestChordInter> restChords = new LinkedHashSet<RestChordInter>();
 
@@ -152,7 +152,7 @@ public class Measure
     /** Only whole rest-based chords (handled outside time slots). (subset of restChords) */
     private final Set<AbstractChordInter> wholeRestChords = new LinkedHashSet<AbstractChordInter>();
 
-    /** FAT inters (FRATs other than Rest chords) for this measure. */
+    /** FAT inters (FRATs other than Rest chords, hence FATs) for this measure. */
     private final Set<Inter> otherRhythms = new LinkedHashSet<Inter>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -215,6 +215,11 @@ public class Measure
     //----------//
     // addInter //
     //----------//
+    /**
+     * Include the provided inter into its proper set within this measure.
+     *
+     * @param inter the inter to include
+     */
     public void addInter (Inter inter)
     {
         if (inter instanceof AbstractChordInter) {
@@ -1412,7 +1417,11 @@ public class Measure
     @SuppressWarnings("unused")
     private String getPageId ()
     {
-        return stack.getPageId();
+        if (stack != null) {
+            return stack.getPageId();
+        }
+
+        return null;
     }
 
     //----------//

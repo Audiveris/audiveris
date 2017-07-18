@@ -1348,7 +1348,7 @@ public class MeasureStack
         if (part != null) {
             int partIndex = system.getParts().indexOf(part);
             Measure measure = measures.get(partIndex);
-            measure.addInter(inter);
+            /// ??? measure.addInter(inter);
             measure.removeInter(inter);
         } else if (inter instanceof TupletInter) {
             stackTuplets.remove((TupletInter) inter);

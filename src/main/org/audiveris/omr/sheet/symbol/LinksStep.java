@@ -75,7 +75,7 @@ public class LinksStep
         watch.start("reduceLinks");
         new SigReducer(system, false).reduceLinks();
 
-        //TODO: Check usefulness of this:
+        // Purge deleted lyrics from containing part
         new InterCleaner(system).purgeContainers();
 
         // Remove all free glyphs?

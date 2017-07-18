@@ -147,9 +147,6 @@ public class SlotsBuilder
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
-    /** The set of RestChordInter to remove from stack current content. */
-    private final Set<RestChordInter> toRemove;
-
     /** To stop on first error encountered. */
     private final boolean failFast;
 
@@ -204,15 +201,12 @@ public class SlotsBuilder
      * Creates a new {@code SlotsBuilder} object for a measure stack.
      *
      * @param stack    the provided measure stack
-     * @param toRemove (output) the set of rest chords to remove
      * @param failFast true to stop on first error encountered
      */
     public SlotsBuilder (MeasureStack stack,
-                         Set<RestChordInter> toRemove,
                          boolean failFast)
     {
         this.stack = stack;
-        this.toRemove = toRemove;
         this.failFast = failFast;
 
         params = new Parameters(stack.getSystem().getSheet().getScale());
@@ -358,8 +352,6 @@ public class SlotsBuilder
      */
     private boolean buildSlots ()
     {
-        toRemove.clear();
-
         // The 'actives' collection gathers the chords that are not terminated at the
         // time slot being considered. Initially, it contains just the whole chords.
         List<AbstractChordInter> actives = new ArrayList<AbstractChordInter>(
