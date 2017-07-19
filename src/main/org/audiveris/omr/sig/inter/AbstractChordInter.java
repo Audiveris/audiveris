@@ -767,7 +767,7 @@ public abstract class AbstractChordInter
             }
         }
 
-        return part;
+        return super.getPart();
     }
 
     //---------//

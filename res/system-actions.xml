@@ -62,6 +62,7 @@
     <action domain="VIEW" section="20" class="org.audiveris.omr.score.ui.PaintingParameters" method="toggleSlots"         item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="20" class="org.audiveris.omr.score.ui.PaintingParameters" method="toggleVoices"        item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
     <action domain="VIEW" section="20" class="org.audiveris.omr.score.ui.PaintingParameters" method="toggleMarks"         item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="20" class="org.audiveris.omr.score.ui.PaintingParameters" method="toggleErrors"        item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="25" class="org.audiveris.omr.ui.ViewParameters"           method="toggleInvalidSheets" item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"           method="toggleStaffLines"    item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"           method="toggleStaffPeaks"    item="javax.swing.JCheckBoxMenuItem"/>

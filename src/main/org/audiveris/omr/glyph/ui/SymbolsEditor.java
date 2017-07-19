@@ -41,6 +41,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SheetGradedPainter;
@@ -491,6 +492,17 @@ public class SymbolsEditor
             final Color oldColor = g.getColor();
             final PaintingParameters painting = PaintingParameters.getInstance();
 
+            if (painting.isErrorPainting()) {
+                // Use specific background for stacks in error
+                for (SystemInfo system : sheet.getSystems()) {
+                    for (MeasureStack stack : system.getMeasureStacks()) {
+                        if (stack.isAbnormal()) {
+                            stack.render(g, Colors.STACK_ABNORMAL);
+                        }
+                    }
+                }
+            }
+
             if (painting.isInputPainting()) {
                 // Sections
                 final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
@@ -563,7 +575,7 @@ public class SymbolsEditor
 
                 Inter inter = (Inter) sheet.getInterIndex().getEntityService().getSelectedEntity();
 
-                if (inter != null && !inter.isDeleted()) {
+                if ((inter != null) && !inter.isDeleted()) {
                     // Inter: attachments for selected inter, if any
                     Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
                     inter.renderAttachments(g);

@@ -23,7 +23,6 @@ package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyInter;
@@ -45,12 +44,8 @@ public class MeasureFiller
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureFiller.class);
 
-    /** Filling classes. */
-    public static final Class<?>[] FILLING_CLASSES = new Class<?>[]{
-        ClefInter.class, // Clefs
-        KeyInter.class, // Key signatures
-        AbstractChordInter.class // Chords (heads & rests) BOF! BOF! BOF! BOF! BOF!
-    };
+    /** Filling classes. (Clefs and Key signatures) */
+    public static final Class<?>[] FILLING_CLASSES = new Class<?>[]{ClefInter.class, KeyInter.class};
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Containing system. */

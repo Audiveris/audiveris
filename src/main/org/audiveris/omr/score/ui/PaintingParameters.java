@@ -71,6 +71,9 @@ public class PaintingParameters
     /** Should the voices be painted. */
     public static final String VOICE_PAINTING = "voicePainting";
 
+    /** Should the errors be painted. */
+    public static final String ERROR_PAINTING = "errorPainting";
+
     //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Enum {@code PaintingLayer} defines layers to be painted.
@@ -147,6 +150,14 @@ public class PaintingParameters
     }
 
     //-----------------//
+    // isErrorPainting //
+    //-----------------//
+    public boolean isErrorPainting ()
+    {
+        return constants.errorPainting.getValue();
+    }
+
+    //-----------------//
     // isInputPainting //
     //-----------------//
     public boolean isInputPainting ()
@@ -194,6 +205,16 @@ public class PaintingParameters
         boolean oldValue = constants.annotationPainting.getValue();
         constants.annotationPainting.setValue(value);
         firePropertyChange(ANNOTATION_PAINTING, oldValue, constants.annotationPainting.getValue());
+    }
+
+    //------------------//
+    // setErrorPainting //
+    //------------------//
+    public void setErrorPainting (boolean value)
+    {
+        boolean oldValue = constants.errorPainting.getValue();
+        constants.errorPainting.setValue(value);
+        firePropertyChange(ERROR_PAINTING, oldValue, constants.errorPainting.getValue());
     }
 
     //-----------------//
@@ -278,6 +299,19 @@ public class PaintingParameters
     {
     }
 
+    //--------------//
+    // toggleErrors //
+    //--------------//
+    /**
+     * Action that toggles the display of errors in the score
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = ERROR_PAINTING)
+    public void toggleErrors (ActionEvent e)
+    {
+    }
+
     //-------------//
     // toggleMarks //
     //-------------//
@@ -348,5 +382,9 @@ public class PaintingParameters
         private final Constant.Boolean markPainting = new Constant.Boolean(
                 true,
                 "Should the marks be painted");
+
+        private final Constant.Boolean errorPainting = new Constant.Boolean(
+                true,
+                "Should the errors be painted");
     }
 }

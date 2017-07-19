@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -64,6 +65,22 @@ public class FlagInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // delete //
+    //--------//
+    @Override
+    public void delete ()
+    {
+        // Remove it from containing measure
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.removeInter(this);
+        }
+
+        super.delete();
+    }
+
     //---------//
     // getPart //
     //---------//
@@ -84,7 +101,7 @@ public class FlagInter
             }
         }
 
-        return part;
+        return super.getPart();
     }
 
     //----------//

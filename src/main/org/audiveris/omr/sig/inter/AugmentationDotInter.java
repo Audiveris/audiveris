@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
@@ -68,6 +69,22 @@ public class AugmentationDotInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // delete //
+    //--------//
+    @Override
+    public void delete ()
+    {
+        // Remove it from containing measure
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.removeInter(this);
+        }
+
+        super.delete();
+    }
+
     //---------//
     // getPart //
     //---------//
@@ -95,7 +112,7 @@ public class AugmentationDotInter
             }
         }
 
-        return part;
+        return super.getPart();
     }
 
     //--------------------------//

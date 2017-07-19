@@ -69,6 +69,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -106,11 +108,11 @@ public class Measure
     private PartBarline rightBarline;
 
     /** Groups of beams in this measure. */
-    @XmlElement(name = "beam-group")
+    @XmlElementRef
     private final Set<BeamGroup> beamGroups = new LinkedHashSet<BeamGroup>();
 
     /** Head chords, populated once for all by CHORDS step. */
-    @XmlElement(name = "head-chord")
+    @XmlElementRef
     private final Set<HeadChordInter> headChords = new LinkedHashSet<HeadChordInter>();
 
     /** Grace chords, populated in CHORDS step. */
@@ -118,8 +120,16 @@ public class Measure
     private final Set<SmallChordInter> graceChords = new LinkedHashSet<SmallChordInter>();
 
     /** Rest chords, populated by RHYTHMS step. */
-    @XmlElement(name = "rest-chord")
+    @XmlElementRef
     private final Set<RestChordInter> restChords = new LinkedHashSet<RestChordInter>();
+
+    /** FAT inters (FRATs other than Rest chords, hence FATs) for this measure. */
+    @XmlElementRefs({
+        @XmlElementRef(type = AugmentationDotInter.class)
+        , @XmlElementRef(type = FlagInter.class)
+        , @XmlElementRef(type = TupletInter.class)
+    })
+    private final Set<Inter> otherRhythms = new LinkedHashSet<Inter>();
 
     /** Voices within this measure, sorted by voice id, populated by RHYTHMS step. */
     @XmlElement(name = "voice")
@@ -151,9 +161,6 @@ public class Measure
 
     /** Only whole rest-based chords (handled outside time slots). (subset of restChords) */
     private final Set<AbstractChordInter> wholeRestChords = new LinkedHashSet<AbstractChordInter>();
-
-    /** FAT inters (FRATs other than Rest chords, hence FATs) for this measure. */
-    private final Set<Inter> otherRhythms = new LinkedHashSet<Inter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -740,6 +747,25 @@ public class Measure
     public PartBarline getMidBarline ()
     {
         return midBarline;
+    }
+
+    //---------------//
+    // getMostInters //
+    //---------------//
+    public Set<Inter> getMostInters ()
+    {
+        Set<Inter> set = new LinkedHashSet<Inter>();
+
+        for (BeamGroup beamGroup : beamGroups) {
+            set.addAll(beamGroup.getBeams());
+        }
+
+        set.addAll(headChords);
+        set.addAll(graceChords);
+        set.addAll(restChords);
+        set.addAll(otherRhythms);
+
+        return set;
     }
 
     //---------//

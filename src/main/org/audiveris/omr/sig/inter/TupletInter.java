@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.DurationFactor;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
@@ -133,6 +134,22 @@ public class TupletInter
         return new TupletInter(glyph, shape, grade);
     }
 
+    //--------//
+    // delete //
+    //--------//
+    @Override
+    public void delete ()
+    {
+        // Remove it from containing stack and/or measure
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.removeInter(this);
+        }
+
+        super.delete();
+    }
+
     //-----------------//
     // getBaseDuration //
     //-----------------//
@@ -192,6 +209,26 @@ public class TupletInter
     }
 
     //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff == null) {
+            // Chord -> Tuplet
+            for (Relation ctRel : sig.getRelations(this, ChordTupletRelation.class)) {
+                AbstractChordInter chord = (AbstractChordInter) sig.getOppositeInter(this, ctRel);
+
+                if (chord.getStaff() != null) {
+                    return staff = chord.getStaff();
+                }
+            }
+        }
+
+        return staff;
+    }
+
+    //----------//
     // getVoice //
     //----------//
     @Override
@@ -237,26 +274,6 @@ public class TupletInter
 
             return null;
         }
-    }
-
-    //----------//
-    // getStaff //
-    //----------//
-    @Override
-    public Staff getStaff ()
-    {
-        if (staff == null) {
-            // Chord -> Tuplet
-            for (Relation ctRel : sig.getRelations(this, ChordTupletRelation.class)) {
-                AbstractChordInter chord = (AbstractChordInter) sig.getOppositeInter(this, ctRel);
-
-                if (chord.getStaff() != null) {
-                    return staff = chord.getStaff();
-                }
-            }
-        }
-
-        return staff;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

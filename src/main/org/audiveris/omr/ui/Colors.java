@@ -162,6 +162,9 @@ public class Colors
     /** Current time slot */
     public static final Color SLOT_CURRENT = new Color(255, 0, 255, alpha);
 
+    /** Stack detected as abnormal. */
+    public static final Color STACK_ABNORMAL = new Color(255, 225, 225);
+
     /** Brace staff peak */
     public static final Color STAFF_PEAK_BRACE = new Color(0, 255, 255, 100);
 

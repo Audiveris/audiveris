@@ -26,6 +26,7 @@ import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -36,16 +37,18 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,7 +61,7 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -127,6 +130,14 @@ public class MeasureStack
     @XmlAttribute
     private int right;
 
+    /** Unassigned tuplets within stack. */
+    @XmlElementRef
+    private final Set<TupletInter> stackTuplets = new LinkedHashSet<TupletInter>();
+
+    /** Sequence of time slots within the measure, from left to right. */
+    @XmlElementRef
+    private final List<Slot> slots = new ArrayList<Slot>();
+
     /** Flag for special measure. */
     @XmlAttribute
     private Special special;
@@ -156,10 +167,6 @@ public class MeasureStack
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean abnormal;
 
-    /** Sequence of time slots within the measure, from left to right. */
-    @XmlElement(name = "slot")
-    private final List<Slot> slots = new ArrayList<Slot>();
-
     // Transient data
     //---------------
     //
@@ -169,9 +176,6 @@ public class MeasureStack
 
     /** Vertical sequence of (Part) measures, from top to bottom. */
     private final List<Measure> measures = new ArrayList<Measure>();
-
-    /** Unassigned tuplets within stack. */
-    private final Set<TupletInter> stackTuplets = new LinkedHashSet<TupletInter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -1356,13 +1360,67 @@ public class MeasureStack
         if (part != null) {
             int partIndex = system.getParts().indexOf(part);
             Measure measure = measures.get(partIndex);
-            /// ??? measure.addInter(inter);
             measure.removeInter(inter);
         } else if (inter instanceof TupletInter) {
             stackTuplets.remove((TupletInter) inter);
         } else {
             throw new IllegalStateException("No part for " + inter);
         }
+    }
+
+    //--------//
+    // render //
+    //--------//
+    /**
+     * Render the measure stack area with provided color.
+     *
+     * @param g     graphics context
+     * @param color provided color
+     */
+    public void render (Graphics2D g,
+                        Color color)
+    {
+        // Save some drawing
+        final Rectangle clip = g.getClipBounds();
+        final Rectangle systemRect = system.getBounds();
+
+        if ((clip != null) && !clip.intersects(systemRect)) {
+            return;
+        }
+
+        g.setColor(color);
+
+        Sheet sheet = system.getSheet();
+
+        // Most inters from first measure
+        Staff firstStaff = system.getFirstStaff();
+        Measure firstMeasure = getMeasureAt(firstStaff);
+        int top = Integer.MAX_VALUE;
+
+        for (Inter inter : firstMeasure.getMostInters()) {
+            top = Math.min(top, inter.getBounds().y);
+        }
+
+        // Most inters from last measure
+        Staff lastStaff = system.getLastStaff();
+        Measure lastMeasure = getMeasureAt(lastStaff);
+        int bottom = 0;
+
+        for (Inter inter : lastMeasure.getMostInters()) {
+            Rectangle bounds = inter.getBounds();
+            bottom = Math.max(bottom, bounds.y + bounds.height);
+        }
+
+        // Inters from stack tuplets
+        for (Inter inter : stackTuplets) {
+            Rectangle bounds = inter.getBounds();
+            top = Math.min(top, bounds.y);
+            bottom = Math.max(bottom, bounds.y + bounds.height);
+        }
+
+        Area area = new Area(new Rectangle(left, 0, right - left + 1, sheet.getHeight()));
+        area.intersect(new Area(new Rectangle(0, top, sheet.getWidth(), bottom - top + 1)));
+        g.fill(area);
     }
 
     //-------------//

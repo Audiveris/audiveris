@@ -24,7 +24,6 @@ package org.audiveris.omr.sheet.rhythm;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 
@@ -127,11 +126,9 @@ public class StackTuner
 
         // Link tuplets
         final Set<TupletInter> toDelete = new TupletsBuilder(stack).linkTuplets();
-        final SIGraph sig = stack.getSystem().getSig();
 
         if (!toDelete.isEmpty()) {
             for (TupletInter tuplet : toDelete) {
-                stack.removeInter(tuplet);
                 tuplet.delete();
             }
         }
