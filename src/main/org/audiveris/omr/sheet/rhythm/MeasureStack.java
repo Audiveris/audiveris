@@ -1397,7 +1397,7 @@ public class MeasureStack
         Measure firstMeasure = getMeasureAt(firstStaff);
         int top = Integer.MAX_VALUE;
 
-        for (Inter inter : firstMeasure.getMostInters()) {
+        for (Inter inter : firstMeasure.getTimingInters()) {
             top = Math.min(top, inter.getBounds().y);
         }
 
@@ -1406,7 +1406,7 @@ public class MeasureStack
         Measure lastMeasure = getMeasureAt(lastStaff);
         int bottom = 0;
 
-        for (Inter inter : lastMeasure.getMostInters()) {
+        for (Inter inter : lastMeasure.getTimingInters()) {
             Rectangle bounds = inter.getBounds();
             bottom = Math.max(bottom, bounds.y + bounds.height);
         }

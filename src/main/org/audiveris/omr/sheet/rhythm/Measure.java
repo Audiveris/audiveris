@@ -749,25 +749,6 @@ public class Measure
         return midBarline;
     }
 
-    //---------------//
-    // getMostInters //
-    //---------------//
-    public Set<Inter> getMostInters ()
-    {
-        Set<Inter> set = new LinkedHashSet<Inter>();
-
-        for (BeamGroup beamGroup : beamGroups) {
-            set.addAll(beamGroup.getBeams());
-        }
-
-        set.addAll(headChords);
-        set.addAll(graceChords);
-        set.addAll(restChords);
-        set.addAll(otherRhythms);
-
-        return set;
-    }
-
     //---------//
     // getPart //
     //---------//
@@ -993,6 +974,30 @@ public class Measure
         }
 
         return null; // Not found
+    }
+
+    //-----------------//
+    // getTimingInters //
+    //-----------------//
+    /**
+     * Report the set of measure inters involved in timing.
+     *
+     * @return chords, beams, flags, augmentation dots, tuplets
+     */
+    public Set<Inter> getTimingInters ()
+    {
+        Set<Inter> set = new LinkedHashSet<Inter>();
+
+        for (BeamGroup beamGroup : beamGroups) {
+            set.addAll(beamGroup.getBeams());
+        }
+
+        set.addAll(headChords);
+        set.addAll(graceChords);
+        set.addAll(restChords);
+        set.addAll(otherRhythms);
+
+        return set;
     }
 
     //------------//
