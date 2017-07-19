@@ -1316,38 +1316,42 @@ public class MeasureStack
      */
     public void printVoices (String title)
     {
-        StringBuilder sb = new StringBuilder();
+        try {
+            StringBuilder sb = new StringBuilder();
 
-        // Title
-        if (title != null) {
-            sb.append(title);
-        }
+            // Title
+            if (title != null) {
+                sb.append(title);
+            }
 
-        // Measure
-        sb.append(this);
+            // Measure
+            sb.append(this);
 
-        // Slot headers
-        if (!slots.isEmpty()) {
-            sb.append("\n   ");
+            // Slot headers
+            if (!slots.isEmpty()) {
+                sb.append("\n   ");
 
-            for (Slot slot : slots) {
-                if (slot.getTimeOffset() != null) {
-                    sb.append("|").append(String.format("%-7s", slot.getTimeOffset()));
+                for (Slot slot : slots) {
+                    if (slot.getTimeOffset() != null) {
+                        sb.append("|").append(String.format("%-7s", slot.getTimeOffset()));
+                    }
+                }
+
+                sb.append("|").append(getCurrentDuration());
+            }
+
+            for (Measure measure : measures) {
+                sb.append("\n--");
+
+                for (Voice voice : measure.getVoices()) {
+                    sb.append("\n").append(voice.toStrip());
                 }
             }
 
-            sb.append("|").append(getCurrentDuration());
+            logger.info(sb.toString());
+        } catch (Exception ex) {
+            logger.warn("Error printing voices for {} {}", this, ex.toString(), ex);
         }
-
-        for (Measure measure : measures) {
-            sb.append("\n--");
-
-            for (Voice voice : measure.getVoices()) {
-                sb.append("\n").append(voice.toStrip());
-            }
-        }
-
-        logger.info(sb.toString());
     }
 
     //-------------//

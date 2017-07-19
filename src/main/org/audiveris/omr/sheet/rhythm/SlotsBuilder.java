@@ -35,6 +35,7 @@ import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
@@ -249,6 +250,10 @@ public class SlotsBuilder
     private boolean areAdjacent (AbstractChordInter ch1,
                                  AbstractChordInter ch2)
     {
+        if (ch1.isVip() && ch2.isVip()) {
+            logger.info("VIP areAdjacent? {} {}", ch1, ch2);
+        }
+
         // Adjacency cannot occur if at least 1 rest-chord is involved.
         if (ch1.isRest() || ch2.isRest()) {
             return false;
@@ -276,20 +281,27 @@ public class SlotsBuilder
                 return false;
             }
 
-            // Case of nearly shared heads (put on slightly different x because deltaPitch = 1)
-            // TODO: perhaps check for minimum x overlap?
-            if ((xGap < 0) && (ch1.getStemDir() != ch2.getStemDir())) {
-                //                AbstractNoteInter h1 = ch1.getLeadingNote();
-                //                AbstractNoteInter h2 = ch2.getLeadingNote();
-                //
-                //                // TODO: perhaps accept deltaPitch of 2 only with very similar abscissae?
-                //                if (Math.abs(h1.getIntegerPitch() - h2.getIntegerPitch()) <= 2) {
+            // Embraced?
+            if (xGap < 0) {
                 return true;
-
-                //                }
             }
 
-            // If beam on each side -> false (different groups!)
+            // Similar pitches?
+            for (Inter i1 : ch1.getNotes()) {
+                final HeadInter h1 = (HeadInter) i1;
+                final int p1 = h1.getIntegerPitch();
+
+                for (Inter i2 : ch2.getNotes()) {
+                    final HeadInter h2 = (HeadInter) i2;
+                    final int p2 = h2.getIntegerPitch();
+
+                    if (Math.abs(p2 - p1) <= 2) {
+                        return true;
+                    }
+                }
+            }
+
+            // If beam on each side -> false (different groups!) TODO: ??? ???
             if (!ch1.getBeams().isEmpty() && !ch2.getBeams().isEmpty()) {
                 return false;
             }
@@ -415,6 +427,7 @@ public class SlotsBuilder
             } else if (term.equals(prevTerm)) {
                 logger.info("Stack#{} endless loop detected", stack.getIdValue());
                 stack.setAbnormal();
+
                 break;
             }
 
