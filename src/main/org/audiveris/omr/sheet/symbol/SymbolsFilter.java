@@ -50,6 +50,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.util.ByteUtil;
 
@@ -221,10 +222,10 @@ public class SymbolsFilter
                 0.5,
                 "Margin erased above & below staff header area");
 
-        private final Constant.Integer minSentenceLength = new Constant.Integer(
+        private final Constant.Integer minWordLength = new Constant.Integer(
                 "letter count",
-                3,
-                "Minimum number of chars in a sentence");
+                4,
+                "Minimum number of chars in a sentence word");
     }
 
     //--------//
@@ -338,7 +339,7 @@ public class SymbolsFilter
          */
         public void eraseInters (Map<SystemInfo, List<Glyph>> weaksMap)
         {
-            final int minSentenceLength = constants.minSentenceLength.getValue();
+            final int minWordLength = constants.minWordLength.getValue();
 
             for (SystemInfo system : sheet.getSystems()) {
                 final SIGraph sig = system.getSig();
@@ -361,14 +362,18 @@ public class SymbolsFilter
                         continue;
                     }
 
-                    // Special case for very small sentences: they are not erased
+                    // Special case for sentences of only very small words: they are not erased
                     // since they might be mistaken for text-like symbols
                     if (inter instanceof SentenceInter) {
-                        SentenceInter sentence = (SentenceInter) inter;
-                        String content = sentence.getValue();
+                        final SentenceInter sentence = (SentenceInter) inter;
+                        int maxWordLength = 0;
 
-                        // Two short sentence
-                        if (content.length() < minSentenceLength) {
+                        for (Inter iw : sentence.getMembers()) {
+                            WordInter word = (WordInter) iw;
+                            maxWordLength = Math.max(maxWordLength, word.getValue().length());
+                        }
+
+                        if (maxWordLength < minWordLength) {
                             continue;
                         }
                     }

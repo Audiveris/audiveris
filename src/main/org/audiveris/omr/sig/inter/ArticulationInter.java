@@ -127,6 +127,10 @@ public class ArticulationInter
                                             SystemInfo system,
                                             List<Inter> systemHeadChords)
     {
+        if (glyph.isVip()) {
+            logger.info("VIP ArticulationInter create {} as {}", glyph, shape);
+        }
+
         Scale scale = system.getSheet().getScale();
         SIGraph sig = system.getSig();
         final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum());

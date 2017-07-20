@@ -682,7 +682,7 @@ public class DotFactory
         luBox.x -= maxDx;
         luBox.width += maxDx;
 
-        final List<Inter> firsts = sig.intersectedInters(
+        final List<Inter> firsts = SIGraph.intersectedInters(
                 systemFirsts,
                 GeoOrder.BY_ABSCISSA,
                 luBox);

@@ -121,6 +121,9 @@ public class PaintingParameters
     /** Voice painting is chosen to be not persistent. */
     private boolean voicePainting = false;
 
+    /** Error painting is chosen to be not persistent. */
+    private boolean errorPainting = true;
+
     /** Layer painting is chosen to be not persistent. */
     private PaintingLayer paintingLayer = INPUT;
 
@@ -154,7 +157,7 @@ public class PaintingParameters
     //-----------------//
     public boolean isErrorPainting ()
     {
-        return constants.errorPainting.getValue();
+        return errorPainting;
     }
 
     //-----------------//
@@ -212,9 +215,9 @@ public class PaintingParameters
     //------------------//
     public void setErrorPainting (boolean value)
     {
-        boolean oldValue = constants.errorPainting.getValue();
-        constants.errorPainting.setValue(value);
-        firePropertyChange(ERROR_PAINTING, oldValue, constants.errorPainting.getValue());
+        boolean oldValue = errorPainting;
+        errorPainting = value;
+        firePropertyChange(ERROR_PAINTING, oldValue, errorPainting);
     }
 
     //-----------------//
@@ -382,9 +385,5 @@ public class PaintingParameters
         private final Constant.Boolean markPainting = new Constant.Boolean(
                 true,
                 "Should the marks be painted");
-
-        private final Constant.Boolean errorPainting = new Constant.Boolean(
-                true,
-                "Should the errors be painted");
     }
 }

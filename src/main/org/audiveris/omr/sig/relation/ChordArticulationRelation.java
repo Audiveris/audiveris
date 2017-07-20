@@ -141,7 +141,7 @@ public class ChordArticulationRelation
                 "Maximum horizontal gap between articulation center & chord");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
-                1.5,
+                2.0,
                 "Maximum vertical gap between articulation center & chord");
 
         private final Constant.Ratio xWeight = new Constant.Ratio(
