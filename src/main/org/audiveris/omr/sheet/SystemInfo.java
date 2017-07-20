@@ -1288,6 +1288,10 @@ public class SystemInfo
     // setInterSet //
     //-------------//
     /**
+     * Trick used during marshalling.
+     * <p>
+     * If interSet is not null, then any inter being marshalled is also included in this set.
+     *
      * @param interSet the interSet to set
      */
     public void setInterSet (InterSet interSet)

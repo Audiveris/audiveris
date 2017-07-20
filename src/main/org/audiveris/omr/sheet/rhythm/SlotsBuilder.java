@@ -517,7 +517,7 @@ public class SlotsBuilder
 
         // Populate map of staves with installed chords
         for (Measure measure : stack.getMeasures()) {
-            for (AbstractChordInter chord : measure.getAllChords()) {
+            for (AbstractChordInter chord : measure.getStandardChords()) {
                 for (Staff staff : chord.getStaves()) {
                     map.get(staff).add(chord);
                 }

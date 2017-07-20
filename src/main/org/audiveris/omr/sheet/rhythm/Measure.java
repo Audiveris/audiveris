@@ -39,7 +39,6 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
-import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -114,10 +113,6 @@ public class Measure
     /** Head chords, populated once for all by CHORDS step. */
     @XmlElementRef
     private final Set<HeadChordInter> headChords = new LinkedHashSet<HeadChordInter>();
-
-    /** Grace chords, populated in CHORDS step. */
-    @XmlElement(name = "small-chord")
-    private final Set<SmallChordInter> graceChords = new LinkedHashSet<SmallChordInter>();
 
     /** Rest chords, populated by RHYTHMS step. */
     @XmlElementRef
@@ -241,8 +236,6 @@ public class Measure
                 if (chord.getMembers().get(0).getShape() == Shape.WHOLE_REST) {
                     wholeRestChords.add(chord);
                 }
-            } else if (chord instanceof SmallChordInter) {
-                graceChords.add((SmallChordInter) chord);
             }
         } else if (inter instanceof ClefInter) {
             clefs.add((ClefInter) inter);
@@ -298,10 +291,6 @@ public class Measure
 
             // Chords
             for (AbstractChordInter chord : headChords) {
-                chord.afterReload(this);
-            }
-
-            for (AbstractChordInter chord : graceChords) {
                 chord.afterReload(this);
             }
 
@@ -406,24 +395,6 @@ public class Measure
             // Use end of staff
             return staff.getAbscissa(RIGHT);
         }
-    }
-
-    //--------------//
-    // getAllChords //
-    //--------------//
-    /**
-     * Report the collection of all chords (head chords, rest chords, small chords)
-     *
-     * @return the set of all chords in this measure
-     */
-    public Set<AbstractChordInter> getAllChords ()
-    {
-        final Set<AbstractChordInter> allChords = new LinkedHashSet<AbstractChordInter>();
-        allChords.addAll(headChords);
-        allChords.addAll(restChords);
-        allChords.addAll(graceChords);
-
-        return allChords;
     }
 
     //------------//
@@ -926,7 +897,7 @@ public class Measure
     // getStandardChords //
     //-------------------//
     /**
-     * Report the collection of standard chords (head chords, rest chords, NO small chords)
+     * Report the collection of standard chords (head chords, rest chords)
      *
      * @return the set of all standard chords in this measure
      */
@@ -993,7 +964,6 @@ public class Measure
         }
 
         set.addAll(headChords);
-        set.addAll(graceChords);
         set.addAll(restChords);
         set.addAll(otherRhythms);
 
@@ -1236,8 +1206,6 @@ public class Measure
             otherRhythms.remove(inter);
         } else if (inter instanceof HeadChordInter) {
             headChords.remove((HeadChordInter) inter);
-        } else if (inter instanceof SmallChordInter) {
-            graceChords.remove((SmallChordInter) inter);
         } else {
             logger.error("Attempt to use removeInter() with {}", inter);
         }

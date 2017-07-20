@@ -443,25 +443,6 @@ public class MeasureStack
         }
     }
 
-    //--------------//
-    // getAllChords //
-    //--------------//
-    /**
-     * Report the collection of all chords in stack (heads, rests, graces)
-     *
-     * @return all chords in stack
-     */
-    public Set<AbstractChordInter> getAllChords ()
-    {
-        Set<AbstractChordInter> allChords = new LinkedHashSet<AbstractChordInter>();
-
-        for (Measure measure : measures) {
-            allChords.addAll(measure.getAllChords());
-        }
-
-        return allChords;
-    }
-
     //-----------------//
     // getClosestChord //
     //-----------------//

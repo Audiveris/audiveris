@@ -85,17 +85,13 @@
 leftBarline
 midBarline
 rightBarline
---
 dummy?
+otherRhythms
+--
 clefs
 keys
 timeSigs
-beamGroups
-headChords
-graceChords
-restChords
-wholeRestChords
-otherRhythms</panel_attributes>
+wholeRestChords</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -142,21 +138,20 @@ suspicious</panel_attributes>
       <x>150</x>
       <y>20</y>
       <w>120</w>
-      <h>210</h>
+      <h>200</h>
     </coordinates>
     <panel_attributes>*MeasureStack*
 --
 id
 left
 right
---
+stackTuplets
 special
 repeat
 expectedDuration
 actualDuration
 excess
-abnormal
-stackTuplets</panel_attributes>
+abnormal</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -174,12 +169,12 @@ stackTuplets</panel_attributes>
     <type>com.baselet.element.old.element.Relation</type>
     <coordinates>
       <x>180</x>
-      <y>200</y>
+      <y>190</y>
       <w>50</w>
-      <h>90</h>
+      <h>100</h>
     </coordinates>
     <panel_attributes>lt=&lt;&lt;&lt;-</panel_attributes>
-    <additional_attributes>30;30;30;70</additional_attributes>
+    <additional_attributes>30;30;30;80</additional_attributes>
   </element>
   <element>
     <type>com.baselet.element.old.element.Relation</type>
@@ -205,6 +200,7 @@ stackTuplets</panel_attributes>
 id
 excess
 wholeRestChord
+--
 termination
 inferredTimeSig</panel_attributes>
     <additional_attributes/>
