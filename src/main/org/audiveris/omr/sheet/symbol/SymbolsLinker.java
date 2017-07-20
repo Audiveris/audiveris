@@ -22,6 +22,8 @@
 package org.audiveris.omr.sheet.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -55,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Collection;
@@ -157,10 +160,12 @@ public class SymbolsLinker
             if (!fermata.linkWithBarline()) {
                 // Look for a chord (head or rest) related to this fermata
                 final Point center = fermata.getCenter();
+                final Rectangle bounds = arc.getBounds();
                 final MeasureStack stack = system.getMeasureStackAt(center);
                 final Collection<AbstractChordInter> chords = (fermata.getShape() == Shape.FERMATA_BELOW)
                         ? stack.getStandardChordsAbove(
-                                center) : stack.getStandardChordsBelow(center);
+                                center,
+                                bounds) : stack.getStandardChordsBelow(center, bounds);
 
                 if (!fermata.linkWithChords(chords)) {
                     // No link to barline, no link to chord, discard it
@@ -220,8 +225,9 @@ public class SymbolsLinker
             }
 
             final Point location = pedal.getCenter();
+            final Rectangle bounds = pedal.getBounds();
             final MeasureStack stack = system.getMeasureStackAt(location);
-            final AbstractChordInter chordAbove = stack.getStandardChordAbove(location);
+            final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, bounds);
 
             if (chordAbove != null) {
                 sig.addEdge(chordAbove, pedal, new ChordPedalRelation());
@@ -240,8 +246,10 @@ public class SymbolsLinker
      */
     private void linkTexts ()
     {
+        final Scale scale = system.getSheet().getScale();
+
         for (Inter sInter : sig.inters(SentenceInter.class)) {
-            SentenceInter sentence = (SentenceInter) sInter;
+            final SentenceInter sentence = (SentenceInter) sInter;
             final TextRole role = sentence.getRole();
 
             if (role == null) {
@@ -251,6 +259,7 @@ public class SymbolsLinker
             }
 
             final Point location = sentence.getLocation();
+            final Rectangle bounds = sentence.getBounds();
 
             switch (role) {
             case Lyrics: {
@@ -266,7 +275,11 @@ public class SymbolsLinker
             case Direction: {
                 // Map direction with proper chord
                 MeasureStack stack = system.getMeasureStackAt(location);
-                AbstractChordInter chord = stack.getEventChord(location);
+                int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
+                Rectangle fatBounds = new Rectangle(bounds);
+                fatBounds.grow(xGapMax, 0);
+
+                AbstractChordInter chord = stack.getEventChord(location, fatBounds);
 
                 if (chord != null) {
                     sig.addEdge(chord, sentence, new ChordSentenceRelation());
@@ -280,7 +293,7 @@ public class SymbolsLinker
             case ChordName: {
                 // Map chordName with proper chord
                 MeasureStack stack = system.getMeasureStackAt(location);
-                AbstractChordInter chordBelow = stack.getStandardChordBelow(location);
+                AbstractChordInter chordBelow = stack.getStandardChordBelow(location, bounds);
 
                 if (chordBelow != null) {
                     WordInter word = sentence.getFirstWord(); // The single word in fact
@@ -307,6 +320,9 @@ public class SymbolsLinker
      */
     private void linkWedges ()
     {
+        final Scale scale = system.getSheet().getScale();
+        final int xGapMax = scale.toPixels(ChordWedgeRelation.getXGapMax());
+
         for (Inter inter : sig.inters(WedgeInter.class)) {
             final WedgeInter wedge = (WedgeInter) inter;
             Line2D topLine = wedge.getLine1();
@@ -314,13 +330,15 @@ public class SymbolsLinker
             for (HorizontalSide side : HorizontalSide.values()) {
                 final Point2D location = (side == LEFT) ? topLine.getP1() : topLine.getP2();
                 final MeasureStack stack = system.getMeasureStackAt(location);
+                final Rectangle lu = new Rectangle(PointUtil.rounded(location));
+                lu.grow(xGapMax, 0);
 
-                final AbstractChordInter chordAbove = stack.getStandardChordAbove(location);
+                final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, lu);
 
                 if (chordAbove != null) {
                     sig.addEdge(chordAbove, wedge, new ChordWedgeRelation(side));
                 } else {
-                    final AbstractChordInter chordBelow = stack.getStandardChordBelow(location);
+                    final AbstractChordInter chordBelow = stack.getStandardChordBelow(location, lu);
 
                     if (chordBelow != null) {
                         sig.addEdge(chordBelow, wedge, new ChordWedgeRelation(side));

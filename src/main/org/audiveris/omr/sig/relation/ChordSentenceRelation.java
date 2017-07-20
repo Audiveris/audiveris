@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Scale;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -33,4 +36,30 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordSentenceRelation
         extends AbstractSupport
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // getXGapMax //
+    //------------//
+    public static Scale.Fraction getXGapMax ()
+    {
+        return constants.xGapMax;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction xGapMax = new Scale.Fraction(
+                1.0,
+                "Maximum horizontal gap between sentence & chord");
+    }
 }

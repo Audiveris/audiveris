@@ -242,8 +242,8 @@ public class DynamicsInter
 
         for (VerticalSide side : VerticalSide.values()) {
             final boolean lookAbove = side == VerticalSide.TOP;
-            AbstractChordInter chord = lookAbove ? stack.getStandardChordAbove(center)
-                    : stack.getStandardChordBelow(center);
+            AbstractChordInter chord = lookAbove ? stack.getStandardChordAbove(center, bounds)
+                    : stack.getStandardChordBelow(center, bounds);
 
             if ((chord == null)
                 || chord instanceof RestChordInter

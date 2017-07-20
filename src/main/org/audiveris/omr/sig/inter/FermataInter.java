@@ -241,7 +241,7 @@ public class FermataInter
     /**
      * (Try to) connect this fermata with suitable chord.
      *
-     * @param chords the chords in fermata related staff
+     * @param chords the chords in fermata related staff, constrained by fermata x range
      * @return true if successful
      */
     public boolean linkWithChords (Collection<AbstractChordInter> chords)
@@ -250,7 +250,7 @@ public class FermataInter
         Point center = getCenter();
         AbstractChordInter chord = AbstractChordInter.getClosestChord(chords, center);
 
-        if ((chord != null) && (GeoUtil.xOverlap(getBounds(), chord.getBounds()) > 0)) {
+        if (chord != null) {
             double dyChord = Math.sqrt(GeoUtil.ptDistanceSq(chord.getBounds(), center.x, center.y));
 
             // If chord is mirrored, select the closest vertically

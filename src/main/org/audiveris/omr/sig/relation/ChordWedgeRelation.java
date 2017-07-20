@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.util.HorizontalSide;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -39,8 +41,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordWedgeRelation
         extends AbstractSupport
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Left or right side of the wedge. */
     @XmlAttribute
     private final HorizontalSide side;
@@ -76,6 +81,14 @@ public class ChordWedgeRelation
         return side;
     }
 
+    //------------//
+    // getXGapMax //
+    //------------//
+    public static Scale.Fraction getXGapMax ()
+    {
+        return constants.xGapMax;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -83,5 +96,19 @@ public class ChordWedgeRelation
     public String toString ()
     {
         return super.toString() + "/" + side;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction xGapMax = new Scale.Fraction(
+                1.0,
+                "Maximum horizontal gap between wedge extremum point & chord");
     }
 }
