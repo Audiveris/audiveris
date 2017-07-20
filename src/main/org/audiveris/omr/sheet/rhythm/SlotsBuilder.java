@@ -76,6 +76,12 @@ import java.util.Set;
  * slot.</li>
  * <li>Similar abscissa is only an indication, it is not always reliable.</li>
  * </ul>
+ * <p>
+ * Example:<br>
+ * <img src="doc-files/AdjacentChords.png">
+ * <p>
+ * More examples:<br>
+ * <img src="doc-files/AdjacentChords4.png">
  *
  * @author Hervé Bitteur
  */
