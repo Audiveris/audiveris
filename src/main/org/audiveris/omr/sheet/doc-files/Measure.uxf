@@ -261,9 +261,12 @@ table</panel_attributes>
       <x>490</x>
       <y>500</y>
       <w>90</w>
-      <h>80</h>
+      <h>120</h>
     </coordinates>
     <panel_attributes>*Chord*
+--
+stem
+notes
 --
 dotsNumber
 timeOffset
