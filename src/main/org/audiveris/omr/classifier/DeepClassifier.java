@@ -22,7 +22,6 @@
 package org.audiveris.omr.classifier;
 
 import static org.audiveris.omr.classifier.Classifier.SHAPE_COUNT;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -183,9 +182,13 @@ public class DeepClassifier
         final INDArray features = Nd4j.create(doubles);
         normalize(features);
 
-        INDArray output = model.output(features, false);
-        BaseLayer outputLayer = (BaseLayer) model.getOutputLayer();
-        INDArray preOutput = outputLayer.preOutput(false);
+        final INDArray preOutput;
+
+        synchronized (this) {
+            INDArray output = model.output(features, false);
+            BaseLayer outputLayer = (BaseLayer) model.getOutputLayer();
+            preOutput = outputLayer.preOutput(false);
+        }
 
         Evaluation[] evals = new Evaluation[SHAPE_COUNT];
         Shape[] values = Shape.values();
