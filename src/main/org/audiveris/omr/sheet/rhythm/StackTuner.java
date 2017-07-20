@@ -23,7 +23,6 @@ package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.TimeRational;
-import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 
@@ -76,46 +75,56 @@ public class StackTuner
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // freeze //
-    //--------//
-    public void freeze ()
-    {
-        //        // For those chords that have not been kept, delete the member notes
-        //        List<Inter> discardedInters = new ArrayList<Inter>(seeds);
-        //        discardedInters.removeAll(keptInters);
-        //
-        //        for (Inter discarded : discardedInters) {
-        //            discarded.delete();
-        //            stack.removeInter(discarded);
-        //
-        //            if (discarded instanceof InterEnsemble) {
-        //                for (Inter member : ((InterEnsemble) discarded).getMembers()) {
-        //                    member.delete();
-        //                }
-        //            }
-        //        }
-        //
-        //        // Freeze the stack rhythm data
-        //        for (Inter kept : keptInters) {
-        //            kept.freeze();
-        //        }
-        //
-        //        for (AbstractChordInter chord : stack.getStandardChords()) {
-        //            chord.freeze();
-        //        }
-    }
-
     //---------//
-    // install //
+    // process //
     //---------//
     /**
-     * Try to install the provided configuration.
+     * Process the stack to find out a correct configuration of rhythm data.
+     *
+     * @param initialDuration The expected duration for this stack, or null
+     */
+    public void process (Rational initialDuration)
+    {
+        stack.setExpectedDuration(initialDuration);
+
+        try {
+            if (!check() && !failFast) {
+                logger.info("{}{} no correct rhythm", stack.getSystem().getLogPrefix(), stack);
+            }
+        } catch (Exception ex) {
+            logger.warn("Error " + ex + " checkConfig ", ex);
+        }
+    }
+
+    //-------//
+    // check //
+    //-------//
+    /**
+     * Check stack current configuration.
+     *
+     * @return OK if the configuration if correct
+     */
+    private boolean check ()
+    {
+        // Compute and check the time slots
+        if (!checkSlots(failFast)) {
+            return false;
+        }
+
+        // Check that each voice looks correct
+        return !failFast && checkVoices();
+    }
+
+    //------------//
+    // checkSlots //
+    //------------//
+    /**
+     * Check the resulting time slots of current stack configuration.
      *
      * @param failFast true to stop processing on first error
      * @return true if successful, false if an error was detected
      */
-    public boolean install (boolean failFast)
+    private boolean checkSlots (boolean failFast)
     {
         // Reset all rhythm data within the stack
         stack.resetRhythm();
@@ -135,50 +144,6 @@ public class StackTuner
 
         // Build slots & voices
         return new SlotsBuilder(stack, failFast).process();
-    }
-
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Process the stack to find out a correct configuration of rhythm data.
-     *
-     * @param initialDuration The expected duration for this stack, or null
-     */
-    public void process (Rational initialDuration)
-    {
-        stack.setExpectedDuration(initialDuration);
-
-        try {
-            if (checkConfig()) {
-                // Protect correct rhythm data against other symbols
-                ///freeze();
-            } else if (!failFast) {
-                SystemInfo system = stack.getSystem();
-                logger.info("{}{} no correct rhythm", system.getLogPrefix(), stack);
-            }
-        } catch (Exception ex) {
-            logger.warn("Error " + ex + " checkConfig ", ex);
-        }
-    }
-
-    //-------------//
-    // checkConfig //
-    //-------------//
-    /**
-     * Check the current configuration.
-     *
-     * @return OK if the configuration if correct
-     */
-    private boolean checkConfig ()
-    {
-        // Installation computes the time slots, and may fail
-        if (!install(failFast)) {
-            return false;
-        }
-
-        // Check that each voice looks correct
-        return !failFast && checkVoices();
     }
 
     //-------------//
