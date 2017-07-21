@@ -217,6 +217,27 @@ public class SampleRepository
     // addSample //
     //-----------//
     /**
+     * Build and add a sample from a provided glyph and containing sheet.
+     * <p>
+     * <b>Beware</b>, this method uses sheet global interline rather than staff specific interline.
+     *
+     * @param shape assigned shape
+     * @param glyph underlying glyph
+     * @param sheet containing sheet
+     */
+    @Deprecated
+    public void addSample (Shape shape,
+                           Glyph glyph,
+                           Sheet sheet)
+    {
+        final SampleSheet sampleSheet = findSampleSheet(sheet);
+        addSample(shape, glyph, sheet.getInterline(), sampleSheet, null);
+    }
+
+    //-----------//
+    // addSample //
+    //-----------//
+    /**
      * Build and add a sample from a provided glyph, with its related staff and
      * containing sheet.
      *
@@ -874,19 +895,6 @@ public class SampleRepository
         return GLOBAL != null;
     }
 
-    //----------------//
-    // hasSheetImages //
-    //----------------//
-    /**
-     * Check whether file of sheet images is available.
-     *
-     * @return true if images are available
-     */
-    public boolean hasSheetImages ()
-    {
-        return Files.exists(imagesFile);
-    }
-
     //-----------//
     // isSymbols //
     //-----------//
@@ -925,6 +933,19 @@ public class SampleRepository
         }
 
         return exitListener;
+    }
+
+    //----------------//
+    // hasSheetImages //
+    //----------------//
+    /**
+     * Check whether file of sheet images is available.
+     *
+     * @return true if images are available
+     */
+    public boolean hasSheetImages ()
+    {
+        return Files.exists(imagesFile);
     }
 
     //-------------------//

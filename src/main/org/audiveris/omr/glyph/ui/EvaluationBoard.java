@@ -95,7 +95,7 @@ public class EvaluationBoard
     protected final Classifier classifier;
 
     /** Related inters controller */
-    protected final InterController intersController;
+    protected final InterController interController;
 
     /** Related sheet */
     @Navigable(false)
@@ -118,18 +118,18 @@ public class EvaluationBoard
      * Create an evaluation board with one neural network classifier and the ability to
      * force glyph shape.
      *
-     * @param isActive         true for active buttons
-     * @param sheet            the related sheet, or null
-     * @param classifier       the classifier to use
-     * @param glyphService     the service to get glyphs
-     * @param intersController the related inters controller
-     * @param selected         true for pre-selection
+     * @param isActive        true for active buttons
+     * @param sheet           the related sheet, or null
+     * @param classifier      the classifier to use
+     * @param glyphService    the service to get glyphs
+     * @param interController the related inters controller
+     * @param selected        true for pre-selection
      */
     public EvaluationBoard (boolean isActive,
                             Sheet sheet,
                             Classifier classifier,
                             EntityService<Glyph> glyphService,
-                            InterController intersController,
+                            InterController interController,
                             boolean selected)
     {
         super(
@@ -142,7 +142,7 @@ public class EvaluationBoard
                 false);
 
         this.classifier = classifier;
-        this.intersController = intersController;
+        this.interController = interController;
         this.isActive = isActive;
         this.sheet = sheet;
 
@@ -318,7 +318,7 @@ public class EvaluationBoard
                 return;
             }
 
-            boolean enabled = !glyph.isVirtual();
+            boolean enabled = constants.allowSampleCreation.isSet();
             double minGrade = constants.minGrade.getValue();
             int iBound = Math.min(evalCount(), positiveEvals(evals));
             int i;
@@ -375,6 +375,10 @@ public class EvaluationBoard
                 "buttons",
                 5,
                 "Max number of buttons in the shape selector");
+
+        private final Constant.Boolean allowSampleCreation = new Constant.Boolean(
+                false,
+                "Should we allow sample creation?");
     }
 
     //------------//
@@ -396,7 +400,7 @@ public class EvaluationBoard
         //~ Constructors ---------------------------------------------------------------------------
         public EvalButton ()
         {
-            grade.setToolTipText("(Logarithmic) Grade of the evaluation");
+            grade.setToolTipText("Grade of the evaluation");
 
             if (isActive) {
                 button = new JButton();
@@ -419,7 +423,7 @@ public class EvaluationBoard
         public void actionPerformed (ActionEvent e)
         {
             // Assign inter on current glyph with selected shape
-            if (intersController != null) {
+            if (interController != null) {
                 Glyph glyph = ((EntityService<Glyph>) getSelectionService()).getSelectedEntity();
 
                 if (glyph != null) {
@@ -427,7 +431,8 @@ public class EvaluationBoard
                     Shape shape = Shape.valueOf(str);
 
                     // Actually assign the shape
-                    intersController.addInter(glyph, shape);
+                    ///interController.addInter(glyph, shape);
+                    sheet.getStub().getBook().getSampleRepository().addSample(shape, glyph, sheet);
                 }
             }
         }
@@ -466,7 +471,6 @@ public class EvaluationBoard
                 }
 
                 grade.setVisible(true);
-                ///grade.setText(String.format("%.3f", Math.log(eval.grade)));
                 grade.setText(String.format("%.4f", eval.grade));
             } else {
                 grade.setVisible(false);

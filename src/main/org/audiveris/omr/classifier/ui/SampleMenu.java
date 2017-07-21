@@ -22,7 +22,6 @@
 package org.audiveris.omr.classifier.ui;
 
 import org.audiveris.omr.classifier.SampleRepository;
-import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
@@ -94,12 +93,10 @@ public class SampleMenu
     //-----------//
     private void addSample (Shape shape)
     {
+        // TODO: we need staff information (-> interline and pitch)
         final Book book = sheet.getStub().getBook();
         final SampleRepository repository = book.getSampleRepository();
-        final SampleSheet sampleSheet = repository.findSampleSheet(sheet);
-
-        // TODO: we need staff information (-> interline and pitch)
-        repository.addSample(shape, glyph, sheet.getInterline(), sampleSheet, null);
+        repository.addSample(shape, glyph, sheet);
     }
 
     //-----------//
