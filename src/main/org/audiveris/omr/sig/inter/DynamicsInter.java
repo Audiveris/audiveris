@@ -223,10 +223,6 @@ public class DynamicsInter
      */
     public boolean linkWithChord ()
     {
-        if (isVip()) {
-            logger.info("VIP linkWithChord for {}", this);
-        }
-
         return !searchPartnerships(sig.getSystem(), true).isEmpty();
     }
 
@@ -235,6 +231,10 @@ public class DynamicsInter
     //-------------------//
     public Partnership lookupPartnership (SystemInfo system)
     {
+        if (isVip()) {
+            logger.info("VIP lookupPartnership for {}", this);
+        }
+
         // Look for a suitable chord related to this dynamics element
         final Point center = getCenter();
         final MeasureStack stack = system.getMeasureStackAt(center);
@@ -245,9 +245,7 @@ public class DynamicsInter
             AbstractChordInter chord = lookAbove ? stack.getStandardChordAbove(center, bounds)
                     : stack.getStandardChordBelow(center, bounds);
 
-            if ((chord == null)
-                || chord instanceof RestChordInter
-                || (GeoUtil.xGap(bounds, chord.getBounds()) > 0)) {
+            if ((chord == null) || chord instanceof RestChordInter) {
                 continue;
             }
 
@@ -260,7 +258,10 @@ public class DynamicsInter
                 if (dyMirror < dyChord) {
                     dyChord = dyMirror;
                     chord = (AbstractChordInter) chord.getMirror();
-                    logger.debug("{} selecting mirror {}", this, chord);
+
+                    if (isVip()) {
+                        logger.info("VIP {} selecting mirror {}", this, chord);
+                    }
                 }
             }
 
@@ -270,11 +271,13 @@ public class DynamicsInter
 
             if (dyChord > maxDy) {
                 // Check vertical distance between element and staff
-                final Staff chordStaff = chord.getTopStaff();
+                final Staff chordStaff = lookAbove ? chord.getBottomStaff() : chord.getTopStaff();
                 final int dyStaff = chordStaff.gapTo(bounds);
 
                 if (dyStaff > maxDy) {
-                    logger.debug("{} too far from staff/chord: {}", this, dyStaff);
+                    if (isVip()) {
+                        logger.info("VIP {} too far from staff/chord: {}", this, dyStaff);
+                    }
 
                     continue;
                 }
@@ -326,7 +329,7 @@ public class DynamicsInter
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxDy = new Scale.Fraction(
-                4.5,
+                7,
                 "Maximum vertical distance between dynamics center and related chord/staff");
     }
 }
