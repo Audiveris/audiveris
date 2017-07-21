@@ -22,7 +22,6 @@
 package org.audiveris.omr.sheet.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -117,7 +116,12 @@ public class SymbolsLinker
     {
         for (Inter inter : sig.inters(DynamicsInter.class)) {
             DynamicsInter dynamics = (DynamicsInter) inter;
-            dynamics.linkWithChord();
+
+            try {
+                dynamics.linkWithChord();
+            } catch (Exception ex) {
+                logger.warn("Error in linkDynamics for {} {}", inter, ex.toString(), ex);
+            }
         }
     }
 
@@ -137,42 +141,46 @@ public class SymbolsLinker
             FermataArcInter arc = (FermataArcInter) arcInter;
             FermataDotInter dot = null;
 
-            for (Relation rel : sig.getRelations(arc, DotFermataRelation.class)) {
-                dot = (FermataDotInter) sig.getOppositeInter(arcInter, rel);
+            try {
+                for (Relation rel : sig.getRelations(arc, DotFermataRelation.class)) {
+                    dot = (FermataDotInter) sig.getOppositeInter(arcInter, rel);
 
-                break;
-            }
-
-            if (dot == null) {
-                arc.delete();
-
-                continue;
-            }
-
-            FermataInter fermata = FermataInter.create(arc, dot, system);
-            sig.addVertex(fermata);
-
-            if (fermata.isVip()) {
-                logger.info("VIP linkFermatas on {}", fermata);
-            }
-
-            // Look for a related barline
-            if (!fermata.linkWithBarline()) {
-                // Look for a chord (head or rest) related to this fermata
-                final Point center = fermata.getCenter();
-                final Rectangle bounds = arc.getBounds();
-                final MeasureStack stack = system.getMeasureStackAt(center);
-                final Collection<AbstractChordInter> chords = (fermata.getShape() == Shape.FERMATA_BELOW)
-                        ? stack.getStandardChordsAbove(
-                                center,
-                                bounds) : stack.getStandardChordsBelow(center, bounds);
-
-                if (!fermata.linkWithChords(chords)) {
-                    // No link to barline, no link to chord, discard it
-                    fermata.delete();
-                    arc.delete();
-                    dot.delete();
+                    break;
                 }
+
+                if (dot == null) {
+                    arc.delete();
+
+                    continue;
+                }
+
+                FermataInter fermata = FermataInter.create(arc, dot, system);
+                sig.addVertex(fermata);
+
+                if (fermata.isVip()) {
+                    logger.info("VIP linkFermatas on {}", fermata);
+                }
+
+                // Look for a related barline
+                if (!fermata.linkWithBarline()) {
+                    // Look for a chord (head or rest) related to this fermata
+                    final Point center = fermata.getCenter();
+                    final Rectangle bounds = arc.getBounds();
+                    final MeasureStack stack = system.getMeasureStackAt(center);
+                    final Collection<AbstractChordInter> chords = (fermata.getShape() == Shape.FERMATA_BELOW)
+                            ? stack.getStandardChordsAbove(
+                                    center,
+                                    bounds) : stack.getStandardChordsBelow(center, bounds);
+
+                    if (!fermata.linkWithChords(chords)) {
+                        // No link to barline, no link to chord, discard it
+                        fermata.delete();
+                        arc.delete();
+                        dot.delete();
+                    }
+                }
+            } catch (Exception ex) {
+                logger.warn("Error in linkFermatas for {} {}", arc, ex.toString(), ex);
             }
         }
     }
@@ -189,22 +197,30 @@ public class SymbolsLinker
         for (Inter chordInter : sig.inters(SmallChordInter.class)) {
             final SmallChordInter smallChord = (SmallChordInter) chordInter;
 
-            for (Inter interNote : smallChord.getNotes()) {
-                for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
-                    SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
-                    HeadInter head = slur.getHead(HorizontalSide.RIGHT);
+            if (smallChord.isVip()) {
+                logger.info("VIP linkGracesl for {}", smallChord);
+            }
 
-                    if (head != null) {
-                        Voice voice = head.getVoice();
+            try {
+                for (Inter interNote : smallChord.getNotes()) {
+                    for (Relation rel : sig.getRelations(interNote, SlurHeadRelation.class)) {
+                        SlurInter slur = (SlurInter) sig.getOppositeInter(interNote, rel);
+                        HeadInter head = slur.getHead(HorizontalSide.RIGHT);
 
-                        if (voice != null) {
-                            smallChord.setVoice(voice);
-                            logger.debug("{} assigned {}", smallChord, voice);
+                        if (head != null) {
+                            Voice voice = head.getVoice();
 
-                            continue SmallLoop;
+                            if (voice != null) {
+                                smallChord.setVoice(voice);
+                                logger.debug("{} assigned {}", smallChord, voice);
+
+                                continue SmallLoop;
+                            }
                         }
                     }
                 }
+            } catch (Exception ex) {
+                logger.warn("Error in linkGraces for {} {}", smallChord, ex.toString(), ex);
             }
         }
     }
@@ -220,19 +236,23 @@ public class SymbolsLinker
         for (Inter inter : sig.inters(PedalInter.class)) {
             final PedalInter pedal = (PedalInter) inter;
 
-            if (pedal.isVip()) {
-                logger.info("VIP linkPedal for {}", pedal);
-            }
+            try {
+                if (pedal.isVip()) {
+                    logger.info("VIP linkPedal for {}", pedal);
+                }
 
-            final Point location = pedal.getCenter();
-            final Rectangle bounds = pedal.getBounds();
-            final MeasureStack stack = system.getMeasureStackAt(location);
-            final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, bounds);
+                final Point location = pedal.getCenter();
+                final Rectangle bounds = pedal.getBounds();
+                final MeasureStack stack = system.getMeasureStackAt(location);
+                final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, bounds);
 
-            if (chordAbove != null) {
-                sig.addEdge(chordAbove, pedal, new ChordPedalRelation());
-            } else {
-                logger.info("No chord above {}", pedal);
+                if (chordAbove != null) {
+                    sig.addEdge(chordAbove, pedal, new ChordPedalRelation());
+                } else {
+                    logger.info("No chord above {}", pedal);
+                }
+            } catch (Exception ex) {
+                logger.warn("Error in linkPedals for {} {}", pedal, ex.toString(), ex);
             }
         }
     }
@@ -250,64 +270,86 @@ public class SymbolsLinker
 
         for (Inter sInter : sig.inters(SentenceInter.class)) {
             final SentenceInter sentence = (SentenceInter) sInter;
-            final TextRole role = sentence.getRole();
 
-            if (role == null) {
-                logger.info("No role for {}", sentence);
-
-                continue;
-            }
-
-            final Point location = sentence.getLocation();
-            final Rectangle bounds = sentence.getBounds();
-
-            switch (role) {
-            case Lyrics: {
-                // Map each syllable with proper chord, in staff just above
-                for (Inter wInter : sentence.getMembers()) {
-                    LyricItemInter item = (LyricItemInter) wInter;
-                    item.mapToChord();
+            try {
+                if (sentence.isVip()) {
+                    logger.info("VIP linkTexts for {}", sentence);
                 }
-            }
 
-            break;
+                final TextRole role = sentence.getRole();
 
-            case Direction: {
-                // Map direction with proper chord
-                MeasureStack stack = system.getMeasureStackAt(location);
-                int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
-                Rectangle fatBounds = new Rectangle(bounds);
-                fatBounds.grow(xGapMax, 0);
+                if (role == null) {
+                    logger.info("No role for {}", sentence);
 
-                AbstractChordInter chord = stack.getEventChord(location, fatBounds);
-
-                if (chord != null) {
-                    sig.addEdge(chord, sentence, new ChordSentenceRelation());
-                } else {
-                    logger.info("No chord above direction {}", sentence);
+                    continue;
                 }
-            }
 
-            break;
+                final Point location = sentence.getLocation();
+                final Rectangle bounds = sentence.getBounds();
 
-            case ChordName: {
-                // Map chordName with proper chord
-                MeasureStack stack = system.getMeasureStackAt(location);
-                AbstractChordInter chordBelow = stack.getStandardChordBelow(location, bounds);
-
-                if (chordBelow != null) {
-                    WordInter word = sentence.getFirstWord(); // The single word in fact
-                    sig.addEdge(chordBelow, word, new ChordNameRelation());
-                } else {
-                    logger.info("No chord above chordName {}", sentence);
+                switch (role) {
+                case Lyrics: {
+                    // Map each syllable with proper chord, in staff just above
+                    for (Inter wInter : sentence.getMembers()) {
+                        LyricItemInter item = (LyricItemInter) wInter;
+                        item.mapToChord();
+                    }
                 }
-            }
 
-            break;
+                break;
 
-            default:
+                case Direction: {
+                    // Map direction with proper chord
+                    MeasureStack stack = system.getMeasureStackAt(location);
 
-            // Roles other than [Lyrics, Direction, ChordName] don't use relations
+                    if (stack == null) {
+                        logger.info(
+                                "No measure stack for direction {} {}",
+                                sentence,
+                                sentence.getValue());
+
+                        break;
+                    }
+
+                    int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
+                    Rectangle fatBounds = new Rectangle(bounds);
+                    fatBounds.grow(xGapMax, 0);
+
+                    AbstractChordInter chord = stack.getEventChord(location, fatBounds);
+
+                    if (chord != null) {
+                        sig.addEdge(chord, sentence, new ChordSentenceRelation());
+                    } else {
+                        logger.info(
+                                "No chord above direction {} {}",
+                                sentence,
+                                sentence.getValue());
+                    }
+                }
+
+                break;
+
+                case ChordName: {
+                    // Map chordName with proper chord
+                    MeasureStack stack = system.getMeasureStackAt(location);
+                    AbstractChordInter chordBelow = stack.getStandardChordBelow(location, bounds);
+
+                    if (chordBelow != null) {
+                        WordInter word = sentence.getFirstWord(); // The single word in fact
+                        sig.addEdge(chordBelow, word, new ChordNameRelation());
+                    } else {
+                        logger.info("No chord above chordName {}", sentence);
+                    }
+                }
+
+                break;
+
+                default:
+
+                // Roles other than [Lyrics, Direction, ChordName] don't use relations
+                }
+            } catch (Exception ex) {
+                logger.warn("Error in linkTexts for {} {}", sentence, ex.toString(), ex);
             }
         }
     }
@@ -320,32 +362,37 @@ public class SymbolsLinker
      */
     private void linkWedges ()
     {
-        final Scale scale = system.getSheet().getScale();
-        final int xGapMax = scale.toPixels(ChordWedgeRelation.getXGapMax());
-
         for (Inter inter : sig.inters(WedgeInter.class)) {
-            final WedgeInter wedge = (WedgeInter) inter;
-            Line2D topLine = wedge.getLine1();
+            try {
+                if (inter.isVip()) {
+                    logger.info("VIP linkWedges for {}", inter);
+                }
 
-            for (HorizontalSide side : HorizontalSide.values()) {
-                final Point2D location = (side == LEFT) ? topLine.getP1() : topLine.getP2();
-                final MeasureStack stack = system.getMeasureStackAt(location);
-                final Rectangle lu = new Rectangle(PointUtil.rounded(location));
-                lu.grow(xGapMax, 0);
+                final WedgeInter wedge = (WedgeInter) inter;
+                final Line2D topLine = wedge.getLine1();
 
-                final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, lu);
+                for (HorizontalSide side : HorizontalSide.values()) {
+                    final Point2D location = (side == LEFT) ? topLine.getP1()
+                            : topLine.getP2();
+                    final MeasureStack stack = system.getMeasureStackAt(location);
+                    final AbstractChordInter chordAbove = stack.getStandardChordAbove(
+                            location,
+                            null);
 
-                if (chordAbove != null) {
-                    sig.addEdge(chordAbove, wedge, new ChordWedgeRelation(side));
-                } else {
-                    final AbstractChordInter chordBelow = stack.getStandardChordBelow(location, lu);
-
-                    if (chordBelow != null) {
-                        sig.addEdge(chordBelow, wedge, new ChordWedgeRelation(side));
+                    if (chordAbove != null) {
+                        sig.addEdge(chordAbove, wedge, new ChordWedgeRelation(side));
                     } else {
-                        logger.info("No chord for {} {}", wedge, side);
+                        AbstractChordInter chordBelow = stack.getStandardChordBelow(location, null);
+
+                        if (chordBelow != null) {
+                            sig.addEdge(chordBelow, wedge, new ChordWedgeRelation(side));
+                        } else {
+                            logger.info("No chord for {} {}", wedge, side);
+                        }
                     }
                 }
+            } catch (Exception ex) {
+                logger.warn("Error in linkWedges for {} {}", inter, ex.toString(), ex);
             }
         }
     }

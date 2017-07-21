@@ -245,7 +245,7 @@ public class LyricItemInter
             }
         }
 
-        logger.warn("No head-chord above lyric {}", this);
+        logger.info("No head-chord above lyric {}", this);
     }
 
     //-------------//
