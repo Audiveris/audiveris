@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -367,10 +368,10 @@ public class TesseractOrder
                 }
 
                 // Char/symbol to be processed
-                word.addChar(
-                        new TextChar(
-                                BoundingBox(it, RIL_SYMBOL),
-                                it.GetUTF8Text(RIL_SYMBOL).getString(UTF8)));
+                wordAddChars(
+                        word,
+                        BoundingBox(it, RIL_SYMBOL),
+                        it.GetUTF8Text(RIL_SYMBOL).getString(UTF8));
             } while (it.Next(nextLevel));
 
             return lines;
@@ -448,5 +449,36 @@ public class TesseractOrder
         }
 
         return buf;
+    }
+
+    /**
+     * Add TextChar(s) to the provided word.
+     * <p>
+     * Beware, the 'value' may be longer than 1, for example: "sz" as symbol value
+     *
+     * @param word   the word to populate
+     * @param bounds the char/symbol bounds
+     * @param str    the char/symbol value
+     */
+    private void wordAddChars (TextWord word,
+                               Rectangle bounds,
+                               String value)
+    {
+        final int len = value.length();
+
+        if (len == 1) {
+            word.addChar(new TextChar(bounds, value)); // Normal case
+        } else {
+            double meanCharWidth = (double) bounds.width / len;
+
+            for (int i = 0; i < len; i++) {
+                Rectangle cb = new Rectangle2D.Double(
+                        bounds.x + (i * meanCharWidth),
+                        bounds.y,
+                        meanCharWidth,
+                        bounds.height).getBounds();
+                word.addChar(new TextChar(cb, value.substring(i, i + 1)));
+            }
+        }
     }
 }
