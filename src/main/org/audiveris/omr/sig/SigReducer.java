@@ -734,6 +734,7 @@ public class SigReducer
             if (head.isVip()) {
                 logger.info("VIP checkheads for {}", head);
             }
+
             // Check if the head has a stem relation
             if (!sig.hasRelation(head, HeadStemRelation.class)) {
                 if (head.isVip() || logger.isDebugEnabled()) {
@@ -989,7 +990,7 @@ public class SigReducer
     // checkStemLengths //
     //------------------//
     /**
-     * Perform checks on stem length from tail to head anchor.
+     * Perform checks on stem length from tail to closest head anchor.
      *
      * @return the count of modifications done
      */
@@ -1002,20 +1003,31 @@ public class SigReducer
         for (Inter inter : stems) {
             final StemInter stem = (StemInter) inter;
             final Rectangle stemBox = stem.getBounds();
-            int extension = 0;
+            Rectangle headsBox = null;
 
             for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
                 final HeadInter head = (HeadInter) sig.getOppositeInter(stem, rel);
                 final Rectangle headBox = head.getBounds();
-                final int above = headBox.y - stemBox.y;
-                final int below = (stemBox.y + stemBox.height) - (headBox.y + headBox.width);
-                extension = Math.max(extension, above);
-                extension = Math.max(extension, below);
+
+                if (headsBox == null) {
+                    headsBox = headBox;
+                } else {
+                    headsBox.add(headBox);
+                }
             }
 
-            if (extension < minStemExtension) {
+            if (headsBox == null) {
                 stem.delete();
-                modifs += 1;
+                modifs++;
+            } else {
+                final int above = headsBox.y - stemBox.y;
+                final int below = (stemBox.y + stemBox.height) - (headsBox.y + headsBox.height);
+                final int extension = Math.max(above, below);
+
+                if (extension < minStemExtension) {
+                    stem.delete();
+                    modifs++;
+                }
             }
         }
 
@@ -1733,9 +1745,6 @@ public class SigReducer
             modifs += checkStemEndingHeads();
             deleted.addAll(updateAndPurge());
 
-            modifs += checkStemLengths();
-            deleted.addAll(updateAndPurge());
-
             modifs += checkHeads();
             deleted.addAll(updateAndPurge());
 
@@ -1749,6 +1758,9 @@ public class SigReducer
             deleted.addAll(updateAndPurge());
 
             modifs += checkStems();
+            deleted.addAll(updateAndPurge());
+
+            modifs += checkStemLengths();
             deleted.addAll(updateAndPurge());
 
             return modifs;
