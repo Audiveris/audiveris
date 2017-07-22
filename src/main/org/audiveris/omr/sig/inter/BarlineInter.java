@@ -105,7 +105,7 @@ public class BarlineInter
     public void delete ()
     {
         if (staff != null) {
-            staff.removeBar(this);
+            staff.removeBarline(this);
         }
 
         super.delete();

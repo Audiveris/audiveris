@@ -224,7 +224,7 @@ public class HeaderBuilder
     private void computeHeaderStarts ()
     {
         for (Staff staff : system.getStaves()) {
-            BarlineInter leftBar = staff.getSideBar(LEFT);
+            BarlineInter leftBar = staff.getSideBarline(LEFT);
 
             if (leftBar == null) {
                 // No left bar line found, so use the beginning abscissa of lines

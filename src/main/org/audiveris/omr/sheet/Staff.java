@@ -277,6 +277,21 @@ public class Staff
         attachments.addAttachment(id, attachment);
     }
 
+    //------------//
+    // addBarline //
+    //------------//
+    /**
+     * Include a barline into staff structure.
+     *
+     * @param barline the barline to include
+     */
+    public void addBarline (BarlineInter barline)
+    {
+        bars.add(barline);
+        Collections.sort(bars, Inter.byCenterAbscissa);
+        retrieveSideBars();
+    }
+
     //-----------//
     // addLedger //
     //-----------//
@@ -731,6 +746,33 @@ public class Staff
         }
     }
 
+    //------------------------//
+    // getLedgerPitchPosition //
+    //------------------------//
+    /**
+     * Report the pitch position of a ledger WRT the related staff.
+     * <p>
+     * TODO: This implementation assumes a 5-line staff.
+     * But can we have ledgers on a staff with more (of less) than 5 lines?
+     *
+     * @param lineIndex the ledger line index
+     * @return the ledger pitch position
+     */
+    public static int getLedgerPitchPosition (int lineIndex)
+    {
+        //        // Safer, for the time being...
+        //        if (getStaff()
+        //                .getLines()
+        //                .size() != 5) {
+        //            throw new RuntimeException("Only 5-line staves are supported");
+        //        }
+        if (lineIndex > 0) {
+            return 4 + (2 * lineIndex);
+        } else {
+            return -4 + (2 * lineIndex);
+        }
+    }
+
     //----------------//
     // getEndingSlope //
     //----------------//
@@ -936,33 +978,6 @@ public class Staff
         return ledgerMap;
     }
 
-    //------------------------//
-    // getLedgerPitchPosition //
-    //------------------------//
-    /**
-     * Report the pitch position of a ledger WRT the related staff.
-     * <p>
-     * TODO: This implementation assumes a 5-line staff.
-     * But can we have ledgers on a staff with more (of less) than 5 lines?
-     *
-     * @param lineIndex the ledger line index
-     * @return the ledger pitch position
-     */
-    public static int getLedgerPitchPosition (int lineIndex)
-    {
-        //        // Safer, for the time being...
-        //        if (getStaff()
-        //                .getLines()
-        //                .size() != 5) {
-        //            throw new RuntimeException("Only 5-line staves are supported");
-        //        }
-        if (lineIndex > 0) {
-            return 4 + (2 * lineIndex);
-        } else {
-            return -4 + (2 * lineIndex);
-        }
-    }
-
     //------------//
     // getLedgers //
     //------------//
@@ -1118,10 +1133,16 @@ public class Staff
         return system.getPartOf(this);
     }
 
-    //------------//
-    // getSideBar //
-    //------------//
-    public BarlineInter getSideBar (HorizontalSide side)
+    //----------------//
+    // getSideBarline //
+    //----------------//
+    /**
+     * Report the barline, if any, at the desired extremum side of this staff.
+     *
+     * @param side desired horizontal side
+     * @return the side barline or null
+     */
+    public BarlineInter getSideBarline (HorizontalSide side)
     {
         return sideBars.get(side);
     }
@@ -1144,7 +1165,7 @@ public class Staff
     // getSystem //
     //-----------//
     /**
-     * @return the system
+     * @return the containing system
      */
     public SystemInfo getSystem ()
     {
@@ -1272,29 +1293,33 @@ public class Staff
         return attachments.removeAttachments(prefix);
     }
 
-    //-----------//
-    // removeBar //
-    //-----------//
+    //---------------//
+    // removeBarline //
+    //---------------//
     /**
      * Remove the provided instance of Barline from internal staff collection.
      *
-     * @param bar the provided bar to remove
+     * @param barline the barline to remove
      * @return true if actually removed
      */
-    public boolean removeBar (BarlineInter bar)
+    public boolean removeBarline (BarlineInter barline)
     {
         // Purge sideBars if needed
         for (Iterator<Entry<HorizontalSide, BarlineInter>> it = sideBars.entrySet().iterator();
                 it.hasNext();) {
             Entry<HorizontalSide, BarlineInter> entry = it.next();
 
-            if (entry.getValue() == bar) {
+            if (entry.getValue() == barline) {
                 it.remove();
             }
         }
 
         // Purge bars
-        return bars.remove(bar);
+        boolean res = bars.remove(barline);
+
+        retrieveSideBars();
+
+        return res;
     }
 
     //--------------//
@@ -1675,6 +1700,8 @@ public class Staff
      */
     private void retrieveSideBars ()
     {
+        sideBars.clear();
+
         if (!bars.isEmpty()) {
             for (HorizontalSide side : HorizontalSide.values()) {
                 final int end = getAbscissa(side);

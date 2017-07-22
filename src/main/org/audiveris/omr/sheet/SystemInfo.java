@@ -628,9 +628,10 @@ public class SystemInfo
         final double x = point.getX();
 
         for (MeasureStack stack : stacks) {
-            Measure measure = stack.getMeasureAt(staff);
+            final Measure measure = stack.getMeasureAt(staff);
 
-            if ((x >= measure.getAbscissa(LEFT, staff))
+            if ((measure != null)
+                && (x >= measure.getAbscissa(LEFT, staff))
                 && (x <= measure.getAbscissa(RIGHT, staff))) {
                 return stack;
             }
