@@ -27,6 +27,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FermataNoteRelation;
@@ -151,6 +152,10 @@ public class FermataInter
             return null;
         }
 
+        final SIGraph sig = arc.getSig();
+        sig.computeContextualGrade(arc);
+        sig.computeContextualGrade(dot);
+
         final double grade = 0.5 * (arc.getContextualGrade() + dot.getContextualGrade());
         final Shape shape = (arcShape == Shape.FERMATA_ARC) ? Shape.FERMATA : Shape.FERMATA_BELOW;
         final Rectangle box = arc.getBounds();
@@ -160,6 +165,14 @@ public class FermataInter
         fermata.setStaff(staff);
 
         return fermata;
+    }
+
+    //--------//
+    // getArc //
+    //--------//
+    public FermataArcInter getArc ()
+    {
+        return arc;
     }
 
     //-----------//
@@ -175,6 +188,14 @@ public class FermataInter
         return bounds;
     }
 
+    //--------//
+    // getDot //
+    //--------//
+    public FermataDotInter getDot ()
+    {
+        return dot;
+    }
+
     //------------//
     // getMembers //
     //------------//
@@ -182,22 +203,6 @@ public class FermataInter
     public List<? extends Inter> getMembers ()
     {
         return Arrays.asList(arc, dot);
-    }
-
-    //--------//
-    // getArc //
-    //--------//
-    public FermataArcInter getArc ()
-    {
-        return arc;
-    }
-
-    //--------//
-    // getDot //
-    //--------//
-    public FermataDotInter getDot ()
-    {
-        return dot;
     }
 
     //-----------------//
