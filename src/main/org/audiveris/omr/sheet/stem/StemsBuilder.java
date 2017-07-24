@@ -367,7 +367,7 @@ public class StemsBuilder
     private void checkBeamStems (Inter beam)
     {
         if (beam.isVip()) {
-            logger.info("VIP checkBeamStems for {}");
+            logger.info("VIP checkBeamStems? {}");
         }
 
         List<BeamStemRelation> rels = new ArrayList<BeamStemRelation>();
@@ -598,7 +598,7 @@ public class StemsBuilder
         public void linkAllCorners ()
         {
             if (head.isVip()) {
-                logger.info("VIP linkAllCorners {}", head);
+                logger.info("VIP linkAllCorners? {}", head);
             }
 
             neighborBeams = getNeighboringInters(systemBeams);
@@ -625,7 +625,7 @@ public class StemsBuilder
         public void reuseAllCorners ()
         {
             if (head.isVip()) {
-                logger.info("VIP reuseAllCorners {}", head);
+                logger.info("VIP reuseAllCorners? {}", head);
             }
 
             neighborStems = getNeighboringInters(systemStems);
@@ -745,7 +745,7 @@ public class StemsBuilder
             public void link ()
             {
                 if (head.isVip()) {
-                    logger.info("VIP link {} {}", head, corner);
+                    logger.info("VIP link? {} {}", head, corner);
                 }
 
                 area = getLuArea();
@@ -883,7 +883,7 @@ public class StemsBuilder
                                                       StemInter stem)
             {
                 if (beam.isVip() && stem.isVip()) {
-                    logger.info("VIP connectBeamStem {} & {}", beam, stem);
+                    logger.info("VIP connectBeamStem? {} & {}", beam, stem);
                 }
 
                 // Relation beam -> stem (if not yet present)
@@ -966,7 +966,7 @@ public class StemsBuilder
                     hRel.setHeadSide(corner.hSide);
 
                     if (head.isVip() && stemInter.isVip()) {
-                        logger.info("VIP connectHeadStem {} & {}", head, stemInter);
+                        logger.info("VIP connectHeadStem? {} & {}", head, stemInter);
                     }
 
                     final Glyph stemGlyph = stemInter.getGlyph();
@@ -1010,12 +1010,12 @@ public class StemsBuilder
                         sig.addEdge(head, stemInter, hRel);
 
                         if (stemInter.isVip()) {
-                            logger.info("VIP {} {} {} to {}", head, corner, hRel, stemInter);
+                            logger.info("VIP linked {} {} {} to {}", head, corner, hRel, stemInter);
                         }
                     } else {
                         if (stemInter.isVip()) {
                             logger.info(
-                                    "VIP failed connection {} to {} {} {}",
+                                    "VIP failed link {} to {} {} {}",
                                     stemInter,
                                     head,
                                     corner,
@@ -1044,7 +1044,7 @@ public class StemsBuilder
                 stem = system.getSheet().getGlyphIndex().registerOriginal(stem);
 
                 if (stem.isVip()) {
-                    logger.info("VIP createStemInter for {}", stem);
+                    logger.info("VIP createStemInter? {}", stem);
                 }
 
                 // Stem interpretation (if not yet present for this glyph)
