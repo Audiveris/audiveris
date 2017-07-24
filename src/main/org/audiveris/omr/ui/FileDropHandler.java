@@ -26,6 +26,8 @@ import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Param;
 import org.audiveris.omr.util.VoidTask;
@@ -188,6 +190,8 @@ public class FileDropHandler
 
         private final File file;
 
+        private Book book;
+
         //~ Constructors ---------------------------------------------------------------------------
         public DropBookTask (File file)
         {
@@ -199,10 +203,21 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            Book book = OMR.engine.loadBook(file.toPath());
+            book = OMR.engine.loadBook(file.toPath());
             book.createStubsTabs(null); // Tabs are now accessible
 
             return null;
+        }
+
+        @Override
+        protected void finished ()
+        {
+            // Focus UI on book just dropped
+            SheetStub firstValid = book.getFirstValidStub();
+
+            if (firstValid != null) {
+                StubsController.getInstance().selectAssembly(firstValid);
+            }
         }
     }
 
@@ -217,6 +232,8 @@ public class FileDropHandler
         private final File file;
 
         private final Step dropStep;
+
+        private Book book;
 
         //~ Constructors ---------------------------------------------------------------------------
         public DropInputTask (File file,
@@ -234,7 +251,7 @@ public class FileDropHandler
             logger.info("Dropping input file {}", file);
 
             try {
-                final Book book = OMR.engine.loadInput(file.toPath());
+                book = OMR.engine.loadInput(file.toPath());
                 LogUtil.start(book);
                 book.createStubs(null);
                 book.createStubsTabs(null); // Tabs are now accessible
@@ -248,6 +265,17 @@ public class FileDropHandler
                 return null;
             } finally {
                 LogUtil.stopBook();
+            }
+        }
+
+        @Override
+        protected void finished ()
+        {
+            // Focus UI on input just dropped
+            SheetStub firstValid = book.getFirstValidStub();
+
+            if (firstValid != null) {
+                StubsController.getInstance().selectAssembly(firstValid);
             }
         }
     }
