@@ -44,11 +44,11 @@ import java.util.List;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Interface {@code Section} handles a section of contiguous and compatible {@link Run}
- * instances.
+ * Interface {@code Section} describes an <b>immutable</b> section of contiguous and
+ * compatible {@link Run} instances.
  * <p>
- * NOTA: Cross-section source/target relationship are not handled here, they would need an external
- * SimpleDirectedGraph.
+ * NOTA: Cross-section source/target relationship are not handled here, but in {@link LinkedSection}
+ * class.
  * <p>
  * A section carries orientation information, which is the orientation for all runs in this section.
  * <ol> <li> Positions increase in parallel with run numbers, so the thickness of a section is
@@ -181,20 +181,6 @@ public interface Section
     };
 
     //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Extend a section with the given run.
-     * This new run is assumed to be contiguous to the current last run of the
-     * section, no check is performed.
-     *
-     * @param run the new last run
-     */
-    public void append (Run run);
-
-    /**
-     * Compute the various cached parameters from scratch.
-     */
-    public void computeParameters ();
-
     /**
      * Predicate to check whether the given absolute point is located
      * inside the section.
@@ -420,7 +406,7 @@ public interface Section
     public int getRunCount ();
 
     /**
-     * Return the list of all runs in this section.
+     * Return an unmodifiable list of all runs in this section.
      *
      * @return the section runs
      */
@@ -491,13 +477,6 @@ public interface Section
     public boolean isVertical ();
 
     /**
-     * Add a run at the beginning rather than at the end of the section.
-     *
-     * @param run the new first run
-     */
-    public void prepend (Run run);
-
-    /**
      * Render the section
      *
      * @param g             the graphics context
@@ -520,14 +499,6 @@ public interface Section
     public boolean renderSelected (Graphics g);
 
     /**
-     * Set the position of the first run of the section.
-     *
-     * @param firstPos position of the first run, abscissa for a vertical run,
-     *                 ordinate for a horizontal run.
-     */
-    public void setFirstPos (int firstPos);
-
-    /**
      * Assign the containing lag
      *
      * @param lag the containing lag
@@ -542,11 +513,4 @@ public interface Section
      *         (vertically or horizontally, but not in diagonal)
      */
     public boolean touches (Section that);
-
-    /**
-     * Apply an absolute translation vector to this section.
-     *
-     * @param vector the translation vector
-     */
-    public void translate (Point vector);
 }

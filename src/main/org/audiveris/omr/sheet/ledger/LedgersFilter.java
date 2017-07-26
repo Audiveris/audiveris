@@ -140,8 +140,8 @@ public class LedgersFilter
         final Lag lag = new BasicLag(Lags.LEDGER_LAG, HORIZONTAL);
 
         // We accept no shift between runs of the same section!
-        final SectionFactory sectionsBuilder = new SectionFactory(lag, new JunctionShiftPolicy(0));
-        sectionsBuilder.createSections(ledgerTable, null, true);
+        final SectionFactory sectionFactory = new SectionFactory(lag, new JunctionShiftPolicy(0));
+        sectionFactory.createSections(ledgerTable, null, true);
         setVipSections(lag);
 
         // Display a view on this lag?

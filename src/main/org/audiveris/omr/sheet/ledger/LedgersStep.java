@@ -28,6 +28,9 @@ import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Map;
 
@@ -40,8 +43,11 @@ import java.util.Map;
 public class LedgersStep
         extends AbstractSystemStep<LedgersStep.Context>
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(LedgersStep.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LedgersStep object.
      */
@@ -58,7 +64,7 @@ public class LedgersStep
                            Sheet sheet)
     {
         // Add ledger checkboard
-        new LedgersBuilder(sheet.getSystems().get(0), null).addCheckBoard();
+        new LedgersBuilder(sheet.getSystems().get(0)).addCheckBoard();
     }
 
     //----------//
@@ -70,7 +76,7 @@ public class LedgersStep
             throws StepException
     {
         final List<Section> sections = context.sectionMap.get(system);
-        new LedgersBuilder(system, sections).buildLedgers();
+        new LedgersBuilder(system).buildLedgers(sections);
     }
 
     //----------//

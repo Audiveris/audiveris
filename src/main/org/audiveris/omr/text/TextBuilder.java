@@ -30,9 +30,7 @@ import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory.CompoundConstructor;
 import org.audiveris.omr.glyph.dynamic.SectionCompound;
-import org.audiveris.omr.lag.BasicLag;
 import org.audiveris.omr.lag.JunctionRatioPolicy;
-import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.SectionFactory;
 import org.audiveris.omr.math.GeoUtil;
@@ -576,23 +574,21 @@ public class TextBuilder
         final Rectangle areaBounds = area.getBounds();
 
         for (TextLine sheetLine : sheetLines) {
-            if (!areaBounds.intersects(sheetLine.getBounds())) {
-                continue;
-            }
+            if (areaBounds.intersects(sheetLine.getBounds())) {
+                TextLine line = new TextLine();
 
-            TextLine line = new TextLine();
+                for (TextWord sheetWord : sheetLine.getWords()) {
+                    final Rectangle wordBox = sheetWord.getBounds();
 
-            for (TextWord sheetWord : sheetLine.getWords()) {
-                final Rectangle wordBox = sheetWord.getBounds();
-
-                if (area.contains(wordBox)) {
-                    TextWord word = sheetWord.copy();
-                    line.appendWord(word);
+                    if (area.contains(wordBox)) {
+                        TextWord word = sheetWord.copy();
+                        line.appendWord(word);
+                    }
                 }
-            }
 
-            if (!line.getWords().isEmpty()) {
-                systemLines.add(line);
+                if (!line.getWords().isEmpty()) {
+                    systemLines.add(line);
+                }
             }
         }
 
@@ -1032,14 +1028,13 @@ public class TextBuilder
     private List<Section> getSections (ByteProcessor buffer,
                                        List<TextLine> lines)
     {
-        Lag tLag = new BasicLag("tLag", VERTICAL);
-        SectionFactory factory = new SectionFactory(tLag, JunctionRatioPolicy.DEFAULT);
+        SectionFactory factory = new SectionFactory(VERTICAL, JunctionRatioPolicy.DEFAULT);
         List<Section> allSections = new ArrayList<Section>();
 
         for (TextLine line : lines) {
             for (TextWord word : line.getWords()) {
                 Rectangle roi = word.getBounds();
-                List<Section> wordSections = factory.createSections(buffer, null, roi);
+                List<Section> wordSections = factory.createSections(buffer, roi);
                 allSections.addAll(wordSections);
             }
         }
@@ -1153,7 +1148,7 @@ public class TextBuilder
      *
      * @param lines       the lines (and contained words) to be mapped
      * @param allSections the population of sections to browse
-     * @param language    the OCR language specification
+     * @param language    the OCR language specification (not used actually)
      */
     private void mapGlyphs (List<TextLine> lines,
                             Collection<Section> allSections,
@@ -1176,10 +1171,9 @@ public class TextBuilder
             logger.debug("  mapping {}", line);
 
             // Browse all words, starting by shorter ones
+            List<TextWord> toRemove = new ArrayList<TextWord>();
             List<TextWord> sortedWords = new ArrayList<TextWord>(line.getWords());
             Collections.sort(sortedWords, TextWord.bySize);
-
-            List<TextWord> toRemove = new ArrayList<TextWord>();
 
             for (TextWord word : sortedWords) {
                 // Isolate proper word glyph from its enclosed sections

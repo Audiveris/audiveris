@@ -46,15 +46,17 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code LinkedSection} is a working wrapper around a section.
+ * Class {@code LinkedSection} is a working wrapper around a section considered as
+ * immutable, since all modifying operations on the underlying section raise
+ * UnsupportedOperationException.
  * <p>
- * <b>NOTA BENE</b>: This wrapper is <b>NOT</b> meant to be used by several threads!
  * Additional transient data:
  * <ul>
  * <li>Links to source sections and target sections</li>
  * <li>Link to compound</li>
  * <li>Processed flag</li>
  * </ul>
+ * <b>NOTA BENE</b>: This wrapper <b>CANNOT</b> be used by several threads!
  *
  * @author Hervé Bitteur
  */
@@ -109,18 +111,6 @@ public class LinkedSection
         }
 
         targets.add(target);
-    }
-
-    @Override
-    public void append (Run run)
-    {
-        section.append(run);
-    }
-
-    @Override
-    public void computeParameters ()
-    {
-        section.computeParameters();
     }
 
     @Override
@@ -430,12 +420,6 @@ public class LinkedSection
     }
 
     @Override
-    public void prepend (Run run)
-    {
-        section.prepend(run);
-    }
-
-    @Override
     public boolean render (Graphics g,
                            boolean drawBorders,
                            Color specificColor)
@@ -455,12 +439,6 @@ public class LinkedSection
     public void setCompound (SectionCompound compound)
     {
         this.compound = compound;
-    }
-
-    @Override
-    public void setFirstPos (int firstPos)
-    {
-        section.setFirstPos(firstPos);
     }
 
     @Override
@@ -508,11 +486,5 @@ public class LinkedSection
     public boolean touches (Section that)
     {
         return section.touches(that);
-    }
-
-    @Override
-    public void translate (Point vector)
-    {
-        section.translate(vector);
     }
 }

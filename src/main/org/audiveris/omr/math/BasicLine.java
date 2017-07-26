@@ -158,6 +158,25 @@ public class BasicLine
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------------------//
+    // checkLineParameters //
+    //---------------------//
+    /**
+     * Make sure the line parameters are usable.
+     */
+    public void checkLineParameters ()
+    {
+        // Recompute parameters based on points if so needed
+        if (dirty) {
+            compute();
+        }
+
+        // Make sure the parameters are available
+        if (Double.isNaN(a) || Double.isNaN(b) || Double.isNaN(c)) {
+            throw new UndefinedLineException("Line parameters not properly set");
+        }
+    }
+
     //------------//
     // distanceOf //
     //------------//
@@ -559,25 +578,6 @@ public class BasicLine
         checkLineParameters();
 
         return c;
-    }
-
-    //---------------------//
-    // checkLineParameters //
-    //---------------------//
-    /**
-     * Make sure the line parameters are usable.
-     */
-    private void checkLineParameters ()
-    {
-        // Recompute parameters based on points if so needed
-        if (dirty) {
-            compute();
-        }
-
-        // Make sure the parameters are available
-        if (Double.isNaN(a) || Double.isNaN(b) || Double.isNaN(c)) {
-            throw new UndefinedLineException("Line parameters not properly set");
-        }
     }
 
     //---------//

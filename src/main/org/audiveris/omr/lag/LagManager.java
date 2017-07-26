@@ -104,8 +104,8 @@ public class LagManager
         }
 
         Lag lag = (hLag != null) ? hLag : new BasicLag(Lags.HLAG, HORIZONTAL);
-        SectionFactory sectionsFactory = new SectionFactory(lag, JunctionRatioPolicy.DEFAULT);
-        sectionsFactory.createSections(horiTable, null, true);
+        SectionFactory factory = new SectionFactory(lag, JunctionRatioPolicy.DEFAULT);
+        factory.createSections(horiTable, null, true);
         setLag(Lags.HLAG, lag);
         setVipSections(HORIZONTAL);
 

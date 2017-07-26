@@ -36,8 +36,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -80,7 +80,7 @@ public class SectionFactory
     private final JunctionPolicy junctionPolicy;
 
     /** Processed sections. true/false */
-    private final Set<Section> processedSections = new LinkedHashSet<Section>();
+    private final Set<DynamicSection> processedSections = new LinkedHashSet<DynamicSection>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -137,48 +137,24 @@ public class SectionFactory
     // createSections //
     //----------------//
     /**
-     * Create sections out of the foreground pixels found in a provided buffer and
-     * contained in the specified region of interest.
+     * Create sections out of the foreground pixels found in the specified region of
+     * interest of a provided buffer.
      *
      * @param buffer the provided buffer
-     * @param offset buffer offset, if any, to be applied to sections
      * @param roi    region of interest (its coordinates are relative to the buffer origin)
      * @return the collection of created sections, with absolute coordinates
      */
     public List<Section> createSections (ByteProcessor buffer,
-                                         Point offset,
                                          Rectangle roi)
     {
         // Runs
         RunTable runTable = new RunTableFactory(orientation).createTable(buffer, roi);
 
+        // Offset?
+        Point offset = ((roi.x != 0) || (roi.y != 0)) ? roi.getLocation() : null;
+
         // Create sections within roi/runtable
-        List<Section> sections = createSections(runTable, offset, false);
-
-        if ((roi.x != 0) || (roi.y != 0)) {
-            Point roiOffset = roi.getLocation();
-
-            for (Section section : sections) {
-                section.translate(roiOffset);
-            }
-        }
-
-        return sections;
-    }
-
-    //----------------//
-    // createSections //
-    //----------------//
-    /**
-     * Create sections from the provided table of runs, with no source offset and no
-     * inclusion of runs into the lag.
-     *
-     * @param runTable the table of runs
-     * @return the list of created sections
-     */
-    public List<Section> createSections (RunTable runTable)
-    {
-        return createSections(runTable, null, false);
+        return createSections(runTable, offset, false);
     }
 
     //----------------//
@@ -197,13 +173,33 @@ public class SectionFactory
                                          boolean include)
     {
         // Build sections with runTable-based coordinates
-        List<Section> sections = new Build().buildSections(runTable, include);
+        List<DynamicSection> sections = new Build().buildSections(runTable, include);
 
         // Translate sections to absolute coordinates if an offset was provided
         if (offset != null) {
-            for (Section section : sections) {
-                section.translate(offset);
+            for (DynamicSection dynSection : sections) {
+                dynSection.translate(offset);
             }
+        }
+
+        return getImmutables(sections);
+    }
+
+    //---------------//
+    // getImmutables //
+    //---------------//
+    /**
+     * Report immutable version of sections.
+     *
+     * @param dynSections (mutable) sections
+     * @return immutable sections
+     */
+    private List<Section> getImmutables (List<DynamicSection> dynSections)
+    {
+        final List<Section> sections = new ArrayList<Section>(dynSections.size());
+
+        for (DynamicSection dynSection : dynSections) {
+            sections.add(new BasicSection(dynSection));
         }
 
         return sections;
@@ -212,17 +208,17 @@ public class SectionFactory
     //-------------//
     // isProcessed //
     //-------------//
-    private boolean isProcessed (Section section)
+    private boolean isProcessed (DynamicSection dynSection)
     {
-        return processedSections.contains(section);
+        return processedSections.contains(dynSection);
     }
 
     //--------------//
     // setProcessed //
     //--------------//
-    private void setProcessed (Section section)
+    private void setProcessed (DynamicSection dynSection)
     {
-        processedSections.add(section);
+        processedSections.add(dynSection);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -243,23 +239,23 @@ public class SectionFactory
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Counter to set section ids when no lag is used. */
+        /** Counter to set dynamicsection ids when no lag is used. */
         private int localId;
 
         /** Global list of all sections created. */
-        private final List<Section> created = new ArrayList<Section>();
+        private final List<DynamicSection> created = new ArrayList<DynamicSection>();
 
         /** All Active sections in the next sequence. */
-        private final List<Section> nextActives = new ArrayList<Section>();
+        private final List<DynamicSection> nextActives = new ArrayList<DynamicSection>();
 
         /** List of sections in previous sequence that overlap given run in next sequence. */
-        private final List<Section> overlappingSections = new ArrayList<Section>();
+        private final List<DynamicSection> overlappingSections = new ArrayList<DynamicSection>();
 
         /**
          * List of all Active sections in the previous sequence, which means only
          * sections that have a run in previous sequence.
          */
-        private final List<Section> prevActives = new ArrayList<Section>();
+        private final List<DynamicSection> prevActives = new ArrayList<DynamicSection>();
 
         //~ Methods --------------------------------------------------------------------------------
         //--------------//
@@ -272,10 +268,10 @@ public class SectionFactory
          * @param include  if true, include the content of runTable into the lag
          * @return the list of created sections
          */
-        public List<Section> buildSections (RunTable runTable,
-                                            boolean include)
+        public List<DynamicSection> buildSections (RunTable runTable,
+                                                   boolean include)
         {
-            // All runs (if any) in first sequence start each their own section
+            // All runs (if any) in first sequence start each their own dynamicSection
             for (Iterator<Run> it = runTable.iterator(0); it.hasNext();) {
                 nextActives.add(createSection(0, it.next()));
             }
@@ -293,8 +289,8 @@ public class SectionFactory
                     // will contain only active sections (that may be continued)
                     logger.debug("Prev sequence");
 
-                    for (Section section : prevActives) {
-                        processPrevSide(section, runTable, col);
+                    for (DynamicSection dynSection : prevActives) {
+                        processPrevSide(dynSection, runTable, col);
                     }
 
                     // Process all runs of next sequence
@@ -319,13 +315,13 @@ public class SectionFactory
         //-----------------//
         // continueSection //
         //-----------------//
-        private void continueSection (Section section,
+        private void continueSection (DynamicSection dynSection,
                                       Run run)
         {
-            logger.debug("Continuing section {} with {}", section, run);
+            logger.debug("Continuing section {} with {}", dynSection, run);
 
-            section.append(run);
-            nextActives.add(section);
+            dynSection.append(run);
+            nextActives.add(dynSection);
         }
 
         //---------------//
@@ -338,27 +334,27 @@ public class SectionFactory
          * @param firstRun the very first run of the section
          * @return the created section
          */
-        private Section createSection (int firstPos,
-                                       Run firstRun)
+        private DynamicSection createSection (int firstPos,
+                                              Run firstRun)
         {
             if (firstRun == null) {
                 throw new IllegalArgumentException("null first run");
             }
 
-            final Section section = new BasicSection(orientation);
+            final DynamicSection dynSection = new DynamicSection(orientation);
 
             if (lag != null) {
-                lag.register(section); // Section gets an id from lag
+                lag.register(dynSection); // Section gets an id from lag
             } else {
-                section.setId(++localId); // Use a local id
+                dynSection.setId(++localId); // Use a local id
             }
 
-            section.setFirstPos(firstPos);
-            section.append(firstRun);
+            dynSection.setFirstPos(firstPos);
+            dynSection.append(firstRun);
 
-            created.add(section);
+            created.add(dynSection);
 
-            return section;
+            return dynSection;
         }
 
         //-----------------//
@@ -380,8 +376,8 @@ public class SectionFactory
             // All such sections are then stored in overlappingSections
             overlappingSections.clear();
 
-            for (Section section : prevActives) {
-                Run lastRun = section.getLastRun();
+            for (DynamicSection dynSection : prevActives) {
+                Run lastRun = dynSection.getLastRun();
 
                 if (lastRun.getStart() > nextStop) {
                     break;
@@ -389,7 +385,7 @@ public class SectionFactory
 
                 if (lastRun.getStop() >= nextStart) {
                     logger.debug("Overlap from {} to {}", lastRun, run);
-                    overlappingSections.add(section);
+                    overlappingSections.add(dynSection);
                 }
             }
 
@@ -404,17 +400,14 @@ public class SectionFactory
 
             case 1: // Continuing sections (if not finished)
 
-                Section prevSection = overlappingSections.get(0);
+                DynamicSection prevSection = overlappingSections.get(0);
 
                 if (!isProcessed(prevSection)) {
                     continueSection(prevSection, run);
                 } else {
                     // Create a new section, linked by a junction
-                    Section newSection = createSection(col, run);
+                    DynamicSection newSection = createSection(col, run);
                     nextActives.add(newSection);
-
-                    //                    prevSection.addTarget(newSection);
-                    //                    newSection.addSource(prevSection);
                 }
 
                 break;
@@ -422,14 +415,8 @@ public class SectionFactory
             default: // Converging sections, end them, start a new one
                 logger.debug("Converging at {}", run);
 
-                Section newSection = createSection(col, run);
+                DynamicSection newSection = createSection(col, run);
                 nextActives.add(newSection);
-
-            //
-            //                for (Section section : overlappingSections) {
-            //                    section.addTarget(newSection);
-            //                    newSection.addSource(section);
-            //                }
             }
         }
 
@@ -440,18 +427,18 @@ public class SectionFactory
          * Take care of the first sequence, at the given section/run,
          * checking links to the next sequence runs that overlap this run.
          *
-         * @param section  the section at hand
-         * @param runTable the table of runs
-         * @param nextCol  column for the next sequence
+         * @param dynSection the section at hand
+         * @param runTable   the table of runs
+         * @param nextCol    column for the next sequence
          */
-        private void processPrevSide (Section section,
+        private void processPrevSide (DynamicSection dynSection,
                                       RunTable runTable,
                                       int nextCol)
         {
-            Run lastRun = section.getLastRun();
+            Run lastRun = dynSection.getLastRun();
             int prevStart = lastRun.getStart();
             int prevStop = lastRun.getStop();
-            logger.debug("processPrevSide for section {}", section);
+            logger.debug("processPrevSide for section {}", dynSection);
 
             // Check if overlap with a run in next sequence
             int overlapNb = 0;
@@ -476,23 +463,29 @@ public class SectionFactory
 
             switch (overlapNb) {
             case 0: // Nothing : end of the section
-                logger.debug("Ending section {}", section);
+                logger.debug("Ending section {}", dynSection);
 
                 break;
 
             case 1: // Continue if consistent
 
-                if (junctionPolicy.consistentRun(overlapRun, section)) {
-                    logger.debug("Perhaps extending section {} with run {}", section, overlapRun);
+                if (junctionPolicy.consistentRun(overlapRun, dynSection)) {
+                    logger.debug(
+                            "Perhaps extending section {} with run {}",
+                            dynSection,
+                            overlapRun);
                 } else {
-                    logger.debug("Incompatible height between {} and run {}", section, overlapRun);
-                    setProcessed(section);
+                    logger.debug(
+                            "Incompatible height between {} and run {}",
+                            dynSection,
+                            overlapRun);
+                    setProcessed(dynSection);
                 }
 
                 break;
 
             default: // Diverging, so conclude the section here
-                setProcessed(section);
+                setProcessed(dynSection);
             }
         }
     }

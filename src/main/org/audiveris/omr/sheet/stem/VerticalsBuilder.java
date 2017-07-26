@@ -254,111 +254,6 @@ public class VerticalsBuilder
         logger.debug("{}verticals: {}", system.getLogPrefix(), seedNb);
     }
 
-    //    //---------------//
-    //    // getCleanValue //
-    //    //---------------//
-    //    /**
-    //     * Retrieve the cumulated length of stick portions without items
-    //     * on left or right side.
-    //     *
-    //     * @param stick the stick to check
-    //     * @return the clean length of the stick
-    //     */
-    //    private int getCleanValue (Glyph stick)
-    //    {
-    //        final int dx = scale.toPixels(constants.beltMarginDx);
-    //        final Point2D start = stick.getStartPoint(VERTICAL);
-    //        final Point2D stop = stick.getStopPoint(VERTICAL);
-    //        final double halfWidth = (typicalWidth - 1) / 2;
-    //
-    //        // Theoretical stem vertical lines on left and right
-    //        final Line2D leftLine = new Line2D.Double(
-    //                new Point2D.Double(start.getX() - halfWidth, start.getY()),
-    //                new Point2D.Double(stop.getX() - halfWidth, stop.getY()));
-    //        final Line2D rightLine = new Line2D.Double(
-    //                new Point2D.Double(start.getX() + halfWidth, start.getY()),
-    //                new Point2D.Double(stop.getX() + halfWidth, stop.getY()));
-    //        final Rectangle stickBox = stick.getBounds();
-    //
-    //        // Inspect each horizontal row
-    //        int emptyCount = 0; // Count of rows where stem is white (broken)
-    //        int leftCount = 0; // Count of rows where stem has item on left
-    //        int rightCount = 0; // Count of rows where stem has item on right
-    //        int bothCount = 0; // Count of rows where stem has item on both
-    //        int cleanCount = 0; // Count of rows where stem is bare (no item stuck)
-    //
-    //        if (stick.isVip()) {
-    //            logger.info("VIP getCleanValue for {}", stick);
-    //        }
-    //
-    //        for (int y = stickBox.y; y < (stickBox.y + stickBox.height); y++) {
-    //            final int leftLimit = (int) Math.rint(LineUtil.intersectionAtY(leftLine, y).getX());
-    //            final int rightLimit = (int) Math.rint(LineUtil.intersectionAtY(rightLine, y).getX());
-    //
-    //            // Make sure the stem row is not empty
-    //            boolean empty = true;
-    //
-    //            for (int x = leftLimit; x <= rightLimit; x++) {
-    //                if (pixelFilter.get(x, y) == 0) {
-    //                    empty = false;
-    //
-    //                    break;
-    //                }
-    //            }
-    //
-    //            if (empty) {
-    //                emptyCount++;
-    //
-    //                continue;
-    //            }
-    //
-    //            // Item on left?
-    //            boolean onLeft = true;
-    //
-    //            for (int x = leftLimit; x >= (leftLimit - dx); x--) {
-    //                if (pixelFilter.get(x, y) != 0) {
-    //                    onLeft = false;
-    //
-    //                    break;
-    //                }
-    //            }
-    //
-    //            // Item on right?
-    //            boolean onRight = true;
-    //
-    //            for (int x = rightLimit; x <= (rightLimit + dx); x++) {
-    //                if (pixelFilter.get(x, y) != 0) {
-    //                    onRight = false;
-    //
-    //                    break;
-    //                }
-    //            }
-    //
-    //            if (onLeft && onRight) {
-    //                bothCount++;
-    //            } else if (onLeft) {
-    //                leftCount++;
-    //            } else if (onRight) {
-    //                rightCount++;
-    //            } else {
-    //                cleanCount++;
-    //            }
-    //        }
-    //
-    //        if (stick.isVip()) {
-    //            logger.info(
-    //                    "#{} empty:{} both:{} left:{} right:{} clean:{}",
-    //                    stick.getId(),
-    //                    emptyCount,
-    //                    bothCount,
-    //                    leftCount,
-    //                    rightCount,
-    //                    cleanCount);
-    //        }
-    //
-    //        return cleanCount;
-    //    }
-    //
     //--------------------//
     // retrieveCandidates //
     //--------------------//
@@ -611,19 +506,6 @@ public class VerticalsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        //
-        //        private final Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
-        //                1.0,
-        //                "Maximum delta position between two overlapping filaments");
-        //
-        //        private final Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
-        //                0.3,
-        //                "Maximum space between overlapping filaments");
-        //
-        //        private final Scale.Fraction maxCoordGap = new Scale.Fraction(
-        //                0,
-        //                "Maximum delta coordinate for a gap between filaments");
-        //
         private final Constant.Ratio minSideRatio = new Constant.Ratio(
                 0.4,
                 "Minimum ratio of filament length to be actually enlarged");

@@ -24,7 +24,6 @@ package org.audiveris.omr.lag;
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.math.Barycenter;
-import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Line;
 import org.audiveris.omr.math.PointsCollector;
@@ -48,6 +47,7 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -77,33 +77,33 @@ public class BasicSection
     //~ Instance fields ----------------------------------------------------------------------------
     /** Position of first run */
     @XmlAttribute(name = "first-pos")
-    private int firstPos;
+    protected int firstPos;
 
     /** Section orientation */
     @XmlAttribute(name = "orientation")
-    private Orientation orientation;
+    protected Orientation orientation;
 
     /** The collection of runs that make up the section */
     @XmlElement(name = "run")
-    private final List<Run> runs = new ArrayList<Run>();
+    protected final List<Run> runs = new ArrayList<Run>();
 
     /** Containing lag, if any. */
-    private Lag lag;
+    protected Lag lag;
 
     /** Oriented bounding rectangle */
     protected Rectangle orientedBounds;
 
     /** Absolute mass center */
-    private Point centroid;
+    protected Point centroid;
 
     /** Length of longest run */
-    private int maxRunLength;
+    protected int maxRunLength;
 
     /** Number of foreground pixels. */
-    private int weight;
+    protected int weight;
 
     /** Absolute contour points */
-    private Polygon polygon;
+    protected Polygon polygon;
 
     /** Approximating oriented line for this section */
     protected Line orientedLine;
@@ -117,6 +117,25 @@ public class BasicSection
     public BasicSection (Orientation orientation)
     {
         this.orientation = orientation;
+    }
+
+    /**
+     * Creates a new {@code BasicSection} object from a {@link DynamicSection} instance.
+     *
+     * @param ds the provided dynamic section instance
+     */
+    public BasicSection (DynamicSection ds)
+    {
+        orientation = ds.getOrientation();
+        firstPos = ds.getFirstPos();
+        runs.addAll(ds.getRuns());
+        lag = ds.getLag();
+        orientedBounds = ds.getOrientedBounds();
+        centroid = ds.getCentroid();
+        maxRunLength = ds.getMaxRunLength();
+        weight = ds.getWeight();
+        polygon = ds.getPolygon();
+        orientedLine = ds.getOrientedLine();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -139,45 +158,6 @@ public class BasicSection
         }
 
         return table;
-    }
-
-    //--------//
-    // append //
-    //--------//
-    @Override
-    public void append (Run run)
-    {
-        run = new Run(run);
-        runs.add(run);
-        addRun(run);
-
-        logger.debug("Appended {} to {}", run, this);
-    }
-
-    //-------------------//
-    // computeParameters //
-    //-------------------//
-    @Override
-    public void computeParameters ()
-    {
-        // weight & maxRunLength
-        weight = 0;
-        maxRunLength = 0;
-
-        // maxRunLength
-        for (Run run : runs) {
-            computeRunContribution(run);
-        }
-
-        // Invalidate cached data
-        invalidateCache();
-
-        logger.debug(
-                "Parameters of {} maxRunLength={} meanRunLength={}" + " weight={}",
-                this,
-                getMaxRunLength(),
-                getMeanRunLength(),
-                weight);
     }
 
     //----------//
@@ -507,24 +487,6 @@ public class BasicSection
     @Override
     public Point getCentroid ()
     {
-        if (centroid == null) {
-            Point orientedPoint = new Point(0, 0);
-            int y = firstPos;
-
-            for (Run run : runs) {
-                final int length = run.getLength();
-                orientedPoint.y += (length * (2 * y));
-                orientedPoint.x += (length * ((2 * run.getStart()) + length));
-                y++;
-            }
-
-            orientedPoint.x /= (2 * getWeight());
-            orientedPoint.y /= (2 * getWeight());
-
-            centroid = orientation.absolute(orientedPoint);
-            logger.debug("Centroid of {} is {}", this, centroid);
-        }
-
         return centroid;
     }
 
@@ -662,10 +624,6 @@ public class BasicSection
     @Override
     public Rectangle getOrientedBounds ()
     {
-        if (orientedBounds == null) {
-            orientedBounds = new Rectangle(orientation.oriented(getBounds()));
-        }
-
         return orientedBounds;
     }
 
@@ -675,23 +633,6 @@ public class BasicSection
     @Override
     public Line getOrientedLine ()
     {
-        if (orientedLine == null) {
-            // Compute the section line
-            orientedLine = new BasicLine();
-
-            int y = getFirstPos();
-
-            for (Run run : getRuns()) {
-                int stop = run.getStop();
-
-                for (int x = run.getStart(); x <= stop; x++) {
-                    orientedLine.includePoint((double) x, (double) y);
-                }
-
-                y++;
-            }
-        }
-
         return orientedLine;
     }
 
@@ -710,10 +651,6 @@ public class BasicSection
     @Override
     public Polygon getPolygon ()
     {
-        if (polygon == null) {
-            polygon = computePolygon();
-        }
-
         return polygon;
     }
 
@@ -754,7 +691,7 @@ public class BasicSection
     @Override
     public List<Run> getRuns ()
     {
-        return runs;
+        return Collections.unmodifiableList(runs);
     }
 
     //---------------//
@@ -796,10 +733,6 @@ public class BasicSection
     @Override
     public int getWeight ()
     {
-        if (weight == 0) {
-            computeParameters();
-        }
-
         return weight;
     }
 
@@ -833,7 +766,7 @@ public class BasicSection
     {
         int pos = getFirstPos();
 
-        for (Run run : getRuns()) {
+        for (Run run : runs) {
             final int start = run.getStart();
             final Rectangle runBox = (orientation == Orientation.HORIZONTAL)
                     ? new Rectangle(start, pos, run.getLength(), 1)
@@ -865,22 +798,6 @@ public class BasicSection
     public boolean isVertical ()
     {
         return orientation == Orientation.VERTICAL;
-    }
-
-    //---------//
-    // prepend //
-    //---------//
-    @Override
-    public void prepend (Run run)
-    {
-        run = new Run(run);
-        logger.debug("Prepending {} to {}", run, this);
-
-        firstPos--;
-        runs.add(0, run);
-        addRun(run);
-
-        logger.debug("Prepended {}", this);
     }
 
     //--------//
@@ -957,15 +874,6 @@ public class BasicSection
         }
     }
 
-    //-------------//
-    // setFirstPos //
-    //-------------//
-    @Override
-    public void setFirstPos (int firstPos)
-    {
-        this.firstPos = firstPos;
-    }
-
     //--------//
     // setLag //
     //--------//
@@ -1000,7 +908,7 @@ public class BasicSection
 
         int pos = getFirstPos();
 
-        for (Run run : getRuns()) {
+        for (Run run : runs) {
             final int start = run.getStart();
             final Rectangle r1 = (orientation == Orientation.HORIZONTAL)
                     ? new Rectangle(start, pos, run.getLength(), 1)
@@ -1032,170 +940,12 @@ public class BasicSection
     }
 
     //-----------//
-    // translate //
-    //-----------//
-    @Override
-    public void translate (Point vector)
-    {
-        // Get the coord/pos equivalent of dx/dy vector
-        Point cp = orientation.oriented(vector);
-        int dc = cp.x;
-        int dp = cp.y;
-
-        // Apply the needed modifications
-        firstPos += dp;
-
-        for (Run run : runs) {
-            run.translate(dc);
-        }
-
-        // Force update
-        invalidateCache();
-    }
-
-    //----------------//
-    // computePolygon //
-    //----------------//
-    /**
-     * Compute the arrays of points needed to draw the section runs.
-     * This is an absolute definition.
-     *
-     * @return the created polygon that represents the section geometry
-     */
-    protected Polygon computePolygon ()
-    {
-        final int maxNb = 1 + (4 * getRunCount()); // Upper value
-        final int[] xx = new int[maxNb];
-        final int[] yy = new int[maxNb];
-        int idx = 0; // Current filling index in xx & yy arrays
-
-        if (isVertical()) {
-            idx = populatePolygon(yy, xx, idx, 1);
-            idx = populatePolygon(yy, xx, idx, -1);
-        } else {
-            idx = populatePolygon(xx, yy, idx, 1);
-            idx = populatePolygon(xx, yy, idx, -1);
-        }
-
-        Polygon poly = new Polygon(xx, yy, idx);
-
-        return poly;
-    }
-
-    //-----------//
     // internals //
     //-----------//
     @Override
     protected String internals ()
     {
         return orientation.isVertical() ? "V" : "H";
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    protected void invalidateCache ()
-    {
-        orientedBounds = null;
-        centroid = null;
-        polygon = null;
-        orientedLine = null;
-    }
-
-    //--------//
-    // addRun //
-    //--------//
-    /**
-     * Compute incrementally the cached parameters.
-     */
-    private void addRun (Run run)
-    {
-        // Invalidate cached data
-        invalidateCache();
-
-        // Compute contribution of this run
-        computeRunContribution(run);
-    }
-
-    //------------------------//
-    // computeRunContribution //
-    //------------------------//
-    private void computeRunContribution (Run run)
-    {
-        final int length = run.getLength();
-        weight += length;
-        maxRunLength = Math.max(maxRunLength, length);
-    }
-
-    //-----------------//
-    // populatePolygon //
-    //-----------------//
-    /**
-     * Compute the arrays of points needed to draw the section runs
-     *
-     * @param xpoints to receive abscissae
-     * @param ypoints to receive coordinates
-     * @param dir     direction for browsing runs
-     * @param index   first index available in arrays
-     * @return last index value
-     */
-    private int populatePolygon (int[] xpoints,
-                                 int[] ypoints,
-                                 int index,
-                                 int dir)
-    {
-        // Precise delimitating points
-        int runNb = getRunCount();
-        int iStart = (dir > 0) ? 0 : (runNb - 1);
-        int iBreak = (dir > 0) ? runNb : (-1);
-        int y = (dir > 0) ? getFirstPos() : (getFirstPos() + runNb);
-        int xPrev = -1;
-
-        for (int i = iStart; i != iBreak; i += dir) {
-            Run run = runs.get(i);
-
-            // +----------------------------+
-            // +--+-------------------------+
-            //    +----------------------+--+
-            //    +----------------------+
-            //
-            // Order of the 4 angle points for a run is
-            // Vertical lag:    Horizontal lag:
-            //     1 2              1 4
-            //     4 3              2 3
-            int x = (dir > 0) ? run.getStart() : (run.getStop() + 1);
-
-            if (x != xPrev) {
-                if (xPrev != -1) {
-                    // Insert last vertex
-                    xpoints[index] = xPrev;
-                    ypoints[index] = y;
-                    index++;
-                }
-
-                // Insert new vertex
-                xpoints[index] = x;
-                ypoints[index] = y;
-                index++;
-                xPrev = x;
-            }
-
-            y += dir;
-        }
-
-        // Complete the sequence, with a new vertex
-        xpoints[index] = xPrev;
-        ypoints[index] = y;
-        index++;
-
-        if (dir < 0) {
-            // Finish with starting point
-            xpoints[index] = runs.get(0).getStart();
-            ypoints[index] = getFirstPos();
-            index++;
-        }
-
-        return index;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1223,132 +973,3 @@ public class BasicSection
         }
     }
 }
-//
-//    //---------------//
-//    // inNextSibling //
-//    //---------------//
-//    @Override
-//    public Section inNextSibling ()
-//    {
-//        // Check we have sources
-//        if (getInDegree() == 0) {
-//            return null;
-//        }
-//
-//        // Proper source section
-//        Section source = getSources().get(getInDegree() - 1);
-//
-//        // Browse till we get to this as target
-//        for (Iterator<Section> li = source.getTargets().iterator(); li.hasNext();) {
-//            Section section = li.next();
-//
-//            if (section == this) {
-//                if (li.hasNext()) {
-//                    return li.next();
-//                } else {
-//                    return null;
-//                }
-//            }
-//        }
-//
-//        logger.error("inNextSibling inconsistent graph");
-//
-//        return null;
-//    }
-//
-//    //-------------------//
-//    // inPreviousSibling //
-//    //-------------------//
-//    @Override
-//    public Section inPreviousSibling ()
-//    {
-//        if (getInDegree() == 0) {
-//            return null;
-//        }
-//
-//        // Proper source section
-//        Section source = getSources().get(0);
-//
-//        // Browse till we get to this as target
-//        for (ListIterator<Section> li = source.getTargets().listIterator(source.getOutDegree());
-//                li.hasPrevious();) {
-//            Section section = li.previous();
-//
-//            if (section == this) {
-//                if (li.hasPrevious()) {
-//                    return li.previous();
-//                } else {
-//                    return null;
-//                }
-//            }
-//        }
-//
-//        logger.error("inPreviousSibling inconsistent graph");
-//
-//        return null;
-//    }
-//
-//
-//    //----------------//
-//    // outNextSibling //
-//    //----------------//
-//    @Override
-//    public Section outNextSibling ()
-//    {
-//        if (getOutDegree() == 0) {
-//            return null;
-//        }
-//
-//        // Proper target section
-//        Section target = getTargets().get(getOutDegree() - 1);
-//
-//        // Browse till we get to this as source
-//        for (Iterator<Section> li = target.getSources().iterator(); li.hasNext();) {
-//            Section section = li.next();
-//
-//            if (section == this) {
-//                if (li.hasNext()) {
-//                    return li.next();
-//                } else {
-//                    return null;
-//                }
-//            }
-//        }
-//
-//        logger.error("outNextSibling inconsistent graph");
-//
-//        return null;
-//    }
-//
-//    //--------------------//
-//    // outPreviousSibling //
-//    //--------------------//
-//    @Override
-//    public Section outPreviousSibling ()
-//    {
-//        if (getOutDegree() == 0) {
-//            return null;
-//        }
-//
-//        // Proper target section
-//        Section target = getTargets().get(getOutDegree() - 1);
-//
-//        // Browse till we get to this as source
-//        for (ListIterator<Section> li = target.getSources().listIterator(target.getInDegree());
-//                li.hasPrevious();) {
-//            Section section = li.previous();
-//
-//            if (section == this) {
-//                if (li.hasPrevious()) {
-//                    return li.previous();
-//                } else {
-//                    return null;
-//                }
-//            }
-//        }
-//
-//        logger.error("outPreviousSibling inconsistent graph");
-//
-//        return null;
-//    }
-//

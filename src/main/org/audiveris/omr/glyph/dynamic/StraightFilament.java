@@ -24,11 +24,13 @@ package org.audiveris.omr.glyph.dynamic;
 import org.audiveris.omr.glyph.NearLine;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.BasicLine;
+import org.audiveris.omr.math.Line;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -69,7 +71,15 @@ public class StraightFilament
         line = new BasicLine();
 
         for (Section section : getMembers()) {
-            line.includeLine(section.getAbsoluteLine());
+            Line sectionLine = section.getAbsoluteLine();
+
+            if (sectionLine != null) {
+                line.includeLine(sectionLine);
+            } else {
+                // Just 1 point
+                Point cp = new Point(section.getStartCoord(), section.getFirstPos());
+                line.includePoint(section.getOrientation().absolute(cp));
+            }
         }
 
         Rectangle box = getBounds();

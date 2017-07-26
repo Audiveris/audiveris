@@ -608,12 +608,19 @@ public class BasicGlyph
         }
 
         // We have a problem if glyph is just 0 or 1 pixel: no computable slope!
-        if (basicLine.getNumberOfPoints() == 0) {
+        switch (basicLine.getNumberOfPoints()) {
+        case 0:
             throw new IllegalStateException("Glyph has no pixel, cannot compute line.");
-        } else if (basicLine.getNumberOfPoints() == 1) {
+
+        case 1:
             slope = 0d; // we just need a value.
-        } else {
+
+            break;
+
+        default:
             slope = basicLine.getSlope();
+
+            break;
         }
 
         line = basicLine.toDouble();

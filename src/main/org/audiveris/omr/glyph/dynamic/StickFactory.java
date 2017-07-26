@@ -397,8 +397,6 @@ public class StickFactory
     private List<LinkedSection> getNeighbors (LinkedSection section,
                                               boolean reverse)
     {
-        //        return reverse ? Graphs.predecessorListOf(graph, section)
-        //                : Graphs.successorListOf(graph, section);
         return reverse ? section.getSources() : section.getTargets();
     }
 

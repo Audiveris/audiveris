@@ -312,7 +312,6 @@ public class SpotsBuilder
             final Picture picture = sheet.getPicture();
             final int stemWidth = sheet.getScale().getMaxStem();
 
-            ///return  picture.getSource(Picture.SourceKey.GAUSSIAN);
             watch.start("getSource NO_STAFF");
 
             ByteProcessor buffer = picture.getSource(Picture.SourceKey.NO_STAFF);

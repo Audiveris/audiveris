@@ -138,9 +138,6 @@ public class LedgersBuilder
     /** Large sheet scale. */
     private final InterlineScale largeScale;
 
-    /** Candidate sections for this system. */
-    private final List<Section> sections;
-
     /** Check suites. */
     private final Suites suites;
 
@@ -160,14 +157,11 @@ public class LedgersBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * @param system   the related system to process
-     * @param sections candidate sections for this system
+     * @param system the related system to process
      */
-    public LedgersBuilder (SystemInfo system,
-                           List<Section> sections)
+    public LedgersBuilder (SystemInfo system)
     {
         this.system = system;
-        this.sections = sections;
 
         sig = system.getSig();
         sheet = system.getSheet();
@@ -201,8 +195,10 @@ public class LedgersBuilder
     //--------------//
     /**
      * Search horizontal sticks for ledgers and build ledgers incrementally.
+     *
+     * @param sections candidate sections for this system
      */
-    public void buildLedgers ()
+    public void buildLedgers (List<Section> sections)
     {
         try {
             // Put apart the (good) system beams, they can't intersect ledgers.
