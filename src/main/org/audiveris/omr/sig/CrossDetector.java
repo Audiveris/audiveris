@@ -193,7 +193,7 @@ public class CrossDetector
      * Return the distance between the provided inter and its closest partner if any.
      *
      * @param inter provided inter
-     * @return distance to its closest partner if any, null otherwise
+     * @return distance to its closest partner if any, MAX_VALUE otherwise
      */
     private double partnerDistance (Inter inter)
     {
@@ -240,7 +240,7 @@ public class CrossDetector
         } else {
             final double aDist = Math.min(staffDistance(above), partnerDistance(above));
             final double bDist = Math.min(staffDistance(below), partnerDistance(below));
-            final Inter farther = (aDist >= bDist) ? above : below;
+            final Inter farther = (aDist > bDist) ? above : below;
 
             if (farther.isVip()) {
                 logger.info("Deleting farther {}", farther);
