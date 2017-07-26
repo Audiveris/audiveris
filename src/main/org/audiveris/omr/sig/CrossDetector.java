@@ -23,6 +23,7 @@ package org.audiveris.omr.sig;
 
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -30,6 +31,8 @@ import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -142,71 +145,92 @@ public class CrossDetector
     /**
      * Detect all cases where 2 Inters actually overlap while being in separate systems.
      *
-     * @param list1 the collection of inters to process from one system
-     * @param list2 the collection of inters to process from another system
+     * @param aboves the collection of inters to process from system above
+     * @param belows the collection of inters to process from system below
      */
-    private void detectCrossOverlaps (List<Inter> list1,
-                                      List<Inter> list2)
+    private void detectCrossOverlaps (List<Inter> aboves,
+                                      List<Inter> belows)
     {
-        Collections.sort(list2, Inter.byAbscissa);
+        Collections.sort(aboves, Inter.byAbscissa);
+        Collections.sort(belows, Inter.byAbscissa);
 
         NextLeft:
-        for (Inter left : list1) {
-            if (left.isDeleted()) {
+        for (Inter above : aboves) {
+            if (above.isDeleted()) {
                 continue;
             }
 
-            final Rectangle leftBox = left.getBounds();
+            final Rectangle aboveBox = above.getBounds();
 
-            final double xMax = leftBox.getMaxX();
+            final double xMax = aboveBox.getMaxX();
 
-            for (Inter right : list2) {
-                if (right.isDeleted()) {
+            for (Inter below : belows) {
+                if (below.isDeleted()) {
                     continue;
                 }
 
-                Rectangle rightBox = right.getBounds();
+                Rectangle belowBox = below.getBounds();
 
-                if (leftBox.intersects(rightBox)) {
+                if (aboveBox.intersects(belowBox)) {
                     // Have a more precise look
-                    if (left.isVip() && right.isVip()) {
-                        logger.info("VIP check cross overlap {} vs {}", left, right);
-                    }
-
                     try {
-                        if (left.overlaps(right) && right.overlaps(left)) {
-                            resolveConflict(left, right);
+                        if (above.overlaps(below) && below.overlaps(above)) {
+                            resolveConflict(above, below);
                         }
                     } catch (DeletedInterException diex) {
-                        if (diex.inter == left) {
+                        if (diex.inter == above) {
                             continue NextLeft;
                         }
                     }
-                } else if (rightBox.x > xMax) {
-                    break; // Since right list is sorted by abscissa
+                } else if (belowBox.x > xMax) {
+                    break; // Since below list is sorted by abscissa
                 }
             }
         }
     }
 
     /**
+     * Return the distance between the provided inter and its closest partner if any.
+     *
+     * @param inter provided inter
+     * @return distance to its closest partner if any, null otherwise
+     */
+    private double partnerDistance (Inter inter)
+    {
+        final Point center = inter.getCenter();
+        final SIGraph sig = inter.getSig();
+        double bestD2 = Double.MAX_VALUE;
+
+        for (Relation rel : sig.getRelations(inter, Support.class)) {
+            Inter partner = sig.getOppositeInter(inter, rel);
+            Rectangle box = partner.getBounds();
+            double d2 = GeoUtil.ptDistanceSq(box, center.x, center.y);
+            bestD2 = Math.min(bestD2, d2);
+        }
+
+        return Math.sqrt(bestD2);
+    }
+
+    /**
      * Resolve the conflict detected between the two provided inters.
      * <p>
      * We simply delete the weaker if there is any significant difference in grade.
-     * Otherwise we deleted the inter farther from its own staff
+     * Otherwise we deleted the inter farther from its own staff or partnering chord
      *
-     * @param left  an inter (in one system)
-     * @param right an inter (in another system)
+     * @param above an inter (in system above)
+     * @param below an inter (in system below)
      */
-    private void resolveConflict (Inter left,
-                                  Inter right)
+    private void resolveConflict (Inter above,
+                                  Inter below)
     {
-        logger.debug("resolveConflict {} & {}", left, right);
+        if (above.isVip() && below.isVip()) {
+            logger.info("VIP resolveConflict? {} vs {}", above, below);
+        }
 
-        double gradeDiff = Math.abs(left.getBestGrade() - right.getBestGrade());
+        double gradeDiff = Math.abs(above.getBestGrade() - below.getBestGrade());
 
         if (gradeDiff >= constants.minGradeDiff.getValue()) {
-            Inter weaker = (left.getBestGrade() <= right.getBestGrade()) ? left : right;
+            Inter weaker = (above.getBestGrade() <= below.getBestGrade()) ? above : below;
 
             if (weaker.isVip()) {
                 logger.info("VIP Deleting weaker {}", weaker);
@@ -214,9 +238,9 @@ public class CrossDetector
 
             weaker.delete();
         } else {
-            final double lDist = staffDistance(left);
-            final double rDist = staffDistance(right);
-            final Inter farther = (lDist >= rDist) ? left : right;
+            final double aDist = Math.min(staffDistance(above), partnerDistance(above));
+            final double bDist = Math.min(staffDistance(below), partnerDistance(below));
+            final Inter farther = (aDist >= bDist) ? above : below;
 
             if (farther.isVip()) {
                 logger.info("Deleting farther {}", farther);

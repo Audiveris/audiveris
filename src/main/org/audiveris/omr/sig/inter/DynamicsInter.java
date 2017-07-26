@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -235,25 +236,31 @@ public class DynamicsInter
             logger.info("VIP lookupPartnership for {}", this);
         }
 
+        final Scale scale = system.getSheet().getScale();
+        final int maxDy = scale.toPixels(constants.maxDy);
+        final int maxXGap = scale.toPixels(constants.maxXGap);
+
         // Look for a suitable chord related to this dynamics element
         final Point center = getCenter();
         final MeasureStack stack = system.getMeasureStackAt(center);
-        getBounds();
+        final Rectangle widenedBounds = getBounds();
+        widenedBounds.grow(maxXGap, 0);
 
         for (VerticalSide side : VerticalSide.values()) {
             final boolean lookAbove = side == VerticalSide.TOP;
-            AbstractChordInter chord = lookAbove ? stack.getStandardChordAbove(center, bounds)
-                    : stack.getStandardChordBelow(center, bounds);
+            AbstractChordInter chord = lookAbove
+                    ? stack.getStandardChordAbove(center, widenedBounds)
+                    : stack.getStandardChordBelow(center, widenedBounds);
 
             if ((chord == null) || chord instanceof RestChordInter) {
                 continue;
             }
 
-            double dyChord = GeoUtil.yGap(bounds, chord.getBounds());
+            double dyChord = GeoUtil.yGap(widenedBounds, chord.getBounds());
 
             // If chord is mirrored, select the closest vertically
             if (chord.getMirror() != null) {
-                double dyMirror = GeoUtil.yGap(bounds, chord.getMirror().getBounds());
+                double dyMirror = GeoUtil.yGap(widenedBounds, chord.getMirror().getBounds());
 
                 if (dyMirror < dyChord) {
                     dyChord = dyMirror;
@@ -266,13 +273,10 @@ public class DynamicsInter
             }
 
             // Check vertical distance between element and chord
-            final Scale scale = system.getSheet().getScale();
-            final int maxDy = scale.toPixels(constants.maxDy);
-
             if (dyChord > maxDy) {
                 // Check vertical distance between element and staff
                 final Staff chordStaff = lookAbove ? chord.getBottomStaff() : chord.getTopStaff();
-                final int dyStaff = chordStaff.gapTo(bounds);
+                final int dyStaff = chordStaff.gapTo(widenedBounds);
 
                 if (dyStaff > maxDy) {
                     if (isVip()) {
@@ -331,5 +335,9 @@ public class DynamicsInter
         private final Scale.Fraction maxDy = new Scale.Fraction(
                 7,
                 "Maximum vertical distance between dynamics center and related chord/staff");
+
+        private final Scale.Fraction maxXGap = new Scale.Fraction(
+                1.0,
+                "Maximum horizontal gap between dynamics and related chord/staff");
     }
 }
