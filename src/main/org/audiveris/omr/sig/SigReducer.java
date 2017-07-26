@@ -1554,6 +1554,10 @@ public class SigReducer
             reduced.addAll(sig.reduceExclusions());
             allRemoved.addAll(reduced);
 
+            while ((modifs = adapter.checkLateConsistencies()) > 0) {
+                logger.debug("S#{} late modifs: {}", system.getId(), modifs);
+            }
+
             logger.debug("S#{} reductions: {}", system.getId(), reduced);
         } while (!reduced.isEmpty() || !deleted.isEmpty());
 
@@ -1718,6 +1722,11 @@ public class SigReducer
             // Void by default
         }
 
+        public int checkLateConsistencies ()
+        {
+            return 0; // Void by default
+        }
+
         public Set<Inter> checkSlurs ()
         {
             return Collections.emptySet();
@@ -1759,6 +1768,14 @@ public class SigReducer
 
             modifs += checkStems();
             deleted.addAll(updateAndPurge());
+
+            return modifs;
+        }
+
+        @Override
+        public int checkLateConsistencies ()
+        {
+            int modifs = 0;
 
             modifs += checkStemLengths();
             deleted.addAll(updateAndPurge());
