@@ -358,10 +358,6 @@ public class Main
                 true,
                 "Should we show environment?");
 
-        private final Constant.Boolean showNatives = new Constant.Boolean(
-                true,
-                "Should we show loading of native libraries?");
-
         private final Constant.String locale = new Constant.String(
                 "en",
                 "Locale language to be used in the whole application (en, fr)");
@@ -386,9 +382,5 @@ public class Main
                 "Seconds",
                 120,
                 "Time-out for one step on a sheet, specified in seconds");
-
-        private final Constant.Boolean closeBookOnEnd = new Constant.Boolean(
-                true,
-                "Should we close a book when it has been processed in batch?");
     }
 }

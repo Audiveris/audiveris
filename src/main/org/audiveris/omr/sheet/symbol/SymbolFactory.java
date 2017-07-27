@@ -22,14 +22,11 @@
 package org.audiveris.omr.sheet.symbol;
 
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.Shape.*;
+import org.audiveris.omr.glyph.ShapeSet;
 import static org.audiveris.omr.glyph.ShapeSet.*;
-
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.header.TimeBuilder;
@@ -101,8 +98,6 @@ import java.util.TreeMap;
 public class SymbolFactory
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SymbolFactory.class);
 
@@ -223,11 +218,11 @@ public class SymbolFactory
             addSymbol(BreathMarkInter.create(glyph, grade, system));
         } else if (shape == Shape.ARPEGGIATO) {
             addSymbol(ArpeggiatoInter.create(glyph, grade, system, systemHeadChords));
-        } else if (constants.supportFingerings.isSet() && Digits.contains(shape)) {
+        } else if (ShapeSet.supportFingerings() && Digits.contains(shape)) {
             addSymbol(new FingeringInter(glyph, shape, grade));
-        } else if (constants.supportFrets.isSet() && Romans.contains(shape)) {
+        } else if (ShapeSet.supportFrets() && Romans.contains(shape)) {
             addSymbol(new FretInter(glyph, shape, grade));
-        } else if (constants.supportPluckings.isSet() && Pluckings.contains(shape)) {
+        } else if (ShapeSet.supportPluckings() && Pluckings.contains(shape)) {
             addSymbol(new PluckingInter(glyph, shape, grade));
         } else {
             logger.debug("SymbolFactory no support yet for {} {}", shape, glyph);
@@ -447,7 +442,7 @@ public class SymbolFactory
         case DIGIT_3:
         case DIGIT_4:
 
-            if (constants.supportFingerings.isSet()) {
+            if (ShapeSet.supportFingerings()) {
                 return new FingeringInter(null, shape, grade); // No visit
             } else {
                 return null;
@@ -458,7 +453,7 @@ public class SymbolFactory
         case PLUCK_M:
         case PLUCK_A:
 
-            if (constants.supportPluckings.isSet()) {
+            if (ShapeSet.supportPluckings()) {
                 return new PluckingInter(null, shape, grade); // No visit
             } else {
                 return null;
@@ -478,7 +473,7 @@ public class SymbolFactory
         case ROMAN_XI:
         case ROMAN_XII:
 
-            if (constants.supportFrets.isSet()) {
+            if (ShapeSet.supportFrets()) {
                 return new FretInter(null, shape, grade); // No visit
             } else {
                 return null;
@@ -664,28 +659,6 @@ public class SymbolFactory
                 }
             }
         }
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean supportPluckings = new Constant.Boolean(
-                false,
-                "Should we support Pluckings (guitar right-hand)?");
-
-        private final Constant.Boolean supportFingerings = new Constant.Boolean(
-                false,
-                "Should we support Fingerings (guitar left-hand)?");
-
-        private final Constant.Boolean supportFrets = new Constant.Boolean(
-                false,
-                "Should we support Fret indications (guitar left-hand)?");
     }
 }
 //

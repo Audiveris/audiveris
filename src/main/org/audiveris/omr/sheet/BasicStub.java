@@ -787,8 +787,9 @@ public class BasicStub
     // doOneStep //
     //-----------//
     /**
-     * Do just one specified step, synchronously, with display of related UI if any
-     * and recording of the step into the script.
+     * Do just one specified step, synchronously, with display of related UI if any.
+     * <p>
+     * Step duration is guarded by a timeout, so that processing cannot get blocked infinitely.
      *
      * @param step the step to perform
      * @throws StepException

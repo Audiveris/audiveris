@@ -173,15 +173,15 @@ public class ShapeSet
     public static final EnumSet<Shape> SmallNotes = EnumSet.noneOf(Shape.class);
 
     static {
-        if (constants.supportSmallHeadNotes.isSet()) {
+        if (supportSmallHeadNotes()) {
             SmallNotes.add(NOTEHEAD_BLACK_SMALL);
         }
 
-        if (constants.supportSmallVoidNotes.isSet()) {
+        if (supportSmallVoidNotes()) {
             SmallNotes.add(NOTEHEAD_VOID_SMALL);
         }
 
-        if (constants.supportSmallWholeNotes.isSet()) {
+        if (supportSmallWholeNotes()) {
             SmallNotes.add(WHOLE_NOTE_SMALL);
         }
     }
@@ -215,15 +215,15 @@ public class ShapeSet
     static {
         TemplateNotes.addAll(Arrays.asList(NOTEHEAD_BLACK, NOTEHEAD_VOID, WHOLE_NOTE));
 
-        if (constants.supportSmallHeadNotes.isSet()) {
+        if (supportSmallHeadNotes()) {
             TemplateNotes.add(NOTEHEAD_BLACK_SMALL);
         }
 
-        if (constants.supportSmallVoidNotes.isSet()) {
+        if (supportSmallVoidNotes()) {
             TemplateNotes.add(NOTEHEAD_VOID_SMALL);
         }
 
-        if (constants.supportSmallWholeNotes.isSet()) {
+        if (supportSmallWholeNotes()) {
             TemplateNotes.add(WHOLE_NOTE_SMALL);
         }
     }
@@ -234,11 +234,11 @@ public class ShapeSet
     static {
         StemTemplateNotes.addAll(Arrays.asList(NOTEHEAD_BLACK, NOTEHEAD_VOID));
 
-        if (constants.supportSmallHeadNotes.isSet()) {
+        if (supportSmallHeadNotes()) {
             StemTemplateNotes.add(NOTEHEAD_BLACK_SMALL);
         }
 
-        if (constants.supportSmallVoidNotes.isSet()) {
+        if (supportSmallVoidNotes()) {
             StemTemplateNotes.add(NOTEHEAD_VOID_SMALL);
         }
     }
@@ -249,7 +249,7 @@ public class ShapeSet
     static {
         BlackTemplateNotes.addAll(Arrays.asList(NOTEHEAD_BLACK));
 
-        if (constants.supportSmallHeadNotes.isSet()) {
+        if (supportSmallHeadNotes()) {
             BlackTemplateNotes.add(NOTEHEAD_BLACK_SMALL);
         }
     }
@@ -260,7 +260,7 @@ public class ShapeSet
     static {
         VoidTemplateNotes.addAll(Arrays.asList(NOTEHEAD_VOID, WHOLE_NOTE));
 
-        if (constants.supportSmallVoidNotes.isSet()) {
+        if (supportSmallVoidNotes()) {
             VoidTemplateNotes.add(NOTEHEAD_VOID_SMALL);
         }
     }
@@ -335,8 +335,8 @@ public class ShapeSet
             shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
 
     /**
-     * <img src="http://0.tqn.com/y/piano/1/U/m/G/-/-/musical-dynamics_MUSIC.png" />
-     * <br/>
+     * <img src="http://0.tqn.com/y/piano/1/U/m/G/-/-/musical-dynamics_MUSIC.png">
+     * <br>
      * see <a href="http://piano.about.com/od/musicaltermssymbols/ss/2Int_SheetMusic_2.htm">Musical
      * Dynamics</a>
      */
@@ -635,6 +635,103 @@ public class ShapeSet
         }
     }
 
+    //-----------------------//
+    // getPhysicalShapeNames //
+    //-----------------------//
+    /**
+     * Report the names of all the physical shapes.
+     *
+     * @return the array of names for shapes up to LAST_PHYSICAL_SHAPE
+     */
+    public static String[] getPhysicalShapeNames ()
+    {
+        int shapeCount = 1 + LAST_PHYSICAL_SHAPE.ordinal();
+        String[] names = new String[shapeCount];
+
+        for (Shape shape : allPhysicalShapes) {
+            names[shape.ordinal()] = shape.name();
+        }
+
+        return names;
+    }
+
+    //-----------------------------//
+    // getPhysicalShapeNamesString //
+    //-----------------------------//
+    /**
+     * Report a formatted string with the names of all the physical shapes.
+     *
+     * @return a global string
+     */
+    public static String getPhysicalShapeNamesString ()
+    {
+        final List<String> names = Arrays.asList(getPhysicalShapeNames());
+        StringBuilder sb = new StringBuilder("{ //\n");
+
+        for (int i = 0; i < names.size(); i++) {
+            String comma = (i < (names.size() - 1)) ? "," : "";
+            sb.append(String.format("\"%-18s // %3d\n", names.get(i) + "\"" + comma, i));
+        }
+
+        sb.append("};");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // contains //
+    //----------//
+    /**
+     * Convenient method to check if encapsulated shapes set does
+     * contain the provided object.
+     *
+     * @param shape the Shape object to check for inclusion
+     * @return true if contained, false otherwise
+     */
+    public boolean contains (Shape shape)
+    {
+        return shapes.contains(shape);
+    }
+
+    //----------//
+    // getColor //
+    //----------//
+    /**
+     * Report the color currently assigned to the range, if any.
+     *
+     * @return the related color, or null
+     */
+    public Color getColor ()
+    {
+        return color;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of the set.
+     *
+     * @return the set name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //--------//
+    // getRep //
+    //--------//
+    /**
+     * Report the representative shape of the set, if any.
+     *
+     * @return the rep shape, or null
+     */
+    public Shape getRep ()
+    {
+        return rep;
+    }
+
     //-------------//
     // getShapeSet //
     //-------------//
@@ -649,50 +746,6 @@ public class ShapeSet
     public static List<ShapeSet> getShapeSets ()
     {
         return Sets.setList;
-    }
-
-    //-----------//
-    // getShapes //
-    //-----------//
-    /**
-     * Exports the set of shapes.
-     *
-     * @return the proper enum set
-     */
-    public EnumSet<Shape> getShapes ()
-    {
-        return shapes;
-    }
-
-    //-----------------//
-    // getSortedShapes //
-    //-----------------//
-    /**
-     * Exports the sorted collection of shapes.
-     *
-     * @return the proper enum set
-     */
-    public List<Shape> getSortedShapes ()
-    {
-        if (sortedShapes != null) {
-            return sortedShapes;
-        } else {
-            return new ArrayList<Shape>(shapes);
-        }
-    }
-
-    //------------------//
-    // setConstantColor //
-    //------------------//
-    /**
-     * Define a specific color for the set.
-     *
-     * @param color the specified color
-     */
-    public void setConstantColor (Color color)
-    {
-        constantColor.setValue(color);
-        setColor(color);
     }
 
     //----------//
@@ -745,132 +798,6 @@ public class ShapeSet
      * @param col1 a first collection of shapes
      * @param col2 a second collection of shapes
      * @param col3 a third collection of shapes
-     * @param col4 a fourth collection of shapes
-     * @return a single collection
-     */
-    public static Collection<Shape> shapesOf (Collection<Shape> col1,
-                                              Collection<Shape> col2,
-                                              Collection<Shape> col3,
-                                              Collection<Shape> col4)
-    {
-        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
-                : EnumSet.noneOf(Shape.class);
-
-        shapes.addAll(col1);
-        shapes.addAll(col2);
-        shapes.addAll(col3);
-        shapes.addAll(col4);
-
-        return shapes;
-    }
-
-    //---------//
-    // valueOf //
-    //---------//
-    /**
-     * Retrieve a set knowing its name (just like an enumeration).
-     *
-     * @param str the provided set name
-     * @return the range found, or null otherwise
-     */
-    public static ShapeSet valueOf (String str)
-    {
-        return Sets.map.get(str);
-    }
-
-    //----------//
-    // contains //
-    //----------//
-    /**
-     * Convenient method to check if encapsulated shapes set does
-     * contain the provided object.
-     *
-     * @param shape the Shape object to check for inclusion
-     * @return true if contained, false otherwise
-     */
-    public boolean contains (Shape shape)
-    {
-        return shapes.contains(shape);
-    }
-
-    //----------//
-    // getColor //
-    //----------//
-    /**
-     * Report the color currently assigned to the range, if any.
-     *
-     * @return the related color, or null
-     */
-    public Color getColor ()
-    {
-        return color;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name of the set.
-     *
-     * @return the set name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //-----------------------//
-    // getPhysicalShapeNames //
-    //-----------------------//
-    /**
-     * Report the names of all the physical shapes.
-     *
-     * @return the array of names for shapes up to LAST_PHYSICAL_SHAPE
-     */
-    public static String[] getPhysicalShapeNames ()
-    {
-        int shapeCount = 1 + LAST_PHYSICAL_SHAPE.ordinal();
-        String[] names = new String[shapeCount];
-
-        for (Shape shape : allPhysicalShapes) {
-            names[shape.ordinal()] = shape.name();
-        }
-
-        return names;
-    }
-
-    //-----------------------------//
-    // getPhysicalShapeNamesString //
-    //-----------------------------//
-    /**
-     * Report a formatted string with the names of all the physical shapes.
-     *
-     * @return a global string
-     */
-    public static String getPhysicalShapeNamesString ()
-    {
-        final List<String> names = Arrays.asList(getPhysicalShapeNames());
-        StringBuilder sb = new StringBuilder("{ //\n");
-
-        for (int i = 0; i < names.size(); i++) {
-            String comma = (i < (names.size() - 1)) ? "," : "";
-            sb.append(String.format("\"%-18s // %3d\n", names.get(i) + "\"" + comma, i));
-        }
-
-        sb.append("};");
-
-        return sb.toString();
-    }
-
-    //----------//
-    // shapesOf //
-    //----------//
-    /**
-     * Convenient way to build a collection of shapes.
-     *
-     * @param col1 a first collection of shapes
-     * @param col2 a second collection of shapes
-     * @param col3 a third collection of shapes
      * @return a single collection
      */
     public static Collection<Shape> shapesOf (Collection<Shape> col1,
@@ -893,6 +820,34 @@ public class ShapeSet
     /**
      * Convenient way to build a collection of shapes.
      *
+     * @param col1 a first collection of shapes
+     * @param col2 a second collection of shapes
+     * @param col3 a third collection of shapes
+     * @param col4 a fourth collection of shapes
+     * @return a single collection
+     */
+    public static Collection<Shape> shapesOf (Collection<Shape> col1,
+                                              Collection<Shape> col2,
+                                              Collection<Shape> col3,
+                                              Collection<Shape> col4)
+    {
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
+
+        shapes.addAll(col1);
+        shapes.addAll(col2);
+        shapes.addAll(col3);
+        shapes.addAll(col4);
+
+        return shapes;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    /**
+     * Convenient way to build a collection of shapes.
+     *
      * @param shapes an array of shapes
      * @return a single collection
      */
@@ -901,17 +856,110 @@ public class ShapeSet
         return Arrays.asList(shapes);
     }
 
-    //--------//
-    // getRep //
-    //--------//
-    /**
-     * Report the representative shape of the set, if any.
-     *
-     * @return the rep shape, or null
-     */
-    public Shape getRep ()
+    //-------------------//
+    // supportFingerings //
+    //-------------------//
+    public static boolean supportFingerings ()
     {
-        return rep;
+        return constants.supportFingerings.isSet();
+    }
+
+    //--------------//
+    // supportFrets //
+    //--------------//
+    public static boolean supportFrets ()
+    {
+        return constants.supportFrets.isSet();
+    }
+
+    //------------------//
+    // supportPluckings //
+    //------------------//
+    public static boolean supportPluckings ()
+    {
+        return constants.supportPluckings.isSet();
+    }
+
+    //-----------------------//
+    // supportSmallHeadNotes //
+    //-----------------------//
+    public static boolean supportSmallHeadNotes ()
+    {
+        return constants.supportSmallHeadNotes.isSet();
+    }
+
+    //-----------------------//
+    // supportSmallVoidNotes //
+    //-----------------------//
+    public static boolean supportSmallVoidNotes ()
+    {
+        return constants.supportSmallVoidNotes.isSet();
+    }
+
+    //------------------------//
+    // supportSmallWholeNotes //
+    //------------------------//
+    public static boolean supportSmallWholeNotes ()
+    {
+        return constants.supportSmallWholeNotes.isSet();
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    /**
+     * Retrieve a set knowing its name (just like an enumeration).
+     *
+     * @param str the provided set name
+     * @return the range found, or null otherwise
+     */
+    public static ShapeSet valueOf (String str)
+    {
+        return Sets.map.get(str);
+    }
+
+    //-----------//
+    // getShapes //
+    //-----------//
+    /**
+     * Exports the set of shapes.
+     *
+     * @return the proper enum set
+     */
+    public EnumSet<Shape> getShapes ()
+    {
+        return shapes;
+    }
+
+    //-----------------//
+    // getSortedShapes //
+    //-----------------//
+    /**
+     * Exports the sorted collection of shapes.
+     *
+     * @return the proper enum set
+     */
+    public List<Shape> getSortedShapes ()
+    {
+        if (sortedShapes != null) {
+            return sortedShapes;
+        } else {
+            return new ArrayList<Shape>(shapes);
+        }
+    }
+
+    //------------------//
+    // setConstantColor //
+    //------------------//
+    /**
+     * Define a specific color for the set.
+     *
+     * @param color the specified color
+     */
+    public void setConstantColor (Color color)
+    {
+        constantColor.setValue(color);
+        setColor(color);
     }
 
     //----------------------//
@@ -1025,6 +1073,18 @@ public class ShapeSet
         private final Constant.Boolean supportSmallWholeNotes = new Constant.Boolean(
                 false,
                 "Should we support WHOLE_NOTE_SMALL shape?");
+
+        private final Constant.Boolean supportPluckings = new Constant.Boolean(
+                false,
+                "Should we support Pluckings (guitar right-hand)?");
+
+        private final Constant.Boolean supportFingerings = new Constant.Boolean(
+                false,
+                "Should we support Fingerings (guitar left-hand)?");
+
+        private final Constant.Boolean supportFrets = new Constant.Boolean(
+                false,
+                "Should we support Fret indications (guitar left-hand)?");
     }
 
     //------//
