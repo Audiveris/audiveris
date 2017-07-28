@@ -47,8 +47,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Interface {@code Section} describes an <b>immutable</b> section of contiguous and
  * compatible {@link Run} instances.
  * <p>
- * NOTA: Cross-section source/target relationship are not handled here, but in {@link LinkedSection}
- * class.
+ * NOTA: Cross-section source/target relationship are not handled here, but in
+ * {@link org.audiveris.omr.glyph.dynamic.LinkedSection} class.
  * <p>
  * A section carries orientation information, which is the orientation for all runs in this section.
  * <ol> <li> Positions increase in parallel with run numbers, so the thickness of a section is

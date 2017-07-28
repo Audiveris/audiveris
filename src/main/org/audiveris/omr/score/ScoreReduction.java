@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -101,9 +102,12 @@ public class ScoreReduction
     //--------//
     /**
      * Process a score by merging information from the score pages.
+     *
+     * @return the count of modifications done
      */
-    public void reduce ()
+    public int reduce ()
     {
+        int modifs = 0;
         /* Connect parts across the pages */
         connection = PartConnection.connectScorePages(pages);
 
@@ -111,12 +115,14 @@ public class ScoreReduction
         numberResults();
 
         // Create score part-list and connect to pages and systems parts
-        addPartList();
+        modifs += addPartList();
 
         // Debug: List all candidates per result
         if (logger.isDebugEnabled()) {
             dumpResultMapping();
         }
+
+        return modifs;
     }
 
     //-------------//
@@ -125,8 +131,10 @@ public class ScoreReduction
     /**
      * Build the part-list as the sequence of Result/LogicalPart instances, and map each
      * of them to a Part.
+     *
+     * @return the count of modifications done
      */
-    private void addPartList ()
+    private int addPartList ()
     {
         // Map (page) LogicalPart -> (score) LogicalPart data
         List<LogicalPart> partList = new ArrayList<LogicalPart>();
@@ -172,7 +180,13 @@ public class ScoreReduction
             }
         }
 
+        if (Objects.deepEquals(score.getLogicalParts(), partList)) {
+            return 0;
+        }
+
         score.setLogicalParts(partList);
+
+        return 1;
     }
 
     //-------------------//

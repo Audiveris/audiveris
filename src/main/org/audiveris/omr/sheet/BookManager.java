@@ -501,6 +501,7 @@ public class BookManager
         }
 
         book.setModified(true);
+        book.setDirty(true);
         addBook(book);
 
         getImageHistory().add(path); // Insert in input history

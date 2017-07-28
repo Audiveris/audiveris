@@ -804,6 +804,9 @@ public class StubsController
     {
         logger.debug("stateChanged/checkStubStatus on {}", stub);
 
+        // If stub lock is not free, then there is some processing going on on this stub.
+        // Hence, give up and let this processing go.
+        // Otherwise, launch the performing of the early steps.
         if (stub.getLock().tryLock()) {
             try {
                 LogUtil.start(stub);

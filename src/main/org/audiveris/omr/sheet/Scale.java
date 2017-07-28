@@ -813,8 +813,7 @@ public class Scale
         @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("beam");
-            sb.append('(');
+            StringBuilder sb = new StringBuilder("beam(");
             sb.append(main);
 
             if (extra != null) {
@@ -822,8 +821,7 @@ public class Scale
             }
 
             if (distanceMean != null) {
-                sb.append(String.format(" gapMean:%.1f", distanceMean));
-                sb.append(String.format(" gapStd:%.1f", distanceSigma));
+                sb.append(String.format(" dist:%.1f~%.1f", distanceMean, distanceSigma));
             }
 
             sb.append(')');

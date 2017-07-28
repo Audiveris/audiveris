@@ -47,6 +47,7 @@ import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;
+import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.util.CursorController;
 import org.audiveris.omr.ui.util.OmrFileFilter;
@@ -274,109 +275,7 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public void browseBook (ActionEvent e)
     {
-        OMR.gui.getApplication().show(StubsController.getCurrentBook().getBrowserFrame());
-    }
-
-    //-----------//
-    // buildBook //
-    //-----------//
-    /**
-     * Launch or complete the transcription of all sheets and merge them at book level.
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = BOOK_IDLE)
-    public Task<Void, Void> buildBook (ActionEvent e)
-    {
-        Book book = StubsController.getCurrentStub().getBook();
-
-        // Check if (valid) sheets still need to be processed
-        int todo = 0;
-
-        for (SheetStub stub : book.getValidStubs()) {
-            if (!stub.isDone(Step.PAGE)) {
-                todo++;
-            }
-        }
-
-        if (todo > 0) {
-            return new BuildBookTask(book);
-        } else {
-            logger.info("No sheet transcription needed for {}", book);
-
-            return null;
-        }
-    }
-
-    //-------------//
-    // buildScores //
-    //-------------//
-    /**
-     * Build all scores at book level.
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = BOOK_IDLE)
-    public Task<Void, Void> buildScores (ActionEvent e)
-    {
-        Book book = StubsController.getCurrentStub().getBook();
-
-        return new BuildScoresTask(book);
-    }
-
-    //------------//
-    // buildSheet //
-    //------------//
-    /**
-     * Launch sheet transcription.
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = STUB_IDLE)
-    public Task<Void, Void> buildSheet (ActionEvent e)
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-
-        if (stub.isDone(Step.PAGE)) {
-            return new RebuildTask(stub.getSheet());
-        } else {
-            return new BuildSheetTask(stub.getSheet());
-        }
-    }
-
-    //-----------//
-    // cleanBook //
-    //-----------//
-    /**
-     * Delete the exported MusicXML for the whole current book.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public void cleanBook (ActionEvent e)
-    {
-        Book book = StubsController.getCurrentStub().getBook();
-        book.deleteExport();
-    }
-
-    //------------//
-    // cleanSheet //
-    //------------//
-    /**
-     * Delete the exported MusicXML for the current sheet.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public void cleanSheet (ActionEvent e)
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-        logger.warn("Check implementation of cleanSheet");
-
-        ///stub.deleteExport();
+        OmrGui.getApplication().show(StubsController.getCurrentBook().getBrowserFrame());
     }
 
     //-----------//
@@ -1064,7 +963,7 @@ public class BookActions
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = STUB_AVAILABLE)
+    @Action(enabledProperty = STUB_IDLE)
     public void resetSheet (ActionEvent e)
     {
         SheetStub stub = StubsController.getCurrentStub();
@@ -1089,7 +988,7 @@ public class BookActions
      *
      * @param e the event that triggered this action
      */
-    @Action(enabledProperty = STUB_AVAILABLE)
+    @Action(enabledProperty = STUB_IDLE)
     public void resetSheetToBinary (ActionEvent e)
     {
         SheetStub stub = StubsController.getCurrentStub();
@@ -1259,6 +1158,48 @@ public class BookActions
     @Action(selectedProperty = REBUILD_ALLOWED)
     public void toggleRebuild (ActionEvent e)
     {
+    }
+
+    //----------------//
+    // transcribeBook //
+    //----------------//
+    /**
+     * Launch or complete the transcription of all sheets and merge them at book level.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = BOOK_TRANSCRIBABLE)
+    public Task<Void, Void> transcribeBook (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        return new TranscribeBookTask(stub);
+    }
+
+    //-----------------//
+    // transcribeSheet //
+    //-----------------//
+    /**
+     * Launch or complete sheet transcription.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = STUB_TRANSCRIBABLE)
+    public Task<Void, Void> transcribeSheet (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        return new TranscribeSheetTask(stub.getSheet());
     }
 
     //--------------------//
@@ -1684,118 +1625,6 @@ public class BookActions
     }
 
     //---------------//
-    // BuildBookTask //
-    //---------------//
-    private static class BuildBookTask
-            extends VoidTask
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Book book;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public BuildBookTask (Book book)
-        {
-            this.book = book;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            try {
-                LogUtil.start(book);
-
-                for (SheetStub stub : book.getValidStubs()) {
-                    stub.reachStep(Step.PAGE, false);
-                }
-            } catch (Exception ex) {
-                logger.warn("Could not build book", ex);
-            } finally {
-                LogUtil.stopBook();
-            }
-
-            return null;
-        }
-    }
-
-    //-----------------//
-    // BuildScoresTask //
-    //-----------------//
-    private static class BuildScoresTask
-            extends VoidTask
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Book book;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public BuildScoresTask (Book book)
-        {
-            this.book = book;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            try {
-                LogUtil.start(book);
-
-                for (SheetStub stub : book.getValidStubs()) {
-                    LogUtil.start(stub);
-                    stub.reachStep(Step.PAGE, false);
-                    LogUtil.stopStub();
-                }
-
-                book.buildScores();
-            } catch (Exception ex) {
-                logger.warn("Could not build score(s) of book, " + ex, ex);
-            } finally {
-                LogUtil.stopBook();
-            }
-
-            return null;
-        }
-    }
-
-    //----------------//
-    // BuildSheetTask //
-    //----------------//
-    private static class BuildSheetTask
-            extends VoidTask
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Sheet sheet;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public BuildSheetTask (Sheet sheet)
-        {
-            this.sheet = sheet;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        protected Void doInBackground ()
-                throws InterruptedException
-        {
-            try {
-                LogUtil.start(sheet.getStub());
-                sheet.getStub().reachStep(Step.PAGE, false);
-            } catch (Exception ex) {
-                logger.warn("Could not build page", ex);
-            } finally {
-                LogUtil.stopStub();
-            }
-
-            return null;
-        }
-    }
-
-    //---------------//
     // CloseBookTask //
     //---------------//
     private static class CloseBookTask
@@ -2070,6 +1899,83 @@ public class BookActions
                 BookActions.getInstance().setBookModified(false);
             } finally {
                 LogUtil.stopBook();
+            }
+
+            return null;
+        }
+    }
+
+    //--------------------//
+    // TranscribeBookTask //
+    //--------------------//
+    private static class TranscribeBookTask
+            extends VoidTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final SheetStub stub;
+
+        private final Book book;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public TranscribeBookTask (SheetStub stub)
+        {
+            this.stub = stub;
+            this.book = stub.getBook();
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                LogUtil.start(book);
+                book.transcribe();
+            } catch (Exception ex) {
+                logger.warn("Could not transcribe book", ex);
+            } finally {
+                LogUtil.stopBook();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void finished ()
+        {
+            StubsController.getInstance().callAboutStub(stub);
+        }
+    }
+
+    //---------------------//
+    // TranscribeSheetTask //
+    //---------------------//
+    private static class TranscribeSheetTask
+            extends VoidTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Sheet sheet;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public TranscribeSheetTask (Sheet sheet)
+        {
+            this.sheet = sheet;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                LogUtil.start(sheet.getStub());
+                sheet.getStub().transcribe();
+            } catch (Exception ex) {
+                logger.warn("Could not transcribe sheet", ex);
+            } finally {
+                LogUtil.stopStub();
             }
 
             return null;

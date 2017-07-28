@@ -29,7 +29,6 @@ import org.audiveris.omr.math.GeoPath;
 import org.audiveris.omr.math.ReversePathIterator;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
-import org.audiveris.omr.sig.relation.CrossExclusion;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Navigable;
@@ -71,9 +70,6 @@ import java.util.List;
  * each system process these entities as needed.
  * Basically the shareable entities are those found between the last line of upper system and the
  * first line of lower system.
- * <p>
- * {@link CrossExclusion} relation class is specifically meant to formalize Inter exclusion across
- * systems.
  *
  * @author Hervé Bitteur
  */

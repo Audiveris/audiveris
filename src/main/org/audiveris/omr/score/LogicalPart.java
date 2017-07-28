@@ -29,6 +29,8 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -102,6 +104,28 @@ public class LogicalPart
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof LogicalPart)) {
+            return false;
+        }
+
+        LogicalPart that = (LogicalPart) obj;
+
+        if ((id != that.id) || (staffCount != that.staffCount)) {
+            return false;
+        }
+
+        return Objects.deepEquals(midiProgram, that.midiProgram)
+               && Objects.deepEquals(name, that.name)
+               && Objects.deepEquals(abbreviation, that.abbreviation);
+    }
+
     //-------//
     // getId //
     //-------//
@@ -218,6 +242,19 @@ public class LogicalPart
     public int getStaffCount ()
     {
         return staffCount;
+    }
+
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (23 * hash) + this.id;
+        hash = (23 * hash) + this.staffCount;
+        hash = (23 * hash) + Objects.hashCode(this.name);
+        hash = (23 * hash) + Objects.hashCode(this.abbreviation);
+        hash = (23 * hash) + Objects.hashCode(this.midiProgram);
+
+        return hash;
     }
 
     //--------------//

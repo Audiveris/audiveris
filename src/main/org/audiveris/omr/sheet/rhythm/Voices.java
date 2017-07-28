@@ -181,9 +181,11 @@ public abstract class Voices
      * Ties across sheets cannot easily be persisted, so we detect and use them on the fly.
      *
      * @param score the score to process
+     * @return the count of modifications made
      */
-    public static void refineScore (Score score)
+    public static int refineScore (Score score)
     {
+        int modifs = 0;
         SystemInfo prevSystem = null; // Last system of preceding page, if any
 
         for (int pageNumber = 1; pageNumber <= score.getPageCount(); pageNumber++) {
@@ -219,16 +221,16 @@ public abstract class Voices
 
                         if ((tiedId != null) && (voice.getId() != tiedId)) {
                             logicalPart.swapVoiceId(page, voice.getId(), tiedId);
+                            modifs++;
                         }
                     }
                 }
             }
 
             prevSystem = page.getLastSystem();
-
-            // TODO: Here we could dispose of sheet/page...
-            /// score.disposePage(page);
         }
+
+        return modifs;
     }
 
     //-------------//

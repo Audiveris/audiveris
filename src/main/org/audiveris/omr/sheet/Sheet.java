@@ -28,8 +28,6 @@ import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.lag.LagManager;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sig.InterIndex;
-import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.CrossExclusion;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.ErrorsEditor;
@@ -40,7 +38,6 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -50,6 +47,66 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <p>
  * If a movement break occurs in the middle of a sheet, this sheet will contain at least two pages,
  * but in most cases there is exactly one {@link Page} instance per Sheet instance.
+ *
+ * Methods are organized as follows:
+ * <dl>
+ * <dt>Administration</dt>
+ * <dd><ul>
+ * <li>{@link #getId}</li>
+ * <li>{@link #getStub}</li>
+ * <li>{@link #afterReload}</li>
+ * <li>{@link #getLagManager}</li>
+ * <li>{@link #getFilamentIndex}</li>
+ * <li>{@link #getGlyphIndex}</li>
+ * <li>{@link #getInterIndex}</li>
+ * <li>{@link #getPersistentIdGenerator}</li>
+ * </ul></dd>
+ *
+ * <dt>Pages, Systems and Staves</dt>
+ * <dd><ul>
+ * <li>{@link #addPage}</li>
+ * <li>{@link #getPages}</li>
+ * <li>{@link #getStaffManager}</li>
+ * <li>{@link #getSystemManager}</li>
+ * <li>{@link #getSystems}</li>
+ * </ul></dd>
+ *
+ * <dt>Samples</dt>
+ * <dd><ul>
+ * <li>{@link #sample}</li>
+ * </ul></dd>
+ *
+ * <dt>Artifacts</dt>
+ * <dd><ul>
+ * <li>{@link #setImage}</li>
+ * <li>{@link #hasPicture}</li>
+ * <li>{@link #getPicture}</li>
+ * <li>{@link #getHeight}</li>
+ * <li>{@link #getWidth}</li>
+ * <li>{@link #setScale}</li>
+ * <li>{@link #getScale}</li>
+ * <li>{@link #getInterline}</li>
+ * <li>{@link #setSkew}</li>
+ * <li>{@link #getSkew}</li>
+ * <li>{@link #store}</li>
+ * <li>{@link #print}</li>
+ * <li>{@link #export}</li>
+ * <li>{@link #getSheetDelta}</li>
+ * </ul></dd>
+ *
+ * <dt>UI</dt>
+ * <dd><ul>
+ * <li>{@link #getSymbolsEditor}</li>
+ * <li>{@link #displayDataTab}</li>
+ * <li>{@link #displayMainTabs}</li>
+ * <li>{@link #getErrorsEditor}</li>
+ * <li>{@link #getGlyphsController}</li>
+ * <li>{@link #getInterController}</li>
+ * <li>{@link #getLocationService}</li>
+ * <li>{@link #addItemRenderer}</li>
+ * <li>{@link #renderItems}</li>
+ * </ul></dd>
+ * </dl>
  *
  * @author Hervé Bitteur
  */
@@ -85,11 +142,6 @@ public interface Sheet
     void afterReload (SheetStub stub);
 
     /**
-     * Delete the sheet exported MusicXML, if any.
-     */
-    void deleteExport ();
-
-    /**
      * Display the DATA_TAB.
      */
     void displayDataTab ();
@@ -112,13 +164,6 @@ public interface Sheet
      * @param path sheet export path
      */
     void export (Path path);
-
-    /**
-     * Report the cross-system exclusions.
-     *
-     * @return the map of cross-exclusions
-     */
-    Map<Inter, List<CrossExclusion>> getCrossExclusions ();
 
     /**
      * In non batch mode, report the editor dealing with detected errors in this sheet

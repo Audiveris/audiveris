@@ -49,7 +49,6 @@ import org.audiveris.omr.sig.InterIndex;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.CrossExclusion;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
@@ -77,10 +76,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -157,11 +154,6 @@ public class BasicSheet
     /** Corresponding page(s). A single sheet may relate to several pages. */
     @XmlElement(name = "page")
     private final List<Page> pages = new ArrayList<Page>();
-
-    /** Cross-system exclusions. */
-    //TODO: use ConcurrentHashMap?
-    //TODO: handle persistency
-    private final Map<Inter, List<CrossExclusion>> crossExclusions = new HashMap<Inter, List<CrossExclusion>>();
 
     /** Global glyph index.
      * See annotated get/set methods: {@link #getGlyphIndexContent()}
@@ -376,40 +368,40 @@ public class BasicSheet
                 new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
 
-    //--------------//
-    // deleteExport //
-    //--------------//
-    @Override
-    public void deleteExport ()
-    {
-        final Book book = getBook();
-
-        if (!book.isMultiSheet()) {
-            book.deleteExport(); // Simply delete the single-sheet book!
-        } else {
-            // path/to/scores/Book
-            Path bookPathSansExt = BookManager.getActualPath(
-                    book.getExportPathSansExt(),
-                    BookManager.getDefaultExportPathSansExt(book));
-
-            // Determine the output path (sans extension) for the provided sheet
-            final Path sheetPathSansExt = getSheetPathSansExt(bookPathSansExt);
-
-            // Multi-sheet book: <bookname>-sheet#<N>.mvt<M>.mxl
-            // Multi-sheet book: <bookname>-sheet#<N>.mxl
-            final Path folder = sheetPathSansExt.getParent();
-            final Path sheetName = sheetPathSansExt.getFileName(); // book-sheet#N
-
-            final String dirGlob = "glob:**/" + sheetName + "{/**,}";
-            final String filGlob = "glob:**/" + sheetName + "{/**,.*}";
-            final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
-
-            if (!paths.isEmpty()) {
-                BookManager.deletePaths(sheetName + " deletion", paths);
-            }
-        }
-    }
-
+    //
+    //    //--------------//
+    //    // deleteExport //
+    //    //--------------//
+    //    public void deleteExport ()
+    //    {
+    //        final Book book = getBook();
+    //
+    //        if (!book.isMultiSheet()) {
+    //            book.deleteExport(); // Simply delete the single-sheet book!
+    //        } else {
+    //            // path/to/scores/Book
+    //            Path bookPathSansExt = BookManager.getActualPath(
+    //                    book.getExportPathSansExt(),
+    //                    BookManager.getDefaultExportPathSansExt(book));
+    //
+    //            // Determine the output path (sans extension) for the provided sheet
+    //            final Path sheetPathSansExt = getSheetPathSansExt(bookPathSansExt);
+    //
+    //            // Multi-sheet book: <bookname>-sheet#<N>.mvt<M>.mxl
+    //            // Multi-sheet book: <bookname>-sheet#<N>.mxl
+    //            final Path folder = sheetPathSansExt.getParent();
+    //            final Path sheetName = sheetPathSansExt.getFileName(); // book-sheet#N
+    //
+    //            final String dirGlob = "glob:**/" + sheetName + "{/**,}";
+    //            final String filGlob = "glob:**/" + sheetName + "{/**,.*}";
+    //            final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
+    //
+    //            if (!paths.isEmpty()) {
+    //                BookManager.deletePaths(sheetName + " deletion", paths);
+    //            }
+    //        }
+    //    }
+    //
     //----------------//
     // displayDataTab //
     //----------------//
@@ -519,18 +511,6 @@ public class BasicSheet
         } catch (Exception ex) {
             logger.warn("Error exporting " + this + ", " + ex, ex);
         }
-    }
-
-    //--------------------//
-    // getCrossExclusions //
-    //--------------------//
-    /**
-     * @return the crossExclusions
-     */
-    @Override
-    public Map<Inter, List<CrossExclusion>> getCrossExclusions ()
-    {
-        return crossExclusions;
     }
 
     //-----------------//
@@ -1054,6 +1034,26 @@ public class BasicSheet
         return stub.getBook();
     }
 
+    //----------------------//
+    // getGlyphIndexContent //
+    //----------------------//
+    /**
+     * Mean for JAXB marshalling only.
+     *
+     * @return collection of glyphs from glyphIndex.weakIndex
+     */
+    @SuppressWarnings("unchecked")
+    @XmlElement(name = "glyph-index")
+    @XmlJavaTypeAdapter(GlyphListAdapter.class)
+    private ArrayList<Glyph> getGlyphIndexContent ()
+    {
+        if (glyphIndex == null) {
+            return null;
+        }
+
+        return glyphIndex.getEntities();
+    }
+
     //----------------//
     // getJaxbContext //
     //----------------//
@@ -1075,26 +1075,6 @@ public class BasicSheet
     {
         GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
         glyphsController = new GlyphsController(model);
-    }
-
-    //----------------------//
-    // getGlyphIndexContent //
-    //----------------------//
-    /**
-     * Mean for JAXB marshalling only.
-     *
-     * @return collection of glyphs from glyphIndex.weakIndex
-     */
-    @SuppressWarnings("unchecked")
-    @XmlElement(name = "glyph-index")
-    @XmlJavaTypeAdapter(GlyphListAdapter.class)
-    private ArrayList<Glyph> getGlyphIndexContent ()
-    {
-        if (glyphIndex == null) {
-            return null;
-        }
-
-        return glyphIndex.getEntities();
     }
 
     //-----------//

@@ -2190,13 +2190,7 @@ public class PartwiseBuilder
                 source.encodeScore(scorePartwise);
             }
 
-            // PartList & sequence of parts (if not done yet)
-            //TODO: this has nothing to do here!
-            if (score.getLogicalParts() == null) {
-                // Merge the pages (connecting the parts across pages)
-                new ScoreReduction(score).reduce();
-            }
-
+            // PartList & sequence of parts
             if (score.getLogicalParts() != null) {
                 processPartList();
             }

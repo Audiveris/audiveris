@@ -56,33 +56,36 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dl>
  * <dt>Administration</dt>
  * <dd><ul>
+ * <li>{@link #getInputPath}</li>
+ * <li>{@link #getAlias}</li>
+ * <li>{@link #setAlias}</li>
+ * <li>{@link #getRadix}</li>
  * <li>{@link #includeBook}</li>
  * <li>{@link #getOffset}</li>
  * <li>{@link #setOffset}</li>
- * <li>{@link #getInputPath}</li>
- * <li>{@link #getRadix}</li>
+ * <li>{@link #isDirty}</li>
+ * <li>{@link #setDirty}</li>
+ * <li>{@link #isModified}</li>
+ * <li>{@link #setModified}</li>
  * <li>{@link #close}</li>
  * <li>{@link #isClosing}</li>
  * <li>{@link #setClosing}</li>
+ * <li>{@link #getLock}</li>
  * </ul></dd>
  *
- * <dt>Sheets</dt>
+ * <dt>SheetStubs</dt>
  * <dd><ul>
  * <li>{@link #createStubs}</li>
+ * <li>{@link #createStubsTabs}</li>
  * <li>{@link #loadSheetImage}</li>
  * <li>{@link #isMultiSheet}</li>
  * <li>{@link #getStub}</li>
  * <li>{@link #getStubs}</li>
+ * <li>{@link #getFirstValidStub}</li>
+ * <li>{@link #getValidStubs}</li>
  * <li>{@link #removeStub}</li>
- * </ul></dd>
- *
- * <dt>Transcription</dt>
- * <dd><ul>
- * <li>{@link #transcribe}</li>
- * <li>{@link #reachBookStep}</li>
- * <li>{@link #updateScores}</li>
- * <li>{@link #buildScores}</li>
- * <li>{@link #getScores}</li>
+ * <li>{@link #hideInvalidStubs}</li>
+ * <li>{@link #swapAllSheets}</li>
  * </ul></dd>
  *
  * <dt>Parameters</dt>
@@ -91,18 +94,39 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getLanguageParam}</li>
  * </ul></dd>
  *
+ * <dt>Transcription</dt>
+ * <dd><ul>
+ * <li>{@link #reset}</li>
+ * <li>{@link #resetToBinary}</li>
+ * <li>{@link #transcribe}</li>
+ * <li>{@link #reachBookStep}</li>
+ * <li>{@link #updateScores}</li>
+ * <li>{@link #reduceScores}</li>
+ * <li>{@link #getScores}</li>
+ * </ul></dd>
+ *
+ * <dt>Samples</dt>
+ * <dd><ul>
+ * <li>{@link #getSampleRepository}</li>
+ * <li>{@link #getSpecificSampleRepository}</li>
+ * <li>{@link #hasAllocatedRepository}</li>
+ * <li>{@link #hasSpecificRepository}</li>
+ * <li>{@link #sample}</li>
+ * </ul></dd>
+ *
  * <dt>Artifacts</dt>
  * <dd><ul>
  * <li>{@link #getBrowserFrame}</li>
  * <li>{@link #getExportPathSansExt}</li>
  * <li>{@link #setExportPathSansExt}</li>
  * <li>{@link #export}</li>
- * <li>{@link #deleteExport}</li>
  * <li>{@link #getPrintPath}</li>
  * <li>{@link #setPrintPath}</li>
  * <li>{@link #print}</li>
  * <li>{@link #getBookPath}</li>
  * <li>{@link #store}</li>
+ * <li>{@link #storeBookInfo}</li>
+ * <li>{@link #openSheetFolder}</li>
  * </ul></dd>
  * </dl>
  * <p>
@@ -119,21 +143,6 @@ public interface Book
     static final String BOOK_INTERNALS = "book.xml";
 
     //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Reset all valid sheets of this book to their initial state.
-     */
-    void reset ();
-
-    /**
-     * Reset all valid sheets of this book to their BINARY step.
-     */
-    void resetToBinary ();
-
-    /**
-     * Determine the logical parts of each score.
-     */
-    void buildScores ();
-
     /**
      * Delete this book instance, as well as its related resources.
      */
@@ -156,11 +165,6 @@ public interface Book
     void createStubsTabs (Integer focus);
 
     /**
-     * Delete the exported MusicXML, if any.
-     */
-    void deleteExport ();
-
-    /**
      * Export this book scores using MusicXML format.
      * <p>
      * Assuming 'BOOK' is the radix of book name, several outputs can be considered:
@@ -174,11 +178,6 @@ public interface Book
      * </ul>
      */
     void export ();
-
-    /**
-     * Write the book symbol samples into its sample repository.
-     */
-    void sample ();
 
     /**
      * Report the book name alias if any.
@@ -342,6 +341,13 @@ public interface Book
     boolean isClosing ();
 
     /**
+     * Report whether the book scores need to be reduced.
+     *
+     * @return true if dirty
+     */
+    boolean isDirty ();
+
+    /**
      * Report whether the book has been modified with respect to its book data.
      *
      * @return true if modified
@@ -392,6 +398,13 @@ public interface Book
                            Set<Integer> sheetIds);
 
     /**
+     * Determine the logical parts of each score.
+     *
+     * @return the count of modifications done
+     */
+    int reduceScores ();
+
+    /**
      * Remove the specified sheet stub from the containing book.
      * <p>
      * Typically, when the sheet carries no music information, it can be removed from the book
@@ -401,6 +414,21 @@ public interface Book
      * @return true if actually removed
      */
     boolean removeStub (SheetStub stub);
+
+    /**
+     * Reset all valid sheets of this book to their initial state.
+     */
+    void reset ();
+
+    /**
+     * Reset all valid sheets of this book to their BINARY step.
+     */
+    void resetToBinary ();
+
+    /**
+     * Write the book symbol samples into its sample repository.
+     */
+    void sample ();
 
     /**
      * Set the book alias
@@ -417,6 +445,13 @@ public interface Book
     void setClosing (boolean closing);
 
     /**
+     * Set the dirty flag.
+     *
+     * @param dirty the new flag value
+     */
+    void setDirty (boolean dirty);
+
+    /**
      * Remember the path (without extension) where the book is to be exported.
      *
      * @param exportPathSansExt the book export path (without extension)
@@ -426,9 +461,9 @@ public interface Book
     /**
      * Set the modified flag.
      *
-     * @param val the new flag value
+     * @param modified the new flag value
      */
-    void setModified (boolean val);
+    void setModified (boolean modified);
 
     /**
      * Assign this book offset (WRT containing super-book)
@@ -474,7 +509,7 @@ public interface Book
 
     /**
      * Convenient method to perform all needed transcription steps on all valid sheets
-     * of this book.
+     * of this book and building the book score(s).
      *
      * @return true if OK
      */

@@ -23,9 +23,7 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
-
 import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
-
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.FilterDescriptor;
@@ -33,9 +31,7 @@ import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.sheet.Picture.TableKey;
-
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
-
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.ProcessingCancellationException;
@@ -43,6 +39,7 @@ import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.LiveParam;
 import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.Navigable;
@@ -80,7 +77,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.util.Jaxb;
 
 /**
  * Class {@code BasicStub} is the implementation of SheetStub.
@@ -527,6 +523,11 @@ public class BasicStub
     //-----------//
     // reachStep //
     //-----------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Each needed step is performed sequentially, guarded by a timeout.
+     */
     @Override
     public boolean reachStep (Step target,
                               boolean force)
@@ -535,7 +536,7 @@ public class BasicStub
         final StopWatch watch = new StopWatch("reachStep " + target);
         SortedSet<Step> neededSteps = null;
         boolean ok = false;
-        getLock().lock();
+        getLock().lock(); // Wait for completion of early processing if any
         logger.debug("reachStep got lock on {}", this);
 
         try {
@@ -550,7 +551,6 @@ public class BasicStub
             }
 
             logger.debug("Sheet#{} scheduling {}", number, neededSteps);
-
             StepMonitoring.notifyStart();
 
             if (ctrl != null) {
@@ -587,6 +587,15 @@ public class BasicStub
         }
 
         return ok;
+    }
+
+    //------------//
+    // transcribe //
+    //------------//
+    @Override
+    public boolean transcribe ()
+    {
+        return reachStep(Step.last(), false);
     }
 
     //-------//
@@ -687,6 +696,7 @@ public class BasicStub
 
         if (modified) {
             book.setModified(true);
+            book.setDirty(true);
         }
     }
 

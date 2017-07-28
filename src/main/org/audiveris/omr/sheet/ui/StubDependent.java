@@ -48,6 +48,9 @@ public abstract class StubDependent
 
     private static final Logger logger = LoggerFactory.getLogger(StubDependent.class);
 
+    /** Name of property linked to sheet transcription ability. */
+    public static final String STUB_TRANSCRIBABLE = "stubTranscribable";
+
     /** Name of property linked to sheet availability. */
     public static final String STUB_AVAILABLE = "stubAvailable";
 
@@ -57,6 +60,9 @@ public abstract class StubDependent
     /** Name of property linked to sheet lack of activity. */
     public static final String STUB_IDLE = "stubIdle";
 
+    /** Name of property linked to book transcription ability. */
+    public static final String BOOK_TRANSCRIBABLE = "bookTranscribable";
+
     /** Name of property linked to book lack of activity. */
     public static final String BOOK_IDLE = "bookIdle";
 
@@ -64,6 +70,9 @@ public abstract class StubDependent
     public static final String BOOK_MODIFIED = "bookModified";
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Indicates whether the current sheet stub can be transcribed. */
+    protected boolean stubTranscribable = false;
+
     /** Indicates whether there is a current sheet stub. */
     protected boolean stubAvailable = false;
 
@@ -72,6 +81,9 @@ public abstract class StubDependent
 
     /** Indicates whether current sheet is idle. */
     protected boolean stubIdle = false;
+
+    /** Indicates whether the current book can be transcribed. */
+    protected boolean bookTranscribable = false;
 
     /** Indicates whether current book is idle (all its sheets are idle). */
     protected boolean bookIdle = false;
@@ -116,6 +128,19 @@ public abstract class StubDependent
         return bookModified;
     }
 
+    //---------------------//
+    // isBookTranscribable //
+    //---------------------//
+    /**
+     * Getter for bookTranscribable property
+     *
+     * @return the current property value
+     */
+    public boolean isBookTranscribable ()
+    {
+        return bookTranscribable;
+    }
+
     //-----------------//
     // isStubAvailable //
     //-----------------//
@@ -140,6 +165,19 @@ public abstract class StubDependent
     public boolean isStubIdle ()
     {
         return stubIdle;
+    }
+
+    //---------------------//
+    // isStubTranscribable //
+    //---------------------//
+    /**
+     * Getter for stubTranscribable property
+     *
+     * @return the current property value
+     */
+    public boolean isStubTranscribable ()
+    {
+        return stubTranscribable;
     }
 
     //-------------//
@@ -185,20 +223,25 @@ public abstract class StubDependent
             // Update stubValid
             setStubValid((stub != null) && stub.isValid());
 
-            // Update stubIdle
+            // Update stubIdle & stubTranscribable
             if (stub != null) {
-                Step currentStep = stub.getCurrentStep();
-                ///logger.info("currentStep: {}", currentStep);
-                setStubIdle(currentStep == null);
+                final Step currentStep = stub.getCurrentStep();
+                final boolean idle = currentStep == null;
+                setStubIdle(idle);
+                setStubTranscribable(idle && stub.isValid() && !stub.isDone(Step.last()));
             } else {
                 setStubIdle(false);
+                setStubTranscribable(false);
             }
 
-            // Update bookIdle
+            // Update bookIdle & bookTranscribable
             if (stub != null) {
-                setBookIdle(isBookIdle(stub.getBook()));
+                final boolean idle = isBookIdle(stub.getBook());
+                setBookIdle(idle);
+                setBookTranscribable(idle && isBookTranscribable(stub.getBook()));
             } else {
                 setBookIdle(false);
+                setBookTranscribable(false);
             }
 
             // Update bookModified
@@ -248,6 +291,24 @@ public abstract class StubDependent
         }
     }
 
+    //----------------------//
+    // setBookTranscribable //
+    //----------------------//
+    /**
+     * Setter for bookTranscribable property.
+     *
+     * @param bookTranscribable the new property value
+     */
+    public void setBookTranscribable (boolean bookTranscribable)
+    {
+        boolean oldValue = this.bookTranscribable;
+        this.bookTranscribable = bookTranscribable;
+
+        if (bookTranscribable != oldValue) {
+            firePropertyChange(BOOK_TRANSCRIBABLE, oldValue, this.bookTranscribable);
+        }
+    }
+
     //------------------//
     // setStubAvailable //
     //------------------//
@@ -284,6 +345,24 @@ public abstract class StubDependent
         }
     }
 
+    //----------------------//
+    // setStubTranscribable //
+    //----------------------//
+    /**
+     * Setter for stubTranscribable property.
+     *
+     * @param stubTranscribable the new property value
+     */
+    public void setStubTranscribable (boolean stubTranscribable)
+    {
+        boolean oldValue = this.stubTranscribable;
+        this.stubTranscribable = stubTranscribable;
+
+        if (stubTranscribable != oldValue) {
+            firePropertyChange(STUB_TRANSCRIBABLE, oldValue, this.stubTranscribable);
+        }
+    }
+
     //--------------//
     // setStubValid //
     //--------------//
@@ -307,16 +386,29 @@ public abstract class StubDependent
     //------------//
     private boolean isBookIdle (Book book)
     {
-        for (SheetStub stub : book.getStubs()) {
+        for (SheetStub stub : book.getValidStubs()) {
             final Step currentStep = stub.getCurrentStep();
 
             if (currentStep != null) {
-                ///logger.info("isBookIdle stub currentStep: {}", currentStep);
                 return false;
             }
         }
 
-        ///logger.info("isBookIdle: true");
         return true;
+    }
+
+    //---------------------//
+    // isBookTranscribable //
+    //---------------------//
+    private boolean isBookTranscribable (Book book)
+    {
+        // Book is assumed idle
+        for (SheetStub stub : book.getValidStubs()) {
+            if (!stub.isDone(Step.last())) {
+                return true;
+            }
+        }
+
+        return book.isDirty();
     }
 }

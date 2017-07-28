@@ -116,11 +116,11 @@ public class BasicBook
     // Persistent data
     //----------------
     //
-    /** Related Audiveris version. */
+    /** Related Audiveris version that last operated on this book. */
     @XmlAttribute(name = "software-version")
     private String version;
 
-    /** Related Audiveris build. */
+    /** Related Audiveris build that last operated on this book. */
     @XmlAttribute(name = "software-build")
     private String build;
 
@@ -182,6 +182,9 @@ public class BasicBook
     /** Set if the book itself has been modified. */
     private boolean modified = false;
 
+    /** Indicate if the book scores must be updated. */
+    private boolean dirty = false;
+
     /** Book-level sample repository. */
     private SampleRepository repository;
 
@@ -228,60 +231,6 @@ public class BasicBook
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // closeFileSystem //
-    //-----------------//
-    /**
-     * Close the provided (book) file system.
-     *
-     * @param fileSystem the book file system
-     */
-    public static void closeFileSystem (FileSystem fileSystem)
-    {
-        try {
-            fileSystem.close();
-
-            logger.info("Book file system closed.");
-        } catch (Exception ex) {
-            logger.warn("Could not close book file system " + ex, ex);
-        }
-    }
-
-    //-------------//
-    // buildScores //
-    //-------------//
-    @Override
-    public void buildScores ()
-    {
-        for (Score score : scores) {
-            // (re) build the score logical parts
-            new ScoreReduction(score).reduce();
-            //
-            //            for (Page page : score.getPages()) {
-            //                //                // - Retrieve the actual duration of every measure
-            //                //                page.accept(new DurationRetriever());
-            //                //
-            //                //                // - Check all voices timing, assign forward items if needed.
-            //                //                // - Detect special measures and assign proper measure ids
-            //                //                // If needed, we can trigger a reprocessing of this page
-            //                //                page.accept(new MeasureFixer());
-            //                //
-            //                // Check whether time signatures are consistent across all pages in score
-            //                // TODO: to be implemented
-            //                //
-            //                // Connect slurs across pages
-            //                page.getFirstSystem().connectPageInitialSlurs(score);
-            //            }
-
-            // Voices connection
-            Voices.refineScore(score);
-        }
-
-        setModified(true);
-
-        logger.info("Scores built: {}", scores.size());
-    }
-
     //-------//
     // close //
     //-------//
@@ -329,6 +278,139 @@ public class BasicBook
         Memory.gc();
 
         logger.debug("Book closed.");
+    }
+
+    //-----------------//
+    // closeFileSystem //
+    //-----------------//
+    /**
+     * Close the provided (book) file system.
+     *
+     * @param fileSystem the book file system
+     */
+    public static void closeFileSystem (FileSystem fileSystem)
+    {
+        try {
+            fileSystem.close();
+
+            logger.info("Book file system closed.");
+        } catch (Exception ex) {
+            logger.warn("Could not close book file system " + ex, ex);
+        }
+    }
+
+    //-----//
+    // ids //
+    //-----//
+    /**
+     * Build a string with just the IDs of the stub collection.
+     *
+     * @param stubs the collection of stub instances
+     * @return the string built
+     */
+    public static String ids (List<SheetStub> stubs)
+    {
+        if (stubs == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+
+        for (SheetStub entity : stubs) {
+            sb.append("#").append(entity.getNumber());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // loadBook //
+    //----------//
+    /**
+     * Load a book out of a provided book file.
+     *
+     * @param bookPath path to the (zipped) book file
+     * @return the loaded book if successful
+     */
+    public static Book loadBook (Path bookPath)
+    {
+        StopWatch watch = new StopWatch("loadBook " + bookPath);
+        BasicBook book = null;
+
+        try {
+            logger.info("Loading book {} ...", bookPath);
+            watch.start("book");
+
+            // Open book file
+            Path rootPath = ZipFileSystem.open(bookPath);
+
+            // Load book internals (just the stubs) out of book.xml
+            Path internalsPath = rootPath.resolve(Book.BOOK_INTERNALS);
+            InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ);
+
+            Unmarshaller um = getJaxbContext().createUnmarshaller();
+            book = (BasicBook) um.unmarshal(is);
+            book.getLock().lock();
+            LogUtil.start(book);
+            book.initTransients(null, bookPath);
+            is.close();
+            rootPath.getFileSystem().close(); // Close book file
+
+            book.checkScore(); // TODO: remove ASAP
+
+            return book;
+        } catch (Exception ex) {
+            logger.warn("Error loading book " + bookPath + " " + ex, ex);
+
+            return null;
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+
+            if (book != null) {
+                book.getLock().unlock();
+            }
+
+            LogUtil.stopBook();
+        }
+    }
+
+    //--------------//
+    // openBookFile //
+    //--------------//
+    /**
+     * Open the book file (supposed to already exist at location provided by
+     * '{@code bookPath}' parameter) for reading or writing.
+     * <p>
+     * When IO operations are finished, the book file must be closed via
+     * {@link #closeFileSystem(java.nio.file.FileSystem)}
+     *
+     * @param bookPath book path name
+     * @return the root path of the (zipped) book file system
+     */
+    public static Path openBookFile (Path bookPath)
+    {
+        if (bookPath == null) {
+            throw new IllegalStateException("bookPath is null");
+        }
+
+        try {
+            logger.debug("Book file system opened");
+
+            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, null);
+
+            return fileSystem.getPath(fileSystem.getSeparator());
+        } catch (FileNotFoundException ex) {
+            logger.warn("File not found: " + bookPath, ex);
+        } catch (IOException ex) {
+            logger.warn("Error reading book:" + bookPath, ex);
+        }
+
+        return null;
     }
 
     //-------------//
@@ -435,48 +517,50 @@ public class BasicBook
         }
     }
 
-    //--------------//
-    // deleteExport //
-    //--------------//
-    @Override
-    public void deleteExport ()
-    {
-        // Determine the output path for the provided book: path/to/scores/Book
-        Path bookPathSansExt = BookManager.getActualPath(
-                getExportPathSansExt(),
-                BookManager.getDefaultExportPathSansExt(this));
-
-        // One-sheet book: <bookname>.mxl
-        // One-sheet book: <bookname>.mvt<M>.mxl
-        // One-sheet book: <bookname>/... (perhaps some day: 1 directory per book)
-        //
-        // Multi-sheet book: <bookname>-sheet#<N>.mxl
-        // Multi-sheet book: <bookname>-sheet#<N>.mvt<M>.mxl
-        final Path folder = isMultiSheet() ? bookPathSansExt : bookPathSansExt.getParent();
-        final Path bookName = bookPathSansExt.getFileName(); // bookname
-
-        final String dirGlob = "glob:**/" + bookName + "{/**,}";
-        final String filGlob = "glob:**/" + bookName + "{/**,.*}";
-        final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
-
-        if (!paths.isEmpty()) {
-            BookManager.deletePaths(bookName + " deletion", paths);
-        } else {
-            logger.info("Nothing to delete");
-        }
-    }
-
+    //
+    //    //--------------//
+    //    // deleteExport //
+    //    //--------------//
+    //    public void deleteExport ()
+    //    {
+    //        // Determine the output path for the provided book: path/to/scores/Book
+    //        Path bookPathSansExt = BookManager.getActualPath(
+    //                getExportPathSansExt(),
+    //                BookManager.getDefaultExportPathSansExt(this));
+    //
+    //        // One-sheet book: <bookname>.mxl
+    //        // One-sheet book: <bookname>.mvt<M>.mxl
+    //        // One-sheet book: <bookname>/... (perhaps some day: 1 directory per book)
+    //        //
+    //        // Multi-sheet book: <bookname>-sheet#<N>.mxl
+    //        // Multi-sheet book: <bookname>-sheet#<N>.mvt<M>.mxl
+    //        final Path folder = isMultiSheet() ? bookPathSansExt : bookPathSansExt.getParent();
+    //        final Path bookName = bookPathSansExt.getFileName(); // bookname
+    //
+    //        final String dirGlob = "glob:**/" + bookName + "{/**,}";
+    //        final String filGlob = "glob:**/" + bookName + "{/**,.*}";
+    //        final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
+    //
+    //        if (!paths.isEmpty()) {
+    //            BookManager.deletePaths(bookName + " deletion", paths);
+    //        } else {
+    //            logger.info("Nothing to delete");
+    //        }
+    //    }
+    //
     //--------//
     // export //
     //--------//
     @Override
     public void export ()
     {
+        // Make sure material is ready?
+        transcribe();
+
         // path/to/scores/Book
-        Path bookPathSansExt = BookManager.getActualPath(
+        final Path bookPathSansExt = BookManager.getActualPath(
                 getExportPathSansExt(),
                 BookManager.getDefaultExportPathSansExt(this));
-
         final boolean compressed = BookManager.useCompression();
         final String ext = compressed ? OMR.COMPRESSED_SCORE_EXTENSION : OMR.SCORE_EXTENSION;
         final boolean sig = BookManager.useSignature();
@@ -490,15 +574,12 @@ public class BasicBook
             final Path opusPath = bookPathSansExt.resolveSibling(bookName + OMR.OPUS_EXTENSION);
 
             try {
-                makeReadyForExport();
                 new OpusExporter(this).export(opusPath, bookName, sig);
             } catch (Exception ex) {
                 logger.warn("Could not export opus " + opusPath, ex);
             }
         } else {
             // Export the book as one or several movement files
-            makeReadyForExport();
-
             for (Score score : scores) {
                 final String scoreName = (!multiMovements) ? bookName
                         : (bookName + OMR.MOVEMENT_EXTENSION + score.getId());
@@ -754,33 +835,6 @@ public class BasicBook
         });
     }
 
-    //-----//
-    // ids //
-    //-----//
-    /**
-     * Build a string with just the IDs of the stub collection.
-     *
-     * @param stubs the collection of stub instances
-     * @return the string built
-     */
-    public static String ids (List<SheetStub> stubs)
-    {
-        if (stubs == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        for (SheetStub entity : stubs) {
-            sb.append("#").append(entity.getNumber());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
     //-------------//
     // includeBook //
     //-------------//
@@ -797,6 +851,15 @@ public class BasicBook
     public boolean isClosing ()
     {
         return closing;
+    }
+
+    //---------//
+    // isDirty //
+    //---------//
+    @Override
+    public boolean isDirty ()
+    {
+        return dirty;
     }
 
     //------------//
@@ -831,59 +894,6 @@ public class BasicBook
         return stubs.size() > 1;
     }
 
-    //----------//
-    // loadBook //
-    //----------//
-    /**
-     * Load a book out of a provided book file.
-     *
-     * @param bookPath path to the (zipped) book file
-     * @return the loaded book if successful
-     */
-    public static Book loadBook (Path bookPath)
-    {
-        StopWatch watch = new StopWatch("loadBook " + bookPath);
-        BasicBook book = null;
-
-        try {
-            logger.info("Loading book {} ...", bookPath);
-            watch.start("book");
-
-            // Open book file
-            Path rootPath = ZipFileSystem.open(bookPath);
-
-            // Load book internals (just the stubs) out of book.xml
-            Path internalsPath = rootPath.resolve(Book.BOOK_INTERNALS);
-            InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ);
-
-            Unmarshaller um = getJaxbContext().createUnmarshaller();
-            book = (BasicBook) um.unmarshal(is);
-            book.getLock().lock();
-            LogUtil.start(book);
-            book.initTransients(null, bookPath);
-            is.close();
-            rootPath.getFileSystem().close(); // Close book file
-
-            book.checkScore(); // TODO: remove ASAP
-
-            return book;
-        } catch (Exception ex) {
-            logger.warn("Error loading book " + bookPath + " " + ex, ex);
-
-            return null;
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-
-            if (book != null) {
-                book.getLock().unlock();
-            }
-
-            LogUtil.stopBook();
-        }
-    }
-
     //----------------//
     // loadSheetImage //
     //----------------//
@@ -908,40 +918,6 @@ public class BasicBook
 
             return null;
         }
-    }
-
-    //--------------//
-    // openBookFile //
-    //--------------//
-    /**
-     * Open the book file (supposed to already exist at location provided by
-     * '{@code bookPath}' parameter) for reading or writing.
-     * <p>
-     * When IO operations are finished, the book file must be closed via
-     * {@link #closeFileSystem(java.nio.file.FileSystem)}
-     *
-     * @param bookPath book path name
-     * @return the root path of the (zipped) book file system
-     */
-    public static Path openBookFile (Path bookPath)
-    {
-        if (bookPath == null) {
-            throw new IllegalStateException("bookPath is null");
-        }
-
-        try {
-            logger.debug("Book file system opened");
-
-            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, null);
-
-            return fileSystem.getPath(fileSystem.getSeparator());
-        } catch (FileNotFoundException ex) {
-            logger.warn("File not found: " + bookPath, ex);
-        } catch (IOException ex) {
-            logger.warn("Error reading book:" + bookPath, ex);
-        }
-
-        return null;
     }
 
     //--------------//
@@ -1044,7 +1020,13 @@ public class BasicBook
                                 LogUtil.start(stub);
 
                                 try {
-                                    return stub.reachStep(target, force);
+                                    boolean ok = stub.reachStep(target, force);
+
+                                    if (ok && (OMR.gui == null)) {
+                                        stub.swapSheet(); // Save sheet & global book info to disk
+                                    }
+
+                                    return ok;
                                 } finally {
                                     LogUtil.stopStub();
                                 }
@@ -1079,13 +1061,9 @@ public class BasicBook
 
                         try {
                             if (stub.reachStep(target, force)) {
-                                // At end of each sheet processing:
-                                // Save sheet to disk (including global book info)
                                 if (OMR.gui == null) {
-                                    stub.swapSheet();
+                                    stub.swapSheet(); // Save sheet & global book info to disk
                                 }
-
-                                ///stub.storeSheet();
                             } else {
                                 someFailure = true;
                             }
@@ -1115,6 +1093,48 @@ public class BasicBook
         }
 
         return false;
+    }
+
+    //--------------//
+    // reduceScores //
+    //--------------//
+    @Override
+    public int reduceScores ()
+    {
+        int modifs = 0;
+
+        for (Score score : scores) {
+            // (re) build the score logical parts
+            modifs += new ScoreReduction(score).reduce();
+            //
+            //            for (Page page : score.getPages()) {
+            //                //                // - Retrieve the actual duration of every measure
+            //                //                page.accept(new DurationRetriever());
+            //                //
+            //                //                // - Check all voices timing, assign forward items if needed.
+            //                //                // - Detect special measures and assign proper measure ids
+            //                //                // If needed, we can trigger a reprocessing of this page
+            //                //                page.accept(new MeasureFixer());
+            //                //
+            //                // Check whether time signatures are consistent across all pages in score
+            //                // TODO: to be implemented
+            //                //
+            //                // Connect slurs across pages
+            //                page.getFirstSystem().connectPageInitialSlurs(score);
+            //            }
+
+            // Voices connection
+            modifs += Voices.refineScore(score);
+        }
+
+        if (modifs > 0) {
+            setModified(true);
+            logger.info("Scores built: {}", scores.size());
+        }
+
+        setDirty(false);
+
+        return modifs;
     }
 
     //------------//
@@ -1182,6 +1202,15 @@ public class BasicBook
         this.closing = closing;
     }
 
+    //----------//
+    // setDirty //
+    //----------//
+    @Override
+    public void setDirty (boolean dirty)
+    {
+        this.dirty = dirty;
+    }
+
     //----------------------//
     // setExportPathSansExt //
     //----------------------//
@@ -1195,10 +1224,10 @@ public class BasicBook
     // setModified //
     //-------------//
     @Override
-    public void setModified (boolean val)
+    public void setModified (boolean modified)
     {
-        ///logger.info("{} setModified {}", this, val);
-        this.modified = val;
+        ///logger.info("{} setModified {}", this, modified);
+        this.modified = modified;
 
         if (OMR.gui != null) {
             SwingUtilities.invokeLater(
@@ -1412,7 +1441,13 @@ public class BasicBook
     @Override
     public boolean transcribe ()
     {
-        return reachBookStep(Step.last(), false, null);
+        boolean ok = reachBookStep(Step.last(), false, null);
+
+        if (ok && (scores != null)) {
+            reduceScores();
+        }
+
+        return ok;
     }
 
     //--------------//
@@ -1626,20 +1661,6 @@ public class BasicBook
         return ZipFileSystem.open(bookPath);
     }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
-        }
-
-        return jaxbContext;
-    }
-
     //--------------//
     // createScores //
     //--------------//
@@ -1684,6 +1705,20 @@ public class BasicBook
         }
 
         return list;
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
+        }
+
+        return jaxbContext;
     }
 
     //--------------//
@@ -1812,22 +1847,6 @@ public class BasicBook
         }
 
         logger.debug("Inserted scores:{}", scores.subList(insertIndex, index));
-    }
-
-    //--------------------//
-    // makeReadyForExport //
-    //--------------------//
-    private void makeReadyForExport ()
-    {
-        // Make sure all sheets have been transcribed
-        for (SheetStub stub : getValidStubs()) {
-            stub.reachStep(Step.PAGE, false);
-        }
-
-        // Group book pages into scores, if not already done
-        if (scores.isEmpty()) {
-            buildScores();
-        }
     }
 
     //----------//

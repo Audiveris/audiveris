@@ -38,6 +38,63 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Book instance from the actual {@link Sheet} instances and avoid loading all of them
  * in memory.
  *
+ * Methods are organized as follows:
+ * <dl>
+ * <dt>Administration</dt>
+ * <dd><ul>
+ * <li>{@link #getId}</li>
+ * <li>{@link #getBook}</li>
+ * <li>{@link #getNum}</li>
+ * <li>{@link #getNumber}</li>
+ * <li>{@link #hasSheet}</li>
+ * <li>{@link #getSheet}</li>
+ * <li>{@link #swapSheet}</li>
+ * <li>{@link #decideOnRemoval}</li>
+ * <li>{@link #isModified}</li>
+ * <li>{@link #setModified}</li>
+ * <li>{@link #close}</li>
+ * <li>{@link #getLock}</li>
+ * </ul></dd>
+ *
+ * <dt>Pages</dt>
+ * <dd><ul>
+ * <li>{@link #addPageRef}</li>
+ * <li>{@link #clearPageRefs}</li>
+ * <li>{@link #getFirstPageRef}</li>
+ * <li>{@link #getLastPageRef}</li>
+ * <li>{@link #getPageRefs}</li>
+ * </ul></dd>
+ *
+ * <dt>Parameters</dt>
+ * <dd><ul>
+ * <li>{@link #getFilterParam}</li>
+ * <li>{@link #getLanguageParam}</li>
+ * </ul></dd>
+ *
+ * <dt>Transcription</dt>
+ * <dd><ul>
+ * <li>{@link #reset}</li>
+ * <li>{@link #resetToBinary}</li>
+ * <li>{@link #reachStep}</li>
+ * <li>{@link #getCurrentStep}</li>
+ * <li>{@link #getLatestStep}</li>
+ * <li>{@link #transcribe}</li>
+ * <li>{@link #isDone}</li>
+ * <li>{@link #isValid}</li>
+ * <li>{@link #invalidate}</li>
+ * </ul></dd>
+ *
+ * <dt>Artifacts</dt>
+ * <dd><ul>
+ * <li>{@link #storeSheet}</li>
+ * </ul></dd>
+ *
+ * <dt>UI</dt>
+ * <dd><ul>
+ * <li>{@link #getAssembly}</li>
+ * </ul></dd>
+ * </dl>
+ *
  * @author Hervé Bitteur
  */
 @XmlJavaTypeAdapter(BasicStub.Adapter.class)
@@ -207,7 +264,7 @@ public interface SheetStub
     boolean isValid ();
 
     /**
-     * Make sure the provided step has been reached on this sheet stub
+     * Make sure the provided step has been reached on this sheet stub.
      *
      * @param step  the step to check
      * @param force if true and step already reached, stub is reset and processed until step
@@ -229,9 +286,9 @@ public interface SheetStub
     /**
      * Set the modified flag.
      *
-     * @param val the new flag value
+     * @param modified the new flag value
      */
-    void setModified (boolean val);
+    void setModified (boolean modified);
 
     /**
      * Store sheet material into book.
@@ -246,4 +303,12 @@ public interface SheetStub
      * If modified and not discarded, sheet material will be stored before being disposed of.
      */
     void swapSheet ();
+
+    /**
+     * Convenient method to reach last step on this stub.
+     * Defined as reachStep(Step.last(), false);
+     *
+     * @return true if OK
+     */
+    boolean transcribe ();
 }
