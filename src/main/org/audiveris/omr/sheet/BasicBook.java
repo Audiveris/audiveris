@@ -1103,36 +1103,38 @@ public class BasicBook
     {
         int modifs = 0;
 
-        for (Score score : scores) {
-            // (re) build the score logical parts
-            modifs += new ScoreReduction(score).reduce();
-            //
-            //            for (Page page : score.getPages()) {
-            //                //                // - Retrieve the actual duration of every measure
-            //                //                page.accept(new DurationRetriever());
-            //                //
-            //                //                // - Check all voices timing, assign forward items if needed.
-            //                //                // - Detect special measures and assign proper measure ids
-            //                //                // If needed, we can trigger a reprocessing of this page
-            //                //                page.accept(new MeasureFixer());
-            //                //
-            //                // Check whether time signatures are consistent across all pages in score
-            //                // TODO: to be implemented
-            //                //
-            //                // Connect slurs across pages
-            //                page.getFirstSystem().connectPageInitialSlurs(score);
-            //            }
+        if (scores != null) {
+            for (Score score : scores) {
+                // (re) build the score logical parts
+                modifs += new ScoreReduction(score).reduce();
+                //
+                //            for (Page page : score.getPages()) {
+                //                //                // - Retrieve the actual duration of every measure
+                //                //                page.accept(new DurationRetriever());
+                //                //
+                //                //                // - Check all voices timing, assign forward items if needed.
+                //                //                // - Detect special measures and assign proper measure ids
+                //                //                // If needed, we can trigger a reprocessing of this page
+                //                //                page.accept(new MeasureFixer());
+                //                //
+                //                // Check whether time signatures are consistent across all pages in score
+                //                // TODO: to be implemented
+                //                //
+                //                // Connect slurs across pages
+                //                page.getFirstSystem().connectPageInitialSlurs(score);
+                //            }
 
-            // Voices connection
-            modifs += Voices.refineScore(score);
+                // Voices connection
+                modifs += Voices.refineScore(score);
+            }
+
+            if (modifs > 0) {
+                setModified(true);
+                logger.info("Scores built: {}", scores.size());
+            }
+
+            setDirty(false);
         }
-
-        if (modifs > 0) {
-            setModified(true);
-            logger.info("Scores built: {}", scores.size());
-        }
-
-        setDirty(false);
 
         return modifs;
     }
@@ -1443,9 +1445,7 @@ public class BasicBook
     {
         boolean ok = reachBookStep(Step.last(), false, null);
 
-        if (ok && (scores != null)) {
-            reduceScores();
-        }
+        reduceScores();
 
         return ok;
     }

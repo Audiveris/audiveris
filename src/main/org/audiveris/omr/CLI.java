@@ -134,19 +134,6 @@ public class CLI
         return tasks;
     }
 
-    //-----------------//
-    // getOutputFolder //
-    //-----------------//
-    /**
-     * Report the output folder if present on the CLI
-     *
-     * @return the CLI output path, or null
-     */
-    public Path getOutputFolder ()
-    {
-        return params.outputFolder;
-    }
-
     //------------//
     // getOptions //
     //------------//
@@ -162,6 +149,19 @@ public class CLI
         }
 
         return params.options;
+    }
+
+    //-----------------//
+    // getOutputFolder //
+    //-----------------//
+    /**
+     * Report the output folder if present on the CLI
+     *
+     * @return the CLI output path, or null
+     */
+    public Path getOutputFolder ()
+    {
+        return params.outputFolder;
     }
 
     //---------------//
@@ -185,6 +185,8 @@ public class CLI
         if (logger.isDebugEnabled()) {
             new Dumping().dump(params);
         }
+
+        checkParams();
 
         return params;
     }
@@ -276,6 +278,23 @@ public class CLI
 
         buf.append("\n");
         logger.info(buf.toString());
+    }
+
+    //-------------//
+    // checkParams //
+    //-------------//
+    private void checkParams ()
+            throws CmdLineException
+    {
+        if (params.transcribe) {
+            if ((params.step != null) && (params.step != Step.last())) {
+                String msg = "'-transcribe' option not compatible with '-step " + params.step
+                             + "' option";
+                throw new CmdLineException(parser, msg);
+            }
+
+            params.step = Step.last();
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -488,7 +507,7 @@ public class CLI
         boolean export;
 
         /** Force step re-processing. */
-        @Option(name = "-force", usage = "Force step re-processing")
+        @Option(name = "-force", usage = "Force step/transcribe re-processing")
         boolean force;
 
         /** Help mode. */
@@ -526,6 +545,10 @@ public class CLI
         /** Specific step. */
         @Option(name = "-step", usage = "Define a specific processing step")
         Step step;
+
+        /** Should book be transcribed?. */
+        @Option(name = "-transcribe", usage = "Transcribe whole book")
+        boolean transcribe;
 
         /** Optional "--" separator. */
         @Argument
@@ -732,6 +755,10 @@ public class CLI
                     if (!ok) {
                         return;
                     }
+                }
+
+                if (params.transcribe) {
+                    book.reduceScores();
                 }
 
                 // Specific class to run?
