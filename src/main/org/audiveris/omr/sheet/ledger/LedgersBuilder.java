@@ -716,7 +716,7 @@ public class LedgersBuilder
                 "High Minimum long length for a ledger");
 
         private final Scale.Fraction minLedgerLengthLow2 = new Scale.Fraction(
-                1.5,
+                1.4,
                 "Low Minimum long length for a ledger");
 
         private final Scale.Fraction minThicknessHigh = new Scale.Fraction(
