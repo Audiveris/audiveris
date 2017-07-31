@@ -82,6 +82,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -340,14 +341,34 @@ public class BasicSheet
      */
     public void createBinaryView ()
     {
-        locationService.subscribeStrongly(LocationEvent.class, picture);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(
+                        new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        createBinaryView();
+                    }
+                });
+            } catch (Exception ex) {
+                logger.warn("invokeAndWait error", ex);
+            }
+        } else {
+            if (stub.getAssembly().getPane(SheetTab.BINARY_TAB.label) != null) {
+                return;
+            }
 
-        // Display sheet picture
-        PictureView pictureView = new PictureView(this);
-        stub.getAssembly().addViewTab(
-                SheetTab.BINARY_TAB,
-                pictureView,
-                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+            locationService.subscribeStrongly(LocationEvent.class, picture);
+
+            // Display sheet binary
+            PictureView pictureView = new PictureView(this);
+            stub.getAssembly().addViewTab(
+                    SheetTab.BINARY_TAB,
+                    pictureView,
+                    new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+        }
     }
 
     //-------------------//
@@ -422,11 +443,11 @@ public class BasicSheet
     public void displayMainTabs ()
     {
         if (stub.isDone(Step.GRID)) {
-            // Display DATA tab
-            displayDataTab();
+            displayDataTab(); // Display DATA tab
+        } else if (stub.isDone(Step.BINARY)) {
+            createBinaryView(); // Display BINARY tab
         } else {
-            // Display BINARY tab
-            createPictureView();
+            createPictureView(); // Display Picture tab
         }
 
         if (!stub.isValid()) {

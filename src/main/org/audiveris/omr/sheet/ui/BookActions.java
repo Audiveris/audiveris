@@ -384,7 +384,11 @@ public class BookActions
             return;
         }
 
-        ((BasicSheet) stub.getSheet()).createPictureView();
+        if (stub.isDone(Step.BINARY)) {
+            ((BasicSheet) stub.getSheet()).createBinaryView();
+        } else {
+            ((BasicSheet) stub.getSheet()).createPictureView();
+        }
     }
 
     //------------------------//

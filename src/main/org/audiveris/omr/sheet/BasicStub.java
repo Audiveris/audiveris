@@ -654,24 +654,6 @@ public class BasicStub
             doReset();
             sheet = new BasicSheet(this, binaryTable);
             logger.info("Sheet#{} reset to BINARY.", number);
-
-            if (OMR.gui != null) {
-                Runnable runnable = new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        sheet.createBinaryView();
-                        StubsController.getInstance().reDisplay(BasicStub.this);
-                    }
-                };
-
-                if (SwingUtilities.isEventDispatchThread()) {
-                    runnable.run();
-                } else {
-                    SwingUtilities.invokeAndWait(runnable);
-                }
-            }
         } catch (Throwable ex) {
             logger.warn("Could not reset to BINARY {}", ex.toString(), ex);
             reset();
@@ -756,9 +738,7 @@ public class BasicStub
 
                         // Close stub UI, if any
                         if (assembly != null) {
-                            ///ctrl.deleteAssembly(BasicStub.this);
                             assembly.reset();
-                            assembly.close();
                         }
                     }
                 });

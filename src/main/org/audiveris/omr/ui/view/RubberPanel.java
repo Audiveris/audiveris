@@ -216,6 +216,19 @@ public class RubberPanel
         return pt;
     }
 
+    //------------------//
+    // getPreferredSize //
+    //------------------//
+    @Override
+    public Dimension getPreferredSize ()
+    {
+        if (modelSize != null) {
+            return zoom.scaled(modelSize);
+        }
+
+        return super.getPreferredSize();
+    }
+
     //--------------------//
     // getRubberRectangle //
     //--------------------//

@@ -12,5 +12,6 @@ Predefined MDC keys:
     
     <!-- Define DEBUG loggers here below: -->
 <!--        <logger name="org.audiveris.omr.sheet.ScaleBuilder" level="DEBUG"/>-->
+        <logger name="org.audiveris.omr.sheet.ui.SheetAssembly" level="DEBUG"/>
 
 </configuration>
