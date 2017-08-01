@@ -86,6 +86,9 @@ public class DeepClassifier
     /** The underlying convolutional neural network. */
     private MultiLayerNetwork model;
 
+    /** Boolean to trigger stopping. */
+    protected volatile boolean stopping = false;
+
     //~ Constructors -------------------------------------------------------------------------------
     private DeepClassifier ()
     {
@@ -252,6 +255,15 @@ public class DeepClassifier
         constants.maxEpochs.setValue(maxEpochs);
     }
 
+    //------//
+    // stop //
+    //------//
+    @Override
+    public void stop ()
+    {
+        stopping = true;
+    }
+
     //-------//
     // train //
     //-------//
@@ -259,6 +271,8 @@ public class DeepClassifier
     @Override
     public void train (Collection<Sample> samples)
     {
+        stopping = false;
+
         if (samples.isEmpty()) {
             logger.warn("No sample to retrain neural classifier");
 
@@ -323,7 +337,15 @@ public class DeepClassifier
 
             // Store
             store(FILE_NAME);
+
+            if (stopping) {
+                logger.info("Stopping.");
+
+                break;
+            }
         }
+
+        stopping = false;
     }
 
     //--------------//

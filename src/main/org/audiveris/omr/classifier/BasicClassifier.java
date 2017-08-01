@@ -42,9 +42,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
 import static java.nio.file.StandardOpenOption.CREATE;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -192,6 +190,15 @@ public class BasicClassifier
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    //-------//
+    // reset //
+    //-------//
+    @Override
+    public void reset ()
+    {
+        model = createNetwork();
+    }
+
     //--------------//
     // setMaxEpochs //
     //--------------//
@@ -207,13 +214,13 @@ public class BasicClassifier
         constants.maxEpochs.setValue(maxEpochs);
     }
 
-    //-------//
-    // reset //
-    //-------//
+    //------//
+    // stop //
+    //------//
     @Override
-    public void reset ()
+    public void stop ()
     {
-        model = createNetwork();
+        model.stop();
     }
 
     //-------//

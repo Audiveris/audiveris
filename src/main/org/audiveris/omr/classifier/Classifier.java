@@ -161,6 +161,11 @@ public interface Classifier
     void removeListener (IterationListener listener);
 
     /**
+     * Recreate a classifier from scratch.
+     */
+    void reset ();
+
+    /**
      * Setter on the maximum number of training epochs.
      *
      * @param maxEpochs the upper limit on epochs counter
@@ -168,9 +173,9 @@ public interface Classifier
     void setMaxEpochs (int maxEpochs);
 
     /**
-     * Recreate a classifier from scratch.
+     * Stop the on-going training.
      */
-    void reset ();
+    void stop ();
 
     /**
      * Train the network using the provided collection of shape samples.

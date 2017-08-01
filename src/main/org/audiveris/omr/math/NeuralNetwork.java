@@ -113,6 +113,9 @@ public class NeuralNetwork
     /** Default number of epochs when training. */
     private transient volatile int epochs = 10;
 
+    /** To trigger training stop. */
+    private transient volatile boolean stopping = false;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a neural network, with specified number of cells in each
@@ -207,28 +210,6 @@ public class NeuralNetwork
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding NeuralNetwork.
-     *
-     * @param in the input stream that contains the network definition in XML format.
-     *           The stream is not closed by this method
-     *
-     * @return the allocated network.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static NeuralNetwork unmarshal (InputStream in)
-            throws JAXBException
-    {
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
-        logger.debug("Network unmarshalled");
-
-        return nn;
-    }
-
     //
     //--------//
     // backup //
@@ -481,6 +462,14 @@ public class NeuralNetwork
         this.momentum = momentum;
     }
 
+    //------//
+    // stop //
+    //------//
+    public void stop ()
+    {
+        stopping = true;
+    }
+
     //-------//
     // train //
     //-------//
@@ -497,6 +486,8 @@ public class NeuralNetwork
                        TrainingMonitor listener,
                        int iterPeriod)
     {
+        stopping = false;
+
         Objects.requireNonNull(inputs, "inputs array is null");
         Objects.requireNonNull(desiredOutputs, "desiredOutputs array is null");
         logger.info("Network is being trained on {} epochs...", epochs);
@@ -600,6 +591,13 @@ public class NeuralNetwork
                     listener.iterationPeriodDone(iter, mse);
                 }
             }
+
+            // Stop required?
+            if (stopping) {
+                logger.info("Stopping.");
+
+                break;
+            }
         }
 
         final long dur = System.currentTimeMillis() - startTime;
@@ -609,6 +607,29 @@ public class NeuralNetwork
                         dur / 1000,
                         epochs,
                         patterns));
+        stopping = false;
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding NeuralNetwork.
+     *
+     * @param in the input stream that contains the network definition in XML format.
+     *           The stream is not closed by this method
+     *
+     * @return the allocated network.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static NeuralNetwork unmarshal (InputStream in)
+            throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
+        logger.debug("Network unmarshalled");
+
+        return nn;
     }
 
     //-------------//
@@ -663,6 +684,20 @@ public class NeuralNetwork
         }
 
         return matrix;
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
+        }
+
+        return jaxbContext;
     }
 
     //------------//
@@ -730,20 +765,6 @@ public class NeuralNetwork
 
             ///outs[o] = relu(sum);
         }
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
-        }
-
-        return jaxbContext;
     }
 
     private double relu (double val)

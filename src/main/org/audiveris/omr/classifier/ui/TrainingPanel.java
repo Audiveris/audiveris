@@ -90,6 +90,9 @@ class TrainingPanel
     /** User action to launch incremental training. */
     protected TrainAction trainAction;
 
+    /** User action to stop training. */
+    protected StopAction stopAction;
+
     /** User progress bar to visualize the training process. */
     protected JProgressBar progressBar = new JProgressBar();
 
@@ -144,6 +147,7 @@ class TrainingPanel
 
         resetAction = new ResetAction();
         trainAction = new TrainAction();
+        stopAction = new StopAction();
 
         defineLayout();
 
@@ -223,6 +227,7 @@ class TrainingPanel
     {
         resetAction.setEnabled(task.getActivity() == INACTIVE);
         trainAction.setEnabled(task.getActivity() == INACTIVE);
+        stopAction.setEnabled(task.getActivity() == TRAINING);
     }
 
     //-----------------//
@@ -334,6 +339,8 @@ class TrainingPanel
 
         r += 2; // ----------------------------
 
+        builder.add(new JButton(stopAction), cst.xy(1, r));
+
         builder.add(new JButton(trainAction), cst.xy(3, r));
 
         builder.add(iterIndex.getLabel(), cst.xy(5, r));
@@ -410,6 +417,28 @@ class TrainingPanel
             if (answer == JOptionPane.YES_OPTION) {
                 task.classifier.reset();
             }
+        }
+    }
+
+    //------------//
+    // StopAction //
+    //------------//
+    protected class StopAction
+            extends AbstractAction
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public StopAction ()
+        {
+            super("Stop");
+            putValue(Action.SHORT_DESCRIPTION, "Stop the training");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            task.classifier.stop();
         }
     }
 

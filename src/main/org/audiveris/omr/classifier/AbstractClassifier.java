@@ -207,34 +207,6 @@ public abstract class AbstractClassifier<M extends Object>
         return weight >= constants.minWeight.getValue();
     }
 
-    //--------------//
-    // isCompatible //
-    //--------------//
-    /**
-     * Make sure the provided pair (model + norms) is compatible with the current
-     * application version.
-     *
-     * @param model non-null model instance
-     * @param norms non-null norms instance
-     * @return true if engine is usable and found compatible
-     */
-    protected abstract boolean isCompatible (M model,
-                                             Norms norms);
-
-    //-----------//
-    // loadModel //
-    //-----------//
-    /**
-     * Load classifier model out of the provided input stream.
-     * Method to be provided by subclass.
-     *
-     * @param root non-null root path of file system
-     * @return the loaded model
-     * @throws Exception
-     */
-    protected abstract M loadModel (Path root)
-            throws Exception;
-
     //----------------------//
     // getSortedEvaluations //
     //----------------------//
@@ -260,6 +232,20 @@ public abstract class AbstractClassifier<M extends Object>
             return evals;
         }
     }
+
+    //--------------//
+    // isCompatible //
+    //--------------//
+    /**
+     * Make sure the provided pair (model + norms) is compatible with the current
+     * application version.
+     *
+     * @param model non-null model instance
+     * @param norms non-null norms instance
+     * @return true if engine is usable and found compatible
+     */
+    protected abstract boolean isCompatible (M model,
+                                             Norms norms);
 
     //------//
     // load //
@@ -357,6 +343,32 @@ public abstract class AbstractClassifier<M extends Object>
     }
 
     //-----------//
+    // loadModel //
+    //-----------//
+    /**
+     * Load classifier model out of the provided input stream.
+     * Method to be provided by subclass.
+     *
+     * @param root non-null root path of file system
+     * @return the loaded model
+     * @throws Exception
+     */
+    protected abstract M loadModel (Path root)
+            throws Exception;
+
+    //------------//
+    // storeModel //
+    //------------//
+    /**
+     * Store the model to disk.
+     *
+     * @param modelPath path to model file
+     * @throws Exception
+     */
+    protected abstract void storeModel (Path modelPath)
+            throws Exception;
+
+    //-----------//
     // loadNorms //
     //-----------//
     /**
@@ -428,18 +440,6 @@ public abstract class AbstractClassifier<M extends Object>
             logger.warn("Error storing {} {}", getName(), ex.toString(), ex);
         }
     }
-
-    //------------//
-    // storeModel //
-    //------------//
-    /**
-     * Store the model to disk.
-     *
-     * @param modelPath path to model file
-     * @throws Exception
-     */
-    protected abstract void storeModel (Path modelPath)
-            throws Exception;
 
     //------------//
     // storeNorms //
