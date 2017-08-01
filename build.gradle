@@ -92,7 +92,7 @@ dependencies {
         [group: 'com.jgoodies', name: 'jgoodies-looks', version: '2.7.0'],
         [group: 'javax.media', name: 'jai-core', version: '1.1.3'],
         [group: 'net.imagej', name: 'ij', version: '1.51f'],
-        [group: 'de.intarsys.opensource', name: 'jPodRenderer', version: '5.5.1'],
+        [group: 'de.intarsys.opensource', name: 'jPodRenderer', version: '5.6'],
         [group: 'org.audiveris', name: 'proxymusic', version: '3.0.1'],
         [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.0.0'],
         [group: 'org.jfree', name: 'jfreechart', version: '1.0.19'],
