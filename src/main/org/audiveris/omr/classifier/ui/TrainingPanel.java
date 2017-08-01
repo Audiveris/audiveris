@@ -372,7 +372,7 @@ class TrainingPanel
     //---------------//
     private void displayParams ()
     {
-        maxEpochs.setValue(ShapeClassifier.getInstance().getMaxEpochs());
+        maxEpochs.setValue(task.classifier.getMaxEpochs());
     }
 
     //-------------//

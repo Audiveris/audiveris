@@ -320,10 +320,10 @@ public class DeepClassifier
             INDArray guesses = model.output(dataSet.getFeatureMatrix());
             eval.eval(dataSet.getLabels(), guesses);
             logger.info(eval.stats(true));
-        }
 
-        // Store
-        store(FILE_NAME);
+            // Store
+            store(FILE_NAME);
+        }
     }
 
     //--------------//
@@ -503,12 +503,12 @@ public class DeepClassifier
 
         private final Constant.Integer maxEpochs = new Constant.Integer(
                 "Epochs",
-                10,
+                30,
                 "Maximum number of epochs in training");
 
         private final Constant.Integer iterations = new Constant.Integer(
                 "Iterations",
-                10,
+                2,
                 "Number of iterations on each minibatch");
     }
 }
