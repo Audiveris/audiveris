@@ -1200,7 +1200,7 @@ public class SlotsBuilder
                 "Minimum horizontal delta between two slots");
 
         private final Scale.Fraction maxAdjacencyXGap = new Scale.Fraction(
-                0.65,
+                0.3, //0.65,
                 "Maximum horizontal gap between adjacent chords bounds");
 
         private final Scale.Fraction maxVerticalOverlap = new Scale.Fraction(
