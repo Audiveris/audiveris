@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -85,6 +86,7 @@ public class TableTest
     {
         Table table = createTable();
         File target = new File(dir, fileName);
+        Files.deleteIfExists(target.toPath());
 
         new Dumping().dump(table);
 

@@ -22,6 +22,7 @@
 package org.audiveris.omr.run;
 
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
+
 import org.audiveris.omr.util.BaseTestCase;
 import org.audiveris.omr.util.Jaxb;
 
@@ -34,6 +35,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -72,6 +74,8 @@ public class RunTableBindingTest
             throws PropertyException, JAXBException, FileNotFoundException, IOException,
                    XMLStreamException
     {
+        Files.deleteIfExists(fileTable.toPath());
+
         RunTable table = createHorizontalInstance();
         table.dumpSequences();
         System.out.println("table: " + table.dumpOf());

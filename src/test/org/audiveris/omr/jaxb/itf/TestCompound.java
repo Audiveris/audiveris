@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -72,6 +73,7 @@ public class TestCompound
             throws JAXBException, IOException, XMLStreamException
     {
         File target = new File(dir, indexFileName);
+        Files.deleteIfExists(target.toPath());
 
         MyCompound compound = new MyCompound();
         compound.index = new MyBasicIndex<MyEntity>("my-index-name");

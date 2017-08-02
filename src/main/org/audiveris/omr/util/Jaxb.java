@@ -87,6 +87,7 @@ public abstract class Jaxb
             m.marshal(object, writer);
         } finally {
             if (os != null) {
+                os.flush();
                 os.close();
             }
         }
