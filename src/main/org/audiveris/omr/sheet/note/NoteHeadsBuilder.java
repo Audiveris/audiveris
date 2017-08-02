@@ -843,11 +843,6 @@ public class NoteHeadsBuilder
                 0.375,
                 "Maximum dx between similar template instances");
 
-        //
-        //        private final Scale.Fraction maxClosedDy = new Scale.Fraction(
-        //                0.2,
-        //                "Extension allowed in y for closed lines");
-        //
         private final Scale.Fraction maxOpenDy = new Scale.Fraction(
                 0.25,
                 "Extension allowed in y for open lines");
@@ -861,7 +856,7 @@ public class NoteHeadsBuilder
                 "Vertical margin for intercepting stem seed around a target pitch");
 
         private final Constant.Ratio wholeBoost = new Constant.Ratio(
-                0.4, // 0.5,
+                0.35,
                 "How much do we boost whole notes (always isolated)");
 
         private final Scale.Fraction minBeamWidth = new Scale.Fraction(

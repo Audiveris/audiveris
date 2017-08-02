@@ -543,7 +543,7 @@ public class VerticalsBuilder
                 "Low minimum clean length for a stem");
 
         private final Scale.Fraction gapHigh = new Scale.Fraction(
-                0.5,
+                0.3,
                 "Maximum vertical gap between stem segments");
 
         private final Constant.Double slopeHigh = new Constant.Double(
@@ -554,12 +554,6 @@ public class VerticalsBuilder
         private final Scale.Fraction straightHigh = new Scale.Fraction(
                 0.2,
                 "High maximum distance to average stem line");
-
-        //
-        //        private final Constant.Double maxCoTangentForCheck = new Constant.Double(
-        //                "cotangent",
-        //                0.1,
-        //                "Maximum cotangent for interactive check of a stem candidate");
     }
 
     //----------//
