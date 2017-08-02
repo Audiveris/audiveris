@@ -259,7 +259,7 @@ public class SigReducer
 
         for (Inter stem : stems) {
             if (stem.isVip()) {
-                //                logger.info("VIP analyzeChords with {}", stem);
+                logger.info("VIP analyzeChords with {}", stem);
             }
 
             // Consider only good stems
@@ -296,15 +296,30 @@ public class SigReducer
             }
 
             // Mutual head exclusion based on head shape
+            // But perhaps the joining stem is the problem, so check the two conflicting heads
+            // are not linked to any other stem than the one at hand.
             List<Shape> headShapes = new ArrayList<Shape>(heads.keySet());
 
             for (int ic = 0; ic < (headShapes.size() - 1); ic++) {
                 Shape c1 = headShapes.get(ic);
                 Set<Inter> set1 = heads.get(c1);
 
-                for (Shape c2 : headShapes.subList(ic + 1, headShapes.size())) {
-                    Set<Inter> set2 = heads.get(c2);
-                    exclude(set1, set2);
+                for (Inter h1 : set1) {
+                    HeadInter head1 = (HeadInter) h1;
+
+                    if (head1.getStems().size() == 1) {
+                        for (Shape c2 : headShapes.subList(ic + 1, headShapes.size())) {
+                            Set<Inter> set2 = heads.get(c2);
+
+                            for (Inter h2 : set2) {
+                                HeadInter head2 = (HeadInter) h2;
+
+                                if (head2.getStems().size() == 1) {
+                                    sig.insertExclusion(h1, h2, Exclusion.Cause.INCOMPATIBLE);
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -657,7 +672,7 @@ public class SigReducer
     private int checkHeadSide (Inter head)
     {
         if (head.isVip()) {
-            //            logger.info("VIP checkHeadSide for {}", head);
+            logger.info("VIP checkHeadSide for {}", head);
         }
 
         int modifs = 0;
@@ -1292,7 +1307,7 @@ public class SigReducer
                 if (leftBox.intersects(rightBox)) {
                     // Have a more precise look
                     if (left.isVip() && right.isVip()) {
-                        ///logger.info("VIP check overlap {} vs {}", left, right);
+                        logger.info("VIP check overlap {} vs {}", left, right);
                     }
 
                     try {
