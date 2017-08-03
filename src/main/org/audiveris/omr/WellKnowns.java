@@ -22,7 +22,6 @@
 package org.audiveris.omr;
 
 import org.audiveris.omr.log.LogUtil;
-
 import static org.audiveris.omr.util.UriUtil.toURI;
 
 import org.slf4j.Logger;
@@ -66,6 +65,9 @@ public abstract class WellKnowns
     /** Application name: {@value}. */
     public static final String TOOL_NAME = ProgramId.PROGRAM_NAME;
 
+    /** Application id: {@value}. */
+    public static final String TOOL_ID = ProgramId.PROGRAM_ID;
+
     /** Application reference: {@value}. */
     public static final String TOOL_REF = ProgramId.PROGRAM_VERSION;
 
@@ -73,7 +75,7 @@ public abstract class WellKnowns
     public static final String TOOL_BUILD = ProgramId.PROGRAM_BUILD;
 
     /** Specific prefix for application folders: {@value}. */
-    private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/" + TOOL_NAME;
+    private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/" + TOOL_ID;
 
     //----------//
     // PLATFORM //
@@ -172,9 +174,19 @@ public abstract class WellKnowns
     /** The default base for output folders. */
     public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER.resolve("output");
 
+    //----------//
+    // USER LOG //
+    //----------//
+    //
+    /** The folder where log files are stored. */
+    public static final Path LOG_FOLDER = getLogFolder();
+
     static {
         /** Logging configuration. */
         LogUtil.initialize(CONFIG_FOLDER, RES_URI);
+
+        /** Make sure LOG_FOLDER exists. */
+        createLogFolder();
 
         /** Log declared data (debug). */
         logDeclaredData();
@@ -215,6 +227,24 @@ public abstract class WellKnowns
     {
     }
 
+    //-----------------//
+    // createLogFolder //
+    //-----------------//
+    /**
+     * Make sure LOG_FOLDER exists.
+     */
+    private static void createLogFolder ()
+    {
+        if (!Files.exists(LOG_FOLDER)) {
+            try {
+                Files.createDirectories(LOG_FOLDER);
+            } catch (IOException ex) {
+                final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
+                logger.warn("Error creating " + LOG_FOLDER, ex);
+            }
+        }
+    }
+
     //------------------//
     // createTempFolder //
     //------------------//
@@ -223,12 +253,11 @@ public abstract class WellKnowns
      */
     private static void createTempFolder ()
     {
-        final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
-
         if (!Files.exists(TEMP_FOLDER)) {
             try {
                 Files.createDirectories(TEMP_FOLDER);
             } catch (IOException ex) {
+                final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
                 logger.warn("Error creating " + TEMP_FOLDER, ex);
             }
         }
@@ -401,6 +430,57 @@ public abstract class WellKnowns
         }
 
         return null;
+    }
+
+    //--------------//
+    // getLogFolder //
+    //--------------//
+    /**
+     * Defines where log files must be written, based on OS.
+     *
+     * @return target log folder
+     */
+    private static Path getLogFolder ()
+    {
+        if (WINDOWS) {
+            String appdata = System.getenv("APPDATA");
+
+            if (appdata != null) {
+                return Paths.get(appdata + TOOL_PREFIX + "/log");
+            }
+
+            throw new RuntimeException("APPDATA environment variable is not set");
+        } else if (MAC_OS_X) {
+            String cache = System.getenv("XDG_CACHE_HOME");
+
+            if (cache != null) {
+                return Paths.get(cache + TOOL_PREFIX + "/log");
+            }
+
+            String home = System.getenv("HOME");
+
+            if (home != null) {
+                return Paths.get(home + "/.cache" + TOOL_PREFIX + "/log");
+            }
+
+            throw new RuntimeException("HOME environment variable is not set");
+        } else if (LINUX) {
+            String cache = System.getenv("XDG_CACHE_HOME");
+
+            if (cache != null) {
+                return Paths.get(cache + TOOL_PREFIX + "/log");
+            }
+
+            String home = System.getenv("HOME");
+
+            if (home != null) {
+                return Paths.get(home + "/.cache" + TOOL_PREFIX + "/log");
+            }
+
+            throw new RuntimeException("HOME environment variable is not set");
+        } else {
+            throw new RuntimeException("Platform unknown");
+        }
     }
 
     //--------------//

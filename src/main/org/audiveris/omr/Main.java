@@ -124,6 +124,9 @@ public class Main
             return;
         }
 
+        // Log files
+        LogUtil.addFileAppender();
+
         // Initialize tool parameters
         initialize();
 

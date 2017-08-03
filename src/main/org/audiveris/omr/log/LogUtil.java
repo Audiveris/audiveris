@@ -49,6 +49,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.SwingUtilities;
+import org.audiveris.omr.WellKnowns;
 
 /**
  * Class {@code LogUtil} handles logging features based on underlying LogBack binding.
@@ -124,6 +125,36 @@ public abstract class LogUtil
         root.addAppender(guiAppender);
     }
 
+    //----------------//
+    // addFileAppender //
+    //----------------//
+    /**
+     * Add a specific appender meant for FILE.
+     */
+    public static void addFileAppender ()
+    {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+                Logger.ROOT_LOGGER_NAME);
+        FileAppender fileAppender = new FileAppender();
+        PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
+        fileAppender.setName("FILE");
+        fileAppender.setContext(loggerContext);
+        fileAppender.setAppend(false);
+
+        String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(new Date());
+        Path logPath = WellKnowns.LOG_FOLDER.resolve(now + ".log").toAbsolutePath();
+        fileAppender.setFile(logPath.toString());
+        fileEncoder.setContext(loggerContext);
+        fileEncoder.setPattern("%date %-5level [%X{BOOK}%X{SHEET}] %25replace(%file){'\\.java$',''} %-4line | %msg%n%ex");
+        fileEncoder.start();
+        fileAppender.setEncoder(fileEncoder);
+        fileAppender.start();
+        root.addAppender(fileAppender);
+
+        System.out.println("LogUtil. Logging to " + logPath);
+    }
+
     //------------//
     // initialize //
     //------------//
@@ -147,7 +178,7 @@ public abstract class LogUtil
 
             if (Files.exists(configPath)) {
                 // Everything seems OK, let LogBack use the config file
-                System.out.println("LogUtil. Using " + configPath);
+                System.out.println("LogUtil. Config " + configPath);
 
                 return;
             } else {
@@ -161,7 +192,7 @@ public abstract class LogUtil
         Path configPath = CONFIG_FOLDER.resolve(LOGBACK_FILE_NAME).toAbsolutePath();
 
         if (Files.exists(configPath)) {
-            System.out.println("LogUtil. Using " + configPath);
+            System.out.println("LogUtil. Config " + configPath);
             System.setProperty(LOGBACK_LOGGING_KEY, configPath.toString());
 
             return;
@@ -188,7 +219,7 @@ public abstract class LogUtil
             }
 
             if (Files.exists(localPath)) {
-                System.out.println("LogUtil. Using " + configUri);
+                System.out.println("LogUtil. Config " + configUri);
                 System.setProperty(LOGBACK_LOGGING_KEY, localPath.toString());
 
                 return;
@@ -218,31 +249,11 @@ public abstract class LogUtil
         consoleAppender.start();
         root.addAppender(consoleAppender);
 
-        // FILE (located in default temp directory)
-        Path logFile;
-        FileAppender fileAppender = new FileAppender();
-        PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
-        fileAppender.setName("FILE");
-        fileAppender.setContext(loggerContext);
-        fileAppender.setAppend(false);
-
-        String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(new Date());
-        logFile = Paths.get(System.getProperty("user.home"), "audiveris-" + now + ".log");
-        fileAppender.setFile(logFile.toAbsolutePath().toString());
-        fileEncoder.setContext(loggerContext);
-        fileEncoder.setPattern("%date %level \\(%file:%line\\) [%X{BOOK}%X{SHEET}] %msg%ex%n");
-        fileEncoder.start();
-        fileAppender.setEncoder(fileEncoder);
-        fileAppender.start();
-        root.addAppender(fileAppender);
-
         // Levels
         root.setLevel(Level.INFO);
 
         // OPTIONAL: print logback internal status messages
         StatusPrinter.print(loggerContext);
-
-        root.info("LogUtil. Logging to file {}", logFile.toAbsolutePath());
     }
 
     //----------------//

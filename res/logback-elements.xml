@@ -25,22 +25,19 @@
         </encoder>
     </appender>
     
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <append>true</append>
-        <file>${user.home}/audiveris-${bySecond}.log</file>
-        <encoder>
-            <pattern>%date %-5level [%-18thread] [%X{BOOK}%X{SHEET}] %25file:%-4line | %msg%n%ex</pattern>
-<!--            <pattern>%date %level \(%file:%line\) [%X{BOOK}%X{SHEET}] %msg%n%ex</pattern>-->
-        </encoder>
-    </appender>
+    <!-- 
+        FILE appender is not listed here because its target depends on OS.
+        See LogUtil.addFileAppender()
+    -->
 
     <!-- 
         GUI appender is not listed here because it is dynamically allocated & appended
         only when not running in batch.
+        See LogUtil.addGuiAppender()
     -->
+    
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
     </root>    
     
     <!-- Too avoid useless messages from nd4j or reflections -->
