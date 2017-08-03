@@ -141,7 +141,7 @@ public abstract class WellKnowns
     //-------------//
     //
     /** The folder where global configuration data is stored. */
-    public static final Path CONFIG_FOLDER = getConfigFolder();
+    public static final Path CONFIG_FOLDER = getFolder(FolderKind.CONFIG);
 
     /** The folder where plugin scripts are found. */
     public static final Path PLUGINS_FOLDER = CONFIG_FOLDER.resolve("plugins");
@@ -151,7 +151,7 @@ public abstract class WellKnowns
     //-----------//
     //
     /** Base folder for data. */
-    public static final Path DATA_FOLDER = getDataFolder();
+    public static final Path DATA_FOLDER = getFolder(FolderKind.DATA);
 
     /**
      * The folder where documentations files are installed.
@@ -179,22 +179,20 @@ public abstract class WellKnowns
     //----------//
     //
     /** The folder where log files are stored. */
-    public static final Path LOG_FOLDER = getLogFolder();
+    public static final Path LOG_FOLDER = getFolder(FolderKind.LOG);
 
     static {
         /** Logging configuration. */
         LogUtil.initialize(CONFIG_FOLDER, RES_URI);
 
         /** Make sure LOG_FOLDER exists. */
-        createLogFolder();
+        createFolder(LOG_FOLDER);
 
         /** Log declared data (debug). */
         logDeclaredData();
-    }
 
-    static {
         /** Make sure TEMP_FOLDER exists. */
-        createTempFolder();
+        createFolder(TEMP_FOLDER);
     }
 
     static {
@@ -209,6 +207,16 @@ public abstract class WellKnowns
 
     private static final String ocrNotFoundMsg = "Tesseract data could not be found. "
                                                  + "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
+
+    //~ Enumerations -------------------------------------------------------------------------------
+    private static enum FolderKind
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        CONFIG,
+        DATA,
+        LOG;
+    }
 
     //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */
@@ -227,38 +235,22 @@ public abstract class WellKnowns
     {
     }
 
-    //-----------------//
-    // createLogFolder //
-    //-----------------//
+    //--------------//
+    // createFolder //
+    //--------------//
     /**
-     * Make sure LOG_FOLDER exists.
+     * Make sure the provided folder exists.
+     *
+     * @param folder the folder to create if needed
      */
-    private static void createLogFolder ()
+    private static void createFolder (Path folder)
     {
-        if (!Files.exists(LOG_FOLDER)) {
+        if (!Files.exists(folder)) {
             try {
-                Files.createDirectories(LOG_FOLDER);
+                Files.createDirectories(folder);
             } catch (IOException ex) {
                 final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
-                logger.warn("Error creating " + LOG_FOLDER, ex);
-            }
-        }
-    }
-
-    //------------------//
-    // createTempFolder //
-    //------------------//
-    /**
-     * Make sure TEMP_FOLDER exists.
-     */
-    private static void createTempFolder ()
-    {
-        if (!Files.exists(TEMP_FOLDER)) {
-            try {
-                Files.createDirectories(TEMP_FOLDER);
-            } catch (IOException ex) {
-                final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
-                logger.warn("Error creating " + TEMP_FOLDER, ex);
+                logger.warn("Error creating " + folder, ex);
             }
         }
     }
@@ -303,86 +295,6 @@ public abstract class WellKnowns
     }
 
     //-----------------//
-    // getConfigFolder //
-    //-----------------//
-    private static Path getConfigFolder ()
-    {
-        if (WINDOWS) {
-            String appdata = System.getenv("APPDATA");
-
-            if (appdata != null) {
-                return Paths.get(appdata + TOOL_PREFIX + "/config");
-            }
-
-            throw new RuntimeException("APPDATA environment variable is not set");
-        } else if (MAC_OS_X) {
-            String home = System.getProperty("user.home");
-
-            if (home != null) {
-                return Paths.get(home + "/Library/Application Support/" + TOOL_PREFIX);
-            }
-
-            throw new RuntimeException("HOME environment variable is not set");
-        } else if (LINUX) {
-            String config = System.getenv("XDG_CONFIG_HOME");
-
-            if (config != null) {
-                return Paths.get(config + TOOL_PREFIX);
-            }
-
-            String home = System.getenv("HOME");
-
-            if (home != null) {
-                return Paths.get(home + "/.config" + TOOL_PREFIX);
-            }
-
-            throw new RuntimeException("HOME environment variable is not set");
-        } else {
-            throw new RuntimeException("Platform unknown");
-        }
-    }
-
-    //---------------//
-    // getDataFolder //
-    //---------------//
-    private static Path getDataFolder ()
-    {
-        if (WINDOWS) {
-            String appdata = System.getenv("APPDATA");
-
-            if (appdata != null) {
-                return Paths.get(appdata + TOOL_PREFIX + "/data");
-            }
-
-            throw new RuntimeException("APPDATA environment variable is not set");
-        } else if (MAC_OS_X) {
-            String home = System.getProperty("user.home");
-
-            if (home != null) {
-                return Paths.get(home + "/Library/" + TOOL_PREFIX + "/data");
-            }
-
-            throw new RuntimeException("HOME environment variable is not set");
-        } else if (LINUX) {
-            String data = System.getenv("XDG_DATA_HOME");
-
-            if (data != null) {
-                return Paths.get(data + TOOL_PREFIX);
-            }
-
-            String home = System.getenv("HOME");
-
-            if (home != null) {
-                return Paths.get(home + "/.local/share" + TOOL_PREFIX);
-            }
-
-            throw new RuntimeException("HOME environment variable is not set");
-        } else {
-            throw new RuntimeException("Platform unknown");
-        }
-    }
-
-    //-----------------//
     // getFileEncoding //
     //-----------------//
     private static String getFileEncoding ()
@@ -393,6 +305,116 @@ public abstract class WellKnowns
         System.setProperty(ENCODING_KEY, ENCODING_VALUE);
 
         return ENCODING_VALUE;
+    }
+
+    //-----------//
+    // getFolder //
+    //-----------//
+    private static Path getFolder (FolderKind kind)
+    {
+        if (WINDOWS) {
+            return getFolderForWindows(kind);
+        } else if (MAC_OS_X) {
+            return getFolderForMac(kind);
+        } else if (LINUX) {
+            return getFolderForLinux(kind);
+        } else {
+            throw new RuntimeException("Platform unknown");
+        }
+    }
+
+    //-------------------//
+    // getFolderForLinux //
+    //-------------------//
+    private static Path getFolderForLinux (FolderKind kind)
+    {
+        // First try XDG specification
+        final String xdg = System.getenv(xdgProperty(kind));
+
+        if (xdg != null) {
+            final Path audiverisPath = Paths.get(xdg + TOOL_PREFIX);
+
+            switch (kind) {
+            case CONFIG:
+                return audiverisPath;
+
+            case DATA:
+                return audiverisPath;
+
+            default:
+            case LOG:
+                return audiverisPath.resolve("log");
+            }
+        }
+
+        // Fall back using home
+        final String home = System.getenv("HOME");
+
+        if (home == null) {
+            throw new RuntimeException("HOME environment variable is not set");
+        }
+
+        switch (kind) {
+        case CONFIG:
+            return Paths.get(home + "/.config" + TOOL_PREFIX);
+
+        case DATA:
+            return Paths.get(home + "/.local/share" + TOOL_PREFIX);
+
+        default:
+        case LOG:
+            return Paths.get(home + "/.cache" + TOOL_PREFIX + "/log");
+        }
+    }
+
+    //-----------------//
+    // getFolderForMac //
+    //-----------------//
+    private static Path getFolderForMac (FolderKind kind)
+    {
+        final String home = System.getenv("HOME");
+
+        if (home == null) {
+            throw new RuntimeException("HOME environment variable is not set");
+        }
+
+        switch (kind) {
+        case CONFIG:
+            return Paths.get(home + "/Library/Application Support/" + TOOL_PREFIX);
+
+        case DATA:
+            return Paths.get(home + "/Library/" + TOOL_PREFIX + "/data");
+
+        default:
+        case LOG:
+            return Paths.get(home + "/Library/" + TOOL_PREFIX + "/log");
+        }
+    }
+
+    //---------------------//
+    // getFolderForWindows //
+    //---------------------//
+    private static Path getFolderForWindows (FolderKind kind)
+    {
+        final String appdata = System.getenv("APPDATA");
+
+        if (appdata == null) {
+            throw new RuntimeException("APPDATA environment variable is not set");
+        }
+
+        final Path audiverisPath = Paths.get(appdata + TOOL_PREFIX);
+
+        switch (kind) {
+        case CONFIG:
+            return audiverisPath.resolve("config");
+
+        case DATA:
+            return audiverisPath.resolve("data");
+
+        default:
+        case LOG:
+            return audiverisPath.resolve("log");
+        }
     }
 
     //------------//
@@ -418,51 +440,6 @@ public abstract class WellKnowns
         }
 
         return null;
-    }
-
-    //--------------//
-    // getLogFolder //
-    //--------------//
-    /**
-     * Defines where log files must be written, based on OS.
-     *
-     * @return target log folder
-     */
-    private static Path getLogFolder ()
-    {
-        if (WINDOWS) {
-            String appdata = System.getenv("APPDATA");
-
-            if (appdata != null) {
-                return Paths.get(appdata + TOOL_PREFIX + "/log");
-            }
-
-            throw new RuntimeException("APPDATA environment variable is not set");
-        } else if (MAC_OS_X) {
-            String home = System.getProperty("user.home");
-
-            if (home != null) {
-                return Paths.get(home + "/Library/" + TOOL_PREFIX + "/log");
-            }
-
-            throw new RuntimeException("HOME environment variable is not set");
-        } else if (LINUX) {
-            String cache = System.getenv("XDG_CACHE_HOME");
-
-            if (cache != null) {
-                return Paths.get(cache + TOOL_PREFIX + "/log");
-            }
-
-            String home = System.getenv("HOME");
-
-            if (home != null) {
-                return Paths.get(home + "/.cache" + TOOL_PREFIX + "/log");
-            }
-
-            throw new RuntimeException("HOME environment variable is not set");
-        } else {
-            throw new RuntimeException("Platform unknown");
-        }
     }
 
     //--------------//
@@ -553,6 +530,24 @@ public abstract class WellKnowns
         }
 
         throw new InstallationException(ocrNotFoundMsg);
+    }
+
+    //-------------//
+    // xdgProperty //
+    //-------------//
+    private static String xdgProperty (FolderKind kind)
+    {
+        switch (kind) {
+        case CONFIG:
+            return "XDG_CONFIG_HOME";
+
+        case DATA:
+            return "XDG_DATA_HOME";
+
+        default:
+        case LOG:
+            return "XDG_CACHE_HOME";
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
