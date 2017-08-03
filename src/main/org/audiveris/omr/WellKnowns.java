@@ -316,16 +316,10 @@ public abstract class WellKnowns
 
             throw new RuntimeException("APPDATA environment variable is not set");
         } else if (MAC_OS_X) {
-            String config = System.getenv("XDG_CONFIG_HOME");
-
-            if (config != null) {
-                return Paths.get(config + System.getProperty("user.dir"));
-            }
-
-            String home = System.getenv("HOME");
+            String home = System.getProperty("user.home");
 
             if (home != null) {
-                return Paths.get(System.getProperty("user.dir"));
+                return Paths.get(home + "/Library/Application Support/" + TOOL_PREFIX);
             }
 
             throw new RuntimeException("HOME environment variable is not set");
@@ -362,16 +356,10 @@ public abstract class WellKnowns
 
             throw new RuntimeException("APPDATA environment variable is not set");
         } else if (MAC_OS_X) {
-            String data = System.getenv("XDG_DATA_HOME");
-
-            if (data != null) {
-                return Paths.get(System.getProperty("user.dir"));
-            }
-
-            String home = System.getenv("HOME");
+            String home = System.getProperty("user.home");
 
             if (home != null) {
-                return Paths.get(System.getProperty("user.dir"));
+                return Paths.get(home + "/Library/" + TOOL_PREFIX + "/data");
             }
 
             throw new RuntimeException("HOME environment variable is not set");
@@ -451,16 +439,10 @@ public abstract class WellKnowns
 
             throw new RuntimeException("APPDATA environment variable is not set");
         } else if (MAC_OS_X) {
-            String cache = System.getenv("XDG_CACHE_HOME");
-
-            if (cache != null) {
-                return Paths.get(cache + TOOL_PREFIX + "/log");
-            }
-
-            String home = System.getenv("HOME");
+            String home = System.getProperty("user.home");
 
             if (home != null) {
-                return Paths.get(home + "/.cache" + TOOL_PREFIX + "/log");
+                return Paths.get(home + "/Library/" + TOOL_PREFIX + "/log");
             }
 
             throw new RuntimeException("HOME environment variable is not set");
