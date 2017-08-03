@@ -4,10 +4,10 @@ apply plugin: 'application'
 sourceCompatibility = '1.7'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-ext.programName    = 'Audiveris'
-ext.programVersion = '5.0.0'
-ext.companyName    = "$programName Ltd."
-ext.companyId      = "${programName}Ltd"
+ext.programName    = 'audiveris'
+ext.programVersion = '5.0.1'
+ext.companyName    = "Audiveris Ltd."
+ext.companyId      = "AudiverisLtd"
 
 // this code is required in order to adapt values of os.name and os.arch to the
 // conventions used by Javacpp's dependencies
