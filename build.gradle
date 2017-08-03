@@ -6,7 +6,7 @@ sourceCompatibility = '1.7'
 
 ext.programName     = 'Audiveris'
 ext.programId       = 'audiveris'
-ext.programVersion  = '5.0.1'
+ext.programVersion  = '5.0.0'
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
 
