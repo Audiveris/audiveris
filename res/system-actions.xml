@@ -86,7 +86,8 @@
 
     <action domain="DEBUG" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="browseBook"/>
     
-    <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="showManual" />
+<!--    <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="showManual" />-->
+    <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="visitWiki" />
     <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="visitWebSite" />
     <action domain="HELP" section="40" class="org.audiveris.omr.ui.GuiActions" method="showAbout" />
 

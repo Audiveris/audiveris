@@ -61,7 +61,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -385,31 +384,32 @@ public class GuiActions
 
         aboutAction.actionPerformed(e);
     }
-
-    //------------//
-    // showManual //
-    //------------//
-    /**
-     * Action to launch a browser on (local) Audiveris handbook
-     *
-     * @param e the event which triggered this action
-     */
-    @Action(enabledProperty = "browserSupported")
-    public void showManual (ActionEvent e)
-    {
-        Path path = WellKnowns.DOC_FOLDER.resolve(constants.manualUrl.getValue());
-
-        if (!Files.exists(path)) {
-            logger.warn("Cannot find file {}", path);
-        } else {
-            URI uri = path.toUri();
-            WebBrowser.getBrowser().launch(uri);
-        }
-    }
-
+//
+//    //------------//
+//    // showManual //
+//    //------------//
+//    /**
+//     * Action to launch a browser on (local) Audiveris handbook
+//     *
+//     * @param e the event which triggered this action
+//     */
+//    @Action(enabledProperty = "browserSupported")
+//    public void showManual (ActionEvent e)
+//    {
+//        Path path = WellKnowns.DOC_FOLDER.resolve(constants.manualUrl.getValue());
+//
+//        if (!Files.exists(path)) {
+//            logger.warn("Cannot find file {}", path);
+//        } else {
+//            URI uri = path.toUri();
+//            WebBrowser.getBrowser().launch(uri);
+//        }
+//    }
+//
     //------------//
     // showMemory //
     //------------//
+
     /**
      * Action to display the current value of occupied memory
      *
@@ -478,6 +478,27 @@ public class GuiActions
             WebBrowser.getBrowser().launch(uri);
         } catch (URISyntaxException ex) {
             logger.warn("Illegal site uri " + str, ex);
+        }
+    }
+
+    //-----------//
+    // visitWiki //
+    //-----------//
+    /**
+     * Action to launch a browser on application wiki
+     *
+     * @param e the event which triggered this action
+     */
+    @Action(enabledProperty = "browserSupported")
+    public void visitWiki (ActionEvent e)
+    {
+        String str = constants.wikiUrl.getValue();
+
+        try {
+            URI uri = new URI(str);
+            WebBrowser.getBrowser().launch(uri);
+        } catch (URISyntaxException ex) {
+            logger.warn("Illegal wiki uri " + str, ex);
         }
     }
 
@@ -706,9 +727,14 @@ public class GuiActions
                 "http://www.audiveris.org",
                 "URL of Audiveris home page");
 
-        private final Constant.String manualUrl = new Constant.String(
-                "docs/manual/handbook.html",
-                "URL of local Audiveris manual");
+        private final Constant.String wikiUrl = new Constant.String(
+                "https://github.com/Audiveris/audiveris/wiki",
+                "URL of Audiveris wiki");
+//
+//        private final Constant.String manualUrl = new Constant.String(
+//                "docs/manual/handbook.html",
+//                "URL of local Audiveris manual");
+//
 
         private final Constant.Boolean boardsDisplayed = new Constant.Boolean(
                 true,
