@@ -38,6 +38,7 @@ import org.audiveris.omr.ui.field.LComboBox;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 
@@ -259,9 +260,9 @@ public class InterBoard
 
         // Inter characteristics
         textField.setVisible(false);
-        textField.setEnabled(false); // TEMPORARY
+        textField.setEnabled(true); // TEMPORARY false
         roleCombo.setVisible(false);
-        roleCombo.setEnabled(false); // TEMPORARY
+        roleCombo.setEnabled(true); // TEMPORARY falses
 
         if (inter != null) {
             vip.getLabel().setEnabled(true);
@@ -300,8 +301,7 @@ public class InterBoard
             deassignAction.putValue(Action.NAME, " ");
         }
 
-        ///TEMPORARY deassignAction.setEnabled((inter != null) && !inter.isDeleted());
-        ///
+        deassignAction.setEnabled((inter != null) && !inter.isDeleted());
         grade.setEnabled(inter != null);
         shapeField.setEnabled(inter != null);
         details.setEnabled(inter != null);
@@ -328,7 +328,7 @@ public class InterBoard
     //----------------//
     // DeassignAction //
     //----------------//
-    private static class DeassignAction
+    private class DeassignAction
             extends AbstractAction
     {
         //~ Constructors ---------------------------------------------------------------------------
@@ -343,7 +343,20 @@ public class InterBoard
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            logger.info("Not yet implemented");
+            // Delete the inter
+            final Inter inter = InterBoard.this.getSelectedEntity();
+            logger.info("Deleting {}", inter);
+
+            sheet.getInterController().removeInter(inter);
+
+            sheet.getStub().setModified(true);
+            getSelectionService().publish(
+                    new EntityListEvent<Inter>(
+                            this,
+                            SelectionHint.ENTITY_INIT,
+                            MouseMovement.PRESSING,
+                            null));
+            sheet.getSymbolsEditor().refresh();
         }
     }
 }

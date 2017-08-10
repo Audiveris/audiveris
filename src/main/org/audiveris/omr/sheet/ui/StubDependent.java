@@ -69,6 +69,12 @@ public abstract class StubDependent
     /** Name of property linked to book modified. */
     public static final String BOOK_MODIFIED = "bookModified";
 
+    /** Name of property linked to undoable. */
+    public static final String UNDOABLE = "undoable";
+
+    /** Name of property linked to redoable. */
+    public static final String REDOABLE = "redoable";
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Indicates whether the current sheet stub can be transcribed. */
     protected boolean stubTranscribable = false;
@@ -90,6 +96,12 @@ public abstract class StubDependent
 
     /** Indicates whether current book has been modified. */
     protected boolean bookModified = false;
+
+    /** Indicates whether we can undo user action. */
+    protected boolean undoable = false;
+
+    /** Indicates whether we can redo user action. */
+    protected boolean redoable = false;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -139,6 +151,19 @@ public abstract class StubDependent
     public boolean isBookTranscribable ()
     {
         return bookTranscribable;
+    }
+
+    //------------//
+    // isRedoable //
+    //------------//
+    /**
+     * Getter for redoable property
+     *
+     * @return the current property value
+     */
+    public boolean isRedoable ()
+    {
+        return redoable;
     }
 
     //-----------------//
@@ -191,6 +216,19 @@ public abstract class StubDependent
     public boolean isStubValid ()
     {
         return stubValid;
+    }
+
+    //------------//
+    // isUndoable //
+    //------------//
+    /**
+     * Getter for undoable property
+     *
+     * @return the current property value
+     */
+    public boolean isUndoable ()
+    {
+        return undoable;
     }
 
     //---------//
@@ -309,6 +347,24 @@ public abstract class StubDependent
         }
     }
 
+    //-------------//
+    // setRedoable //
+    //-------------//
+    /**
+     * Setter for redoable property
+     *
+     * @param redoable the new property value
+     */
+    public void setRedoable (boolean redoable)
+    {
+        boolean oldValue = this.redoable;
+        this.redoable = redoable;
+
+        if (redoable != oldValue) {
+            firePropertyChange(REDOABLE, oldValue, this.redoable);
+        }
+    }
+
     //------------------//
     // setStubAvailable //
     //------------------//
@@ -378,6 +434,24 @@ public abstract class StubDependent
 
         if (stubValid != oldValue) {
             firePropertyChange(STUB_VALID, oldValue, this.stubValid);
+        }
+    }
+
+    //-------------//
+    // setUndoable //
+    //-------------//
+    /**
+     * Setter for undoable property
+     *
+     * @param undoable the new property value
+     */
+    public void setUndoable (boolean undoable)
+    {
+        boolean oldValue = this.undoable;
+        this.undoable = undoable;
+
+        if (undoable != oldValue) {
+            firePropertyChange(UNDOABLE, oldValue, this.undoable);
         }
     }
 

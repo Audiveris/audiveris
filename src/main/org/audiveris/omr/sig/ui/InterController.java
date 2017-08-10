@@ -26,7 +26,13 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ui.NestView;
 import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.StaffManager;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.symbol.SymbolFactory;
+import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.relation.Partnership;
 
 import org.jdesktop.application.Task;
 
@@ -35,6 +41,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.util.Collection;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -95,103 +103,100 @@ public class InterController
     public Task<Void, Void> addInter (Glyph glyph,
                                       Shape shape)
     {
-        // Disabled for 5.0
-        return null;
+        logger.info("add {} for {}", glyph, shape);
 
-        //        logger.info("add {} for {}", glyph, shape);
-        //
-        //        StaffManager staffManager = sheet.getStaffManager();
-        //        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
-        //
-        //        // TODO: while interacting with user, make sure we have the related staff & system
-        //        SystemInfo system = null;
-        //        Staff staff = null;
-        //        Point center = glyph.getCenter();
-        //        List<Staff> staves = staffManager.getStavesOf(center);
-        //
-        //        if (staves.isEmpty()) {
-        //            throw new IllegalStateException("No staff for " + center);
-        //        }
-        //
-        //        Inter ghost = SymbolFactory.createGhost(shape, 1);
-        //        ghost.setGlyph(glyph);
-        //        ghost.setBounds(glyph.getBounds());
-        //
-        //        Collection<Partnership> partnerships = null;
-        //
-        //        if (staves.size() == 1) {
-        //            // We are within one staff height
-        //            staff = staves.get(0);
-        //            system = staff.getSystem();
-        //            partnerships = ghost.searchPartnerships(system, false);
-        //        } else {
-        //            // We are between two staves
-        //            SystemInfo prevSystem = null;
-        //            StaffLoop:
-        //            for (int i = 0; i < 2; i++) {
-        //                system = staves.get(i).getSystem();
-        //
-        //                if (system != prevSystem) {
-        //                    partnerships = ghost.searchPartnerships(system, false);
-        //
-        //                    for (Partnership p : partnerships) {
-        //                        if (p.partner.getStaff() != null) {
-        //                            staff = p.partner.getStaff();
-        //
-        //                            break StaffLoop;
-        //                        }
-        //                    }
-        //                }
-        //
-        //                prevSystem = system;
-        //            }
-        //
-        //            if (staff == null) {
-        //                // Use proximity to staff (1/3 of gutter is considered as staff-related)
-        //                double bestDist = Double.MAX_VALUE;
-        //                double gutter = 0;
-        //                int bestIdx = -1;
-        //
-        //                for (int i = 0; i < 2; i++) {
-        //                    double dist = staves.get(i).distanceTo(center);
-        //                    gutter += dist;
-        //
-        //                    if (bestDist > dist) {
-        //                        bestDist = dist;
-        //                        bestIdx = i;
-        //                    }
-        //                }
-        //
-        //                if (bestDist <= (gutter / 3)) {
-        //                    staff = staves.get(bestIdx);
-        //                } else {
-        //                    // TODO: Ask user!
-        //                }
-        //            }
-        //        }
-        //
-        //        if (staff == null) {
-        //            logger.warn("No staff known at {}", center);
-        //
-        //            return null;
-        //        }
-        //
-        //        ghost.setStaff(staff);
-        //
-        //        InterTask task = new AdditionTask(system.getSig(), ghost, partnerships);
-        //        history.add(task);
-        //
-        //        Task<Void, Void> uTask = task.performDo();
-        //
-        //        sheet.getStub().setModified(true);
-        //        sheet.getGlyphIndex().publish(null);
-        //        sheet.getInterIndex().publish(ghost);
-        //        editor.refresh();
-        //
-        //        BookActions.getInstance().setUndoable(history.canUndo());
-        //        BookActions.getInstance().setRedoable(history.canRedo());
-        //
-        //        return uTask;
+        StaffManager staffManager = sheet.getStaffManager();
+        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+
+        // TODO: while interacting with user, make sure we have the related staff & system
+        SystemInfo system = null;
+        Staff staff = null;
+        Point center = glyph.getCenter();
+        List<Staff> staves = staffManager.getStavesOf(center);
+
+        if (staves.isEmpty()) {
+            throw new IllegalStateException("No staff for " + center);
+        }
+
+        Inter ghost = SymbolFactory.createGhost(shape, 1);
+        ghost.setGlyph(glyph);
+        ghost.setBounds(glyph.getBounds());
+
+        Collection<Partnership> partnerships = null;
+
+        if (staves.size() == 1) {
+            // We are within one staff height
+            staff = staves.get(0);
+            system = staff.getSystem();
+            partnerships = ghost.searchPartnerships(system, false);
+        } else {
+            // We are between two staves
+            SystemInfo prevSystem = null;
+            StaffLoop:
+            for (int i = 0; i < 2; i++) {
+                system = staves.get(i).getSystem();
+
+                if (system != prevSystem) {
+                    partnerships = ghost.searchPartnerships(system, false);
+
+                    for (Partnership p : partnerships) {
+                        if (p.partner.getStaff() != null) {
+                            staff = p.partner.getStaff();
+
+                            break StaffLoop;
+                        }
+                    }
+                }
+
+                prevSystem = system;
+            }
+
+            if (staff == null) {
+                // Use proximity to staff (1/3 of gutter is considered as staff-related)
+                double bestDist = Double.MAX_VALUE;
+                double gutter = 0;
+                int bestIdx = -1;
+
+                for (int i = 0; i < 2; i++) {
+                    double dist = staves.get(i).distanceTo(center);
+                    gutter += dist;
+
+                    if (bestDist > dist) {
+                        bestDist = dist;
+                        bestIdx = i;
+                    }
+                }
+
+                if (bestDist <= (gutter / 3)) {
+                    staff = staves.get(bestIdx);
+                } else {
+                    // TODO: Ask user!
+                }
+            }
+        }
+
+        if (staff == null) {
+            logger.warn("No staff known at {}", center);
+
+            return null;
+        }
+
+        ghost.setStaff(staff);
+
+        InterTask task = new AdditionTask(system.getSig(), ghost, partnerships);
+        history.add(task);
+
+        Task<Void, Void> uTask = task.performDo();
+
+        sheet.getStub().setModified(true);
+        sheet.getGlyphIndex().publish(null);
+        sheet.getInterIndex().publish(ghost);
+        editor.refresh();
+
+        BookActions.getInstance().setUndoable(history.canUndo());
+        BookActions.getInstance().setRedoable(history.canRedo());
+
+        return uTask;
     }
 
     /**
@@ -224,31 +229,27 @@ public class InterController
     public Task<Void, Void> dropInter (Inter ghost,
                                        Point center)
     {
-        // Disabled for 5.0
-        return null;
+        logger.info("drop {} at {}", ghost, center);
 
-        //
-        //        logger.info("drop {} at {}", ghost, center);
-        //
-        //        SystemInfo system = ghost.getStaff().getSystem();
-        //
-        //        // Edges? this depends on ghost class...
-        //        Collection<Partnership> partnerships = ghost.searchPartnerships(system, false);
-        //
-        //        InterTask task = new AdditionTask(system.getSig(), ghost, partnerships);
-        //        history.add(task);
-        //
-        //        Task<Void, Void> uTask = task.performDo();
-        //
-        //        sheet.getStub().setModified(true);
-        //        sheet.getGlyphIndex().publish(null);
-        //        sheet.getInterIndex().publish(ghost);
-        //        editor.refresh();
-        //
-        //        BookActions.getInstance().setUndoable(history.canUndo());
-        //        BookActions.getInstance().setRedoable(history.canRedo());
-        //
-        //        return uTask;
+        SystemInfo system = ghost.getStaff().getSystem();
+
+        // Edges? this depends on ghost class...
+        Collection<Partnership> partnerships = ghost.searchPartnerships(system, false);
+
+        InterTask task = new AdditionTask(system.getSig(), ghost, partnerships);
+        history.add(task);
+
+        Task<Void, Void> uTask = task.performDo();
+
+        sheet.getStub().setModified(true);
+        sheet.getGlyphIndex().publish(null);
+        sheet.getInterIndex().publish(ghost);
+        editor.refresh();
+
+        BookActions.getInstance().setUndoable(history.canUndo());
+        BookActions.getInstance().setRedoable(history.canRedo());
+
+        return uTask;
     }
 
     /**
@@ -258,23 +259,20 @@ public class InterController
      */
     public Task<Void, Void> redo ()
     {
-        // Disabled for 5.0
-        return null;
+        InterTask task = history.redo();
+        Task<Void, Void> uTask = task.performRedo();
 
-        //        InterTask task = history.redo();
-        //        Task<Void, Void> uTask = task.performRedo();
-        //
-        //        sheet.getStub().setModified(true);
-        //        sheet.getGlyphIndex().publish(null);
-        //
-        //        Inter inter = task.getInter();
-        //        sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
-        //        editor.refresh();
-        //
-        //        BookActions.getInstance().setUndoable(history.canUndo());
-        //        BookActions.getInstance().setRedoable(history.canRedo());
-        //
-        //        return uTask;
+        sheet.getStub().setModified(true);
+        sheet.getGlyphIndex().publish(null);
+
+        Inter inter = task.getInter();
+        sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
+        editor.refresh();
+
+        BookActions.getInstance().setUndoable(history.canUndo());
+        BookActions.getInstance().setRedoable(history.canRedo());
+
+        return uTask;
     }
 
     /**
@@ -285,25 +283,22 @@ public class InterController
      */
     public Task<Void, Void> removeInter (Inter inter)
     {
-        // Disabled for 5.0
-        return null;
+        logger.info("remove {}", inter);
 
-        //        logger.info("remove {}", inter);
-        //
-        //        InterTask task = new RemovalTask(inter);
-        //        history.add(task);
-        //
-        //        Task<Void, Void> uTask = task.performDo();
-        //
-        //        sheet.getStub().setModified(true);
-        //        sheet.getGlyphIndex().publish(null);
-        //        sheet.getInterIndex().publish(null);
-        //        editor.refresh();
-        //
-        //        BookActions.getInstance().setUndoable(history.canUndo());
-        //        BookActions.getInstance().setRedoable(history.canRedo());
-        //
-        //        return uTask;
+        InterTask task = new RemovalTask(inter);
+        history.add(task);
+
+        Task<Void, Void> uTask = task.performDo();
+
+        sheet.getStub().setModified(true);
+        sheet.getGlyphIndex().publish(null);
+        sheet.getInterIndex().publish(null);
+        editor.refresh();
+
+        BookActions.getInstance().setUndoable(history.canUndo());
+        BookActions.getInstance().setRedoable(history.canRedo());
+
+        return uTask;
     }
 
     /**
@@ -331,23 +326,20 @@ public class InterController
      */
     public Task<Void, Void> undo ()
     {
-        // Disabled for 5.0
-        return null;
+        InterTask task = history.undo();
+        Task<Void, Void> uTask = task.performUndo();
 
-        //        InterTask task = history.undo();
-        //        Task<Void, Void> uTask = task.performUndo();
-        //
-        //        sheet.getStub().setModified(true);
-        //        sheet.getGlyphIndex().publish(null);
-        //
-        //        Inter inter = task.getInter();
-        //        sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
-        //        editor.refresh();
-        //
-        //        BookActions.getInstance().setUndoable(history.canUndo());
-        //        BookActions.getInstance().setRedoable(history.canRedo());
-        //
-        //        return uTask;
+        sheet.getStub().setModified(true);
+        sheet.getGlyphIndex().publish(null);
+
+        Inter inter = task.getInter();
+        sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
+        editor.refresh();
+
+        BookActions.getInstance().setUndoable(history.canUndo());
+        BookActions.getInstance().setRedoable(history.canRedo());
+
+        return uTask;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

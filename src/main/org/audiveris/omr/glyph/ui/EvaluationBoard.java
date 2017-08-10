@@ -318,7 +318,7 @@ public class EvaluationBoard
                 return;
             }
 
-            boolean enabled = constants.allowSampleCreation.isSet();
+            boolean enabled = true; ///constants.allowSampleCreation.isSet();
             double minGrade = constants.minGrade.getValue();
             int iBound = Math.min(evalCount(), positiveEvals(evals));
             int i;
@@ -431,8 +431,8 @@ public class EvaluationBoard
                     Shape shape = Shape.valueOf(str);
 
                     // Actually assign the shape
-                    ///interController.addInter(glyph, shape);
-                    sheet.getStub().getBook().getSampleRepository().addSample(shape, glyph, sheet);
+                    interController.addInter(glyph, shape);
+                    ///sheet.getStub().getBook().getSampleRepository().addSample(shape, glyph, sheet);
                 }
             }
         }

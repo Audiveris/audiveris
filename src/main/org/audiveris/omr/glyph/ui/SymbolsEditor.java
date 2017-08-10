@@ -54,6 +54,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
+import org.audiveris.omr.sig.ui.ShapeBoard;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
@@ -167,7 +168,7 @@ public class SymbolsEditor
 
         boards.add(new SymbolGlyphBoard(glyphsController, true, true));
         boards.add(new InterBoard(sheet));
-        // boards.add(new ShapeBoard(sheet, false)); // Use of ShapeBoard is disabled for 5.0
+        boards.add(new ShapeBoard(sheet, false));
         boards.add(
                 new EvaluationBoard(
                         true,

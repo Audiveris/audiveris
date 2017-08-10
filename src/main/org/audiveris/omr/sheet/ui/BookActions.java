@@ -45,6 +45,7 @@ import org.audiveris.omr.sheet.stem.StemScaler;
 import static org.audiveris.omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
+import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.OmrGui;
@@ -909,6 +910,33 @@ public class BookActions
         return new PrintSheetTask(stub.getSheet(), sheetPrintPath);
     }
 
+    //------//
+    // redo //
+    //------//
+    /**
+     * Action to redo undone user modification.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = REDOABLE)
+    public void redo (ActionEvent e)
+    {
+        logger.info("redo");
+
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return;
+        }
+
+        Sheet sheet = stub.getSheet();
+        InterController controller = sheet.getInterController();
+        controller.redo();
+
+        setUndoable(controller.canUndo());
+        setRedoable(controller.canRedo());
+    }
+
     //-----------//
     // resetBook //
     //-----------//
@@ -1204,6 +1232,32 @@ public class BookActions
         }
 
         return new TranscribeSheetTask(stub.getSheet());
+    }
+
+    //------//
+    // undo //
+    //------//
+    /**
+     * Action to undo last user modification.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = UNDOABLE)
+    public void undo (ActionEvent e)
+    {
+        logger.info("undo");
+
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return;
+        }
+
+        Sheet sheet = stub.getSheet();
+        InterController controller = sheet.getInterController();
+        controller.undo();
+        setUndoable(controller.canUndo());
+        setRedoable(controller.canRedo());
     }
 
     //--------------------//
