@@ -39,6 +39,7 @@ import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
+import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
 import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
@@ -506,6 +507,7 @@ public class BasicSheet
                     final Score score = new Score();
                     score.setBook(book);
                     score.addPageRef(stub.getNumber(), pageRef);
+                    new ScoreReduction(score).reduce();
 
                     final int idx = pageRef.getId();
                     final String scoreName = sheetName + OMR.MOVEMENT_EXTENSION + idx;
@@ -517,6 +519,7 @@ public class BasicSheet
                 final Score score = new Score();
                 score.setBook(book);
                 score.addPageRef(stub.getNumber(), stub.getFirstPageRef());
+                new ScoreReduction(score).reduce();
 
                 final String scoreName = sheetName;
                 final Path scorePath = path.resolveSibling(scoreName + ext);
@@ -525,10 +528,6 @@ public class BasicSheet
 
             // Remember the book export path in the book itself
             book.setExportPathSansExt(folder.resolve(book.getRadix()));
-
-            //            if (!book.isMultiSheet()) {
-            //                book.getScript().addTask(new ExportTask(bookPathSansExt, null));
-            //            }
         } catch (Exception ex) {
             logger.warn("Error exporting " + this + ", " + ex, ex);
         }
