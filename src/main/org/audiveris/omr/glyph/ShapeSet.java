@@ -1063,7 +1063,7 @@ public class ShapeSet
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean supportSmallHeadNotes = new Constant.Boolean(
-                false, //true,
+                true,
                 "Should we support NOTEHEAD_BLACK_SMALL shape?");
 
         private final Constant.Boolean supportSmallVoidNotes = new Constant.Boolean(
@@ -1075,15 +1075,15 @@ public class ShapeSet
                 "Should we support WHOLE_NOTE_SMALL shape?");
 
         private final Constant.Boolean supportPluckings = new Constant.Boolean(
-                false,
+                true,
                 "Should we support Pluckings (guitar right-hand)?");
 
         private final Constant.Boolean supportFingerings = new Constant.Boolean(
-                false,
+                true,
                 "Should we support Fingerings (guitar left-hand)?");
 
         private final Constant.Boolean supportFrets = new Constant.Boolean(
-                false,
+                true,
                 "Should we support Fret indications (guitar left-hand)?");
     }
 
