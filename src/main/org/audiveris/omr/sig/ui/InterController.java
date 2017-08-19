@@ -103,7 +103,7 @@ public class InterController
     public Task<Void, Void> addInter (Glyph glyph,
                                       Shape shape)
     {
-        logger.info("add {} for {}", glyph, shape);
+        logger.debug("addInter {} as {}", glyph, shape);
 
         StaffManager staffManager = sheet.getStaffManager();
         glyph = sheet.getGlyphIndex().registerOriginal(glyph);
@@ -171,12 +171,18 @@ public class InterController
                     staff = staves.get(bestIdx);
                 } else {
                     // TODO: Ask user!
+                    int res = StaffSelection.getInstance().prompt();
+                    logger.debug("res: {}", res);
+
+                    if (res >= 0) {
+                        staff = staves.get(res);
+                    }
                 }
             }
         }
 
         if (staff == null) {
-            logger.warn("No staff known at {}", center);
+            logger.info("No staff");
 
             return null;
         }
@@ -195,6 +201,8 @@ public class InterController
 
         BookActions.getInstance().setUndoable(history.canUndo());
         BookActions.getInstance().setRedoable(history.canRedo());
+
+        logger.info("added {} as {}", glyph, shape);
 
         return uTask;
     }
@@ -343,6 +351,20 @@ public class InterController
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //
+    //    private ImageIcon loadIcon (String path)
+    //    {
+    //        try {
+    //            InputStream stream = getClass().getResourceAsStream("/crystal/22x22/" + path);
+    //
+    //            return new ImageIcon(ImageIO.read(stream));
+    //        } catch (IOException ex) {
+    //            logger.error("Cannot load icon {}", path, ex);
+    //
+    //            return null;
+    //        }
+    //    }
+    //
     //--------------//
     // RemoveAction //
     //--------------//

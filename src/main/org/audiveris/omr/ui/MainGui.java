@@ -133,6 +133,9 @@ public class MainGui
     /** Step menu. */
     private StepMenu stepMenu;
 
+    /** Map of class resources. */
+    private ResourceMap resources;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MainGui} instance, to handle any user display and interaction.
@@ -292,9 +295,7 @@ public class MainGui
                     // Update frame title
                     sb.append(" - ");
 
-                    ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                            getClass());
-                    sb.append(resource.getString("mainFrame.title"));
+                    sb.append(resources.getString("mainFrame.title"));
                     frame.setTitle(sb.toString());
                 }
             });
@@ -439,6 +440,9 @@ public class MainGui
     protected void ready ()
     {
         logger.debug("MainGui. 3/ready");
+
+        // Get resources, now that application is available
+        resources = Application.getInstance().getContext().getResourceMap(getClass());
 
         // Set application exit listener
         addExitListener(new GuiExitListener());
