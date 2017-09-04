@@ -168,7 +168,7 @@ public class SymbolsEditor
 
         boards.add(new SymbolGlyphBoard(glyphsController, true, true));
         boards.add(new InterBoard(sheet));
-        boards.add(new ShapeBoard(sheet, false));
+        boards.add(new ShapeBoard(sheet, true));
         boards.add(
                 new EvaluationBoard(
                         true,
@@ -176,7 +176,7 @@ public class SymbolsEditor
                         BasicClassifier.getInstance(),
                         sheet.getGlyphIndex().getEntityService(),
                         interController,
-                        false));
+                        true));
         boards.add(
                 new EvaluationBoard(
                         true,
@@ -184,7 +184,7 @@ public class SymbolsEditor
                         DeepClassifier.getInstance(),
                         sheet.getGlyphIndex().getEntityService(),
                         interController,
-                        false));
+                        true));
 
         BoardsPane boardsPane = new BoardsPane(boards);
 

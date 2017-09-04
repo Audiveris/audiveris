@@ -45,7 +45,7 @@ public class StaffSelection
     private static final Logger logger = LoggerFactory.getLogger(StaffSelection.class);
 
     /** Singleton. */
-    private static StaffSelection INSTANCE;
+    private static volatile StaffSelection INSTANCE;
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Resource injection. */
@@ -80,10 +80,14 @@ public class StaffSelection
      *
      * @return the unique instance of this class
      */
-    public static synchronized StaffSelection getInstance ()
+    public static StaffSelection getInstance ()
     {
         if (INSTANCE == null) {
-            INSTANCE = new StaffSelection();
+            synchronized (StaffSelection.class) {
+                if (INSTANCE == null) {
+                    INSTANCE = new StaffSelection();
+                }
+            }
         }
 
         return INSTANCE;

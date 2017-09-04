@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ui.NestView;
@@ -69,6 +71,8 @@ public class InterController
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(InterController.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -108,8 +112,8 @@ public class InterController
         StaffManager staffManager = sheet.getStaffManager();
         glyph = sheet.getGlyphIndex().registerOriginal(glyph);
 
-        // TODO: while interacting with user, make sure we have the related staff & system
-        SystemInfo system = null;
+        // While interacting with user, make sure we have the related staff & system
+        SystemInfo system;
         Staff staff = null;
         Point center = glyph.getCenter();
         List<Staff> staves = staffManager.getStavesOf(center);
@@ -125,16 +129,18 @@ public class InterController
         Collection<Partnership> partnerships = null;
 
         if (staves.size() == 1) {
-            // We are within one staff height
+            // Staff is uniquely defined
             staff = staves.get(0);
             system = staff.getSystem();
             partnerships = ghost.searchPartnerships(system, false);
-        } else {
-            // We are between two staves
+        }
+
+        if ((staff == null) && constants.useStaffPartnership.isSet()) {
+            // Try to use partnership
             SystemInfo prevSystem = null;
             StaffLoop:
-            for (int i = 0; i < 2; i++) {
-                system = staves.get(i).getSystem();
+            for (Staff stf : staves) {
+                system = stf.getSystem();
 
                 if (system != prevSystem) {
                     partnerships = ghost.searchPartnerships(system, false);
@@ -143,6 +149,7 @@ public class InterController
                         if (p.partner.getStaff() != null) {
                             staff = p.partner.getStaff();
 
+                            // We stop on first partnership found. TODO: is this erroneous?
                             break StaffLoop;
                         }
                     }
@@ -150,46 +157,49 @@ public class InterController
 
                 prevSystem = system;
             }
+        }
 
-            if (staff == null) {
-                // Use proximity to staff (1/3 of gutter is considered as staff-related)
-                double bestDist = Double.MAX_VALUE;
-                double gutter = 0;
-                int bestIdx = -1;
+        if ((staff == null) && constants.useStaffProximity.isSet()) {
+            // Use proximity to staff (vertical margin defined as ratio of gutter)
+            double bestDist = Double.MAX_VALUE;
+            Staff bestStf = null;
+            double gutter = 0;
 
-                for (int i = 0; i < 2; i++) {
-                    double dist = staves.get(i).distanceTo(center);
-                    gutter += dist;
+            for (Staff stf : staves) {
+                double dist = stf.distanceTo(center);
+                gutter += dist;
 
-                    if (bestDist > dist) {
-                        bestDist = dist;
-                        bestIdx = i;
-                    }
+                if (bestDist > dist) {
+                    bestDist = dist;
+                    bestStf = stf;
                 }
+            }
 
-                if (bestDist <= (gutter / 3)) {
-                    staff = staves.get(bestIdx);
-                } else {
-                    // TODO: Ask user!
-                    int res = StaffSelection.getInstance().prompt();
-                    logger.debug("res: {}", res);
-
-                    if (res >= 0) {
-                        staff = staves.get(res);
-                    }
-                }
+            if (bestDist <= (gutter * constants.gutterRatio.getValue())) {
+                staff = bestStf;
             }
         }
 
         if (staff == null) {
-            logger.info("No staff");
+            // Finally, prompt user...
+            int option = StaffSelection.getInstance().prompt();
+
+            if (option >= 0) {
+                staff = staves.get(option);
+            }
+        }
+
+        if (staff == null) {
+            logger.info("No staff, abandonned.");
 
             return null;
         }
 
         ghost.setStaff(staff);
+        system = staff.getSystem();
 
         InterTask task = new AdditionTask(system.getSig(), ghost, partnerships);
+
         history.add(task);
 
         Task<Void, Void> uTask = task.performDo();
@@ -202,7 +212,7 @@ public class InterController
         BookActions.getInstance().setUndoable(history.canUndo());
         BookActions.getInstance().setRedoable(history.canRedo());
 
-        logger.info("added {} as {}", glyph, shape);
+        logger.info("Added {} in staff#{}", ghost, staff.getId());
 
         return uTask;
     }
@@ -291,7 +301,9 @@ public class InterController
      */
     public Task<Void, Void> removeInter (Inter inter)
     {
-        logger.info("remove {}", inter);
+        if (inter.isDeleted()) {
+            return null;
+        }
 
         InterTask task = new RemovalTask(inter);
         history.add(task);
@@ -306,7 +318,22 @@ public class InterController
         BookActions.getInstance().setUndoable(history.canUndo());
         BookActions.getInstance().setRedoable(history.canRedo());
 
+        logger.info("Removed {}", inter);
+
         return uTask;
+    }
+
+    /**
+     * Remove the provided collection of inter (with their relations)
+     *
+     * @param inters the inters to remove
+     * @return the task that carries out additional processing
+     */
+    public void removeInters (Collection<? extends Inter> inters)
+    {
+        for (Inter inter : inters) {
+            removeInter(inter);
+        }
     }
 
     /**
@@ -351,20 +378,27 @@ public class InterController
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //
-    //    private ImageIcon loadIcon (String path)
-    //    {
-    //        try {
-    //            InputStream stream = getClass().getResourceAsStream("/crystal/22x22/" + path);
-    //
-    //            return new ImageIcon(ImageIO.read(stream));
-    //        } catch (IOException ex) {
-    //            logger.error("Cannot load icon {}", path, ex);
-    //
-    //            return null;
-    //        }
-    //    }
-    //
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean useStaffPartnership = new Constant.Boolean(
+                true,
+                "Should we use partnership for staff selection");
+
+        private final Constant.Boolean useStaffProximity = new Constant.Boolean(
+                true,
+                "Should we use proximity for staff selection");
+
+        private final Constant.Ratio gutterRatio = new Constant.Ratio(
+                0.33,
+                "Vertical margin as ratio of inter-staff gutter");
+    }
+
     //--------------//
     // RemoveAction //
     //--------------//

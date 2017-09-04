@@ -27,13 +27,14 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
-import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -88,6 +89,26 @@ public class InterMenu
         super.updateUserLocation(rect);
     }
 
+    private void insertDeletion (SystemInfo system,
+                                 final List<Inter> sysInters)
+    {
+        JMenuItem item = new JMenuItem(
+                "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
+        item.addActionListener(
+                new ActionListener()
+        {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                final InterController interController = sheet.getInterController();
+
+                interController.removeInters(sysInters);
+            }
+        });
+        this.add(item);
+        this.addSeparator();
+    }
+
     //------------//
     // updateMenu //
     //------------//
@@ -132,9 +153,13 @@ public class InterMenu
                         addSeparator();
                     }
 
-                    UIUtil.insertTitle(this, "Inters for System #" + system.getId() + ":");
+                    //                    UIUtil.insertTitle(
+                    //                            this,
+                    //                            sysInters.size() + " inters for System #" + system.getId() + ":");
+                    List<Inter> sysInters = entry.getValue();
+                    insertDeletion(system, sysInters);
 
-                    for (Inter inter : entry.getValue()) {
+                    for (Inter inter : sysInters) {
                         final SIGraph sig = inter.getSig();
                         final Set<Relation> rels = sig.edgesOf(inter);
 

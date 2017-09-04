@@ -345,7 +345,7 @@ public class InterBoard
         {
             // Delete the inter
             final Inter inter = InterBoard.this.getSelectedEntity();
-            logger.info("Deleting {}", inter);
+            logger.debug("Deleting {}", inter);
 
             sheet.getInterController().removeInter(inter);
 
