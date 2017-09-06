@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.classifier.ui.SampleMenu;
+import org.audiveris.omr.classifier.ui.ShapeMenu;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -83,7 +83,8 @@ public class GlyphMenu
             UIUtil.insertTitle(this, "Glyphs:");
 
             for (Glyph glyph : glyphs) {
-                JMenuItem item = new SampleMenu(glyph, sheet);
+                ///JMenuItem item = new SampleMenu(glyph, sheet);
+                JMenuItem item = new ShapeMenu(glyph, sheet);
 
                 if (!glyph.getGroups().isEmpty()) {
                     item.setToolTipText(glyph.getGroups().toString());
@@ -116,8 +117,8 @@ public class GlyphMenu
         @Override
         public void mouseEntered (MouseEvent e)
         {
-            SampleMenu sampleMenu = (SampleMenu) e.getSource();
-            Glyph glyph = sampleMenu.getGlyph();
+            ShapeMenu shapeMenu = (ShapeMenu) e.getSource();
+            Glyph glyph = shapeMenu.getGlyph();
 
             sheet.getGlyphIndex().getEntityService().publish(
                     new EntityListEvent<Glyph>(
