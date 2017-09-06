@@ -31,7 +31,7 @@ import java.util.List;
  * <li>Sentence vs words</li>
  * <li>TimePairInter vs num & den</li>
  * <li>KeyInter vs its alterations</li>
- * <li>ChordInter vs its notes and stem</li>
+ * <li>ChordInter vs its notes</li>
  * <li>FermataInter vs its arc and dot</li>
  * </ul>
  *

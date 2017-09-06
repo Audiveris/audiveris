@@ -31,7 +31,7 @@ import java.util.Collection;
 
 /**
  * Class {@code InterTask} is the elementary task (focused on an Inter) that can be
- * done, undone and redone by the IntersController.
+ * done, undone and redone by the {@link InterController}.
  *
  * @author Hervé Bitteur
  */
@@ -43,7 +43,7 @@ public abstract class InterTask
     protected final SIGraph sig;
 
     /** Task focus. */
-    private final Inter inter;
+    protected final Inter inter;
 
     /** Relations inter is involved in. */
     protected final Collection<Partnership> partnerships;
@@ -79,4 +79,20 @@ public abstract class InterTask
     {
         return inter;
     }
+
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(actionName());
+        sb.append(" of ").append(inter);
+
+        return sb.toString();
+    }
+
+    /**
+     * Report a name for inter task action
+     *
+     * @return task name
+     */
+    protected abstract String actionName ();
 }

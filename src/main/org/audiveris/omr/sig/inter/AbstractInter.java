@@ -273,12 +273,13 @@ public abstract class AbstractInter
 
             if (ensemble instanceof InterMutableEnsemble) {
                 InterMutableEnsemble ime = (InterMutableEnsemble) ensemble;
+                //
+                //                if (ime.getMembers().size() == 1) {
+                //                    ime.delete();
+                //                } else {
+                ime.removeMember(this);
 
-                if (ime.getMembers().size() == 1) {
-                    ime.delete();
-                } else {
-                    ime.removeMember(this);
-                }
+                //                }
             }
 
             if (sig != null) {

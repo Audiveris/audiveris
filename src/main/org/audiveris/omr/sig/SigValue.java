@@ -129,6 +129,7 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.audiveris.omr.sig.relation.SentenceWordRelation;
 
 /**
  * Class {@code SigValue} represents the content of a SIG for use by JAXB.
@@ -372,7 +373,6 @@ public class SigValue
          * The relation instance.
          * <p>
          * Here we list alphabetically all CONCRETE relation types. No abstract!
-         * CrossExclusion is not listed here, because it must be handled outside any specific sig.
          */
         @XmlElementRefs({
             @XmlElementRef(type = AlterHeadRelation.class)
@@ -407,6 +407,7 @@ public class SigValue
             , @XmlElementRef(type = NoExclusion.class)
             , @XmlElementRef(type = RepeatDotBarRelation.class)
             , @XmlElementRef(type = RepeatDotPairRelation.class)
+            , @XmlElementRef(type = SentenceWordRelation.class)
             , @XmlElementRef(type = SlurHeadRelation.class)
             , @XmlElementRef(type = StemAlignmentRelation.class)
             , @XmlElementRef(type = TimeTopBottomRelation.class)

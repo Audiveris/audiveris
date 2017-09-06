@@ -102,7 +102,7 @@ public class InterMenu
             {
                 final InterController interController = sheet.getInterController();
 
-                interController.removeInters(sysInters);
+                interController.removeInters(sysInters, null);
             }
         });
         this.add(item);

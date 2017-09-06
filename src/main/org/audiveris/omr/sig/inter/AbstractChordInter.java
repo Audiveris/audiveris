@@ -1009,13 +1009,13 @@ public abstract class AbstractChordInter
     @Override
     public void removeMember (Inter member)
     {
-        if (member instanceof AbstractNoteInter) {
-            notes.remove((AbstractNoteInter) member);
-            reset();
-        } else {
+        if (!(member instanceof AbstractNoteInter)) {
             throw new IllegalArgumentException(
                     "Only AbstractNoteInter can be removed from ChordInter");
         }
+
+        notes.remove((AbstractNoteInter) member);
+        reset();
     }
 
     //-------------//

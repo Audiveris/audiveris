@@ -22,11 +22,14 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Skew;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SentenceWordRelation;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
-import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.ui.symbol.TextFont;
 
 import org.slf4j.Logger;
@@ -34,8 +37,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -52,7 +55,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * This class is used for any text role other than Lyrics (Title, Direction, Number, PartName,
  * Creator et al, Rights, ChordName, UnknownRole).
  * <p>
- * For Lyrics role , the specific subclass {@link LyricLineInter} is used.
+ * For Lyrics role, the specific subclass {@link LyricLineInter} is used.
  *
  * @author Hervé Bitteur
  */
@@ -73,10 +76,11 @@ public class SentenceInter
         public int compare (SentenceInter s1,
                             SentenceInter s2)
         {
-            Point2D dsk1 = s1.getSig().getSystem().getSkew().deskewed(s1.getLocation());
-            Point2D dsk2 = s2.getSig().getSystem().getSkew().deskewed(s2.getLocation());
+            final Skew skew = s1.getSig().getSystem().getSkew();
 
-            return Double.compare(dsk1.getY(), dsk2.getY());
+            return Double.compare(
+                    skew.deskewed(s1.getLocation()).getY(),
+                    skew.deskewed(s2.getLocation()).getY());
         }
     };
 
@@ -85,11 +89,12 @@ public class SentenceInter
     // Persistent data
     //----------------
     //
-    /** Sequence of sentence words. */
+    /** Sequence of sentence words. To be removed shortly. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "words")
-    protected final List<WordInter> words = new ArrayList<WordInter>();
+    @Deprecated
+    protected List<WordInter> oldWords;
 
     /** Average font for the sentence. */
     @XmlAttribute(name = "font")
@@ -108,23 +113,16 @@ public class SentenceInter
      * @param grade    the interpretation quality
      * @param meanFont the font averaged on whole text line
      * @param role     text role for the line
-     * @param words    the sequence of words
      */
     protected SentenceInter (Rectangle bounds,
                              double grade,
                              FontInfo meanFont,
-                             TextRole role,
-                             List<WordInter> words)
+                             TextRole role)
     {
         super(null, bounds, Shape.TEXT, grade);
 
         this.meanFont = meanFont;
         this.role = role;
-        this.words.addAll(words);
-
-        for (WordInter word : words) {
-            word.setEnsemble(this);
-        }
     }
 
     /**
@@ -149,19 +147,11 @@ public class SentenceInter
      */
     public static SentenceInter create (TextLine line)
     {
-        List<WordInter> wordInters = new ArrayList<WordInter>();
-
-        for (TextWord word : line.getWords()) {
-            WordInter wordInter = new WordInter(word);
-            wordInters.add(wordInter);
-        }
-
         SentenceInter sentence = new SentenceInter(
                 line.getBounds(),
                 line.getConfidence() * Inter.intrinsicRatio,
                 line.getMeanFont(),
-                line.getRole(),
-                wordInters);
+                line.getRole());
 
         return sentence;
     }
@@ -181,34 +171,35 @@ public class SentenceInter
     @Override
     public void addMember (Inter member)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (!(member instanceof WordInter)) {
+            throw new IllegalArgumentException("Only WordInter can be added to Sentence");
+        }
+
+        reset();
     }
 
     //-------------//
     // assignStaff //
     //-------------//
-    public void assignStaff (SystemInfo system)
+    /**
+     * Determine the related staff for this sentence.
+     *
+     * @param system   containing system
+     * @param location sentence location
+     * @return the related staff if found, null otherwise
+     */
+    public Staff assignStaff (SystemInfo system,
+                              Point location)
     {
-        if (staff != null) {
-            return;
-        }
-
-        final Point loc = getLocation();
-
-        if (role != TextRole.ChordName) {
-            staff = system.getStaffAtOrAbove(loc);
+        if ((staff == null) && (role != TextRole.ChordName)) {
+            staff = system.getStaffAtOrAbove(location);
         }
 
         if (staff == null) {
-            staff = system.getStaffAtOrBelow(loc);
+            staff = system.getStaffAtOrBelow(location);
         }
 
-        if (staff != null) {
-            for (Inter wInter : getMembers()) {
-                WordInter wordInter = (WordInter) wInter;
-                wordInter.setStaff(staff);
-            }
-        }
+        return staff;
     }
 
     //-----------//
@@ -222,17 +213,17 @@ public class SentenceInter
     @Override
     public Rectangle getBounds ()
     {
-        Rectangle bounds = null;
+        Rectangle theBounds = null;
 
-        for (WordInter word : words) {
-            if (bounds == null) {
-                bounds = word.getBounds();
+        for (Inter word : getMembers()) {
+            if (theBounds == null) {
+                theBounds = word.getBounds();
             } else {
-                bounds.add(word.getBounds());
+                theBounds.add(word.getBounds());
             }
         }
 
-        return bounds;
+        return bounds = theBounds;
     }
 
     //---------------------//
@@ -253,11 +244,13 @@ public class SentenceInter
     //--------------//
     public WordInter getFirstWord ()
     {
+        final List<? extends Inter> words = getMembers();
+
         if (words.isEmpty()) {
             return null;
         }
 
-        return words.get(0);
+        return (WordInter) words.get(0);
     }
 
     //-------------//
@@ -265,11 +258,13 @@ public class SentenceInter
     //-------------//
     public WordInter getLastWord ()
     {
+        final List<? extends Inter> words = getMembers();
+
         if (words.isEmpty()) {
             return null;
         }
 
-        return words.get(words.size() - 1);
+        return (WordInter) words.get(words.size() - 1);
     }
 
     //-------------//
@@ -277,7 +272,13 @@ public class SentenceInter
     //-------------//
     public Point getLocation ()
     {
-        return words.get(0).getLocation();
+        final Inter first = getFirstWord();
+
+        if (first == null) {
+            return null;
+        }
+
+        return ((WordInter) first).getLocation();
     }
 
     //-------------//
@@ -299,6 +300,14 @@ public class SentenceInter
     @Override
     public List<? extends Inter> getMembers ()
     {
+        List<WordInter> words = new ArrayList<WordInter>();
+
+        for (Relation rel : sig.getRelations(this, SentenceWordRelation.class)) {
+            words.add((WordInter) sig.getOppositeInter(this, rel));
+        }
+
+        Collections.sort(words, Inter.byAbscissa);
+
         return words;
     }
 
@@ -323,8 +332,8 @@ public class SentenceInter
         StringBuilder sb = null;
 
         // Use each word value
-        for (WordInter word : words) {
-            String str = word.getValue();
+        for (Inter word : getMembers()) {
+            String str = ((WordInter) word).getValue();
 
             if (sb == null) {
                 sb = new StringBuilder(str);
@@ -341,23 +350,35 @@ public class SentenceInter
     }
 
     //--------------//
+    // linkOldWords //
+    //--------------//
+    /**
+     * For old OMR files, where words were nested within sentences, add proper
+     * relationships between sentence and words and delete the oldWords list.
+     */
+    @Deprecated
+    public void linkOldWords ()
+    {
+        if ((oldWords != null) && !oldWords.isEmpty()) {
+            for (WordInter word : oldWords) {
+                sig.addEdge(this, word, new SentenceWordRelation());
+            }
+        }
+
+        oldWords = null;
+    }
+
+    //--------------//
     // removeMember //
     //--------------//
     @Override
     public void removeMember (Inter member)
     {
-        if (member instanceof WordInter) {
-            WordInter word = (WordInter) member;
-            logger.debug("{} about to remove {}", this, word);
-            words.remove(word);
-
-            if (words.isEmpty()) {
-                logger.debug("Deleting empty {}", this);
-                delete();
-            }
-        } else {
+        if (!(member instanceof WordInter)) {
             throw new IllegalArgumentException("Only WordInter can be removed from Sentence");
         }
+
+        reset();
     }
 
     //-------------//
@@ -381,5 +402,16 @@ public class SentenceInter
         sb.append(' ').append(role);
 
         return sb.toString();
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Invalidate cached information. (following the addition or removal of a word)
+     */
+    private void reset ()
+    {
+        bounds = null;
     }
 }

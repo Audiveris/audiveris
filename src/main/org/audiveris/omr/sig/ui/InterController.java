@@ -33,8 +33,12 @@ import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterMutableEnsemble;
+import org.audiveris.omr.sig.relation.AbstractContainment;
 import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Relation;
 
 import org.jdesktop.application.Task;
 
@@ -44,7 +48,9 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -278,6 +284,8 @@ public class InterController
     public Task<Void, Void> redo ()
     {
         InterTask task = history.redo();
+        logger.info("Redo {}", task);
+
         Task<Void, Void> uTask = task.performRedo();
 
         sheet.getStub().setModified(true);
@@ -296,13 +304,38 @@ public class InterController
     /**
      * Remove the provided inter (with its relations)
      *
-     * @param inter the inter to remove
+     * @param inter    the inter to remove
+     * @param toRemove current set of inters to remove, or null
      * @return the task that carries out additional processing
      */
-    public Task<Void, Void> removeInter (Inter inter)
+    public Task<Void, Void> removeInter (Inter inter,
+                                         Set<Inter> toRemove)
     {
         if (inter.isDeleted()) {
             return null;
+        }
+
+        if (toRemove == null) {
+            toRemove = new LinkedHashSet<Inter>();
+        }
+
+        toRemove.add(inter);
+
+        // Remove members if any
+        if (inter instanceof InterMutableEnsemble) {
+            InterMutableEnsemble ime = (InterMutableEnsemble) inter;
+            removeInters(ime.getMembers(), toRemove);
+        } else {
+            // Delete containing ensemble if this is the last member
+            SIGraph sig = inter.getSig();
+
+            for (Relation rel : sig.getRelations(inter, AbstractContainment.class)) {
+                InterMutableEnsemble ime = (InterMutableEnsemble) sig.getOppositeInter(inter, rel);
+
+                if (!toRemove.contains(ime) && (ime.getMembers().size() <= 1)) {
+                    removeInter(ime, toRemove);
+                }
+            }
         }
 
         InterTask task = new RemovalTask(inter);
@@ -326,13 +359,20 @@ public class InterController
     /**
      * Remove the provided collection of inter (with their relations)
      *
-     * @param inters the inters to remove
-     * @return the task that carries out additional processing
+     * @param inters   the inters to remove
+     * @param toRemove current set of inters to remove, or null
      */
-    public void removeInters (Collection<? extends Inter> inters)
+    public void removeInters (Collection<? extends Inter> inters,
+                              Set<Inter> toRemove)
     {
+        if (toRemove == null) {
+            toRemove = new LinkedHashSet<Inter>();
+        }
+
         for (Inter inter : inters) {
-            removeInter(inter);
+            if (!toRemove.contains(inter)) {
+                removeInter(inter, toRemove);
+            }
         }
     }
 
@@ -362,6 +402,8 @@ public class InterController
     public Task<Void, Void> undo ()
     {
         InterTask task = history.undo();
+        logger.info("Undo {}", task);
+
         Task<Void, Void> uTask = task.performUndo();
 
         sheet.getStub().setModified(true);
@@ -416,7 +458,7 @@ public class InterController
             Inter inter = sheet.getInterIndex().getEntityService().getSelectedEntity();
 
             if (inter != null) {
-                removeInter(inter);
+                removeInter(inter, null);
             }
         }
     }

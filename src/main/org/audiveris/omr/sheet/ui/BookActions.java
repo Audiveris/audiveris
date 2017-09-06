@@ -921,8 +921,6 @@ public class BookActions
     @Action(enabledProperty = REDOABLE)
     public void redo (ActionEvent e)
     {
-        logger.info("redo");
-
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub == null) {
@@ -1245,8 +1243,6 @@ public class BookActions
     @Action(enabledProperty = UNDOABLE)
     public void undo (ActionEvent e)
     {
-        logger.info("undo");
-
         SheetStub stub = StubsController.getCurrentStub();
 
         if (stub == null) {

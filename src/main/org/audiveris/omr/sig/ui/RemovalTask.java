@@ -23,6 +23,8 @@ package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterMutableEnsemble;
+import org.audiveris.omr.sig.relation.AbstractContainment;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 
@@ -57,7 +59,16 @@ public class RemovalTask
     @Override
     public Task<Void, Void> performDo ()
     {
-        getInter().delete();
+        for (Partnership partnership : partnerships) {
+            if (partnership.relation instanceof AbstractContainment) {
+                InterMutableEnsemble ime = (InterMutableEnsemble) (partnership.outgoing ? inter
+                        : partnership.partner);
+                Inter member = partnership.outgoing ? partnership.partner : inter;
+                ime.removeMember(member);
+            }
+        }
+
+        inter.delete();
 
         return null;
     }
@@ -71,14 +82,20 @@ public class RemovalTask
     @Override
     public Task<Void, Void> performUndo ()
     {
-        getInter().undelete();
-        sig.addVertex(getInter());
+        inter.undelete();
+        sig.addVertex(inter);
 
         for (Partnership partnership : partnerships) {
-            partnership.applyTo(getInter());
+            partnership.applyTo(inter);
         }
 
         return null;
+    }
+
+    @Override
+    protected String actionName ()
+    {
+        return "removal";
     }
 
     /**
@@ -106,22 +123,6 @@ public class RemovalTask
                             sig.getEdgeTarget(rel) == partner));
         }
 
-        //        // Incomings
-        //        for (Relation rel : sig.incomingEdgesOf(inter)) {
-        //            if (partnerships == null) {
-        //                partnerships = new LinkedHashSet<Partnership>();
-        //            }
-        //
-        //            partnerships.add(new Partnership(sig.getOppositeInter(inter, rel), rel, false));
-        //        }
-        //
-        //        // Outgoings
-        //        for (Relation rel : sig.outgoingEdgesOf(inter)) {
-        //            if (partnerships == null) {
-        //                partnerships = new LinkedHashSet<Partnership>();
-        //            }
-        //
-        //        }
         if (partnerships == null) {
             return Collections.emptySet();
         }

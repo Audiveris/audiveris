@@ -57,10 +57,10 @@ public class AdditionTask
     @Override
     public Task<Void, Void> performDo ()
     {
-        sig.addVertex(getInter());
+        sig.addVertex(inter);
 
         for (Partnership partnership : partnerships) {
-            partnership.applyTo(getInter());
+            partnership.applyTo(inter);
         }
 
         return null;
@@ -69,7 +69,7 @@ public class AdditionTask
     @Override
     public Task<Void, Void> performRedo ()
     {
-        getInter().undelete();
+        inter.undelete();
 
         return performDo();
     }
@@ -77,8 +77,14 @@ public class AdditionTask
     @Override
     public Task<Void, Void> performUndo ()
     {
-        getInter().delete();
+        inter.delete();
 
         return null;
+    }
+
+    @Override
+    protected String actionName ()
+    {
+        return "addition";
     }
 }

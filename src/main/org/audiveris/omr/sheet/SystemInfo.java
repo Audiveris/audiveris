@@ -271,7 +271,9 @@ public class SystemInfo
             }
 
             for (Inter inter : sig.inters(SentenceInter.class)) {
-                ((SentenceInter) inter).assignStaff(this);
+                SentenceInter sentence = (SentenceInter) inter;
+                sentence.assignStaff(this, sentence.getLocation());
+                sentence.linkOldWords(); // Temporary
             }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
