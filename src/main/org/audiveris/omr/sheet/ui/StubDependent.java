@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
+import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.StubEvent;
@@ -288,6 +289,17 @@ public abstract class StubDependent
             } else {
                 setBookModified(false);
             }
+
+            // Update undoable/redoable
+            if (stub != null && stub.hasSheet()) {
+                InterController ctrl = stub.getSheet().getInterController();
+                setUndoable(ctrl.canUndo());
+                setRedoable(ctrl.canRedo());
+            } else {
+                setUndoable(false);
+                setRedoable(false);
+            }
+
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
