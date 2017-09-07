@@ -49,7 +49,6 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import org.audiveris.omr.sig.relation.SentenceWordRelation;
 import static org.audiveris.omr.text.TextRole.PartName;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.symbol.TextFont;
@@ -664,7 +663,8 @@ public class TextBuilder
                 wordSections.addAll(charSections);
 
                 SectionCompound compound = CompoundFactory.buildCompound(charSections, constructor);
-                Glyph charGlyph = sheet.getGlyphIndex().registerOriginal(compound.toGlyph(null));
+                Glyph charGlyph = sheet.getGlyphIndex().registerOriginal(
+                        compound.toGlyph(null));
                 system.addFreeGlyph(charGlyph);
             }
         }
@@ -931,7 +931,7 @@ public class TextBuilder
                             : new WordInter(word);
                     wordInter.setStaff(staff);
                     sig.addVertex(wordInter);
-                    sig.addEdge(sentence, wordInter, new SentenceWordRelation());
+                    sentence.addMember(wordInter);
                 }
             }
         }

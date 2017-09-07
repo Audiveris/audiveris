@@ -102,13 +102,13 @@ public class BarlineInter
      * bar collection is updated.
      */
     @Override
-    public void delete ()
+    public void delete (boolean extensive)
     {
         if (staff != null) {
             staff.removeBarline(this);
         }
 
-        super.delete();
+        super.delete(extensive);
     }
 
     //-------------------//

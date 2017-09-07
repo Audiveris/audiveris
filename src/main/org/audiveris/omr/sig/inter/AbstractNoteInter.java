@@ -210,13 +210,13 @@ public abstract class AbstractNoteInter
      * @see #undelete()
      */
     @Override
-    public void delete ()
+    public void delete (boolean extensive)
     {
         if (staff != null) {
             staff.removeNote(this);
         }
 
-        super.delete();
+        super.delete(extensive);
     }
 
     //-----------//

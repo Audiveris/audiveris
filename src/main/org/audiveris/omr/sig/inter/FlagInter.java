@@ -69,7 +69,7 @@ public class FlagInter
     // delete //
     //--------//
     @Override
-    public void delete ()
+    public void delete (boolean extensive)
     {
         // Remove it from containing measure
         MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
@@ -78,7 +78,7 @@ public class FlagInter
             stack.removeInter(this);
         }
 
-        super.delete();
+        super.delete(extensive);
     }
 
     //---------//

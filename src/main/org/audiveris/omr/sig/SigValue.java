@@ -106,6 +106,7 @@ import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
+import org.audiveris.omr.sig.relation.SentenceWordRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
@@ -129,7 +130,6 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import org.audiveris.omr.sig.relation.SentenceWordRelation;
 
 /**
  * Class {@code SigValue} represents the content of a SIG for use by JAXB.

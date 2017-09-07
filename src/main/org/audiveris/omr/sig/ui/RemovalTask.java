@@ -68,7 +68,7 @@ public class RemovalTask
             }
         }
 
-        inter.delete();
+        inter.delete(false);
 
         return null;
     }

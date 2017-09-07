@@ -270,8 +270,16 @@ public interface Inter
 
     /**
      * Delete this instance, and remove it from its containing SIG.
+     * This is equivalent to delete(true).
      */
     void delete ();
+
+    /**
+     * Delete this instance, and remove it from its containing SIG.
+     *
+     * @param extensive option to forward deletion to containing ensemble if any
+     */
+    void delete (boolean extensive);
 
     /**
      * Mark this inter as frozen, that cannot be deleted even by a conflicting

@@ -298,7 +298,7 @@ public class StemInter
     // delete //
     //--------//
     @Override
-    public void delete ()
+    public void delete (boolean extensive)
     {
         if (deleted) {
             return;
@@ -331,7 +331,7 @@ public class StemInter
             }
         }
 
-        super.delete();
+        super.delete(extensive);
     }
 
     //-----------//

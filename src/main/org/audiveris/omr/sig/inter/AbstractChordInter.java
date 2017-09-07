@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sig.relation.AbstractContainment;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
@@ -201,20 +202,30 @@ public abstract class AbstractChordInter
     @Override
     public void addMember (Inter member)
     {
-        if (member instanceof AbstractNoteInter) {
-            AbstractNoteInter note = (AbstractNoteInter) member;
-            notes.add(note);
-
-            if (notes.size() > 1) {
-                Collections.sort(notes, AbstractPitchedInter.bottomUp);
-            }
-
-            note.setEnsemble(this);
-            reset();
-        } else {
+        if (!(member instanceof AbstractNoteInter)) {
             throw new IllegalArgumentException(
                     "Only AbstractNoteInter can be added to AbstractChordInter");
         }
+
+        AbstractNoteInter note = (AbstractNoteInter) member;
+        notes.add(note);
+
+        if (notes.size() > 1) {
+            Collections.sort(notes, AbstractPitchedInter.bottomUp);
+        }
+
+        note.setEnsemble(this);
+        reset();
+    }
+
+    //-----------//
+    // addMember //
+    //-----------//
+    @Override
+    public void addMember (Inter member,
+                           AbstractContainment relation)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //-------------//
@@ -321,13 +332,13 @@ public abstract class AbstractChordInter
     // delete //
     //--------//
     @Override
-    public void delete ()
+    public void delete (boolean extensive)
     {
         if (measure != null) {
             measure.removeInter(this);
         }
 
-        super.delete();
+        super.delete(extensive);
     }
 
     //--------------//

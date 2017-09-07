@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -204,6 +205,9 @@ public class InterController
         ghost.setStaff(staff);
         system = staff.getSystem();
 
+        // If glyph used by another inter, delete this other inter
+        removeCompetitors(glyph, system);
+
         InterTask task = new AdditionTask(system.getSig(), ghost, partnerships);
 
         history.add(task);
@@ -344,7 +348,7 @@ public class InterController
         Task<Void, Void> uTask = task.performDo();
 
         sheet.getStub().setModified(true);
-        sheet.getGlyphIndex().publish(null);
+        ///sheet.getGlyphIndex().publish(null); // Let glyph displayed, to ease inter selection
         sheet.getInterIndex().publish(null);
         editor.refresh();
 
@@ -417,6 +421,27 @@ public class InterController
         BookActions.getInstance().setRedoable(history.canRedo());
 
         return uTask;
+    }
+
+    //-------------------//
+    // removeCompetitors //
+    //-------------------//
+    /**
+     * Discard any existing Inter with the same underlying glyph.
+     *
+     * @param glyph  underlying glyph
+     * @param system containing system
+     */
+    private void removeCompetitors (Glyph glyph,
+                                    SystemInfo system)
+    {
+        final Rectangle glyphBounds = glyph.getBounds();
+
+        for (Inter inter : system.getSig().containedInters(glyphBounds)) {
+            if (inter.getGlyph() == glyph) {
+                removeInter(inter, null);
+            }
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

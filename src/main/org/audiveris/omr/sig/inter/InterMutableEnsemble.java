@@ -21,9 +21,20 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.sig.relation.AbstractContainment;
+
 /**
  * Interface {@code InterMutableEnsemble} is a mutable {@link InterEnsemble}, with the
  * ability to add or remove members.
+ * <p>
+ * Such ensembles cannot durably exist and be fully defined without their members: for example, a
+ * {@link SentenceInter} instance cannot exist without at least one member {@link WordInter}
+ * instance.
+ * <p>
+ * Hence, care must be taken to avoid such "empty ensembles":<ul>
+ * <li>Sentence creation must be followed by inclusion of a word.
+ * <li>Deletion of sole word of a sentence must be followed by sentence deletion.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -38,6 +49,15 @@ public interface InterMutableEnsemble
      * @param member the member to add
      */
     void addMember (Inter member);
+
+    /**
+     * Add a member to the mutable ensemble.
+     *
+     * @param member   the member to add
+     * @param relation the ensemble-member relation instance to use, if any
+     */
+    void addMember (Inter member,
+                    AbstractContainment relation);
 
     /**
      * Remove a member from the mutable ensemble.

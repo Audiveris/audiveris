@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.relation.AbstractContainment;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SentenceWordRelation;
 import org.audiveris.omr.text.FontInfo;
@@ -171,9 +172,22 @@ public class SentenceInter
     @Override
     public void addMember (Inter member)
     {
+        addMember(member, null);
+    }
+
+    //-----------//
+    // addMember //
+    //-----------//
+    @Override
+    public void addMember (Inter member,
+                           AbstractContainment relation)
+    {
         if (!(member instanceof WordInter)) {
             throw new IllegalArgumentException("Only WordInter can be added to Sentence");
         }
+
+        sig.addEdge(this, member, (relation != null) ? relation : new SentenceWordRelation());
+        member.setEnsemble(this);
 
         reset();
     }
@@ -361,7 +375,7 @@ public class SentenceInter
     {
         if ((oldWords != null) && !oldWords.isEmpty()) {
             for (WordInter word : oldWords) {
-                sig.addEdge(this, word, new SentenceWordRelation());
+                addMember(word);
             }
         }
 
@@ -378,6 +392,7 @@ public class SentenceInter
             throw new IllegalArgumentException("Only WordInter can be removed from Sentence");
         }
 
+        member.setEnsemble(null);
         reset();
     }
 

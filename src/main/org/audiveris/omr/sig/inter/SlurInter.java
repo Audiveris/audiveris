@@ -281,13 +281,13 @@ public class SlurInter
      * @see #undelete()
      */
     @Override
-    public void delete ()
+    public void delete (boolean extensive)
     {
         if (part != null) {
             part.removeSlur(this);
         }
 
-        super.delete();
+        super.delete(extensive);
     }
 
     //----------//

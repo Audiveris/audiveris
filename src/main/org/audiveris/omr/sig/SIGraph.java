@@ -221,7 +221,11 @@ public class SIGraph
         List<Inter> found = new ArrayList<Inter>();
 
         for (Inter inter : vertexSet()) {
-            if (rect.contains(inter.getBounds())) {
+            final Rectangle box = inter.getBounds();
+
+            if (box == null) {
+                logger.error("No bounds for {}", inter);
+            } else if (rect.contains(box)) {
                 found.add(inter);
             }
         }
@@ -857,6 +861,33 @@ public class SIGraph
         return exc;
     }
 
+    //------------------//
+    // insertExclusions //
+    //------------------//
+    /**
+     * Formalize mutual exclusion within a collection of inters
+     *
+     * @param inters the set of inters to mutually exclude
+     * @param cause  the exclusion cause
+     * @return the exclusions inserted
+     */
+    public List<Relation> insertExclusions (Collection<? extends Inter> inters,
+                                            Cause cause)
+    {
+        List<Inter> list = new ArrayList<Inter>(new LinkedHashSet<Inter>(inters));
+        List<Relation> exclusions = new ArrayList<Relation>();
+
+        for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
+            Inter inter = list.get(i);
+
+            for (Inter other : list.subList(i + 1, inters.size())) {
+                exclusions.add(insertExclusion(inter, other, cause));
+            }
+        }
+
+        return exclusions;
+    }
+
     //---------------//
     // insertSupport //
     //---------------//
@@ -910,33 +941,6 @@ public class SIGraph
         }
 
         return sup;
-    }
-
-    //------------------//
-    // insertExclusions //
-    //------------------//
-    /**
-     * Formalize mutual exclusion within a collection of inters
-     *
-     * @param inters the set of inters to mutually exclude
-     * @param cause  the exclusion cause
-     * @return the exclusions inserted
-     */
-    public List<Relation> insertExclusions (Collection<? extends Inter> inters,
-                                            Cause cause)
-    {
-        List<Inter> list = new ArrayList<Inter>(new LinkedHashSet<Inter>(inters));
-        List<Relation> exclusions = new ArrayList<Relation>();
-
-        for (int i = 0, iBreak = list.size(); i < iBreak; i++) {
-            Inter inter = list.get(i);
-
-            for (Inter other : list.subList(i + 1, inters.size())) {
-                exclusions.add(insertExclusion(inter, other, cause));
-            }
-        }
-
-        return exclusions;
     }
 
     //--------//

@@ -152,14 +152,6 @@ public class WordInter
     }
 
     //-------------//
-    // setEnsemble //
-    //-------------//
-    public void setEnsemble (SentenceInter sentence)
-    {
-        this.ensemble = sentence;
-    }
-
-    //-------------//
     // shapeString //
     //-------------//
     @Override

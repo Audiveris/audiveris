@@ -33,6 +33,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code DotFermataRelation} represents the relation between a dot and a
  * compatible fermata arc.
+ * <p>
+ * Implementation remark:
+ * This is just a temporary workaround to cope with the fact that the two parts of a fermata sign
+ * (dot and arc) are rather far apart.
+ * Accepting the dot-arc distance as an inner distance for a single symbol, would lead to
+ * combinatory explosion when aggregating glyphs in SYMBOLS step.
+ * Hence, for the time being, we handle them as two separate symbols linked together.
+ * This approach is likely to evolve when the Patch Classifier gets available.
  *
  * @author Hervé Bitteur
  */

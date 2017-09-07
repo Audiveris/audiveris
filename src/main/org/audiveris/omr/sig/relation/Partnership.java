@@ -69,11 +69,11 @@ public class Partnership
         final Inter source = outgoing ? inter : partner;
         final Inter target = outgoing ? partner : inter;
 
-        sig.addEdge(source, target, relation);
-
         if (relation instanceof AbstractContainment) {
             InterMutableEnsemble ime = (InterMutableEnsemble) source;
-            ime.addMember(target);
+            ime.addMember(target, (AbstractContainment) relation);
+        } else {
+            sig.addEdge(source, target, relation);
         }
     }
 

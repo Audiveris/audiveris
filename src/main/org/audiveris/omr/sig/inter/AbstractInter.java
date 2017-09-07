@@ -52,6 +52,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -263,23 +264,39 @@ public abstract class AbstractInter
     @Override
     public void delete ()
     {
+        delete(true);
+    }
+
+    //--------//
+    // delete //
+    //--------//
+    @Override
+    public void delete (boolean extensive)
+    {
         if (!deleted) {
-            ///logger.info("delete {}", this);
             if (isVip()) {
                 logger.info("VIP delete {}", this);
             }
 
             deleted = true;
 
-            if (ensemble instanceof InterMutableEnsemble) {
+            if (extensive && ensemble instanceof InterMutableEnsemble) {
                 InterMutableEnsemble ime = (InterMutableEnsemble) ensemble;
-                //
-                //                if (ime.getMembers().size() == 1) {
-                //                    ime.delete();
-                //                } else {
-                ime.removeMember(this);
 
-                //                }
+                if (ime.getMembers().size() == 1) {
+                    ime.delete(extensive);
+                } else {
+                    ime.removeMember(this);
+                }
+            }
+
+            if (extensive && this instanceof InterMutableEnsemble) {
+                InterMutableEnsemble ime = (InterMutableEnsemble) this;
+
+                // Delete the members
+                for (Inter member : ime.getMembers()) {
+                    member.delete(extensive);
+                }
             }
 
             if (sig != null) {
@@ -734,22 +751,20 @@ public abstract class AbstractInter
             throws DeletedInterException
     {
         // Trivial case?
-        Rectangle2D thisBounds = this.getCoreBounds();
-        Rectangle2D thatBounds = that.getCoreBounds();
-
-        if (!thisBounds.intersects(thatBounds)) {
+        if (!this.getCoreBounds().intersects(that.getCoreBounds())) {
             return false;
         }
 
         // Ensemble <--> that?
         if (this instanceof InterEnsemble) {
-            InterEnsemble thisEnsemble = (InterEnsemble) this;
+            final InterEnsemble thisEnsemble = (InterEnsemble) this;
+            final List<? extends Inter> members = thisEnsemble.getMembers();
 
-            if (thisEnsemble.getMembers().contains(that)) {
+            if (members.contains(that)) {
                 return false;
             }
 
-            for (Inter thisMember : thisEnsemble.getMembers()) {
+            for (Inter thisMember : members) {
                 if (thisMember.overlaps(that)
                     && that.overlaps(thisMember)
                     && sig.noSupport(thisMember, that)) {

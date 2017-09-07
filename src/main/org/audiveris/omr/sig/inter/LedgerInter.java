@@ -107,13 +107,13 @@ public class LedgerInter
      * ledgers collection is updated.
      */
     @Override
-    public void delete ()
+    public void delete (boolean extensive)
     {
         if (staff != null) {
             staff.removeLedger(this);
         }
 
-        super.delete();
+        super.delete(extensive);
     }
 
     //------------//
