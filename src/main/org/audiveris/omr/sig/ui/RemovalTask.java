@@ -82,7 +82,6 @@ public class RemovalTask
     @Override
     public Task<Void, Void> performUndo ()
     {
-        inter.undelete();
         sig.addVertex(inter);
 
         for (Partnership partnership : partnerships) {

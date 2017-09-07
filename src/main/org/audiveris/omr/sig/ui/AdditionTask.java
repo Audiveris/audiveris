@@ -69,8 +69,6 @@ public class AdditionTask
     @Override
     public Task<Void, Void> performRedo ()
     {
-        inter.undelete();
-
         return performDo();
     }
 

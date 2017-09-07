@@ -34,6 +34,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigValue.InterSet;
 import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
@@ -328,7 +329,11 @@ public abstract class AbstractInter
 
         if (this instanceof InterEnsemble) {
             InterEnsemble ens = (InterEnsemble) this;
-            sb.append("   members:").append(ens.getMembers());
+            sb.append(String.format("   members: %s%n", ens.getMembers()));
+        }
+
+        for (Relation rel : sig.edgesOf(this)) {
+            sb.append(String.format("   rel: %s%n", rel.seenFrom(this)));
         }
 
         return sb.toString();

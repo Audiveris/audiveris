@@ -319,16 +319,22 @@ public class InterController
             return null;
         }
 
+        if (inter.isVip()) {
+            logger.info("VIP removeInter for {}", inter);
+        }
+
         if (toRemove == null) {
             toRemove = new LinkedHashSet<Inter>();
         }
 
         toRemove.add(inter);
 
-        // Remove members if any
+        List<? extends Inter> members = null;
+
+        // Remember members if any
         if (inter instanceof InterMutableEnsemble) {
             InterMutableEnsemble ime = (InterMutableEnsemble) inter;
-            removeInters(ime.getMembers(), toRemove);
+            members = ime.getMembers();
         } else {
             // Delete containing ensemble if this is the last member
             SIGraph sig = inter.getSig();
@@ -348,7 +354,7 @@ public class InterController
         Task<Void, Void> uTask = task.performDo();
 
         sheet.getStub().setModified(true);
-        ///sheet.getGlyphIndex().publish(null); // Let glyph displayed, to ease inter selection
+        ///sheet.getGlyphIndex().publish(null); // Let glyph displayed, to ease new inter assignment
         sheet.getInterIndex().publish(null);
         editor.refresh();
 
@@ -356,6 +362,11 @@ public class InterController
         BookActions.getInstance().setRedoable(history.canRedo());
 
         logger.info("Removed {}", inter);
+
+        // Finally, members is any
+        if (members != null) {
+            removeInters(members, toRemove);
+        }
 
         return uTask;
     }
