@@ -281,21 +281,21 @@ public abstract class AbstractInter
 
             deleted = true;
 
-            if (extensive && ensemble instanceof InterMutableEnsemble) {
-                InterMutableEnsemble ime = (InterMutableEnsemble) ensemble;
+            if (extensive && ensemble instanceof InterEnsemble) {
+                InterEnsemble ens = (InterEnsemble) ensemble;
 
-                if (ime.getMembers().size() == 1) {
-                    ime.delete(extensive);
+                if (ens.getMembers().size() == 1) {
+                    ens.delete(extensive);
                 } else {
-                    ime.removeMember(this);
+                    ens.removeMember(this);
                 }
             }
 
-            if (extensive && this instanceof InterMutableEnsemble) {
-                InterMutableEnsemble ime = (InterMutableEnsemble) this;
+            if (extensive && this instanceof InterEnsemble) {
+                InterEnsemble ens = (InterEnsemble) this;
 
                 // Delete the members
-                for (Inter member : ime.getMembers()) {
+                for (Inter member : ens.getMembers()) {
                     member.delete(extensive);
                 }
             }
@@ -325,11 +325,6 @@ public abstract class AbstractInter
 
         if (!getDetails().isEmpty()) {
             sb.append(String.format("   %s%n", getDetails()));
-        }
-
-        if (this instanceof InterEnsemble) {
-            InterEnsemble ens = (InterEnsemble) this;
-            sb.append(String.format("   members: %s%n", ens.getMembers()));
         }
 
         for (Relation rel : sig.edgesOf(this)) {

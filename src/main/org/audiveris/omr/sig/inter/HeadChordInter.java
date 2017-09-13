@@ -30,6 +30,7 @@ import java.awt.Rectangle;
 import java.util.Comparator;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.util.Entities;
 
 /**
  * Class {@code HeadChordInter} is a AbstractChordInter composed of heads.
@@ -110,7 +111,7 @@ public class HeadChordInter
         clone.setStaff(staff);
 
         // Notes (we make a deep copy of each note head)
-        for (AbstractNoteInter note : notes) {
+        for (Inter note : getMembers()) {
             HeadInter head = (HeadInter) note;
             AbstractNoteInter newHead = null;
 
@@ -149,17 +150,7 @@ public class HeadChordInter
      */
     public Rectangle getHeadsBounds ()
     {
-        Rectangle box = null;
-
-        for (Inter head : notes) {
-            if (box == null) {
-                box = head.getBounds();
-            } else {
-                box = box.union(head.getBounds());
-            }
-        }
-
-        return box;
+        return Entities.getBounds(getMembers());
     }
 
     //-------------//

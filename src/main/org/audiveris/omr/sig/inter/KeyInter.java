@@ -23,16 +23,17 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sig.SIGraph;
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.Step.*;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.*;
+import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +93,8 @@ public class KeyInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of key components. */
     @XmlElement(name = "key-alter")
-    private final List<KeyAlterInter> alters = new ArrayList<KeyAlterInter>();
+    @Deprecated
+    private List<KeyAlterInter> oldAlters;
 
     /** Numerical value for signature. */
     @XmlAttribute
@@ -102,43 +104,27 @@ public class KeyInter
     /**
      * Creates a new KeyInter object.
      *
-     * @param bounds the bounding bounds
      * @param grade  the interpretation quality
      * @param fifths signature value (negative for flats, positive for sharps)
-     * @param alters sequence of alteration inters
      */
-    public KeyInter (Rectangle bounds,
-                     double grade,
-                     int fifths,
-                     List<KeyAlterInter> alters)
+    public KeyInter (double grade,
+                     int fifths)
     {
-        super(null, bounds, null, grade);
+        super(null, null, null, grade);
 
         this.fifths = fifths;
-
-        if (alters != null) {
-            this.alters.addAll(alters);
-
-            for (KeyAlterInter alter : alters) {
-                alter.setEnsemble(this);
-            }
-        }
     }
 
     /**
-     * Creates a new KeyInter object.
+     * Creates a new KeyInter (ghost) object.
      *
-     * @param bounds the bounding bounds
-     * @param grade  the interpretation quality
-     * @param shape  the key shape
-     * @param alters sequence of alteration inters
+     * @param grade the interpretation quality
+     * @param shape the key shape
      */
-    public KeyInter (Rectangle bounds,
-                     double grade,
-                     Shape shape,
-                     List<KeyAlterInter> alters)
+    public KeyInter (double grade,
+                     Shape shape)
     {
-        this(bounds, grade, (shape != null) ? valueOf(shape) : 0, alters);
+        this(grade, (shape != null) ? valueOf(shape) : 0);
     }
 
     /**
@@ -159,31 +145,64 @@ public class KeyInter
         visitor.visit(this);
     }
 
-    //----------//
-    // addAlter //
-    //----------//
-    /**
-     * (method currently not used) Insert a key item in existing key signature.
-     *
-     * @param alter the key item to insert
-     */
-    public void addAlter (KeyAlterInter alter)
+    //-----------//
+    // addMember //
+    //-----------//
+    @Override
+    public void addMember (Inter member)
     {
-        // Insert provided alter at proper index
-        final int x = alter.getBounds().x;
-        int i = 0;
+        addMember(member, null);
+    }
 
-        for (; i < alters.size(); i++) {
-            KeyAlterInter current = alters.get(i);
-
-            if (current.getBounds().x >= x) {
-                break;
-            }
+    //-----------//
+    // addMember //
+    //-----------//
+    @Override
+    public void addMember (Inter member,
+                           ContainmentRelation relation)
+    {
+        if (!(member instanceof KeyAlterInter)) {
+            throw new IllegalArgumentException("Only KeyAlterInter can be added to KeyInter");
         }
 
-        alters.add(i, alter);
-        alter.setEnsemble(this);
-        bounds = null;
+        final Shape mShape = member.getShape();
+
+        if ((mShape != Shape.SHARP) && (mShape != Shape.NATURAL) && (mShape != Shape.FLAT)) {
+            throw new IllegalArgumentException("Attempt to add illegal shape in Key: " + mShape);
+        }
+
+        EnsembleHelper.addMember(this, member, relation);
+        reset();
+    }
+
+    /**
+     * Creates a new KeyInter object.
+     *
+     * @param staff  the containing staff
+     * @param alters sequence of alteration inters
+     * @return the created KeyInter
+     */
+    public static KeyInter create (Staff staff,
+                                   List<KeyAlterInter> alters)
+    {
+        SIGraph sig = staff.getSystem().getSig();
+        double grade = 0;
+
+        for (KeyAlterInter alter : alters) {
+            grade += sig.computeContextualGrade(alter);
+        }
+
+        grade /= alters.size();
+
+        KeyInter keyInter = new KeyInter(grade, 0);
+        keyInter.setStaff(staff);
+        sig.addVertex(keyInter);
+
+        for (Inter member : alters) {
+            keyInter.addMember(member, null);
+        }
+
+        return keyInter;
     }
 
     //-------------//
@@ -250,11 +269,52 @@ public class KeyInter
     /**
      * Report the integer value that describes the key signature, using range [-1..-7]
      * for flats and range [+1..+7] for sharps.
+     * We accept naturals as well.
      *
      * @return the signature
      */
     public int getFifths ()
     {
+        if (fifths == 0) {
+            if ((sig != null) && sig.containsVertex(this)) {
+                final List<Inter> alters = getMembers();
+                int count = 0;
+
+                for (Inter alter : alters) {
+                    switch (alter.getShape()) {
+                    case SHARP:
+
+                        if (count < 0) {
+                            throw new IllegalStateException("Sharp and Flat in same Key");
+                        }
+
+                        count++;
+
+                        break;
+
+                    case FLAT:
+
+                        if (count > 0) {
+                            throw new IllegalStateException("Sharp and Flat in same Key");
+                        }
+
+                        count--;
+
+                        break;
+
+                    case NATURAL:
+                        break;
+
+                    default:
+                        throw new IllegalStateException(
+                                "Illegal shape in Key: " + alter.getShape());
+                    }
+                }
+
+                fifths = count;
+            }
+        }
+
         return fifths;
     }
 
@@ -290,9 +350,9 @@ public class KeyInter
     // getMembers //
     //------------//
     @Override
-    public List<? extends Inter> getMembers ()
+    public List<Inter> getMembers ()
     {
-        return alters;
+        return EnsembleHelper.getMembers(this, Inter.byCenterAbscissa);
     }
 
     //------------//
@@ -418,6 +478,30 @@ public class KeyInter
         return bestKind;
     }
 
+    //----------------//
+    // linkOldMembers //
+    //----------------//
+    @Override
+    public void linkOldMembers ()
+    {
+        EnsembleHelper.linkOldMembers(this, oldAlters);
+        oldAlters = null;
+    }
+
+    //--------------//
+    // removeMember //
+    //--------------//
+    @Override
+    public void removeMember (Inter member)
+    {
+        if (!(member instanceof KeyAlterInter)) {
+            throw new IllegalArgumentException("Only KeyAlterInter can be removed from Key");
+        }
+
+        EnsembleHelper.removeMember(this, member);
+        reset();
+    }
+
     //-----------//
     // replicate //
     //-----------//
@@ -429,7 +513,7 @@ public class KeyInter
      */
     public KeyInter replicate (Staff targetStaff)
     {
-        KeyInter inter = new KeyInter(null, 0, getFifths(), null);
+        KeyInter inter = new KeyInter(0, getFifths());
         inter.setStaff(targetStaff);
 
         return inter;
@@ -465,31 +549,12 @@ public class KeyInter
      */
     public void shrink ()
     {
+        final List<Inter> alters = getMembers();
+
         // Discard last alter
-        KeyAlterInter lastAlter = alters.get(alters.size() - 1);
-        alters.remove(lastAlter);
+        Inter lastAlter = alters.get(alters.size() - 1);
+        removeMember(lastAlter);
         lastAlter.delete();
-
-        // Adjust fifths
-        if (fifths > 0) {
-            fifths--;
-        } else {
-            fifths++;
-        }
-
-        // Recompute key grade
-        double newGrade = 0;
-
-        for (Inter alter : alters) {
-            newGrade += sig.computeContextualGrade(alter);
-        }
-
-        newGrade /= alters.size();
-        setGrade(newGrade);
-
-        // Reset cached data
-        bounds = null;
-        ctxGrade = null;
     }
 
     //-----------//
@@ -502,6 +567,15 @@ public class KeyInter
         sb.append(" fifths:").append(getFifths());
 
         return sb.toString();
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    private void reset ()
+    {
+        bounds = null;
+        fifths = 0;
     }
 
     //---------//

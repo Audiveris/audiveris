@@ -126,6 +126,19 @@ public interface Inter
     };
 
     /**
+     * For comparing interpretations by reverse center ordinate.
+     */
+    public static final Comparator<Inter> byReverseCenterOrdinate = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter i1,
+                            Inter i2)
+        {
+            return Integer.compare(i2.getCenter().y, i1.getCenter().y);
+        }
+    };
+
+    /**
      * For comparing interpretations by right abscissa.
      */
     public static final Comparator<Inter> byRightAbscissa = new Comparator<Inter>()
@@ -418,6 +431,7 @@ public interface Inter
      *
      * @param interline scaling factor
      * @return the symbol bounding box
+     * @see #getBounds()
      */
     Rectangle getSymbolBounds (int interline);
 

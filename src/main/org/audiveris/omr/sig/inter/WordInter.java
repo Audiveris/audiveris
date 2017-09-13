@@ -103,20 +103,6 @@ public class WordInter
     }
 
     //-------------//
-    // getEnsemble //
-    //-------------//
-    /**
-     * Report the sentence that contains this word.
-     *
-     * @return the containing sentence
-     */
-    @Override
-    public SentenceInter getEnsemble ()
-    {
-        return (SentenceInter) ensemble;
-    }
-
-    //-------------//
     // getFontInfo //
     //-------------//
     /**

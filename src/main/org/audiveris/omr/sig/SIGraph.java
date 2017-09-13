@@ -138,7 +138,9 @@ public class SIGraph
     @Override
     public boolean addVertex (Inter inter)
     {
-        inter.undelete();
+        if (inter.isDeleted()) {
+            inter.undelete();
+        }
 
         // Update sig
         boolean res = super.addVertex(inter);
@@ -694,7 +696,33 @@ public class SIGraph
     // intersectedInters //
     //-------------------//
     /**
-     * Lookup the provided list of interpretations for those whose related glyph
+     * Lookup all SIG inters for those whose bounds intersect the given box.
+     *
+     * @param box the intersecting box
+     * @return the intersected interpretations found
+     */
+    public List<Inter> intersectedInters (Rectangle box)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+
+        for (Inter inter : vertexSet()) {
+            if (inter.isDeleted()) {
+                continue;
+            }
+
+            if (box.intersects(inter.getBounds())) {
+                found.add(inter);
+            }
+        }
+
+        return found;
+    }
+
+    //-------------------//
+    // intersectedInters //
+    //-------------------//
+    /**
+     * Lookup the provided list of interpretations for those whose bounds
      * intersect the given box.
      *
      * @param inters the list of interpretations to search for
@@ -733,7 +761,7 @@ public class SIGraph
     // intersectedInters //
     //-------------------//
     /**
-     * Lookup the provided list of interpretations for those whose related glyph
+     * Lookup the provided list of interpretations for those whose bounds
      * intersect the given area.
      *
      * @param inters the list of interpretations to search for

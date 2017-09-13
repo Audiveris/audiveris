@@ -476,6 +476,25 @@ public class SlurInter
         }
     }
 
+    //----------//
+    // undelete //
+    //----------//
+    /**
+     * Since a slur instance is held by its containing part, make sure part
+     * slurs collection is updated.
+     *
+     * @see #delete()
+     */
+    @Override
+    public void undelete ()
+    {
+        super.undelete();
+
+        if (part != null) {
+            part.addSlur(this);
+        }
+    }
+
     //----------------//
     // haveSameHeight //
     //----------------//

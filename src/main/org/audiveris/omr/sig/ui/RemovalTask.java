@@ -23,8 +23,8 @@ package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterMutableEnsemble;
-import org.audiveris.omr.sig.relation.AbstractContainment;
+import org.audiveris.omr.sig.inter.InterEnsemble;
+import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 
@@ -60,11 +60,11 @@ public class RemovalTask
     public Task<Void, Void> performDo ()
     {
         for (Partnership partnership : partnerships) {
-            if (partnership.relation instanceof AbstractContainment) {
-                InterMutableEnsemble ime = (InterMutableEnsemble) (partnership.outgoing ? inter
+            if (partnership.relation instanceof ContainmentRelation) {
+                InterEnsemble ens = (InterEnsemble) (partnership.outgoing ? inter
                         : partnership.partner);
                 Inter member = partnership.outgoing ? partnership.partner : inter;
-                ime.removeMember(member);
+                ens.removeMember(member);
             }
         }
 

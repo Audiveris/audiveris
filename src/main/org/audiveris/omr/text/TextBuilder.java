@@ -915,15 +915,8 @@ public class TextBuilder
             Staff staff = sentence.assignStaff(system, line.getLocation());
 
             if (staff != null) {
-                // For PartName. TODO: Perhaps later in transcription?
-                assignSentence(sentence);
-
                 // Populate sig
                 sig.addVertex(sentence);
-
-                if (sentence instanceof LyricLineInter) {
-                    staff.getPart().addLyric((LyricLineInter) sentence);
-                }
 
                 // Link sentence and words
                 for (TextWord word : line.getWords()) {
@@ -933,6 +926,13 @@ public class TextBuilder
                     sig.addVertex(wordInter);
                     sentence.addMember(wordInter);
                 }
+
+                if (sentence instanceof LyricLineInter) {
+                    staff.getPart().addLyric((LyricLineInter) sentence);
+                }
+
+                // For PartName. TODO: Perhaps later in transcription?
+                assignSentence(sentence);
             }
         }
     }

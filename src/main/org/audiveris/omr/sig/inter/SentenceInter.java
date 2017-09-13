@@ -25,21 +25,18 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.relation.AbstractContainment;
-import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.sig.relation.SentenceWordRelation;
+import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -63,7 +60,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "sentence")
 public class SentenceInter
         extends AbstractInter
-        implements InterMutableEnsemble
+        implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -180,14 +177,13 @@ public class SentenceInter
     //-----------//
     @Override
     public void addMember (Inter member,
-                           AbstractContainment relation)
+                           ContainmentRelation relation)
     {
         if (!(member instanceof WordInter)) {
             throw new IllegalArgumentException("Only WordInter can be added to Sentence");
         }
 
-        sig.addEdge(this, member, (relation != null) ? relation : new SentenceWordRelation());
-        member.setEnsemble(this);
+        EnsembleHelper.addMember(this, member, relation);
 
         reset();
     }
@@ -219,25 +215,14 @@ public class SentenceInter
     //-----------//
     // getBounds //
     //-----------//
-    /**
-     * Overridden to recompute the bounds from contained words.
-     *
-     * @return the line bounds
-     */
     @Override
     public Rectangle getBounds ()
     {
-        Rectangle theBounds = null;
-
-        for (Inter word : getMembers()) {
-            if (theBounds == null) {
-                theBounds = word.getBounds();
-            } else {
-                theBounds.add(word.getBounds());
-            }
+        if (bounds == null) {
+            bounds = Entities.getBounds(getMembers());
         }
 
-        return bounds = theBounds;
+        return bounds;
     }
 
     //---------------------//
@@ -312,17 +297,9 @@ public class SentenceInter
     // getMembers //
     //------------//
     @Override
-    public List<? extends Inter> getMembers ()
+    public List<Inter> getMembers ()
     {
-        List<WordInter> words = new ArrayList<WordInter>();
-
-        for (Relation rel : sig.getRelations(this, SentenceWordRelation.class)) {
-            words.add((WordInter) sig.getOppositeInter(this, rel));
-        }
-
-        Collections.sort(words, Inter.byAbscissa);
-
-        return words;
+        return EnsembleHelper.getMembers(this, Inter.byAbscissa);
     }
 
     //---------//
@@ -363,22 +340,13 @@ public class SentenceInter
         }
     }
 
-    //--------------//
-    // linkOldWords //
-    //--------------//
-    /**
-     * For old OMR files, where words were nested within sentences, add proper
-     * relationships between sentence and words and delete the oldWords list.
-     */
-    @Deprecated
-    public void linkOldWords ()
+    //----------------//
+    // linkOldMembers //
+    //----------------//
+    @Override
+    public void linkOldMembers ()
     {
-        if ((oldWords != null) && !oldWords.isEmpty()) {
-            for (WordInter word : oldWords) {
-                addMember(word);
-            }
-        }
-
+        EnsembleHelper.linkOldMembers(this, oldWords);
         oldWords = null;
     }
 
@@ -392,7 +360,7 @@ public class SentenceInter
             throw new IllegalArgumentException("Only WordInter can be removed from Sentence");
         }
 
-        member.setEnsemble(null);
+        EnsembleHelper.removeMember(this, member);
         reset();
     }
 

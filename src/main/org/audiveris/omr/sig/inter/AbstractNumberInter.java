@@ -86,8 +86,13 @@ public abstract class AbstractNumberInter
         visitor.visit(this);
     }
 
+    //----------//
+    // getValue //
+    //----------//
     /**
-     * @return the value
+     * Report the integer value of this symbol
+     *
+     * @return the integer value
      */
     public int getValue ()
     {

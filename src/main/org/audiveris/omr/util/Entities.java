@@ -209,10 +209,12 @@ public class Entities
 
         if ((entities != null) && !entities.isEmpty()) {
             for (Entity entity : entities) {
-                if (bounds == null) {
-                    bounds = entity.getBounds();
-                } else {
-                    bounds.add(entity.getBounds());
+                if (entity != null) {
+                    if (bounds == null) {
+                        bounds = entity.getBounds();
+                    } else {
+                        bounds.add(entity.getBounds());
+                    }
                 }
             }
         }

@@ -146,4 +146,21 @@ public class LedgerInter
     {
         this.index = index;
     }
+
+    //----------//
+    // undelete //
+    //----------//
+    /**
+     * Since a ledger instance is held by its containing staff, make sure staff
+     * ledgers collection is updated.
+     */
+    @Override
+    public void undelete ()
+    {
+        super.undelete();
+
+        if (staff != null) {
+            staff.addLedger(this);
+        }
+    }
 }

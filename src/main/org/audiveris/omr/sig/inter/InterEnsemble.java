@@ -21,21 +21,30 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.sig.relation.ContainmentRelation;
+
 import java.util.List;
 
 /**
- * Interface {@code InterEnsemble} refers to an inter that is composed of other inters.
- * This class is not mutable.
+ * Interface {@code InterEnsemble} refers to an inter that is composed of other inters,
+ * with the ability to add or remove members.
  * <p>
  * Examples are:<ul>
- * <li>Sentence vs words</li>
+ * <li>Sentence vs words (and LyricLine vs LyricItems)</li>
  * <li>TimePairInter vs num & den</li>
  * <li>KeyInter vs its alterations</li>
  * <li>ChordInter vs its notes</li>
  * <li>FermataInter vs its arc and dot</li>
  * </ul>
- *
- * @see InterMutableEnsemble
+ * <p>
+ * Such ensembles cannot durably exist and be fully defined without their members: for example, a
+ * {@link SentenceInter} instance cannot exist without at least one member {@link WordInter}
+ * instance.
+ * <p>
+ * Hence, care must be taken to avoid such "empty ensembles":<ul>
+ * <li>Sentence creation must be followed by inclusion of a word.
+ * <li>Deletion of sole word of a sentence must be followed by sentence deletion.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -45,9 +54,38 @@ public interface InterEnsemble
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
+     * Add a member to the ensemble.
+     *
+     * @param member the member to add
+     */
+    void addMember (Inter member);
+
+    /**
+     * Add a member to the ensemble.
+     *
+     * @param member   the member to add
+     * @param relation the ensemble-member relation instance to use, if any
+     */
+    void addMember (Inter member,
+                    ContainmentRelation relation);
+
+    /**
      * Report the list of ensemble members.
      *
      * @return the members
      */
-    List<? extends Inter> getMembers ();
+    List<Inter> getMembers ();
+
+    /**
+     * Convert old nested members to relation-based members.
+     */
+    @Deprecated
+    void linkOldMembers ();
+
+    /**
+     * Remove a member from the ensemble.
+     *
+     * @param member the member to remove
+     */
+    void removeMember (Inter member);
 }

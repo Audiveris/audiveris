@@ -23,7 +23,7 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterMutableEnsemble;
+import org.audiveris.omr.sig.inter.InterEnsemble;
 
 /**
  * Class {@code Partnership} encapsulates a partnering vertex with the related edge.
@@ -69,9 +69,9 @@ public class Partnership
         final Inter source = outgoing ? inter : partner;
         final Inter target = outgoing ? partner : inter;
 
-        if (relation instanceof AbstractContainment) {
-            InterMutableEnsemble ime = (InterMutableEnsemble) source;
-            ime.addMember(target, (AbstractContainment) relation);
+        if (relation instanceof ContainmentRelation) {
+            InterEnsemble ens = (InterEnsemble) source;
+            ens.addMember(target, (ContainmentRelation) relation);
         } else {
             sig.addEdge(source, target, relation);
         }

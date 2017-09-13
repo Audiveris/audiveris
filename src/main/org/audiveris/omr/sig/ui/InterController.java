@@ -35,8 +35,8 @@ import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterMutableEnsemble;
-import org.audiveris.omr.sig.relation.AbstractContainment;
+import org.audiveris.omr.sig.inter.InterEnsemble;
+import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 
@@ -46,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -319,6 +318,8 @@ public class InterController
             return null;
         }
 
+        logger.debug("Removing {}", inter);
+
         if (inter.isVip()) {
             logger.info("VIP removeInter for {}", inter);
         }
@@ -332,18 +333,18 @@ public class InterController
         List<? extends Inter> members = null;
 
         // Remember members if any
-        if (inter instanceof InterMutableEnsemble) {
-            InterMutableEnsemble ime = (InterMutableEnsemble) inter;
-            members = ime.getMembers();
+        if (inter instanceof InterEnsemble) {
+            InterEnsemble ens = (InterEnsemble) inter;
+            members = ens.getMembers();
         } else {
             // Delete containing ensemble if this is the last member
             SIGraph sig = inter.getSig();
 
-            for (Relation rel : sig.getRelations(inter, AbstractContainment.class)) {
-                InterMutableEnsemble ime = (InterMutableEnsemble) sig.getOppositeInter(inter, rel);
+            for (Relation rel : sig.getRelations(inter, ContainmentRelation.class)) {
+                InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
 
-                if (!toRemove.contains(ime) && (ime.getMembers().size() <= 1)) {
-                    removeInter(ime, toRemove);
+                if (!toRemove.contains(ens) && (ens.getMembers().size() <= 1)) {
+                    removeInter(ens, toRemove);
                 }
             }
         }
@@ -446,9 +447,9 @@ public class InterController
     private void removeCompetitors (Glyph glyph,
                                     SystemInfo system)
     {
-        final Rectangle glyphBounds = glyph.getBounds();
+        final List<Inter> intersected = system.getSig().intersectedInters(glyph.getBounds());
 
-        for (Inter inter : system.getSig().containedInters(glyphBounds)) {
+        for (Inter inter : intersected) {
             if (inter.getGlyph() == glyph) {
                 removeInter(inter, null);
             }

@@ -84,11 +84,11 @@ public class StemInter
     //
     /** Top point. */
     @XmlElement
-    private final Point2D top;
+    private Point2D top;
 
     /** Bottom point. */
     @XmlElement
-    private final Point2D bottom;
+    private Point2D bottom;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -115,8 +115,11 @@ public class StemInter
                       double grade)
     {
         super(glyph, null, Shape.STEM, grade);
-        top = glyph.getStartPoint(VERTICAL);
-        bottom = glyph.getStopPoint(VERTICAL);
+
+        if (glyph != null) {
+            top = glyph.getStartPoint(VERTICAL);
+            bottom = glyph.getStopPoint(VERTICAL);
+        }
     }
 
     /**
@@ -125,7 +128,6 @@ public class StemInter
     private StemInter ()
     {
         super(null, null, null, null);
-        top = bottom = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -408,6 +410,25 @@ public class StemInter
         return bottom;
     }
 
+    //----------//
+    // getHeads //
+    //----------//
+    /**
+     * Report the heads linked to this stem, whatever the side.
+     *
+     * @return set of linked heads
+     */
+    public Set<HeadInter> getHeads ()
+    {
+        final Set<HeadInter> set = new LinkedHashSet<HeadInter>();
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            set.add((HeadInter) sig.getEdgeSource(relation));
+        }
+
+        return set;
+    }
+
     //--------//
     // getTop //
     //--------//
@@ -485,21 +506,14 @@ public class StemInter
     }
 
     //----------//
-    // getHeads //
+    // setGlyph //
     //----------//
-    /**
-     * Report the heads linked to this stem, whatever the side.
-     *
-     * @return set of linked heads
-     */
-    public Set<HeadInter> getHeads ()
+    @Override
+    public void setGlyph (Glyph glyph)
     {
-        final Set<HeadInter> set = new LinkedHashSet<HeadInter>();
+        super.setGlyph(glyph);
 
-        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
-            set.add((HeadInter) sig.getEdgeSource(relation));
-        }
-
-        return set;
+        top = glyph.getStartPoint(VERTICAL);
+        bottom = glyph.getStopPoint(VERTICAL);
     }
 }

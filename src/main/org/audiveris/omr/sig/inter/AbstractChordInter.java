@@ -32,12 +32,13 @@ import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.relation.AbstractContainment;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
+import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
@@ -70,7 +71,7 @@ import javax.xml.bind.annotation.XmlList;
  */
 public abstract class AbstractChordInter
         extends AbstractInter
-        implements InterMutableEnsemble
+        implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -84,21 +85,25 @@ public abstract class AbstractChordInter
     // Persistent data
     //----------------
     //
-    /**
-     * Sequence of chord notes (one or several heads or just a single rest),
-     * kept ordered bottom-up.
-     */
     /** Attached stem if any. */
     @XmlIDREF
     @XmlAttribute(name = "stem")
     protected StemInter stem;
 
+    /**
+     * Sequence of chord notes (one or several heads or just a single rest),
+     * kept ordered bottom-up.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "notes")
-    protected final List<AbstractNoteInter> notes = new ArrayList<AbstractNoteInter>();
+    @Deprecated
+    private List<AbstractNoteInter> oldNotes;
 
-    /** Sequence of beams if any this chord is linked to, kept ordered from tail to head. */
+    /**
+     * Sequence of beams if any this chord is linked to,
+     * kept ordered from tail to head.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "beams")
@@ -202,20 +207,7 @@ public abstract class AbstractChordInter
     @Override
     public void addMember (Inter member)
     {
-        if (!(member instanceof AbstractNoteInter)) {
-            throw new IllegalArgumentException(
-                    "Only AbstractNoteInter can be added to AbstractChordInter");
-        }
-
-        AbstractNoteInter note = (AbstractNoteInter) member;
-        notes.add(note);
-
-        if (notes.size() > 1) {
-            Collections.sort(notes, AbstractPitchedInter.bottomUp);
-        }
-
-        note.setEnsemble(this);
-        reset();
+        addMember(member, null);
     }
 
     //-----------//
@@ -223,9 +215,15 @@ public abstract class AbstractChordInter
     //-----------//
     @Override
     public void addMember (Inter member,
-                           AbstractContainment relation)
+                           ContainmentRelation relation)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (!(member instanceof AbstractNoteInter)) {
+            throw new IllegalArgumentException(
+                    "Only AbstractNoteInter can be added to AbstractChordInter");
+        }
+
+        EnsembleHelper.addMember(this, member, relation);
+        reset();
     }
 
     //-------------//
@@ -282,17 +280,19 @@ public abstract class AbstractChordInter
      */
     public void countDots ()
     {
+        final List<Inter> notes = getMembers();
+
         if (notes.isEmpty()) {
             return;
         }
 
         if (notes.size() == 1) {
-            dotsNumber = notes.get(0).getDotCount();
+            dotsNumber = ((AbstractNoteInter) notes.get(0)).getDotCount();
         } else {
             Population pop = new Population();
 
-            for (AbstractNoteInter note : notes) {
-                pop.includeValue(note.getDotCount());
+            for (Inter note : notes) {
+                pop.includeValue(((AbstractNoteInter) note).getDotCount());
             }
 
             double val = pop.getMeanValue();
@@ -304,8 +304,8 @@ public abstract class AbstractChordInter
 
                 if (dotsNumber == 0) {
                     // Delete the discarded augmentation relations
-                    for (AbstractNoteInter note : notes) {
-                        int count = note.getDotCount();
+                    for (Inter note : notes) {
+                        int count = ((AbstractNoteInter) note).getDotCount();
 
                         if (count != 0) {
                             for (Relation dn : sig.getRelations(note, AugmentationRelation.class)) {
@@ -386,6 +386,8 @@ public abstract class AbstractChordInter
      */
     public Staff getBottomStaff ()
     {
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty()) {
             return notes.get(0).getStaff();
         }
@@ -400,18 +402,17 @@ public abstract class AbstractChordInter
     public Rectangle getBounds ()
     {
         if (bounds == null) {
-            if (stem != null) {
-                bounds = stem.getBounds();
-            }
+            final Rectangle stemBounds = (stem != null) ? stem.getBounds() : null;
+            final Rectangle notesBounds = Entities.getBounds(getMembers());
 
-            for (Inter member : notes) {
-                final Rectangle memberBounds = member.getBounds();
-
-                if (bounds == null) {
-                    bounds = memberBounds;
-                } else {
-                    bounds = bounds.union(memberBounds);
+            if (notesBounds != null) {
+                if (stemBounds != null) {
+                    notesBounds.add(stemBounds);
                 }
+
+                bounds = notesBounds;
+            } else {
+                bounds = stemBounds;
             }
         }
 
@@ -526,11 +527,12 @@ public abstract class AbstractChordInter
      */
     public Rational getDurationSansDotOrTuplet ()
     {
+        final List<Inter> notes = getMembers();
         Rational dur = null;
 
         if (!notes.isEmpty()) {
             // All note heads are assumed to be the same within one chord
-            AbstractNoteInter note = notes.get(0);
+            Inter note = notes.get(0);
             Shape noteShape = note.getShape();
 
             // Duration from note shape
@@ -584,11 +586,12 @@ public abstract class AbstractChordInter
      */
     public Rational getDurationSansTuplet ()
     {
-        Rational sansDot = getDurationSansDotOrTuplet();
+        final List<Inter> notes = getMembers();
+        final Rational sansDot = getDurationSansDotOrTuplet();
 
         if ((sansDot != null) && !notes.isEmpty()) {
             // All note heads are assumed to be the same within one chord
-            AbstractNoteInter note = notes.get(0);
+            Inter note = notes.get(0);
             Shape noteShape = note.getShape();
 
             if (!noteShape.isWholeRest()) {
@@ -713,14 +716,16 @@ public abstract class AbstractChordInter
      */
     public AbstractNoteInter getLeadingNote ()
     {
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty()) {
             if (stem != null) {
                 // Find the note farthest from stem middle point
                 Point middle = stem.getCenter();
-                AbstractNoteInter bestNote = null;
+                Inter bestNote = null;
                 int bestDy = Integer.MIN_VALUE;
 
-                for (AbstractNoteInter note : notes) {
+                for (Inter note : notes) {
                     int noteY = note.getCenter().y;
                     int dy = Math.abs(noteY - middle.y);
 
@@ -730,9 +735,9 @@ public abstract class AbstractChordInter
                     }
                 }
 
-                return bestNote;
+                return (AbstractNoteInter) bestNote;
             } else {
-                return notes.get(0);
+                return (AbstractNoteInter) notes.get(0);
             }
         } else {
             logger.warn("No notes in chord " + this);
@@ -753,9 +758,9 @@ public abstract class AbstractChordInter
     // getMembers //
     //------------//
     @Override
-    public List<? extends Inter> getMembers ()
+    public List<Inter> getMembers ()
     {
-        return notes;
+        return EnsembleHelper.getMembers(this, Inter.byReverseCenterOrdinate);
     }
 
     //----------//
@@ -773,6 +778,8 @@ public abstract class AbstractChordInter
     public Part getPart ()
     {
         if (part == null) {
+            final List<Inter> notes = getMembers();
+
             if (!notes.isEmpty()) {
                 part = notes.get(0).getPart();
             }
@@ -905,6 +912,8 @@ public abstract class AbstractChordInter
      */
     public Staff getTopStaff ()
     {
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty()) {
             return notes.get(notes.size() - 1).getStaff();
         }
@@ -969,7 +978,9 @@ public abstract class AbstractChordInter
     public boolean isEmbracedBy (Point top,
                                  Point bottom)
     {
-        for (AbstractNoteInter note : notes) {
+        final List<Inter> notes = getMembers();
+
+        for (Inter note : notes) {
             Point center = note.getCenter();
 
             if ((center.y >= top.y) && (center.y <= bottom.y)) {
@@ -990,6 +1001,8 @@ public abstract class AbstractChordInter
      */
     public boolean isRest ()
     {
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty()) {
             return notes.get(0).getShape().isRest();
         }
@@ -1007,11 +1020,23 @@ public abstract class AbstractChordInter
      */
     public boolean isWholeRest ()
     {
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty()) {
             return notes.get(0).getShape().isWholeRest();
         }
 
         return false;
+    }
+
+    //----------------//
+    // linkOldMembers //
+    //----------------//
+    @Override
+    public void linkOldMembers ()
+    {
+        EnsembleHelper.linkOldMembers(this, oldNotes);
+        oldNotes = null;
     }
 
     //--------------//
@@ -1025,7 +1050,7 @@ public abstract class AbstractChordInter
                     "Only AbstractNoteInter can be removed from ChordInter");
         }
 
-        notes.remove((AbstractNoteInter) member);
+        EnsembleHelper.removeMember(this, member);
         reset();
     }
 
@@ -1174,6 +1199,19 @@ public abstract class AbstractChordInter
         }
     }
 
+    //----------//
+    // undelete //
+    //----------//
+    @Override
+    public void undelete ()
+    {
+        super.undelete();
+
+        if (measure != null) {
+            measure.addInter(this);
+        }
+    }
+
     //---------------//
     // beforeMarshal //
     //---------------//
@@ -1200,12 +1238,14 @@ public abstract class AbstractChordInter
         StringBuilder sb = new StringBuilder(super.internals());
 
         if (sig != null) {
-            Rational sansTuplet = getDurationSansTuplet();
+            if (sig.containsVertex(this)) {
+                Rational sansTuplet = getDurationSansTuplet();
 
-            if (sansTuplet != null) {
-                sb.append(" dur:").append(sansTuplet);
-            } else {
-                sb.append(" noDur");
+                if (sansTuplet != null) {
+                    sb.append(" dur:").append(sansTuplet);
+                } else {
+                    sb.append(" noDur");
+                }
             }
         } else {
             sb.append(" NOSIG");
@@ -1261,6 +1301,8 @@ public abstract class AbstractChordInter
         tailLocation = null;
 
         // Compute global grade based on contained notes (TODO: +stem as well?)
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty() && (sig != null)) {
             double gr = 0;
 

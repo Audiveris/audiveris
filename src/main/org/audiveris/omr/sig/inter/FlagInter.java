@@ -127,6 +127,21 @@ public class FlagInter
         return staff;
     }
 
+    //----------//
+    // undelete //
+    //----------//
+    @Override
+    public void undelete ()
+    {
+        super.undelete();
+
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
+        }
+    }
+
     //-----------//
     // internals //
     //-----------//

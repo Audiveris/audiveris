@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                             S e n t e n c e W o r d R e l a t i o n                            //
+//                              C o n t a i n m e n t R e l a t i o n                             //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -26,13 +26,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SentenceWordRelation}
+ * Class {@code ContainmentRelation} represents an ensemble - member relation.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name = "sentence-word")
-public class SentenceWordRelation
-        extends AbstractContainment
+@XmlRootElement(name = "containment")
+public class ContainmentRelation
+        extends AbstractRelation
 {
 }

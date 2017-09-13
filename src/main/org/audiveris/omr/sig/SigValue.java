@@ -90,6 +90,7 @@ import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
+import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
@@ -106,7 +107,6 @@ import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
-import org.audiveris.omr.sig.relation.SentenceWordRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
@@ -392,6 +392,7 @@ public class SigValue
             , @XmlElementRef(type = ChordTupletRelation.class)
             , @XmlElementRef(type = ChordWedgeRelation.class)
             , @XmlElementRef(type = ClefKeyRelation.class)
+            , @XmlElementRef(type = ContainmentRelation.class)
             , @XmlElementRef(type = DotFermataRelation.class)
             , @XmlElementRef(type = DoubleDotRelation.class)
             , @XmlElementRef(type = EndingBarRelation.class)
@@ -407,7 +408,6 @@ public class SigValue
             , @XmlElementRef(type = NoExclusion.class)
             , @XmlElementRef(type = RepeatDotBarRelation.class)
             , @XmlElementRef(type = RepeatDotPairRelation.class)
-            , @XmlElementRef(type = SentenceWordRelation.class)
             , @XmlElementRef(type = SlurHeadRelation.class)
             , @XmlElementRef(type = StemAlignmentRelation.class)
             , @XmlElementRef(type = TimeTopBottomRelation.class)

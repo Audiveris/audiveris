@@ -24,9 +24,13 @@ package org.audiveris.omr.sheet.symbol;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.Shape.*;
+
 import org.audiveris.omr.glyph.ShapeSet;
+
 import static org.audiveris.omr.glyph.ShapeSet.*;
+
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.header.TimeBuilder;
@@ -53,7 +57,7 @@ import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.FretInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterMutableEnsemble;
+import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
@@ -85,6 +89,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import org.audiveris.omr.sig.inter.StemInter;
 
 /**
  * Class {@code SymbolFactory} generates the inter instances corresponding to
@@ -256,7 +261,7 @@ public class SymbolFactory
         case KEY_SHARP_5:
         case KEY_SHARP_6:
         case KEY_SHARP_7:
-            return new KeyInter(null, grade, shape, null);
+            return new KeyInter(grade, shape);
 
         // Brace, bracket ???
         //
@@ -331,8 +336,10 @@ public class SymbolFactory
         case LEDGER:
             return new LedgerInter(null, grade);
 
-        // Stem ???
-        //
+        // Stem
+        case STEM:
+            return new StemInter(null, grade);
+
         // Flags
         case FLAG_1:
         case FLAG_2:
@@ -369,7 +376,7 @@ public class SymbolFactory
         // Holds
         case FERMATA:
         case FERMATA_BELOW:
-            return new FermataInter(null, null, shape, grade, null); // No visit
+            return new FermataInter(shape, grade); // No visit
 
         case FERMATA_DOT:
             return new FermataDotInter(null, grade); // No visit
@@ -481,7 +488,7 @@ public class SymbolFactory
 
         default:
 
-            String msg = "No moving Inter class for " + shape;
+            String msg = "No ghost instance for " + shape;
             logger.error(msg);
             throw new IllegalArgumentException(msg);
         }
@@ -637,7 +644,7 @@ public class SymbolFactory
                     public boolean check (Inter inter)
                     {
                         return inter.getBounds().intersects(columnBox)
-                               && !(inter instanceof InterMutableEnsemble);
+                               && !(inter instanceof InterEnsemble);
                     }
                 });
 

@@ -155,38 +155,19 @@ public class BarlineInter
         }
     }
 
-    //--------//
-    // isGood //
-    //--------//
-    @Override
-    public boolean isGood ()
+    /**
+     * Report the sequence of items (barlines and repeat dots if any) this barline
+     * is part of.
+     *
+     * @return the items sequence, composed of at least this barline
+     */
+    public SortedSet<Inter> getGroupItems ()
     {
-        return getGrade() >= 0.6; // TODO, quick & dirty
-    }
+        SortedSet<Inter> items = new TreeSet<Inter>(Inter.byFullAbscissa);
+        items.add(this);
+        browseGroup(this, items);
 
-    //------------//
-    // isStaffEnd //
-    //------------//
-    public boolean isStaffEnd (HorizontalSide side)
-    {
-        return staffEnd == side;
-    }
-
-    //-------------//
-    // setStaffEnd //
-    //-------------//
-    public void setStaffEnd (HorizontalSide side)
-    {
-        staffEnd = side;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
+        return items;
     }
 
     //------------//
@@ -212,19 +193,55 @@ public class BarlineInter
         return null;
     }
 
-    /**
-     * Report the sequence of items (barlines and repeat dots if any) this barline
-     * is part of.
-     *
-     * @return the items sequence, composed of at least this barline
-     */
-    public SortedSet<Inter> getGroupItems ()
+    //--------//
+    // isGood //
+    //--------//
+    @Override
+    public boolean isGood ()
     {
-        SortedSet<Inter> items = new TreeSet<Inter>(Inter.byFullAbscissa);
-        items.add(this);
-        browseGroup(this, items);
+        return getGrade() >= 0.6; // TODO, quick & dirty
+    }
 
-        return items;
+    //------------//
+    // isStaffEnd //
+    //------------//
+    public boolean isStaffEnd (HorizontalSide side)
+    {
+        return staffEnd == side;
+    }
+
+    //-------------//
+    // setStaffEnd //
+    //-------------//
+    public void setStaffEnd (HorizontalSide side)
+    {
+        staffEnd = side;
+    }
+
+    //--------//
+    // undelete //
+    //--------//
+    /**
+     * Since a BarlineInter instance is held by its containing staff, make sure staff
+     * bar collection is updated.
+     */
+    @Override
+    public void undelete ()
+    {
+        super.undelete();
+
+        if (staff != null) {
+            staff.addBarline(this);
+        }
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
     }
 
     private void browseGroup (BarlineInter bar,

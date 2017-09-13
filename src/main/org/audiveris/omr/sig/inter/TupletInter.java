@@ -242,6 +242,21 @@ public class TupletInter
         return null;
     }
 
+    //----------//
+    // undelete //
+    //----------//
+    @Override
+    public void undelete ()
+    {
+        super.undelete();
+
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
+        }
+    }
+
     //-----------//
     // internals //
     //-----------//

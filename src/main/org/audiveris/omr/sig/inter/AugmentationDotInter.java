@@ -148,4 +148,20 @@ public class AugmentationDotInter
 
         return null;
     }
+
+    //----------//
+    // undelete //
+    //----------//
+    @Override
+    public void undelete ()
+    {
+        super.undelete();
+
+        // Re-add it to containing measure stack
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
+        }
+    }
 }

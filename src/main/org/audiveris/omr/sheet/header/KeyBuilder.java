@@ -1066,8 +1066,6 @@ public class KeyBuilder
                 if ((lastValidSlice != null) && (lastValidSlice.getId() == 1)) {
                     if (!checkTrailingSpace()) {
                         destroy();
-
-                        return;
                     }
                 }
             }
@@ -1630,17 +1628,7 @@ public class KeyBuilder
                 }
             }
 
-            double grade = 0;
-
-            for (KeyAlterInter alter : alters) {
-                grade += sig.computeContextualGrade(alter);
-            }
-
-            grade /= alters.size();
-
-            keyInter = new KeyInter(box, grade, getFifths(), alters);
-            keyInter.setStaff(staff);
-            sig.addVertex(keyInter);
+            keyInter = KeyInter.create(staff, alters);
 
             // Postpone staff header assignment until key is finalized...
         }

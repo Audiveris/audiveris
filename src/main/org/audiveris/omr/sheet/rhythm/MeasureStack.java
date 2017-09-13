@@ -1394,7 +1394,8 @@ public class MeasureStack
         // Most inters from first measure
         Staff firstStaff = system.getFirstStaff();
         Measure firstMeasure = getMeasureAt(firstStaff);
-        int top = Integer.MAX_VALUE;
+        LineInfo firstLine = firstStaff.getFirstLine();
+        int top = Math.min(firstLine.yAt(left), firstLine.yAt(right));
 
         for (Inter inter : firstMeasure.getTimingInters()) {
             top = Math.min(top, inter.getBounds().y);
@@ -1403,7 +1404,8 @@ public class MeasureStack
         // Most inters from last measure
         Staff lastStaff = system.getLastStaff();
         Measure lastMeasure = getMeasureAt(lastStaff);
-        int bottom = 0;
+        LineInfo lastLine = lastStaff.getLastLine();
+        int bottom = Math.max(lastLine.yAt(left), lastLine.yAt(right));
 
         for (Inter inter : lastMeasure.getTimingInters()) {
             Rectangle bounds = inter.getBounds();
