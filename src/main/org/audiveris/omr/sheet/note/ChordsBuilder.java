@@ -316,7 +316,7 @@ public class ChordsBuilder
 
         for (int i = 0, iBreak = wholeHeads.size(); i < iBreak; i++) {
             final HeadInter h1 = wholeHeads.get(i);
-            HeadChordInter chord = (HeadChordInter) h1.getEnsemble();
+            AbstractChordInter chord = h1.getChord();
 
             if (chord != null) {
                 continue; // Head already included in a chord

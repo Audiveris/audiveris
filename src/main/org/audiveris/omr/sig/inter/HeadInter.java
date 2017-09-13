@@ -132,6 +132,17 @@ public class HeadInter
         this.anchor = anchor;
     }
 
+    /**
+     * Creates a new {@code HeadInter} object.
+     *
+     * @param pivot  the template pivot
+     * @param anchor relative pivot configuration
+     * @param bounds the object bounds
+     * @param shape  the underlying shape
+     * @param grade  quality grade
+     * @param staff  the related staff
+     * @param pitch  the note pitch
+     */
     public HeadInter (Point pivot,
                       Anchor anchor,
                       Rectangle bounds,
@@ -357,6 +368,56 @@ public class HeadInter
         return constants.shrinkVertRatio.getValue();
     }
 
+    //--------------//
+    // getSideStems //
+    //--------------//
+    /**
+     * Report the stems linked to this head, organized by head side.
+     *
+     * @return the map of linked stems, organized by head side
+     * @see #getStems()
+     */
+    public Map<HorizontalSide, Set<StemInter>> getSideStems ()
+    {
+        // Split connected stems into left and right sides
+        final Map<HorizontalSide, Set<StemInter>> map = new EnumMap<HorizontalSide, Set<StemInter>>(
+                HorizontalSide.class);
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            HeadStemRelation rel = (HeadStemRelation) relation;
+            HorizontalSide side = rel.getHeadSide();
+            Set<StemInter> set = map.get(side);
+
+            if (set == null) {
+                map.put(side, set = new LinkedHashSet<StemInter>());
+            }
+
+            set.add((StemInter) sig.getEdgeTarget(rel));
+        }
+
+        return map;
+    }
+
+    //----------//
+    // getStems //
+    //----------//
+    /**
+     * Report the stems linked to this head, whatever the side.
+     *
+     * @return set of linked stems
+     * @see #getSideStems()
+     */
+    public Set<StemInter> getStems ()
+    {
+        final Set<StemInter> set = new LinkedHashSet<StemInter>();
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            set.add((StemInter) sig.getEdgeTarget(relation));
+        }
+
+        return set;
+    }
+
     //----------//
     // overlaps //
     //----------//
@@ -574,56 +635,6 @@ public class HeadInter
 
         //TODO: What if we have no stem? It's a WHOLE_NOTE or SMALL_WHOLE_NOTE
         // Perhaps check for a weak ledger, tangent to the note towards staff
-    }
-
-    //--------------//
-    // getSideStems //
-    //--------------//
-    /**
-     * Report the stems linked to this head, organized by head side.
-     *
-     * @return the map of linked stems, organized by head side
-     * @see #getStems()
-     */
-    public Map<HorizontalSide, Set<StemInter>> getSideStems ()
-    {
-        // Split connected stems into left and right sides
-        final Map<HorizontalSide, Set<StemInter>> map = new EnumMap<HorizontalSide, Set<StemInter>>(
-                HorizontalSide.class);
-
-        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
-            HeadStemRelation rel = (HeadStemRelation) relation;
-            HorizontalSide side = rel.getHeadSide();
-            Set<StemInter> set = map.get(side);
-
-            if (set == null) {
-                map.put(side, set = new LinkedHashSet<StemInter>());
-            }
-
-            set.add((StemInter) sig.getEdgeTarget(rel));
-        }
-
-        return map;
-    }
-
-    //----------//
-    // getStems //
-    //----------//
-    /**
-     * Report the stems linked to this head, whatever the side.
-     *
-     * @return set of linked stems
-     * @see #getSideStems()
-     */
-    public Set<StemInter> getStems ()
-    {
-        final Set<StemInter> set = new LinkedHashSet<StemInter>();
-
-        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
-            set.add((StemInter) sig.getEdgeTarget(relation));
-        }
-
-        return set;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

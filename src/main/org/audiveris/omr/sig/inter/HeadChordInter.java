@@ -22,6 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +31,6 @@ import java.awt.Rectangle;
 import java.util.Comparator;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.util.Entities;
 
 /**
  * Class {@code HeadChordInter} is a AbstractChordInter composed of heads.
@@ -47,8 +47,8 @@ public class HeadChordInter
             HeadChordInter.class);
 
     /**
-     * Compare two heads of the same chord, ordered by increasing distance from chord
-     * head ordinate.
+     * Compare two heads (assumed to be) of the same chord, ordered by
+     * increasing distance from chord head ordinate.
      */
     public static final Comparator<HeadInter> headComparator = new Comparator<HeadInter>()
     {
@@ -60,12 +60,12 @@ public class HeadChordInter
                 return 0;
             }
 
-            HeadChordInter c1 = (HeadChordInter) n1.getEnsemble();
+            AbstractChordInter c1 = n1.getChord();
 
-            if (c1 != n2.getEnsemble()) {
-                logger.error("Comparing notes from different chords");
-            }
-
+            //            if (c1 != n2.getChord()) {
+            //                logger.error("Comparing notes from different chords");
+            //            }
+            //
             return c1.getStemDir() * (n1.getCenter().y - n2.getCenter().y);
         }
     };

@@ -231,7 +231,7 @@ public abstract class AbstractNoteInter
     public int getOctave ()
     {
         if (octave == null) {
-            AbstractChordInter chord = (AbstractChordInter) getEnsemble();
+            AbstractChordInter chord = getChord();
             Measure measure = chord.getMeasure();
             octave = ClefInter.octaveOf(measure.getClefBefore(getCenter(), getStaff()), pitch);
         }
@@ -250,7 +250,7 @@ public abstract class AbstractNoteInter
     public Step getStep ()
     {
         if (step == null) {
-            AbstractChordInter chord = (AbstractChordInter) getEnsemble();
+            AbstractChordInter chord = getChord();
             Measure measure = chord.getMeasure();
             step = ClefInter.noteStepOf(
                     measure.getClefBefore(getCenter(), staff),
