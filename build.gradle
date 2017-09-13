@@ -99,7 +99,7 @@ dependencies {
         [group: 'net.imagej', name: 'ij', version: '1.51f'],
         [group: 'de.intarsys.opensource', name: 'jPodRenderer', version: '5.6'],
         [group: 'org.audiveris', name: 'proxymusic', version: '3.0.1'],
-        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.0.0'],
+        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.0.1'],
         [group: 'org.jfree', name: 'jfreechart', version: '1.0.19'],
         [group: 'com.itextpdf', name: 'itextpdf', version: '5.5.9'],
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
@@ -121,7 +121,7 @@ dependencies {
 
     testCompile(
         [group: 'junit', name: 'junit', version: '4.10'],
-        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.0.0']
+        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.0.1']
     )
 }
 
