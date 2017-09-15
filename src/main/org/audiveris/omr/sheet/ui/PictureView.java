@@ -23,11 +23,11 @@ package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
-import org.audiveris.omr.score.ui.PaintingParameters;
 import org.audiveris.omr.score.ui.SheetPopupMenu;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -87,9 +87,9 @@ public class PictureView
         // Inject dependency of pixel location
         view.setLocationService(sheet.getLocationService());
 
-        // Listen to all painting parameters
-        PaintingParameters.getInstance()
-                .addPropertyChangeListener(new WeakPropertyChangeListener(this));
+        // Listen to all view parameters
+        ViewParameters.getInstance().addPropertyChangeListener(
+                new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);
@@ -140,10 +140,10 @@ public class PictureView
         {
             // Check we have all needed data
             // If not, use SwingWorker to spawn a task to retrieve the data and then do the painting
-            final PaintingParameters painting = PaintingParameters.getInstance();
-            final boolean input = painting.isInputPainting();
-            final boolean output = painting.isOutputPainting();
-            final boolean voice = painting.isVoicePainting();
+            final ViewParameters viewParams = ViewParameters.getInstance();
+            final boolean input = viewParams.isInputPainting();
+            final boolean output = viewParams.isOutputPainting();
+            final boolean voice = viewParams.isVoicePainting();
 
             boolean ok = true;
 

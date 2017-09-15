@@ -280,7 +280,7 @@ public class SheetAssembly
         displayBoards();
 
         // Display the errors pane of this assembly?
-        if (GuiActions.getInstance().isErrorsDisplayed()) {
+        if (GuiActions.getInstance().isErrorsWindowDisplayed()) {
             OMR.gui.setErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
         }
     }

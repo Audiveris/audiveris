@@ -1416,7 +1416,7 @@ public class BookActions
             });
 
             dialog.pack();
-            OMR.gui.getApplication().show(dialog);
+            OmrGui.getApplication().show(dialog);
 
             return apply.value;
         } catch (Exception ex) {

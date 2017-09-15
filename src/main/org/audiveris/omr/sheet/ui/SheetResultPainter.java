@@ -29,7 +29,6 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Rational;
-import org.audiveris.omr.score.ui.PaintingParameters;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -45,16 +44,17 @@ import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
-import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
+import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.symbol.Alignment;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
@@ -122,8 +122,8 @@ public class SheetResultPainter
     /** Ordinate offset, in pixels, for annotation near staff or system. */
     protected static final int annotationDy = 15;
 
-    /** Painting parameters. */
-    protected static final PaintingParameters parameters = PaintingParameters.getInstance();
+    /** View parameters. */
+    protected static final ViewParameters viewParams = ViewParameters.getInstance();
 
     /** Sequence of colors for voices. */
     private static final int alpha = 150;
@@ -347,9 +347,10 @@ public class SheetResultPainter
             }
 
             // Paint chord related stuff: articulation & arpeggiato if any
-            for (Relation aRel : sig.getRelations(chord,
-                                                  ChordArticulationRelation.class,
-                                                  ChordArpeggiatoRelation.class)) {
+            for (Relation aRel : sig.getRelations(
+                    chord,
+                    ChordArticulationRelation.class,
+                    ChordArpeggiatoRelation.class)) {
                 sig.getOppositeInter(chord, aRel).accept(sigPainter);
             }
         }
@@ -512,7 +513,7 @@ public class SheetResultPainter
             }
 
             // Draw slot vertical lines ?
-            if (parameters.isSlotPainting() && (stack.getSlots() != null)) {
+            if (viewParams.isSlotPainting() && (stack.getSlots() != null)) {
                 for (Slot slot : stack.getSlots()) {
                     drawSlot(slot, Colors.SLOT);
                 }

@@ -29,12 +29,12 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.GlobalFilter;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.run.RunTable;
-import org.audiveris.omr.score.ui.PaintingParameters;
 import org.audiveris.omr.sheet.ui.ImageView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.ui.BoardsPane;
+import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Navigable;
@@ -436,8 +436,8 @@ public class SheetDiff
             // Inject dependency of pixel location
             setLocationService(sheet.getLocationService());
 
-            // Listen to all painting parameters
-            PaintingParameters.getInstance()
+            // Listen to all view parameters
+            ViewParameters.getInstance()
                     .addPropertyChangeListener(new WeakPropertyChangeListener(this));
         }
 

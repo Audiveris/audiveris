@@ -33,9 +33,7 @@ import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.ui.SectionBoard;
 import org.audiveris.omr.run.Orientation;
-import org.audiveris.omr.run.RunBoard;
 import org.audiveris.omr.score.ui.EditorMenu;
-import org.audiveris.omr.score.ui.PaintingParameters;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -63,7 +61,9 @@ import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
+
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
+
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -76,8 +76,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
+
 import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -119,6 +121,9 @@ public class SymbolsEditor
     /** The entity used for display focus. */
     private final ShapeFocusBoard focus;
 
+    /** View parameters. */
+    private final ViewParameters viewParams = ViewParameters.getInstance();
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a view in the sheet assembly tabs, dedicated to the
@@ -146,10 +151,16 @@ public class SymbolsEditor
             hLag = new BasicLag(Lags.HLAG, Orientation.HORIZONTAL);
             sheet.getLagManager().setLag(Lags.HLAG, hLag);
         } else {
-            if (hLag.getRunTable() != null) {
-                boards.add(new RunBoard(hLag, false));
-            }
-
+            //            RunTable hTable = hLag.getRunTable();
+            //
+            //            if (hTable != null) {
+            //                if (hTable.getRunService() == null) {
+            //                    hTable.setRunService(new RunService("hLagRuns", hTable));
+            //                }
+            //
+            //                boards.add(new RunBoard(hLag, false));
+            //            }
+            //
             boards.add(new SectionBoard(hLag, false));
         }
 
@@ -159,10 +170,16 @@ public class SymbolsEditor
             vLag = new BasicLag(Lags.VLAG, Orientation.VERTICAL);
             sheet.getLagManager().setLag(Lags.VLAG, vLag);
         } else {
-            if (vLag.getRunTable() != null) {
-                boards.add(new RunBoard(vLag, false));
-            }
-
+            //            RunTable vTable = vLag.getRunTable();
+            //
+            //            if (vTable != null) {
+            //                if (vTable.getRunService() == null) {
+            //                    vTable.setRunService(new RunService("vLagRuns", vTable));
+            //                }
+            //
+            //                boards.add(new RunBoard(vLag, false));
+            //            }
+            //
             boards.add(new SectionBoard(vLag, false));
         }
 
@@ -491,9 +508,8 @@ public class SymbolsEditor
         public void render (Graphics2D g)
         {
             final Color oldColor = g.getColor();
-            final PaintingParameters painting = PaintingParameters.getInstance();
 
-            if (painting.isErrorPainting()) {
+            if (viewParams.isErrorPainting()) {
                 // Use specific background for stacks in error
                 for (SystemInfo system : sheet.getSystems()) {
                     for (MeasureStack stack : system.getMeasureStacks()) {
@@ -504,9 +520,9 @@ public class SymbolsEditor
                 }
             }
 
-            if (painting.isInputPainting()) {
+            if (viewParams.isInputPainting()) {
                 // Sections
-                final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
+                final boolean drawBorders = viewParams.isSectionMode();
                 final Stroke oldStroke = (drawBorders) ? UIUtil.setAbsoluteStroke(g, 1f) : null;
 
                 for (Lag lag : lags) {
@@ -536,15 +552,15 @@ public class SymbolsEditor
                 }
             }
 
-            if (painting.isOutputPainting()) {
+            if (viewParams.isOutputPainting()) {
                 // Inters (with opaque colors)
                 g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
 
-                boolean mixed = painting.isInputPainting();
+                boolean mixed = viewParams.isInputPainting();
                 g.setColor(mixed ? Colors.MUSIC_SYMBOLS : Colors.MUSIC_ALONE);
 
-                final boolean coloredVoices = mixed ? false : painting.isVoicePainting();
-                final boolean annots = painting.isAnnotationPainting();
+                final boolean coloredVoices = mixed ? false : viewParams.isVoicePainting();
+                final boolean annots = viewParams.isAnnotationPainting();
                 new SheetResultPainter(sheet, g, coloredVoices, false, annots).process();
             }
 
@@ -557,10 +573,9 @@ public class SymbolsEditor
         @Override
         protected void renderItems (Graphics2D g)
         {
-            PaintingParameters painting = PaintingParameters.getInstance();
             g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
 
-            if (painting.isInputPainting()) {
+            if (viewParams.isInputPainting()) {
                 // Normal display of selected glyphs
                 super.renderItems(g);
 
@@ -592,12 +607,12 @@ public class SymbolsEditor
                 }
             }
 
-            if (painting.isOutputPainting()) {
+            if (viewParams.isOutputPainting()) {
                 // Selected slot, if any
                 if (highlightedSlot != null) {
-                    boolean mixed = painting.isInputPainting();
-                    final boolean coloredVoices = mixed ? false : painting.isVoicePainting();
-                    final boolean annots = painting.isAnnotationPainting();
+                    boolean mixed = viewParams.isInputPainting();
+                    final boolean coloredVoices = mixed ? false : viewParams.isVoicePainting();
+                    final boolean annots = viewParams.isAnnotationPainting();
                     new SheetResultPainter(sheet, g, coloredVoices, false, annots).highlightSlot(
                             highlightedSlot);
                 }

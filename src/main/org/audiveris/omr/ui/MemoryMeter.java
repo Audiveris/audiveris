@@ -157,7 +157,7 @@ public class MemoryMeter
     //----------//
     private void defineUI ()
     {
-        ApplicationContext applicationContext = OMR.gui.getApplication().getContext();
+        ApplicationContext applicationContext = OmrGui.getApplication().getContext();
         component.setLayout(new BorderLayout());
 
         // Progress bar

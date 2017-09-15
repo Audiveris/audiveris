@@ -375,10 +375,6 @@ public class EvaluationBoard
                 "buttons",
                 5,
                 "Max number of buttons in the shape selector");
-
-        private final Constant.Boolean allowSampleCreation = new Constant.Boolean(
-                false,
-                "Should we allow sample creation?");
     }
 
     //------------//

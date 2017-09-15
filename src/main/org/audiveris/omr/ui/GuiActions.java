@@ -102,14 +102,14 @@ public class GuiActions
     /** Create this action just once */
     private static volatile AboutAction aboutAction;
 
-    /** Should the errors window be displayed */
-    public static final String ERRORS_DISPLAYED = "errorsDisplayed";
+    /** Should the errors window be displayed. */
+    public static final String ERRORS_WINDOW_DISPLAYED = "errorsWindowDisplayed";
 
-    /** Should the log window be displayed */
-    public static final String LOG_DISPLAYED = "logDisplayed";
+    /** Should the log window be displayed. */
+    public static final String LOG_WINDOW_DISPLAYED = "logWindowDisplayed";
 
-    /** Should the boards window be displayed */
-    public static final String BOARDS_DISPLAYED = "boardsDisplayed";
+    /** Should the boards window be displayed. */
+    public static final String BOARDS_WINDOW_DISPLAYED = "boardsWindowDisplayed";
 
     //~ Methods ------------------------------------------------------------------------------------
     //-------------//
@@ -248,15 +248,15 @@ public class GuiActions
     @Action
     public void exit (ActionEvent e)
     {
-        OMR.gui.getApplication().exit();
+        OmrGui.getApplication().exit();
     }
 
-    //-------------------//
-    // isBoardsDisplayed //
-    //-------------------//
-    public boolean isBoardsDisplayed ()
+    //-------------------------//
+    // isBoardsWindowDisplayed //
+    //-------------------------//
+    public boolean isBoardsWindowDisplayed ()
     {
-        return constants.boardsDisplayed.getValue();
+        return constants.boardsWindowDisplayed.getValue();
     }
 
     //--------------------//
@@ -272,20 +272,20 @@ public class GuiActions
         return WebBrowser.getBrowser().isSupported();
     }
 
-    //-------------------//
-    // isErrorsDisplayed //
-    //-------------------//
-    public boolean isErrorsDisplayed ()
+    //-------------------------//
+    // isErrorsWindowDisplayed //
+    //-------------------------//
+    public boolean isErrorsWindowDisplayed ()
     {
-        return constants.errorsDisplayed.getValue();
+        return constants.errorsWindowDisplayed.getValue();
     }
 
-    //----------------//
-    // isLogDisplayed //
-    //----------------//
-    public boolean isLogDisplayed ()
+    //----------------------//
+    // isLogWindowDisplayed //
+    //----------------------//
+    public boolean isLogWindowDisplayed ()
     {
-        return constants.logDisplayed.getValue();
+        return constants.logWindowDisplayed.getValue();
     }
 
     //--------------------//
@@ -337,34 +337,34 @@ public class GuiActions
         SampleRepository.getGlobalInstance().checkForSave();
     }
 
-    //--------------------//
-    // setBoardsDisplayed //
-    //--------------------//
-    public void setBoardsDisplayed (boolean value)
+    //--------------------------//
+    // setBoardsWindowDisplayed //
+    //--------------------------//
+    public void setBoardsWindowDisplayed (boolean value)
     {
-        boolean oldValue = constants.boardsDisplayed.getValue();
-        constants.boardsDisplayed.setValue(value);
-        firePropertyChange(BOARDS_DISPLAYED, oldValue, value);
+        boolean oldValue = constants.boardsWindowDisplayed.getValue();
+        constants.boardsWindowDisplayed.setValue(value);
+        firePropertyChange(BOARDS_WINDOW_DISPLAYED, oldValue, value);
     }
 
-    //--------------------//
-    // setErrorsDisplayed //
-    //--------------------//
-    public void setErrorsDisplayed (boolean value)
+    //--------------------------//
+    // setErrorsWindowDisplayed //
+    //--------------------------//
+    public void setErrorsWindowDisplayed (boolean value)
     {
-        boolean oldValue = constants.errorsDisplayed.getValue();
-        constants.errorsDisplayed.setValue(value);
-        firePropertyChange(ERRORS_DISPLAYED, oldValue, value);
+        boolean oldValue = constants.errorsWindowDisplayed.getValue();
+        constants.errorsWindowDisplayed.setValue(value);
+        firePropertyChange(ERRORS_WINDOW_DISPLAYED, oldValue, value);
     }
 
-    //-----------------//
-    // setLogDisplayed //
-    //-----------------//
-    public void setLogDisplayed (boolean value)
+    //-----------------------//
+    // setLogWindowDisplayed //
+    //-----------------------//
+    public void setLogWindowDisplayed (boolean value)
     {
-        boolean oldValue = constants.logDisplayed.getValue();
-        constants.logDisplayed.setValue(value);
-        firePropertyChange(LOG_DISPLAYED, oldValue, value);
+        boolean oldValue = constants.logWindowDisplayed.getValue();
+        constants.logWindowDisplayed.setValue(value);
+        firePropertyChange(LOG_WINDOW_DISPLAYED, oldValue, value);
     }
 
     //-----------//
@@ -429,7 +429,7 @@ public class GuiActions
      *
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = BOARDS_DISPLAYED)
+    @Action(selectedProperty = BOARDS_WINDOW_DISPLAYED)
     public void toggleBoards (ActionEvent e)
     {
     }
@@ -442,7 +442,7 @@ public class GuiActions
      *
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = ERRORS_DISPLAYED)
+    @Action(selectedProperty = ERRORS_WINDOW_DISPLAYED)
     public void toggleErrors (ActionEvent e)
     {
     }
@@ -455,7 +455,7 @@ public class GuiActions
      *
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = LOG_DISPLAYED)
+    @Action(selectedProperty = LOG_WINDOW_DISPLAYED)
     public void toggleLog (ActionEvent e)
     {
     }
@@ -567,7 +567,7 @@ public class GuiActions
                 aboutBox = createAboutBox();
             }
 
-            OMR.gui.getApplication().show(aboutBox);
+            OmrGui.getApplication().show(aboutBox);
         }
 
         private JDialog createAboutBox ()
@@ -736,15 +736,15 @@ public class GuiActions
 //                "URL of local Audiveris manual");
 //
 
-        private final Constant.Boolean boardsDisplayed = new Constant.Boolean(
+        private final Constant.Boolean boardsWindowDisplayed = new Constant.Boolean(
                 true,
                 "Should the boards window be displayed");
 
-        private final Constant.Boolean logDisplayed = new Constant.Boolean(
+        private final Constant.Boolean logWindowDisplayed = new Constant.Boolean(
                 true,
                 "Should the log window be displayed");
 
-        private final Constant.Boolean errorsDisplayed = new Constant.Boolean(
+        private final Constant.Boolean errorsWindowDisplayed = new Constant.Boolean(
                 false,
                 "Should the errors window be displayed");
     }
@@ -762,7 +762,7 @@ public class GuiActions
         //~ Constructors ---------------------------------------------------------------------------
         public OptionsTask ()
         {
-            super(OMR.gui.getApplication());
+            super(OmrGui.getApplication());
 
             timer.schedule(
                     new TimerTask()
@@ -798,7 +798,7 @@ public class GuiActions
         protected void succeeded (Options options)
         {
             if (options != null) {
-                OMR.gui.getApplication().show(options.getComponent());
+                OmrGui.getApplication().show(options.getComponent());
             }
         }
     }
