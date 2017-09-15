@@ -34,7 +34,6 @@ import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
-import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
@@ -207,23 +206,12 @@ public abstract class AbstractChordInter
     @Override
     public void addMember (Inter member)
     {
-        addMember(member, null);
-    }
-
-    //-----------//
-    // addMember //
-    //-----------//
-    @Override
-    public void addMember (Inter member,
-                           ContainmentRelation relation)
-    {
         if (!(member instanceof AbstractNoteInter)) {
             throw new IllegalArgumentException(
                     "Only AbstractNoteInter can be added to AbstractChordInter");
         }
 
-        EnsembleHelper.addMember(this, member, relation);
-        reset();
+        EnsembleHelper.addMember(this, member);
     }
 
     //-------------//
@@ -1039,6 +1027,18 @@ public abstract class AbstractChordInter
         oldNotes = null;
     }
 
+    @Override
+    public void memberAdded (Inter member)
+    {
+        reset();
+    }
+
+    @Override
+    public void memberRemoved (Inter member)
+    {
+        reset();
+    }
+
     //--------------//
     // removeMember //
     //--------------//
@@ -1051,7 +1051,6 @@ public abstract class AbstractChordInter
         }
 
         EnsembleHelper.removeMember(this, member);
-        reset();
     }
 
     //-------------//
@@ -1301,17 +1300,19 @@ public abstract class AbstractChordInter
         tailLocation = null;
 
         // Compute global grade based on contained notes (TODO: +stem as well?)
-        final List<Inter> notes = getMembers();
+        if ((sig != null) && sig.containsVertex(this)) {
+            final List<Inter> notes = getMembers();
 
-        if (!notes.isEmpty() && (sig != null)) {
-            double gr = 0;
+            if (!notes.isEmpty()) {
+                double gr = 0;
 
-            for (Inter inter : notes) {
-                gr += sig.computeContextualGrade(inter);
+                for (Inter inter : notes) {
+                    gr += sig.computeContextualGrade(inter);
+                }
+
+                gr /= notes.size();
+                setGrade(gr);
             }
-
-            gr /= notes.size();
-            setGrade(gr);
         }
     }
 }

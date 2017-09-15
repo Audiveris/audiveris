@@ -235,6 +235,7 @@ public abstract class PageCleaner
     @Override
     public void visit (KeyAlterInter alter)
     {
+        // Process isolated keyAlter
         if (alter.getEnsemble() == null) {
             processGlyph(alter.getGlyph());
         }
@@ -300,6 +301,7 @@ public abstract class PageCleaner
     @Override
     public void visit (WordInter word)
     {
+        // Process isolated word
         if (word.getEnsemble() == null) {
             processGlyph(word.getGlyph());
         }

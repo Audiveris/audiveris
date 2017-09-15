@@ -27,7 +27,6 @@ import org.audiveris.omr.sig.SIGraph;
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.Step.*;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.*;
-import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -151,16 +150,6 @@ public class KeyInter
     @Override
     public void addMember (Inter member)
     {
-        addMember(member, null);
-    }
-
-    //-----------//
-    // addMember //
-    //-----------//
-    @Override
-    public void addMember (Inter member,
-                           ContainmentRelation relation)
-    {
         if (!(member instanceof KeyAlterInter)) {
             throw new IllegalArgumentException("Only KeyAlterInter can be added to KeyInter");
         }
@@ -171,8 +160,7 @@ public class KeyInter
             throw new IllegalArgumentException("Attempt to add illegal shape in Key: " + mShape);
         }
 
-        EnsembleHelper.addMember(this, member, relation);
-        reset();
+        EnsembleHelper.addMember(this, member);
     }
 
     /**
@@ -199,7 +187,7 @@ public class KeyInter
         sig.addVertex(keyInter);
 
         for (Inter member : alters) {
-            keyInter.addMember(member, null);
+            keyInter.addMember(member);
         }
 
         return keyInter;
@@ -488,6 +476,18 @@ public class KeyInter
         oldAlters = null;
     }
 
+    @Override
+    public void memberAdded (Inter member)
+    {
+        reset();
+    }
+
+    @Override
+    public void memberRemoved (Inter member)
+    {
+        reset();
+    }
+
     //--------------//
     // removeMember //
     //--------------//
@@ -499,7 +499,6 @@ public class KeyInter
         }
 
         EnsembleHelper.removeMember(this, member);
-        reset();
     }
 
     //-----------//
@@ -553,7 +552,6 @@ public class KeyInter
 
         // Discard last alter
         Inter lastAlter = alters.get(alters.size() - 1);
-        removeMember(lastAlter);
         lastAlter.delete();
     }
 

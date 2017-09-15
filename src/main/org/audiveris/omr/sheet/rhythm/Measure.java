@@ -154,9 +154,6 @@ public class Measure
     /** Potential one Time signature per staff. */
     private final Set<AbstractTimeInter> timeSigs = new LinkedHashSet<AbstractTimeInter>();
 
-    /** Only whole rest-based chords (handled outside time slots). (subset of restChords) */
-    private final Set<AbstractChordInter> wholeRestChords = new LinkedHashSet<AbstractChordInter>();
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Measure} object.
@@ -232,10 +229,6 @@ public class Measure
                 headChords.add((HeadChordInter) chord);
             } else if (chord instanceof RestChordInter) {
                 restChords.add((RestChordInter) chord);
-
-                if (chord.getMembers().get(0).getShape() == Shape.WHOLE_REST) {
-                    wholeRestChords.add(chord);
-                }
             }
         } else if (inter instanceof ClefInter) {
             clefs.add((ClefInter) inter);
@@ -308,7 +301,6 @@ public class Measure
     public void clearFrats ()
     {
         restChords.clear();
-        wholeRestChords.clear();
         otherRhythms.clear();
     }
 
@@ -1007,17 +999,6 @@ public class Measure
         return Collections.unmodifiableList(voices);
     }
 
-    //--------------------//
-    // getWholeRestChords //
-    //--------------------//
-    /**
-     * @return the wholeRestChords
-     */
-    public Set<AbstractChordInter> getWholeRestChords ()
-    {
-        return wholeRestChords;
-    }
-
     //----------//
     // getWidth //
     //----------//
@@ -1199,7 +1180,6 @@ public class Measure
         if (inter instanceof RestChordInter) {
             RestChordInter restChord = (RestChordInter) inter;
             restChords.remove(restChord);
-            wholeRestChords.remove(restChord); // Just in case
         } else if (inter instanceof FlagInter
                    || inter instanceof AugmentationDotInter
                    || inter instanceof TupletInter) {

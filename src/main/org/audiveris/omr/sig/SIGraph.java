@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig;
 
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import static org.audiveris.omr.math.GeoOrder.*;
@@ -31,7 +29,6 @@ import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.BasicExclusion;
 import org.audiveris.omr.sig.relation.Exclusion;
@@ -41,8 +38,10 @@ import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 
+import org.jgrapht.DirectedGraph;
 import org.jgrapht.Graphs;
-import org.jgrapht.graph.Multigraph;
+import org.jgrapht.graph.DefaultListenableGraph;
+import org.jgrapht.graph.DirectedMultigraph;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,11 +72,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlJavaTypeAdapter(SigValue.Adapter.class)
 public class SIGraph
-        extends Multigraph<Inter, Relation>
+        extends DefaultListenableGraph<Inter, Relation>
+        implements DirectedGraph<Inter, Relation>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(SIGraph.class);
 
@@ -97,7 +95,7 @@ public class SIGraph
      */
     public SIGraph (SystemInfo system)
     {
-        super(Relation.class);
+        super(new DirectedMultigraph(Relation.class), true /* reuseEvents */);
 
         Objects.requireNonNull(system, "A sig needs a non-null system");
         this.system = system;
@@ -119,8 +117,7 @@ public class SIGraph
      */
     private SIGraph ()
     {
-        super(Relation.class);
-        this.system = null;
+        super(new DirectedMultigraph(Relation.class), true /* reuseEvents */);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -142,16 +139,16 @@ public class SIGraph
             inter.undelete();
         }
 
-        // Update sig
-        boolean res = super.addVertex(inter);
-        inter.setSig(this);
-
         // Update index
         if (inter.getId() == 0) {
             system.getSheet().getInterIndex().register(inter);
         } else {
             system.getSheet().getInterIndex().insert(inter);
         }
+
+        // Update sig
+        boolean res = super.addVertex(inter);
+        inter.setSig(this);
 
         return res;
     }
@@ -170,19 +167,6 @@ public class SIGraph
             this.system = system;
             sigValue.populateSig(this);
             sigValue = null; // SigValue is no longer useful and can be disposed of
-
-            // Link members to their ensemble
-            for (Inter inter : inters(InterEnsemble.class)) {
-                InterEnsemble ensemble = (InterEnsemble) inter;
-
-                for (Inter member : ensemble.getMembers()) {
-                    if (member.getEnsemble() == null) {
-                        member.setEnsemble(ensemble);
-                    } else {
-                        logger.warn("Ensemble already set for member {}", member);
-                    }
-                }
-            }
 
             // Link inters to their related staff
             final StaffManager mgr = system.getSheet().getStaffManager();
@@ -632,15 +616,40 @@ public class SIGraph
         return supports;
     }
 
-    //--------//
-    // system //
-    //--------//
+    //-----------//
+    // getSystem //
+    //-----------//
     /**
      * @return the related system
      */
     public SystemInfo getSystem ()
     {
         return system;
+    }
+
+    //-------------//
+    // hasRelation //
+    //-------------//
+    /**
+     * Check whether the provided Inter is involved in a relation of one of the
+     * provided relation classes.
+     *
+     * @param inter           the inter instance to check
+     * @param relationClasses the provided classes
+     * @return true if such relation is found, false otherwise
+     */
+    public boolean hasRelation (Inter inter,
+                                Class... relationClasses)
+    {
+        for (Relation rel : edgesOf(inter)) {
+            for (Class classe : relationClasses) {
+                if (classe.isInstance(rel)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     //--------//
@@ -690,32 +699,6 @@ public class SIGraph
         }
 
         return filtered;
-    }
-
-    //-------------------//
-    // intersectedInters //
-    //-------------------//
-    /**
-     * Lookup all SIG inters for those whose bounds intersect the given box.
-     *
-     * @param box the intersecting box
-     * @return the intersected interpretations found
-     */
-    public List<Inter> intersectedInters (Rectangle box)
-    {
-        List<Inter> found = new ArrayList<Inter>();
-
-        for (Inter inter : vertexSet()) {
-            if (inter.isDeleted()) {
-                continue;
-            }
-
-            if (box.intersects(inter.getBounds())) {
-                found.add(inter);
-            }
-        }
-
-        return found;
     }
 
     //-------------------//
@@ -811,31 +794,6 @@ public class SIGraph
         }
 
         return found;
-    }
-
-    //-------------//
-    // hasRelation //
-    //-------------//
-    /**
-     * Check whether the provided Inter is involved in a relation of one of the
-     * provided relation classes.
-     *
-     * @param inter           the inter instance to check
-     * @param relationClasses the provided classes
-     * @return true if such relation is found, false otherwise
-     */
-    public boolean hasRelation (Inter inter,
-                                Class... relationClasses)
-    {
-        for (Relation rel : edgesOf(inter)) {
-            for (Class classe : relationClasses) {
-                if (classe.isInstance(rel)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     //-----------------//
@@ -1087,6 +1045,32 @@ public class SIGraph
         return inters(new StaffClassPredicate(staff, classe));
     }
 
+    //-------------------//
+    // intersectedInters //
+    //-------------------//
+    /**
+     * Lookup all SIG inters for those whose bounds intersect the given box.
+     *
+     * @param box the intersecting box
+     * @return the intersected interpretations found
+     */
+    public List<Inter> intersectedInters (Rectangle box)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+
+        for (Inter inter : vertexSet()) {
+            if (inter.isDeleted()) {
+                continue;
+            }
+
+            if (box.intersects(inter.getBounds())) {
+                found.add(inter);
+            }
+        }
+
+        return found;
+    }
+
     //-----------//
     // noSupport //
     //-----------//
@@ -1191,13 +1175,15 @@ public class SIGraph
                 final Set<Inter> involved = involvedInters(getSupports(weaker));
                 involved.remove(weaker);
 
+                final Inter weakerEnsemble = weaker.getEnsemble(); // Before weaker is deleted!
+
                 // Remove the weaker inter
                 removed.add(weaker);
                 weaker.delete();
 
                 // If removal of weaker has resulted in removal of its ensemble, count ensemble
-                if ((weaker.getEnsemble() != null) && weaker.getEnsemble().isDeleted()) {
-                    removed.add(weaker.getEnsemble());
+                if ((weakerEnsemble != null) && weakerEnsemble.isDeleted()) {
+                    removed.add(weakerEnsemble);
                 }
 
                 // Update contextual values for all inters that were involved with 'weaker'
@@ -1407,20 +1393,6 @@ public class SIGraph
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Integer maxSupportCount = new Constant.Integer(
-                "count",
-                6,
-                "Upper limit on number of supports used for contextual grade");
-    }
-
     //----------------//
     // ClassPredicate //
     //----------------//

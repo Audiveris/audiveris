@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.sig.relation.ContainmentRelation;
-
 import java.util.List;
 
 /**
@@ -55,22 +53,19 @@ public interface InterEnsemble
 
     /**
      * Add a member to the ensemble.
+     * <p>
+     * Both the ensemble and the member instances must already exist in the SIG.
+     * <p>
+     * This will trigger {@link #memberAdded(Inter)} via any SIG listener.
      *
      * @param member the member to add
      */
     void addMember (Inter member);
 
     /**
-     * Add a member to the ensemble.
-     *
-     * @param member   the member to add
-     * @param relation the ensemble-member relation instance to use, if any
-     */
-    void addMember (Inter member,
-                    ContainmentRelation relation);
-
-    /**
-     * Report the list of ensemble members.
+     * Report the list of members of the ensemble.
+     * <p>
+     * The ensemble instance (and its members if any) must already exist in the SIG.
      *
      * @return the members
      */
@@ -83,7 +78,29 @@ public interface InterEnsemble
     void linkOldMembers ();
 
     /**
+     * Call-back when a member has just been added.
+     *
+     * @param member the added member
+     */
+    void memberAdded (Inter member);
+
+    /**
+     * Call-back when a member has just been removed.
+     *
+     * @param member the removed member
+     */
+    void memberRemoved (Inter member);
+
+    /**
      * Remove a member from the ensemble.
+     * <p>
+     * This does not delete the member instance, but simply deletes the containment relationship
+     * between the ensemble instance and the member instance.
+     * <p>
+     * On the opposite, directly deleting a (member) instance, automatically triggers the removal of
+     * this member from any containing ensemble.
+     * <p>
+     * This will trigger {@link #memberRemoved(Inter)} via any SIG listener.
      *
      * @param member the member to remove
      */

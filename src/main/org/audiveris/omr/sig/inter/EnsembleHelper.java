@@ -22,8 +22,11 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.SigListener;
 import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.sig.relation.Relation;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,20 +42,38 @@ public abstract class EnsembleHelper
 {
     //~ Methods ------------------------------------------------------------------------------------
 
+    //-----------//
+    // addMember //
+    //-----------//
+    /**
+     * Set the containment relationship between an (ensemble) instance and a (member)
+     * instance.
+     * <p>
+     * Both instances must already exist in SIG.
+     * <p>
+     * This will trigger {@link SigListener#edgeAdded(GraphEdgeChangeEvent) } in
+     * any SIG listener.
+     *
+     * @param ensemble the containing inter
+     * @param member   the contained inter
+     */
     public static void addMember (InterEnsemble ensemble,
                                   Inter member)
     {
-    }
-
-    public static void addMember (InterEnsemble ensemble,
-                                  Inter member,
-                                  ContainmentRelation relation)
-    {
         SIGraph sig = ensemble.getSig();
-        sig.addEdge(ensemble, member, (relation != null) ? relation : new ContainmentRelation());
-        member.setEnsemble(ensemble); // Deprecated?
+        sig.addEdge(ensemble, member, new ContainmentRelation());
     }
 
+    //------------//
+    // getMembers //
+    //------------//
+    /**
+     * Report the sorted list of current member instances for a provided ensemble.
+     *
+     * @param ensemble   the containing inter
+     * @param comparator the comparator to sort the list of members
+     * @return the members list, perhaps empty but not null
+     */
     public static List<Inter> getMembers (InterEnsemble ensemble,
                                           Comparator<Inter> comparator)
     {
@@ -70,6 +91,17 @@ public abstract class EnsembleHelper
         return members;
     }
 
+    //----------------//
+    // linkOldMembers //
+    //----------------//
+    /**
+     * Convert old containment implementation (based on nesting) to new implementation
+     * based on explicit ContainmentRelation in SIG.
+     *
+     * @param ensemble   the containing inter
+     * @param oldMembers the (unmarshalled) old list of nested members
+     */
+    @Deprecated
     public static void linkOldMembers (InterEnsemble ensemble,
                                        List<? extends Inter> oldMembers)
     {
@@ -80,11 +112,24 @@ public abstract class EnsembleHelper
         }
     }
 
+    //--------------//
+    // removeMember //
+    //--------------//
+    /**
+     * Remove the containment relationship between an (ensemble) instance and a (member)
+     * instance.
+     * <p>
+     * Both instances must exist in SIG.
+     * <p>
+     * This will trigger {@link SigListener#edgeRemoved(GraphEdgeChangeEvent)} in any SIG listener.
+     *
+     * @param ensemble the containing inter
+     * @param member   the contained inter
+     */
     public static void removeMember (InterEnsemble ensemble,
                                      Inter member)
     {
         SIGraph sig = ensemble.getSig();
         sig.removeEdge(ensemble, member);
-        member.setEnsemble(null); // Deprecated?
     }
 }

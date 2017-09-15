@@ -28,7 +28,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FermataNoteRelation;
@@ -177,16 +176,6 @@ public class FermataInter
     @Override
     public void addMember (Inter member)
     {
-        addMember(member, null);
-    }
-
-    //-----------//
-    // addMember //
-    //-----------//
-    @Override
-    public void addMember (Inter member,
-                           ContainmentRelation relation)
-    {
         if (member instanceof FermataArcInter) {
             FermataArcInter arc = getArc();
 
@@ -194,7 +183,7 @@ public class FermataInter
                 throw new IllegalStateException("Arc already defined");
             }
 
-            EnsembleHelper.addMember(this, member, relation);
+            EnsembleHelper.addMember(this, member);
         }
 
         if (member instanceof FermataDotInter) {
@@ -204,9 +193,19 @@ public class FermataInter
                 throw new IllegalStateException("Dot already defined");
             }
 
-            EnsembleHelper.addMember(this, member, relation);
+            EnsembleHelper.addMember(this, member);
         }
+    }
 
+    @Override
+    public void memberAdded (Inter member)
+    {
+        reset();
+    }
+
+    @Override
+    public void memberRemoved (Inter member)
+    {
         reset();
     }
 
@@ -391,8 +390,6 @@ public class FermataInter
         }
 
         EnsembleHelper.removeMember(this, member);
-
-        reset();
     }
 
     //-----------//

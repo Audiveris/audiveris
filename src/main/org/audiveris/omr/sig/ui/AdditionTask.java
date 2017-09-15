@@ -30,7 +30,7 @@ import org.jdesktop.application.Task;
 import java.util.Collection;
 
 /**
- * Class {@code AdditionTask} adds an Inter instance, together with relations.
+ * Class {@code AdditionTask} adds an Inter instance, together with its relations.
  *
  * @author Hervé Bitteur
  */

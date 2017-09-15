@@ -24,9 +24,9 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.VerticalSide;
+
 import static org.audiveris.omr.util.VerticalSide.*;
 
 import java.awt.Rectangle;
@@ -118,16 +118,6 @@ public class TimePairInter
     @Override
     public void addMember (Inter member)
     {
-        addMember(member, null);
-    }
-
-    //-----------//
-    // addMember //
-    //-----------//
-    @Override
-    public void addMember (Inter member,
-                           ContainmentRelation relation)
-    {
         if (!(member instanceof TimeNumberInter)) {
             throw new IllegalArgumentException("Only TimeNumberInter can be added to TimePair");
         }
@@ -136,8 +126,18 @@ public class TimePairInter
             throw new IllegalStateException("TimePairInter is already full");
         }
 
-        EnsembleHelper.addMember(this, member, relation);
+        EnsembleHelper.addMember(this, member);
+    }
 
+    @Override
+    public void memberAdded (Inter member)
+    {
+        reset();
+    }
+
+    @Override
+    public void memberRemoved (Inter member)
+    {
         reset();
     }
 
@@ -293,8 +293,6 @@ public class TimePairInter
         }
 
         EnsembleHelper.removeMember(this, member);
-
-        reset();
     }
 
     //-----------//

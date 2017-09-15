@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,8 +35,11 @@ import java.util.List;
  */
 class TaskHistory
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(TaskHistory.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** History of actions. */
     private final List<InterTask> tasks = new ArrayList<InterTask>();
 
@@ -57,6 +63,7 @@ class TaskHistory
             tasks.remove(i);
         }
 
+        ///logger.info("{}", this);
         return task;
     }
 
@@ -90,7 +97,21 @@ class TaskHistory
         InterTask task = tasks.get(cursor + 1);
         cursor++;
 
+        ///logger.info("{}", this);
         return task;
+    }
+
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("TaskHistory{");
+        sb.append("c:").append(cursor);
+
+        sb.append(" ").append(tasks);
+
+        sb.append("}");
+
+        return sb.toString();
     }
 
     /**
@@ -103,6 +124,7 @@ class TaskHistory
         InterTask task = tasks.get(cursor);
         cursor--;
 
+        ///logger.info("{}", this);
         return task;
     }
 }

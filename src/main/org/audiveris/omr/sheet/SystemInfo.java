@@ -36,13 +36,13 @@ import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.SigListener;
 import org.audiveris.omr.sig.SigValue.InterSet;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -71,7 +71,6 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
 
 /**
  * Class {@code SystemInfo} gathers information from the original picture about a
@@ -213,6 +212,7 @@ public class SystemInfo
         setStaves(staves);
 
         sig = new SIGraph(this);
+        sig.addGraphListener(new SigListener());
     }
 
     /**
@@ -278,11 +278,14 @@ public class SystemInfo
                 sentence.assignStaff(this, sentence.getLocation());
             }
 
-            // Temporary fix
+            // Temporary fix, for old ensemble implementations based on nesting.
             for (Inter inter : sig.inters(InterEnsemble.class)) {
                 InterEnsemble ensemble = (InterEnsemble) inter;
                 ensemble.linkOldMembers();
             }
+
+            // Listen to sig modifications
+            sig.addGraphListener(new SigListener());
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }

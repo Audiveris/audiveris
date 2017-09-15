@@ -33,6 +33,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigValue.InterSet;
+import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -137,9 +138,6 @@ public abstract class AbstractInter
 
     /** Deleted flag, if any. */
     protected boolean deleted;
-
-    /** Containing ensemble, if any. */
-    protected InterEnsemble ensemble;
 
     /** Object precise area, if any. */
     protected Area area;
@@ -275,32 +273,41 @@ public abstract class AbstractInter
     public void delete (boolean extensive)
     {
         if (!deleted) {
+            logger.debug("Deleting {} extensive:{}", this, extensive);
+
             if (isVip()) {
                 logger.info("VIP delete {}", this);
             }
 
             deleted = true;
 
-            if (extensive && ensemble instanceof InterEnsemble) {
-                InterEnsemble ens = (InterEnsemble) ensemble;
-
-                if (ens.getMembers().size() == 1) {
-                    ens.delete(extensive);
-                } else {
-                    ens.removeMember(this);
-                }
-            }
-
-            if (extensive && this instanceof InterEnsemble) {
-                InterEnsemble ens = (InterEnsemble) this;
-
-                // Delete the members
-                for (Inter member : ens.getMembers()) {
-                    member.delete(extensive);
-                }
-            }
-
             if (sig != null) {
+                // Handle ensemble - member cases?
+                // Extensive is true for non-manual deletions only
+                if (extensive) {
+                    for (Relation rel : sig.incomingEdgesOf(this)) {
+                        if (rel instanceof ContainmentRelation) {
+                            InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(this, rel);
+
+                            if (ens.getMembers().size() == 1) {
+                                logger.debug("{} deleting a dying ensemble {}", this, ens);
+                                ens.delete(false);
+                            }
+
+                            break;
+                        }
+                    }
+
+                    if (this instanceof InterEnsemble) {
+                        InterEnsemble ens = (InterEnsemble) this;
+
+                        for (Inter member : ens.getMembers()) {
+                            logger.debug("{} deleting a member {}", this, member);
+                            member.delete(false);
+                        }
+                    }
+                }
+
                 sig.removeVertex(this);
             }
         }
@@ -495,7 +502,13 @@ public abstract class AbstractInter
     @Override
     public InterEnsemble getEnsemble ()
     {
-        return ensemble;
+        for (Relation rel : sig.incomingEdgesOf(this)) {
+            if (rel instanceof ContainmentRelation) {
+                return (InterEnsemble) sig.getOppositeInter(this, rel);
+            }
+        }
+
+        return null;
     }
 
     //----------//
@@ -860,15 +873,6 @@ public abstract class AbstractInter
         ctxGrade = value;
     }
 
-    //-------------//
-    // setEnsemble //
-    //-------------//
-    @Override
-    public void setEnsemble (InterEnsemble ensemble)
-    {
-        this.ensemble = ensemble;
-    }
-
     //----------//
     // setGlyph //
     //----------//
@@ -1020,10 +1024,6 @@ public abstract class AbstractInter
 
         if (mirror != null) {
             sb.append(" mirror#").append(mirror.getId());
-        }
-
-        if (ensemble != null) {
-            sb.append(" e#").append(ensemble.getId());
         }
 
         if (staff != null) {

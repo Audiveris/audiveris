@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Page;
@@ -35,6 +36,7 @@ import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -1132,10 +1134,16 @@ public class MeasureStack
     //--------------------//
     public Set<AbstractChordInter> getWholeRestChords ()
     {
-        Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
+        final Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
 
         for (Measure measure : measures) {
-            set.addAll(measure.getWholeRestChords());
+            for (RestChordInter chord : measure.getRestChords()) {
+                final List<Inter> members = chord.getMembers();
+
+                if (!members.isEmpty() && (members.get(0).getShape() == Shape.WHOLE_REST)) {
+                    set.add(chord);
+                }
+            }
         }
 
         return set;

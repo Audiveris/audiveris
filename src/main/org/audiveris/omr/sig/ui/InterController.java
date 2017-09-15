@@ -330,14 +330,15 @@ public class InterController
 
         toRemove.add(inter);
 
+        // Remember members if any
         List<? extends Inter> members = null;
 
-        // Remember members if any
         if (inter instanceof InterEnsemble) {
+            // Simply remember the ensemble members
             InterEnsemble ens = (InterEnsemble) inter;
             members = ens.getMembers();
         } else {
-            // Delete containing ensemble if this is the last member
+            // Delete containing ensemble if this is the last member in ensemble
             SIGraph sig = inter.getSig();
 
             for (Relation rel : sig.getRelations(inter, ContainmentRelation.class)) {

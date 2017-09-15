@@ -542,13 +542,6 @@ public interface Inter
     void setContextualGrade (double value);
 
     /**
-     * Set the containing ensemble for this inter.
-     *
-     * @param ensemble the containing ensemble
-     */
-    void setEnsemble (InterEnsemble ensemble);
-
-    /**
      * Assign the glyph which is concerned by this interpretation.
      *
      * @param glyph the underlying glyph (non null)

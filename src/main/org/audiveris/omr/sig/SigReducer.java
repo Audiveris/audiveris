@@ -1272,8 +1272,9 @@ public class SigReducer
                 mirrors = new LinkedHashSet<Inter>();
                 mirrors.add(leftMirror);
 
-                if (left.getEnsemble() != null) {
-                    AbstractChordInter leftChord = (AbstractChordInter) left.getEnsemble();
+                final AbstractChordInter leftChord = (AbstractChordInter) left.getEnsemble();
+
+                if (leftChord != null) {
                     Inter leftChordMirror = leftChord.getMirror();
 
                     if (leftChordMirror != null) {
