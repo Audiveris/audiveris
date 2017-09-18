@@ -23,9 +23,7 @@ package org.audiveris.omr.ui;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-
 import static org.audiveris.omr.ui.ViewParameters.PaintingLayer.*;
-
 import org.audiveris.omr.ui.action.ActionManager;
 
 import org.jdesktop.application.AbstractBean;
@@ -70,6 +68,9 @@ public class ViewParameters
     /** A global property name for layers. */
     public static final String LAYER_PAINTING = "layerPainting";
 
+    /** A global property name for selection mode. */
+    public static final String SELECTION_MODE = "selectionMode";
+
     /** Should the voices be painted. */
     public static final String VOICE_PAINTING = "voicePainting";
 
@@ -90,9 +91,6 @@ public class ViewParameters
 
     /** Should the stick lines be painted. */
     public static final String LINE_PAINTING = "linePainting";
-
-    /** Should the Sections selection be enabled. */
-    public static final String SECTION_MODE = "sectionMode";
 
     /** Should the stick attachments be painted. */
     public static final String ATTACHMENT_PAINTING = "attachmentPainting";
@@ -143,9 +141,47 @@ public class ViewParameters
         }
     }
 
+    /**
+     * Enum {@code SelectionMode} defines type of entities to be selected.
+     */
+    public static enum SelectionMode
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        MODE_GLYPH,
+        MODE_INTER,
+        MODE_SECTION;
+
+        //~ Instance fields ------------------------------------------------------------------------
+        /** Icon assigned to mode. */
+        private Icon icon;
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Lazily building of mode icon.
+         *
+         * @return the mode icon
+         */
+        public Icon getIcon ()
+        {
+            if (icon == null) {
+                ResourceMap resource = Application.getInstance().getContext()
+                        .getResourceMap(ViewParameters.class);
+                String key = getClass().getSimpleName() + "." + this + ".icon";
+                String resourceName = resource.getString(key);
+                icon = new ImageIcon(ViewParameters.class.getResource(resourceName));
+            }
+
+            return icon;
+        }
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Action for switching layers. (Must be lazily computed) */
     private ApplicationAction layerAction;
+
+    /** Action for switching entity selection. (Must be lazily computed) */
+    private ApplicationAction selectionAction;
 
     /** Voice painting is chosen to be not persistent. */
     private boolean voicePainting = false;
@@ -156,8 +192,8 @@ public class ViewParameters
     /** Layer painting is chosen to be not persistent. */
     private PaintingLayer paintingLayer = INPUT;
 
-    /** Dynamic flag to remember if section mode is enabled. */
-    private boolean sectionMode = false;
+    /** Current selection mode. */
+    private SelectionMode selectionMode = SelectionMode.MODE_GLYPH;
 
     /** Staff line painting is chosen to be not persistent. */
     private boolean staffLinePainting = true;
@@ -180,6 +216,14 @@ public class ViewParameters
     public PaintingLayer getPaintingLayer ()
     {
         return paintingLayer;
+    }
+
+    //------------------//
+    // getSelectionMode //
+    //------------------//
+    public SelectionMode getSelectionMode ()
+    {
+        return selectionMode;
     }
 
     //----------------------//
@@ -252,14 +296,6 @@ public class ViewParameters
     public boolean isOutputPainting ()
     {
         return (paintingLayer == INPUT_OUTPUT) || (paintingLayer == OUTPUT);
-    }
-
-    //---------------//
-    // isSectionMode //
-    //---------------//
-    public boolean isSectionMode ()
-    {
-        return sectionMode;
     }
 
     //--------------------//
@@ -390,14 +426,14 @@ public class ViewParameters
         firePropertyChange(LAYER_PAINTING, oldValue, getPaintingLayer());
     }
 
-    //----------------//
-    // setSectionMode //
-    //----------------//
-    public void setSectionMode (boolean value)
+    //------------------//
+    // setSelectionMode //
+    //------------------//
+    public void setSelectionMode (SelectionMode value)
     {
-        boolean oldValue = sectionMode;
-        sectionMode = value;
-        firePropertyChange(SECTION_MODE, oldValue, value);
+        SelectionMode oldValue = getSelectionMode();
+        selectionMode = value;
+        firePropertyChange(SELECTION_MODE, oldValue, getSelectionMode());
     }
 
     //---------------------//
@@ -489,6 +525,35 @@ public class ViewParameters
         setPaintingLayer(layer);
     }
 
+    //------------------//
+    // switchSelections //
+    //------------------//
+    /**
+     * Action that switches among selection modes in a circular manner.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action
+    public void switchSelections (ActionEvent e)
+    {
+        // Compute next selection
+        int oldOrd = getSelectionMode().ordinal();
+        int ord = (oldOrd + 1) % SelectionMode.values().length;
+        SelectionMode mode = SelectionMode.values()[ord];
+
+        // Update toolbar/menu icon for this dedicated action
+        if (selectionAction == null) {
+            selectionAction = ActionManager.getInstance().getActionInstance(this, "switchSelections");
+        }
+
+        Icon icon = mode.getIcon();
+        selectionAction.putValue(AbstractAction.LARGE_ICON_KEY, icon); // For toolbar
+        selectionAction.putValue(AbstractAction.SMALL_ICON, icon); // For menu
+
+        // Notify new mode
+        setSelectionMode(mode);
+    }
+
     //-------------------//
     // toggleAnnotations //
     //-------------------//
@@ -577,19 +642,6 @@ public class ViewParameters
      */
     @Action(selectedProperty = MARK_PAINTING)
     public void toggleMarks (ActionEvent e)
-    {
-    }
-
-    //----------------//
-    // toggleSections //
-    //----------------//
-    /**
-     * Action that toggles the ability to select Sections (rather than Glyphs)
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = SECTION_MODE)
-    public void toggleSections (ActionEvent e)
     {
     }
 

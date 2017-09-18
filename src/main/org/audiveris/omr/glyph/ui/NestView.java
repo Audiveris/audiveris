@@ -30,6 +30,7 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.EntityView;
 import org.audiveris.omr.ui.ViewParameters;
+import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.Navigable;
@@ -99,7 +100,7 @@ public class NestView
     public void render (Graphics2D g)
     {
         // Should we draw the section borders?
-        final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
+        final boolean drawBorders = ViewParameters.getInstance().getSelectionMode() == SelectionMode.MODE_SECTION;
 
         // Stroke for borders
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
@@ -124,7 +125,10 @@ public class NestView
         // Global sheet renderers if any
         sheet.renderItems(g);
 
-        if (!ViewParameters.getInstance().isSectionMode()) {
+        ///if (!ViewParameters.getInstance().isSectionMode()) {
+        switch (ViewParameters.getInstance().getSelectionMode()) {
+        case MODE_GLYPH:
+
             // Render the selected glyph(s) if any
             List<Glyph> selectedGlyphs = glyphIndex.getSelectedGlyphList();
 
@@ -186,8 +190,16 @@ public class NestView
                 //                    }
                 //                }
             }
-        } else {
-            // Section selection mode
+
+            break;
+
+        case MODE_INTER:
+
+            // TODO: something to do with selected inters???
+            break;
+
+        case MODE_SECTION:
+
             for (Lag lag : lags) {
                 List<Section> selectedSections = lag.getEntityService().getSelectedEntityList();
 

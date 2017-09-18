@@ -58,12 +58,11 @@ import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.ViewParameters;
+import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
-
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
-
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
@@ -76,10 +75,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
-
 import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -361,8 +358,8 @@ public class SymbolsEditor
         public void contextAdded (Point pt,
                                   MouseMovement movement)
         {
-            if (!ViewParameters.getInstance().isSectionMode()) {
-                // Glyph mode
+            if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
+                // Glyph or Inter modes
                 setFocusLocation(new Rectangle(pt), movement, CONTEXT_ADD);
 
                 // Update highlighted slot if possible
@@ -389,8 +386,8 @@ public class SymbolsEditor
         public void contextSelected (Point pt,
                                      MouseMovement movement)
         {
-            if (!ViewParameters.getInstance().isSectionMode()) {
-                // Glyph mode
+            if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
+                // Glyph or Inter mode
                 setFocusLocation(new Rectangle(pt), movement, CONTEXT_INIT);
 
                 // Update highlighted slot if possible
@@ -522,7 +519,7 @@ public class SymbolsEditor
 
             if (viewParams.isInputPainting()) {
                 // Sections
-                final boolean drawBorders = viewParams.isSectionMode();
+                final boolean drawBorders = viewParams.getSelectionMode() == SelectionMode.MODE_SECTION;
                 final Stroke oldStroke = (drawBorders) ? UIUtil.setAbsoluteStroke(g, 1f) : null;
 
                 for (Lag lag : lags) {
