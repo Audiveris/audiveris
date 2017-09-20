@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
@@ -90,6 +91,9 @@ public class InterController
 
     /** User pane. Lazily assigned */
     private SymbolsEditor editor;
+
+    /** User focus on a given Inter, if any. */
+    private Inter interFocus;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -280,6 +284,16 @@ public class InterController
     }
 
     /**
+     * Report the inter, if any, which has UI focus.
+     *
+     * @return the interFocus, perhaps null
+     */
+    public Inter getInterFocus ()
+    {
+        return interFocus;
+    }
+
+    /**
      * Redo last user (undone) action.
      *
      * @return the task that carries out additional processing
@@ -394,6 +408,23 @@ public class InterController
     }
 
     /**
+     * Set UI focus on provided inter.
+     *
+     * @param interFocus the interFocus to set
+     */
+    public void setInterFocus (Inter interFocus)
+    {
+        if (interFocus != null) {
+            logger.info("Focus set on {}", interFocus);
+        } else {
+            logger.info("Focus unset");
+        }
+
+        this.interFocus = interFocus;
+        editor.refresh();
+    }
+
+    /**
      * Late assignment of editor, to avoid circularities in elaboration, and to
      * allow handling of delete key.
      *
@@ -403,12 +434,16 @@ public class InterController
     {
         editor = symbolsEditor;
 
-        // Support for delete key
         NestView view = editor.getView();
-        view.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                KeyStroke.getKeyStroke("DELETE"),
-                "RemoveAction");
+        InputMap inputMap = view.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        // Support for delete key
+        inputMap.put(KeyStroke.getKeyStroke("DELETE"), "RemoveAction");
         view.getActionMap().put("RemoveAction", new RemoveAction());
+
+        // Support for escape key
+        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "UnfocusAction");
+        view.getActionMap().put("UnfocusAction", new UnfocusAction());
     }
 
     /**
@@ -497,6 +532,26 @@ public class InterController
 
             if (inter != null) {
                 removeInter(inter, null);
+            }
+        }
+    }
+
+    //---------------//
+    // UnfocusAction //
+    //---------------//
+    /**
+     * Action to remove inter focus.
+     */
+    private class UnfocusAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            if (getInterFocus() != null) {
+                setInterFocus(null);
             }
         }
     }

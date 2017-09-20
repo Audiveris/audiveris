@@ -259,6 +259,19 @@ public abstract class AbstractChordInter
         this.voice = voice;
     }
 
+    //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        if ((stem != null) && stem.contains(point)) {
+            return true;
+        }
+
+        return super.contains(point);
+    }
+
     //-----------//
     // countDots //
     //-----------//

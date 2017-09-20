@@ -143,7 +143,7 @@ public class WordInter
     @Override
     public String shapeString ()
     {
-        return "WORD_\"" + value + "\"";
+        return "WORD";
     }
 
     //-----------//

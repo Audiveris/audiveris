@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -116,7 +115,7 @@ public class SentenceInter
                              FontInfo meanFont,
                              TextRole role)
     {
-        super(null, bounds, Shape.TEXT, grade);
+        super(null, bounds, null, grade);
 
         this.meanFont = meanFont;
         this.role = role;
@@ -368,7 +367,7 @@ public class SentenceInter
     @Override
     public String shapeString ()
     {
-        return "SENTENCE_\"" + getValue() + "\"";
+        return "SENTENCE";
     }
 
     //-----------//

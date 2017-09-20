@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2017. All rights reserved.
+//  Copyright ©  Audiveris 2017. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,180 +22,90 @@
 package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
-import org.audiveris.omr.ui.view.LocationDependentMenu;
+import org.audiveris.omr.ui.util.SeparableMenu;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
 
+import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code InterMenu} displays a collection of interpretations.
+ * Class {@code InterMenu} builds a menu around a given inter.
  *
  * @author Hervé Bitteur
  */
 public class InterMenu
-        extends LocationDependentMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(InterMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    private final Sheet sheet;
+    private final SeparableMenu menu;
 
-    private final InterListener interListener = new InterListener();
+    private final Inter inter;
+
+    private final JMenuItem focusItem;
+
+    private final Listener listener = new Listener();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new InterMenu object.
+     * Creates a new {@code InterMenu} object.
      *
-     * @param sheet the related sheet
+     * @param inter originating inter
      */
-    public InterMenu (Sheet sheet)
+    public InterMenu (Inter inter)
     {
-        super("Inters ...");
-        this.sheet = sheet;
+        this.inter = inter;
+        menu = new SeparableMenu(new InterAction(inter, null));
+
+        // Focus
+        final Sheet sheet = inter.getSig().getSystem().getSheet();
+        final InterController interController = sheet.getInterController();
+        final boolean focused = inter == interController.getInterFocus();
+        focusItem = new JCheckBoxMenuItem(focused ? "Unset focus" : "Set focus");
+        focusItem.addMouseListener(listener);
+        focusItem.setSelected(focused);
+        menu.add(focusItem);
+        menu.addSeparator();
+
+        // Actions on inter
+        // Existing relations
+        for (Relation relation : inter.getSig().edgesOf(inter)) {
+            JMenuItem item = new JMenuItem(new RelationAction(inter, relation));
+            item.addMouseListener(listener);
+            menu.add(item);
+        }
+
+        menu.trimSeparator();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // updateUserLocation //
-    //--------------------//
-    @Override
-    public void updateUserLocation (Rectangle rect)
+    //---------//
+    // getMenu //
+    //---------//
+    /**
+     * @return the menu
+     */
+    public JMenu getMenu ()
     {
-        updateMenu(sheet.getInterIndex().getEntityService().getSelectedEntityList());
-
-        super.updateUserLocation(rect);
-    }
-
-    private void insertDeletion (SystemInfo system,
-                                 final List<Inter> sysInters)
-    {
-        JMenuItem item = new JMenuItem(
-                "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
-        item.addActionListener(
-                new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                final InterController interController = sheet.getInterController();
-
-                interController.removeInters(sysInters, null);
-            }
-        });
-        this.add(item);
-        this.addSeparator();
-    }
-
-    //------------//
-    // updateMenu //
-    //------------//
-    private void updateMenu (Collection<Inter> inters)
-    {
-        // Sort the inters, first by containing system, then by decreasing contextual grade
-        Map<SystemInfo, List<Inter>> interMap = new TreeMap<SystemInfo, List<Inter>>();
-
-        if (inters != null) {
-            for (Inter inter : inters) {
-                SIGraph sig = inter.getSig();
-
-                if (sig != null) {
-                    SystemInfo system = sig.getSystem();
-
-                    if (system != null) {
-                        List<Inter> list = interMap.get(system);
-
-                        if (list == null) {
-                            interMap.put(system, list = new ArrayList<Inter>());
-                        }
-
-                        list.add(inter);
-                    }
-                }
-            }
-        }
-
-        for (List<Inter> list : interMap.values()) {
-            Collections.sort(list, Inter.byReverseBestGrade);
-        }
-
-        try {
-            // We rebuild the menu items on each update, since the set of inters is brand new.
-            removeAll();
-
-            if ((inters != null) && !inters.isEmpty()) {
-                for (Entry<SystemInfo, List<Inter>> entry : interMap.entrySet()) {
-                    SystemInfo system = entry.getKey();
-
-                    if (getMenuComponentCount() > 0) {
-                        addSeparator();
-                    }
-
-                    //                    UIUtil.insertTitle(
-                    //                            this,
-                    //                            sysInters.size() + " inters for System #" + system.getId() + ":");
-                    List<Inter> sysInters = entry.getValue();
-                    insertDeletion(system, sysInters);
-
-                    for (Inter inter : sysInters) {
-                        final SIGraph sig = inter.getSig();
-                        final Set<Relation> rels = sig.edgesOf(inter);
-
-                        if ((rels == null) || rels.isEmpty()) {
-                            // Just a interpretation item
-                            JMenuItem item = new JMenuItem(new InterAction(inter));
-                            item.addMouseListener(interListener);
-                            add(item);
-                        } else {
-                            // A whole menu of relations for this interpretation
-                            JMenu relMenu = new RelationMenu(inter, rels).getMenu();
-                            relMenu.addMouseListener(interListener);
-                            add(relMenu);
-                        }
-                    }
-                }
-
-                setVisible(true);
-
-                return;
-            }
-
-            setVisible(false);
-        } catch (Exception ex) {
-            logger.warn("Error updating menu " + ex, ex);
-        }
+        return menu;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //---------------//
-    // InterListener //
-    //---------------//
-    /**
-     * Publish related inter when entered by mouse.
-     */
-    private static class InterListener
+    //----------//
+    // Listener //
+    //----------//
+    private class Listener
             extends AbstractMouseListener
     {
         //~ Methods --------------------------------------------------------------------------------
@@ -204,8 +114,24 @@ public class InterMenu
         public void mouseEntered (MouseEvent e)
         {
             JMenuItem item = (JMenuItem) e.getSource();
-            InterAction action = (InterAction) item.getAction();
-            action.publish();
+            Action action = item.getAction();
+
+            if (action instanceof RelationAction) {
+                ((RelationAction) action).publish();
+            } else if (action instanceof InterAction) {
+                ((InterAction) action).publish();
+            }
+        }
+
+        @Override
+        public void mouseReleased (MouseEvent e)
+        {
+            if (e.getSource() == focusItem) {
+                final Sheet sheet = inter.getSig().getSystem().getSheet();
+                final InterController interController = sheet.getInterController();
+                interController.setInterFocus(focusItem.isSelected() ? inter : null);
+                ((InterAction) menu.getAction()).publish();
+            }
         }
     }
 }

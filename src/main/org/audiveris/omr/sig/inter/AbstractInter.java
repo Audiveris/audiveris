@@ -245,6 +245,14 @@ public abstract class AbstractInter
             return true;
         }
 
+        if (this instanceof InterEnsemble) {
+            for (Inter member : ((InterEnsemble) this).getMembers()) {
+                if (member.contains(point)) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 

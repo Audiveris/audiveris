@@ -52,6 +52,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
+import org.audiveris.omr.sig.ui.InterService;
 import org.audiveris.omr.sig.ui.ShapeBoard;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
@@ -71,6 +72,7 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -115,9 +117,6 @@ public class SymbolsEditor
     /** Pop-up menu related to page selection. */
     private final EditorMenu pageMenu;
 
-    /** The entity used for display focus. */
-    private final ShapeFocusBoard focus;
-
     /** View parameters. */
     private final ViewParameters viewParams = ViewParameters.getInstance();
 
@@ -136,7 +135,6 @@ public class SymbolsEditor
     {
         this.sheet = sheet;
 
-        focus = null;
         pageMenu = new EditorMenu(sheet);
 
         List<Board> boards = new ArrayList<Board>();
@@ -518,6 +516,18 @@ public class SymbolsEditor
             }
 
             if (viewParams.isInputPainting()) {
+                // Focused inter, if any
+                final InterController interController = sheet.getInterController();
+                final Inter focus = interController.getInterFocus();
+
+                if ((focus != null) && !focus.isDeleted()) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setColor(Color.PINK);
+                    g2.setStroke(new BasicStroke(6f));
+                    renderBoxArea(focus.getBounds(), g2);
+                    g2.dispose();
+                }
+
                 // Sections
                 final boolean drawBorders = viewParams.getSelectionMode() == SelectionMode.MODE_SECTION;
                 final Stroke oldStroke = (drawBorders) ? UIUtil.setAbsoluteStroke(g, 1f) : null;
@@ -586,7 +596,9 @@ public class SymbolsEditor
                     }
                 }
 
-                Inter inter = (Inter) sheet.getInterIndex().getEntityService().getSelectedEntity();
+                // Selected inter
+                InterService interService = (InterService) sheet.getInterIndex().getEntityService();
+                Inter inter = interService.getSelectedEntity();
 
                 if ((inter != null) && !inter.isDeleted()) {
                     // Inter: attachments for selected inter, if any

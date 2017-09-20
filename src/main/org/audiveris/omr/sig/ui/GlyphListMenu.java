@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        G l y p h M e n u                                       //
+//                                    G l y p h L i s t M e n u                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -42,16 +42,16 @@ import java.util.Collection;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code GlyphMenu} displays a collection of glyphs.
+ * Class {@code GlyphListMenu} displays a collection of glyphs.
  *
  * @author Hervé Bitteur
  */
-public class GlyphMenu
+public class GlyphListMenu
         extends LocationDependentMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(GlyphMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphListMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     private final GlyphListener glyphListener = new GlyphListener();
@@ -60,11 +60,11 @@ public class GlyphMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new GlyphMenu object.
+     * Creates a new {@code GlyphMenu} object.
      *
      * @param sheet the related sheet
      */
-    public GlyphMenu (Sheet sheet)
+    public GlyphListMenu (Sheet sheet)
     {
         super("Glyphs");
         this.sheet = sheet;

@@ -125,7 +125,6 @@ public class NestView
         // Global sheet renderers if any
         sheet.renderItems(g);
 
-        ///if (!ViewParameters.getInstance().isSectionMode()) {
         switch (ViewParameters.getInstance().getSelectionMode()) {
         case MODE_GLYPH:
 

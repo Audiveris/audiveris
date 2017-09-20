@@ -515,8 +515,6 @@ public class SigPainter
     @Override
     public void visit (SentenceInter sentence)
     {
-        setColor(sentence);
-
         FontInfo lineMeanFont = sentence.getMeanFont();
 
         for (Inter member : sentence.getMembers()) {
@@ -664,6 +662,7 @@ public class SigPainter
             Font font = new TextFont(lineMeanFont);
             FontRenderContext frc = g.getFontRenderContext();
             TextLayout layout = new TextLayout(word.getValue(), font, frc);
+            setColor(word);
 
             if (word.getValue().length() > 2) {
                 paint(layout, word.getLocation(), BASELINE_LEFT);
