@@ -36,17 +36,18 @@ import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
+import org.audiveris.omr.sig.inter.RestChordInter;
+import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.relation.ContainmentRelation;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
-
-import org.jdesktop.application.Task;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -67,10 +68,10 @@ import javax.swing.KeyStroke;
  * When adding or dropping an inter, the instance is allocated in proper system (and staff if
  * relevant) together with its relations with existing partners nearby.
  * It is not always obvious to select the proper staff, various techniques are used, and if
- * all have failed, TODO: the user is prompted for staff indication.
+ * all have failed, the user is prompted for staff indication.
  * <p>
  * Finally, a proper InterTask is allocated, inserted in controller's history, and run.
- * Undo & redo actions operate on this history.
+ * Undo & Redo actions operate on this history.
  *
  * @author Hervé Bitteur
  */
@@ -112,10 +113,9 @@ public class InterController
      *
      * @param glyph the glyph to interpret
      * @param shape the shape to be assigned
-     * @return the task that carries out the processing
      */
-    public Task<Void, Void> addInter (Glyph glyph,
-                                      Shape shape)
+    public void addInter (Glyph glyph,
+                          Shape shape)
     {
         logger.debug("addInter {} as {}", glyph, shape);
 
@@ -202,7 +202,7 @@ public class InterController
         if (staff == null) {
             logger.info("No staff, abandonned.");
 
-            return null;
+            return;
         }
 
         ghost.setStaff(staff);
@@ -211,23 +211,7 @@ public class InterController
         // If glyph used by another inter, delete this other inter
         removeCompetitors(glyph, system);
 
-        InterTask task = new AdditionTask(system.getSig(), ghost, partnerships);
-
-        history.add(task);
-
-        Task<Void, Void> uTask = task.performDo();
-
-        sheet.getStub().setModified(true);
-        sheet.getGlyphIndex().publish(null);
-        sheet.getInterIndex().publish(ghost);
-        editor.refresh();
-
-        BookActions.getInstance().setUndoable(history.canUndo());
-        BookActions.getInstance().setRedoable(history.canRedo());
-
-        logger.info("Added {} in staff#{}", ghost, staff.getId());
-
-        return uTask;
+        addGhost(ghost, partnerships);
     }
 
     /**
@@ -255,32 +239,18 @@ public class InterController
      *
      * @param ghost  the populated inter (staff & bounds are already set)
      * @param center the target location for inter center
-     * @return the task that carries out additional processing
      */
-    public Task<Void, Void> dropInter (Inter ghost,
-                                       Point center)
+    public void dropInter (Inter ghost,
+                           Point center)
     {
-        logger.info("drop {} at {}", ghost, center);
+        logger.debug("dropInter {} at {}", ghost, center);
 
         SystemInfo system = ghost.getStaff().getSystem();
 
         // Edges? this depends on ghost class...
         Collection<Partnership> partnerships = ghost.searchPartnerships(system, false);
 
-        InterTask task = new AdditionTask(system.getSig(), ghost, partnerships);
-        history.add(task);
-
-        Task<Void, Void> uTask = task.performDo();
-
-        sheet.getStub().setModified(true);
-        sheet.getGlyphIndex().publish(null);
-        sheet.getInterIndex().publish(ghost);
-        editor.refresh();
-
-        BookActions.getInstance().setUndoable(history.canUndo());
-        BookActions.getInstance().setRedoable(history.canRedo());
-
-        return uTask;
+        addGhost(ghost, partnerships);
     }
 
     /**
@@ -294,28 +264,22 @@ public class InterController
     }
 
     /**
-     * Redo last user (undone) action.
-     *
-     * @return the task that carries out additional processing
+     * Redo last user (undone) action sequence.
      */
-    public Task<Void, Void> redo ()
+    public void redo ()
     {
-        InterTask task = history.redo();
-        logger.info("Redo {}", task);
-
-        Task<Void, Void> uTask = task.performRedo();
+        InterTaskList seq = history.toRedo();
+        seq.performRedo();
 
         sheet.getStub().setModified(true);
         sheet.getGlyphIndex().publish(null);
 
-        Inter inter = task.getInter();
+        Inter inter = seq.getLastInter();
         sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
         editor.refresh();
 
         BookActions.getInstance().setUndoable(history.canUndo());
         BookActions.getInstance().setRedoable(history.canRedo());
-
-        return uTask;
     }
 
     /**
@@ -323,20 +287,15 @@ public class InterController
      *
      * @param inter    the inter to remove
      * @param toRemove current set of inters to remove, or null
-     * @return the task that carries out additional processing
      */
-    public Task<Void, Void> removeInter (Inter inter,
-                                         Set<Inter> toRemove)
+    public void removeInter (Inter inter,
+                             Set<Inter> toRemove)
     {
         if (inter.isDeleted()) {
-            return null;
+            return;
         }
 
-        logger.debug("Removing {}", inter);
-
-        if (inter.isVip()) {
-            logger.info("VIP removeInter for {}", inter);
-        }
+        logger.debug("removeInter on {}", inter);
 
         if (toRemove == null) {
             toRemove = new LinkedHashSet<Inter>();
@@ -344,13 +303,22 @@ public class InterController
 
         toRemove.add(inter);
 
+        InterTaskList seq = new InterTaskList();
+        seq.add(new RemovalTask(inter));
+
         // Remember members if any
         List<? extends Inter> members = null;
 
         if (inter instanceof InterEnsemble) {
-            // Simply remember the ensemble members
+            // Remove all the ensemble members
             InterEnsemble ens = (InterEnsemble) inter;
             members = ens.getMembers();
+
+            for (Inter member : members) {
+                if (!toRemove.contains(member)) {
+                    seq.add(new RemovalTask(member));
+                }
+            }
         } else {
             // Delete containing ensemble if this is the last member in ensemble
             SIGraph sig = inter.getSig();
@@ -359,15 +327,14 @@ public class InterController
                 InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
 
                 if (!toRemove.contains(ens) && (ens.getMembers().size() <= 1)) {
-                    removeInter(ens, toRemove);
+                    toRemove.add(ens);
+                    seq.add(new RemovalTask(ens));
                 }
             }
         }
 
-        InterTask task = new RemovalTask(inter);
-        history.add(task);
-
-        Task<Void, Void> uTask = task.performDo();
+        history.add(seq);
+        seq.performDo();
 
         sheet.getStub().setModified(true);
         ///sheet.getGlyphIndex().publish(null); // Let glyph displayed, to ease new inter assignment
@@ -377,14 +344,6 @@ public class InterController
         BookActions.getInstance().setUndoable(history.canUndo());
         BookActions.getInstance().setRedoable(history.canRedo());
 
-        logger.info("Removed {}", inter);
-
-        // Finally, members is any
-        if (members != null) {
-            removeInters(members, toRemove);
-        }
-
-        return uTask;
     }
 
     /**
@@ -448,32 +407,59 @@ public class InterController
 
     /**
      * Undo last user action.
-     *
-     * @return the task that carries out additional processing
      */
-    public Task<Void, Void> undo ()
+    public void undo ()
     {
-        InterTask task = history.undo();
-        logger.info("Undo {}", task);
-
-        Task<Void, Void> uTask = task.performUndo();
+        InterTaskList seq = history.toUndo();
+        seq.performUndo();
 
         sheet.getStub().setModified(true);
         sheet.getGlyphIndex().publish(null);
 
-        Inter inter = task.getInter();
+        Inter inter = seq.getFirstInter();
         sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
         editor.refresh();
 
         BookActions.getInstance().setUndoable(history.canUndo());
         BookActions.getInstance().setRedoable(history.canRedo());
-
-        return uTask;
     }
 
-    //-------------------//
-    // removeCompetitors //
-    //-------------------//
+    /**
+     * Perform ghost addition.
+     *
+     * @param ghost        the ghost inter to add/drop
+     * @param partnerships its partnerships
+     */
+    private void addGhost (Inter ghost,
+                           Collection<Partnership> partnerships)
+    {
+        SystemInfo system = ghost.getStaff().getSystem();
+
+        InterTaskList seq = new InterTaskList(
+                new AdditionTask(system.getSig(), ghost, partnerships));
+
+        if (ghost instanceof RestInter) {
+            // Wrap this rest within a rest chord
+            seq.add(
+                    new AdditionTask(
+                            system.getSig(),
+                            new RestChordInter(-1),
+                            Arrays.asList(new Partnership(ghost, new ContainmentRelation(), true))));
+        }
+
+        history.add(seq);
+
+        seq.performDo();
+
+        sheet.getStub().setModified(true);
+        sheet.getGlyphIndex().publish(null);
+        sheet.getInterIndex().publish(ghost);
+        editor.refresh();
+
+        BookActions.getInstance().setUndoable(history.canUndo());
+        BookActions.getInstance().setRedoable(history.canRedo());
+    }
+
     /**
      * Discard any existing Inter with the same underlying glyph.
      *

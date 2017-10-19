@@ -25,8 +25,6 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Partnership;
 
-import org.jdesktop.application.Task;
-
 import java.util.Collection;
 
 /**
@@ -55,34 +53,30 @@ public class AdditionTask
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public Task<Void, Void> performDo ()
+    public void performDo ()
     {
         sig.addVertex(inter);
 
         for (Partnership partnership : partnerships) {
             partnership.applyTo(inter);
         }
-
-        return null;
     }
 
     @Override
-    public Task<Void, Void> performRedo ()
+    public void performRedo ()
     {
-        return performDo();
+        performDo();
     }
 
     @Override
-    public Task<Void, Void> performUndo ()
+    public void performUndo ()
     {
         inter.delete();
-
-        return null;
     }
 
     @Override
     protected String actionName ()
     {
-        return "addition";
+        return "add";
     }
 }

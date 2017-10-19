@@ -26,8 +26,6 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 
-import org.jdesktop.application.Task;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -50,40 +48,37 @@ public class RemovalTask
      */
     public RemovalTask (Inter inter)
     {
-        super(inter.getSig(), inter, partnershipsOf(inter));
+        super(inter.getSig(), inter, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public Task<Void, Void> performDo ()
+    public void performDo ()
     {
+        partnerships = partnershipsOf(inter);
         inter.delete(false);
-
-        return null;
     }
 
     @Override
-    public Task<Void, Void> performRedo ()
+    public void performRedo ()
     {
-        return performDo();
+        performDo();
     }
 
     @Override
-    public Task<Void, Void> performUndo ()
+    public void performUndo ()
     {
         sig.addVertex(inter);
 
         for (Partnership partnership : partnerships) {
             partnership.applyTo(inter);
         }
-
-        return null;
     }
 
     @Override
     protected String actionName ()
     {
-        return "removal";
+        return "del";
     }
 
     /**

@@ -25,8 +25,6 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Partnership;
 
-import org.jdesktop.application.Task;
-
 import java.util.Collection;
 
 /**
@@ -46,7 +44,7 @@ public abstract class InterTask
     protected final Inter inter;
 
     /** Relations inter is involved in. */
-    protected final Collection<Partnership> partnerships;
+    protected Collection<Partnership> partnerships;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -66,14 +64,16 @@ public abstract class InterTask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    public abstract Task<Void, Void> performDo ();
+    public abstract void performDo ();
 
-    public abstract Task<Void, Void> performRedo ();
+    public abstract void performRedo ();
 
-    public abstract Task<Void, Void> performUndo ();
+    public abstract void performUndo ();
 
     /**
-     * @return the inter
+     * Getter for involved inter.
+     *
+     * @return the inter involved
      */
     public Inter getInter ()
     {
@@ -84,13 +84,13 @@ public abstract class InterTask
     public String toString ()
     {
         StringBuilder sb = new StringBuilder(actionName());
-        sb.append(" of ").append(inter);
+        sb.append(" ").append(inter);
 
         return sb.toString();
     }
 
     /**
-     * Report a name for inter task action
+     * Report a name for inter task action.
      *
      * @return task name
      */

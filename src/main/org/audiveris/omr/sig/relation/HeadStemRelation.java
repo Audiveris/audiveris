@@ -190,11 +190,11 @@ public class HeadStemRelation
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
-                2,
+                1,
                 "Value for (source) head coeff in support formula");
 
         private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
-                2,
+                1,
                 "Value for (target) stem coeff in support formula");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
