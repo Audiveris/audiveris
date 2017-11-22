@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
@@ -151,8 +152,8 @@ public class CrossDetector
     private void detectCrossOverlaps (List<Inter> aboves,
                                       List<Inter> belows)
     {
-        Collections.sort(aboves, Inter.byAbscissa);
-        Collections.sort(belows, Inter.byAbscissa);
+        Collections.sort(aboves, Inters.byAbscissa);
+        Collections.sort(belows, Inters.byAbscissa);
 
         NextLeft:
         for (Inter above : aboves) {

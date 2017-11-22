@@ -63,6 +63,10 @@ import javax.xml.bind.annotation.XmlList;
  * Class {@code AbstractChordInter} represents an ensemble of notes (rests, heads)
  * attached to the same stem if any, and that start on the same time slot in a part.
  * <p>
+ * A chord made of small heads (typically used in Acciaccatura and Appoggiatura) is a
+ * {@link SmallChordInter}.
+ * A chord made of (non-small) heads or rests is called a "standard" chord by opposition to "small".
+ * <p>
  * <b>NOTA:</b>We assume that all notes of a chord have the same duration.
  * Otherwise separate chord instances must be created.
  *
@@ -84,7 +88,7 @@ public abstract class AbstractChordInter
     // Persistent data
     //----------------
     //
-    /** Attached stem if any. */
+    /** Attached stem, if any. */
     @XmlIDREF
     @XmlAttribute(name = "stem")
     protected StemInter stem;
@@ -92,6 +96,7 @@ public abstract class AbstractChordInter
     /**
      * Sequence of chord notes (one or several heads or just a single rest),
      * kept ordered bottom-up.
+     * This is deprecated, replaced by the use of containment relation.
      */
     @XmlList
     @XmlIDREF
@@ -126,14 +131,11 @@ public abstract class AbstractChordInter
     /** Containing slot, if any (no slot for whole/multi rests). */
     protected Slot slot;
 
-    /** Start time, if any, since beginning of the containing measure. */
+    /** Start time (since beginning of the containing measure). */
     protected Rational timeOffset;
 
     /** Voice this chord belongs to. */
     protected Voice voice;
-
-    /** Ratio to get actual rawDuration WRT graphical notation. */
-    protected DurationFactor tupletFactor;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -224,18 +226,6 @@ public abstract class AbstractChordInter
 
             // Augmentation dot(s)?
             countDots();
-
-            if (sig == null) {
-                logger.error("No sig for inter#" + getId());
-            } else {
-                // Tuplet?
-                for (Relation rel : sig.getRelations(this, ChordTupletRelation.class)) {
-                    TupletInter tuplet = (TupletInter) sig.getOppositeInter(this, rel);
-                    setTupletFactor(tuplet.getDurationFactor());
-
-                    break; // safer, although there should be at most one such relation.
-                }
-            }
 
             // Staff for rest chord
             if (this instanceof RestChordInter) {
@@ -500,6 +490,8 @@ public abstract class AbstractChordInter
         } else {
             Rational sansTuplet = getDurationSansTuplet();
 
+            DurationFactor tupletFactor = getTupletFactor();
+
             if (tupletFactor == null) {
                 return sansTuplet;
             } else {
@@ -683,7 +675,7 @@ public abstract class AbstractChordInter
             }
         }
 
-        Collections.sort(tied, AbstractChordInter.byAbscissa);
+        Collections.sort(tied, Inters.byAbscissa);
 
         return tied;
     }
@@ -758,15 +750,25 @@ public abstract class AbstractChordInter
     //------------//
     // getMembers //
     //------------//
+    /**
+     * {@inheritDoc}
+     *
+     * @return the chord notes, ordered bottom up
+     */
     @Override
     public List<Inter> getMembers ()
     {
-        return EnsembleHelper.getMembers(this, Inter.byReverseCenterOrdinate);
+        return EnsembleHelper.getMembers(this, Inters.byReverseCenterOrdinate);
     }
 
     //----------//
     // getNotes //
     //----------//
+    /**
+     * Report the chord notes.
+     *
+     * @return the chord notes, ordered bottom up
+     */
     public List<? extends Inter> getNotes ()
     {
         return getMembers();
@@ -807,7 +809,7 @@ public abstract class AbstractChordInter
     //----------//
     /**
      * If the chord embraces just one staff, this staff is returned, but if it embraces
-     * two staves, null is returned then {@link #getStaves()} should be used instead.
+     * two staves, null is returned and {@link #getStaves()} should be used instead.
      *
      * @return the single embraced staff, or null
      */
@@ -949,7 +951,13 @@ public abstract class AbstractChordInter
      */
     public DurationFactor getTupletFactor ()
     {
-        return tupletFactor;
+        for (Relation rel : sig.getRelations(this, ChordTupletRelation.class)) {
+            TupletInter tuplet = (TupletInter) sig.getOppositeInter(this, rel);
+
+            return tuplet.getDurationFactor();
+        }
+
+        return null;
     }
 
     //----------//
@@ -1075,7 +1083,6 @@ public abstract class AbstractChordInter
         slot = null;
         voice = null;
         timeOffset = null;
-        tupletFactor = null;
     }
 
     //------------//
@@ -1131,19 +1138,6 @@ public abstract class AbstractChordInter
         }
 
         return true;
-    }
-
-    //-----------------//
-    // setTupletFactor //
-    //-----------------//
-    /**
-     * Assign a tuplet factor to this chord
-     *
-     * @param tupletFactor the factor to apply
-     */
-    public void setTupletFactor (DurationFactor tupletFactor)
-    {
-        this.tupletFactor = tupletFactor;
     }
 
     //----------//

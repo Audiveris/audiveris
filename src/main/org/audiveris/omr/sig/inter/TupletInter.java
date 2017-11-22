@@ -31,9 +31,11 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
+import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -41,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,7 +59,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "tuplet")
 public class TupletInter
-        extends AbstractNotationInter
+        extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -186,7 +189,7 @@ public class TupletInter
                 list.add((AbstractChordInter) sig.getOppositeInter(this, tcRel));
             }
 
-            Collections.sort(list, Inter.byAbscissa);
+            Collections.sort(list, Inters.byAbscissa);
             chords = Collections.unmodifiableList(list);
         }
 
@@ -240,6 +243,32 @@ public class TupletInter
         }
 
         return null;
+    }
+
+    //--------------------//
+    // searchPartnerships //
+    //--------------------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Specifically, look for chords to link with this tuplet.
+     *
+     * @return chords partnership, perhaps empty
+     */
+    @Override
+    public Collection<Partnership> searchPartnerships (SystemInfo system,
+                                                       boolean doit)
+    {
+        MeasureStack stack = system.getMeasureStackAt(getCenter());
+        Collection<Partnership> partnerships = new TupletsBuilder(stack).lookupPartnerships(this);
+
+        if (doit) {
+            for (Partnership partnership : partnerships) {
+                partnership.applyTo(this);
+            }
+        }
+
+        return partnerships;
     }
 
     //----------//

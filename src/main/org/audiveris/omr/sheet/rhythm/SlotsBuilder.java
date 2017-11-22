@@ -337,7 +337,7 @@ public class SlotsBuilder
         // Sort measure standard chords by abscissa
         List<AbstractChordInter> stdChords = new ArrayList<AbstractChordInter>(
                 stack.getStandardChords());
-        Collections.sort(stdChords, Inter.byAbscissa);
+        Collections.sort(stdChords, Inters.byAbscissa);
 
         // Populate graph with chords
         Graphs.addAllVertices(graph, stdChords);
@@ -374,7 +374,7 @@ public class SlotsBuilder
         // time slot being considered. Initially, it contains just the whole chords.
         List<AbstractChordInter> actives = new ArrayList<AbstractChordInter>(
                 stack.getWholeRestChords());
-        Collections.sort(actives, AbstractChordInter.byAbscissa);
+        Collections.sort(actives, Inters.byAbscissa);
 
         // Create voices for whole chords
         handleWholeVoices(actives);
@@ -857,7 +857,7 @@ public class SlotsBuilder
 
                 final List<AbstractChordInter> groupChords = new ArrayList<AbstractChordInter>(
                         chordSet);
-                Collections.sort(groupChords, AbstractChordInter.byAbscissa);
+                Collections.sort(groupChords, Inters.byAbscissa);
 
                 for (int i = 0; i < groupChords.size(); i++) {
                     AbstractChordInter ch1 = groupChords.get(i);

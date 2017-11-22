@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                              C o n t a i n m e n t R e l a t i o n                             //
+//                                      C o n t a i n m e n t                                     //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -26,13 +26,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code ContainmentRelation} represents an ensemble - member relation.
+ * Class {@code Containment} represents an ensemble - member relation.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "containment")
-public class ContainmentRelation
+public class Containment
         extends AbstractRelation
 {
 }

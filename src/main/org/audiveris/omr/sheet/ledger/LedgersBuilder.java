@@ -53,6 +53,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -352,7 +353,7 @@ public class LedgersBuilder
             }
         });
 
-        Collections.sort(beams, Inter.byAbscissa);
+        Collections.sort(beams, Inters.byAbscissa);
 
         return beams;
     }
@@ -618,7 +619,7 @@ public class LedgersBuilder
         final int interline = staff.getSpecificInterline();
         int maxDx = largeScale.toPixels(constants.maxInterLedgerDx);
         Set<Exclusion> exclusions = new LinkedHashSet<Exclusion>();
-        Collections.sort(ledgers, Inter.byAbscissa);
+        Collections.sort(ledgers, Inters.byAbscissa);
 
         for (int i = 0; i < ledgers.size(); i++) {
             final LedgerInter ledger = ledgers.get(i);

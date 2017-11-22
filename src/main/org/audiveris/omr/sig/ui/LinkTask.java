@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        I n t e r T a s k                                       //
+//                                         L i n k T a s k                                        //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2017. All rights reserved.
+//  Copyright ©  Audiveris 2017. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -23,60 +23,58 @@ package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
-
-import java.util.Collection;
+import org.audiveris.omr.sig.relation.Relation;
 
 /**
- * Class {@code InterTask} is the elementary task (focused on an Inter) that can be
- * done, undone and redone by the {@link InterController}.
+ * Class {@code LinkTask}
  *
  * @author Hervé Bitteur
  */
-public abstract class InterTask
-        extends UITask
+public class LinkTask
+        extends RelationTask
 {
-    //~ Instance fields ----------------------------------------------------------------------------
-
-    /** Task focus. */
-    protected final Inter inter;
-
-    /** Relations inter is involved in. */
-    protected Collection<Partnership> partnerships;
-
     //~ Constructors -------------------------------------------------------------------------------
+
     /**
-     * Creates a new {@code InterTask} object.
+     * Creates a new {@code LinkTask} object.
      *
-     * @param sig          the underlying sig
-     * @param inter        the inter task is focused upon
-     * @param partnerships the relations around inter
+     * @param sig      the underlying sig
+     * @param source   the source inter
+     * @param target   the target inter
+     * @param relation the relation that task is focused upon
      */
-    protected InterTask (SIGraph sig,
-                         Inter inter,
-                         Collection<Partnership> partnerships)
+    public LinkTask (SIGraph sig,
+                     Inter source,
+                     Inter target,
+                     Relation relation)
     {
-        super(sig);
-        this.inter = inter;
-        this.partnerships = partnerships;
+        super(sig, relation);
+        this.source = source;
+        this.target = target;
     }
 
-    /**
-     * Getter for involved inter.
-     *
-     * @return the inter involved
-     */
-    public Inter getInter ()
+    //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public void performDo ()
     {
-        return inter;
+        sig.addEdge(getSource(), getTarget(), getRelation());
     }
 
     @Override
-    public String toString ()
+    public void performRedo ()
     {
-        StringBuilder sb = new StringBuilder(actionName());
-        sb.append(" ").append(inter);
+        performDo();
+    }
 
-        return sb.toString();
+    @Override
+    public void performUndo ()
+    {
+        sig.removeEdge(getRelation());
+    }
+
+    @Override
+    protected String actionName ()
+    {
+        return "link";
     }
 }

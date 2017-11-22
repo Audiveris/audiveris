@@ -53,7 +53,10 @@ public class TimePairInter
     // Persistent data
     //----------------
     //
-    /** Signature halves: numerator then denominator. */
+    /**
+     * Signature halves: numerator then denominator.
+     * This is deprecated, replaced by the use of containment relation.
+     */
     @XmlElement(name = "number")
     @Deprecated
     private List<TimeNumberInter> oldMembers;
@@ -212,7 +215,7 @@ public class TimePairInter
     @Override
     public List<Inter> getMembers ()
     {
-        return EnsembleHelper.getMembers(this, Inter.byCenterOrdinate);
+        return EnsembleHelper.getMembers(this, Inters.byCenterOrdinate);
     }
 
     //--------//

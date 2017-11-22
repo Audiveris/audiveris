@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * @author Hervé Bitteur
  */
 public class OrnamentInter
-        extends AbstractNotationInter
+        extends AbstractInter
 {    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(OrnamentInter.class);

@@ -30,7 +30,6 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
-import org.audiveris.omr.sig.relation.FermataNoteRelation;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -63,7 +62,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "fermata")
 public class FermataInter
-        extends AbstractNotationInter
+        extends AbstractInter
         implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
@@ -364,13 +363,6 @@ public class FermataInter
 
             // For fermata & for chord
             sig.addEdge(this, chord, new FermataChordRelation());
-
-            // For chord members (notes). TODO: is this useful???
-            for (Inter member : chord.getMembers()) {
-                if (member instanceof AbstractNoteInter) {
-                    sig.addEdge(this, member, new FermataNoteRelation());
-                }
-            }
 
             return true;
         }

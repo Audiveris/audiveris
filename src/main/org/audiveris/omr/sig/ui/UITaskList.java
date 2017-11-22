@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    I n t e r T a s k L i s t                                   //
+//                                       U I T a s k L i s t                                      //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.sig.inter.Inter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,20 +30,20 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * Class {@code InterTaskList} is a sequence of {@link InterTask} instances, meant to
+ * Class {@code UITaskList} is a sequence of {@link UITask} instances, meant to
  * be handled as a whole.
  *
  * @author Hervé Bitteur
  */
-public class InterTaskList
+public class UITaskList
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(InterTaskList.class);
+    private static final Logger logger = LoggerFactory.getLogger(UITaskList.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of related actions. */
-    private final List<InterTask> list = new ArrayList<InterTask>();
+    private final List<UITask> list = new ArrayList<UITask>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -53,7 +51,7 @@ public class InterTaskList
      *
      * @param tasks sequence of related tasks
      */
-    public InterTaskList (InterTask... tasks)
+    public UITaskList (UITask... tasks)
     {
         this(Arrays.asList(tasks));
     }
@@ -63,7 +61,7 @@ public class InterTaskList
      *
      * @param tasks sequence of related tasks
      */
-    public InterTaskList (List<InterTask> tasks)
+    public UITaskList (List<UITask> tasks)
     {
         list.addAll(tasks);
     }
@@ -74,26 +72,26 @@ public class InterTaskList
      *
      * @param task related task to add
      */
-    public void add (InterTask task)
+    public void add (UITask task)
     {
         list.add(task);
     }
 
-    public Inter getFirstInter ()
+    public UITask getFirstTask ()
     {
-        return list.get(0).inter;
+        return list.get(0);
     }
 
-    public Inter getLastInter ()
+    public UITask getLastTask ()
     {
-        return list.get(list.size() - 1).inter;
+        return list.get(list.size() - 1);
     }
 
     public void performDo ()
     {
         logger.info("  do {}", this);
 
-        for (InterTask task : list) {
+        for (UITask task : list) {
             task.performDo();
         }
     }
@@ -102,7 +100,7 @@ public class InterTaskList
     {
         logger.info("redo {}", this);
 
-        for (InterTask task : list) {
+        for (UITask task : list) {
             task.performRedo();
         }
     }
@@ -112,8 +110,8 @@ public class InterTaskList
         logger.info("undo {}", this);
 
         // Perform Undo in reverse list order
-        for (ListIterator<InterTask> it = list.listIterator(list.size()); it.hasPrevious();) {
-            InterTask task = it.previous();
+        for (ListIterator<UITask> it = list.listIterator(list.size()); it.hasPrevious();) {
+            UITask task = it.previous();
             task.performUndo();
         }
     }

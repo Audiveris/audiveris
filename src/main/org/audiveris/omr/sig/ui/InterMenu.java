@@ -22,8 +22,11 @@
 package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.Relations;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.util.SeparableMenu;
 
@@ -31,11 +34,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.MouseEvent;
+import java.util.Set;
 
-import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
+import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 
 /**
  * Class {@code InterMenu} builds a menu around a given inter.
@@ -55,7 +60,11 @@ public class InterMenu
 
     private final JMenuItem focusItem;
 
-    private final Listener listener = new Listener();
+    private final RelationListener relationListener = new RelationListener();
+
+    private final RelationClassListener relationClassListener = new RelationClassListener();
+
+    private final InterController interController;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -70,20 +79,27 @@ public class InterMenu
 
         // Focus
         final Sheet sheet = inter.getSig().getSystem().getSheet();
-        final InterController interController = sheet.getInterController();
-        final boolean focused = inter == interController.getInterFocus();
+        interController = sheet.getInterController();
+
+        final Inter focus = interController.getInterFocus();
+        final boolean focused = inter == focus;
         focusItem = new JCheckBoxMenuItem(focused ? "Unset focus" : "Set focus");
-        focusItem.addMouseListener(listener);
+        focusItem.addMouseListener(new FocusListener());
         focusItem.setSelected(focused);
         menu.add(focusItem);
         menu.addSeparator();
 
-        // Actions on inter
-        // Existing relations
+        // Existing relations (available for unlinking)
         for (Relation relation : inter.getSig().edgesOf(inter)) {
             JMenuItem item = new JMenuItem(new RelationAction(inter, relation));
-            item.addMouseListener(listener);
+            item.addMouseListener(relationListener);
             menu.add(item);
+        }
+
+        // Suggested relations from focus to inter and from inter to focus
+        if ((focus != null) && !focused) {
+            addSuggestedLinks(menu, focus, inter, focus);
+            addSuggestedLinks(menu, inter, focus, focus);
         }
 
         menu.trimSeparator();
@@ -101,11 +117,80 @@ public class InterMenu
         return menu;
     }
 
+    //-------------------//
+    // addSuggestedLinks //
+    //-------------------//
+    /**
+     * Insert menu items for suggestions of relations
+     *
+     * @param menu   menu to be populated
+     * @param source relation source
+     * @param target relation target
+     * @param focus  current inter with focus
+     */
+    private void addSuggestedLinks (SeparableMenu menu,
+                                    Inter source,
+                                    Inter target,
+                                    Inter focus)
+    {
+        Set<Class<? extends Relation>> set = Relations.suggestedRelationsBetween(source, target);
+
+        if (!set.isEmpty()) {
+            menu.addSeparator();
+
+            for (Class<? extends Relation> classe : set) {
+                // Specific cases
+                if (DoubleDotRelation.class.isAssignableFrom(classe)) {
+                    // Imposed: Source right, Target left
+                    if (source.getCenter().x <= target.getCenter().x) {
+                        continue;
+                    }
+                } else if (RepeatDotPairRelation.class.isAssignableFrom(classe)) {
+                    // Imposed: Source above, Target below
+                    if (source.getCenter().y >= target.getCenter().y) {
+                        continue;
+                    }
+                } else if (TimeTopBottomRelation.class.isAssignableFrom(classe)) {
+                    // Imposed: Source above, Target below
+                    if (source.getCenter().y >= target.getCenter().y) {
+                        continue;
+                    }
+                }
+
+                JMenuItem item = new JMenuItem(
+                        new RelationClassAction(source, target, classe, focus));
+                item.addMouseListener(relationClassListener);
+                menu.add(item);
+            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
-    //----------//
-    // Listener //
-    //----------//
-    private class Listener
+    //---------------//
+    // FocusListener //
+    //---------------//
+    private class FocusListener
+            extends AbstractMouseListener
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void mouseEntered (MouseEvent e)
+        {
+            inter.getSig().publish(inter);
+        }
+
+        @Override
+        public void mouseReleased (MouseEvent e)
+        {
+            interController.setInterFocus(focusItem.isSelected() ? inter : null);
+        }
+    }
+
+    //-----------------------//
+    // RelationClassListener //
+    //-----------------------//
+    private class RelationClassListener
             extends AbstractMouseListener
     {
         //~ Methods --------------------------------------------------------------------------------
@@ -114,24 +199,50 @@ public class InterMenu
         public void mouseEntered (MouseEvent e)
         {
             JMenuItem item = (JMenuItem) e.getSource();
-            Action action = item.getAction();
+            RelationClassAction relationClassAction = (RelationClassAction) item.getAction();
+            relationClassAction.publish();
+        }
 
-            if (action instanceof RelationAction) {
-                ((RelationAction) action).publish();
-            } else if (action instanceof InterAction) {
-                ((InterAction) action).publish();
-            }
+        @Override
+        public void mouseExited (MouseEvent e)
+        {
+            JMenuItem item = (JMenuItem) e.getSource();
+            RelationClassAction relationClassAction = (RelationClassAction) item.getAction();
+            relationClassAction.unpublish();
+        }
+
+        @Override
+        public void mousePressed (MouseEvent e)
+        {
+            JMenuItem item = (JMenuItem) e.getSource();
+            RelationClassAction relationClassAction = (RelationClassAction) item.getAction();
+            relationClassAction.unpublish();
+        }
+    }
+
+    //------------------//
+    // RelationListener //
+    //------------------//
+    private class RelationListener
+            extends AbstractMouseListener
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void mouseEntered (MouseEvent e)
+        {
+            JMenuItem item = (JMenuItem) e.getSource();
+            RelationAction relationAction = (RelationAction) item.getAction();
+            relationAction.publish();
         }
 
         @Override
         public void mouseReleased (MouseEvent e)
         {
-            if (e.getSource() == focusItem) {
-                final Sheet sheet = inter.getSig().getSystem().getSheet();
-                final InterController interController = sheet.getInterController();
-                interController.setInterFocus(focusItem.isSelected() ? inter : null);
-                ((InterAction) menu.getAction()).publish();
-            }
+            JMenuItem item = (JMenuItem) e.getSource();
+            RelationAction ra = (RelationAction) item.getAction();
+            SIGraph sig = ra.getInter().getSig();
+            interController.unlink(sig, ra.getRelation());
         }
     }
 }

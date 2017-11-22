@@ -25,8 +25,6 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
@@ -55,10 +53,8 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
-import org.audiveris.omr.ui.symbol.Alignment;
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
@@ -74,7 +70,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Stroke;
-import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
@@ -91,9 +86,6 @@ import javax.swing.JPanel;
  * a same voice are painted in a same specific voice-dependent color.
  * <p>
  * Remaining SIG inters, plus additional items such as measure, time slots, etc.
- * TODO: handling of colored voices
- * TODO: painting of Measure ID
- * TODO: painting of time slots
  *
  * @author Hervé Bitteur
  */
@@ -102,19 +94,8 @@ public class SheetResultPainter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants constants = new Constants();
-
     private static final Logger logger = LoggerFactory.getLogger(
             SheetResultPainter.class);
-
-    /** Font for annotations. */
-    protected static final Font basicFont = new Font(
-            "Sans Serif",
-            Font.PLAIN,
-            constants.basicFontSize.getValue());
-
-    /** A transformation to half scale. (used for slot time annotation) */
-    protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(0.5, 0.5);
 
     /** Abscissa offset, in pixels, for annotation near system. */
     protected static final int annotationDx = 15;
@@ -360,26 +341,6 @@ public class SheetResultPainter
         g.setColor(oldColor);
     }
 
-    //-------------//
-    // basicLayout //
-    //-------------//
-    /**
-     * Build a TextLayout from a String of BasicFont characters
-     * (transformed by the provided AffineTransform if any)
-     *
-     * @param str the string of proper codes
-     * @param fat potential affine transformation
-     * @return the (sized) TextLayout ready to be drawn
-     */
-    protected TextLayout basicLayout (String str,
-                                      AffineTransform fat)
-    {
-        FontRenderContext frc = g.getFontRenderContext();
-        Font font = (fat == null) ? basicFont : basicFont.deriveFont(fat);
-
-        return new TextLayout(str, font, frc);
-    }
-
     //---------------//
     // getSigPainter //
     //---------------//
@@ -387,24 +348,6 @@ public class SheetResultPainter
     protected SigPainter getSigPainter ()
     {
         return new ResultSigPainter(g, sheet.getScale());
-    }
-
-    //-------//
-    // paint //
-    //-------//
-    /**
-     * This is the general paint method for drawing a symbol layout, at a specified
-     * location, using a specified alignment
-     *
-     * @param layout    what: the symbol, perhaps transformed
-     * @param location  where: the precise location in the display
-     * @param alignment how: the way the symbol is aligned wrt the location
-     */
-    protected void paint (TextLayout layout,
-                          Point location,
-                          Alignment alignment)
-    {
-        OmrFont.paint(g, layout, location, alignment);
     }
 
     //---------------//
@@ -532,24 +475,6 @@ public class SheetResultPainter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Integer basicFontSize = new Constant.Integer(
-                "points",
-                30,
-                "Standard font size for annotations");
-
-        private final Scale.Fraction keySigItemDx = new Scale.Fraction(
-                1.1,
-                "dx between items in a key signature");
-    }
-
     //------------------//
     // ResultSigPainter //
     //------------------//

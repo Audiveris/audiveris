@@ -30,7 +30,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.AbstractSupport;
-import org.audiveris.omr.sig.relation.BasicExclusion;
+import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.Exclusion.Cause;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -127,7 +127,7 @@ public class SIGraphTest
         hs2.setGrade(0.7);
         sig.addEdge(blanche, stem, hs2);
 
-        sig.addEdge(head, blanche, new BasicExclusion(Cause.OVERLAP));
+        sig.addEdge(head, blanche, new Exclusion(Cause.OVERLAP));
 
         sig.addEdge(beam, stem, new AbstractSupport(0.2));
         sig.addEdge(hook, stem, new AbstractSupport(0.4));

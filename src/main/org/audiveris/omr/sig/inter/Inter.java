@@ -40,7 +40,6 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
-import java.util.Comparator;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -48,7 +47,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Interface {@code Inter} defines a possible interpretation.
  * <p>
  * Every Inter instance is assigned an <i>intrinsic</i> grade in range [0..1].
- * There usually exists two thresholds on grade value:<ol>
+ * There usually exist two thresholds on grade value:<ol>
  * <li><b>Minimum</b> grade: this is the minimum value required to actually create (or keep) any
  * interpretation instance.</li>
  * <li><b>Good</b> grade: this is the value which designates a really reliable interpretation, which
@@ -72,189 +71,6 @@ public interface Inter
         extends Entity, VisitableInter, AttachmentHolder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    /**
-     * For comparing interpretations by id.
-     */
-    public static final Comparator<Inter> byId = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getId(), i2.getId());
-        }
-    };
-
-    /**
-     * For comparing interpretations by left abscissa.
-     */
-    public static final Comparator<Inter> byAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getBounds().x, i2.getBounds().x);
-        }
-    };
-
-    /**
-     * For comparing interpretations by center abscissa.
-     */
-    public static final Comparator<Inter> byCenterAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getCenter().x, i2.getCenter().x);
-        }
-    };
-
-    /**
-     * For comparing interpretations by center ordinate.
-     */
-    public static final Comparator<Inter> byCenterOrdinate = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getCenter().y, i2.getCenter().y);
-        }
-    };
-
-    /**
-     * For comparing interpretations by reverse center ordinate.
-     */
-    public static final Comparator<Inter> byReverseCenterOrdinate = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i2.getCenter().y, i1.getCenter().y);
-        }
-    };
-
-    /**
-     * For comparing interpretations by right abscissa.
-     */
-    public static final Comparator<Inter> byRightAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            Rectangle b1 = i1.getBounds();
-            Rectangle b2 = i2.getBounds();
-
-            return Integer.compare(b1.x + b1.width, b2.x + b2.width);
-        }
-    };
-
-    /**
-     * For comparing interpretations by abscissa, ensuring that only identical
-     * interpretations are found equal.
-     * This comparator can thus be used for a TreeSet.
-     */
-    public static final Comparator<Inter> byFullAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter o1,
-                            Inter o2)
-        {
-            if (o1 == o2) {
-                return 0;
-            }
-
-            Point loc1 = o1.getBounds().getLocation();
-            Point loc2 = o2.getBounds().getLocation();
-
-            // Are x values different?
-            int dx = loc1.x - loc2.x;
-
-            if (dx != 0) {
-                return dx;
-            }
-
-            // Vertically aligned, so use ordinates
-            int dy = loc1.y - loc2.y;
-
-            if (dy != 0) {
-                return dy;
-            }
-
-            // Finally, use id ...
-            return Integer.compare(o1.getId(), o2.getId());
-        }
-    };
-
-    /**
-     * For comparing interpretations by ordinate.
-     */
-    public static final Comparator<Inter> byOrdinate = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getBounds().y, i2.getBounds().y);
-        }
-    };
-
-    /**
-     * For comparing interpretations by increasing grade.
-     */
-    public static final Comparator<Inter> byGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i1.getGrade(), i2.getGrade());
-        }
-    };
-
-    /**
-     * For comparing interpretations by decreasing grade.
-     */
-    public static final Comparator<Inter> byReverseGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i2.getGrade(), i1.getGrade());
-        }
-    };
-
-    /**
-     * For comparing interpretations by best grade.
-     */
-    public static final Comparator<Inter> byBestGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i1.getBestGrade(), i2.getBestGrade());
-        }
-    };
-
-    /**
-     * For comparing interpretations by decreasing best grade.
-     */
-    public static final Comparator<Inter> byReverseBestGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i2.getBestGrade(), i1.getBestGrade()); // Reverse order
-        }
-    };
 
     static final Constants constants = new Constants();
 
@@ -516,11 +332,22 @@ public interface Inter
             throws DeletedInterException;
 
     /**
-     * Look for additional partners around this inter instance.
+     * Look for partners around this inter instance.
+     * <p>
+     * Relationships that are searched for inters (which cannot survive without such partnership):
+     * <ul>
+     * <li>For a flag: 1 stem
+     * <li>For a head: 1 stem
+     * <li>For an alteration: 1 head
+     * <li>For an arpeggiato: 1 headChord
+     * <li>For an articulation: 1 headChord
+     * <li>For a dynamic: 1 chord
+     * <li>For a tuplet: 3 or 6 chords (approximately)
+     * </ul>
      *
      * @param system containing system
      * @param doit   if true, relations are actually added to the sig
-     * @return the collection of additional partnerships found, perhaps empty
+     * @return the collection of partnerships found, perhaps empty
      */
     Collection<Partnership> searchPartnerships (SystemInfo system,
                                                 boolean doit);
@@ -534,8 +361,7 @@ public interface Inter
     void setBounds (Rectangle box);
 
     /**
-     * Assign the contextual grade, (0..1 probability) computed for
-     * interpretation.
+     * Assign the contextual grade, (0..1 probability) computed for interpretation.
      *
      * @param value the contextual grade value
      */

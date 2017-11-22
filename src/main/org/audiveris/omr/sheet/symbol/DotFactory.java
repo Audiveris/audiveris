@@ -45,6 +45,7 @@ import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
@@ -262,7 +263,7 @@ public class DotFactory
     private void buildRepeatPairs ()
     {
         List<Inter> repeatDots = sig.inters(Shape.REPEAT_DOT);
-        Collections.sort(repeatDots, Inter.byAbscissa);
+        Collections.sort(repeatDots, Inters.byAbscissa);
 
         for (int i = 0; i < repeatDots.size(); i++) {
             RepeatDotInter dot = (RepeatDotInter) repeatDots.get(i);
@@ -325,7 +326,7 @@ public class DotFactory
             return;
         }
 
-        Collections.sort(heads, Inter.byId);
+        Collections.sort(heads, Inters.byId);
 
         boolean modified;
 
@@ -500,7 +501,7 @@ public class DotFactory
 
         // Collect all (first) augmentation dots found so far in this system
         List<Inter> systemFirsts = sig.inters(Shape.AUGMENTATION_DOT);
-        Collections.sort(systemFirsts, Inter.byAbscissa);
+        Collections.sort(systemFirsts, Inters.byAbscissa);
 
         // Phase #2: Tests for second augmentation dots (double dots)
         for (Dot dot : dots) {

@@ -33,7 +33,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigValue.InterSet;
-import org.audiveris.omr.sig.relation.ContainmentRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -294,7 +294,7 @@ public abstract class AbstractInter
                 // Extensive is true for non-manual deletions only
                 if (extensive) {
                     for (Relation rel : sig.incomingEdgesOf(this)) {
-                        if (rel instanceof ContainmentRelation) {
+                        if (rel instanceof Containment) {
                             InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(this, rel);
 
                             if (ens.getMembers().size() == 1) {
@@ -511,7 +511,7 @@ public abstract class AbstractInter
     public InterEnsemble getEnsemble ()
     {
         for (Relation rel : sig.incomingEdgesOf(this)) {
-            if (rel instanceof ContainmentRelation) {
+            if (rel instanceof Containment) {
                 return (InterEnsemble) sig.getOppositeInter(this, rel);
             }
         }

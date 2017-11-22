@@ -24,13 +24,9 @@ package org.audiveris.omr.sheet.symbol;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.Shape.*;
-
 import org.audiveris.omr.glyph.ShapeSet;
-
 import static org.audiveris.omr.glyph.ShapeSet.*;
-
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.header.TimeBuilder;
@@ -68,6 +64,7 @@ import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
+import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
@@ -89,7 +86,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import org.audiveris.omr.sig.inter.StemInter;
 
 /**
  * Class {@code SymbolFactory} generates the inter instances corresponding to
@@ -145,13 +141,13 @@ public class SymbolFactory
         sig = system.getSig();
 
         systemStems = sig.inters(Shape.STEM);
-        Collections.sort(systemStems, Inter.byAbscissa);
+        Collections.sort(systemStems, Inters.byAbscissa);
 
         systemHeads = sig.inters(HeadInter.class);
-        Collections.sort(systemHeads, Inter.byAbscissa);
+        Collections.sort(systemHeads, Inters.byAbscissa);
 
         systemHeadChords = sig.inters(AbstractChordInter.class);
-        Collections.sort(systemHeadChords, Inter.byAbscissa);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
 
         dotFactory = new DotFactory(this);
     }
@@ -509,7 +505,7 @@ public class SymbolFactory
     {
         if (systemBars == null) {
             systemBars = sig.inters(BarlineInter.class);
-            Collections.sort(systemBars, Inter.byAbscissa);
+            Collections.sort(systemBars, Inters.byAbscissa);
         }
 
         return systemBars;
@@ -522,7 +518,7 @@ public class SymbolFactory
     {
         if (systemRests == null) {
             systemRests = sig.inters(RestInter.class);
-            Collections.sort(systemRests, Inter.byAbscissa);
+            Collections.sort(systemRests, Inters.byAbscissa);
         }
 
         return systemRests;

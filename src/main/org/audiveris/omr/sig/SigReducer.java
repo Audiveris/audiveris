@@ -49,6 +49,7 @@ import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -873,7 +874,7 @@ public class SigReducer
     {
         // All system note heads, sorted by abscissa
         List<Inter> allHeads = sig.inters(ShapeSet.Heads);
-        Collections.sort(allHeads, Inter.byAbscissa);
+        Collections.sort(allHeads, Inters.byAbscissa);
 
         final List<LedgerInter> toDelete = new ArrayList<LedgerInter>();
         boolean modified;
@@ -1131,7 +1132,7 @@ public class SigReducer
         }
 
         final List<Inter> systemTimes = sig.inters(AbstractTimeInter.class);
-        Collections.sort(systemNotes, Inter.byAbscissa);
+        Collections.sort(systemNotes, Inters.byAbscissa);
 
         for (Staff staff : system.getStaves()) {
             List<Inter> staffTimes = SIGraph.inters(staff, systemTimes);
@@ -1146,7 +1147,7 @@ public class SigReducer
                 AbstractTimeInter timeSig = (AbstractTimeInter) inter;
 
                 // Position WRT Notes in staff
-                int notePrev = -2 - Collections.binarySearch(notes, timeSig, Inter.byAbscissa);
+                int notePrev = -2 - Collections.binarySearch(notes, timeSig, Inters.byAbscissa);
 
                 if (notePrev != -1) {
                     // Position WRT Bars in staff
@@ -1155,7 +1156,7 @@ public class SigReducer
                                   - Collections.binarySearch(
                                     bars,
                                     timeSig,
-                                    Inter.byAbscissa);
+                                    Inters.byAbscissa);
                     int xMin = (barPrev != -1) ? bars.get(barPrev).getCenter().x : 0;
 
                     for (int i = notePrev; i >= 0; i--) {
@@ -1253,7 +1254,7 @@ public class SigReducer
     private void detectOverlaps (List<Inter> inters,
                                  Adapter adapter)
     {
-        Collections.sort(inters, Inter.byAbscissa);
+        Collections.sort(inters, Inters.byAbscissa);
 
         NextLeft:
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {

@@ -56,6 +56,7 @@ import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AbstractVerticalInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.util.Dumping;
@@ -234,14 +235,14 @@ public class NoteHeadsBuilder
 
             // Consider seed-based heads as special competitors for x-based notes
             systemCompetitors.addAll(ch);
-            Collections.sort(systemCompetitors, Inter.byOrdinate);
+            Collections.sort(systemCompetitors, Inters.byOrdinate);
 
             // Second, process x-based notes for the staff
             watch.start("Staff #" + staff.getId() + " range");
             ch.addAll(processStaff(staff, false));
 
             // Finally, detect notes overlaps for current staff
-            Collections.sort(ch, Inter.byFullAbscissa);
+            Collections.sort(ch, Inters.byFullAbscissa);
             watch.start("Staff #" + staff.getId() + " duplicates");
 
             int duplicates = purgeDuplicates(ch);
@@ -289,7 +290,7 @@ public class NoteHeadsBuilder
     private List<HeadInter> aggregateMatches (List<HeadInter> inters)
     {
         // Sort by decreasing grade
-        Collections.sort(inters, Inter.byReverseGrade);
+        Collections.sort(inters, Inters.byReverseGrade);
 
         // Gather matches per close locations
         // Avoid duplicate locations
@@ -445,7 +446,7 @@ public class NoteHeadsBuilder
         }
 
         // Sort by abscissa for more efficient lookup
-        Collections.sort(kept, Inter.byAbscissa);
+        Collections.sort(kept, Inters.byAbscissa);
 
         return kept;
     }
@@ -559,7 +560,7 @@ public class NoteHeadsBuilder
             }
         });
 
-        Collections.sort(comps, Inter.byOrdinate);
+        Collections.sort(comps, Inters.byOrdinate);
 
         return comps;
     }

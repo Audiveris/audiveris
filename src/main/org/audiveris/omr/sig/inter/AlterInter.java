@@ -284,7 +284,7 @@ public class AlterInter
     {
         // Not very optimized!
         List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
-        Collections.sort(systemHeads, Inter.byAbscissa);
+        Collections.sort(systemHeads, Inters.byAbscissa);
 
         Collection<Partnership> partnerships = searchPartnerships(systemHeads);
 

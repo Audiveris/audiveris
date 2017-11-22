@@ -393,6 +393,36 @@ public abstract class UIUtil
         return null;
     }
 
+    //-------------------------//
+    // setAbsoluteDashedStroke //
+    //-------------------------//
+    /**
+     * Similar to {@link #setAbsoluteStroke(java.awt.Graphics, float) but for a dashed
+     * stroke.
+     *
+     * @param g     the current graphics context
+     * @param width the absolute stroke width desired
+     * @return the previous stroke
+     */
+    public static Stroke setAbsoluteDashedStroke (Graphics g,
+                                                  float width)
+    {
+        Graphics2D g2 = (Graphics2D) g;
+        AffineTransform AT = g2.getTransform();
+        double ratio = AT.getScaleX();
+        Stroke oldStroke = g2.getStroke();
+        Stroke stroke = new BasicStroke(
+                width / (float) ratio,
+                BasicStroke.CAP_SQUARE,
+                BasicStroke.JOIN_MITER,
+                10.0f,
+                new float[]{3.0f},
+                0.0f);
+        g2.setStroke(stroke);
+
+        return oldStroke;
+    }
+
     //-------------------//
     // setAbsoluteStroke //
     //-------------------//

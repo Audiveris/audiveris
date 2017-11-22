@@ -38,6 +38,7 @@ import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
@@ -690,7 +691,7 @@ public class BeamGroup
             }
         }
 
-        Collections.sort(chords, AbstractChordInter.byAbscissa);
+        Collections.sort(chords, Inters.byAbscissa);
 
         return chords;
     }

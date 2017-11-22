@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
@@ -144,7 +145,7 @@ public class Measure
     private MeasureStack stack;
 
     /** Possibly several Clefs per staff. (Abscissa-ordered) */
-    private final TreeSet<ClefInter> clefs = new TreeSet<ClefInter>(Inter.byFullAbscissa);
+    private final TreeSet<ClefInter> clefs = new TreeSet<ClefInter>(Inters.byFullAbscissa);
 
     /** Possibly one Key signature per staff, since keys may differ between staves.
      * Implemented as a map: (staff index in part) -> Key sig

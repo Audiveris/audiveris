@@ -85,7 +85,10 @@ public class SentenceInter
     // Persistent data
     //----------------
     //
-    /** Sequence of sentence words. To be removed shortly. */
+    /**
+     * Sequence of sentence words.
+     * This is deprecated, replaced by the use of containment relation.
+     */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "words")
@@ -285,7 +288,7 @@ public class SentenceInter
     @Override
     public List<Inter> getMembers ()
     {
-        return EnsembleHelper.getMembers(this, Inter.byAbscissa);
+        return EnsembleHelper.getMembers(this, Inters.byAbscissa);
     }
 
     //---------//

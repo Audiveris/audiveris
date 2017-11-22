@@ -38,7 +38,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
-import org.audiveris.omr.sig.relation.ContainmentRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 
@@ -59,9 +59,9 @@ import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 
 /**
- * Class {@code InterController} is the UI in charge of dealing with Inters (addition,
- * removal, modifications) to correct OMR output, with the ability to undo & redo at
- * will.
+ * Class {@code InterController} is the UI in charge of dealing with Inter and
+ * Relation instances (addition, removal, modifications) to correct OMR output,
+ * with the ability to undo & redo at will.
  * <p>
  * It works at sheet level.
  * <p>
@@ -70,7 +70,7 @@ import javax.swing.KeyStroke;
  * It is not always obvious to select the proper staff, various techniques are used, and if
  * all have failed, the user is prompted for staff indication.
  * <p>
- * Finally, a proper InterTask is allocated, inserted in controller's history, and run.
+ * Finally, a proper {@link UITask} is allocated, inserted in controller's history, and run.
  * Undo & Redo actions operate on this history.
  *
  * @author Hervé Bitteur
@@ -96,6 +96,9 @@ public class InterController
     /** User focus on a given Inter, if any. */
     private Inter interFocus;
 
+    /** User relation suggestion, if any. TODO: use a set for multiple items? */
+    private RelationClassAction relationClassAction;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code IntersController} object.
@@ -108,6 +111,9 @@ public class InterController
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // addInter //
+    //----------//
     /**
      * Add a shape interpretation based on a provided glyph.
      *
@@ -214,6 +220,9 @@ public class InterController
         addGhost(ghost, partnerships);
     }
 
+    //---------//
+    // canRedo //
+    //---------//
     /**
      * Is a redo possible?
      *
@@ -224,6 +233,9 @@ public class InterController
         return history.canRedo();
     }
 
+    //---------//
+    // canUndo //
+    //---------//
     /**
      * Is an undo possible?
      *
@@ -234,6 +246,9 @@ public class InterController
         return history.canUndo();
     }
 
+    //-----------//
+    // dropInter //
+    //-----------//
     /**
      * Add a shape interpretation by dropping a symbol at given location.
      *
@@ -253,6 +268,9 @@ public class InterController
         addGhost(ghost, partnerships);
     }
 
+    //---------------//
+    // getInterFocus //
+    //---------------//
     /**
      * Report the inter, if any, which has UI focus.
      *
@@ -263,25 +281,67 @@ public class InterController
         return interFocus;
     }
 
+    //------//
+    // link //
+    //------//
+    /**
+     * Add a relation between inters.
+     *
+     * @param sig      the containing SIG
+     * @param source   the source inter
+     * @param target   the target inter
+     * @param relation the relation to add
+     */
+    public void link (SIGraph sig,
+                      Inter source,
+                      Inter target,
+                      Relation relation)
+    {
+        logger.debug("link on {} between {} and {}", relation, source, target);
+
+        UITaskList seq = new UITaskList();
+        seq.add(new LinkTask(sig, source, target, relation));
+        history.add(seq);
+        seq.performDo();
+
+        sheet.getStub().setModified(true);
+        sheet.getInterIndex().publish(source);
+
+        actionEpilog();
+    }
+
+    //------//
+    // redo //
+    //------//
     /**
      * Redo last user (undone) action sequence.
      */
     public void redo ()
     {
-        InterTaskList seq = history.toRedo();
+        UITaskList seq = history.toRedo();
         seq.performRedo();
 
         sheet.getStub().setModified(true);
-        sheet.getGlyphIndex().publish(null);
 
-        Inter inter = seq.getLastInter();
-        sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
-        editor.refresh();
+        UITask task = seq.getLastTask();
 
-        BookActions.getInstance().setUndoable(history.canUndo());
-        BookActions.getInstance().setRedoable(history.canRedo());
+        if (task instanceof InterTask) {
+            sheet.getGlyphIndex().publish(null);
+
+            Inter inter = ((InterTask) task).getInter();
+            sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
+        } else {
+            RelationTask relTask = (RelationTask) task;
+            Inter source = relTask.getSource();
+            sheet.getInterIndex().publish(source);
+        }
+
+        actionEpilog();
     }
 
+    //-------------//
+    // removeInter //
+    //-------------//
     /**
      * Remove the provided inter (with its relations)
      *
@@ -303,16 +363,13 @@ public class InterController
 
         toRemove.add(inter);
 
-        InterTaskList seq = new InterTaskList();
+        final UITaskList seq = new UITaskList();
         seq.add(new RemovalTask(inter));
-
-        // Remember members if any
-        List<? extends Inter> members = null;
 
         if (inter instanceof InterEnsemble) {
             // Remove all the ensemble members
-            InterEnsemble ens = (InterEnsemble) inter;
-            members = ens.getMembers();
+            final InterEnsemble ens = (InterEnsemble) inter;
+            final List<? extends Inter> members = ens.getMembers();
 
             for (Inter member : members) {
                 if (!toRemove.contains(member)) {
@@ -323,7 +380,7 @@ public class InterController
             // Delete containing ensemble if this is the last member in ensemble
             SIGraph sig = inter.getSig();
 
-            for (Relation rel : sig.getRelations(inter, ContainmentRelation.class)) {
+            for (Relation rel : sig.getRelations(inter, Containment.class)) {
                 InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
 
                 if (!toRemove.contains(ens) && (ens.getMembers().size() <= 1)) {
@@ -339,13 +396,13 @@ public class InterController
         sheet.getStub().setModified(true);
         ///sheet.getGlyphIndex().publish(null); // Let glyph displayed, to ease new inter assignment
         sheet.getInterIndex().publish(null);
-        editor.refresh();
 
-        BookActions.getInstance().setUndoable(history.canUndo());
-        BookActions.getInstance().setRedoable(history.canRedo());
-
+        actionEpilog();
     }
 
+    //--------------//
+    // removeInters //
+    //--------------//
     /**
      * Remove the provided collection of inter (with their relations)
      *
@@ -366,6 +423,9 @@ public class InterController
         }
     }
 
+    //---------------//
+    // setInterFocus //
+    //---------------//
     /**
      * Set UI focus on provided inter.
      *
@@ -383,9 +443,12 @@ public class InterController
         editor.refresh();
     }
 
+    //------------------//
+    // setSymbolsEditor //
+    //------------------//
     /**
-     * Late assignment of editor, to avoid circularities in elaboration, and to
-     * allow handling of delete key.
+     * Late assignment of editor, to avoid circularities in elaboration, and to allow
+     * handling of specific keys.
      *
      * @param symbolsEditor the user pane
      */
@@ -405,23 +468,72 @@ public class InterController
         view.getActionMap().put("UnfocusAction", new UnfocusAction());
     }
 
+    //------//
+    // undo //
+    //------//
     /**
      * Undo last user action.
      */
     public void undo ()
     {
-        InterTaskList seq = history.toUndo();
+        UITaskList seq = history.toUndo();
         seq.performUndo();
 
         sheet.getStub().setModified(true);
-        sheet.getGlyphIndex().publish(null);
 
-        Inter inter = seq.getFirstInter();
-        sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
+        UITask task = seq.getFirstTask();
+
+        if (task instanceof InterTask) {
+            sheet.getGlyphIndex().publish(null);
+
+            Inter inter = ((InterTask) task).getInter();
+            sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
+        } else {
+            RelationTask relTask = (RelationTask) task;
+            Inter source = relTask.getSource();
+            sheet.getInterIndex().publish(source);
+        }
+
+        actionEpilog();
+    }
+
+    /**
+     * Remove a relation between inters.
+     *
+     * @param sig      the containing SIG
+     * @param relation the relation to remove
+     */
+    public void unlink (SIGraph sig,
+                        Relation relation)
+    {
+        logger.debug("unlink on {}", relation);
+
+        UITaskList seq = new UITaskList();
+        seq.add(new UnlinkTask(sig, relation));
+
+        Inter source = sig.getEdgeSource(relation);
+        history.add(seq);
+
+        seq.performDo();
+
+        sheet.getStub().setModified(true);
+        sheet.getInterIndex().publish(source);
+
+        actionEpilog();
+    }
+
+    /**
+     * Epilog for any user action (add/remove of inter/relation).
+     */
+    private void actionEpilog ()
+    {
+        // Update editor display
         editor.refresh();
 
-        BookActions.getInstance().setUndoable(history.canUndo());
-        BookActions.getInstance().setRedoable(history.canRedo());
+        // Update status of undo/redo actions
+        final BookActions bookActions = BookActions.getInstance();
+        bookActions.setUndoable(canUndo());
+        bookActions.setRedoable(canRedo());
     }
 
     /**
@@ -435,16 +547,14 @@ public class InterController
     {
         SystemInfo system = ghost.getStaff().getSystem();
 
-        InterTaskList seq = new InterTaskList(
-                new AdditionTask(system.getSig(), ghost, partnerships));
+        UITaskList seq = new UITaskList(new AdditionTask(system.getSig(), ghost, partnerships));
 
         if (ghost instanceof RestInter) {
-            // Wrap this rest within a rest chord
-            seq.add(
-                    new AdditionTask(
+            // Wrap this rest inter within a rest chord
+            seq.add(new AdditionTask(
                             system.getSig(),
                             new RestChordInter(-1),
-                            Arrays.asList(new Partnership(ghost, new ContainmentRelation(), true))));
+                            Arrays.asList(new Partnership(ghost, new Containment(), true))));
         }
 
         history.add(seq);
@@ -454,10 +564,8 @@ public class InterController
         sheet.getStub().setModified(true);
         sheet.getGlyphIndex().publish(null);
         sheet.getInterIndex().publish(ghost);
-        editor.refresh();
 
-        BookActions.getInstance().setUndoable(history.canUndo());
-        BookActions.getInstance().setRedoable(history.canRedo());
+        actionEpilog();
     }
 
     /**
@@ -540,5 +648,22 @@ public class InterController
                 setInterFocus(null);
             }
         }
+    }
+
+    /**
+     * @return the relationClassAction
+     */
+    public RelationClassAction getRelationClassAction ()
+    {
+        return relationClassAction;
+    }
+
+    /**
+     * @param relationClassAction the relationClassAction to set
+     */
+    public void setRelationClassAction (
+            RelationClassAction relationClassAction)
+    {
+        this.relationClassAction = relationClassAction;
     }
 }

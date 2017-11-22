@@ -303,15 +303,15 @@ public class DynamicsInter
     {
         Partnership partnership = lookupPartnership(system);
 
-        if (partnership != null) {
-            if (doit) {
-                partnership.applyTo(this);
-            }
-
-            return Collections.singleton(partnership);
+        if (partnership == null) {
+            return Collections.emptySet();
         }
 
-        return Collections.emptySet();
+        if (doit) {
+            partnership.applyTo(this);
+        }
+
+        return Collections.singleton(partnership);
     }
 
     //-----------//

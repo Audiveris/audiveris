@@ -134,7 +134,7 @@ public class StackTuner
         countChordDots();
 
         // Link tuplets
-        final Set<TupletInter> toDelete = new TupletsBuilder(stack).linkTuplets();
+        final Set<TupletInter> toDelete = new TupletsBuilder(stack).linkStackTuplets();
 
         if (!toDelete.isEmpty()) {
             for (TupletInter tuplet : toDelete) {

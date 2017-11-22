@@ -29,8 +29,8 @@ import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StemInter;
-import org.audiveris.omr.sig.relation.BasicExclusion;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.Exclusion.Cause;
 import org.audiveris.omr.sig.relation.Relation;
@@ -400,7 +400,7 @@ public class SIGraph
     public List<List<Inter>> getPartitions (Inter focus,
                                             List<Inter> inters)
     {
-        Collections.sort(inters, Inter.byReverseGrade);
+        Collections.sort(inters, Inters.byReverseGrade);
 
         final int n = inters.size();
         final List<Inter> stems = (focus instanceof HeadInter) ? stemsOf(inters) : null;
@@ -837,7 +837,7 @@ public class SIGraph
         }
 
         // Do insert an exclusion
-        Exclusion exc = new BasicExclusion(cause);
+        Exclusion exc = new Exclusion(cause);
         addEdge(source, target, exc);
 
         if (inter1.isVip() && inter2.isVip()) {

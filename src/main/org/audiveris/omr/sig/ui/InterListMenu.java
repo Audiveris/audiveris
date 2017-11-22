@@ -25,6 +25,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 
@@ -136,7 +137,7 @@ public class InterListMenu
         }
 
         for (List<Inter> list : interMap.values()) {
-            Collections.sort(list, Inter.byReverseBestGrade);
+            Collections.sort(list, Inters.byReverseBestGrade);
         }
 
         try {

@@ -36,7 +36,7 @@ import static javax.swing.Action.SHORT_DESCRIPTION;
  *
  * @author Hervé Bitteur
  */
-class RelationAction
+public class RelationAction
         extends AbstractAction
 {
     //~ Instance fields ----------------------------------------------------------------------------
@@ -102,5 +102,29 @@ class RelationAction
         if (other != null) {
             other.getSig().publish(other);
         }
+    }
+
+    /**
+     * @return the inter
+     */
+    public Inter getInter ()
+    {
+        return inter;
+    }
+
+    /**
+     * @return the relation
+     */
+    public Relation getRelation ()
+    {
+        return relation;
+    }
+
+    /**
+     * @return the other
+     */
+    public Inter getOther ()
+    {
+        return other;
     }
 }

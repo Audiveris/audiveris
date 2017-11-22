@@ -47,12 +47,12 @@ import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.sig.ui.InterService;
+import org.audiveris.omr.sig.ui.RelationClassAction;
 import org.audiveris.omr.sig.ui.ShapeBoard;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
@@ -80,13 +80,12 @@ import java.awt.Rectangle;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import java.awt.Stroke;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -608,10 +607,28 @@ public class SymbolsEditor
 
                     // Inter: main partnerships
                     SIGraph sig = inter.getSig();
+                    Set<Relation> supports = sig.getRelations(inter, Support.class);
 
-                    for (Relation rel : sig.getRelations(inter, Support.class)) {
-                        Inter opp = sig.getOppositeInter(inter, rel);
-                        drawSupport(g, inter, opp, rel);
+                    if (!supports.isEmpty()) {
+                        SheetGradedPainter painter = new SheetGradedPainter(sheet, g);
+
+                        for (Relation rel : supports) {
+                            Inter opp = sig.getOppositeInter(inter, rel);
+                            painter.drawSupport(inter, opp, rel.getClass(), false);
+                        }
+                    }
+
+                    // Suggested support?
+                    InterController interController = sheet.getInterController();
+                    RelationClassAction rca = interController.getRelationClassAction();
+
+                    if (rca != null) {
+                        SheetGradedPainter painter = new SheetGradedPainter(sheet, g);
+                        painter.drawSupport(
+                                rca.getSource(),
+                                rca.getTarget(),
+                                rca.getRelationClass(),
+                                true);
                     }
                 }
             }
@@ -626,24 +643,6 @@ public class SymbolsEditor
                             highlightedSlot);
                 }
             }
-        }
-
-        private void drawSupport (Graphics2D g,
-                                  Inter one,
-                                  Inter two,
-                                  Relation rel)
-        {
-            final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-            g.setColor((rel instanceof NoExclusion) ? Color.GRAY : Color.GREEN);
-
-            final double r = 2; // Radius
-            final Point oneCenter = one.getRelationCenter();
-            Ellipse2D e1 = new Ellipse2D.Double(oneCenter.x - r, oneCenter.y - r, 2 * r, 2 * r);
-            final Point twoCenter = two.getRelationCenter();
-            Ellipse2D e2 = new Ellipse2D.Double(twoCenter.x - r, twoCenter.y - r, 2 * r, 2 * r);
-            g.fill(e1);
-            g.fill(e2);
-            g.draw(new Line2D.Double(oneCenter, twoCenter));
         }
 
         //---------------//

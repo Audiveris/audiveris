@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "caesura")
 public class CaesuraInter
-        extends AbstractNotationInter
+        extends AbstractInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 

@@ -50,6 +50,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -198,7 +199,7 @@ public class SymbolsLinker
             final SmallChordInter smallChord = (SmallChordInter) chordInter;
 
             if (smallChord.isVip()) {
-                logger.info("VIP linkGracesl for {}", smallChord);
+                logger.info("VIP linkGraces for {}", smallChord);
             }
 
             try {

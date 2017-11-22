@@ -26,6 +26,7 @@ import ij.process.ByteProcessor;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.BasicGlyph;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.image.Anchored.Anchor;
@@ -33,29 +34,41 @@ import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.image.TemplateFactory.Catalog;
+import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.ByteUtil;
+import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -398,6 +411,27 @@ public class HeadInter
         return map;
     }
 
+    //-----------------------//
+    // getStemReferencePoint //
+    //-----------------------//
+    /**
+     * Report the reference point for a stem connection.
+     *
+     * @param anchor    desired side for stem (typically TOP_RIGHT_STEM or BOTTOM_LEFT_STEM)
+     * @param interline relevant interline value
+     * @return the reference point
+     */
+    public Point2D getStemReferencePoint (Anchor anchor,
+                                          int interline)
+    {
+        ShapeDescriptor desc = getDescriptor(interline);
+        Point ref = getBounds().getLocation();
+        Point offset = desc.getOffset(anchor);
+        ref.translate(offset.x, offset.y);
+
+        return ref;
+    }
+
     //----------//
     // getStems //
     //----------//
@@ -537,6 +571,37 @@ public class HeadInter
         bounds = glyph.getBounds();
     }
 
+    //--------------------//
+    // searchPartnerships //
+    //--------------------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Specifically, look for stem to allow head attachment.
+     *
+     * @return stem partnership, perhaps empty
+     */
+    @Override
+    public Collection<Partnership> searchPartnerships (SystemInfo system,
+                                                       boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemStems = system.getSig().inters(StemInter.class);
+        Collections.sort(systemStems, Inters.byAbscissa);
+
+        Partnership partnership = lookupPartnership(systemStems);
+
+        if (partnership == null) {
+            return Collections.emptyList();
+        }
+
+        if (doit) {
+            partnership.applyTo(this);
+        }
+
+        return Collections.singleton(partnership);
+    }
+
     //--------//
     // shrink //
     //--------//
@@ -635,6 +700,73 @@ public class HeadInter
 
         //TODO: What if we have no stem? It's a WHOLE_NOTE or SMALL_WHOLE_NOTE
         // Perhaps check for a weak ledger, tangent to the note towards staff
+    }
+
+    //-------------------//
+    // lookupPartnership //
+    //-------------------//
+    /**
+     * Try to detect a partnership between this Head instance and a stem nearby.
+     * <p>
+     * 1/ Use a lookup area on each horizontal side of the head to filter candidate stems.
+     * 2/ Select the best connection among the compatible candidates.
+     *
+     * @param systemStems abscissa-ordered collection of stems in system
+     * @return the partnership found or null
+     */
+    private Partnership lookupPartnership (List<Inter> systemStems)
+    {
+        if (systemStems.isEmpty()) {
+            return null;
+        }
+
+        final SystemInfo system = systemStems.get(0).getSig().getSystem();
+        final Scale scale = system.getSheet().getScale();
+        final int interline = scale.getInterline();
+        final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum());
+        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
+        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum());
+
+        Partnership bestPartnership = null;
+        double bestGrade = 0;
+
+        for (Corner corner : Corner.stemValues) {
+            Point refPt = PointUtil.rounded(getStemReferencePoint(corner.stemAnchor(), interline));
+            int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
+            int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
+            Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
+            List<Inter> stems = SIGraph.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+
+            for (Inter inter : stems) {
+                StemInter stem = (StemInter) inter;
+                Glyph stemGlyph = stem.getGlyph();
+                Point2D start = stemGlyph.getStartPoint(VERTICAL);
+                Point2D stop = stemGlyph.getStopPoint(VERTICAL);
+                double crossX = LineUtil.xAtY(start, stop, refPt.getY());
+                final double xGap = refPt.getX() - crossX;
+                final double yGap;
+
+                if (refPt.getY() < start.getY()) {
+                    yGap = start.getY() - refPt.getY();
+                } else if (refPt.getY() > stop.getY()) {
+                    yGap = refPt.getY() - stop.getY();
+                } else {
+                    yGap = 0;
+                }
+
+                HeadStemRelation rel = new HeadStemRelation();
+                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+
+                if (rel.getGrade() >= rel.getMinGrade()) {
+                    if ((bestPartnership == null) || (rel.getGrade() > bestGrade)) {
+                        bestPartnership = new Partnership(stem, rel, true);
+                        bestGrade = rel.getGrade();
+                    }
+                }
+            }
+        }
+
+        return bestPartnership;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

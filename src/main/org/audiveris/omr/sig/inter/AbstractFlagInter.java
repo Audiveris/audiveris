@@ -175,11 +175,15 @@ public abstract class AbstractFlagInter
     {
         // Not very optimized!
         List<Inter> systemStems = system.getSig().inters(StemInter.class);
-        Collections.sort(systemStems, Inter.byAbscissa);
+        Collections.sort(systemStems, Inters.byAbscissa);
 
         Partnership partnership = lookupPartnership(systemStems);
 
-        if (doit && (partnership != null)) {
+        if (partnership == null) {
+            return Collections.emptyList();
+        }
+
+        if (doit) {
             partnership.applyTo(this);
         }
 

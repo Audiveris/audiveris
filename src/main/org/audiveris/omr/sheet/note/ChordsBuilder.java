@@ -32,6 +32,7 @@ import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
@@ -124,7 +125,7 @@ public class ChordsBuilder
 
             for (Staff staff : part.getStaves()) {
                 List<Inter> heads = sig.inters(staff, HeadInter.class); // Heads in staff
-                Collections.sort(heads, Inter.byCenterAbscissa);
+                Collections.sort(heads, Inters.byCenterAbscissa);
                 logger.debug("Staff#{} heads:{}", staff.getId(), heads.size());
 
                 // Isolated heads (instances of WholeInter or SmallWholeInter) found so far in staff
@@ -312,7 +313,7 @@ public class ChordsBuilder
      */
     private void detectWholeVerticals (List<HeadInter> wholeHeads)
     {
-        Collections.sort(wholeHeads, Inter.byCenterOrdinate);
+        Collections.sort(wholeHeads, Inters.byCenterOrdinate);
 
         for (int i = 0, iBreak = wholeHeads.size(); i < iBreak; i++) {
             final HeadInter h1 = wholeHeads.get(i);

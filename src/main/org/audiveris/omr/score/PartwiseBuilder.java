@@ -56,6 +56,7 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
@@ -1699,7 +1700,7 @@ public class PartwiseBuilder
             // For first note in chord
             if (!current.measure.isDummy()) {
                 if (isFirstInChord) {
-                    // Chord direction events (statement, pedal, dynamics, TODO: others?)
+                    // Chord events (direction, pedal, dynamics, TODO: others?)
                     for (Relation rel : sig.edgesOf(chord)) {
                         if (rel instanceof ChordSentenceRelation) {
                             processDirection((SentenceInter) sig.getOppositeInter(chord, rel));
@@ -2843,7 +2844,7 @@ public class PartwiseBuilder
 
             for (Map.Entry<Staff, List<ClefInter>> entry : map.entrySet()) {
                 List<ClefInter> list = entry.getValue();
-                Collections.sort(list, Inter.byCenterAbscissa); // not needed? (already sorted)
+                Collections.sort(list, Inters.byCenterAbscissa); // not needed? (already sorted)
                 iters.put(entry.getKey(), list.listIterator());
             }
         }

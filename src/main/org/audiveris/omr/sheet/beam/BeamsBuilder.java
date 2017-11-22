@@ -48,6 +48,7 @@ import org.audiveris.omr.sig.inter.AbstractBeamInter.Impacts;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -1193,7 +1194,7 @@ public class BeamsBuilder
             return aggregates;
         }
 
-        Collections.sort(smallBlacks, Inter.byAbscissa);
+        Collections.sort(smallBlacks, Inters.byAbscissa);
         logger.debug("S#{} cues:{}", system.getId(), smallBlacks);
 
         // Look for aggregates of close instances

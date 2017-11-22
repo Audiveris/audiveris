@@ -84,7 +84,7 @@ public class HeadChordInter
     /**
      * No-arg constructor meant for JAXB.
      */
-    private HeadChordInter ()
+    protected HeadChordInter ()
     {
     }
 

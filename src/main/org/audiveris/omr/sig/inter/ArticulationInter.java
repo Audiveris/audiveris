@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "articulation")
 public class ArticulationInter
-        extends AbstractNotationInter
+        extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -118,68 +118,6 @@ public class ArticulationInter
         }
 
         return null;
-
-        //
-        //
-        //        Scale scale = system.getSheet().getScale();
-        //        SIGraph sig = system.getSig();
-        //        final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum());
-        //        final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum());
-        //        final Rectangle glyphBox = glyph.getBounds();
-        //        final Point glyphCenter = glyph.getCenter();
-        //        final Rectangle luBox = new Rectangle(glyphCenter);
-        //        luBox.grow(maxDx, maxDy);
-        //
-        //        final List<Inter> chords = SIGraph.intersectedInters(
-        //                systemHeadChords,
-        //                GeoOrder.BY_ABSCISSA,
-        //                luBox);
-        //
-        //        if (chords.isEmpty()) {
-        //            return null;
-        //        }
-        //
-        //        ChordArticulationRelation bestRel = null;
-        //        Inter bestChord = null;
-        //        double bestYGap = Double.MAX_VALUE;
-        //
-        //        for (Inter chord : chords) {
-        //            Rectangle chordBox = chord.getBounds();
-        //
-        //            // The articulation cannot intersect the chord
-        //            if (chordBox.intersects(glyphBox)) {
-        //                continue;
-        //            }
-        //
-        //            Point center = chord.getCenter();
-        //
-        //            // Select proper chord reference point (top or bottom)
-        //            int yRef = (glyphCenter.y > center.y) ? (chordBox.y + chordBox.height)
-        //                    : chordBox.y;
-        //            double xGap = Math.abs(center.x - glyphCenter.x);
-        //            double yGap = Math.abs(yRef - glyphCenter.y);
-        //            ChordArticulationRelation rel = new ChordArticulationRelation();
-        //            rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-        //
-        //            if (rel.getGrade() >= rel.getMinGrade()) {
-        //                if ((bestRel == null) || (bestYGap > yGap)) {
-        //                    bestRel = rel;
-        //                    bestChord = chord;
-        //                    bestYGap = yGap;
-        //                }
-        //            }
-        //        }
-        //
-        //        if (bestRel != null) {
-        //            ArticulationInter articulation = new ArticulationInter(glyph, shape, grade);
-        //            sig.addVertex(articulation);
-        //            sig.addEdge(bestChord, articulation, bestRel);
-        //            logger.debug("Created {}", articulation);
-        //
-        //            return articulation;
-        //        }
-        //
-        //        return null;
     }
 
     //----------//
@@ -221,11 +159,15 @@ public class ArticulationInter
     {
         // Not very optimized!
         List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
-        Collections.sort(systemHeadChords, Inter.byAbscissa);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
 
         Partnership partnership = lookupPartnership(systemHeadChords);
 
-        if (doit && (partnership != null)) {
+        if (partnership == null) {
+            return Collections.emptyList();
+        }
+
+        if (doit) {
             partnership.applyTo(this);
         }
 
@@ -261,9 +203,9 @@ public class ArticulationInter
         final Scale scale = system.getSheet().getScale();
         final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum());
         final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum());
-        final Rectangle glyphBox = glyph.getBounds();
-        final Point glyphCenter = glyph.getCenter();
-        final Rectangle luBox = new Rectangle(glyphCenter);
+        final Rectangle articBox = getBounds();
+        final Point arcticCenter = getCenter();
+        final Rectangle luBox = new Rectangle(arcticCenter);
         luBox.grow(maxDx, maxDy);
 
         final List<Inter> chords = SIGraph.intersectedInters(
@@ -283,17 +225,17 @@ public class ArticulationInter
             Rectangle chordBox = chord.getBounds();
 
             // The articulation cannot intersect the chord
-            if (chordBox.intersects(glyphBox)) {
+            if (chordBox.intersects(articBox)) {
                 continue;
             }
 
             Point center = chord.getCenter();
 
             // Select proper chord reference point (top or bottom)
-            int yRef = (glyphCenter.y > center.y)
+            int yRef = (arcticCenter.y > center.y)
                     ? (chordBox.y + chordBox.height) : chordBox.y;
-            double xGap = Math.abs(center.x - glyphCenter.x);
-            double yGap = Math.abs(yRef - glyphCenter.y);
+            double xGap = Math.abs(center.x - arcticCenter.x);
+            double yGap = Math.abs(yRef - arcticCenter.y);
             ChordArticulationRelation rel = new ChordArticulationRelation();
             rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 

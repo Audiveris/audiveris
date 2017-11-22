@@ -62,7 +62,7 @@ public abstract class AbstractRelation
     @Override
     public String getName ()
     {
-        return getClass().getSimpleName().replaceFirst("Relation", "");
+        return Relations.nameOf(getClass());
     }
 
     //----------//

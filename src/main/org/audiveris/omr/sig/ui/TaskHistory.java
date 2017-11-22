@@ -28,10 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TaskHistory} handles a history of InterTaskList instances, with the
- * ability to add, undo and redo.
+ * Class {@code TaskHistory} handles a history of UITaskList instances, with the
+ ability to add, undo and redo.
  * <p>
- * Within an InterTaskList, all tasks are handled as a whole, to cope with dependent tasks.
+ Within an UITaskList, all tasks are handled as a whole, to cope with dependent tasks.
  *
  * @author Hervé Bitteur
  */
@@ -43,7 +43,7 @@ class TaskHistory
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** History of action sequences. */
-    private final List<InterTaskList> sequences = new ArrayList<InterTaskList>();
+    private final List<UITaskList> sequences = new ArrayList<UITaskList>();
 
     /** Current position in history, always pointing to sequence just done. */
     private int cursor = -1;
@@ -55,7 +55,7 @@ class TaskHistory
      * @param tasks one (or several related) task(s)
      * @return the action sequence
      */
-    public InterTaskList add (InterTaskList seq)
+    public UITaskList add (UITaskList seq)
     {
         sequences.add(cursor + 1, seq);
         cursor++;
@@ -93,9 +93,9 @@ class TaskHistory
      *
      * @return the task sequence to redo
      */
-    public InterTaskList toRedo ()
+    public UITaskList toRedo ()
     {
-        InterTaskList seq = sequences.get(cursor + 1);
+        UITaskList seq = sequences.get(cursor + 1);
         cursor++;
 
         return seq;
@@ -119,9 +119,9 @@ class TaskHistory
      *
      * @return the task sequence to undo
      */
-    public InterTaskList toUndo ()
+    public UITaskList toUndo ()
     {
-        InterTaskList seq = sequences.get(cursor);
+        UITaskList seq = sequences.get(cursor);
         cursor--;
 
         return seq;

@@ -33,6 +33,7 @@ import org.audiveris.omr.sheet.rhythm.Voice.SlotVoice;
 import static org.audiveris.omr.sheet.rhythm.Voice.Status.BEGIN;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -184,7 +185,7 @@ public class Slot
         logger.debug("incomings={}", incomings);
 
         // Sort incoming chords vertically
-        Collections.sort(incomings, AbstractChordInter.byOrdinate);
+        Collections.sort(incomings, Inters.byOrdinate);
 
         List<AbstractChordInter> rookies = new ArrayList<AbstractChordInter>();
 

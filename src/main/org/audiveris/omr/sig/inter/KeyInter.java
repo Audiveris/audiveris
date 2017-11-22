@@ -90,7 +90,10 @@ public class KeyInter
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Sequence of key components. */
+    /**
+     * Sequence of key components.
+     * This is deprecated, replaced by the use of containment relation.
+     */
     @XmlElement(name = "key-alter")
     @Deprecated
     private List<KeyAlterInter> oldAlters;
@@ -340,7 +343,7 @@ public class KeyInter
     @Override
     public List<Inter> getMembers ()
     {
-        return EnsembleHelper.getMembers(this, Inter.byCenterAbscissa);
+        return EnsembleHelper.getMembers(this, Inters.byCenterAbscissa);
     }
 
     //------------//

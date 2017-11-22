@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        I n t e r T a s k                                       //
+//                                           U I T a s k                                          //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2017. All rights reserved.
+//  Copyright ©  Audiveris 2017. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,61 +22,41 @@
 package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
-
-import java.util.Collection;
 
 /**
- * Class {@code InterTask} is the elementary task (focused on an Inter) that can be
- * done, undone and redone by the {@link InterController}.
+ * Class {@code UITask} is the basis for user interactive task
  *
  * @author Hervé Bitteur
  */
-public abstract class InterTask
-        extends UITask
+public abstract class UITask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Task focus. */
-    protected final Inter inter;
-
-    /** Relations inter is involved in. */
-    protected Collection<Partnership> partnerships;
+    /** Underlying SIG. */
+    protected final SIGraph sig;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code InterTask} object.
+     * Creates a new {@code UITask} object.
      *
-     * @param sig          the underlying sig
-     * @param inter        the inter task is focused upon
-     * @param partnerships the relations around inter
+     * @param sig the underlying sig
      */
-    protected InterTask (SIGraph sig,
-                         Inter inter,
-                         Collection<Partnership> partnerships)
+    public UITask (SIGraph sig)
     {
-        super(sig);
-        this.inter = inter;
-        this.partnerships = partnerships;
+        this.sig = sig;
     }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    public abstract void performDo ();
+
+    public abstract void performRedo ();
+
+    public abstract void performUndo ();
 
     /**
-     * Getter for involved inter.
+     * Report a name for task action.
      *
-     * @return the inter involved
+     * @return task name
      */
-    public Inter getInter ()
-    {
-        return inter;
-    }
-
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder(actionName());
-        sb.append(" ").append(inter);
-
-        return sb.toString();
-    }
+    protected abstract String actionName ();
 }

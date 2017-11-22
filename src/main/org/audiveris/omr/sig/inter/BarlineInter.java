@@ -163,7 +163,7 @@ public class BarlineInter
      */
     public SortedSet<Inter> getGroupItems ()
     {
-        SortedSet<Inter> items = new TreeSet<Inter>(Inter.byFullAbscissa);
+        SortedSet<Inter> items = new TreeSet<Inter>(Inters.byFullAbscissa);
         items.add(this);
         browseGroup(this, items);
 

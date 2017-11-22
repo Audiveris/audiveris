@@ -24,13 +24,14 @@ package org.audiveris.omr.sig.inter;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code SmallChordInter} is a AbstractChordInter composed of small heads.
+ * Class {@code SmallChordInter} is a chord composed of small heads,
+ * typically (slashed) Acciaccatura and (un-slashed) Appoggiatura.
  *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "small-chord")
 public class SmallChordInter
-        extends AbstractChordInter
+        extends HeadChordInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 

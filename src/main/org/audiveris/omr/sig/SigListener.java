@@ -23,7 +23,7 @@ package org.audiveris.omr.sig;
 
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
-import org.audiveris.omr.sig.relation.ContainmentRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
@@ -65,7 +65,7 @@ public class SigListener
         //
         Relation edge = e.getEdge();
 
-        if (edge instanceof ContainmentRelation) {
+        if (edge instanceof Containment) {
             InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
             ensemble.memberAdded(e.getEdgeTarget());
         }
@@ -82,7 +82,7 @@ public class SigListener
         //
         Relation edge = e.getEdge();
 
-        if (edge instanceof ContainmentRelation) {
+        if (edge instanceof Containment) {
             InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
             ensemble.memberRemoved(e.getEdgeTarget());
         }

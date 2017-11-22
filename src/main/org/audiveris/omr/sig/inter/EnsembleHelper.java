@@ -23,7 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigListener;
-import org.audiveris.omr.sig.relation.ContainmentRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
@@ -61,7 +61,7 @@ public abstract class EnsembleHelper
                                   Inter member)
     {
         SIGraph sig = ensemble.getSig();
-        sig.addEdge(ensemble, member, new ContainmentRelation());
+        sig.addEdge(ensemble, member, new Containment());
     }
 
     //------------//
@@ -80,7 +80,7 @@ public abstract class EnsembleHelper
         SIGraph sig = ensemble.getSig();
         List<Inter> members = new ArrayList<Inter>();
 
-        for (Relation rel : sig.getRelations(ensemble, ContainmentRelation.class)) {
+        for (Relation rel : sig.getRelations(ensemble, Containment.class)) {
             members.add(sig.getOppositeInter(ensemble, rel));
         }
 
@@ -96,7 +96,7 @@ public abstract class EnsembleHelper
     //----------------//
     /**
      * Convert old containment implementation (based on nesting) to new implementation
-     * based on explicit ContainmentRelation in SIG.
+ based on explicit Containment in SIG.
      *
      * @param ensemble   the containing inter
      * @param oldMembers the (unmarshalled) old list of nested members

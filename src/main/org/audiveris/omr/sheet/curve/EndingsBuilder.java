@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
@@ -143,7 +144,7 @@ public class EndingsBuilder
         }
 
         if (!found.isEmpty()) {
-            Collections.sort(found, Inter.byFullAbscissa);
+            Collections.sort(found, Inters.byFullAbscissa);
 
             SentenceInter sentence = found.get(0);
             sig.addEdge(ending, sentence, new EndingSentenceRelation());
@@ -181,7 +182,7 @@ public class EndingsBuilder
         box.height = staff.getLastLine().yAt(end.x) - end.y;
 
         List<Inter> bars = SIGraph.intersectedInters(systemBars, GeoOrder.NONE, box);
-        Collections.sort(bars, Inter.byAbscissa);
+        Collections.sort(bars, Inters.byAbscissa);
 
         if (bars.isEmpty()) {
             return null;

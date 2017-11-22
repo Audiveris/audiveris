@@ -41,7 +41,6 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SlurInter;
-import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.Dumping;
@@ -549,7 +548,7 @@ public class SlursLinker
             this.clump = clump;
             sig = system.getSig();
 
-            sysChords = sig.inters(new Class[]{HeadChordInter.class, SmallChordInter.class});
+            sysChords = sig.inters(HeadChordInter.class);
 
             // Pre-select chords candidates according to clump side
             preselect(bounds);
@@ -1007,15 +1006,6 @@ public class SlursLinker
             return dist / n;
         }
 
-        private double weightedDist (SlurInter slur,
-                                     Map<HorizontalSide, ChordLink> map)
-        {
-            final double dist = meanEuclidianDist(map);
-            final int nbPoints = slur.getInfo().getPoints().size();
-
-            return dist / nbPoints;
-        }
-
         /**
          * Filter the chords that could be relevant for clump.
          */
@@ -1162,6 +1152,15 @@ public class SlursLinker
             }
 
             return bestHead;
+        }
+
+        private double weightedDist (SlurInter slur,
+                                     Map<HorizontalSide, ChordLink> map)
+        {
+            final double dist = meanEuclidianDist(map);
+            final int nbPoints = slur.getInfo().getPoints().size();
+
+            return dist / nbPoints;
         }
     }
 
