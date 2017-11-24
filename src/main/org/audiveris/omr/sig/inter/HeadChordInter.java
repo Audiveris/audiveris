@@ -82,6 +82,18 @@ public class HeadChordInter
     }
 
     /**
+     * Creates a new {@code HeadChordInter} object.
+     *
+     * @param grade the intrinsic grade
+     * @param stem  the related stem
+     */
+    public HeadChordInter (double grade,
+                           StemInter stem)
+    {
+        super(grade, stem);
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
     protected HeadChordInter ()

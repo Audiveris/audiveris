@@ -149,6 +149,20 @@ public abstract class AbstractChordInter
     }
 
     /**
+     * Creates a new {@code AbstractChordInter} object.
+     *
+     * @param grade the interpretation quality
+     * @param stem  the related stem
+     */
+    public AbstractChordInter (double grade,
+                               StemInter stem)
+    {
+        this(grade);
+
+        setStem(stem);
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
     protected AbstractChordInter ()
@@ -1107,7 +1121,7 @@ public abstract class AbstractChordInter
     /**
      * @param stem the stem to set
      */
-    public void setStem (StemInter stem)
+    public final void setStem (StemInter stem)
     {
         this.stem = stem;
         reset();

@@ -34,11 +34,15 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
 
@@ -49,6 +53,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -281,6 +286,14 @@ public class InterController
         return interFocus;
     }
 
+    /**
+     * @return the relationClassAction
+     */
+    public RelationClassAction getRelationClassAction ()
+    {
+        return relationClassAction;
+    }
+
     //------//
     // link //
     //------//
@@ -443,6 +456,14 @@ public class InterController
         editor.refresh();
     }
 
+    /**
+     * @param relationClassAction the relationClassAction to set
+     */
+    public void setRelationClassAction (RelationClassAction relationClassAction)
+    {
+        this.relationClassAction = relationClassAction;
+    }
+
     //------------------//
     // setSymbolsEditor //
     //------------------//
@@ -545,16 +566,38 @@ public class InterController
     private void addGhost (Inter ghost,
                            Collection<Partnership> partnerships)
     {
-        SystemInfo system = ghost.getStaff().getSystem();
-
-        UITaskList seq = new UITaskList(new AdditionTask(system.getSig(), ghost, partnerships));
+        final SIGraph sig = ghost.getStaff().getSystem().getSig();
+        final UITaskList seq = new UITaskList(new AdditionTask(sig, ghost, partnerships));
 
         if (ghost instanceof RestInter) {
             // Wrap this rest inter within a rest chord
-            seq.add(new AdditionTask(
-                            system.getSig(),
+            seq.add(
+                    new AdditionTask(
+                            sig,
                             new RestChordInter(-1),
                             Arrays.asList(new Partnership(ghost, new Containment(), true))));
+        } else if (ghost instanceof StemInter) {
+            // Wrap this stem within a head chord
+            final StemInter stem = (StemInter) ghost;
+            seq.add(new AdditionTask(sig, new HeadChordInter(-1, stem), Collections.EMPTY_SET));
+        } else if (ghost instanceof HeadInter) {
+            // If we link head to a stem, create/update the related head chord
+            for (Partnership partnership : partnerships) {
+                if (partnership.relation instanceof HeadStemRelation) {
+                    StemInter stem = (StemInter) partnership.partner;
+                    HeadChordInter headChord = stem.getChord();
+
+                    if (headChord == null) {
+                        // Create a chord based on stem
+                        headChord = new HeadChordInter(-1, stem);
+                        seq.add(new AdditionTask(sig, headChord, Collections.EMPTY_SET));
+                    }
+
+                    seq.add(new LinkTask(sig, headChord, ghost, new Containment()));
+
+                    break;
+                }
+            }
         }
 
         history.add(seq);
@@ -648,22 +691,5 @@ public class InterController
                 setInterFocus(null);
             }
         }
-    }
-
-    /**
-     * @return the relationClassAction
-     */
-    public RelationClassAction getRelationClassAction ()
-    {
-        return relationClassAction;
-    }
-
-    /**
-     * @param relationClassAction the relationClassAction to set
-     */
-    public void setRelationClassAction (
-            RelationClassAction relationClassAction)
-    {
-        this.relationClassAction = relationClassAction;
     }
 }

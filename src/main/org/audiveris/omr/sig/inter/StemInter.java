@@ -411,6 +411,25 @@ public class StemInter
     }
 
     //----------//
+    // getChord //
+    //----------//
+    /**
+     * Report the chord this stem is part of, if any.
+     *
+     * @return the related chord or null
+     */
+    public HeadChordInter getChord ()
+    {
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            HeadInter head = (HeadInter) sig.getEdgeSource(relation);
+
+            return (HeadChordInter) head.getChord();
+        }
+
+        return null;
+    }
+
+    //----------//
     // getHeads //
     //----------//
     /**
