@@ -22,14 +22,21 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.relation.FlagStemRelation;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -70,6 +77,16 @@ public class HeadChordInter
         }
     };
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
+    /** Attached stem, if any. */
+    @XmlIDREF
+    @XmlAttribute(name = "stem")
+    protected StemInter stem;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadChordInter} object.
@@ -90,7 +107,8 @@ public class HeadChordInter
     public HeadChordInter (double grade,
                            StemInter stem)
     {
-        super(grade, stem);
+        this(grade);
+        setStem(stem);
     }
 
     /**
@@ -101,6 +119,19 @@ public class HeadChordInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        if ((stem != null) && stem.contains(point)) {
+            return true;
+        }
+
+        return super.contains(point);
+    }
+
     //-----------//
     // duplicate //
     //-----------//
@@ -152,6 +183,67 @@ public class HeadChordInter
         return clone;
     }
 
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (bounds == null) {
+            bounds = Entities.getBounds(getMembers());
+
+            if (stem != null) {
+                bounds.add(stem.getBounds());
+            }
+        }
+
+        return super.getBounds();
+    }
+
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        StringBuilder sb = new StringBuilder(super.getDetails());
+
+        if (stem != null) {
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+
+            sb.append("stem:").append(stem);
+        }
+
+        return sb.toString();
+    }
+
+    //----------------//
+    // getFlagsNumber //
+    //----------------//
+    /**
+     * Report the number of (individual) flags attached to the chord stem
+     *
+     * @return the number of individual flags
+     */
+    @Override
+    public int getFlagsNumber ()
+    {
+        int count = 0;
+
+        if (stem != null) {
+            final Set<Relation> rels = sig.getRelations(stem, FlagStemRelation.class);
+
+            for (Relation rel : rels) {
+                AbstractFlagInter flagInter = (AbstractFlagInter) sig.getOppositeInter(stem, rel);
+                count += flagInter.getValue();
+            }
+        }
+
+        return count;
+    }
+
     //----------------//
     // getHeadsBounds //
     //----------------//
@@ -165,6 +257,89 @@ public class HeadChordInter
         return Entities.getBounds(getMembers());
     }
 
+    //----------------//
+    // getLeadingNote //
+    //----------------//
+    /**
+     * Report the note which if vertically farthest from stem tail.
+     * For wholes & breves, it's the head itself.
+     * For rest chords, it's the rest itself
+     *
+     * @return the leading note
+     */
+    public HeadInter getLeadingNote ()
+    {
+        final List<Inter> notes = getMembers();
+
+        if (!notes.isEmpty()) {
+            if (stem != null) {
+                // Find the note farthest from stem middle point
+                Point middle = stem.getCenter();
+                Inter bestNote = null;
+                int bestDy = Integer.MIN_VALUE;
+
+                for (Inter note : notes) {
+                    int noteY = note.getCenter().y;
+                    int dy = Math.abs(noteY - middle.y);
+
+                    if (dy > bestDy) {
+                        bestNote = note;
+                        bestDy = dy;
+                    }
+                }
+
+                return (HeadInter) bestNote;
+            } else {
+                return (HeadInter) notes.get(0);
+            }
+        } else {
+            logger.warn("No notes in chord " + this);
+
+            return null;
+        }
+    }
+
+    //---------//
+    // getStem //
+    //---------//
+    /**
+     * @return the stem
+     */
+    @Override
+    public StemInter getStem ()
+    {
+        return stem;
+    }
+
+    //------------//
+    // getStemDir //
+    //------------//
+    /**
+     * Report the stem direction of this chord, from head to tail
+     *
+     * @return -1 if stem is up, 0 if no stem, +1 if stem is down
+     */
+    public int getStemDir ()
+    {
+        if (stem == null) {
+            return 0;
+        } else {
+            return Integer.signum(getTailLocation().y - getHeadLocation().y);
+        }
+    }
+
+    //---------//
+    // setStem //
+    //---------//
+    /**
+     * @param stem the stem to set
+     */
+    public final void setStem (StemInter stem)
+    {
+        this.stem = stem;
+        reset();
+    }
+
     //-------------//
     // shapeString //
     //-------------//
@@ -172,5 +347,39 @@ public class HeadChordInter
     public String shapeString ()
     {
         return "HeadChord";
+    }
+
+    //------------------//
+    // computeLocations //
+    //------------------//
+    /**
+     * Compute the head and tail locations for this chord.
+     */
+    @Override
+    protected void computeLocations ()
+    {
+        AbstractNoteInter leading = getLeadingNote();
+
+        if (leading == null) {
+            return;
+        }
+
+        if (stem == null) {
+            tailLocation = headLocation = leading.getCenter();
+        } else {
+            Rectangle stemBox = stem.getBounds();
+
+            if (stem.getCenter().y < leading.getCenter().y) {
+                // Stem is up
+                tailLocation = new Point(stemBox.x + (stemBox.width / 2), stemBox.y);
+            } else {
+                // Stem is down
+                tailLocation = new Point(
+                        stemBox.x + (stemBox.width / 2),
+                        ((stemBox.y + stemBox.height) - 1));
+            }
+
+            headLocation = new Point(tailLocation.x, leading.getCenter().y);
+        }
     }
 }

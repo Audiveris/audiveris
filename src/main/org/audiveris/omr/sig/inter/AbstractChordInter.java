@@ -34,7 +34,6 @@ import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
-import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.Entities;
@@ -54,7 +53,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
@@ -88,11 +86,6 @@ public abstract class AbstractChordInter
     // Persistent data
     //----------------
     //
-    /** Attached stem, if any. */
-    @XmlIDREF
-    @XmlAttribute(name = "stem")
-    protected StemInter stem;
-
     /**
      * Sequence of chord notes (one or several heads or just a single rest),
      * kept ordered bottom-up.
@@ -149,20 +142,6 @@ public abstract class AbstractChordInter
     }
 
     /**
-     * Creates a new {@code AbstractChordInter} object.
-     *
-     * @param grade the interpretation quality
-     * @param stem  the related stem
-     */
-    public AbstractChordInter (double grade,
-                               StemInter stem)
-    {
-        this(grade);
-
-        setStem(stem);
-    }
-
-    /**
      * No-arg constructor meant for JAXB.
      */
     protected AbstractChordInter ()
@@ -170,6 +149,35 @@ public abstract class AbstractChordInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // getClosestChord //
+    //-----------------//
+    /**
+     * From a provided Chord collection, report the chord which has the
+     * closest abscissa to a provided point.
+     *
+     * @param chords the collection of chords to browse
+     * @param point  the reference point
+     * @return the abscissa-wise closest chord
+     */
+    public static AbstractChordInter getClosestChord (Collection<AbstractChordInter> chords,
+                                                      Point point)
+    {
+        AbstractChordInter bestChord = null;
+        int bestDx = Integer.MAX_VALUE;
+
+        for (AbstractChordInter chord : chords) {
+            int dx = Math.abs(chord.getHeadLocation().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestChord = chord;
+            }
+        }
+
+        return bestChord;
+    }
+
     //--------//
     // accept //
     //--------//
@@ -205,7 +213,7 @@ public abstract class AbstractChordInter
                 public int compare (AbstractBeamInter b1,
                                     AbstractBeamInter b2)
                 {
-                    int x = stem.getCenter().x;
+                    int x = getCenter().x;
                     double y1 = LineUtil.yAtX(b1.getMedian(), x);
                     double y2 = LineUtil.yAtX(b2.getMedian(), x);
                     int yHead = getHeadLocation().y;
@@ -261,19 +269,6 @@ public abstract class AbstractChordInter
     public void assignVoice (Voice voice)
     {
         this.voice = voice;
-    }
-
-    //----------//
-    // contains //
-    //----------//
-    @Override
-    public boolean contains (Point point)
-    {
-        if ((stem != null) && stem.contains(point)) {
-            return true;
-        }
-
-        return super.contains(point);
     }
 
     //-----------//
@@ -407,69 +402,10 @@ public abstract class AbstractChordInter
     public Rectangle getBounds ()
     {
         if (bounds == null) {
-            final Rectangle stemBounds = (stem != null) ? stem.getBounds() : null;
-            final Rectangle notesBounds = Entities.getBounds(getMembers());
-
-            if (notesBounds != null) {
-                if (stemBounds != null) {
-                    notesBounds.add(stemBounds);
-                }
-
-                bounds = notesBounds;
-            } else {
-                bounds = stemBounds;
-            }
+            bounds = Entities.getBounds(getMembers());
         }
 
         return super.getBounds();
-    }
-
-    //-----------------//
-    // getClosestChord //
-    //-----------------//
-    /**
-     * From a provided Chord collection, report the chord which has the
-     * closest abscissa to a provided point.
-     *
-     * @param chords the collection of chords to browse
-     * @param point  the reference point
-     * @return the abscissa-wise closest chord
-     */
-    public static AbstractChordInter getClosestChord (Collection<AbstractChordInter> chords,
-                                                      Point point)
-    {
-        AbstractChordInter bestChord = null;
-        int bestDx = Integer.MAX_VALUE;
-
-        for (AbstractChordInter chord : chords) {
-            int dx = Math.abs(chord.getHeadLocation().x - point.x);
-
-            if (dx < bestDx) {
-                bestDx = dx;
-                bestChord = chord;
-            }
-        }
-
-        return bestChord;
-    }
-
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
-    {
-        StringBuilder sb = new StringBuilder(super.getDetails());
-
-        if (stem != null) {
-            if (sb.length() > 0) {
-                sb.append(' ');
-            }
-
-            sb.append("stem:").append(stem);
-        }
-
-        return sb.toString();
     }
 
     //---------------//
@@ -641,24 +577,13 @@ public abstract class AbstractChordInter
     // getFlagsNumber //
     //----------------//
     /**
-     * Report the number of (individual) flags attached to the chord stem
+     * Report the number of (individual) flags attached to the chord
      *
      * @return the number of individual flags
      */
     public int getFlagsNumber ()
     {
-        int count = 0;
-
-        if (stem != null) {
-            final Set<Relation> rels = sig.getRelations(stem, FlagStemRelation.class);
-
-            for (Relation rel : rels) {
-                AbstractFlagInter flagInter = (AbstractFlagInter) sig.getOppositeInter(stem, rel);
-                count += flagInter.getValue();
-            }
-        }
-
-        return count;
+        return 0;
     }
 
     //------------------------//
@@ -726,26 +651,7 @@ public abstract class AbstractChordInter
         final List<Inter> notes = getMembers();
 
         if (!notes.isEmpty()) {
-            if (stem != null) {
-                // Find the note farthest from stem middle point
-                Point middle = stem.getCenter();
-                Inter bestNote = null;
-                int bestDy = Integer.MIN_VALUE;
-
-                for (Inter note : notes) {
-                    int noteY = note.getCenter().y;
-                    int dy = Math.abs(noteY - middle.y);
-
-                    if (dy > bestDy) {
-                        bestNote = note;
-                        bestDy = dy;
-                    }
-                }
-
-                return (AbstractNoteInter) bestNote;
-            } else {
-                return (AbstractNoteInter) notes.get(0);
-            }
+            return (AbstractNoteInter) notes.get(0);
         } else {
             logger.warn("No notes in chord " + this);
 
@@ -865,28 +771,22 @@ public abstract class AbstractChordInter
     // getStem //
     //---------//
     /**
-     * @return the stem
+     * @return null
      */
     public StemInter getStem ()
     {
-        return stem;
+        return null;
     }
 
     //------------//
     // getStemDir //
     //------------//
     /**
-     * Report the stem direction of this chord, from head to tail
-     *
-     * @return -1 if stem is up, 0 if no stem, +1 if stem is down
+     * @return 0 since no stem
      */
     public int getStemDir ()
     {
-        if (stem == null) {
-            return 0;
-        } else {
-            return Integer.signum(getTailLocation().y - getHeadLocation().y);
-        }
+        return 0;
     }
 
     //-----------------//
@@ -1115,18 +1015,6 @@ public abstract class AbstractChordInter
         this.slot = slot;
     }
 
-    //---------//
-    // setStem //
-    //---------//
-    /**
-     * @param stem the stem to set
-     */
-    public final void setStem (StemInter stem)
-    {
-        this.stem = stem;
-        reset();
-    }
-
     //----_----------//
     // setTimeOffset //
     //------_--------//
@@ -1249,6 +1137,23 @@ public abstract class AbstractChordInter
         super.beforeMarshal(m);
     }
 
+    //------------------//
+    // computeLocations //
+    //------------------//
+    /**
+     * Compute the head and tail locations for this chord.
+     */
+    protected void computeLocations ()
+    {
+        AbstractNoteInter leading = getLeadingNote();
+
+        if (leading == null) {
+            return;
+        }
+
+        tailLocation = headLocation = leading.getCenter();
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -1274,48 +1179,14 @@ public abstract class AbstractChordInter
         return sb.toString();
     }
 
-    //------------------//
-    // computeLocations //
-    //------------------//
-    /**
-     * Compute the head and tail locations for this chord.
-     */
-    private void computeLocations ()
-    {
-        AbstractNoteInter leading = getLeadingNote();
-
-        if (leading == null) {
-            return;
-        }
-
-        if (stem == null) {
-            tailLocation = headLocation = leading.getCenter();
-        } else {
-            Rectangle stemBox = stem.getBounds();
-
-            if (stem.getCenter().y < leading.getCenter().y) {
-                // Stem is up
-                tailLocation = new Point(stemBox.x + (stemBox.width / 2), stemBox.y);
-            } else {
-                // Stem is down
-                tailLocation = new Point(
-                        stemBox.x + (stemBox.width / 2),
-                        ((stemBox.y + stemBox.height) - 1));
-            }
-
-            headLocation = new Point(tailLocation.x, leading.getCenter().y);
-        }
-    }
-
     //-------//
     // reset //
     //-------//
     /**
      * Invalidate cached information. (following the addition or removal of a stem or note)
      */
-    private void reset ()
+    protected void reset ()
     {
-        staff = null;
         bounds = null;
         headLocation = null;
         tailLocation = null;

@@ -1773,13 +1773,15 @@ public class PartwiseBuilder
 
                 current.pmNote.setRest(rest);
             } else {
+                HeadChordInter headChord = (HeadChordInter) chord;
+
                 // Grace?
                 if (isFirstInChord && note.getShape().isSmall()) {
                     Grace grace = factory.createGrace();
                     current.pmNote.setGrace(grace);
 
                     // Slash? (check the flag)
-                    StemInter stem = chord.getStem();
+                    StemInter stem = headChord.getStem();
 
                     if (stem != null) {
                         for (Relation rel : sig.getRelations(stem, FlagStemRelation.class)) {
