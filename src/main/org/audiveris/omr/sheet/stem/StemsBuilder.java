@@ -613,7 +613,7 @@ public class StemsBuilder
             neighborBeams = getNeighboringInters(systemBeams);
             neighborSeeds = getNeighboringSeeds();
 
-            for (Corner corner : Corner.stemValues) {
+            for (Corner corner : Corner.values) {
                 new CornerLinker(corner).link();
             }
         }
@@ -629,7 +629,7 @@ public class StemsBuilder
 
             neighborStems = getNeighboringInters(systemStems);
 
-            for (Corner corner : Corner.stemValues) {
+            for (Corner corner : Corner.values) {
                 new CornerLinker(corner).reuse();
             }
         }

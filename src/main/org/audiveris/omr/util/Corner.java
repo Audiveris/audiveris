@@ -52,11 +52,6 @@ public class Corner
             TOP_LEFT,
             BOTTOM_RIGHT);
 
-    /** Connection corners for stems. */
-    public static final List<Corner> stemValues = Arrays.asList(
-            TOP_RIGHT,
-            BOTTOM_LEFT);
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** The vertical side. */
     public final VerticalSide vSide;

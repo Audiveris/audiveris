@@ -730,7 +730,7 @@ public class HeadInter
         Partnership bestPartnership = null;
         double bestGrade = 0;
 
-        for (Corner corner : Corner.stemValues) {
+        for (Corner corner : Corner.values) {
             Point refPt = PointUtil.rounded(getStemReferencePoint(corner.stemAnchor(), interline));
             int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
             int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
