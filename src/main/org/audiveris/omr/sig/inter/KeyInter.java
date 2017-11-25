@@ -479,18 +479,6 @@ public class KeyInter
         oldAlters = null;
     }
 
-    @Override
-    public void memberAdded (Inter member)
-    {
-        reset();
-    }
-
-    @Override
-    public void memberRemoved (Inter member)
-    {
-        reset();
-    }
-
     //--------------//
     // removeMember //
     //--------------//
@@ -570,10 +558,11 @@ public class KeyInter
         return sb.toString();
     }
 
-    //-------//
-    // reset //
-    //-------//
-    private void reset ()
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
     {
         bounds = null;
         fifths = 0;

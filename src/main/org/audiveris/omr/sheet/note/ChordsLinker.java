@@ -24,22 +24,10 @@ package org.audiveris.omr.sheet.note;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
-import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractBeamInter;
-import org.audiveris.omr.sig.inter.AbstractChordInter;
-import org.audiveris.omr.sig.inter.HeadInter;
-import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.StemInter;
-import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.HeadStemRelation;
-import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Class {@code ChordsLinker} works at system level to handle relations between chords
@@ -60,9 +48,6 @@ public class ChordsLinker
     @Navigable(false)
     private final SystemInfo system;
 
-    /** System SIG. */
-    private final SIGraph sig;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ChordsLinker} object.
@@ -72,7 +57,6 @@ public class ChordsLinker
     public ChordsLinker (SystemInfo system)
     {
         this.system = system;
-        sig = system.getSig();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -81,40 +65,9 @@ public class ChordsLinker
     //------------//
     public void linkChords ()
     {
-        // Handle beam - chords relationships
-        linkBeams();
-
         // Allocate beam groups per stack
         for (MeasureStack stack : system.getMeasureStacks()) {
             BeamGroup.populate(stack);
-        }
-    }
-
-    //-----------//
-    // linkBeams //
-    //-----------//
-    /**
-     * Set up links between beams and chords, both ways.
-     */
-    private void linkBeams ()
-    {
-        List<Inter> beams = sig.inters(AbstractBeamInter.class);
-
-        for (Inter inter : beams) {
-            AbstractBeamInter beam = (AbstractBeamInter) inter;
-            Set<Relation> bsRels = sig.getRelations(beam, BeamStemRelation.class);
-
-            for (Relation bs : bsRels) {
-                StemInter stem = (StemInter) sig.getOppositeInter(beam, bs);
-                Set<Relation> hsRels = sig.getRelations(stem, HeadStemRelation.class);
-
-                for (Relation hs : hsRels) {
-                    HeadInter head = (HeadInter) sig.getOppositeInter(stem, hs);
-                    AbstractChordInter chord = head.getChord();
-                    chord.addBeam(beam);
-                    beam.addChord(chord);
-                }
-            }
         }
     }
 }

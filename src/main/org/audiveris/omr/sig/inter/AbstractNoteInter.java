@@ -207,6 +207,7 @@ public abstract class AbstractNoteInter
      * Since a note instance is held by its containing staff, make sure staff
      * notes collection is updated.
      *
+     * @param extensive
      * @see #undelete()
      */
     @Override

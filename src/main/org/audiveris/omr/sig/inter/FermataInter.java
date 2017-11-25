@@ -196,18 +196,6 @@ public class FermataInter
         }
     }
 
-    @Override
-    public void memberAdded (Inter member)
-    {
-        reset();
-    }
-
-    @Override
-    public void memberRemoved (Inter member)
-    {
-        reset();
-    }
-
     //--------//
     // getArc //
     //--------//
@@ -393,10 +381,11 @@ public class FermataInter
         return super.internals() + " " + shape;
     }
 
-    //-------//
-    // reset //
-    //-------//
-    private void reset ()
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
     {
         bounds = null;
     }

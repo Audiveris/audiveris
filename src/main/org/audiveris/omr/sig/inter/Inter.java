@@ -266,6 +266,11 @@ public interface Inter
     void increase (double ratio);
 
     /**
+     * Nullify cached data.
+     */
+    void invalidateCache ();
+
+    /**
      * Report whether the interpretation has a good contextual grade.
      *
      * @return true if contextual grade is good

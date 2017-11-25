@@ -78,20 +78,6 @@ public interface InterEnsemble
     void linkOldMembers ();
 
     /**
-     * Call-back when a member has just been added.
-     *
-     * @param member the added member
-     */
-    void memberAdded (Inter member);
-
-    /**
-     * Call-back when a member has just been removed.
-     *
-     * @param member the removed member
-     */
-    void memberRemoved (Inter member);
-
-    /**
      * Remove a member from the ensemble.
      * <p>
      * This does not delete the member instance, but simply deletes the containment relationship

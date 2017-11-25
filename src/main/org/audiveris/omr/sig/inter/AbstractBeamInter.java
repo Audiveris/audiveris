@@ -27,6 +27,9 @@ import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -42,8 +45,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -80,15 +81,12 @@ public abstract class AbstractBeamInter
     @XmlElement
     private final Line2D median;
 
-    /** Chords that are linked by this beam. */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "chords")
-    private final List<AbstractChordInter> chords = new ArrayList<AbstractChordInter>();
-
     // Transient data
     //---------------
     //
+    /** Chords that are linked by this beam. */
+    private List<AbstractChordInter> chords;
+
     /** The containing beam group. */
     private BeamGroup group;
 
@@ -124,16 +122,6 @@ public abstract class AbstractBeamInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //----------//
-    // addChord //
-    //----------//
-    public void addChord (AbstractChordInter chord)
-    {
-        if (!chords.contains(chord)) {
-            chords.add(chord);
-        }
     }
 
     //
@@ -200,6 +188,23 @@ public abstract class AbstractBeamInter
      */
     public List<AbstractChordInter> getChords ()
     {
+        if (chords == null) {
+            chords = new ArrayList<AbstractChordInter>();
+
+            for (Relation bs : sig.getRelations(this, BeamStemRelation.class)) {
+                StemInter stem = (StemInter) sig.getOppositeInter(this, bs);
+
+                for (Relation hs : sig.getRelations(stem, HeadStemRelation.class)) {
+                    HeadInter head = (HeadInter) sig.getOppositeInter(stem, hs);
+                    AbstractChordInter chord = head.getChord();
+
+                    if (chord != null) {
+                        chords.add(chord);
+                    }
+                }
+            }
+        }
+
         return chords;
     }
 
@@ -253,6 +258,15 @@ public abstract class AbstractBeamInter
         return null;
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        chords = null;
+    }
+
     //--------//
     // isGood //
     //--------//
@@ -268,14 +282,6 @@ public abstract class AbstractBeamInter
     public boolean isHook ()
     {
         return false;
-    }
-
-    //-------------//
-    // removeChord //
-    //-------------//
-    public void removeChord (AbstractChordInter chord)
-    {
-        chords.remove(chord);
     }
 
     //----------//

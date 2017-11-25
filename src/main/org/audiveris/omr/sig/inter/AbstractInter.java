@@ -698,6 +698,15 @@ public abstract class AbstractInter
         }
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        // No-op by default
+    }
+
     //--------------------//
     // isContextuallyGood //
     //--------------------//

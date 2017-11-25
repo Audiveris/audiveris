@@ -337,7 +337,7 @@ public class HeadChordInter
     public final void setStem (StemInter stem)
     {
         this.stem = stem;
-        reset();
+        invalidateCache();
     }
 
     //-------------//

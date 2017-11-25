@@ -26,7 +26,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.VerticalSide;
-
 import static org.audiveris.omr.util.VerticalSide.*;
 
 import java.awt.Rectangle;
@@ -130,18 +129,6 @@ public class TimePairInter
         }
 
         EnsembleHelper.addMember(this, member);
-    }
-
-    @Override
-    public void memberAdded (Inter member)
-    {
-        reset();
-    }
-
-    @Override
-    public void memberRemoved (Inter member)
-    {
-        reset();
     }
 
     //-----------//
@@ -275,6 +262,16 @@ public class TimePairInter
         return timeRational;
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        bounds = null;
+        timeRational = null;
+    }
+
     //----------------//
     // linkOldMembers //
     //----------------//
@@ -317,14 +314,5 @@ public class TimePairInter
     public String shapeString ()
     {
         return "TIME_SIG_" + getTimeRational();
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    private void reset ()
-    {
-        bounds = null;
-        timeRational = null;
     }
 }

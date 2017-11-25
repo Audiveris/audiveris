@@ -22,8 +22,6 @@
 package org.audiveris.omr.sig;
 
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
-import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
@@ -57,48 +55,38 @@ public class SigListener
     @Override
     public void edgeAdded (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        //        logger.info(
-        //                "GRAPH edgeAdded {} src:{} tgt:{}",
-        //                e.getEdge(),
-        //                e.getEdgeSource(),
-        //                e.getEdgeTarget());
+        // logger.info(
+        //         "GRAPH edgeAdded {} src:{} tgt:{}",
+        //         e.getEdge(),
+        //         e.getEdgeSource(),
+        //         e.getEdgeTarget());
         //
-        Relation edge = e.getEdge();
-
-        if (edge instanceof Containment) {
-            InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
-            ensemble.memberAdded(e.getEdgeTarget());
-        }
+        e.getEdge().added(e);
     }
 
     @Override
     public void edgeRemoved (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        //        logger.info(
-        //                "GRAPH edgeRemoved {} src:{} tgt:{}",
-        //                e.getEdge(),
-        //                e.getEdgeSource(),
-        //                e.getEdgeTarget());
+        // logger.info(
+        //         "GRAPH edgeRemoved {} src:{} tgt:{}",
+        //         e.getEdge(),
+        //         e.getEdgeSource(),
+        //         e.getEdgeTarget());
         //
-        Relation edge = e.getEdge();
-
-        if (edge instanceof Containment) {
-            InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
-            ensemble.memberRemoved(e.getEdgeTarget());
-        }
+        e.getEdge().removed(e);
     }
 
     @Override
     public void vertexAdded (GraphVertexChangeEvent<Inter> e)
     {
-        //        final Inter inter = e.getVertex();
-        //        logger.info("GRAPH vertexAdded {}#{}", inter.getClass().getSimpleName(), inter.getId());
+        // final Inter inter = e.getVertex();
+        // logger.info("GRAPH vertexAdded {}#{}", inter.getClass().getSimpleName(), inter.getId());
     }
 
     @Override
     public void vertexRemoved (GraphVertexChangeEvent<Inter> e)
     {
-        //        final Inter inter = e.getVertex();
-        //        logger.info("GRAPH vertexRemoved {}#{}", inter.getClass().getSimpleName(), inter.getId());
+        // final Inter inter = e.getVertex();
+        // logger.info("GRAPH vertexRemoved {}#{}", inter.getClass().getSimpleName(), inter.getId());
     }
 }

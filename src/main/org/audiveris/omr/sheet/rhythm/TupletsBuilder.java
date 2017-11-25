@@ -484,9 +484,8 @@ public class TupletsBuilder
         {
             SIGraph sig = chord.getSig();
             Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
-            List<AbstractBeamInter> beams = chord.getBeams();
 
-            for (AbstractBeamInter beam : beams) {
+            for (AbstractBeamInter beam : chord.getBeams()) {
                 Set<Relation> bhRels = sig.getRelations(beam, BeamHeadRelation.class);
 
                 for (Relation bh : bhRels) {

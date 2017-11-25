@@ -329,6 +329,18 @@ public class SentenceInter
         }
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    /**
+     * Invalidate cached information. (following the addition or removal of a word)
+     */
+    @Override
+    public void invalidateCache ()
+    {
+        bounds = null;
+    }
+
     //----------------//
     // linkOldMembers //
     //----------------//
@@ -337,18 +349,6 @@ public class SentenceInter
     {
         EnsembleHelper.linkOldMembers(this, oldWords);
         oldWords = null;
-    }
-
-    @Override
-    public void memberAdded (Inter member)
-    {
-        reset();
-    }
-
-    @Override
-    public void memberRemoved (Inter member)
-    {
-        reset();
     }
 
     //--------------//
@@ -385,16 +385,5 @@ public class SentenceInter
         sb.append(' ').append(role);
 
         return sb.toString();
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Invalidate cached information. (following the addition or removal of a word)
-     */
-    private void reset ()
-    {
-        bounds = null;
     }
 }

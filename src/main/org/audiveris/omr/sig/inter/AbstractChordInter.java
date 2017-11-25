@@ -33,6 +33,7 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
@@ -52,7 +53,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
@@ -97,18 +97,15 @@ public abstract class AbstractChordInter
     @Deprecated
     private List<AbstractNoteInter> oldNotes;
 
-    /**
-     * Sequence of beams if any this chord is linked to,
-     * kept ordered from tail to head.
-     */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "beams")
-    protected List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
-
     // Transient data
     //---------------
     //
+    /**
+     * Sequence of beams if any this chord is linked to,
+     * kept ordered from tail to head. Lazily computed.
+     */
+    protected List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
+
     /** Location for chord head (head farthest from chord tail). Lazily computed. */
     protected Point headLocation;
 
@@ -185,43 +182,6 @@ public abstract class AbstractChordInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //---------//
-    // addBeam //
-    //---------//
-    /**
-     * Insert a beam as attached to this chord
-     *
-     * @param beam the attached beam
-     */
-    public void addBeam (AbstractBeamInter beam)
-    {
-        if (beams == null) {
-            beams = new ArrayList<AbstractBeamInter>();
-        }
-
-        if (!beams.contains(beam)) {
-            beams.add(beam);
-
-            // Keep the sequence sorted from chord tail
-            Collections.sort(
-                    beams,
-                    new Comparator<AbstractBeamInter>()
-            {
-                @Override
-                public int compare (AbstractBeamInter b1,
-                                    AbstractBeamInter b2)
-                {
-                    int x = getCenter().x;
-                    double y1 = LineUtil.yAtX(b1.getMedian(), x);
-                    double y2 = LineUtil.yAtX(b2.getMedian(), x);
-                    int yHead = getHeadLocation().y;
-
-                    return Double.compare(Math.abs(yHead - y2), Math.abs(yHead - y1));
-                }
-            });
-        }
     }
 
     //-----------//
@@ -369,11 +329,38 @@ public abstract class AbstractChordInter
      */
     public List<AbstractBeamInter> getBeams ()
     {
-        if (beams != null) {
-            return beams;
-        } else {
-            return NO_BEAM;
+        if (beams == null) {
+            beams = new ArrayList<AbstractBeamInter>();
+
+            final StemInter stem = getStem();
+
+            if (stem != null) {
+                for (Relation bs : sig.getRelations(stem, BeamStemRelation.class)) {
+                    AbstractBeamInter beam = (AbstractBeamInter) sig.getOppositeInter(stem, bs);
+                    beams.add(beam);
+                }
+
+                // Keep the sequence sorted from chord tail
+                Collections.sort(
+                        beams,
+                        new Comparator<AbstractBeamInter>()
+                {
+                    @Override
+                    public int compare (AbstractBeamInter b1,
+                                        AbstractBeamInter b2)
+                    {
+                        int x = getCenter().x;
+                        double y1 = LineUtil.yAtX(b1.getMedian(), x);
+                        double y2 = LineUtil.yAtX(b2.getMedian(), x);
+                        int yHead = getHeadLocation().y;
+
+                        return Double.compare(Math.abs(yHead - y2), Math.abs(yHead - y1));
+                    }
+                });
+            }
         }
+
+        return beams;
     }
 
     //----------------//
@@ -888,6 +875,37 @@ public abstract class AbstractChordInter
         return voice;
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    /**
+     * Invalidate cached information. (following the addition or removal of a stem or note)
+     */
+    @Override
+    public void invalidateCache ()
+    {
+        beams = null;
+        bounds = null;
+        headLocation = null;
+        tailLocation = null;
+
+        // Compute global grade based on contained notes (TODO: +stem as well?)
+        if ((sig != null) && sig.containsVertex(this)) {
+            final List<Inter> notes = getMembers();
+
+            if (!notes.isEmpty()) {
+                double gr = 0;
+
+                for (Inter inter : notes) {
+                    gr += sig.computeContextualGrade(inter);
+                }
+
+                gr /= notes.size();
+                setGrade(gr);
+            }
+        }
+    }
+
     //--------------//
     // isEmbracedBy //
     //--------------//
@@ -960,18 +978,6 @@ public abstract class AbstractChordInter
     {
         EnsembleHelper.linkOldMembers(this, oldNotes);
         oldNotes = null;
-    }
-
-    @Override
-    public void memberAdded (Inter member)
-    {
-        reset();
-    }
-
-    @Override
-    public void memberRemoved (Inter member)
-    {
-        reset();
     }
 
     //--------------//
@@ -1120,23 +1126,6 @@ public abstract class AbstractChordInter
         }
     }
 
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    /**
-     * Called immediately before the marshalling of this object begins.
-     */
-    @SuppressWarnings("unused")
-    protected void beforeMarshal (Marshaller m)
-    {
-        // Nullify 'beams', so that no empty element appears in XML output.
-        if ((beams != null) && beams.isEmpty()) {
-            beams = null;
-        }
-
-        super.beforeMarshal(m);
-    }
-
     //------------------//
     // computeLocations //
     //------------------//
@@ -1177,34 +1166,5 @@ public abstract class AbstractChordInter
         }
 
         return sb.toString();
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Invalidate cached information. (following the addition or removal of a stem or note)
-     */
-    protected void reset ()
-    {
-        bounds = null;
-        headLocation = null;
-        tailLocation = null;
-
-        // Compute global grade based on contained notes (TODO: +stem as well?)
-        if ((sig != null) && sig.containsVertex(this)) {
-            final List<Inter> notes = getMembers();
-
-            if (!notes.isEmpty()) {
-                double gr = 0;
-
-                for (Inter inter : notes) {
-                    gr += sig.computeContextualGrade(inter);
-                }
-
-                gr /= notes.size();
-                setGrade(gr);
-            }
-        }
     }
 }

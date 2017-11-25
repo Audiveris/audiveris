@@ -1019,13 +1019,9 @@ public class BeamGroup
                     }
                 }
 
-                // Cut the links pivotChord <-> beam
-                pivotBeams.remove(beam);
-                beam.removeChord(pivotChord);
-
-                // Link beam to shortChord
-                shortChord.addBeam(beam);
-                beam.addChord(shortChord);
+                // Notify updates to beam and shortChord
+                beam.invalidateCache();
+                shortChord.invalidateCache();
             }
 
             measure.getStack().addInter(shortChord);

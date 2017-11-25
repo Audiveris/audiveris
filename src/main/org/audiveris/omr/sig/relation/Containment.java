@@ -21,6 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterEnsemble;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -35,4 +40,19 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Containment
         extends AbstractRelation
 {
+    //~ Methods ------------------------------------------------------------------------------------
+
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
+        ensemble.invalidateCache();
+    }
+
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
+        ensemble.invalidateCache();
+    }
 }

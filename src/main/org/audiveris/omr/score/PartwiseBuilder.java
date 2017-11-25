@@ -1929,9 +1929,11 @@ public class PartwiseBuilder
                 }
 
                 // Beams ?
+                int beamCounter = 0;
+
                 for (AbstractBeamInter beam : chord.getBeams()) {
                     Beam pmBeam = factory.createBeam();
-                    pmBeam.setNumber(1 + chord.getBeams().indexOf(beam));
+                    pmBeam.setNumber(1 + beamCounter++);
 
                     if (beam.isHook()) {
                         if (beam.getCenter().x > chord.getStem().getCenter().x) {
