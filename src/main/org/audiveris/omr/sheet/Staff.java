@@ -165,7 +165,7 @@ public class Staff
 
     /** Sequence of bar lines. */
     @XmlElement(name = "bar")
-    private List<BarlineInter> bars;
+    private List<BarlineInter> bars = new ArrayList<BarlineInter>();
 
     /** Map of ledgers nearby. */
     @XmlElement(name = "ledgers")
@@ -815,6 +815,10 @@ public class Staff
      */
     public LineInfo getFirstLine ()
     {
+        if (lines == null) {
+            logger.info("BINGO lines is null");
+        }
+
         return lines.get(0);
     }
 
@@ -1802,10 +1806,12 @@ public class Staff
         public static void checkStaffHolder (Inter inter,
                                              StaffManager mgr)
         {
-            Staff staff = inter.getStaff();
+            if (inter.hasStaff()) {
+                Staff staff = inter.getStaff();
 
-            if (staff instanceof StaffHolder) {
-                inter.setStaff(mgr.getStaff(staff.getId() - 1));
+                if (staff instanceof StaffHolder) {
+                    inter.setStaff(mgr.getStaff(staff.getId() - 1));
+                }
             }
         }
 

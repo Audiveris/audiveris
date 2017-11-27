@@ -554,7 +554,7 @@ public class SigReducer
                 logger.info("Deleting {} lacking target", dot);
             }
 
-            dot.delete();
+            dot.remove();
             modifs++;
         }
 
@@ -617,7 +617,7 @@ public class SigReducer
                     logger.info("VIP deleting beam lacking stem {}", beam);
                 }
 
-                beam.delete();
+                beam.remove();
                 modifs++;
             }
         }
@@ -649,7 +649,7 @@ public class SigReducer
                     logger.info("VIP deleting {} lacking note head", alter);
                 }
 
-                alter.delete();
+                alter.remove();
                 modifs++;
             }
         }
@@ -694,7 +694,7 @@ public class SigReducer
                     logger.info("VIP deleting {} with no correct head on either end", stem);
                 }
 
-                stem.delete();
+                stem.remove();
                 modifs++;
 
                 continue;
@@ -757,7 +757,7 @@ public class SigReducer
                     logger.info("VIP no stem for {}", head);
                 }
 
-                head.delete();
+                head.remove();
                 modifs++;
 
                 continue;
@@ -790,7 +790,7 @@ public class SigReducer
                     logger.info("VIP no stem for {}", inter);
                 }
 
-                inter.delete();
+                inter.remove();
             }
         }
 
@@ -855,7 +855,7 @@ public class SigReducer
                 logger.info("VIP deleting isolated {}", alter);
             }
 
-            alter.delete();
+            alter.remove();
             modifs++;
         }
 
@@ -901,7 +901,7 @@ public class SigReducer
                                 logger.info("VIP deleting orphan ledger {}", ledger);
                             }
 
-                            ledger.delete();
+                            ledger.remove();
                             modified = true;
                         }
                     }
@@ -911,7 +911,7 @@ public class SigReducer
 
         if (!toDelete.isEmpty()) {
             for (LedgerInter ledger : toDelete) {
-                ledger.delete(); // This updates the ledgerMap in relevant staves
+                ledger.remove(); // This updates the ledgerMap in relevant staves
             }
         }
 
@@ -936,7 +936,7 @@ public class SigReducer
             @Override
             public boolean check (Inter inter)
             {
-                return !inter.isDeleted() && (inter instanceof SlurInter)
+                return !inter.isRemoved() && (inter instanceof SlurInter)
                        && (inter.getBounds().width <= maxSlurWidth);
             }
         });
@@ -947,7 +947,7 @@ public class SigReducer
             @Override
             public boolean check (Inter inter)
             {
-                return !inter.isDeleted() && (inter instanceof TupletInter)
+                return !inter.isRemoved() && (inter instanceof TupletInter)
                        && (inter.isContextuallyGood());
             }
         });
@@ -966,7 +966,7 @@ public class SigReducer
                         logger.info("VIP deleting tuplet-slur {}", slur);
                     }
 
-                    slur.delete();
+                    slur.remove();
                     deleted.add(slur);
 
                     break;
@@ -1033,7 +1033,7 @@ public class SigReducer
             }
 
             if (headsBox == null) {
-                stem.delete();
+                stem.remove();
                 modifs++;
             } else {
                 final int above = headsBox.y - stemBox.y;
@@ -1041,7 +1041,7 @@ public class SigReducer
                 final int extension = Math.max(above, below);
 
                 if (extension < minStemExtension) {
-                    stem.delete();
+                    stem.remove();
                     modifs++;
                 }
             }
@@ -1071,7 +1071,7 @@ public class SigReducer
                     logger.info("VIP deleting stem lacking starting head {}", stem);
                 }
 
-                stem.delete();
+                stem.remove();
                 modifs++;
 
                 continue;
@@ -1107,7 +1107,7 @@ public class SigReducer
                     logger.info("VIP deleting time number lacking sibling {}", number);
                 }
 
-                number.delete();
+                number.remove();
                 modifs++;
             }
         }
@@ -1260,7 +1260,7 @@ public class SigReducer
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
             Inter left = inters.get(i);
 
-            if (left.isDeleted()) {
+            if (left.isRemoved()) {
                 continue;
             }
 
@@ -1290,7 +1290,7 @@ public class SigReducer
             final double xMax = leftBox.getMaxX();
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
-                if (right.isDeleted()) {
+                if (right.isRemoved()) {
                     continue;
                 }
 

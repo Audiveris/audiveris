@@ -150,7 +150,7 @@ public class SymbolsLinker
                 }
 
                 if (dot == null) {
-                    arc.delete();
+                    arc.remove();
 
                     continue;
                 }
@@ -175,9 +175,9 @@ public class SymbolsLinker
 
                     if (!fermata.linkWithChords(chords)) {
                         // No link to barline, no link to chord, discard it
-                        fermata.delete();
-                        arc.delete();
-                        dot.delete();
+                        fermata.remove();
+                        arc.remove();
+                        dot.remove();
                     }
                 }
             } catch (Exception ex) {

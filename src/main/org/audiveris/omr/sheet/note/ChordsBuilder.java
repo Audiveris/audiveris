@@ -478,13 +478,13 @@ public class ChordsBuilder
         for (AbstractChordInter chord : stemChords) {
             if (chord.getStem() == poorStem) {
                 stemChords.remove(chord);
-                chord.delete();
+                chord.remove();
 
                 break;
             }
         }
 
         // Delete stem from sig
-        poorStem.delete();
+        poorStem.remove();
     }
 }

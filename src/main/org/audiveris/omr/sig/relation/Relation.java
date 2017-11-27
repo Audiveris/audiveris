@@ -43,16 +43,16 @@ public interface Relation
     Relation duplicate ();
 
     /**
-     * Notifies that this edge has been added to the graph.
+     * Notifies that this relation has been added to the sig.
      *
-     * @param e the edge event.
+     * @param e the relation event.
      */
     void added (GraphEdgeChangeEvent<Inter, Relation> e);
 
     /**
-     * Notifies that this edge has been removed from the graph.
+     * Notifies that this relation has been removed from the sig.
      *
-     * @param e the edge event.
+     * @param e the relation event.
      */
     void removed (GraphEdgeChangeEvent<Inter, Relation> e);
 

@@ -594,7 +594,7 @@ public class Skeleton
                 erasedMap.put(system, erased);
 
                 for (Inter inter : sig.vertexSet()) {
-                    if (!inter.isDeleted() && shapes.contains(inter.getShape())) {
+                    if (!inter.isRemoved() && shapes.contains(inter.getShape())) {
                         if (canHide(inter)) {
                             erased.add(inter);
                         }

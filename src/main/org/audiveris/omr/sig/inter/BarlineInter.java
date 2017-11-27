@@ -94,21 +94,23 @@ public class BarlineInter
         visitor.visit(this);
     }
 
-    //--------//
-    // delete //
-    //--------//
+    //-------//
+    // added //
+    //-------//
     /**
      * Since a BarlineInter instance is held by its containing staff, make sure staff
      * bar collection is updated.
+     *
+     * @see #remove(boolean)
      */
     @Override
-    public void delete (boolean extensive)
+    public void added ()
     {
-        if (staff != null) {
-            staff.removeBarline(this);
-        }
+        super.added();
 
-        super.delete(extensive);
+        if (staff != null) {
+            staff.addBarline(this);
+        }
     }
 
     //-------------------//
@@ -210,29 +212,32 @@ public class BarlineInter
         return staffEnd == side;
     }
 
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Since a BarlineInter instance is held by its containing staff, make sure staff
+     * bar collection is updated.
+     *
+     * @param extensive
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (staff != null) {
+            staff.removeBarline(this);
+        }
+
+        super.remove(extensive);
+    }
+
     //-------------//
     // setStaffEnd //
     //-------------//
     public void setStaffEnd (HorizontalSide side)
     {
         staffEnd = side;
-    }
-
-    //--------//
-    // undelete //
-    //--------//
-    /**
-     * Since a BarlineInter instance is held by its containing staff, make sure staff
-     * bar collection is updated.
-     */
-    @Override
-    public void undelete ()
-    {
-        super.undelete();
-
-        if (staff != null) {
-            staff.addBarline(this);
-        }
     }
 
     //-----------//

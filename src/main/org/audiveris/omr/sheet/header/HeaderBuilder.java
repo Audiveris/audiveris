@@ -287,7 +287,7 @@ public class HeaderBuilder
                         logger.info("Deleting {} in staff#{} header", bar, staff.getId());
                     }
 
-                    bar.delete();
+                    bar.remove();
                 }
             }
         }

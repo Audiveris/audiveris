@@ -65,20 +65,24 @@ public class FlagInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // delete //
-    //--------//
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Make sure containing stack is updated.
+     *
+     * @see #remove(boolean)
+     */
     @Override
-    public void delete (boolean extensive)
+    public void added ()
     {
-        // Remove it from containing measure
+        super.added();
+
         MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
 
         if (stack != null) {
-            stack.removeInter(this);
+            stack.addInter(this);
         }
-
-        super.delete(extensive);
     }
 
     //---------//
@@ -127,19 +131,25 @@ public class FlagInter
         return staff;
     }
 
-    //----------//
-    // undelete //
-    //----------//
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove it from containing stack.
+     *
+     * @param extensive
+     * @see #added()
+     */
     @Override
-    public void undelete ()
+    public void remove (boolean extensive)
     {
-        super.undelete();
-
         MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
 
         if (stack != null) {
-            stack.addInter(this);
+            stack.removeInter(this);
         }
+
+        super.remove(extensive);
     }
 
     //-----------//

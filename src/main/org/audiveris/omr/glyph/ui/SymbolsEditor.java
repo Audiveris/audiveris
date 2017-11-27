@@ -519,7 +519,7 @@ public class SymbolsEditor
                 final InterController interController = sheet.getInterController();
                 final Inter focus = interController.getInterFocus();
 
-                if ((focus != null) && !focus.isDeleted()) {
+                if ((focus != null) && !focus.isRemoved()) {
                     Graphics2D g2 = (Graphics2D) g.create();
                     g2.setColor(Color.PINK);
                     g2.setStroke(new BasicStroke(6f));
@@ -599,7 +599,7 @@ public class SymbolsEditor
                 InterService interService = (InterService) sheet.getInterIndex().getEntityService();
                 Inter inter = interService.getSelectedEntity();
 
-                if ((inter != null) && !inter.isDeleted()) {
+                if ((inter != null) && !inter.isRemoved()) {
                     // Inter: attachments for selected inter, if any
                     Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
                     inter.renderAttachments(g);

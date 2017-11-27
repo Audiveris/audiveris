@@ -163,7 +163,7 @@ public class SlursLinker
                     HeadInter head = selected.getHead(side);
 
                     if ((head == null) && !canBeOrphan(selected, side, system)) {
-                        selected.delete();
+                        selected.remove();
 
                         continue SystemLoop;
                     }

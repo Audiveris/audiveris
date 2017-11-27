@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sig;
 
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
@@ -77,7 +80,6 @@ import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
-import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
@@ -95,6 +97,7 @@ import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
+import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
@@ -109,8 +112,6 @@ import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
-
-import org.jgrapht.Graphs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -237,18 +238,20 @@ public class SigValue
      */
     public void populateSig (SIGraph sig)
     {
-        final InterIndex index = sig.getSystem().getSheet().getInterIndex();
+        final Sheet sheet = sig.getSystem().getSheet();
+        final StaffManager mgr = sheet.getStaffManager();
+        final InterIndex index = sheet.getInterIndex();
 
-        // Allocate vertices
-        Graphs.addAllVertices(sig, interRefs);
-        Graphs.addAllVertices(sig, interDefs);
+        // Populate inters
+        sig.populateAllInters(interRefs);
+        sig.populateAllInters(interDefs);
 
         for (Inter inter : sig.vertexSet()) {
             inter.setSig(sig);
             index.insert(inter);
         }
 
-        // Allocate edges
+        // Populate relations
         for (RelationValue rel : relations) {
             try {
                 Inter source = index.getEntity(rel.sourceId);
@@ -257,6 +260,15 @@ public class SigValue
             } catch (Throwable ex) {
                 logger.error("Error unmarshalling relation " + rel + " ex:" + ex, ex);
             }
+        }
+
+        // Replace StaffHolder instances with real Staff instances
+        for (Inter inter : interRefs) {
+            Staff.StaffHolder.checkStaffHolder(inter, mgr);
+        }
+
+        for (Inter inter : interDefs) {
+            Staff.StaffHolder.checkStaffHolder(inter, mgr);
         }
     }
 

@@ -297,12 +297,18 @@ public class StemInter
     }
 
     //--------//
-    // delete //
+    // remove //
     //--------//
+    /**
+     * Remove head-head relations that were based on this stem.
+     *
+     * @param extensive
+     * @see #added()
+     */
     @Override
-    public void delete (boolean extensive)
+    public void remove (boolean extensive)
     {
-        if (deleted) {
+        if (isRemoved()) {
             return;
         }
 
@@ -333,7 +339,7 @@ public class StemInter
             }
         }
 
-        super.delete(extensive);
+        super.remove(extensive);
     }
 
     //-----------//

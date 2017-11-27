@@ -100,6 +100,26 @@ public class TupletInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Add it from containing stack and/or measure.
+     *
+     * @see #remove(boolean)
+     */
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
+        }
+    }
+
     //--------//
     // create //
     //--------//
@@ -135,22 +155,6 @@ public class TupletInter
         }
 
         return new TupletInter(glyph, shape, grade);
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    @Override
-    public void delete (boolean extensive)
-    {
-        // Remove it from containing stack and/or measure
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
-
-        if (stack != null) {
-            stack.removeInter(this);
-        }
-
-        super.delete(extensive);
     }
 
     //-----------------//
@@ -245,6 +249,27 @@ public class TupletInter
         return null;
     }
 
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove it from containing stack and/or measure.
+     *
+     * @param extensive
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.removeInter(this);
+        }
+
+        super.remove(extensive);
+    }
+
     //--------------------//
     // searchPartnerships //
     //--------------------//
@@ -269,21 +294,6 @@ public class TupletInter
         }
 
         return partnerships;
-    }
-
-    //----------//
-    // undelete //
-    //----------//
-    @Override
-    public void undelete ()
-    {
-        super.undelete();
-
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
-
-        if (stack != null) {
-            stack.addInter(this);
-        }
     }
 
     //-----------//

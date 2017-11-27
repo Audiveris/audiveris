@@ -198,6 +198,24 @@ public abstract class AbstractChordInter
         EnsembleHelper.addMember(this, member);
     }
 
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Add the chord to containing measure.
+     *
+     * @see #remove(boolean)
+     */
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        if (measure != null) {
+            measure.addInter(this);
+        }
+    }
+
     //-------------//
     // afterReload //
     //-------------//
@@ -275,7 +293,7 @@ public abstract class AbstractChordInter
                                     measure.removeInter(dot);
                                 }
 
-                                dot.delete();
+                                dot.remove();
                             }
                         }
                     }
@@ -286,19 +304,6 @@ public abstract class AbstractChordInter
         if (isVip()) {
             logger.info("{} counted dots: {}", this, dotsNumber);
         }
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    @Override
-    public void delete (boolean extensive)
-    {
-        if (measure != null) {
-            measure.removeInter(this);
-        }
-
-        super.delete(extensive);
     }
 
     //--------------//
@@ -980,6 +985,25 @@ public abstract class AbstractChordInter
         oldNotes = null;
     }
 
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove the chord from containing measure.
+     *
+     * @param extensive
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (measure != null) {
+            measure.removeInter(this);
+        }
+
+        super.remove(extensive);
+    }
+
     //--------------//
     // removeMember //
     //--------------//
@@ -1110,19 +1134,6 @@ public abstract class AbstractChordInter
             if (slot != null) {
                 voice.startChord(slot, this);
             }
-        }
-    }
-
-    //----------//
-    // undelete //
-    //----------//
-    @Override
-    public void undelete ()
-    {
-        super.undelete();
-
-        if (measure != null) {
-            measure.addInter(this);
         }
     }
 

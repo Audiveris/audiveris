@@ -157,7 +157,7 @@ public class CrossDetector
 
         NextLeft:
         for (Inter above : aboves) {
-            if (above.isDeleted()) {
+            if (above.isRemoved()) {
                 continue;
             }
 
@@ -166,7 +166,7 @@ public class CrossDetector
             final double xMax = aboveBox.getMaxX();
 
             for (Inter below : belows) {
-                if (below.isDeleted()) {
+                if (below.isRemoved()) {
                     continue;
                 }
 
@@ -237,7 +237,7 @@ public class CrossDetector
                 logger.info("VIP Deleting weaker {}", weaker);
             }
 
-            weaker.delete();
+            weaker.remove();
         } else {
             final double aDist = Math.min(staffDistance(above), partnerDistance(above));
             final double bDist = Math.min(staffDistance(below), partnerDistance(below));
@@ -247,7 +247,7 @@ public class CrossDetector
                 logger.info("Deleting farther {}", farther);
             }
 
-            farther.delete();
+            farther.remove();
         }
     }
 

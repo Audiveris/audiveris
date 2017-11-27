@@ -163,7 +163,7 @@ public class SigPainter
         Set<Inter> copy = new LinkedHashSet<Inter>(sig.vertexSet());
 
         for (Inter inter : copy) {
-            if (!inter.isDeleted()) {
+            if (!inter.isRemoved()) {
                 Rectangle bounds = inter.getBounds();
 
                 if (bounds != null) {

@@ -91,24 +91,17 @@ public interface Inter
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
+     * Call-back when this instance has just been added to SIG.
+     * This is meant for additional inter house keeping.
+     */
+    void added ();
+
+    /**
      * Decrease the inter grade.
      *
      * @param ratio ratio applied
      */
     void decrease (double ratio);
-
-    /**
-     * Delete this instance, and remove it from its containing SIG.
-     * This is equivalent to delete(true).
-     */
-    void delete ();
-
-    /**
-     * Delete this instance, and remove it from its containing SIG.
-     *
-     * @param extensive option to forward deletion to containing ensemble if any
-     */
-    void delete (boolean extensive);
 
     /**
      * Mark this inter as frozen, that cannot be deleted even by a conflicting
@@ -259,6 +252,13 @@ public interface Inter
     Voice getVoice ();
 
     /**
+     * Report whether a staff has been assigned.
+     *
+     * @return true if staff assigned
+     */
+    boolean hasStaff ();
+
+    /**
      * Increase the inter grade.
      *
      * @param ratio ratio applied
@@ -276,13 +276,6 @@ public interface Inter
      * @return true if contextual grade is good
      */
     boolean isContextuallyGood ();
-
-    /**
-     * Report whether this instance has been deleted.
-     *
-     * @return true if deleted
-     */
-    boolean isDeleted ();
 
     /**
      * Report whether this instance has been frozen.
@@ -304,6 +297,13 @@ public interface Inter
      * @return true if grade is good
      */
     boolean isReallyGood ();
+
+    /**
+     * Report whether this instance has been removed from SIG.
+     *
+     * @return true if removed
+     */
+    boolean isRemoved ();
 
     /**
      * Report whether this interpretation represents the same thing as that interpretation
@@ -335,6 +335,19 @@ public interface Inter
      */
     boolean overlaps (Inter that)
             throws DeletedInterException;
+
+    /**
+     * Remove this Inter instance from its containing SIG.
+     * This is equivalent to remove(true).
+     */
+    void remove ();
+
+    /**
+     * Remove this Inter instance from its containing SIG.
+     *
+     * @param extensive option to forward removal to containing ensemble if any
+     */
+    void remove (boolean extensive);
 
     /**
      * Look for partners around this inter instance.
@@ -420,11 +433,6 @@ public interface Inter
      * @return shape.toString() by default. To be overridden if shape is null.
      */
     String shapeString ();
-
-    /**
-     * Un-delete this instance.
-     */
-    void undelete ();
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//

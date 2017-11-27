@@ -268,7 +268,7 @@ public abstract class TimeBuilder
             // Check wholes
             for (Inter inter : wholes) {
                 if (inter.getShape() != timeInter.getShape()) {
-                    inter.delete();
+                    inter.remove();
                 }
             }
 
@@ -279,7 +279,7 @@ public abstract class TimeBuilder
                     final List<Inter> members = (side == VerticalSide.TOP) ? nums : dens;
 
                     for (Inter inter : members) {
-                        inter.delete();
+                        inter.remove();
                     }
                 }
             } else {
@@ -296,7 +296,7 @@ public abstract class TimeBuilder
                             compatibles.put(number.getShape(), inter.getGlyph()); // Compatible member
                         }
 
-                        inter.delete();
+                        inter.remove();
                     }
                 }
             }
@@ -313,7 +313,7 @@ public abstract class TimeBuilder
                     compatibles.put(inter.getShape(), inter.getGlyph()); // Compatible whole
                 }
 
-                inter.delete();
+                inter.remove();
             }
 
             // Check numbers
@@ -324,7 +324,7 @@ public abstract class TimeBuilder
 
                 for (Inter inter : members) {
                     if (inter != chosenNumber) {
-                        inter.delete();
+                        inter.remove();
                     }
                 }
             }
@@ -377,7 +377,7 @@ public abstract class TimeBuilder
                 Inter inter = it.next();
 
                 if (!sig.hasRelation(inter, TimeTopBottomRelation.class)) {
-                    inter.delete();
+                    inter.remove();
                     it.remove();
                 }
             }
@@ -443,7 +443,7 @@ public abstract class TimeBuilder
         protected void cleanup ()
         {
             for (Inter inter : timeSet) {
-                inter.delete();
+                inter.remove();
             }
         }
 
@@ -559,7 +559,7 @@ public abstract class TimeBuilder
                         Inter inter = it.next();
 
                         if (!kept.contains(inter)) {
-                            inter.delete();
+                            inter.remove();
                             it.remove();
                         }
                     }
@@ -1674,14 +1674,14 @@ public abstract class TimeBuilder
         public void cleanup ()
         {
             for (Inter inter : bestMap.values()) {
-                inter.delete();
+                inter.remove();
             }
         }
 
         public Inter getSingleInter ()
         {
             for (Inter inter : bestMap.values()) {
-                if (!inter.isDeleted()) {
+                if (!inter.isRemoved()) {
                     return inter;
                 }
             }

@@ -138,7 +138,7 @@ public class StackTuner
 
         if (!toDelete.isEmpty()) {
             for (TupletInter tuplet : toDelete) {
-                tuplet.delete();
+                tuplet.remove();
             }
         }
 

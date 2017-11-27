@@ -265,7 +265,7 @@ public class Part
 
             // No connection for this orphan
             logger.info("Could not left-connect slur#" + slur.getId());
-            slur.delete();
+            slur.remove();
         }
 
         // Check previous orphans for non-connected ones
@@ -273,7 +273,7 @@ public class Part
 
         for (SlurInter prevSlur : precedingOrphans) {
             logger.info("Could not right-connect slur#" + prevSlur.getId());
-            prevSlur.delete();
+            prevSlur.remove();
         }
 
         return links;
@@ -697,7 +697,7 @@ public class Part
         for (Iterator<LyricLineInter> it = lyrics.iterator(); it.hasNext();) {
             LyricLineInter lyric = it.next();
 
-            if (lyric.isDeleted()) {
+            if (lyric.isRemoved()) {
                 it.remove();
             }
         }

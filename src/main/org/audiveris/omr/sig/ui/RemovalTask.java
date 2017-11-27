@@ -56,7 +56,7 @@ public class RemovalTask
     public void performDo ()
     {
         partnerships = partnershipsOf(inter);
-        inter.delete(false);
+        inter.remove(false);
     }
 
     @Override

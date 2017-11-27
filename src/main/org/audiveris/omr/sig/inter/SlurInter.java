@@ -235,6 +235,25 @@ public class SlurInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Since a slur instance is held by its containing part, make sure part
+     * slurs collection is updated.
+     *
+     * @see #remove()
+     */
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        if (part != null) {
+            part.addSlur(this);
+        }
+    }
+
     //-----------//
     // canExtend //
     //-----------//
@@ -269,25 +288,6 @@ public class SlurInter
         }
 
         logger.debug("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    /**
-     * Since a slur instance is held by its containing part, make sure part
-     * slurs collection is updated.
-     *
-     * @see #undelete()
-     */
-    @Override
-    public void delete (boolean extensive)
-    {
-        if (part != null) {
-            part.removeSlur(this);
-        }
-
-        super.delete(extensive);
     }
 
     //----------//
@@ -417,6 +417,26 @@ public class SlurInter
         return tie;
     }
 
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Since a slur instance is held by its containing part, make sure part
+     * slurs collection is updated.
+     *
+     * @param extensive
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (part != null) {
+            part.removeSlur(this);
+        }
+
+        super.remove(extensive);
+    }
+
     //--------------//
     // setExtension //
     //--------------//
@@ -473,25 +493,6 @@ public class SlurInter
                     logger.error("No mirror head for {}", head);
                 }
             }
-        }
-    }
-
-    //----------//
-    // undelete //
-    //----------//
-    /**
-     * Since a slur instance is held by its containing part, make sure part
-     * slurs collection is updated.
-     *
-     * @see #delete()
-     */
-    @Override
-    public void undelete ()
-    {
-        super.undelete();
-
-        if (part != null) {
-            part.addSlur(this);
         }
     }
 

@@ -543,7 +543,7 @@ public class KeyInter
 
         // Discard last alter
         Inter lastAlter = alters.get(alters.size() - 1);
-        lastAlter.delete();
+        lastAlter.remove();
     }
 
     //-----------//

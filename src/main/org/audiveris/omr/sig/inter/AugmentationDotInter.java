@@ -69,20 +69,25 @@ public class AugmentationDotInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // delete //
-    //--------//
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Add the dot to its containing stack.
+     *
+     * @see #remove(boolean)
+     */
     @Override
-    public void delete (boolean extensive)
+    public void added ()
     {
-        // Remove it from containing measure
+        super.added();
+
+        // Add it to containing measure stack
         MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
 
         if (stack != null) {
-            stack.removeInter(this);
+            stack.addInter(this);
         }
-
-        super.delete(extensive);
     }
 
     //---------//
@@ -149,19 +154,24 @@ public class AugmentationDotInter
         return null;
     }
 
-    //----------//
-    // undelete //
-    //----------//
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove the dot from its containing stack.
+     *
+     * @param extensive
+     * @see #added()
+     */
     @Override
-    public void undelete ()
+    public void remove (boolean extensive)
     {
-        super.undelete();
-
-        // Re-add it to containing measure stack
         MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
 
         if (stack != null) {
-            stack.addInter(this);
+            stack.removeInter(this);
         }
+
+        super.remove(extensive);
     }
 }

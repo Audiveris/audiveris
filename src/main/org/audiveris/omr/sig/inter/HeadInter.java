@@ -694,7 +694,7 @@ public class HeadInter
                     ? this : that;
 
             logger.debug("Deleting duplicated {}", dupli);
-            dupli.delete();
+            dupli.remove();
             throw new DeletedInterException(dupli);
         }
 

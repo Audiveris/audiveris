@@ -71,7 +71,7 @@ public class AdditionTask
     @Override
     public void performUndo ()
     {
-        inter.delete();
+        inter.remove();
     }
 
     @Override

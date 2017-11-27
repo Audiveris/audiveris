@@ -416,7 +416,7 @@ public class MeasuresBuilder
                 staffMap.get(staff).remove(group);
 
                 for (BarlineInter barline : group) {
-                    barline.delete();
+                    barline.remove();
                 }
             }
         }

@@ -245,7 +245,7 @@ public class DotFactory
 
                     if (!toDelete.isEmpty()) {
                         for (Inter inter : toDelete) {
-                            inter.delete();
+                            inter.remove();
                         }
                     }
                 }
@@ -306,7 +306,7 @@ public class DotFactory
                     logger.info("Deleting repeat dot lacking sibling {}", dot);
                 }
 
-                dot.delete();
+                dot.remove();
             }
         }
     }

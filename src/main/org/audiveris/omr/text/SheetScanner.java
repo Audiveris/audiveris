@@ -268,7 +268,7 @@ public class SheetScanner
                 final List<Inter> erased = new ArrayList<Inter>();
 
                 for (Inter inter : sig.vertexSet()) {
-                    if (!inter.isDeleted()) {
+                    if (!inter.isRemoved()) {
                         if (canHide(inter)) {
                             erased.add(inter);
                         }

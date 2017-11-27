@@ -659,7 +659,7 @@ public class KeyBuilder
 
                 for (ClefInter clef : clefs) {
                     if (clef != bestClef) {
-                        clef.delete();
+                        clef.remove();
                     }
                 }
 
@@ -816,7 +816,7 @@ public class KeyBuilder
 
                 if ((index == null) || (index >= sourceBuilder.roi.size())) {
                     if (alter != null) {
-                        alter.delete();
+                        alter.remove();
                     }
 
                     it.remove();
@@ -836,7 +836,7 @@ public class KeyBuilder
                             alter = slice.getAlter();
 
                             if (alter != null) {
-                                alter.delete();
+                                alter.remove();
                             }
 
                             it.remove();
@@ -907,7 +907,7 @@ public class KeyBuilder
 
             // Create a brand new KeyInter with current slices & alters
             if (keyInter != null) {
-                keyInter.delete();
+                keyInter.remove();
                 keyInter = null;
             }
 
@@ -935,7 +935,7 @@ public class KeyBuilder
             roi.destroy();
 
             if (keyInter != null) {
-                keyInter.delete();
+                keyInter.remove();
                 keyInter = null;
             }
         }
@@ -1421,7 +1421,7 @@ public class KeyBuilder
                 // Keep only the best clef
                 for (ClefInter clef : clefs) {
                     if (clef != bestClef) {
-                        clef.delete();
+                        clef.remove();
                     }
                 }
 

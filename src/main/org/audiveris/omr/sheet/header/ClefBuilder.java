@@ -496,7 +496,7 @@ public class ClefBuilder
 
             // Delete the other clef candidates
             for (Inter other : clefs.subList(1, clefs.size())) {
-                other.delete();
+                other.remove();
             }
         }
     }

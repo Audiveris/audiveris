@@ -192,7 +192,7 @@ public class InterBoard
         final Inter inter = getSelectedEntity();
 
         // Compute contextual grade
-        if ((inter.getSig() != null) && !inter.isDeleted()) {
+        if ((inter.getSig() != null) && !inter.isRemoved()) {
             inter.getSig().computeContextualGrade(inter);
         }
 
@@ -310,7 +310,7 @@ public class InterBoard
             }
 
             details.setText((inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
-            deassignAction.putValue(Action.NAME, inter.isDeleted() ? "deleted" : "Deassign");
+            deassignAction.putValue(Action.NAME, inter.isRemoved() ? "deleted" : "Deassign");
 
             focus.setEnabled(true);
 
@@ -341,7 +341,7 @@ public class InterBoard
             deassignAction.putValue(Action.NAME, " ");
         }
 
-        deassignAction.setEnabled((inter != null) && !inter.isDeleted());
+        deassignAction.setEnabled((inter != null) && !inter.isRemoved());
         grade.setEnabled(inter != null);
         shapeField.setEnabled(inter != null);
         details.setEnabled(inter != null);

@@ -180,7 +180,7 @@ public class ChordSplitter
                     sig.removeEdge(oldRel);
                 }
 
-                rootStem.delete();
+                rootStem.remove();
             } else {
                 processStem(rootStem, allPartitions); // Shared mode
             }
@@ -189,7 +189,7 @@ public class ChordSplitter
             // TODO: to be implemented
         }
 
-        chord.delete();
+        chord.remove();
     }
 
     //------------------//

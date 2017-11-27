@@ -99,21 +99,23 @@ public class LedgerInter
         visitor.visit(this);
     }
 
-    //--------//
-    // delete //
-    //--------//
+    //-------//
+    // added //
+    //-------//
     /**
      * Since a ledger instance is held by its containing staff, make sure staff
      * ledgers collection is updated.
+     *
+     * @see #remove(boolean)
      */
     @Override
-    public void delete (boolean extensive)
+    public void added ()
     {
-        if (staff != null) {
-            staff.removeLedger(this);
-        }
+        super.added();
 
-        super.delete(extensive);
+        if (staff != null) {
+            staff.addLedger(this);
+        }
     }
 
     //------------//
@@ -139,28 +141,31 @@ public class LedgerInter
         return index;
     }
 
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Since a ledger instance is held by its containing staff, make sure staff
+     * ledgers collection is updated.
+     *
+     * @param extensive
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (staff != null) {
+            staff.removeLedger(this);
+        }
+
+        super.remove(extensive);
+    }
+
     /**
      * @param index the index to set
      */
     public void setIndex (int index)
     {
         this.index = index;
-    }
-
-    //----------//
-    // undelete //
-    //----------//
-    /**
-     * Since a ledger instance is held by its containing staff, make sure staff
-     * ledgers collection is updated.
-     */
-    @Override
-    public void undelete ()
-    {
-        super.undelete();
-
-        if (staff != null) {
-            staff.addLedger(this);
-        }
     }
 }

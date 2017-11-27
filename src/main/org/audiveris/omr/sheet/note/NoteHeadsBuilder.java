@@ -743,7 +743,7 @@ public class NoteHeadsBuilder
                     logger.info("VIP purging {} at {}", inter, inter.getBounds());
                 }
 
-                inter.delete();
+                inter.remove();
             }
         }
 

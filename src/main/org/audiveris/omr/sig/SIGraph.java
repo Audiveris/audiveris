@@ -25,7 +25,6 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import static org.audiveris.omr.math.GeoOrder.*;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -135,10 +134,6 @@ public class SIGraph
     @Override
     public boolean addVertex (Inter inter)
     {
-        if (inter.isDeleted()) {
-            inter.undelete();
-        }
-
         // Update index
         if (inter.getId() == 0) {
             system.getSheet().getInterIndex().register(inter);
@@ -150,7 +145,25 @@ public class SIGraph
         boolean res = super.addVertex(inter);
         inter.setSig(this);
 
+        // Additional actions
+        inter.added();
+
         return res;
+    }
+
+    //-------------------//
+    // populateAllInters //
+    //-------------------//
+    /**
+     * Minimal vertex addition, meant for just SIG bulk populating
+     *
+     * @param inters the inters to add to sig
+     */
+    public final void populateAllInters (Collection<? extends Inter> inters)
+    {
+        for (Inter inter : inters) {
+            super.addVertex(inter);
+        }
     }
 
     //-------------//
@@ -165,15 +178,11 @@ public class SIGraph
     {
         try {
             this.system = system;
+
             sigValue.populateSig(this);
-            sigValue = null; // SigValue is no longer useful and can be disposed of
 
-            // Link inters to their related staff
-            final StaffManager mgr = system.getSheet().getStaffManager();
-
-            for (Inter inter : vertexSet()) {
-                Staff.StaffHolder.checkStaffHolder(inter, mgr);
-            }
+            // SigValue is no longer useful and can be disposed of
+            sigValue = null;
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
@@ -268,7 +277,7 @@ public class SIGraph
     public void deleteInters (Collection<? extends Inter> inters)
     {
         for (Inter inter : inters) {
-            inter.delete();
+            inter.remove();
         }
     }
 
@@ -722,7 +731,7 @@ public class SIGraph
         int yMax = (box.y + box.height) - 1;
 
         for (Inter inter : inters) {
-            if (inter.isDeleted()) {
+            if (inter.isRemoved()) {
                 continue;
             }
 
@@ -762,7 +771,7 @@ public class SIGraph
         double yMax = bounds.getMaxY();
 
         for (Inter inter : inters) {
-            if (inter.isDeleted()) {
+            if (inter.isRemoved()) {
                 continue;
             }
 
@@ -1059,7 +1068,7 @@ public class SIGraph
         List<Inter> found = new ArrayList<Inter>();
 
         for (Inter inter : vertexSet()) {
-            if (inter.isDeleted()) {
+            if (inter.isRemoved()) {
                 continue;
             }
 
@@ -1179,10 +1188,10 @@ public class SIGraph
 
                 // Remove the weaker inter
                 removed.add(weaker);
-                weaker.delete();
+                weaker.remove();
 
                 // If removal of weaker has resulted in removal of its ensemble, count ensemble
-                if ((weakerEnsemble != null) && weakerEnsemble.isDeleted()) {
+                if ((weakerEnsemble != null) && weakerEnsemble.isRemoved()) {
                     removed.add(weakerEnsemble);
                 }
 
@@ -1217,7 +1226,7 @@ public class SIGraph
     @Override
     public boolean removeVertex (Inter inter)
     {
-        if (!inter.isDeleted()) {
+        if (!inter.isRemoved()) {
             logger.error("Do not use removeVertex() directly. Use inter.delete() instead.");
             throw new IllegalStateException("Do not use removeVertex() directly");
         }
@@ -1413,7 +1422,7 @@ public class SIGraph
         @Override
         public boolean check (Inter inter)
         {
-            return !inter.isDeleted() && (classe.isInstance(inter));
+            return !inter.isRemoved() && (classe.isInstance(inter));
         }
     }
 
@@ -1539,7 +1548,7 @@ public class SIGraph
         @Override
         public boolean check (Inter inter)
         {
-            return !inter.isDeleted() && (inter.getShape() == shape);
+            return !inter.isRemoved() && (inter.getShape() == shape);
         }
     }
 
@@ -1563,7 +1572,7 @@ public class SIGraph
         @Override
         public boolean check (Inter inter)
         {
-            return !inter.isDeleted() && shapes.contains(inter.getShape());
+            return !inter.isRemoved() && shapes.contains(inter.getShape());
         }
     }
 
@@ -1591,7 +1600,7 @@ public class SIGraph
         @Override
         public boolean check (Inter inter)
         {
-            return !inter.isDeleted() && (inter.getStaff() == staff)
+            return !inter.isRemoved() && (inter.getStaff() == staff)
                    && ((classe == null) || classe.isInstance(inter));
         }
     }

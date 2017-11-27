@@ -653,7 +653,7 @@ public class SymbolFactory
                         try {
                             if (neighbor.overlaps(time)) {
                                 logger.debug("Deleting time overlapping {}", neighbor);
-                                neighbor.delete();
+                                neighbor.remove();
                                 it.remove();
                             }
                         } catch (DeletedInterException ignored) {

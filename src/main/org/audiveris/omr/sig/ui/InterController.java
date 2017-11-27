@@ -342,7 +342,7 @@ public class InterController
             sheet.getGlyphIndex().publish(null);
 
             Inter inter = ((InterTask) task).getInter();
-            sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
+            sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
         } else {
             RelationTask relTask = (RelationTask) task;
             Inter source = relTask.getSource();
@@ -364,7 +364,7 @@ public class InterController
     public void removeInter (Inter inter,
                              Set<Inter> toRemove)
     {
-        if (inter.isDeleted()) {
+        if (inter.isRemoved()) {
             return;
         }
 
@@ -508,7 +508,7 @@ public class InterController
             sheet.getGlyphIndex().publish(null);
 
             Inter inter = ((InterTask) task).getInter();
-            sheet.getInterIndex().publish(inter.isDeleted() ? null : inter);
+            sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
         } else {
             RelationTask relTask = (RelationTask) task;
             Inter source = relTask.getSource();
