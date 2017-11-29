@@ -24,9 +24,66 @@ package org.audiveris.omr.step;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.ui.SheetTab;
+import org.audiveris.omr.sig.inter.AbstractInter;
+import org.audiveris.omr.sig.inter.AlterInter;
+import org.audiveris.omr.sig.inter.ArpeggiatoInter;
+import org.audiveris.omr.sig.inter.ArticulationInter;
+import org.audiveris.omr.sig.inter.AugmentationDotInter;
+import org.audiveris.omr.sig.inter.BarConnectorInter;
+import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BeamHookInter;
+import org.audiveris.omr.sig.inter.BeamInter;
+import org.audiveris.omr.sig.inter.BraceInter;
+import org.audiveris.omr.sig.inter.BracketConnectorInter;
+import org.audiveris.omr.sig.inter.BracketInter;
+import org.audiveris.omr.sig.inter.BreathMarkInter;
+import org.audiveris.omr.sig.inter.CaesuraInter;
+import org.audiveris.omr.sig.inter.ChordNameInter;
+import org.audiveris.omr.sig.inter.ClefInter;
+import org.audiveris.omr.sig.inter.DynamicsInter;
+import org.audiveris.omr.sig.inter.EndingInter;
+import org.audiveris.omr.sig.inter.FermataArcInter;
+import org.audiveris.omr.sig.inter.FermataDotInter;
+import org.audiveris.omr.sig.inter.FermataInter;
+import org.audiveris.omr.sig.inter.FingeringInter;
+import org.audiveris.omr.sig.inter.FlagInter;
+import org.audiveris.omr.sig.inter.FretInter;
+import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.HeadInter;
+import org.audiveris.omr.sig.inter.KeyAlterInter;
+import org.audiveris.omr.sig.inter.KeyInter;
+import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.inter.LyricItemInter;
+import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.OrnamentInter;
+import org.audiveris.omr.sig.inter.PedalInter;
+import org.audiveris.omr.sig.inter.PluckingInter;
+import org.audiveris.omr.sig.inter.RepeatDotInter;
+import org.audiveris.omr.sig.inter.RestChordInter;
+import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.SegmentInter;
+import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.SmallBeamInter;
+import org.audiveris.omr.sig.inter.SmallChordInter;
+import org.audiveris.omr.sig.inter.SmallFlagInter;
+import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.TimeNumberInter;
+import org.audiveris.omr.sig.inter.TimePairInter;
+import org.audiveris.omr.sig.inter.TimeWholeInter;
+import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.inter.WedgeInter;
+import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.ui.UITaskList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Abstract class {@code AbstractStep} provides a convenient basis for any {@link Step}
@@ -38,7 +95,63 @@ public abstract class AbstractStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            AbstractStep.class);
+
+    /**
+     * List of all non-abstract Inter classes sorted alphabetically.
+     */
+    private static final List<Class<? extends AbstractInter>> concreteInterClasses = Arrays.asList(
+            AlterInter.class,
+            AugmentationDotInter.class,
+            ArpeggiatoInter.class,
+            ArticulationInter.class,
+            BarConnectorInter.class,
+            BarlineInter.class,
+            BeamHookInter.class,
+            BeamInter.class,
+            BraceInter.class,
+            BracketConnectorInter.class,
+            BracketInter.class,
+            BreathMarkInter.class,
+            CaesuraInter.class,
+            ChordNameInter.class,
+            ClefInter.class,
+            DynamicsInter.class,
+            EndingInter.class,
+            FermataDotInter.class,
+            FermataArcInter.class,
+            FermataInter.class,
+            FingeringInter.class,
+            FlagInter.class,
+            FretInter.class,
+            HeadChordInter.class,
+            HeadInter.class,
+            KeyAlterInter.class,
+            KeyInter.class,
+            LedgerInter.class,
+            LyricItemInter.class,
+            LyricLineInter.class,
+            MarkerInter.class,
+            OrnamentInter.class,
+            PedalInter.class,
+            PluckingInter.class,
+            RepeatDotInter.class,
+            RestChordInter.class,
+            RestInter.class,
+            SegmentInter.class,
+            SentenceInter.class,
+            SlurInter.class,
+            SmallBeamInter.class,
+            SmallChordInter.class,
+            SmallFlagInter.class,
+            StemInter.class,
+            TimeNumberInter.class,
+            TimePairInter.class,
+            TimeWholeInter.class,
+            TupletInter.class,
+            WedgeInter.class,
+            WordInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -93,5 +206,25 @@ public abstract class AbstractStep
     public SheetTab getSheetTab ()
     {
         return SheetTab.DATA_TAB;
+    }
+
+    /**
+     * Apply the provided UI sequence too this step.
+     *
+     * @param seq the sequence of UI tasks
+     */
+    public void impact (UITaskList seq)
+    {
+        // No-op by default
+    }
+
+    /**
+     * Report the set of Inter classes that impact this step.
+     *
+     * @return the set of impacting classes, perhaps empty but not null
+     */
+    public Collection<Class<? extends AbstractInter>> impactingInterClasses ()
+    {
+        return Collections.EMPTY_SET;
     }
 }

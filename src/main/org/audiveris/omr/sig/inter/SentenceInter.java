@@ -136,26 +136,6 @@ public class SentenceInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
-    // create //
-    //--------//
-    /**
-     * Create a {@code SentenceInter} from a TextLine.
-     *
-     * @param line the OCR'ed text line
-     * @return the sentence inter
-     */
-    public static SentenceInter create (TextLine line)
-    {
-        SentenceInter sentence = new SentenceInter(
-                line.getBounds(),
-                line.getConfidence() * Inter.intrinsicRatio,
-                line.getMeanFont(),
-                line.getRole());
-
-        return sentence;
-    }
-
-    //--------//
     // accept //
     //--------//
     @Override
@@ -199,6 +179,26 @@ public class SentenceInter
         }
 
         return staff;
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a {@code SentenceInter} from a TextLine.
+     *
+     * @param line the OCR'ed text line
+     * @return the sentence inter
+     */
+    public static SentenceInter create (TextLine line)
+    {
+        SentenceInter sentence = new SentenceInter(
+                line.getBounds(),
+                line.getConfidence() * Inter.intrinsicRatio,
+                line.getMeanFont(),
+                line.getRole());
+
+        return sentence;
     }
 
     //-----------//

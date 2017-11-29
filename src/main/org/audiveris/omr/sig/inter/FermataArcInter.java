@@ -21,13 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import java.awt.Point;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-
-import javax.xml.bind.annotation.XmlRootElement;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+
+import java.awt.Point;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code FermataArcInter} represents the arc part of a fermata, either upright or
@@ -62,6 +63,16 @@ public class FermataArcInter
      */
     private FermataArcInter ()
     {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
     }
 
     //--------//

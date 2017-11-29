@@ -82,6 +82,15 @@ public class LyricLineInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //--------//
     // create //
     //--------//
     /**

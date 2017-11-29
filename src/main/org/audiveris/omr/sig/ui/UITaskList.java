@@ -87,6 +87,11 @@ public class UITaskList
         return list.get(list.size() - 1);
     }
 
+    public List<UITask> getTasks ()
+    {
+        return list;
+    }
+
     public void performDo ()
     {
         logger.info("  do {}", this);

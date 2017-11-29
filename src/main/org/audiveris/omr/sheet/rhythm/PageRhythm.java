@@ -128,6 +128,17 @@ public class PageRhythm
         processRanges();
     }
 
+    /**
+     * (first version of) stack-focused re-processing.
+     *
+     * @param stack
+     */
+    public void reprocessStack (MeasureStack stack)
+    {
+        Rational expectedDuration = stack.getExpectedDuration();
+        new StackTuner(stack, false).process(expectedDuration);
+    }
+
     //---------------//
     // populateFRATs //
     //---------------//

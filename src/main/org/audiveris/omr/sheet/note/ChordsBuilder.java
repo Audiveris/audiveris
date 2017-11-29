@@ -157,13 +157,10 @@ public class ChordsBuilder
 
         for (Inter rest : rests) {
             RestChordInter chord = new RestChordInter(-1);
+            chord.setBounds(rest.getBounds());
             sig.addVertex(chord);
             chord.setStaff(system.getClosestStaff(rest.getCenter()));
             chord.addMember(rest);
-            chord.getBounds(); // To make sure chord box is computed
-
-            // Insert rest chord into measure (TODO: rest location is questionable)
-            ///dispatchChord(chord);
         }
     }
 
@@ -253,52 +250,50 @@ public class ChordsBuilder
             }
         }
 
-        if (!rels.isEmpty()) {
-            HeadInter mirrorHead = null;
+        if (rels.isEmpty()) {
+            return false;
+        }
 
-            for (Relation rel : rels) {
-                StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
+        HeadInter mirrorHead = null;
 
-                if (rels.size() == 2) {
-                    if (((HeadStemRelation) rel).getHeadSide() == RIGHT) {
-                        mirrorHead = head;
-                        head = duplicateHead(head, stem);
-                        head.setStaff(staff);
-                        staff.addNote(head);
-                    }
-                }
+        for (Relation rel : rels) {
+            StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
 
-                // Look for compatible existing chord
-                List<AbstractChordInter> chords = getStemChords(stem, stemChords);
-                final AbstractChordInter chord;
-
-                if (!chords.isEmpty()) {
-                    // At this point, we can have at most one chord per stem
-                    // Join the chord
-                    chord = chords.get(0);
-                    chord.addMember(head);
-                } else {
-                    // Create a brand-new stem-based chord
-                    boolean isSmall = head.getShape().isSmall();
-                    chord = isSmall ? new SmallChordInter(-1) : new HeadChordInter(-1, stem);
-                    sig.addVertex(chord);
-                    chord.addMember(head);
-                    stemChords.add(chord);
-                }
-
-                if (mirrorHead != null) {
-                    head.getChord().setMirror(mirrorHead.getChord());
-                    mirrorHead.getChord().setMirror(head.getChord());
-                    sig.addEdge(head, mirrorHead.getChord(), new NoExclusion());
-                    sig.addEdge(head.getChord(), mirrorHead, new NoExclusion());
+            if (rels.size() == 2) {
+                if (((HeadStemRelation) rel).getHeadSide() == RIGHT) {
+                    mirrorHead = head;
+                    head = duplicateHead(head, stem);
+                    head.setStaff(staff);
+                    staff.addNote(head);
                 }
             }
 
-            return true;
-        } else {
-            //wholeHeads.add(head);
-            return false;
+            // Look for compatible existing chord
+            List<AbstractChordInter> chords = getStemChords(stem, stemChords);
+            final AbstractChordInter chord;
+
+            if (!chords.isEmpty()) {
+                // At this point, we have exactly one chord per stem, so join the chord
+                chord = chords.get(0);
+                chord.addMember(head);
+            } else {
+                // Create a brand-new stem-based chord
+                boolean isSmall = head.getShape().isSmall();
+                chord = isSmall ? new SmallChordInter(-1, stem) : new HeadChordInter(-1, stem);
+                sig.addVertex(chord);
+                chord.addMember(head);
+                stemChords.add(chord);
+            }
+
+            if (mirrorHead != null) {
+                head.getChord().setMirror(mirrorHead.getChord());
+                mirrorHead.getChord().setMirror(head.getChord());
+                sig.addEdge(head, mirrorHead.getChord(), new NoExclusion());
+                sig.addEdge(head.getChord(), mirrorHead, new NoExclusion());
+            }
         }
+
+        return true;
     }
 
     //----------------------//
@@ -346,16 +341,6 @@ public class ChordsBuilder
         }
     }
 
-    //---------------//
-    // dispatchChord //
-    //---------------//
-    private void dispatchChord (AbstractChordInter chord)
-    {
-        Part part = chord.getPart();
-        Measure measure = part.getMeasureAt(chord.getCenter());
-        measure.addInter(chord);
-    }
-
     //----------------//
     // dispatchChords //
     //----------------//
@@ -363,7 +348,9 @@ public class ChordsBuilder
     {
         for (Inter inter : sig.inters(AbstractChordInter.class)) {
             AbstractChordInter chord = (AbstractChordInter) inter;
-            dispatchChord(chord);
+            Part part = chord.getPart();
+            Measure measure = part.getMeasureAt(chord.getCenter());
+            measure.addInter(chord);
         }
     }
 

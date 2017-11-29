@@ -62,8 +62,18 @@ public class BeamHookInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //--------//
     // isHook //
     //--------//
+    @Override
     public boolean isHook ()
     {
         return true;

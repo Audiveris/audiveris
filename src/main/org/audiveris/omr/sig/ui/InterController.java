@@ -45,6 +45,7 @@ import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.step.Step;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,9 @@ import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
+import org.audiveris.omr.score.Page;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sheet.rhythm.PageRhythm;
 
 /**
  * Class {@code InterController} is the UI in charge of dealing with Inter and
@@ -320,7 +324,7 @@ public class InterController
         sheet.getStub().setModified(true);
         sheet.getInterIndex().publish(source);
 
-        actionEpilog();
+        epilog(seq);
     }
 
     //------//
@@ -349,7 +353,7 @@ public class InterController
             sheet.getInterIndex().publish(source);
         }
 
-        actionEpilog();
+        epilog(seq);
     }
 
     //-------------//
@@ -410,7 +414,7 @@ public class InterController
         ///sheet.getGlyphIndex().publish(null); // Let glyph displayed, to ease new inter assignment
         sheet.getInterIndex().publish(null);
 
-        actionEpilog();
+        epilog(seq);
     }
 
     //--------------//
@@ -515,7 +519,7 @@ public class InterController
             sheet.getInterIndex().publish(source);
         }
 
-        actionEpilog();
+        epilog(seq);
     }
 
     /**
@@ -540,21 +544,7 @@ public class InterController
         sheet.getStub().setModified(true);
         sheet.getInterIndex().publish(source);
 
-        actionEpilog();
-    }
-
-    /**
-     * Epilog for any user action (add/remove of inter/relation).
-     */
-    private void actionEpilog ()
-    {
-        // Update editor display
-        editor.refresh();
-
-        // Update status of undo/redo actions
-        final BookActions bookActions = BookActions.getInstance();
-        bookActions.setUndoable(canUndo());
-        bookActions.setRedoable(canRedo());
+        epilog(seq);
     }
 
     /**
@@ -566,15 +556,19 @@ public class InterController
     private void addGhost (Inter ghost,
                            Collection<Partnership> partnerships)
     {
-        final SIGraph sig = ghost.getStaff().getSystem().getSig();
+        final Staff staff = ghost.getStaff();
+        final SIGraph sig = staff.getSystem().getSig();
         final UITaskList seq = new UITaskList(new AdditionTask(sig, ghost, partnerships));
 
         if (ghost instanceof RestInter) {
-            // Wrap this rest inter within a rest chord
+            // Wrap this rest within a rest chord
+            RestChordInter restChord = new RestChordInter(-1);
+            restChord.setBounds(ghost.getBounds());
+            restChord.setStaff(staff);
             seq.add(
                     new AdditionTask(
                             sig,
-                            new RestChordInter(-1),
+                            restChord,
                             Arrays.asList(new Partnership(ghost, new Containment(), true))));
         } else if (ghost instanceof StemInter) {
             // Wrap this stem within a head chord
@@ -608,7 +602,58 @@ public class InterController
         sheet.getGlyphIndex().publish(null);
         sheet.getInterIndex().publish(ghost);
 
-        actionEpilog();
+        epilog(seq);
+    }
+
+    /**
+     * Epilog for any user action sequence.
+     * <p>
+     * This depends on the impacted items (inters, relations) and on the current processing step.
+     */
+    private void epilog (UITaskList seq)
+    {
+        // Determine which music items should be updated
+
+        // Update stack rhythm?
+        final Step step = sheet.getStub().getLatestStep();
+
+        if (step.compareTo(Step.RHYTHMS) >= 0) {
+            // Interest in stem, head, beam, chord, flag, rest, augDot, tuplet, curve (tie), ...
+            for (UITask task : seq.getTasks()) {
+                if (task instanceof InterTask) {
+                    InterTask interTask = (InterTask) task;
+                    Inter inter = interTask.getInter();
+                    Class classe = inter.getClass();
+
+                    if (Step.RHYTHMS.impactingInterClasses().contains(classe)) {
+                        logger.info("Update for RHYTHMS step");
+                        SystemInfo system = inter.getSig().getSystem();
+                        MeasureStack stack = system.getMeasureStackAt(inter.getCenter());
+                        Page page = system.getPage();
+                        new PageRhythm(page).reprocessStack(stack);
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Finally, refresh user interface
+        refreshUI();
+    }
+
+    /**
+     * Refresh UI after any user action sequence.
+     */
+    private void refreshUI ()
+    {
+        // Update editor display
+        editor.refresh();
+
+        // Update status of undo/redo actions
+        final BookActions bookActions = BookActions.getInstance();
+        bookActions.setUndoable(canUndo());
+        bookActions.setRedoable(canRedo());
     }
 
     /**

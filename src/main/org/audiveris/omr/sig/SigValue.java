@@ -130,6 +130,7 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import org.audiveris.omr.sig.inter.OrnamentInter;
 
 /**
  * Class {@code SigValue} represents the content of a SIG for use by JAXB.
@@ -195,6 +196,7 @@ public class SigValue
         @XmlElementRef(type = LyricItemInter.class)
         , @XmlElementRef(type = LyricLineInter.class)
         , @XmlElementRef(type = MarkerInter.class)
+        , @XmlElementRef(type = OrnamentInter.class)
         , @XmlElementRef(type = PedalInter.class)
         , @XmlElementRef(type = PluckingInter.class)
         , @XmlElementRef(type = RepeatDotInter.class)

@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
@@ -104,7 +105,7 @@ public abstract class AbstractChordInter
      * Sequence of beams if any this chord is linked to,
      * kept ordered from tail to head. Lazily computed.
      */
-    protected List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
+    protected List<AbstractBeamInter> beams;
 
     /** Location for chord head (head farthest from chord tail). Lazily computed. */
     protected Point headLocation;
@@ -211,8 +212,10 @@ public abstract class AbstractChordInter
     {
         super.added();
 
-        if (measure != null) {
-            measure.addInter(this);
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
         }
     }
 
@@ -476,7 +479,7 @@ public abstract class AbstractChordInter
             if (!noteShape.isWholeRest()) {
                 // Apply flags/beams for non-rests
                 if (!noteShape.isRest()) {
-                    final int beamNb = (beams != null) ? beams.size() : 0;
+                    final int beamNb = (getBeams() != null) ? getBeams().size() : 0;
                     final int fbn = getFlagsNumber() + beamNb;
 
                     if (fbn > 0) {

@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.SigValue.InterSet;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
@@ -225,6 +226,19 @@ public abstract class AbstractInter
         attachments.addAttachment(id, attachment);
     }
 
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        if (isVip()) {
+            logger.info("VIP added {}", this);
+        }
+
+        removed = false;
+    }
+
     //----------//
     // contains //
     //----------//
@@ -291,6 +305,15 @@ public abstract class AbstractInter
         }
 
         return sb.toString();
+    }
+
+    //-------------------//
+    // firstImpactedStep //
+    //-------------------//
+    @Override
+    public Step firstImpactedStep ()
+    {
+        return null; // By default
     }
 
     //--------//
@@ -516,6 +539,15 @@ public abstract class AbstractInter
         return minGrade;
     }
 
+    //-----------//
+    // getMirror //
+    //-----------//
+    @Override
+    public Inter getMirror ()
+    {
+        return mirror;
+    }
+
     //---------//
     // getPart //
     //---------//
@@ -543,28 +575,6 @@ public abstract class AbstractInter
     public static double getReallyGoodGrade ()
     {
         return goodGrade;
-    }
-
-    //-------//
-    // added //
-    //-------//
-    @Override
-    public void added ()
-    {
-        if (isVip()) {
-            logger.info("VIP added {}", this);
-        }
-
-        removed = false;
-    }
-
-    //-----------//
-    // getMirror //
-    //-----------//
-    @Override
-    public Inter getMirror ()
-    {
-        return mirror;
     }
 
     //-------------------//

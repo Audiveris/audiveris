@@ -207,13 +207,12 @@ public class MeasureStack
         final Part part = inter.getPart();
 
         if (part != null) {
-            int partIndex = system.getParts().indexOf(part);
-            Measure measure = measures.get(partIndex);
+            Measure measure = getMeasureAt(part);
             measure.addInter(inter);
         } else if (inter instanceof TupletInter) {
             stackTuplets.add((TupletInter) inter);
         } else {
-            throw new IllegalStateException("No part for " + inter);
+            logger.debug("No part yet for {}", inter);
         }
     }
 
@@ -1440,7 +1439,7 @@ public class MeasureStack
         slots.clear();
         actualDuration = null;
 
-        // Reset every measure
+        // Reset every measure within this stack
         for (Measure measure : measures) {
             measure.resetRhythm();
         }
@@ -1450,11 +1449,13 @@ public class MeasureStack
     // setAbnormal //
     //-------------//
     /**
-     * Mark this stack as being abnormal.
+     * Mark this stack as being abnormal or not.
+     *
+     * @param abnormal new value
      */
-    public void setAbnormal ()
+    public void setAbnormal (boolean abnormal)
     {
-        abnormal = Boolean.TRUE;
+        this.abnormal = abnormal;
     }
 
     //-------------------//
@@ -1489,7 +1490,7 @@ public class MeasureStack
     public void setExcess (Rational excess)
     {
         this.excess = excess;
-        setAbnormal();
+        setAbnormal(true);
     }
 
     //---------------------//

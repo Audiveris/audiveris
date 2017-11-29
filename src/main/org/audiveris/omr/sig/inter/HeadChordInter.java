@@ -119,6 +119,15 @@ public class HeadChordInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     //----------//
     // contains //
     //----------//
@@ -193,7 +202,11 @@ public class HeadChordInter
             bounds = Entities.getBounds(getMembers());
 
             if (stem != null) {
-                bounds.add(stem.getBounds());
+                if (bounds == null) {
+                    bounds = stem.getBounds();
+                } else {
+                    bounds.add(stem.getBounds());
+                }
             }
         }
 

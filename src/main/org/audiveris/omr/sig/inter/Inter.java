@@ -42,6 +42,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.step.Step;
 
 /**
  * Interface {@code Inter} defines a possible interpretation.
@@ -102,6 +103,13 @@ public interface Inter
      * @param ratio ratio applied
      */
     void decrease (double ratio);
+
+    /**
+     * First step that is impacted by addition or removal of this inter.
+     *
+     * @return first impacted step
+     */
+    Step firstImpactedStep ();
 
     /**
      * Mark this inter as frozen, that cannot be deleted even by a conflicting
