@@ -79,7 +79,7 @@ public class ScoreExporter
      * @param scoreName  simple score name, without extension
      * @param signed     should we inject ProxyMusic signature?
      * @param compressed true for compressed output, false for uncompressed output
-     * @throws java.lang.Exception
+     * @throws Exception if something goes wrong
      */
     public void export (Path path,
                         String scoreName,
@@ -103,7 +103,7 @@ public class ScoreExporter
      * @param signed     should we inject ProxyMusic signature?
      * @param scoreName  (for compressed only) simple score name, without extension
      * @param compressed true for compressed output
-     * @throws Exception
+     * @throws Exception if something goes wrong
      */
     public void export (OutputStream os,
                         boolean signed,
@@ -144,7 +144,7 @@ public class ScoreExporter
      *
      * @param node   the DOM node to export to (cannot be null)
      * @param signed should we inject ProxyMusic signature?
-     * @throws Exception
+     * @throws Exception if something goes wrong
      */
     public void export (Node node,
                         boolean signed)

@@ -193,7 +193,7 @@ public class EntityBoard<E extends Entity>
     /**
      * Triggered by VIP check box and by dump button
      *
-     * @param e
+     * @param e the event that triggered this action
      */
     @Override
     public void actionPerformed (ActionEvent e)
@@ -268,7 +268,7 @@ public class EntityBoard<E extends Entity>
     /**
      * Override-able action performed for 'dump'.
      *
-     * @param e
+     * @param e the event that triggered this action
      */
     protected void dumpActionPerformed (ActionEvent e)
     {
@@ -311,7 +311,7 @@ public class EntityBoard<E extends Entity>
     /**
      * Override-able action performed for 'vip'.
      *
-     * @param e
+     * @param e the event that triggered this action
      */
     protected void vipActionPerformed (ActionEvent e)
     {

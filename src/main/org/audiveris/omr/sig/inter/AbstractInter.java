@@ -957,6 +957,8 @@ public abstract class AbstractInter
     //---------------//
     /**
      * Called immediately before marshalling of this object begins.
+     *
+     * @param m unused
      */
     @SuppressWarnings("unused")
     protected void beforeMarshal (Marshaller m)

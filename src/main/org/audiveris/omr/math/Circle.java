@@ -226,6 +226,8 @@ public class Circle
     /**
      * Report the angle at desired end of the circle arc.
      *
+     * @param reverse if True return the starting angle of circle arc,
+     *                otherwise, return its stopping angle
      * @return the angle, in radians within -PI..PI
      */
     public Double getAngle (boolean reverse)

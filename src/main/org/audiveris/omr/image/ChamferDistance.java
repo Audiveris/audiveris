@@ -255,10 +255,11 @@ public interface ChamferDistance
         }
 
         /**
-         * To get a Table instance of proper type and size.
+         * Get Table instance of the proper type and size.
          *
          * @param width  desired width
          * @param height desired height
+         * @param normalizer the normalizing value
          * @return the table of proper type and dimension
          */
         protected abstract DistanceTable allocateOutput (int width,

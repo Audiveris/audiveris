@@ -58,7 +58,6 @@ import java.util.List;
  * <li><b>T</b>: Tuplets for head and rest chords.</li>
  * </ul>
  * <p>
- * <p>
  * We have tried very hard to use the FRATs as adjustment variables to come up with a "good"
  * configuration within each stack. Unfortunately, this turned out to be impractical.
  * So now we check the "time correctness" of each stack regarding its time slots and voices.

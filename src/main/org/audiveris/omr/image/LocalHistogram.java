@@ -75,7 +75,16 @@ public class LocalHistogram
         //counts=new int[256];
     }
 
-    /** Creates a new instance of LocalHistogram */
+    /**
+     * Creates a new instance of LocalHistogram.
+     *
+     * @param index  DOCUMENT ME!
+     * @param width  DOCUMENT ME!
+     * @param height DOCUMENT ME!
+     * @param pixels DOCUMENT ME!
+     * @param pg     DOCUMENT ME!
+     * @param type   DOCUMENT ME!
+     */
     public LocalHistogram (int index,
                            int width,
                            int height,

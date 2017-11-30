@@ -358,7 +358,7 @@ public class StubsController
     /**
      * Report the index in stubsPane of the provided stub.
      *
-     * @param stub
+     * @param stub the stub of interest
      * @return the stub index in stubsPane
      */
     public Integer getIndex (SheetStub stub)

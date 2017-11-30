@@ -351,7 +351,7 @@ public class Trainer
         /**
          * Assign a new current activity and notify all observers
          *
-         * @param activity
+         * @param activity the activity to be assigned
          */
         public void setActivity (Activity activity)
         {

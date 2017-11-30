@@ -107,8 +107,8 @@ public class OmrUIDefaults
      *
      * @param file properties file path without locale or country information
      *             or .properties extension
-     * @throws FileNotFoundException
-     * @throws IOException
+     * @throws FileNotFoundException if the specified file could not be found
+     * @throws IOException if the specified file could be read
      */
     public void loadFrom (File file)
             throws FileNotFoundException, IOException

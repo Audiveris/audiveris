@@ -66,7 +66,7 @@ public class MacApplication
      * This method should not be manually called;
      * it is used by the proxy to forward calls.
      *
-     * @throws Throwable
+     * @throws Throwable if something goes wrong
      */
     @Override
     public Object invoke (Object proxy,

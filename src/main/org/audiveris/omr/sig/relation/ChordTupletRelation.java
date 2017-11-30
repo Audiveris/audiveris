@@ -48,6 +48,8 @@ public class ChordTupletRelation
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletChordRelation} object.
+     *
+     * @param shape the tuplet shape (currently either TUPLET_THREE or TUPLET_SIX)
      */
     public ChordTupletRelation (Shape shape)
     {

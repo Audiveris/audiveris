@@ -209,7 +209,7 @@ public class Picture
      * @param sheet        the related sheet
      * @param image        the provided original image
      * @param levelService service where pixel events are to be written
-     * @throws ImageFormatException
+     * @throws ImageFormatException  if the image format is unsupported
      */
     public Picture (Sheet sheet,
                     BufferedImage image,

@@ -93,7 +93,7 @@ public class LTextField
     /**
      * Modify the content of the field
      *
-     * @param text
+     * @param text new text to set
      */
     public void setText (String text)
     {

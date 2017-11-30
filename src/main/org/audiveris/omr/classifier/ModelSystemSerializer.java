@@ -68,7 +68,7 @@ public abstract class ModelSystemSerializer
      * @param root        the root path of file system
      * @param loadUpdater true for loading updater
      * @return the loaded multi layer network
-     * @throws IOException
+     * @throws IOException if something goes wrong during IO operations
      */
     public static MultiLayerNetwork restoreMultiLayerNetwork (Path root,
                                                               boolean loadUpdater)
@@ -187,7 +187,7 @@ public abstract class ModelSystemSerializer
      * @param model       the model to save
      * @param root        the root path of file system
      * @param saveUpdater whether to save the updater for the model or not
-     * @throws IOException
+     * @throws IOException if something goes wrong during IO operations
      */
     public static void writeModel (Model model,
                                    Path root,

@@ -60,7 +60,7 @@ public class LComboBox<E>
     /**
      * Add an action listener to the combo.
      *
-     * @param listener
+     * @param listener the action listener to add
      */
     public void addActionListener (ActionListener listener)
     {

@@ -88,7 +88,7 @@ public class Plugin
      * Creates a new Plugin object.
      *
      * @param file related javascript file
-     * @throws JavascriptUnavailableException
+     * @throws JavascriptUnavailableException if no Javascript engine is available
      */
     public Plugin (File file)
             throws JavascriptUnavailableException
@@ -139,6 +139,7 @@ public class Plugin
      * Report the asynchronous plugin task on provided score.
      *
      * @param book the book to process through this plugin
+     * @return the asynchronous plugin task requested
      */
     public Task<Void, Void> getTask (Book book)
     {

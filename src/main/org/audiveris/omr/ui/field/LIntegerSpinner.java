@@ -55,7 +55,7 @@ public class LIntegerSpinner
     /**
      * Add a change listener to the spinner
      *
-     * @param listener
+     * @param listener the change listener to add
      */
     @Override
     public void addChangeListener (ChangeListener listener)
@@ -82,7 +82,7 @@ public class LIntegerSpinner
     /**
      * Modify the content of the spinner
      *
-     * @param value
+     * @param value new value to set
      */
     public void setValue (Integer value)
     {

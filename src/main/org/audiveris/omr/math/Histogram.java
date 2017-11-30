@@ -671,8 +671,6 @@ public class Histogram<K extends Number>
     //----------//
     /**
      * A counted maximum value.
-     *
-     * @param <K>
      */
     public static class MaxEntry<K extends Number>
             implements HistoEntry<K>
@@ -734,8 +732,6 @@ public class Histogram<K extends Number>
     //------//
     /**
      * We are interested in the triplet: first, best, second.
-     *
-     * @param <K>
      */
     public static class Peak<K extends Number>
     {
@@ -777,8 +773,6 @@ public class Histogram<K extends Number>
     //-----------//
     /**
      * A counted peak.
-     *
-     * @param <K>
      */
     public static class PeakEntry<K extends Number>
             implements HistoEntry<K>

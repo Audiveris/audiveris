@@ -253,6 +253,8 @@ public class SymbolRipper
     //------//
     /**
      * Command line entry point, no arguments are used today.
+     *
+     * @param args unused
      */
     public static void main (String... args)
     {

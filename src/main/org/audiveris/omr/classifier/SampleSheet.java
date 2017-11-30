@@ -201,7 +201,7 @@ public class SampleSheet
      * @param path the source path
      * @param desc sheet descriptor
      * @return the unmarshalled instance
-     * @throws IOException
+     * @throws IOException if something goes wrong during IO operations
      */
     public static SampleSheet unmarshal (Path path,
                                          Descriptor desc)

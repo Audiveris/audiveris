@@ -1029,7 +1029,7 @@ public class SystemInfo
      * Otherwise, the staff just above if any in system is returned as well as the staff just below
      * if any in system.
      *
-     * @param point
+     * @param point the provided point
      * @return proper sublist of staves (top down)
      */
     public List<Staff> getStavesAround (Point2D point)

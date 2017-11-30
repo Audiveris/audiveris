@@ -148,7 +148,7 @@ public class ValidationPanel
      *
      * @param task       the current training activity
      * @param source     source for samples
-     * @param isTrainSet
+     * @param isTrainSet True for train set, False for test set
      */
     public ValidationPanel (Trainer.Task task,
                             SampleSource source,

@@ -181,7 +181,7 @@ public class Actions
      *
      * @param in the input stream that contains the collection of action
      *           descriptors in XML format. The stream is not closed by this method
-     * @throws javax.xml.bind.JAXBException
+     * @throws JAXBException if something goes wrong with XML deserialization
      */
     public static void loadActionDescriptors (InputStream in)
             throws JAXBException

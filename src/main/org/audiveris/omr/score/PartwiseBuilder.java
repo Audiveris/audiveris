@@ -273,8 +273,8 @@ public class PartwiseBuilder
      * Create a new PartwiseBuilder object, on a related score instance.
      *
      * @param score the underlying score
-     * @throws InterruptedException
-     * @throws ExecutionException
+     * @throws InterruptedException if the thread has been interrupted
+     * @throws ExecutionException if a checked exception was thrown
      */
     private PartwiseBuilder (Score score)
             throws InterruptedException, ExecutionException
@@ -294,8 +294,8 @@ public class PartwiseBuilder
      *
      * @param score the score to export (cannot be null)
      * @return the populated ScorePartwise
-     * @throws InterruptedException
-     * @throws ExecutionException
+     * @throws InterruptedException if the thread has been interrupted
+     * @throws ExecutionException if a checked exception was thrown
      */
     public static ScorePartwise build (Score score)
             throws InterruptedException, ExecutionException

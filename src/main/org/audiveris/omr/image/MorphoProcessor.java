@@ -70,7 +70,11 @@ public class MorphoProcessor
     int height;
 
     //~ Constructors -------------------------------------------------------------------------------
-    /** Creates a new instance of MorphoProcessor */
+    /**
+     * Creates a new instance of MorphoProcessor.
+     *
+     * @param se the structuring element for processing
+     */
     public MorphoProcessor (StructureElement se)
     {
         this.se = se;

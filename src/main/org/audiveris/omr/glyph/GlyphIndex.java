@@ -368,7 +368,7 @@ public class GlyphIndex
      * This public method <b>must not be called</b> on GlyphIndex.
      * Use {@link #registerOriginal(org.audiveris.omr.glyph.Glyph)} instead.
      *
-     * @param glyph
+     * @param glyph the glyph to process
      */
     @Override
     public int register (Glyph glyph)

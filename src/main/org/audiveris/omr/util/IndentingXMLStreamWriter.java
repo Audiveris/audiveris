@@ -363,7 +363,7 @@ public class IndentingXMLStreamWriter
     /**
      * Print indentation for the current level.
      *
-     * @throws XMLStreamException
+     * @throws XMLStreamException if there was an error processing the XML
      */
     protected void doIndent ()
             throws XMLStreamException
@@ -378,7 +378,7 @@ public class IndentingXMLStreamWriter
     /**
      * Insert a newline.
      *
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws XMLStreamException if there was an error processing the XML
      */
     protected void doNewline ()
             throws XMLStreamException
@@ -389,7 +389,7 @@ public class IndentingXMLStreamWriter
     /**
      * Call-back on writeEmptyElement()
      *
-     * @throws XMLStreamException
+     * @throws XMLStreamException if there was an error processing the XML
      */
     protected void onEmptyElement ()
             throws XMLStreamException
@@ -405,7 +405,7 @@ public class IndentingXMLStreamWriter
     /**
      * Call-back on writeEndElement()
      *
-     * @throws XMLStreamException
+     * @throws XMLStreamException if there was an error processing the XML
      */
     protected void onEndElement ()
             throws XMLStreamException
@@ -423,7 +423,7 @@ public class IndentingXMLStreamWriter
     /**
      * Call-back on any writeStartElement()
      *
-     * @throws XMLStreamException
+     * @throws XMLStreamException if there was an error processing the XML
      */
     protected void onStartElement ()
             throws XMLStreamException

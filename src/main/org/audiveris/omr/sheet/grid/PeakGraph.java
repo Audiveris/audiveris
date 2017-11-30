@@ -135,7 +135,7 @@ public class PeakGraph
      * Retrieve all bar peaks found in staves projection, organize them in a graph
      * of peaks linked by alignment/connection relations, and infer the systems.
      *
-     * @throws StepException
+     * @throws StepException if processing failed at this step
      */
     public void buildSystems ()
             throws StepException

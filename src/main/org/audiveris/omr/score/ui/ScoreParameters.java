@@ -73,7 +73,6 @@ import javax.swing.event.ListSelectionListener;
 /**
  * Class {@code ScoreParameters} is a dialog that allows the user to easily manage the
  * most frequent parameters.
- * <p>
  * <div style="float: right;">
  * <img src="doc-files/ScoreParameters.png" alt="Score parameters dialog">
  * </div>

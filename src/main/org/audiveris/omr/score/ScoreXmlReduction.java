@@ -177,6 +177,10 @@ public class ScoreXmlReduction
      * The resulting score is written to a global.xml file in the same folder as the input pieces.
      *
      * @param args the template items to filter relevant files
+     * @throws MarshallingException if an error occurs during MusicXML serialization
+     * @throws JAXBException if something goes wrong with XML serialization
+     * @throws FileNotFoundException if the specified file could not be found
+     * @throws IOException if something goes wrong during IO operations
      */
     public static void main (String... args)
             throws MarshallingException, JAXBException, FileNotFoundException, IOException
@@ -268,6 +272,9 @@ public class ScoreXmlReduction
      * <p>
      * The final processing status for each fragment is made available through the
      * {@link #getStatuses()} method.
+     *
+     * @throws MarshallingException if an error occurs during MusicXML serialization
+     * @throws JAXBException if something goes wrong with XML serialization
      *
      * @return the resulting global XML output for the score
      */

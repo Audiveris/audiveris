@@ -119,8 +119,8 @@ public abstract class GCD
     /**
      * Report the Least Common Multiple of 2 values, assumed to be positive or zero.
      *
-     * @param m
-     * @param n
+     * @param m first integer value
+     * @param n second integer value
      * @return lcm(|m|, |n|)
      */
     public static int lcm (int m,

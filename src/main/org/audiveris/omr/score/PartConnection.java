@@ -471,19 +471,19 @@ public class PartConnection
 
         /** Assign an abbreviation to the part
          *
-         * @param abbreviation
+         * @param abbreviation the abbreviation string to assign
          */
         void setAbbreviation (String abbreviation);
 
         /** Assign an unique id to the part
          *
-         * @param id
+         * @param id the unique part ID to assign
          */
         void setId (int id);
 
         /** Assign a name to the part
          *
-         * @param name
+         * @param name the part name to assign
          */
         void setName (String name);
     }

@@ -279,7 +279,7 @@ public class SigValue
          *
          * @param sig the existing SIG whose content is to be stored into a SigValue
          * @return the generated SigValue instance
-         * @throws Exception
+         * @throws Exception if something goes wrong
          */
         @Override
         public SigValue marshal (SIGraph sig)
@@ -315,7 +315,7 @@ public class SigValue
          *
          * @param sigValue the value to be converted
          * @return a new SIG instance, to be later populated via {@link #populateSig}
-         * @throws Exception
+         * @throws Exception if something goes wrong
          */
         @Override
         public SIGraph unmarshal (SigValue sigValue)

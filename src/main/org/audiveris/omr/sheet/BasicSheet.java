@@ -231,7 +231,7 @@ public class BasicSheet
      *
      * @param stub  the related sheet stub
      * @param image the already loaded image, if any
-     * @throws org.audiveris.omr.step.StepException
+     * @throws StepException if processing failed at this step
      */
     public BasicSheet (SheetStub stub,
                        BufferedImage image)

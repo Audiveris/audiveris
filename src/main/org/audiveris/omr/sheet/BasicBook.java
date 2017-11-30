@@ -931,7 +931,7 @@ public class BasicBook
      * {@link #closeFileSystem(java.nio.file.FileSystem)}
      *
      * @return the root path of the (zipped) book file system
-     * @throws java.io.IOException
+     * @throws java.io.IOException if anything goes wrong
      */
     public Path openBookFile ()
             throws IOException

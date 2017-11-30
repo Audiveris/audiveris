@@ -155,7 +155,7 @@ public class VerticalsBuilder
     /**
      * Build the verticals seeds out of the dedicated system.
      *
-     * @throws org.audiveris.omr.step.StepException
+     * @throws StepException if processing failed at this step
      */
     public void buildVerticals ()
             throws StepException

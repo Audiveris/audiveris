@@ -172,7 +172,7 @@ public class CLI
      *
      * @param args the CLI arguments
      * @return the parsed parameters, or null if failed
-     * @throws org.kohsuke.args4j.CmdLineException
+     * @throws CmdLineException if there was any error parsing CLI arguments
      */
     public Parameters getParameters (final String... args)
             throws CmdLineException

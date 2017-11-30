@@ -488,7 +488,7 @@ public interface Inter
      *
      * @param that the other instance
      * @return true if (incompatible) overlap is detected
-     * @throws org.audiveris.omr.sig.inter.DeletedInterException
+     * @throws DeletedInterException when an Inter instance no longer exists in its SIG
      */
     boolean overlaps (Inter that)
             throws DeletedInterException;

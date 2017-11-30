@@ -90,7 +90,14 @@ public class StructureElement
         vect = calcVect(mask, width);
     }
 
-    /** Creates a new instance of a StructureElement */
+    /**
+     * Creates a new instance of a StructureElement.
+     *
+     * @param type   the type of the structuring element to create
+     * @param shift  DOCUMENT ME!
+     * @param radius the radius of the structuring element to create
+     * @param offset DOCUMENT ME!
+     */
     public StructureElement (int type,
                              int shift,
                              float radius,

@@ -270,7 +270,7 @@ public class BookActions
     /**
      * Launch the tree display of the current book.
      *
-     * @param e
+     * @param e the event that triggered this action
      */
     @Action(enabledProperty = STUB_AVAILABLE)
     public void browseBook (ActionEvent e)
@@ -615,6 +615,7 @@ public class BookActions
      * Action to invoke the default score external editor
      *
      * @param e the event that triggered this action
+     * @return the task to launch in background
      */
     @Action(enabledProperty = STUB_IDLE)
     public Task<Void, Void> invokeDefaultPlugin (ActionEvent e)

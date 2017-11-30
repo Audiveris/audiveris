@@ -368,7 +368,7 @@ public class HeadInter
      *
      * @param that another inter (perhaps a note)
      * @return true if overlap is detected
-     * @throws org.audiveris.omr.sig.inter.DeletedInterException
+     * @throws DeletedInterException when an Inter instance no longer exists in its SIG
      */
     @Override
     public boolean overlaps (Inter that)

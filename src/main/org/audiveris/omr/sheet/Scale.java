@@ -505,8 +505,8 @@ public class Scale
     /**
      * Remember vertical distance between grouped beams
      *
-     * @param meanValue
-     * @param standardDeviation
+     * @param meanValue the mean value of the distance
+     * @param standardDeviation the standard deviation of the distance
      */
     public void setBeamDistance (double meanValue,
                                  double standardDeviation)

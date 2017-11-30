@@ -121,6 +121,9 @@ public class RestSymbol
     //---------------//
     /**
      * Retrieve the layout of just the rest symbol part, w/o the lines.
+     *
+     * @param font the font to extract the layout from
+     * @return text layout for rest symbols
      */
     protected TextLayout getRestLayout (MusicFont font)
     {

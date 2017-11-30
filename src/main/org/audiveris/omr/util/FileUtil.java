@@ -376,7 +376,7 @@ public abstract class FileUtil
      * @param dir  the directory to read from
      * @param glob the glob matching
      * @return the opened DirectoryStream (remaining to be closed)
-     * @throws IOException
+     * @throws IOException if anything goes wrong
      */
     public static DirectoryStream newDirectoryStream (Path dir,
                                                       String glob)

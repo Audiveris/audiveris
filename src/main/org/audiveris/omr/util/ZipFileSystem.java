@@ -59,7 +59,7 @@ public abstract class ZipFileSystem
      *
      * @param path path to zip file system
      * @return the root path of the (zipped) file system
-     * @throws java.io.IOException
+     * @throws IOException if anything goes wrong
      */
     public static Path create (Path path)
             throws IOException
@@ -90,7 +90,7 @@ public abstract class ZipFileSystem
      *
      * @param path (zip) file path
      * @return the root path of the (zipped) file system
-     * @throws java.io.IOException
+     * @throws IOException if anything goes wrong
      */
     public static Path open (Path path)
             throws IOException

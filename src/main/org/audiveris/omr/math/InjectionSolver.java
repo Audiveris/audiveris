@@ -28,8 +28,8 @@ import java.util.Arrays;
  * (called domain) into another collection of elements (called range, or co-domain).
  * <p>
  * It finds a mapping that minimizes the global mapping distance, given the individual distance for
- * each domain/range elements pair. This implementation uses brute force, and thus should be used
- * with small sizes only.
+ * each domain/range elements pair. This implementation is based on a brute-force approach and thus
+ * should be used with small sizes only.
  *
  * @author Hervé Bitteur
  */
@@ -57,7 +57,7 @@ public class InjectionSolver
      *
      * @param domainSize size of the domain collection
      * @param rangeSize  size of the range collection
-     * @param distance
+     * @param distance the distance
      */
     public InjectionSolver (int domainSize,
                             int rangeSize,

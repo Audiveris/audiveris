@@ -413,6 +413,8 @@ public class LinesRetriever
      *      + secondClustersRetriever.buildInfo()
      *      + buildStaves()
      * </pre>
+     *
+     * @throws StepException if processing failed at this step
      */
     public void retrieveLines ()
             throws StepException

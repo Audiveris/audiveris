@@ -374,7 +374,7 @@ public interface Book
      *
      * @param number sheet number (1-based) within the book
      * @return the path to sheet folder
-     * @throws java.io.IOException
+     * @throws IOException if anything goes wrong
      */
     Path openSheetFolder (int number)
             throws IOException;
@@ -497,7 +497,7 @@ public interface Book
      * Store the book information (global info + stub steps) into book file system.
      *
      * @param root root path of book file system
-     * @throws Exception
+     * @throws Exception if anything goes wrong
      */
     void storeBookInfo (Path root)
             throws Exception;

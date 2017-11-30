@@ -207,6 +207,8 @@ public class DynamicSection
     //--------//
     /**
      * Compute incrementally the cached parameters.
+     *
+     * @param run the run to be processed
      */
     protected void addRun (Run run)
     {

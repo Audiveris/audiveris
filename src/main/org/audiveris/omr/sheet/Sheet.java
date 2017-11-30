@@ -352,7 +352,7 @@ public interface Sheet
      * Assign the related image to this sheet
      *
      * @param image the loaded image
-     * @throws StepException
+     * @throws StepException if processing failed at this step
      */
     void setImage (BufferedImage image)
             throws StepException;

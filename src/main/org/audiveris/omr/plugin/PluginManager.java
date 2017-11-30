@@ -145,6 +145,8 @@ public class PluginManager
     //------------------//
     /**
      * Assign the default plugin.
+     *
+     * @param pluginId the ID of default plugin
      */
     public final void setDefaultPlugin (String pluginId)
     {
@@ -162,6 +164,8 @@ public class PluginManager
     //------------------//
     /**
      * Assign the default plugin.
+     *
+     * @param defaultPlugin new plugin to become the default one
      */
     public final void setDefaultPlugin (Plugin defaultPlugin)
     {

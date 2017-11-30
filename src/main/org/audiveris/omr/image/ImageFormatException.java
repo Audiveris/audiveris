@@ -34,6 +34,8 @@ public class ImageFormatException
 
     /**
      * Construct an {@code ImageFormatException} with provided detail message.
+     *
+     * @param message the message describing this exception
      */
     public ImageFormatException (String message)
     {
