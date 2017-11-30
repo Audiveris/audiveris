@@ -370,8 +370,6 @@ public class SlotsBuilder
      */
     private boolean buildSlots ()
     {
-        stack.setAbnormal(false);
-
         // The 'actives' collection gathers the chords that are not terminated at the
         // time slot being considered. Initially, it contains just the whole chords.
         List<AbstractChordInter> actives = new ArrayList<AbstractChordInter>(

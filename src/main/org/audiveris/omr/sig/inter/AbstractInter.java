@@ -36,7 +36,6 @@ import org.audiveris.omr.sig.SigValue.InterSet;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
@@ -305,15 +304,6 @@ public abstract class AbstractInter
         }
 
         return sb.toString();
-    }
-
-    //-------------------//
-    // firstImpactedStep //
-    //-------------------//
-    @Override
-    public Step firstImpactedStep ()
-    {
-        return null; // By default
     }
 
     //--------//

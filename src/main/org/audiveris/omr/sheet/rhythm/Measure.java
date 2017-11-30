@@ -107,11 +107,11 @@ public class Measure
     @XmlElement(name = "right-barline")
     private PartBarline rightBarline;
 
-    /** Groups of beams in this measure. */
+    /** Groups of beams in this measure, initially populated by CHORDS step. */
     @XmlElementRef
     private final Set<BeamGroup> beamGroups = new LinkedHashSet<BeamGroup>();
 
-    /** Head chords, populated once for all by CHORDS step. */
+    /** Head chords, initially populated by CHORDS step. */
     @XmlElementRef
     private final Set<HeadChordInter> headChords = new LinkedHashSet<HeadChordInter>();
 
@@ -294,6 +294,14 @@ public class Measure
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
+    }
+
+    //-----------------//
+    // clearBeamGroups //
+    //-----------------//
+    public void clearBeamGroups ()
+    {
+        beamGroups.clear();
     }
 
     //------------//
@@ -1165,6 +1173,14 @@ public class Measure
 
         midBarline = rightBarline;
         setRightBarline(right.rightBarline);
+    }
+
+    //-----------------//
+    // removeBeamGroup //
+    //-----------------//
+    public void removeBeamGroup (BeamGroup beamGroup)
+    {
+        beamGroups.remove(beamGroup);
     }
 
     //-------------//

@@ -48,7 +48,7 @@ public class RemovalTask
      */
     public RemovalTask (Inter inter)
     {
-        super(inter.getSig(), inter, null);
+        super(inter.getSig(), inter, inter.getBounds(), null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -68,6 +68,7 @@ public class RemovalTask
     @Override
     public void performUndo ()
     {
+        inter.setBounds(initialBounds);
         sig.addVertex(inter);
 
         for (Partnership partnership : partnerships) {

@@ -25,6 +25,7 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.inter.AbstractInter;
+import org.audiveris.omr.sig.inter.AbstractInterVisitor;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
@@ -50,6 +51,7 @@ import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.FretInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
@@ -75,7 +77,10 @@ import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITaskList;
+import static org.audiveris.omr.step.Step.RHYTHMS;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +102,8 @@ public abstract class AbstractStep
 
     private static final Logger logger = LoggerFactory.getLogger(
             AbstractStep.class);
+
+    private static final Impactor IMPACTOR = new Impactor();
 
     /**
      * List of all non-abstract Inter classes sorted alphabetically.
@@ -195,6 +202,28 @@ public abstract class AbstractStep
     public abstract void doit (Sheet sheet)
             throws StepException;
 
+    /**
+     * First step that is impacted by addition or removal of the provided inter.
+     *
+     * @param inter the provided inter (added or removed)
+     * @return first impacted step
+     */
+    public static Step firstImpactedStep (Inter inter)
+    {
+        return IMPACTOR.firstImpactedStep(inter);
+    }
+
+    /**
+     * First step that is impacted by the provided UI tasks sequence.
+     *
+     * @param seq the provided UI tasks sequence
+     * @return first impacted step
+     */
+    public static Step firstImpactedStep (UITaskList seq)
+    {
+        return IMPACTOR.firstImpactedStep(seq);
+    }
+
     //-------------//
     // getSheetTab //
     //-------------//
@@ -209,7 +238,7 @@ public abstract class AbstractStep
     }
 
     /**
-     * Apply the provided UI sequence too this step.
+     * Apply the provided UI sequence to this step.
      *
      * @param seq the sequence of UI tasks
      */
@@ -226,5 +255,330 @@ public abstract class AbstractStep
     public Collection<Class<? extends AbstractInter>> impactingInterClasses ()
     {
         return Collections.EMPTY_SET;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    private static class Impactor
+            extends AbstractInterVisitor
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** First impacted step. */
+        private Step step;
+
+        //~ Methods --------------------------------------------------------------------------------
+        public Step firstImpactedStep (Inter inter)
+        {
+            step = null;
+
+            inter.accept(this);
+
+            return step;
+        }
+
+        public Step firstImpactedStep (UITaskList seq)
+        {
+            Step seqFirst = null;
+
+            for (UITask task : seq.getTasks()) {
+                Step s = null;
+
+                if (task instanceof InterTask) {
+                    InterTask interTask = (InterTask) task;
+                    s = firstImpactedStep(interTask.getInter());
+                }
+
+                if ((seqFirst == null) || ((s != null) && (s.compareTo(seqFirst) < 0))) {
+                    seqFirst = s;
+                }
+            }
+
+            return seqFirst;
+        }
+
+        //    @Override
+        //    public void visit (AbstractBeamInter inter)
+        //    {
+        //    }
+        //
+        //    @Override
+        //    public void visit (AbstractChordInter inter)
+        //    {
+        //    }
+        //
+        //    @Override
+        //    public void visit (AbstractFlagInter inter)
+        //    {
+        //    }
+        //
+        @Override
+        public void visit (AlterInter inter)
+        {
+        }
+
+        @Override
+        public void visit (ArpeggiatoInter inter)
+        {
+        }
+
+        @Override
+        public void visit (ArticulationInter inter)
+        {
+        }
+
+        @Override
+        public void visit (AugmentationDotInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (BarConnectorInter inter)
+        {
+        }
+
+        @Override
+        public void visit (BarlineInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (BeamHookInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (BeamInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (BraceInter inter)
+        {
+        }
+
+        @Override
+        public void visit (BracketConnectorInter inter)
+        {
+        }
+
+        @Override
+        public void visit (BracketInter inter)
+        {
+        }
+
+        @Override
+        public void visit (BreathMarkInter inter)
+        {
+        }
+
+        @Override
+        public void visit (CaesuraInter inter)
+        {
+        }
+
+        @Override
+        public void visit (ChordNameInter inter)
+        {
+        }
+
+        @Override
+        public void visit (ClefInter inter)
+        {
+        }
+
+        @Override
+        public void visit (DynamicsInter inter)
+        {
+        }
+
+        @Override
+        public void visit (EndingInter inter)
+        {
+        }
+
+        @Override
+        public void visit (FermataArcInter inter)
+        {
+        }
+
+        @Override
+        public void visit (FermataDotInter inter)
+        {
+        }
+
+        @Override
+        public void visit (FermataInter inter)
+        {
+        }
+
+        @Override
+        public void visit (FingeringInter inter)
+        {
+        }
+
+        @Override
+        public void visit (FlagInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (FretInter inter)
+        {
+        }
+
+        @Override
+        public void visit (HeadChordInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (HeadInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (Inter inter)
+        {
+        }
+
+        @Override
+        public void visit (KeyAlterInter inter)
+        {
+        }
+
+        @Override
+        public void visit (KeyInter inter)
+        {
+        }
+
+        @Override
+        public void visit (LedgerInter inter)
+        {
+        }
+
+        @Override
+        public void visit (LyricItemInter inter)
+        {
+        }
+
+        @Override
+        public void visit (LyricLineInter inter)
+        {
+        }
+
+        @Override
+        public void visit (MarkerInter inter)
+        {
+        }
+
+        @Override
+        public void visit (OrnamentInter inter)
+        {
+        }
+
+        @Override
+        public void visit (PedalInter inter)
+        {
+        }
+
+        @Override
+        public void visit (RepeatDotInter inter)
+        {
+        }
+
+        @Override
+        public void visit (PluckingInter inter)
+        {
+        }
+
+        @Override
+        public void visit (RestChordInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (RestInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (SegmentInter inter)
+        {
+        }
+
+        @Override
+        public void visit (SentenceInter inter)
+        {
+        }
+
+        @Override
+        public void visit (SlurInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (SmallBeamInter inter)
+        {
+        }
+
+        @Override
+        public void visit (SmallChordInter inter)
+        {
+        }
+
+        @Override
+        public void visit (SmallFlagInter inter)
+        {
+        }
+
+        @Override
+        public void visit (StemInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (TimeNumberInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (TimePairInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (TimeWholeInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (TupletInter inter)
+        {
+            step = RHYTHMS;
+        }
+
+        @Override
+        public void visit (WedgeInter inter)
+        {
+        }
+
+        @Override
+        public void visit (WordInter inter)
+        {
+        }
     }
 }

@@ -38,7 +38,9 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -124,6 +126,17 @@ public abstract class AbstractBeamInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        // Update group?
+    }
+
     //
     //    //----------------//
     //    // determineGroup //
@@ -135,9 +148,12 @@ public abstract class AbstractBeamInter
     //     *
     //     * @param measure containing measure
     //     */
-    //    public void determineGroup (Measure measure)
+    //    private void determineGroup ()
     //    {
     //        // Check if this beam should belong to an existing group
+    //        Point center = getCenter();
+    //        MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+    //        stack.getMeasureAt(part)
     //        for (BeamGroup grp : measure.getBeamGroups()) {
     //            for (AbstractBeamInter beam : grp.getBeams()) {
     //                for (AbstractChordInter chord : beam.getChords()) {
@@ -191,9 +207,7 @@ public abstract class AbstractBeamInter
         if (chords == null) {
             chords = new ArrayList<AbstractChordInter>();
 
-            for (Relation bs : sig.getRelations(this, BeamStemRelation.class)) {
-                StemInter stem = (StemInter) sig.getOppositeInter(this, bs);
-
+            for (StemInter stem : getStems()) {
                 for (Relation hs : sig.getRelations(stem, HeadStemRelation.class)) {
                     HeadInter head = (HeadInter) sig.getOppositeInter(stem, hs);
                     AbstractChordInter chord = head.getChord();
@@ -246,6 +260,26 @@ public abstract class AbstractBeamInter
     }
 
     //----------//
+    // getStems //
+    //----------//
+    /**
+     * Report the stems connected to this beam.
+     *
+     * @return the set of connected stems, perhaps empty
+     */
+    public Set<StemInter> getStems ()
+    {
+        Set<StemInter> stems = new LinkedHashSet<StemInter>();
+
+        for (Relation bs : sig.getRelations(this, BeamStemRelation.class)) {
+            StemInter stem = (StemInter) sig.getOppositeInter(this, bs);
+            stems.add(stem);
+        }
+
+        return stems;
+    }
+
+    //----------//
     // getVoice //
     //----------//
     @Override
@@ -282,6 +316,23 @@ public abstract class AbstractBeamInter
     public boolean isHook ()
     {
         return false;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (group != null) {
+            group.removeBeam(this);
+        }
+
+        for (AbstractChordInter chord : getChords()) {
+            chord.invalidateCache();
+        }
+
+        super.remove(extensive);
     }
 
     //----------//

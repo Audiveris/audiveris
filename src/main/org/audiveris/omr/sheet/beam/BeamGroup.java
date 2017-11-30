@@ -132,9 +132,8 @@ public class BeamGroup
     public BeamGroup (Measure measure)
     {
         this.measure = measure;
-
+        id = getNextGroupId(measure);
         measure.addBeamGroup(this);
-        id = measure.getBeamGroups().size();
 
         logger.debug("{} Created {}", measure, this);
     }
@@ -148,6 +147,55 @@ public class BeamGroup
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Find proper unique ID for a new group.
+     *
+     * @return proper ID
+     */
+    private int getNextGroupId (Measure measure)
+    {
+        int max = 0;
+
+        for (BeamGroup group : measure.getBeamGroups()) {
+            max = Math.max(max, group.getId());
+        }
+
+        return ++max;
+    }
+
+    //-------------//
+    // includeBeam //
+    //-------------//
+    /**
+     * Manually include (or re-include) a beam into the measure BeamGroup structure.
+     *
+     * @param beam    beam to include
+     * @param measure containing measure
+     */
+    public static void includeBeam (AbstractBeamInter beam,
+                                    Measure measure)
+    {
+        final Set<StemInter> beamStems = beam.getStems();
+
+        // Look for a compatible group (via a common stem)
+        for (BeamGroup group : measure.getBeamGroups()) {
+            for (AbstractBeamInter b : group.getBeams()) {
+                Set<StemInter> s = b.getStems();
+                s.retainAll(beamStems);
+
+                if (!s.isEmpty()) {
+                    assignGroup(group, beam);
+
+                    return; // Found a hosting group
+                }
+            }
+        }
+
+        // Not found, create a new one
+        BeamGroup group = new BeamGroup(measure);
+        assignGroup(group, beam);
+    }
+
     //---------//
     // addBeam //
     //---------//
@@ -158,9 +206,7 @@ public class BeamGroup
      */
     public void addBeam (AbstractBeamInter beam)
     {
-        if (!beams.add(beam)) {
-            logger.warn("{} already in {}", beam, this);
-        }
+        beams.add(beam);
 
         if (beam.isVip()) {
             setVip(true);
@@ -356,6 +402,8 @@ public class BeamGroup
     public static void populate (MeasureStack stack)
     {
         for (Measure measure : stack.getMeasures()) {
+            measure.clearBeamGroups();
+
             // Retrieve beams in this measure
             Set<AbstractBeamInter> beams = new LinkedHashSet<AbstractBeamInter>();
 
@@ -395,7 +443,7 @@ public class BeamGroup
     // removeBeam //
     //------------//
     /**
-     * Remove a beam from this group (in order to assign the beam to another group).
+     * Remove a beam from this group.
      *
      * @param beam the beam to remove
      */
@@ -403,6 +451,13 @@ public class BeamGroup
     {
         if (!beams.remove(beam)) {
             logger.warn(beam + " not found in " + this);
+        }
+
+        if (beams.isEmpty()) {
+            // Remove this group from its containing measure
+            if (measure != null) {
+                measure.removeBeamGroup(this);
+            }
         }
     }
 

@@ -45,16 +45,19 @@ import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.step.AbstractStep;
 import org.audiveris.omr.step.Step;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,9 +66,6 @@ import javax.swing.AbstractAction;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
-import org.audiveris.omr.score.Page;
-import org.audiveris.omr.sheet.rhythm.MeasureStack;
-import org.audiveris.omr.sheet.rhythm.PageRhythm;
 
 /**
  * Class {@code InterController} is the UI in charge of dealing with Inter and
@@ -556,25 +556,37 @@ public class InterController
     private void addGhost (Inter ghost,
                            Collection<Partnership> partnerships)
     {
+        final Rectangle ghostBounds = ghost.getBounds();
         final Staff staff = ghost.getStaff();
         final SIGraph sig = staff.getSystem().getSig();
-        final UITaskList seq = new UITaskList(new AdditionTask(sig, ghost, partnerships));
 
+        // Inter addition
+        final UITaskList seq = new UITaskList(
+                new AdditionTask(sig, ghost, ghostBounds, partnerships));
+
+        // Related additions if any
         if (ghost instanceof RestInter) {
             // Wrap this rest within a rest chord
             RestChordInter restChord = new RestChordInter(-1);
-            restChord.setBounds(ghost.getBounds());
             restChord.setStaff(staff);
             seq.add(
                     new AdditionTask(
                             sig,
                             restChord,
+                            ghostBounds,
                             Arrays.asList(new Partnership(ghost, new Containment(), true))));
         } else if (ghost instanceof StemInter) {
             // Wrap this stem within a head chord
             final StemInter stem = (StemInter) ghost;
-            seq.add(new AdditionTask(sig, new HeadChordInter(-1, stem), Collections.EMPTY_SET));
+            seq.add(
+                    new AdditionTask(
+                            sig,
+                            new HeadChordInter(-1, stem),
+                            ghostBounds,
+                            Collections.EMPTY_SET));
         } else if (ghost instanceof HeadInter) {
+            boolean stemFound = false;
+
             // If we link head to a stem, create/update the related head chord
             for (Partnership partnership : partnerships) {
                 if (partnership.relation instanceof HeadStemRelation) {
@@ -584,13 +596,25 @@ public class InterController
                     if (headChord == null) {
                         // Create a chord based on stem
                         headChord = new HeadChordInter(-1, stem);
-                        seq.add(new AdditionTask(sig, headChord, Collections.EMPTY_SET));
+                        seq.add(
+                                new AdditionTask(
+                                        sig,
+                                        headChord,
+                                        stem.getBounds(),
+                                        Collections.EMPTY_SET));
                     }
 
                     seq.add(new LinkTask(sig, headChord, ghost, new Containment()));
+                    stemFound = true;
 
                     break;
                 }
+            }
+
+            if (!stemFound) {
+                // Head without stem
+                HeadChordInter headChord = new HeadChordInter(-1, null);
+                seq.add(new AdditionTask(sig, headChord, ghostBounds, Collections.EMPTY_SET));
             }
         }
 
@@ -612,29 +636,16 @@ public class InterController
      */
     private void epilog (UITaskList seq)
     {
-        // Determine which music items should be updated
+        // Re-process impacted steps
+        final Step latestStep = sheet.getStub().getLatestStep();
+        final Step firstStep = AbstractStep.firstImpactedStep(seq);
 
-        // Update stack rhythm?
-        final Step step = sheet.getStub().getLatestStep();
+        if ((firstStep != null) && (firstStep.compareTo(latestStep) <= 0)) {
+            final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
 
-        if (step.compareTo(Step.RHYTHMS) >= 0) {
-            // Interest in stem, head, beam, chord, flag, rest, augDot, tuplet, curve (tie), ...
-            for (UITask task : seq.getTasks()) {
-                if (task instanceof InterTask) {
-                    InterTask interTask = (InterTask) task;
-                    Inter inter = interTask.getInter();
-                    Class classe = inter.getClass();
-
-                    if (Step.RHYTHMS.impactingInterClasses().contains(classe)) {
-                        logger.info("Update for RHYTHMS step");
-                        SystemInfo system = inter.getSig().getSystem();
-                        MeasureStack stack = system.getMeasureStackAt(inter.getCenter());
-                        Page page = system.getPage();
-                        new PageRhythm(page).reprocessStack(stack);
-
-                        break;
-                    }
-                }
+            for (Step step : steps) {
+                logger.info("Impact {} step", step);
+                step.impact(seq);
             }
         }
 

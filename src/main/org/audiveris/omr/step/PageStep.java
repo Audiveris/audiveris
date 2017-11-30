@@ -28,10 +28,21 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voices;
-import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.AbstractInterVisitor;
+import org.audiveris.omr.sig.inter.AugmentationDotInter;
+import org.audiveris.omr.sig.inter.BeamHookInter;
+import org.audiveris.omr.sig.inter.BeamInter;
+import org.audiveris.omr.sig.inter.FlagInter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.sig.ui.UITaskList;
 import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
@@ -78,23 +89,47 @@ public class PageStep
             new PageReduction(page).reduce();
 
             // Inter-system connections
-            for (SystemInfo system : page.getSystems()) {
-                final SIGraph sig = system.getSig();
+            connectSlurs(page);
 
-                connectSystemInitialSlurs(system);
-
-                // Refine syllables across systems
-                for (Inter inter : sig.inters(LyricLineInter.class)) {
-                    LyricLineInter line = (LyricLineInter) inter;
-                    line.refineLyricSyllables();
-                }
-            }
+            // Lyrics
+            refineLyrics(page);
 
             // Refine voices IDs (and thus colors) across all systems of the page
             Voices.refinePage(page);
 
             // Merge / renumber measure stacks within the page
             new MeasureFixer().process(page);
+        }
+    }
+
+    //--------//
+    // impact //
+    //--------//
+    @Override
+    public void impact (UITaskList seq)
+    {
+        for (UITask task : seq.getTasks()) {
+            if (task instanceof InterTask) {
+                InterTask interTask = (InterTask) task;
+                Inter inter = interTask.getInter();
+                Page page = inter.getSig().getSystem().getPage();
+
+                inter.accept(new Impactor(page));
+
+                break;
+            }
+        }
+    }
+
+    /**
+     * Connect slurs across systems in page
+     *
+     * @param page provided page
+     */
+    private void connectSlurs (Page page)
+    {
+        for (SystemInfo system : page.getSystems()) {
+            connectSystemInitialSlurs(system);
         }
     }
 
@@ -126,6 +161,97 @@ public class PageStep
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Refine syllables across systems in page
+     *
+     * @param page provided page
+     */
+    private void refineLyrics (Page page)
+    {
+        for (SystemInfo system : page.getSystems()) {
+            for (Inter inter : system.getSig().inters(LyricLineInter.class)) {
+                LyricLineInter line = (LyricLineInter) inter;
+                line.refineLyricSyllables();
+            }
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    private class Impactor
+            extends AbstractInterVisitor
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Page page;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Impactor (Page page)
+        {
+            this.page = page;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void visit (AugmentationDotInter inter)
+        {
+            Voices.refinePage(page);
+        }
+
+        @Override
+        public void visit (BeamHookInter inter)
+        {
+            Voices.refinePage(page);
+        }
+
+        @Override
+        public void visit (BeamInter inter)
+        {
+            Voices.refinePage(page);
+        }
+
+        @Override
+        public void visit (FlagInter inter)
+        {
+            Voices.refinePage(page);
+        }
+
+        @Override
+        public void visit (HeadInter inter)
+        {
+            Voices.refinePage(page);
+        }
+
+        @Override
+        public void visit (LyricItemInter inter)
+        {
+            refineLyrics(page);
+        }
+
+        @Override
+        public void visit (LyricLineInter inter)
+        {
+            refineLyrics(page);
+        }
+
+        @Override
+        public void visit (RestInter inter)
+        {
+            Voices.refinePage(page);
+        }
+
+        @Override
+        public void visit (SlurInter inter)
+        {
+            connectSlurs(page);
+        }
+
+        @Override
+        public void visit (TupletInter inter)
+        {
+            Voices.refinePage(page);
         }
     }
 }

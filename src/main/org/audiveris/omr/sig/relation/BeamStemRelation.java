@@ -24,7 +24,17 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.beam.BeamGroup;
+import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.StemInter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +97,36 @@ public class BeamStemRelation
     public static Scale.Fraction getYGapMaximum ()
     {
         return constants.yGapMax;
+    }
+
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Update the chord if any, that uses this stem.
+     *
+     * @param e edge change event
+     */
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final StemInter stem = (StemInter) e.getEdgeTarget();
+        final HeadChordInter chord = stem.getChord();
+
+        if (chord != null) {
+            chord.invalidateCache();
+
+            // Include in proper BeamGroup within containing Measure?
+            SystemInfo system = stem.getSig().getSystem();
+            Staff staff1 = chord.getTopStaff();
+            MeasureStack stack = system.getMeasureStackAt(stem.getCenter());
+
+            if (stack != null) {
+                Measure measure = stack.getMeasureAt(staff1);
+                AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
+                BeamGroup.includeBeam(beam, measure);
+            }
+        }
     }
 
     //----------------//

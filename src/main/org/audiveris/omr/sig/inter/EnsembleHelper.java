@@ -80,12 +80,14 @@ public abstract class EnsembleHelper
         SIGraph sig = ensemble.getSig();
         List<Inter> members = new ArrayList<Inter>();
 
-        for (Relation rel : sig.getRelations(ensemble, Containment.class)) {
-            members.add(sig.getOppositeInter(ensemble, rel));
-        }
+        if (sig.containsVertex(ensemble)) {
+            for (Relation rel : sig.getRelations(ensemble, Containment.class)) {
+                members.add(sig.getOppositeInter(ensemble, rel));
+            }
 
-        if (!members.isEmpty()) {
-            Collections.sort(members, comparator);
+            if (!members.isEmpty()) {
+                Collections.sort(members, comparator);
+            }
         }
 
         return members;
@@ -96,7 +98,7 @@ public abstract class EnsembleHelper
     //----------------//
     /**
      * Convert old containment implementation (based on nesting) to new implementation
- based on explicit Containment in SIG.
+     * based on explicit Containment in SIG.
      *
      * @param ensemble   the containing inter
      * @param oldMembers the (unmarshalled) old list of nested members

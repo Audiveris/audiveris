@@ -1367,10 +1367,10 @@ public class MeasureStack
             int partIndex = system.getParts().indexOf(part);
             Measure measure = measures.get(partIndex);
             measure.removeInter(inter);
-        } else if (inter instanceof TupletInter) {
+        }
+
+        if (inter instanceof TupletInter) {
             stackTuplets.remove((TupletInter) inter);
-        } else {
-            throw new IllegalStateException("No part for " + inter);
         }
     }
 
@@ -1436,6 +1436,8 @@ public class MeasureStack
     //-------------//
     public void resetRhythm ()
     {
+        setAbnormal(false);
+        excess = null;
         slots.clear();
         actualDuration = null;
 

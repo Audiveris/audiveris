@@ -90,6 +90,7 @@ public class StackTuner
         try {
             if (!check() && !failFast) {
                 logger.info("{}{} no correct rhythm", stack.getSystem().getLogPrefix(), stack);
+                stack.setAbnormal(true);
             }
         } catch (Exception ex) {
             logger.warn("Error " + ex + " checkConfig ", ex);

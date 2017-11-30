@@ -33,6 +33,7 @@ import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -41,12 +42,16 @@ import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractStep;
 import org.audiveris.omr.step.StepException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -137,6 +142,27 @@ public class RhythmsStep
             // Complete each measure with its needed data
             for (SystemInfo system : page.getSystems()) {
                 new MeasureFiller(system).process();
+            }
+        }
+    }
+
+    @Override
+    public void impact (UITaskList seq)
+    {
+        for (UITask task : seq.getTasks()) {
+            if (task instanceof InterTask) {
+                InterTask interTask = (InterTask) task;
+                Inter inter = interTask.getInter();
+                SystemInfo system = inter.getSig().getSystem();
+                Point center = inter.getCenter();
+
+                if (center != null) {
+                    MeasureStack stack = system.getMeasureStackAt(center);
+                    Page page = system.getPage();
+                    new PageRhythm(page).reprocessStack(stack);
+
+                    break;
+                }
             }
         }
     }
