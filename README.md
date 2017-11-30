@@ -8,7 +8,7 @@ music recognition (OMR) engine.
 As opposed to Audiveris [earlier generation][6], which was a stand-alone OMR application composed
 of an engine and a (limited) user interface, this repository is focused on the OMR engine.
 
-The internals of OMR engine are made publicly available, either directly by XML-based ".omr" 
+The internals of the OMR engine are made publicly available, either directly by XML-based ".omr" 
 project files or via the Java API of this software.
 
 The engine can directly export data using [MusicXML][8] 3.0 format, via an integrated exporter.
