@@ -81,14 +81,8 @@ import java.util.Set;
  * In the case of a key signature change, there may be some natural signs to explicitly cancel the
  * previous alterations, although this is not mandatory.
  * <p>
- * <img src="http://www.musicarrangers.com/star-theory/images/p14a.gif">
- * <p>
- * <img src="http://www.musicarrangers.com/star-theory/images/p14b.gif">
- * <p>
  * The relative positioning of alterations in a given signature is identical for all clefs (treble,
- * alto, tenor, bass) with the only exception of the sharp-based signatures in tenor clef:
- * <p>
- * <img src="http://www.musicarrangers.com/star-theory/images/p14c.gif">
+ * alto, tenor, bass) with the only exception of the sharp-based signatures in tenor clef.
  * <p>
  * The main tool is a vertical projection of the StaffHeader staff-free pixels onto the x-axis.
  * Vertically, the projection uses an envelope that can embrace any key signature (under any clef),

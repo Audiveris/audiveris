@@ -25,10 +25,6 @@ import org.audiveris.omr.glyph.Shape;
 
 /**
  * Class {@code KeyFlatSymbol} displays a Key Signature symbol.
- *
- * <p>
- * <img src="doc-files/KeySignatures.png">
- *
  */
 public class KeyFlatSymbol
         extends KeySymbol

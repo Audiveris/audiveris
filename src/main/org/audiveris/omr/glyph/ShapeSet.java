@@ -334,12 +334,6 @@ public class ShapeSet
             new Color(0xff99ff),
             shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
 
-    /**
-     * <img src="http://0.tqn.com/y/piano/1/U/m/G/-/-/musical-dynamics_MUSIC.png">
-     * <br>
-     * see <a href="http://piano.about.com/od/musicaltermssymbols/ss/2Int_SheetMusic_2.htm">Musical
-     * Dynamics</a>
-     */
     public static final ShapeSet Dynamics = new ShapeSet(
             DYNAMICS_F,
             new Color(0x009999),

@@ -85,9 +85,7 @@ import javax.swing.SwingUtilities;
  * Class {@code MainGui} is the Java User Interface, the main class for displaying a
  * sheet, the message log and the various tools.
  * <p>
- * This user interface is structured according to BSAF lifecycle:
- * <p>
- * <img src="https://kenai.com/attachments/wiki_images/bsaf/ApplicationLifecycle.png">
+ * This user interface is structured according to BSAF lifecycle.
  *
  * @author Hervé Bitteur
  */
