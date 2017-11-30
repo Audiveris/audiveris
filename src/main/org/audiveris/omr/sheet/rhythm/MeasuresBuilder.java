@@ -100,7 +100,7 @@ public class MeasuresBuilder
      * <p>
      * To build the logical StaffBarline's, PartBarline's and Measures, the strategy is: <ol>
      * <li>Staff by staff, gather barlines into groups of closely located barlines.</li>
-     * <li>Check & adjust consistency across all staves within the system</li>
+     * <li>Check and adjust consistency across all staves within the system</li>
      * <li>In each part, browsing the sequence of groups in first staff which is now the reference,
      * allocate the corresponding PartBarline's and measures.</li>
      * </ol>

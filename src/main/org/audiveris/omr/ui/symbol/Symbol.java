@@ -62,7 +62,7 @@ public interface Symbol
      * context, the symbol being aligned at provided location.
      *
      * @param g         graphic context
-     * @param font      properly-scaled font (for interline & zoom)
+     * @param font      properly-scaled font (for interline &amp; zoom)
      * @param location  where to paint the shape with provided alignment
      * @param alignment the way the symbol is aligned WRT the location
      */
@@ -75,7 +75,7 @@ public interface Symbol
      * Build the image that represents the related shape, using the scaled font.
      * The main difficulty is to determine up-front the size of the image to allocate.
      *
-     * @param font properly-scaled font (for interline & zoom)
+     * @param font properly-scaled font (for interline &amp; zoom)
      * @return the image built, or null if failed
      */
     SymbolImage buildImage (MusicFont font);

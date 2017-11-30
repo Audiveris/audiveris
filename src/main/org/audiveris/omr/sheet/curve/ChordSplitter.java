@@ -62,12 +62,12 @@ import java.util.TreeSet;
  * <p>
  * The chord stem can be divided in smaller stems only if the resulting chunks are long enough.
  * This is the case for the right-most chord below:<br>
- * <img src="doc-files/longDoubleStem.png">
+ * <img src="doc-files/longDoubleStem.png" alt="Long double stem example">
  * <p>
  * Otherwise, the chord stem is kept as it is, but belongs to several sub-chords, and consequently
  * any stem-related beam (or flag detected later) will apply to several sub-chords.
  * This is the case for the right-most chord below:<br>
- * <img src="doc-files/shortDoubleStem.png">
+ * <img src="doc-files/shortDoubleStem.png" alt="Short double stem example">
  * <p>
  * The general approach works in three phases:
  * <ol>

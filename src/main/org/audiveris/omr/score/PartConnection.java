@@ -55,8 +55,9 @@ import java.util.TreeMap;
  * <li>The various pages of a score using Audiveris Page instances.</li>
  * <li>The various pages of a score using Proxymusic ScorePartwise instances.</li>
  * </ul>
+ * <p>
  * All together, this sums up to three different cases to handle, so we have taken a generic
- * approach, abstracting the different types into Candidates and Results.</p>
+ * approach, abstracting the different types into Candidates and Results.
  * <p>
  * The strategy used to build Results out of Candidates is based on the following assumptions:
  * <ul>
@@ -216,7 +217,7 @@ public class PartConnection
      * Report an unmodifiable view of which resulting part has been assigned to any
      * given candidate
      *
-     * @return the candidateMap (candidate -> assigned result)
+     * @return the candidateMap (candidate &rarr; assigned result)
      */
     public Map<Candidate, Result> getCandidateMap ()
     {
@@ -229,7 +230,7 @@ public class PartConnection
     /**
      * Report which candidate parts have been mapped to any given result
      *
-     * @return the resultMap ((sorted) result -> (unsorted) set of candidates)
+     * @return the resultMap ((sorted) result &rarr; (unsorted) set of candidates)
      */
     public SortedMap<Result, Set<Candidate>> getResultMap ()
     {

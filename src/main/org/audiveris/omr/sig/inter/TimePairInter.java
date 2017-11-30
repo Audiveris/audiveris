@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TimePairInter} is a time signature composed of two halves (num & den).
+ * Class {@code TimePairInter} is a time signature composed of two halves (num &amp; den).
  *
  * @author Hervé Bitteur
  */

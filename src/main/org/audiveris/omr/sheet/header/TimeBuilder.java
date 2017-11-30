@@ -98,7 +98,7 @@ import java.util.TreeMap;
  * Subclass {@link HeaderTimeBuilder} is used at the beginning of a staff (in staff header) while
  * subclass {@link BasicTimeBuilder} is used farther down the staff.
  * <p>
- * <img src="doc-files/TimeBuilder.png">
+ * <img src="doc-files/TimeBuilder.png" alt="TimeBuilder UML">
  *
  * @author Hervé Bitteur
  */
@@ -1186,7 +1186,7 @@ public abstract class TimeBuilder
         /**
          * Report the time inter instance for each staff in the column.
          *
-         * @return the map: staff -> time inter
+         * @return the map: staff &rarr; time inter
          */
         public Map<Staff, AbstractTimeInter> getTimeInters ()
         {
@@ -1252,8 +1252,8 @@ public abstract class TimeBuilder
          * <p>
          * The selection is driven from the whole system column point of view, as follows:
          * <ol>
-         * <li>For each staff, identify all the possible & supported AbstractTimeInter instances,
-         * each with its own grade.</li>
+         * <li>For each staff, identify all the possible and supported AbstractTimeInter
+         * instances, each with its own grade.</li>
          * <li>Then for each possible AbstractTimeInter value (called TimeValue), make sure it
          * appears in each staff as a AbstractTimeInter instance and assign a global grade (as
          * average of staff-based AbstractTimeInter instances for the same TimeValue).</li>

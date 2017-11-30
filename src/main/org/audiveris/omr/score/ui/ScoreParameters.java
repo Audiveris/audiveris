@@ -75,7 +75,7 @@ import javax.swing.event.ListSelectionListener;
  * most frequent parameters.
  * <p>
  * <div style="float: right;">
- * <img src="doc-files/ScoreParameters.png">
+ * <img src="doc-files/ScoreParameters.png" alt="Score parameters dialog">
  * </div>
  *
  * <p>

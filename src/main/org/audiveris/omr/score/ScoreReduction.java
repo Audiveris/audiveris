@@ -48,16 +48,14 @@ import java.util.TreeMap;
  * output.</li></ol>
  * <p>
  * Typical calling of the feature is as follows:
- * <code>
  * <pre>
+ * <code>
  *      Map&lt;Integer, String&gt; fragments = ...;
  *      ScoreReduction reduction = new ScoreReduction(fragments);
  *      String output = reduction.reduce();
  *      Map&lt;Integer, Status&gt; statuses = reduction.getStatuses();
- * </pre>
  * </code>
- * </p>
- *
+ * </pre>
  * <b>Features not yet implemented:</b> <ul>
  * <li>Connection of slurs between pages</li>
  * <li>In part-list, handling of part-group beside score-part</li>

@@ -137,11 +137,11 @@ public abstract class Board
      * Create a board from a pre-defined descriptor (name + position).
      *
      * @param desc             the board descriptor
-     * @param selectionService the related selection service for input & output
+     * @param selectionService the related selection service for input and output
      * @param eventsRead       the collection of event classes to observe
      * @param selected         true to pre-select the board
      * @param useCount         true for a count field
-     * @param useVip           true for a VIP label & field
+     * @param useVip           true for a VIP label and field
      * @param useDump          true for a dump button
      */
     public Board (Desc desc,
@@ -168,11 +168,11 @@ public abstract class Board
      *
      * @param name             a name assigned to the board
      * @param position         the preferred position within BoardsPane display
-     * @param selectionService the related selection service for input & output
+     * @param selectionService the related selection service for input and output
      * @param eventsRead       the collection of event classes to observe
      * @param selected         true to pre-select the board
      * @param useCount         true for a count field
-     * @param useVip           true for a VIP label & field
+     * @param useVip           true for a VIP label and field
      * @param useDump          true for a dump button
      */
     public Board (String name,

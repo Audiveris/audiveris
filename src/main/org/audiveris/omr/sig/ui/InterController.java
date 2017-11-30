@@ -42,7 +42,7 @@ import javax.swing.KeyStroke;
 
 /**
  * Class {@code InterController} is the UI in charge of dealing with Inters (addition,
- * removal, modifications) to correct OMR output, with the ability to undo & redo at
+ * removal, modifications) to correct OMR output, with the ability to undo &amp; redo at
  * will.
  * <p>
  * It works at sheet level.
@@ -53,7 +53,7 @@ import javax.swing.KeyStroke;
  * all have failed, TODO: the user is prompted for staff indication.
  * <p>
  * Finally, a proper InterTask is allocated, inserted in controller's history, and run.
- * Undo & redo actions operate on this history.
+ * Undo and redo actions operate on this history.
  *
  * @author Hervé Bitteur
  */
@@ -217,7 +217,7 @@ public class InterController
     /**
      * Add a shape interpretation by dropping a symbol at given location.
      *
-     * @param ghost  the populated inter (staff & bounds are already set)
+     * @param ghost  the populated inter (staff &amp; bounds are already set)
      * @param center the target location for inter center
      * @return the task that carries out additional processing
      */

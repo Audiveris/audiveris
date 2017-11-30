@@ -56,7 +56,7 @@ import java.util.Map.Entry;
  * (cue) counterparts</dd>
  * <dt><b>Size</b></dt>
  * <dd>Either standard size or small size (for cues and grace notes).</dd>
- * <dt><b>Lines & Stems</b></dt>
+ * <dt><b>Lines and Stems</b></dt>
  * <dd>These regions will be neutralized in the distance table, hence the templates don't have to
  * cope with them.</dd>
  * </dl>

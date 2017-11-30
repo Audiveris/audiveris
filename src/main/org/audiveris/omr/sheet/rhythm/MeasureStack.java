@@ -309,7 +309,7 @@ public class MeasureStack
     // clearFrats //
     //------------//
     /**
-     * Get rid of all FRAT inters (both good & poor) in this stack, before a new
+     * Get rid of all FRAT inters (both good and poor) in this stack, before a new
      * configuration is installed.
      */
     public void clearFrats ()
@@ -703,7 +703,7 @@ public class MeasureStack
     //------------//
     /**
      * Report the numeric value of the measure id.
-     * Note that first (n) & second (Xn) measure halves share the same numeric value n.
+     * Note that first (n) and second (Xn) measure halves share the same numeric value n.
      *
      * @return the numeric value of measure id
      */

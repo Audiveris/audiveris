@@ -4,8 +4,7 @@
  * Handling concerns their definition in hosting classes, their potential on-line modification, and
  * their persistency on disk.
  * <p>
- * <img src="doc-files/Constant.png" alt="Persistency of constants"
- * title="Persistency of constants">
+ * <img src="doc-files/Constant.png" alt="Persistency of constants">
  * <p>
  * <a href="Constant.html">Constant</a> instances represent a logical application constant,
  * whose persistency is to be managed from one application run to the other.
@@ -24,7 +23,7 @@
  * The <a href="UnitTreeTable.html">UnitTreeTable</a> is the GUI related to the
  * <a href="UnitManager.html">UnitManager</a> singleton which handles all the units (classes) in
  * which a ConstantSet is defined.
- * This GUI is launched from Tools | Options menu and handles the tree of these units. </li>
+ * This GUI is launched from Tools | Options menu and handles the tree of these units.
  * <p>
  * <b>Persistency</b> of each constant is handled by the
  * <a href= "ConstantManager.html">ConstantManager</a> singleton, which uses the qualified name

@@ -76,8 +76,9 @@ import javax.xml.bind.JAXBException;
  * <li>If not found, it falls back reading the default definition from the application resource,
  * reading the 'res' folder in the application program area.
  * </ol>
+ * <p>
  * After any user training, the data is stored as the custom definition in the user local area,
- * which will be picked up first when the application is run again.</p>
+ * which will be picked up first when the application is run again.
  *
  * @param <M> precise model class to be used
  *
@@ -416,7 +417,7 @@ public abstract class AbstractClassifier<M extends Object>
     /**
      * Store the engine internals, always as user files.
      *
-     * @param fileName file name for classifier data (model & norms)
+     * @param fileName file name for classifier data (model &amp; norms)
      */
     protected void store (String fileName)
     {

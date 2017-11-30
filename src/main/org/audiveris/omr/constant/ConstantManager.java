@@ -76,8 +76,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <li><code>"Minimum resolution, expressed as number of pixels per interline" </code> is the
  * constant description, which will be used as a tool tip in the GUI interface in charge of editing
  * these constants.</li></ul>
- *
- * </li><br>
+ * </li>
  *
  * <li>Then, <b>USER</b> values, contained in a property file named <em><b>"run.properties"</b></em>
  * can assign overriding values to some constants. For example, the {@code minInterline} constant
@@ -91,7 +90,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * Typically, these USER values represent some modification made by the end user at run-time and
  * thus saved from one run to the other.
  * The file is not meant to be edited manually, but rather through the provided GUI tool.</li>
- * <br>
  *
  * <li>Then, <b>CLI</b> values, as set on the command line interface, by means of the
  * <em><b>"-option"</b> key=value</em> command. For further details on this command, refer to the
@@ -101,7 +99,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * in the USER file, unless the constant {@code omr.Main.persistBatchCliConstants} is set to
  * true.</li>
  * <li>When running in <i>interactive</i> mode, these CLI-defined constant values <b>are</b> always
- * persisted in the USER file.</li></ul></li> <br>
+ * persisted in the USER file.</li></ul></li>
  *
  * <li>Finally, <b>UI Options Menu</b> values, as set online through the graphical user interface.
  * These constant values defined at the GUI level are persisted in the USER file.</li> </ol>

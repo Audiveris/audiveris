@@ -40,7 +40,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * (Treble, Alto, Tenor and Bass) and for each presents where the "Middle C" note (C4) would take
  * place.
  * <p>
- * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png">
+ * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png"
+ * alt="Middle C in four clefs">
  * <p>
  * Step line of the clef : -4 for top line (Baritone), -2 for Bass and Tenor,
  * 0 for Alto, +2 for Treble and Mezzo-Soprano, +4 for bottom line (Soprano).

@@ -68,7 +68,8 @@ import java.util.TreeMap;
  * signature, by "replicating" the best signature to the other staff (or staves) in the part.
  * <p>
  * Example of key shapes mixed in the same system:<br>
- * <img src="doc-files/IMSLP00693-1-MixedKeyShapesInSystem.png">
+ * <img src="doc-files/IMSLP00693-1-MixedKeyShapesInSystem.png"
+ * alt="Key shapes mixed in the same system">
  *
  * @author Hervé Bitteur
  */

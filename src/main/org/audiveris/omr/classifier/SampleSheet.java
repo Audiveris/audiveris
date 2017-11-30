@@ -158,7 +158,7 @@ public class SampleSheet
      * Delete from disk the samples, tribes and image if any of a defunct sheet.
      *
      * @param descriptor  descriptor of the defunct sheet
-     * @param samplesRoot root for samples (& tribes)
+     * @param samplesRoot root for samples (&amp; tribes)
      * @param imagesRoot  root for images
      */
     public static void delete (SheetContainer.Descriptor descriptor,
@@ -401,8 +401,8 @@ public class SampleSheet
     // marshal //
     //---------//
     /**
-     * Marshal this instance to disk, using 'samplesRoot' for samples & tribes and
-     * "imagesRoot' for image.
+     * Marshal this instance to disk, using 'samplesRoot' for samples &amp; tribes
+     * and 'imagesRoot' for image.
      *
      * @param samplesRoot root for samples
      * @param imagesRoot  root for images

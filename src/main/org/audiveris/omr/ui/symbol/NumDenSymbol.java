@@ -31,7 +31,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code NumDenSymbol} displays a time sig, with numerator & denominator.
+ * Class {@code NumDenSymbol} displays a time sig, with numerator and denominator.
  */
 public class NumDenSymbol
         extends ShapeSymbol

@@ -83,7 +83,7 @@ import javax.xml.bind.annotation.XmlValue;
  * <pre>
  * null    (for an empty sequence)
  * []      (for an empty sequence as well)
- * [F]     (>0)
+ * [F]     (&gt;0)
  * [FBF]   (perhaps 0BF)
  * [FBFBF] (perhaps 0BFBF)
  * etc...

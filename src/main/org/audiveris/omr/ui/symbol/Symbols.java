@@ -50,7 +50,7 @@ public abstract class Symbols
     private static final EnumMap<Shape, ShapeSymbol> dec = new EnumMap<Shape, ShapeSymbol>(
             Shape.class);
 
-    /** Symbol of '8' char for ottava sign (alta or bassa) on F & G clefs */
+    /** Symbol of '8' char for ottava sign (alta or bassa) on F &amp; G clefs */
     public static final BasicSymbol SYMBOL_OTTAVA = new BasicSymbol(false, 165);
 
     /** Symbol for upper part of brace */

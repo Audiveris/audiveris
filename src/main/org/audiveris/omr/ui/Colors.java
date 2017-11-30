@@ -93,7 +93,7 @@ public class Colors
     /** Hidden entity */
     public static final Color HIDDEN = Color.white;
 
-    /** Vertical filament lines & points */
+    /** Vertical filament lines and points */
     public static final Color LINE_VERTICAL = new Color(0, 255, 255, alpha);
 
     /** Music for picture view */

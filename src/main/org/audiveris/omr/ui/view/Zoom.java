@@ -230,7 +230,7 @@ public class Zoom
     // scaled //
     //--------//
     /**
-     * Coordinate computation, Source -> Display
+     * Coordinate computation, Source &rarr; Display
      *
      * @param val a source value
      *
@@ -245,7 +245,7 @@ public class Zoom
     // scaled //
     //--------//
     /**
-     * Coordinate computation, Source -> Display
+     * Coordinate computation, Source &rarr; Display
      *
      * @param pt source point
      *
@@ -263,7 +263,7 @@ public class Zoom
     // scaled //
     //--------//
     /**
-     * Coordinate computation, Source -> Display
+     * Coordinate computation, Source &rarr; Display
      *
      * @param dim source dimension
      *
@@ -281,7 +281,7 @@ public class Zoom
     // scaled //
     //--------//
     /**
-     * Coordinate computation, Source -> Display
+     * Coordinate computation, Source &rarr; Display
      *
      * @param rect source rectangle
      *
@@ -377,7 +377,7 @@ public class Zoom
     // truncScaled //
     //-------------//
     /**
-     * Coordinate computation, Source -> Display, but with a truncation
+     * Coordinate computation, Source &rarr; Display, but with a truncation
      * rather than rounding.
      *
      * @param val a source value
@@ -392,7 +392,7 @@ public class Zoom
     // truncUnscaled //
     //---------------//
     /**
-     * Coordinate computation, Display -> Source, but with a truncation
+     * Coordinate computation, Display &rarr; Source, but with a truncation
      * rather than rounding.
      *
      * @param val a display value
@@ -421,7 +421,7 @@ public class Zoom
     // unscaled //
     //----------//
     /**
-     * Coordinate computation Display -> Source
+     * Coordinate computation Display &rarr; Source
      *
      * @param val a display value
      * @return the corresponding (unscaled) source coordinate
@@ -435,7 +435,7 @@ public class Zoom
     // unscaled //
     //----------//
     /**
-     * Point computation Display -> Source
+     * Point computation Display &rarr; Source
      *
      * @param pt a display point
      * @return the corresponding (unscaled) source point

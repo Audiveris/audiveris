@@ -44,7 +44,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code KeyInter} represents a key signature on a staff.
  * <p>
- * <img src="doc-files/KeySignatures.png">
+ * <img src="doc-files/KeySignatures.png" alt="Example of key signatures in different clefs">
  *
  * @author Hervé Bitteur
  */

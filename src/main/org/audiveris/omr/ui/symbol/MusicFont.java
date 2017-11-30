@@ -47,7 +47,7 @@ import java.util.Map;
  * </ul>
  * To get a properly scaled instance, use the convenient method {@link #getFont(int)} which expects
  * a staff height expressed in a count of screen pixels (which thus combines the 2 factors listed
- * above).</p>
+ * above).
  * <p>
  * There are two well-known pre-scaled instances of this class:<ul>
  * <li>{@link #baseMusicFont} for standard symbols (scale = 1)</li>

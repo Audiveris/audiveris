@@ -687,7 +687,7 @@ public class SystemInfo
      * if any.
      *
      * @param point the center of the provided note entity
-     * @return the proper note position (staff & pitch)
+     * @return the proper note position (staff &amp; pitch)
      */
     public NotePosition getNoteStaffAt (Point point)
     {

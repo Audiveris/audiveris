@@ -1,7 +1,7 @@
 /**
  * Package for handling textual aspects in glyphs.
  * <p>
- * <img src="doc-files/Text.png" alt="Text" title="Text data model" />
+ * <img src="doc-files/Text.png" alt="Text data model">
  * <p>
  * <h3>Detection of text items</h3>
  * <p>

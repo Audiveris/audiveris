@@ -129,7 +129,7 @@ public abstract class PointUtil
     // extension //
     //-----------//
     /**
-     * Compute extension point, on line p1 -> p2, at 'dist' distance beyond p2.
+     * Compute extension point, on line p1 &rarr; p2, at 'dist' distance beyond p2.
      *
      * @param p1   first point
      * @param p2   second point

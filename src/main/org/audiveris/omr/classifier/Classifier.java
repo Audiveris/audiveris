@@ -33,7 +33,7 @@ import java.util.EnumSet;
 /**
  * Interface {@code Classifier} defines the features of a glyph shape classifier.
  * <p>
- * <img src="doc-files/Classifier.png">
+ * <img src="doc-files/Classifier.png" alt="Classifier UML">
  *
  * @author Hervé Bitteur
  */

@@ -329,7 +329,7 @@ public class Histogram<K extends Number>
     /**
      * Report the maximum entry in this histogram
      *
-     * @return the maximum entry (key & value)
+     * @return the maximum entry (key &amp; value)
      */
     public Map.Entry<K, Integer> getMaximum ()
     {

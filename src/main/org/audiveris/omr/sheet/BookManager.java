@@ -146,7 +146,7 @@ public class BookManager
     // deletePaths //
     //-------------//
     /**
-     * Delete the provided files & dirs.
+     * Delete the provided files &amp; dirs.
      * If interactive mode, prompt user for confirmation beforehand.
      *
      * @param title scope indication for deletion

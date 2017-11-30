@@ -34,7 +34,7 @@ import java.awt.geom.Point2D;
 import java.util.Comparator;
 
 /**
- * Class {@code Filament} is the abstract basis for defining a growing long & thin
+ * Class {@code Filament} is the abstract basis for defining a growing long and thin
  * compound of sections.
  * <ul>
  * <li>{@link CurvedFilament} implements a perhaps wavy filament, for staff lines and ledgers

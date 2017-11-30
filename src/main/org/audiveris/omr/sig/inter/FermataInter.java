@@ -50,7 +50,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class {@code FermataInter} represents a full fermata interpretation, either upright
  * or inverted, combining an arc and a dot.
  * <p>
- * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Urlinie_in_G_with_fermata.png/220px-Urlinie_in_G_with_fermata.png">
+ * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Urlinie_in_G_with_fermata.png/220px-Urlinie_in_G_with_fermata.png"
+ * alt="Urlinie in G with fermata on penultimate note">
  * <p>
  * An upright fermata refers to the chord in the staff right below in the containing part.
  * An inverted fermata refers to the chord in the staff right above in the containing part.

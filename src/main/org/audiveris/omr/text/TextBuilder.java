@@ -541,7 +541,7 @@ public class TextBuilder
     // recutStandardWords //
     //--------------------//
     /**
-     * Re-cut (merge & split) words within a standard TextLine.
+     * Re-cut (merge &amp; split) words within a standard TextLine.
      *
      * @param line the line to re-cut words
      */

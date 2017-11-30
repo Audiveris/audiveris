@@ -77,14 +77,14 @@ import javax.xml.bind.JAXBException;
  * output.</li></ol>
  * <p>
  * Typical calling of the feature is as follows:
- * <code>
  * <pre>
+ * <code>
  * Map&lt;Integer, String&gt; fragments = ...;
  * ScoreXmlReduction reduction = new ScoreXmlReduction(fragments);
  * String output = reduction.reduce();
  * Map&lt;Integer, Status&gt; statuses = reduction.getStatuses();
- * </pre>
  * </code>
+ * </pre>
  * <p>
  * <b>Features not yet implemented:</b> <ul>
  * <li>Connection of slurs between pages</li>
@@ -99,8 +99,8 @@ import javax.xml.bind.JAXBException;
  * launch a ScoreXmlReduction instance on this data and finally write the global score in the input
  * folder.
  * <p>
- * <b>Relevant MusicXML elements:</b><br/>
- * <img src="doc-files/Part.png" />
+ * <b>Relevant MusicXML elements:</b><br>
+ * <img src="doc-files/Part.png" alt="Relevant MusicXML elements">
  *
  * @author Hervé Bitteur
  */
@@ -249,7 +249,7 @@ public class ScoreXmlReduction
     /**
      * Report for each input fragment the final processing status
      *
-     * @return a map (fragment ID -> processing status)
+     * @return a map (fragment ID &rarr; processing status)
      */
     public Map<Integer, Status> getStatuses ()
     {

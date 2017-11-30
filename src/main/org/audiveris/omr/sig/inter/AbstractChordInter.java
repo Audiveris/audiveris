@@ -695,8 +695,8 @@ public abstract class AbstractChordInter
     //----------------//
     /**
      * Report the note which if vertically farthest from stem tail.
-     * For wholes & breves, it's the head itself.
-     * For rest chords, it's the rest itself
+     * For wholes and breves, it's the head itself.
+     * For rest chords, it's the rest itself.
      *
      * @return the leading note
      */

@@ -78,10 +78,10 @@ import java.util.Set;
  * </ul>
  * <p>
  * Example:<br>
- * <img src="doc-files/AdjacentChords.png">
+ * <img src="doc-files/AdjacentChords.png" alt="Adjanced chords example">
  * <p>
  * More examples:<br>
- * <img src="doc-files/AdjacentChords4.png">
+ * <img src="doc-files/AdjacentChords4.png" alt="Another example of adjanced chords">
  *
  * @author Hervé Bitteur
  */

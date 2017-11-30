@@ -66,7 +66,7 @@ public class StaffLine
     // Persistent data
     //----------------
     //
-    /** Absolute defining points (including start & stop points). */
+    /** Absolute defining points (including start &amp; stop points). */
     @XmlElement(name = "point")
     protected final List<Point2D> points;
 

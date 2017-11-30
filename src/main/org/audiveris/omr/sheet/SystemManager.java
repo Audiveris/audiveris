@@ -424,8 +424,6 @@ public class SystemManager
     //-----------------//
     /**
      * Populate the systems with relevant sections and glyphs.
-     *
-     * @throws org.audiveris.omr.step.StepException
      */
     public void populateSystems ()
     {

@@ -29,7 +29,7 @@ import java.awt.Point;
 import java.awt.Stroke;
 
 /**
- * Class {@code DecrescendoSymbol} displays a decrescendo symbol: ">".
+ * Class {@code DecrescendoSymbol} displays a decrescendo symbol: {@literal ">"}.
  */
 public class DecrescendoSymbol
         extends CrescendoSymbol

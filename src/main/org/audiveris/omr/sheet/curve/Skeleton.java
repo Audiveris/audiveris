@@ -164,10 +164,10 @@ public class Skeleton
     /** The skeleton buffer. */
     public ByteProcessor buf;
 
-    /** Map of relevant arcs. (end points -> arc) */
+    /** Map of relevant arcs (end points &rarr; arc). */
     public final Map<Point, Arc> arcsMap = new LinkedHashMap<Point, Arc>();
 
-    /** Map of void arcs. (pivot -> arc(s)) */
+    /** Map of void arcs (pivot &rarr; arc(s)). */
     public final Map<Point, List<Arc>> voidArcsMap = new LinkedHashMap<Point, List<Arc>>();
 
     /** List of arcs end points, with no junction, ordered by abscissa. */
@@ -279,7 +279,7 @@ public class Skeleton
      *
      * @param from p1
      * @param to   p2
-     * @return heading p1 -> p2
+     * @return heading p1 &rarr; p2
      */
     public static int getDir (Point from,
                               Point to)

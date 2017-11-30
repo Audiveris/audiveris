@@ -94,9 +94,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  * TODO: When an alpha channel is involved, perform the alpha multiplication if the components are
  * not yet premultiplied.
  *
- * <h4>Overview of transforms:<br>
- * <img src="../image/doc-files/transforms.png">
- * </h4>
+ * <h1>Overview of transforms:<br>
+ * <img src="../image/doc-files/transforms.png" alt="Image Transforms UML">
+ * </h1>
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
@@ -122,7 +122,7 @@ public class Picture
 
         /** The initial gray-level source. */
         INITIAL,
-        /** The binarized (black & white) source. */
+        /** The binarized (black &amp; white) source. */
         BINARY,
         /** The Gaussian-filtered source. */
         GAUSSIAN,

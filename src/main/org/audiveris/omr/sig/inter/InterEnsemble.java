@@ -29,7 +29,7 @@ import java.util.List;
  * <p>
  * Examples are:<ul>
  * <li>Sentence vs words</li>
- * <li>TimePairInter vs num & den</li>
+ * <li>TimePairInter vs num &amp; den</li>
  * <li>KeyInter vs its alterations</li>
  * <li>ChordInter vs its notes and stem</li>
  * <li>FermataInter vs its arc and dot</li>

@@ -71,7 +71,7 @@ import java.util.Arrays;
  * as: <code>a + d - b - c</code> </li>
  * <li>In particular if lower right rectangle is reduced to a single cell, then
  * <code>d = pixel_value + top + left - topLeft</code>
- * <br/>
+ * <br>
  * This property is used to incrementally populate the table.</li>
  * </ul>
  *

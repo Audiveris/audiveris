@@ -119,7 +119,8 @@ public class DndOperation
     /**
      * Drop the ghost inter at provided location.
      * <p>
-     * Finalize ghost info (staff & bounds), insert into proper SIG and link to partners if any.
+     * Finalize ghost info (staff &amp; bounds), insert into proper SIG
+     * and link to partners if any.
      *
      * @param center provided location
      */

@@ -55,7 +55,7 @@ import java.util.List;
  * <li><b>F</b>: Flags.</li>
  * <li><b>R</b>: Rest chords.</li>
  * <li><b>A</b>: Augmentation dots.</li>
- * <li><b>T</b>: Tuplets for head & rest chords.</li>
+ * <li><b>T</b>: Tuplets for head and rest chords.</li>
  * </ul>
  * <p>
  * <p>
@@ -67,7 +67,7 @@ import java.util.List;
  * key-sig changes on the following systems. Hence, parallelism is NOT provided for this step.
  * Consistently, within a system, processing is done measure stack after measure stack.
  * <p>
- * Time sig can be inferred from stacks actual content, but this is a chicken & egg problem.
+ * Time sig can be inferred from stacks actual content, but this is a chicken &amp; egg problem.
  * We check whether the page starts with a time-sig indication. If not, we'll need two passes, the
  * first pass to determine expected duration and the second pass to determine time signature and
  * more precise fit.

@@ -190,8 +190,8 @@ public class SlurInfo
     /**
      * Report the left-to-right Bézier curve which best approximates the slur.
      * <p>
-     * It is built by combining the left half (point & control point) of left circle curve and the
-     * right half (control point & point) of right circle curve.
+     * It is built by combining the left half (point &amp; control point) of left circle curve and
+     * the right half (control point &amp; point) of right circle curve.
      * Vectors from point to related control point are applied a ratio extension so that curve
      * middle point (M) fits on slur middle point (M').
      * We apply the same ratio on both vectors, which may not be the best choice but that's enough

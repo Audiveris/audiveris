@@ -31,7 +31,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 
 /**
- * Class {@code CrescendoSymbol} displays a crescendo symbol: "<" .
+ * Class {@code CrescendoSymbol} displays a crescendo symbol: {@literal "<"}.
  */
 public class CrescendoSymbol
         extends ShapeSymbol

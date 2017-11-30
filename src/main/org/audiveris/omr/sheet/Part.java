@@ -234,7 +234,7 @@ public class Part
      *
      * @param precedingPart the part to connect to, in the preceding system,
      *                      [perhaps the last system of the preceding page]
-     * @return the map (slur -> prevSlur) of connections detected
+     * @return the map (slur &rarr; prevSlur) of connections detected
      */
     public Map<SlurInter, SlurInter> connectSlursWith (Part precedingPart)
     {

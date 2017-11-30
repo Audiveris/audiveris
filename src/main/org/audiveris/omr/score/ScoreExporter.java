@@ -140,7 +140,7 @@ public class ScoreExporter
     //--------//
     /**
      * Export the score to DOM node.
-     * (No longer used, it was meant for Audiveris->Zong pure java transfer)
+     * (No longer used, it was meant for Audiveris&rarr;Zong pure java transfer)
      *
      * @param node   the DOM node to export to (cannot be null)
      * @param signed should we inject ProxyMusic signature?

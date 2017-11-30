@@ -282,7 +282,7 @@ public class Arc
     // reverse //
     //---------//
     /**
-     * Reverse arc internal order (points & junction points).
+     * Reverse arc internal order (points &amp; junction points).
      */
     public void reverse ()
     {

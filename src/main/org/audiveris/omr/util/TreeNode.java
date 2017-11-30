@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Class {@code TreeNode} handles a node in a tree hierarchy,
  * which is typically the tree organization of a score entity.
- * <p/>
+ * <p>
  * A TreeNode has : <ul> <li> A parent (which may be null) to which the TreeNode
  * belongs <li> A list (which may be empty) of contained chidren, for which the
  * TreeNode is the parent. </ul>
