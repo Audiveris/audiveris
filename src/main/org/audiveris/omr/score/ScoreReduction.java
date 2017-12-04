@@ -82,10 +82,10 @@ public class ScoreReduction
 
         List<ResultEntry> resultEntries = connection.getResults();
 
-        //        if (logger.isDebugEnabled()) {
-        connection.dumpResults();
+        if (logger.isDebugEnabled()) {
+            connection.dumpResults();
+        }
 
-        //        }
         // Store the list of LogicalPart instances into score
         return storeResults(resultEntries) ? 1 : 0;
     }

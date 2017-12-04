@@ -76,9 +76,9 @@ public class PageReduction
         final PartConnection connection = new PartConnection(sequences);
         final List<PartConnection.ResultEntry> resultEntries = connection.getResults();
 
-        //        if (logger.isDebugEnabled()) {
-        connection.dumpResults();
-        //        }
+        if (logger.isDebugEnabled()) {
+            connection.dumpResults();
+        }
 
         // Store the list of LogicalPart instances into page
         storeResults(resultEntries);
