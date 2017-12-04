@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.SortedSet;
@@ -327,6 +328,32 @@ public class Page
         }
 
         return null;
+    }
+
+    //--------------------//
+    // getSystemPartsById //
+    //--------------------//
+    /**
+     * Report the list of (system physical) parts that exhibit the desired ID.
+     *
+     * @param id the desired ID
+     * @return the parts with this ID
+     */
+    public List<Part> getSystemPartsById (int id)
+    {
+        List<Part> parts = new ArrayList<Part>();
+
+        for (SystemInfo system : getSystems()) {
+            for (Part part : system.getParts()) {
+                if (part.getId() == id) {
+                    parts.add(part);
+
+                    break;
+                }
+            }
+        }
+
+        return parts;
     }
 
     //-----------------//

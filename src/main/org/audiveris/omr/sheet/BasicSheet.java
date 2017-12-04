@@ -500,6 +500,7 @@ public class BasicSheet
                     : ((ext.equals(OMR.SCORE_EXTENSION)) ? false
                     : BookManager.useCompression());
             final boolean useSig = BookManager.useSignature();
+            int modifs = 0;
 
             if (pages.size() > 1) {
                 // One file per page
@@ -507,7 +508,7 @@ public class BasicSheet
                     final Score score = new Score();
                     score.setBook(book);
                     score.addPageRef(stub.getNumber(), pageRef);
-                    new ScoreReduction(score).reduce();
+                    modifs += new ScoreReduction(score).reduce();
 
                     final int idx = pageRef.getId();
                     final String scoreName = sheetName + OMR.MOVEMENT_EXTENSION + idx;
@@ -519,11 +520,15 @@ public class BasicSheet
                 final Score score = new Score();
                 score.setBook(book);
                 score.addPageRef(stub.getNumber(), stub.getFirstPageRef());
-                new ScoreReduction(score).reduce();
+                modifs += new ScoreReduction(score).reduce();
 
                 final String scoreName = sheetName;
                 final Path scorePath = path.resolveSibling(scoreName + ext);
                 new ScoreExporter(score).export(scorePath, scoreName, useSig, compressed);
+            }
+
+            if (modifs > 0) {
+                book.setModified(true);
             }
 
             // Remember the book export path in the book itself

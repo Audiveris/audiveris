@@ -90,6 +90,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code BasicBook} is a basic implementation of Book interface.
@@ -148,6 +149,11 @@ public class BasicBook
     @XmlElement(name = "score")
     private final List<Score> scores = new ArrayList<Score>();
 
+    /** Indicate if the book scores must be updated. */
+    @XmlAttribute(name = "dirty")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean dirty = false;
+
     // Transient data
     //---------------
     //
@@ -181,9 +187,6 @@ public class BasicBook
 
     /** Set if the book itself has been modified. */
     private boolean modified = false;
-
-    /** Indicate if the book scores must be updated. */
-    private boolean dirty = false;
 
     /** Book-level sample repository. */
     private SampleRepository repository;

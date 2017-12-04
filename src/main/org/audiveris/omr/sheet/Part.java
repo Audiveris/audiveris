@@ -317,7 +317,6 @@ public class Part
 
         dummyPart.setId(id);
         dummyPart.setDummy();
-        dummyPart.setLogicalPart(refPart.getLogicalPart());
 
         Measure refMeasure = refPart.getFirstMeasure();
 
@@ -731,11 +730,14 @@ public class Part
     /**
      * Set the part id.
      *
-     * @param id the id value
+     * @param id the new id value
      */
     public void setId (int id)
     {
-        this.id = id;
+        if (this.id != id) {
+            this.id = id;
+            this.getSystem().getSheet().getStub().setModified(true);
+        }
     }
 
     //----------------//
@@ -749,14 +751,6 @@ public class Part
     public void setLeftBarline (PartBarline leftBarline)
     {
         this.leftBarline = leftBarline;
-    }
-
-    //----------------//
-    // setLogicalPart //
-    //----------------//
-    public void setLogicalPart (LogicalPart logicalPart)
-    {
-        setId(logicalPart.getId());
     }
 
     //---------//
