@@ -252,6 +252,11 @@ public class DynamicsInter
         // Look for a suitable chord related to this dynamics element
         final Point center = getCenter();
         final MeasureStack stack = system.getMeasureStackAt(center);
+
+        if (stack == null) {
+            return null;
+        }
+
         final Rectangle widenedBounds = getBounds();
         widenedBounds.grow(maxXGap, 0);
 
