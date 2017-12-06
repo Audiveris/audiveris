@@ -28,28 +28,34 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voices;
-import org.audiveris.omr.sig.inter.AbstractInterVisitor;
+import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.FlagInter;
+import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.TimeNumberInter;
+import org.audiveris.omr.sig.inter.TimePairInter;
+import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.ui.InterTask;
-import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITaskList;
 import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Class {@code PageStep} handles connections between systems in a page.
@@ -69,7 +75,55 @@ public class PageStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(PageStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            PageStep.class);
+
+    /** Inter classes that may impact voices. */
+    private static final Set<Class<? extends AbstractInter>> forVoices;
+
+    static {
+        forVoices = new HashSet<Class<? extends AbstractInter>>();
+        forVoices.add(AugmentationDotInter.class);
+        forVoices.add(BeamHookInter.class);
+        forVoices.add(BeamInter.class);
+        forVoices.add(FlagInter.class);
+        forVoices.add(HeadChordInter.class);
+        forVoices.add(HeadInter.class);
+        forVoices.add(RestChordInter.class);
+        forVoices.add(RestInter.class);
+        forVoices.add(SlurInter.class);
+        forVoices.add(TimeNumberInter.class);
+        forVoices.add(TimePairInter.class);
+        forVoices.add(TimeWholeInter.class);
+        forVoices.add(TupletInter.class);
+    }
+
+    /** Inter classes that may impact lyrics. */
+    private static final Set<Class<? extends AbstractInter>> forLyrics;
+
+    static {
+        forLyrics = new HashSet<Class<? extends AbstractInter>>();
+        forLyrics.add(LyricItemInter.class);
+        forLyrics.add(LyricLineInter.class);
+    }
+
+    /** Inter classes that may impact slurs. */
+    private static final Set<Class<? extends AbstractInter>> forSlurs;
+
+    static {
+        forSlurs = new HashSet<Class<? extends AbstractInter>>();
+        forSlurs.add(SlurInter.class);
+    }
+
+    /** All impacting Inter classes. */
+    private static final Set<Class<? extends AbstractInter>> impactingInterClasses;
+
+    static {
+        impactingInterClasses = new HashSet<Class<? extends AbstractInter>>();
+        impactingInterClasses.addAll(forVoices);
+        impactingInterClasses.addAll(forLyrics);
+        impactingInterClasses.addAll(forSlurs);
+    }
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -80,6 +134,9 @@ public class PageStep
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------//
+    // doit //
+    //------//
     @Override
     public void doit (Sheet sheet)
             throws StepException
@@ -108,19 +165,39 @@ public class PageStep
     @Override
     public void impact (UITaskList seq)
     {
-        for (UITask task : seq.getTasks()) {
-            if (task instanceof InterTask) {
-                InterTask interTask = (InterTask) task;
-                Inter inter = interTask.getInter();
-                Page page = inter.getSig().getSystem().getPage();
+        InterTask interTask = seq.getFirstInterTask();
 
-                inter.accept(new Impactor(page));
+        if (interTask != null) {
+            Inter inter = interTask.getInter();
+            Page page = inter.getSig().getSystem().getPage();
+            Class<? extends AbstractInter> interClass = (Class<? extends AbstractInter>) inter.getClass();
 
-                break;
+            if (forSlurs.contains(interClass)) {
+                connectSlurs(page);
+            }
+
+            if (forLyrics.contains(interClass)) {
+                refineLyrics(page);
+            }
+
+            if (forVoices.contains(interClass)) {
+                Voices.refinePage(page);
             }
         }
     }
 
+    //-----------------------//
+    // impactingInterClasses //
+    //-----------------------//
+    @Override
+    public Set<Class<? extends AbstractInter>> impactingInterClasses ()
+    {
+        return impactingInterClasses;
+    }
+
+    //--------------//
+    // connectSlurs //
+    //--------------//
     /**
      * Connect slurs across systems in page
      *
@@ -164,6 +241,9 @@ public class PageStep
         }
     }
 
+    //--------------//
+    // refineLyrics //
+    //--------------//
     /**
      * Refine syllables across systems in page
      *
@@ -176,82 +256,6 @@ public class PageStep
                 LyricLineInter line = (LyricLineInter) inter;
                 line.refineLyricSyllables();
             }
-        }
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    private class Impactor
-            extends AbstractInterVisitor
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Page page;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Impactor (Page page)
-        {
-            this.page = page;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void visit (AugmentationDotInter inter)
-        {
-            Voices.refinePage(page);
-        }
-
-        @Override
-        public void visit (BeamHookInter inter)
-        {
-            Voices.refinePage(page);
-        }
-
-        @Override
-        public void visit (BeamInter inter)
-        {
-            Voices.refinePage(page);
-        }
-
-        @Override
-        public void visit (FlagInter inter)
-        {
-            Voices.refinePage(page);
-        }
-
-        @Override
-        public void visit (HeadInter inter)
-        {
-            Voices.refinePage(page);
-        }
-
-        @Override
-        public void visit (LyricItemInter inter)
-        {
-            refineLyrics(page);
-        }
-
-        @Override
-        public void visit (LyricLineInter inter)
-        {
-            refineLyrics(page);
-        }
-
-        @Override
-        public void visit (RestInter inter)
-        {
-            Voices.refinePage(page);
-        }
-
-        @Override
-        public void visit (SlurInter inter)
-        {
-            connectSlurs(page);
-        }
-
-        @Override
-        public void visit (TupletInter inter)
-        {
-            Voices.refinePage(page);
         }
     }
 }

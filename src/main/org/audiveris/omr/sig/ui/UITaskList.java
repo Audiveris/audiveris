@@ -77,6 +77,17 @@ public class UITaskList
         list.add(task);
     }
 
+    public InterTask getFirstInterTask ()
+    {
+        for (UITask task : getTasks()) {
+            if (task instanceof InterTask) {
+                return (InterTask) task;
+            }
+        }
+
+        return null;
+    }
+
     public UITask getFirstTask ()
     {
         return list.get(0);

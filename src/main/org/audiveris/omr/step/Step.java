@@ -242,18 +242,29 @@ public enum Step
         }
     }
 
+    //--------//
+    // impact //
+    //--------//
     /**
-     * Report the set of Inter classes that impact this step.
+     * Process the impact of the UI task sequence on this step.
      *
-     * @return the set of impacting classes, perhaps empty but not null
+     * @param seq the provided UI task sequence
+     */
+    public void impact (UITaskList seq)
+    {
+        helper.impact(seq);
+    }
+
+    //-----------------------//
+    // impactingInterClasses //
+    //-----------------------//
+    /**
+     * Report the Inter classes that impact this step.
+     *
+     * @return the collection of Inter classes this step cares about
      */
     public Collection<Class<? extends AbstractInter>> impactingInterClasses ()
     {
         return helper.impactingInterClasses();
-    }
-
-    public void impact (UITaskList seq)
-    {
-        helper.impact(seq);
     }
 }

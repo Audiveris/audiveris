@@ -45,7 +45,6 @@ import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.step.AbstractStep;
 import org.audiveris.omr.step.Step;
 
 import org.slf4j.Logger;
@@ -148,8 +147,8 @@ public class InterController
         }
 
         Inter ghost = SymbolFactory.createGhost(shape, 1);
-        ghost.setGlyph(glyph);
         ghost.setBounds(glyph.getBounds());
+        ghost.setGlyph(glyph);
 
         Collection<Partnership> partnerships = null;
 
@@ -638,7 +637,7 @@ public class InterController
     {
         // Re-process impacted steps
         final Step latestStep = sheet.getStub().getLatestStep();
-        final Step firstStep = AbstractStep.firstImpactedStep(seq);
+        final Step firstStep = firstImpactedStep(seq);
 
         if ((firstStep != null) && (firstStep.compareTo(latestStep) <= 0)) {
             final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
@@ -651,6 +650,38 @@ public class InterController
 
         // Finally, refresh user interface
         refreshUI();
+    }
+
+    //-------------------//
+    // firstImpactedStep //
+    //-------------------//
+    /**
+     * Report the first step impacted by the provided task sequence
+     *
+     * @param seq the provided task sequence
+     * @return the first step impacted, perhaps null
+     */
+    private Step firstImpactedStep (UITaskList seq)
+    {
+        InterTask interTask = seq.getFirstInterTask();
+
+        if (interTask == null) {
+            // seq contains only relation(s) and no inter
+            logger.warn("TODO: No inter in UI task sequence {}", seq);
+
+            return null;
+        }
+
+        Inter inter = interTask.inter;
+        Class interClass = inter.getClass();
+
+        for (Step step : Step.values()) {
+            if (step.impactingInterClasses().contains(interClass)) {
+                return step;
+            }
+        }
+
+        return null;
     }
 
     /**
