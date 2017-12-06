@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BreathMarkInter;
 import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -115,6 +116,9 @@ public class SymbolFactory
 
     /** All system heads, ordered by abscissa. */
     private final List<Inter> systemHeads;
+
+    /** All system notes (heads and rests), ordered by abscissa. */
+    private List<Inter> systemNotes;
 
     /** All system head-based chords, ordered by abscissa. */
     private final List<Inter> systemHeadChords;
@@ -263,7 +267,10 @@ public class SymbolFactory
         //
         // Barlines ???
         //
-        // Beams ???
+        // Beams
+        case BEAM_HOOK:
+            return new BeamHookInter(grade);
+
         //
         // Repeats
         case REPEAT_DOT:
@@ -552,6 +559,21 @@ public class SymbolFactory
         return systemHeads;
     }
 
+    //----------------//
+    // getSystemNotes //
+    //----------------//
+    List<Inter> getSystemNotes ()
+    {
+        if (systemNotes == null) {
+            systemNotes = new ArrayList<Inter>(getSystemHeads().size() + getSystemRests().size());
+            systemNotes.addAll(getSystemHeads());
+            systemNotes.addAll(getSystemRests());
+            Collections.sort(systemNotes, Inters.byAbscissa);
+        }
+
+        return systemNotes;
+    }
+
     //-----------//
     // addSymbol //
     //-----------//
@@ -664,262 +686,3 @@ public class SymbolFactory
         }
     }
 }
-//
-//    //------------------//
-//    // createGhostInter //
-//    //------------------//
-//    /**
-//     * Create a ghost instance (its location is meant to evolve) for a given shape.
-//     *
-//     * @param shape the provided shape
-//     * @return proper ghost instance
-//     */
-//    public static Inter createGhostInter (Shape shape)
-//    {
-//        Class<? extends Inter> classe = forShape.get(shape);
-//
-//        if (classe == null) {
-//            String msg = "No ghost Inter class for " + shape;
-//            logger.error(msg);
-//            throw new IllegalArgumentException(msg);
-//        }
-//
-//        try {
-//            Inter instance = null;
-//
-//            // Try using 'createGhost()' method if any
-//            try {
-//                Method create = classe.getDeclaredMethod(
-//                        "createGhost",
-//                        new Class[]{Shape.class});
-//
-//                if (Modifier.isStatic(create.getModifiers())) {
-//                    instance = (Inter) create.invoke(shape);
-//                }
-//            } catch (NoSuchMethodException ignored) {
-//            }
-//
-//            if (instance == null) {
-//                // Fall back to allocate a new class instance
-//                // What about shape???
-//                instance = classe.newInstance();
-//            }
-//
-//            return instance;
-//        } catch (Throwable ex) {
-//            logger.error("Cannot create ghost inter for shape {}", shape, ex);
-//
-//            return null;
-//        }
-//    }
-//
-
-//    private static final Map<Shape, Class<? extends Inter>> forShape = buildShapeMap();
-//
-//    //---------------//
-//    // buildShapeMap //
-//    //---------------//
-//    /**
-//     * Report the Inter subclass that handles the provided shape.
-//     *
-//     * @param shape provided shape
-//     * @return corresponding class or null
-//     */
-//    private static Map<Shape, Class<? extends Inter>> buildShapeMap ()
-//    {
-//        Map<Shape, Class<? extends Inter>> map = new EnumMap<Shape, Class<? extends Inter>>(
-//                Shape.class);
-//
-//        // Key signatures
-//        map.put(KEY_FLAT_1, KeyInter.class);
-//        map.put(KEY_FLAT_2, KeyInter.class);
-//        map.put(KEY_FLAT_3, KeyInter.class);
-//        map.put(KEY_FLAT_4, KeyInter.class);
-//        map.put(KEY_FLAT_5, KeyInter.class);
-//        map.put(KEY_FLAT_6, KeyInter.class);
-//        map.put(KEY_FLAT_7, KeyInter.class);
-//        map.put(KEY_SHARP_1, KeyInter.class);
-//        map.put(KEY_SHARP_2, KeyInter.class);
-//        map.put(KEY_SHARP_3, KeyInter.class);
-//        map.put(KEY_SHARP_4, KeyInter.class);
-//        map.put(KEY_SHARP_5, KeyInter.class);
-//        map.put(KEY_SHARP_6, KeyInter.class);
-//        map.put(KEY_SHARP_7, KeyInter.class);
-//        // Brace, bracket ???
-//        //
-//        // Barlines ???
-//        //
-//        // Repeats
-//        map.put(REPEAT_DOT, RepeatDotInter.class);
-//
-//        // Markers
-//        map.put(CODA, MarkerInter.class);
-//        map.put(SEGNO, MarkerInter.class);
-//        map.put(DAL_SEGNO, MarkerInter.class);
-//        map.put(DA_CAPO, MarkerInter.class);
-//
-//        // Clefs
-//        map.put(G_CLEF, ClefInter.class);
-//        map.put(G_CLEF_SMALL, ClefInter.class);
-//        map.put(G_CLEF_8VA, ClefInter.class);
-//        map.put(G_CLEF_8VB, ClefInter.class);
-//        map.put(F_CLEF, ClefInter.class);
-//        map.put(F_CLEF_SMALL, ClefInter.class);
-//        map.put(F_CLEF_8VA, ClefInter.class);
-//        map.put(F_CLEF_8VB, ClefInter.class);
-//        map.put(C_CLEF, ClefInter.class);
-//        map.put(PERCUSSION_CLEF, ClefInter.class);
-//
-//        // Time sig
-//        map.put(TIME_ZERO, TimeNumberInter.class);
-//        map.put(TIME_ONE, TimeNumberInter.class);
-//        map.put(TIME_TWO, TimeNumberInter.class);
-//        map.put(TIME_THREE, TimeNumberInter.class);
-//        map.put(TIME_FOUR, TimeNumberInter.class);
-//        map.put(TIME_FIVE, TimeNumberInter.class);
-//        map.put(TIME_SIX, TimeNumberInter.class);
-//        map.put(TIME_SEVEN, TimeNumberInter.class);
-//        map.put(TIME_EIGHT, TimeNumberInter.class);
-//        map.put(TIME_NINE, TimeNumberInter.class);
-//        map.put(TIME_TWELVE, TimeNumberInter.class);
-//        map.put(TIME_SIXTEEN, TimeNumberInter.class);
-//
-//        map.put(COMMON_TIME, TimeWholeInter.class);
-//        map.put(CUT_TIME, TimeWholeInter.class);
-//        map.put(TIME_FOUR_FOUR, TimeWholeInter.class);
-//        map.put(TIME_TWO_TWO, TimeWholeInter.class);
-//        map.put(TIME_TWO_FOUR, TimeWholeInter.class);
-//        map.put(TIME_THREE_FOUR, TimeWholeInter.class);
-//        map.put(TIME_FIVE_FOUR, TimeWholeInter.class);
-//        map.put(TIME_THREE_EIGHT, TimeWholeInter.class);
-//        map.put(TIME_SIX_EIGHT, TimeWholeInter.class);
-//
-//        // Noteheads
-//        map.put(NOTEHEAD_BLACK, HeadInter.class);
-//        map.put(NOTEHEAD_BLACK_SMALL, HeadInter.class);
-//        map.put(NOTEHEAD_VOID, HeadInter.class);
-//        map.put(NOTEHEAD_VOID_SMALL, HeadInter.class);
-//        map.put(BREVE, HeadInter.class);
-//        map.put(WHOLE_NOTE, HeadInter.class);
-//        map.put(WHOLE_NOTE_SMALL, HeadInter.class);
-//
-//        map.put(AUGMENTATION_DOT, AugmentationDotInter.class);
-//
-//        // Ledger
-//        map.put(LEDGER, LedgerInter.class);
-//
-//        // Stem ???
-//        //
-//        // Flags
-//        map.put(FLAG_1, FlagInter.class);
-//        map.put(FLAG_2, FlagInter.class);
-//        map.put(FLAG_3, FlagInter.class);
-//        map.put(FLAG_4, FlagInter.class);
-//        map.put(FLAG_5, FlagInter.class);
-//        map.put(FLAG_1_UP, FlagInter.class);
-//        map.put(FLAG_2_UP, FlagInter.class);
-//        map.put(FLAG_3_UP, FlagInter.class);
-//        map.put(FLAG_4_UP, FlagInter.class);
-//        map.put(FLAG_5_UP, FlagInter.class);
-//        map.put(SMALL_FLAG, FlagInter.class);
-//        map.put(SMALL_FLAG_SLASH, FlagInter.class);
-//
-//        // Accidentals
-//        map.put(FLAT, AlterInter.class);
-//        map.put(NATURAL, AlterInter.class);
-//        map.put(SHARP, AlterInter.class);
-//        map.put(DOUBLE_SHARP, AlterInter.class);
-//        map.put(DOUBLE_FLAT, AlterInter.class);
-//
-//        // Articulations
-//        map.put(ACCENT, ArticulationInter.class);
-//        map.put(TENUTO, ArticulationInter.class);
-//        map.put(STACCATO, ArticulationInter.class);
-//        map.put(STACCATISSIMO, ArticulationInter.class);
-//        map.put(STRONG_ACCENT, ArticulationInter.class);
-//
-//        // Holds
-//        map.put(FERMATA, FermataInter.class);
-//        map.put(FERMATA_BELOW, FermataInter.class);
-//        map.put(FERMATA_DOT, FermataDotInter.class);
-//        map.put(CAESURA, CaesuraInter.class);
-//        map.put(BREATH_MARK, BreathMarkInter.class);
-//
-//        // Rests
-//        map.put(LONG_REST, RestInter.class);
-//        map.put(BREVE_REST, RestInter.class);
-//        map.put(WHOLE_REST, RestInter.class);
-//        map.put(HALF_REST, RestInter.class);
-//        map.put(QUARTER_REST, RestInter.class);
-//        map.put(EIGHTH_REST, RestInter.class);
-//        map.put(ONE_16TH_REST, RestInter.class);
-//        map.put(ONE_32ND_REST, RestInter.class);
-//        map.put(ONE_64TH_REST, RestInter.class);
-//        map.put(ONE_128TH_REST, RestInter.class);
-//
-//        // Ottava ???
-//        //
-//        // Dynamics
-//        map.put(DYNAMICS_P, DynamicsInter.class);
-//        map.put(DYNAMICS_PP, DynamicsInter.class);
-//        map.put(DYNAMICS_MP, DynamicsInter.class);
-//        map.put(DYNAMICS_F, DynamicsInter.class);
-//        map.put(DYNAMICS_FF, DynamicsInter.class);
-//        map.put(DYNAMICS_MF, DynamicsInter.class);
-//        map.put(DYNAMICS_FP, DynamicsInter.class);
-//        map.put(DYNAMICS_SF, DynamicsInter.class);
-//        map.put(DYNAMICS_SFZ, DynamicsInter.class);
-//        map.put(CRESCENDO, DynamicsInter.class);
-//        map.put(DIMINUENDO, DynamicsInter.class);
-//
-//        // Ornaments
-//        map.put(GRACE_NOTE_SLASH, OrnamentInter.class);
-//        map.put(GRACE_NOTE, OrnamentInter.class);
-//        map.put(TR, OrnamentInter.class);
-//        map.put(TURN, OrnamentInter.class);
-//        map.put(TURN_INVERTED, OrnamentInter.class);
-//        map.put(TURN_UP, OrnamentInter.class);
-//        map.put(TURN_SLASH, OrnamentInter.class);
-//        map.put(MORDENT, OrnamentInter.class);
-//        map.put(MORDENT_INVERTED, OrnamentInter.class);
-//
-//        // Plucked techniques
-//        map.put(ARPEGGIATO, ArpeggiatoInter.class);
-//
-//        // Keyboards
-//        map.put(PEDAL_MARK, PedalInter.class);
-//        map.put(PEDAL_UP_MARK, PedalInter.class);
-//
-//        // Tuplets
-//        map.put(TUPLET_THREE, TupletInter.class);
-//        map.put(TUPLET_SIX, TupletInter.class);
-//
-//        // Fingering
-//        map.put(DIGIT_0, FingeringInter.class);
-//        map.put(DIGIT_1, FingeringInter.class);
-//        map.put(DIGIT_2, FingeringInter.class);
-//        map.put(DIGIT_3, FingeringInter.class);
-//        map.put(DIGIT_4, FingeringInter.class);
-//
-//        // Plucking
-//        map.put(PLUCK_P, PluckingInter.class);
-//        map.put(PLUCK_I, PluckingInter.class);
-//        map.put(PLUCK_M, PluckingInter.class);
-//        map.put(PLUCK_A, PluckingInter.class);
-//
-//        // Romans
-//        map.put(ROMAN_I, FretInter.class);
-//        map.put(ROMAN_II, FretInter.class);
-//        map.put(ROMAN_III, FretInter.class);
-//        map.put(ROMAN_IV, FretInter.class);
-//        map.put(ROMAN_V, FretInter.class);
-//        map.put(ROMAN_VI, FretInter.class);
-//        map.put(ROMAN_VII, FretInter.class);
-//        map.put(ROMAN_VIII, FretInter.class);
-//        map.put(ROMAN_IX, FretInter.class);
-//        map.put(ROMAN_X, FretInter.class);
-//        map.put(ROMAN_XI, FretInter.class);
-//        map.put(ROMAN_XII, FretInter.class);
-//
-//        return map;
-//    }

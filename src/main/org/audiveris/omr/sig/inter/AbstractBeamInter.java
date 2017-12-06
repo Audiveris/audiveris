@@ -77,11 +77,11 @@ public abstract class AbstractBeamInter
     /** Beam height. */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
-    private final double height;
+    protected double height;
 
     /** Median line. */
     @XmlElement
-    private final Line2D median;
+    protected Line2D median;
 
     // Transient data
     //---------------
@@ -110,6 +110,23 @@ public abstract class AbstractBeamInter
         super(null, null, shape, impacts);
         this.median = median;
         this.height = height;
+
+        if (median != null) {
+            computeArea();
+        }
+    }
+
+    /**
+     * Creates a new AbstractBeamInter <b>ghost</b> object.
+     * Median and height must be assigned later
+     *
+     * @param shape BEAM or BEAM_HOOK
+     * @param grade the grade
+     */
+    protected AbstractBeamInter (Shape shape,
+                                 double grade)
+    {
+        super(null, null, shape, grade);
 
         if (median != null) {
             computeArea();
@@ -375,6 +392,17 @@ public abstract class AbstractBeamInter
         this.group = group;
     }
 
+    //-------------//
+    // computeArea //
+    //-------------//
+    protected void computeArea ()
+    {
+        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
+
+        // Define precise bounds based on this path
+        setBounds(getArea().getBounds());
+    }
+
     //----------------//
     // afterUnmarshal //
     //----------------//
@@ -389,17 +417,6 @@ public abstract class AbstractBeamInter
         if (median != null) {
             computeArea();
         }
-    }
-
-    //-------------//
-    // computeArea //
-    //-------------//
-    private void computeArea ()
-    {
-        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
-
-        // Define precise bounds based on this path
-        setBounds(getArea().getBounds());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

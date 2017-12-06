@@ -1573,7 +1573,6 @@ public class BeamsBuilder
         }
     }
 
-    //
     //-----------//
     // Constants //
     //-----------//

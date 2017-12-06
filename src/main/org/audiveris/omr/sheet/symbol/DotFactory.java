@@ -63,7 +63,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -369,19 +368,6 @@ public class DotFactory
         } while (modified);
     }
 
-    //---------------//
-    // filterOnStack //
-    //---------------//
-    private void filterOnStack (List<Inter> inters,
-                                MeasureStack dotStack)
-    {
-        for (Iterator<Inter> it = inters.iterator(); it.hasNext();) {
-            if (!dotStack.contains(it.next().getCenter())) {
-                it.remove();
-            }
-        }
-    }
-
     //--------------------//
     // instantCheckRepeat //
     //--------------------//
@@ -580,33 +566,12 @@ public class DotFactory
     {
         // Look for entities (heads and rests) reachable from this glyph
         final Point dotCenter = dot.glyph.getCenter();
-        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
-        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
-        final Rectangle luBox = new Rectangle(dotCenter);
-        luBox.grow(0, maxDy);
-        luBox.x -= maxDx;
-        luBox.width += maxDx;
+        final List<Inter> notes = AugmentationDotInter.getCandidateNotes(
+                dotCenter,
+                symbolFactory.getSystemNotes(),
+                system);
 
-        // Relevant heads?
-        final List<Inter> heads = SIGraph.intersectedInters(
-                symbolFactory.getSystemHeads(),
-                GeoOrder.BY_ABSCISSA,
-                luBox);
-        filterOnStack(heads, dotStack);
-
-        // Beware of mirrored heads: link only to the head with longer duration
-        filterMirrorHeads(heads);
-
-        // Relevant rests?
-        final List<Inter> rests = SIGraph.intersectedInters(
-                symbolFactory.getSystemRests(),
-                GeoOrder.BY_ABSCISSA,
-                luBox);
-        filterOnStack(rests, dotStack);
-        heads.addAll(rests);
-
-        if (heads.isEmpty()) {
+        if (notes.isEmpty()) {
             return;
         }
 
@@ -615,7 +580,7 @@ public class DotFactory
         // This will be later solved by the sig reducer.
         AugmentationDotInter augInter = null;
 
-        for (Inter note : heads) {
+        for (Inter note : notes) {
             // Select proper note reference point (center right)
             Point refPt = note.getCenterRight();
             double xGap = dotCenter.x - refPt.x;
@@ -674,19 +639,12 @@ public class DotFactory
             logger.info("VIP lateSecondAugmentationCheck for {}", dot);
         }
 
-        // Look for augmentation dots reachable from this glyph
-        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum());
+        // Augmentation dots reachable from this glyph
         final Point dotCenter = dot.glyph.getCenter();
-        final Rectangle luBox = new Rectangle(dotCenter);
-        luBox.grow(0, maxDy);
-        luBox.x -= maxDx;
-        luBox.width += maxDx;
-
-        final List<Inter> firsts = SIGraph.intersectedInters(
+        final List<Inter> firsts = AugmentationDotInter.getCandidateDots(
+                dotCenter,
                 systemFirsts,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
+                system);
 
         // Remove the augmentation dot, if any, that corresponds to the glyph at hand
         AugmentationDotInter second = null;
@@ -698,10 +656,6 @@ public class DotFactory
 
                 break;
             }
-        }
-
-        if (firsts.isEmpty()) {
-            return;
         }
 
         DoubleDotRelation bestRel = null;
