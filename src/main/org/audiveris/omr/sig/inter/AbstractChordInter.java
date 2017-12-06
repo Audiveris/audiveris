@@ -212,10 +212,16 @@ public abstract class AbstractChordInter
     {
         super.added();
 
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+        Point center = getCenter();
 
-        if (stack != null) {
-            stack.addInter(this);
+        if (center != null) {
+            MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+
+            if (stack != null) {
+                stack.addInter(this);
+            }
+        } else {
+            logger.info("*** No bounds for chord {}", this);
         }
     }
 
