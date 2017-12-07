@@ -918,6 +918,20 @@ public abstract class AbstractChordInter
                 setGrade(gr);
             }
         }
+
+        if (sig != null) {
+            Point center = getCenter();
+
+            if (center != null) {
+                MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+
+                if (stack != null) {
+                    stack.addInter(this);
+                }
+            } else {
+                logger.info("*** invalidateCache. No bounds for chord {}", this);
+            }
+        }
     }
 
     //--------------//

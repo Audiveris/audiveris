@@ -165,6 +165,8 @@ public class PageStep
     @Override
     public void impact (UITaskList seq)
     {
+        logger.info("PAGE. impact for {}", seq);
+
         InterTask interTask = seq.getFirstInterTask();
 
         if (interTask != null) {

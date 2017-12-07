@@ -759,6 +759,7 @@ public class HeadInter
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if ((bestPartnership == null) || (rel.getGrade() > bestGrade)) {
+                        rel.setExtensionPoint(refPt); // Approximately
                         bestPartnership = new Partnership(stem, rel, true);
                         bestGrade = rel.getGrade();
                     }

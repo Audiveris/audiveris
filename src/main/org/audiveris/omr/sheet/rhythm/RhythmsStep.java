@@ -134,6 +134,8 @@ public class RhythmsStep
     @Override
     public void impact (UITaskList seq)
     {
+        logger.info("RHYTHMS. impact for {}", seq);
+
         InterTask interTask = seq.getFirstInterTask();
 
         if (interTask != null) {

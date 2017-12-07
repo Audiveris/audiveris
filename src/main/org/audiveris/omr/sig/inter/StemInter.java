@@ -284,62 +284,18 @@ public class StemInter
             AbstractStemConnection link = (AbstractStemConnection) rel;
             Point2D ext = link.getExtensionPoint();
 
-            if (ext.getY() < extTop.getY()) {
-                extTop = ext;
-            }
+            if (ext != null) {
+                if (ext.getY() < extTop.getY()) {
+                    extTop = ext;
+                }
 
-            if (ext.getY() > extBottom.getY()) {
-                extBottom = ext;
-            }
-        }
-
-        return new Line2D.Double(extTop, extBottom);
-    }
-
-    //--------//
-    // remove //
-    //--------//
-    /**
-     * Remove head-head relations that were based on this stem.
-     *
-     * @param extensive
-     * @see #added()
-     */
-    @Override
-    public void remove (boolean extensive)
-    {
-        if (isRemoved()) {
-            return;
-        }
-
-        if (isGood()) {
-            // Discard head-head relations that are based only on this stem instance
-            Set<HeadInter> stemHeads = getHeads(); // Heads linked to this stem
-
-            for (HeadInter head : stemHeads) {
-                // Other stems this head is linked to
-                Set<StemInter> otherStems = head.getStems();
-                otherStems.remove(this);
-
-                for (Relation rel : sig.getRelations(head, HeadHeadRelation.class)) {
-                    HeadInter similarHead = (HeadInter) sig.getOppositeInter(head, rel);
-
-                    if (stemHeads.contains(similarHead)) {
-                        // Head - otherHead are both on this stem
-                        // Keep HH support only if they are on same good stem (different of this)
-                        Set<StemInter> similarStems = similarHead.getStems();
-                        similarStems.retainAll(otherStems);
-
-                        if (!Inters.hasGoodMember(similarStems)) {
-                            logger.debug("Removing head-head within {} & {}", head, similarHead);
-                            sig.removeEdge(rel);
-                        }
-                    }
+                if (ext.getY() > extBottom.getY()) {
+                    extBottom = ext;
                 }
             }
         }
 
-        super.remove(extensive);
+        return new Line2D.Double(extTop, extBottom);
     }
 
     //-----------//
@@ -528,6 +484,52 @@ public class StemInter
         }
 
         return null;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove head-head relations that were based on this stem.
+     *
+     * @param extensive
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (isRemoved()) {
+            return;
+        }
+
+        if (isGood()) {
+            // Discard head-head relations that are based only on this stem instance
+            Set<HeadInter> stemHeads = getHeads(); // Heads linked to this stem
+
+            for (HeadInter head : stemHeads) {
+                // Other stems this head is linked to
+                Set<StemInter> otherStems = head.getStems();
+                otherStems.remove(this);
+
+                for (Relation rel : sig.getRelations(head, HeadHeadRelation.class)) {
+                    HeadInter similarHead = (HeadInter) sig.getOppositeInter(head, rel);
+
+                    if (stemHeads.contains(similarHead)) {
+                        // Head - otherHead are both on this stem
+                        // Keep HH support only if they are on same good stem (different of this)
+                        Set<StemInter> similarStems = similarHead.getStems();
+                        similarStems.retainAll(otherStems);
+
+                        if (!Inters.hasGoodMember(similarStems)) {
+                            logger.debug("Removing head-head within {} & {}", head, similarHead);
+                            sig.removeEdge(rel);
+                        }
+                    }
+                }
+            }
+        }
+
+        super.remove(extensive);
     }
 
     //----------//

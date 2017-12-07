@@ -31,6 +31,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Partnership;
 import org.audiveris.omr.util.HorizontalSide;
@@ -184,8 +185,9 @@ public class BeamHookInter
                 luBox);
 
         // Find out the best stem candidate, if any
-        StemInter bestStem = null;
         double bestDist = Double.MAX_VALUE;
+        StemInter bestStem = null;
+        BeamStemRelation bestRel = null;
 
         for (HorizontalSide side : HorizontalSide.values()) {
             Point refPt = (side == LEFT) ? getCenterLeft() : getCenterRight();
@@ -198,17 +200,18 @@ public class BeamHookInter
                 if (bestDist > d2) {
                     bestDist = d2;
                     bestStem = stem;
+                    bestRel = new BeamStemRelation();
+                    bestRel.setExtensionPoint(refPt); // Approximate
+                    bestRel.setBeamPortion((side == LEFT) ? BeamPortion.LEFT : BeamPortion.RIGHT);
                 }
             }
         }
 
-        if (bestStem == null) {
+        if (bestRel == null) {
             return null;
         }
 
-        BeamStemRelation rel = new BeamStemRelation();
-
-        return new Partnership(bestStem, rel, true);
+        return new Partnership(bestStem, bestRel, true);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

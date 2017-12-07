@@ -9,6 +9,8 @@
     <include optional="true"     file="res/logback-elements.xml"/>  <!-- from devel. files -->
     
     <!-- You can define additional loggers here below: -->
-<!--        <logger name="org.audiveris.omr.sheet.rhythm.SlotsBuilder" level="DEBUG"/>-->
+    <!-- ============================================= -->
+    
+<!--    <logger name="org.audiveris.omr.sheet.rhythm.SlotsBuilder" level="DEBUG"/>-->
 
 </configuration>

@@ -574,19 +574,10 @@ public class InterController
                             restChord,
                             ghostBounds,
                             Arrays.asList(new Partnership(ghost, new Containment(), true))));
-        } else if (ghost instanceof StemInter) {
-            // Wrap this stem within a head chord
-            final StemInter stem = (StemInter) ghost;
-            seq.add(
-                    new AdditionTask(
-                            sig,
-                            new HeadChordInter(-1, stem),
-                            ghostBounds,
-                            Collections.EMPTY_SET));
         } else if (ghost instanceof HeadInter) {
+            // If we link head to a stem, create/update the related head chord
             boolean stemFound = false;
 
-            // If we link head to a stem, create/update the related head chord
             for (Partnership partnership : partnerships) {
                 if (partnership.relation instanceof HeadStemRelation) {
                     StemInter stem = (StemInter) partnership.partner;
@@ -603,6 +594,7 @@ public class InterController
                                         Collections.EMPTY_SET));
                     }
 
+                    // Declare head part of head-chord
                     seq.add(new LinkTask(sig, headChord, ghost, new Containment()));
                     stemFound = true;
 
@@ -643,7 +635,7 @@ public class InterController
             final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
 
             for (Step step : steps) {
-                logger.info("Impact {} step", step);
+                logger.debug("Impact {}", step);
                 step.impact(seq);
             }
         }
