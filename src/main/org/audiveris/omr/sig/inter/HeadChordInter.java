@@ -245,7 +245,7 @@ public class HeadChordInter
     {
         int count = 0;
 
-        if (stem != null) {
+        if ((stem != null) && !stem.isRemoved()) {
             final Set<Relation> rels = sig.getRelations(stem, FlagStemRelation.class);
 
             for (Relation rel : rels) {

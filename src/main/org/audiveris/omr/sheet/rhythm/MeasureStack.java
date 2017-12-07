@@ -212,7 +212,7 @@ public class MeasureStack
         } else if (inter instanceof TupletInter) {
             stackTuplets.add((TupletInter) inter);
         } else {
-            logger.info("No part yet for {}", inter);
+            logger.debug("No part yet for {}", inter);
         }
     }
 

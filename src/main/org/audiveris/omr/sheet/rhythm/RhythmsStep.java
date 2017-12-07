@@ -134,7 +134,7 @@ public class RhythmsStep
     @Override
     public void impact (UITaskList seq)
     {
-        logger.info("RHYTHMS. impact for {}", seq);
+        logger.info("RHYTHMS impact for {}", seq);
 
         InterTask interTask = seq.getFirstInterTask();
 
@@ -146,8 +146,7 @@ public class RhythmsStep
             if (forPage.contains(interClass)) {
                 // Reprocess the whole page
                 Page page = inter.getSig().getSystem().getPage();
-                //TODO: still to be implemented!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                logger.error("Rhythms step. Impact for page not yet implemented.");
+                new PageRhythm(page).process();
             } else if (forStack.contains(interClass)) {
                 // Or reprocess just the stack
                 Point center = inter.getCenter();

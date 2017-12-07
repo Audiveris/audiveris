@@ -399,6 +399,8 @@ public class SlotsBuilder
                     logger.info("Stack#{} suspicious {}", stack.getIdValue(), lastSlot);
 
                     return false;
+                } else {
+                    stack.setAbnormal(true);
                 }
             }
 

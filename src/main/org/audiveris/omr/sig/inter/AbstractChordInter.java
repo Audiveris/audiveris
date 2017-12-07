@@ -929,7 +929,7 @@ public abstract class AbstractChordInter
                     stack.addInter(this);
                 }
             } else {
-                logger.info("*** invalidateCache. No bounds for chord {}", this);
+                logger.debug("invalidateCache. No bounds for chord {}", this);
             }
         }
     }
