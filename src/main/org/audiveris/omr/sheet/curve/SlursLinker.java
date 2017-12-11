@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
@@ -128,7 +129,7 @@ public class SlursLinker
 
             try {
                 defineAreaPair(slur);
-            } catch (Exception ex) {
+            } catch (Exception ignored) {
                 logger.debug("No lookup area for {} at {}", slur, slur.getBounds());
                 it.remove();
             }
@@ -362,12 +363,9 @@ public class SlursLinker
         info.setArea(firstArea, true);
         slur.addAttachment("F", firstArea);
 
-        ///info.addAttachment("F", firstArea); // Useful?
         Area lastArea = new Area(lastPath);
         info.setArea(lastArea, false);
         slur.addAttachment("L", lastArea);
-
-        ///info.addAttachment("L", lastArea); // Useful?
     }
 
     //-----------//
@@ -407,14 +405,78 @@ public class SlursLinker
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction coverageHExt = new Scale.Fraction(
+                1.25,
+                "Length of extension for horizontal slur coverage");
+
+        private final Scale.Fraction coverageHIn = new Scale.Fraction(
+                0.5,
+                "Internal abscissa of horizontal slur coverage");
+
+        private final Scale.Fraction coverageHDepth = new Scale.Fraction(
+                3.0,
+                "Vertical extension of horizontal slur coverage");
+
+        private final Scale.Fraction coverageVExt = new Scale.Fraction(
+                2.0,
+                "Length of extension for vertical slur coverage");
+
+        private final Scale.Fraction coverageVIn = new Scale.Fraction(
+                1.5,
+                "Internal abscissa of vertical slur coverage");
+
+        private final Scale.Fraction coverageVDepth = new Scale.Fraction(
+                2.5,
+                "Vertical extension of vertical slur coverage");
+
+        private final Scale.Fraction coverageVDepthSmall = new Scale.Fraction(
+                1.5,
+                "Vertical extension of small vertical slur coverage");
+
+        private final Scale.Fraction targetExtension = new Scale.Fraction(
+                0.5,
+                "Extension length from slur end to slur target point");
+
+        private final Constant.Double slopeSeparator = new Constant.Double(
+                "tangent",
+                0.5,
+                "Slope that separates vertical slurs from horizontal slurs");
+
+        private final Constant.Double maxOrphanSlope = new Constant.Double(
+                "tangent",
+                0.5,
+                "Maximum slope for an orphan slur");
+
+        private final Scale.Fraction maxOrphanDx = new Scale.Fraction(
+                6.0,
+                "Maximum dx to staff end for an orphan slur");
+
+        private final Scale.Fraction wideSlurWidth = new Scale.Fraction(
+                6.0,
+                "Minimum width to be a wide slur");
+
+        private final Scale.Fraction maxSmallSlurWidth = new Scale.Fraction(
+                1.5,
+                "Maximum width for a small slur");
+    }
+
+    //-----------//
     // ChordLink //
     //-----------//
     /**
-     * Formalizes a relation between a slur end and a (head-based) chord nearby.
+     * Formalizes a link between a slur end and a (head-based) chord nearby.
      * <p>
      * Rather than chord box center point, we use chord box middle vertical line.
      */
     private static class ChordLink
+            extends Link
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
@@ -424,22 +486,25 @@ public class SlursLinker
             public int compare (ChordLink o1,
                                 ChordLink o2)
             {
-                return Double.compare(o1.euclidean, o2.euclidean);
+                return Double.compare(
+                        ((SlurHeadRelation) o1.relation).getEuclidean(),
+                        ((SlurHeadRelation) o2.relation).getEuclidean());
             }
         };
 
-        //~ Instance fields ------------------------------------------------------------------------
-        /** Chord linked to slur end. */
-        public final AbstractChordInter chord;
-
-        /** Euclidean distance from slur end to chord middle vertical. */
-        public final double euclidean;
-
         //~ Constructors ---------------------------------------------------------------------------
-        public ChordLink (Point slurEnd,
-                          AbstractChordInter chord)
+        public ChordLink (AbstractChordInter chord,
+                          SlurHeadRelation rel)
         {
-            this.chord = chord;
+            super(chord, rel, true);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public static ChordLink create (Point slurEnd,
+                                        HorizontalSide slurSide,
+                                        AbstractChordInter chord)
+        {
+            SlurHeadRelation rel = new SlurHeadRelation(slurSide);
 
             // Define middle vertical line of chord box
             Rectangle box = chord.getBounds();
@@ -448,71 +513,14 @@ public class SlursLinker
                     box.y,
                     box.x + (box.width / 2),
                     box.y + box.height);
-            euclidean = vert.ptSegDist(slurEnd);
+            rel.setEuclidean(vert.ptSegDist(slurEnd));
+
+            return new ChordLink(chord, rel);
         }
-    }
 
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * All pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        final int coverageHExt;
-
-        final int coverageVExt;
-
-        final int coverageHIn;
-
-        final int coverageVIn;
-
-        final int coverageHDepth;
-
-        final int coverageVDepth;
-
-        final int coverageVDepthSmall;
-
-        final int targetExtension;
-
-        final double slopeSeparator;
-
-        final double maxOrphanSlope;
-
-        final int maxOrphanDx;
-
-        final int wideSlurWidth;
-
-        final int maxSmallSlurWidth;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
+        public HeadChordInter getChord ()
         {
-            coverageHExt = scale.toPixels(constants.coverageHExt);
-            coverageHIn = scale.toPixels(constants.coverageHIn);
-            coverageHDepth = scale.toPixels(constants.coverageHDepth);
-            coverageVExt = scale.toPixels(constants.coverageVExt);
-            coverageVIn = scale.toPixels(constants.coverageVIn);
-            coverageVDepth = scale.toPixels(constants.coverageVDepth);
-            coverageVDepthSmall = scale.toPixels(constants.coverageVDepthSmall);
-            targetExtension = scale.toPixels(constants.targetExtension);
-            slopeSeparator = constants.slopeSeparator.getValue();
-            maxOrphanSlope = constants.maxOrphanSlope.getValue();
-            maxOrphanDx = scale.toPixels(constants.maxOrphanDx);
-            wideSlurWidth = scale.toPixels(constants.wideSlurWidth);
-            maxSmallSlurWidth = scale.toPixels(constants.maxSmallSlurWidth);
-
-            if (logger.isDebugEnabled()) {
-                new Dumping().dump(this);
-            }
+            return (HeadChordInter) partner;
         }
     }
 
@@ -683,11 +691,7 @@ public class SlursLinker
                                       HorizontalSide side)
         {
             SlurInfo info = slur.getInfo();
-            CircleModel model = (CircleModel) info.getModel();
-            Point2D mid = model.getMidPoint();
-            Point2D center = model.getCircle().getCenter();
-            int ccw = model.ccw();
-            int expected = (side == LEFT) ? ccw : (-ccw);
+            Point2D mid = info.getMidPoint();
 
             if (chord.getStem() != null) {
                 int xStem = chord.getStem().getCenter().x;
@@ -701,6 +705,12 @@ public class SlursLinker
                     return false;
                 }
             }
+
+            Point2D left = info.getEnd(true);
+            Point2D right = info.getEnd(false);
+            Point2D center = PointUtil.times(PointUtil.addition(left, right), 0.5);
+            int ccw = -info.above();
+            int expected = (side == LEFT) ? ccw : (-ccw);
 
             for (Inter hInter : chord.getNotes()) {
                 if (hInter instanceof HeadInter) {
@@ -791,7 +801,7 @@ public class SlursLinker
                     ChordLink best = list.get(0);
 
                     // Mirror?
-                    Inter mirror = best.chord.getMirror();
+                    Inter mirror = best.getChord().getMirror();
 
                     if ((mirror != null) && links.keySet().contains(mirror)) {
                         mirrors.put(side, best); // We have a conflict to solve
@@ -808,7 +818,7 @@ public class SlursLinker
                     final HorizontalSide side = entry.getKey();
                     final ChordLink link = entry.getValue();
                     final Map<Inter, ChordLink> links = (side == LEFT) ? lefts : rights;
-                    final ChordLink mirrorLink = links.get(link.chord.getMirror());
+                    final ChordLink mirrorLink = links.get(link.getChord().getMirror());
                     final boolean linkOk;
 
                     // The other side of the slur
@@ -817,9 +827,9 @@ public class SlursLinker
 
                     if (otherLink != null) {
                         // Compare with other side of the slur
-                        final Staff otherStaff = otherLink.chord.getTopStaff();
-                        final Staff staff = link.chord.getTopStaff();
-                        final int dir = link.chord.getStemDir();
+                        final Staff otherStaff = otherLink.getChord().getTopStaff();
+                        final Staff staff = link.getChord().getTopStaff();
+                        final int dir = link.getChord().getStemDir();
 
                         if (staff != otherStaff) {
                             // Select mirror according to direction to other staff
@@ -827,15 +837,15 @@ public class SlursLinker
                         } else {
                             // Select mirror with same stem dir as at other slur end
                             // (This may be called into question later when looking for ties)
-                            int otherDir = otherLink.chord.getStemDir();
+                            int otherDir = otherLink.getChord().getStemDir();
                             linkOk = dir == otherDir;
                         }
                     } else {
                         // No link found on other side (orphan? or slur truncated?)
                         // Not too stupid: select the mirror with less beams
-                        Inter stem = link.chord.getStem();
+                        Inter stem = link.getChord().getStem();
                         int nb = sig.getRelations(stem, BeamStemRelation.class).size();
-                        Inter mStem = mirrorLink.chord.getStem();
+                        Inter mStem = mirrorLink.getChord().getStem();
                         int mNb = sig.getRelations(mStem, BeamStemRelation.class).size();
                         linkOk = nb <= mNb;
                     }
@@ -849,9 +859,9 @@ public class SlursLinker
             ChordLink rightLink = linkPair.get(RIGHT);
 
             if ((leftLink != null) && (rightLink != null)) {
-                Inter leftMirror = leftLink.chord.getMirror();
+                Inter leftMirror = leftLink.getChord().getMirror();
 
-                if ((leftMirror != null) && (leftMirror == rightLink.chord)) {
+                if ((leftMirror != null) && (leftMirror == rightLink.getChord())) {
                     logger.debug("{} chord and its mirror linked by the same slur!", slur);
 
                     return null;
@@ -910,7 +920,7 @@ public class SlursLinker
 
             if (target == null) {
                 final Point end = info.getEnd(rev);
-                final Point2D vector = info.getSideModel(rev).getEndVector(rev);
+                final Point2D vector = info.getEndVector(rev);
                 final double ext = params.targetExtension;
                 target = PointUtil.rounded(PointUtil.addition(end, PointUtil.times(vector, ext)));
                 info.setTargetPoint(rev, target);
@@ -934,7 +944,9 @@ public class SlursLinker
                            ChordLink leftLink,
                            ChordLink rightLink)
         {
-            sig.addVertex(slur);
+            if (!sig.containsVertex(slur)) {
+                sig.addVertex(slur);
+            }
 
             SlurInfo info = slur.getInfo();
 
@@ -944,7 +956,7 @@ public class SlursLinker
                 if (link != null) {
                     Point end = info.getEnd(side == LEFT);
                     Point target = info.getTargetPoint(side == LEFT);
-                    Inter head = selectBestHead(link.chord, end, target, info.getBisUnit());
+                    Inter head = selectBestHead(link.getChord(), end, target, info.getBisUnit());
 
                     if (head != null) {
                         sig.addEdge(slur, head, new SlurHeadRelation(side));
@@ -975,7 +987,9 @@ public class SlursLinker
                 if (area.intersects(chordBox)) {
                     // Check the chord contains at least one suitable head on desired slur side
                     if (chordHasHead((AbstractChordInter) chord, slur, side)) {
-                        found.put(chord, new ChordLink(slurTarget, (AbstractChordInter) chord));
+                        found.put(
+                                chord,
+                                ChordLink.create(slurTarget, side, (AbstractChordInter) chord));
                     }
                 }
             }
@@ -998,7 +1012,7 @@ public class SlursLinker
                 ChordLink link = map.get(side);
 
                 if (link != null) {
-                    dist += link.euclidean;
+                    dist += ((SlurHeadRelation) link.relation).getEuclidean();
                     n++;
                 }
             }
@@ -1089,13 +1103,17 @@ public class SlursLinker
                     // Check whether embraced chords are still the same
                     ChordLink left = m.get(LEFT);
 
-                    if ((bestLeft != null) && (left != null) && (left.chord != bestLeft.chord)) {
+                    if ((bestLeft != null)
+                        && (left != null)
+                        && (left.getChord() != bestLeft.getChord())) {
                         break;
                     }
 
                     ChordLink right = m.get(RIGHT);
 
-                    if ((bestRight != null) && (right != null) && (right.chord != bestRight.chord)) {
+                    if ((bestRight != null)
+                        && (right != null)
+                        && (right.getChord() != bestRight.getChord())) {
                         break;
                     }
 
@@ -1164,66 +1182,67 @@ public class SlursLinker
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * All pre-scaled constants.
+     */
+    private static class Parameters
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Scale.Fraction coverageHExt = new Scale.Fraction(
-                1.25,
-                "Length of extension for horizontal slur coverage");
+        final int coverageHExt;
 
-        private final Scale.Fraction coverageHIn = new Scale.Fraction(
-                0.5,
-                "Internal abscissa of horizontal slur coverage");
+        final int coverageVExt;
 
-        private final Scale.Fraction coverageHDepth = new Scale.Fraction(
-                3.0,
-                "Vertical extension of horizontal slur coverage");
+        final int coverageHIn;
 
-        private final Scale.Fraction coverageVExt = new Scale.Fraction(
-                2.0,
-                "Length of extension for vertical slur coverage");
+        final int coverageVIn;
 
-        private final Scale.Fraction coverageVIn = new Scale.Fraction(
-                1.5,
-                "Internal abscissa of vertical slur coverage");
+        final int coverageHDepth;
 
-        private final Scale.Fraction coverageVDepth = new Scale.Fraction(
-                2.5,
-                "Vertical extension of vertical slur coverage");
+        final int coverageVDepth;
 
-        private final Scale.Fraction coverageVDepthSmall = new Scale.Fraction(
-                1.5,
-                "Vertical extension of small vertical slur coverage");
+        final int coverageVDepthSmall;
 
-        private final Scale.Fraction targetExtension = new Scale.Fraction(
-                0.5,
-                "Extension length from slur end to slur target point");
+        final int targetExtension;
 
-        private final Constant.Double slopeSeparator = new Constant.Double(
-                "tangent",
-                0.5,
-                "Slope that separates vertical slurs from horizontal slurs");
+        final double slopeSeparator;
 
-        private final Constant.Double maxOrphanSlope = new Constant.Double(
-                "tangent",
-                0.5,
-                "Maximum slope for an orphan slur");
+        final double maxOrphanSlope;
 
-        private final Scale.Fraction maxOrphanDx = new Scale.Fraction(
-                6.0,
-                "Maximum dx to staff end for an orphan slur");
+        final int maxOrphanDx;
 
-        private final Scale.Fraction wideSlurWidth = new Scale.Fraction(
-                6.0,
-                "Minimum width to be a wide slur");
+        final int wideSlurWidth;
 
-        private final Scale.Fraction maxSmallSlurWidth = new Scale.Fraction(
-                1.5,
-                "Maximum width for a small slur");
+        final int maxSmallSlurWidth;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            coverageHExt = scale.toPixels(constants.coverageHExt);
+            coverageHIn = scale.toPixels(constants.coverageHIn);
+            coverageHDepth = scale.toPixels(constants.coverageHDepth);
+            coverageVExt = scale.toPixels(constants.coverageVExt);
+            coverageVIn = scale.toPixels(constants.coverageVIn);
+            coverageVDepth = scale.toPixels(constants.coverageVDepth);
+            coverageVDepthSmall = scale.toPixels(constants.coverageVDepthSmall);
+            targetExtension = scale.toPixels(constants.targetExtension);
+            slopeSeparator = constants.slopeSeparator.getValue();
+            maxOrphanSlope = constants.maxOrphanSlope.getValue();
+            maxOrphanDx = scale.toPixels(constants.maxOrphanDx);
+            wideSlurWidth = scale.toPixels(constants.wideSlurWidth);
+            maxSmallSlurWidth = scale.toPixels(constants.maxSmallSlurWidth);
+
+            if (logger.isDebugEnabled()) {
+                new Dumping().dump(this);
+            }
+        }
     }
 }

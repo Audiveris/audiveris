@@ -605,7 +605,7 @@ public class SymbolsEditor
                     inter.renderAttachments(g);
                     g.setStroke(oldStroke);
 
-                    // Inter: main partnerships
+                    // Inter: main links
                     SIGraph sig = inter.getSig();
                     Set<Relation> supports = sig.getRelations(inter, Support.class);
 

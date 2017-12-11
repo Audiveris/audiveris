@@ -43,7 +43,7 @@ import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.step.Step;
 
@@ -150,30 +150,30 @@ public class InterController
         ghost.setBounds(glyph.getBounds());
         ghost.setGlyph(glyph);
 
-        Collection<Partnership> partnerships = null;
+        Collection<Link> links = null;
 
         if (staves.size() == 1) {
             // Staff is uniquely defined
             staff = staves.get(0);
             system = staff.getSystem();
-            partnerships = ghost.searchPartnerships(system, false);
+            links = ghost.searchLinks(system, false);
         }
 
-        if ((staff == null) && constants.useStaffPartnership.isSet()) {
-            // Try to use partnership
+        if ((staff == null) && constants.useStaffLink.isSet()) {
+            // Try to use link
             SystemInfo prevSystem = null;
             StaffLoop:
             for (Staff stf : staves) {
                 system = stf.getSystem();
 
                 if (system != prevSystem) {
-                    partnerships = ghost.searchPartnerships(system, false);
+                    links = ghost.searchLinks(system, false);
 
-                    for (Partnership p : partnerships) {
+                    for (Link p : links) {
                         if (p.partner.getStaff() != null) {
                             staff = p.partner.getStaff();
 
-                            // We stop on first partnership found. TODO: is this erroneous?
+                            // We stop on first link found. TODO: is this erroneous?
                             break StaffLoop;
                         }
                     }
@@ -223,9 +223,9 @@ public class InterController
         system = staff.getSystem();
 
         // If glyph used by another inter, delete this other inter
-        removeCompetitors(glyph, system);
+        removeCompetitors(ghost, glyph, system);
 
-        addGhost(ghost, partnerships);
+        addGhost(ghost, links);
     }
 
     //---------//
@@ -271,9 +271,9 @@ public class InterController
         SystemInfo system = ghost.getStaff().getSystem();
 
         // Edges? this depends on ghost class...
-        Collection<Partnership> partnerships = ghost.searchPartnerships(system, false);
+        Collection<Link> links = ghost.searchLinks(system, false);
 
-        addGhost(ghost, partnerships);
+        addGhost(ghost, links);
     }
 
     //---------------//
@@ -550,10 +550,10 @@ public class InterController
      * Perform ghost addition.
      *
      * @param ghost        the ghost inter to add/drop
-     * @param partnerships its partnerships
+     * @param links its links
      */
     private void addGhost (Inter ghost,
-                           Collection<Partnership> partnerships)
+                           Collection<Link> links)
     {
         final Rectangle ghostBounds = ghost.getBounds();
         final Staff staff = ghost.getStaff();
@@ -561,26 +561,25 @@ public class InterController
 
         // Inter addition
         final UITaskList seq = new UITaskList(
-                new AdditionTask(sig, ghost, ghostBounds, partnerships));
+                new AdditionTask(sig, ghost, ghostBounds, links));
 
         // Related additions if any
         if (ghost instanceof RestInter) {
             // Wrap this rest within a rest chord
             RestChordInter restChord = new RestChordInter(-1);
             restChord.setStaff(staff);
-            seq.add(
-                    new AdditionTask(
+            seq.add(new AdditionTask(
                             sig,
                             restChord,
                             ghostBounds,
-                            Arrays.asList(new Partnership(ghost, new Containment(), true))));
+                            Arrays.asList(new Link(ghost, new Containment(), true))));
         } else if (ghost instanceof HeadInter) {
             // If we link head to a stem, create/update the related head chord
             boolean stemFound = false;
 
-            for (Partnership partnership : partnerships) {
-                if (partnership.relation instanceof HeadStemRelation) {
-                    StemInter stem = (StemInter) partnership.partner;
+            for (Link link : links) {
+                if (link.relation instanceof HeadStemRelation) {
+                    StemInter stem = (StemInter) link.partner;
                     HeadChordInter headChord = stem.getChord();
 
                     if (headChord == null) {
@@ -696,13 +695,14 @@ public class InterController
      * @param glyph  underlying glyph
      * @param system containing system
      */
-    private void removeCompetitors (Glyph glyph,
+    private void removeCompetitors (Inter ghost,
+                                    Glyph glyph,
                                     SystemInfo system)
     {
         final List<Inter> intersected = system.getSig().intersectedInters(glyph.getBounds());
 
         for (Inter inter : intersected) {
-            if (inter.getGlyph() == glyph) {
+            if ((inter != ghost) && (inter.getGlyph() == glyph)) {
                 removeInter(inter, null);
             }
         }
@@ -717,9 +717,9 @@ public class InterController
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.Boolean useStaffPartnership = new Constant.Boolean(
+        private final Constant.Boolean useStaffLink = new Constant.Boolean(
                 true,
-                "Should we use partnership for staff selection");
+                "Should we use link for staff selection");
 
         private final Constant.Boolean useStaffProximity = new Constant.Boolean(
                 true,

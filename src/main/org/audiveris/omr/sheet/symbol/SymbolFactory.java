@@ -64,6 +64,7 @@ import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
@@ -488,6 +489,10 @@ public class SymbolFactory
             } else {
                 return null;
             }
+
+        // Curves
+        case SLUR:
+            return new SlurInter(grade);
 
         default:
 

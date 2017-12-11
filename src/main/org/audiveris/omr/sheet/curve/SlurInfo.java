@@ -52,37 +52,39 @@ public class SlurInfo
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Approximating first side model. */
-    private Model firstModel;
+    protected Model firstModel;
 
     /** Approximating last side model. */
-    private Model lastModel;
+    protected Model lastModel;
 
     /** Number of points for side circles. */
-    private final int sideLength;
+    protected final int sideLength;
 
-    /** Is the slur: above heads, below heads or flat. */
-    private int above;
+    /** Is the slur: above heads, below heads or flat.
+     * 1 for above, -1 for below, 0 for flat
+     */
+    protected int above;
 
     /** Unity vector from segment middle to circle center. */
-    private Point2D bisUnit;
+    protected Point2D bisUnit;
 
     /** True for slur rather horizontal. */
-    private Boolean horizontal;
+    protected Boolean horizontal;
 
     /** Area for first chords. */
-    private Area firstChordArea;
+    protected Area firstChordArea;
 
     /** Area for last chords. */
-    private Area lastChordArea;
+    protected Area lastChordArea;
 
     /** Target point for first chords. */
-    private Point firstTarget;
+    protected Point firstTarget;
 
     /** Target point for last chords. */
-    private Point lastTarget;
+    protected Point lastTarget;
 
     /** Global Bézier curve for the slur. */
-    private CubicCurve2D curve;
+    protected CubicCurve2D curve;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -282,6 +284,20 @@ public class SlurInfo
         //        return curve;
     }
 
+    //--------------//
+    // getEndVector //
+    //--------------//
+    /**
+     * Report the unit tangent vector at the item end designated by 'reverse' value.
+     *
+     * @param reverse true for first end, false for last
+     * @return the tangent unit vector
+     */
+    public Point2D getEndVector (boolean reverse)
+    {
+        return getSideModel(reverse).getEndVector(reverse);
+    }
+
     //-------------//
     // getMidPoint //
     //-------------//
@@ -438,7 +454,7 @@ public class SlurInfo
         if (model != null) {
             super.setModel(model);
             above = model.above();
-            bisUnit = computeBisector();
+            bisUnit = computeBisector(above > 0);
         }
     }
 
@@ -472,6 +488,25 @@ public class SlurInfo
         }
     }
 
+    //-----------------//
+    // computeBisector //
+    //-----------------//
+    /**
+     * Compute bisector vector.
+     *
+     * @param above is the slur above (or below)
+     * @return the unit bisector
+     */
+    protected Point2D.Double computeBisector (boolean above)
+    {
+        Line2D bisector = LineUtil.bisector(getEnd(above), getEnd(!above));
+        double length = bisector.getP1().distance(bisector.getP2());
+
+        return new Point2D.Double(
+                (bisector.getX2() - bisector.getX1()) / length,
+                (bisector.getY2() - bisector.getY1()) / length);
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -485,22 +520,5 @@ public class SlurInfo
         }
 
         return sb.toString();
-    }
-
-    //-----------------//
-    // computeBisector //
-    //-----------------//
-    /**
-     * Compute bisector vector.
-     */
-    private Point2D.Double computeBisector ()
-    {
-        boolean ccw = model.ccw() == 1;
-        Line2D bisector = LineUtil.bisector(getEnd(!ccw), getEnd(ccw));
-        double length = bisector.getP1().distance(bisector.getP2());
-
-        return new Point2D.Double(
-                (bisector.getX2() - bisector.getX1()) / length,
-                (bisector.getY2() - bisector.getY1()) / length);
     }
 }

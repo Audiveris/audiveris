@@ -22,16 +22,20 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.curve.GlyphSlurInfo;
 import org.audiveris.omr.sheet.curve.SlurInfo;
+import org.audiveris.omr.sheet.curve.SlursLinker;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.HorizontalSide;
@@ -45,7 +49,10 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 
@@ -193,11 +200,11 @@ public class SlurInter
     //---------------
     //
     /** Physical characteristics. */
-    private final SlurInfo info;
+    private SlurInfo info;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new SlurInter object.
+     * Creates a new {@code SlurInter} object.
      *
      * @param info    the underlying slur information
      * @param impacts the assignment details
@@ -215,6 +222,18 @@ public class SlurInter
         for (Entry<String, java.awt.Shape> entry : info.getAttachments().entrySet()) {
             addAttachment(entry.getKey(), entry.getValue());
         }
+    }
+
+    /**
+     * Creates a new {@code SlurInter} object (meant for manual assignment).
+     *
+     * @param grade inter grade
+     */
+    public SlurInter (double grade)
+    {
+        super(null, null, Shape.SLUR, grade);
+
+        info = null;
     }
 
     /**
@@ -437,6 +456,28 @@ public class SlurInter
         super.remove(extensive);
     }
 
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
+        Collections.sort(systemHeads, Inters.byAbscissa);
+
+        Collection<Link> links = lookupLinks(systemHeads, system);
+
+        if (doit) {
+            for (Link link : links) {
+                link.applyTo(this);
+            }
+        }
+
+        return links;
+    }
+
     //--------------//
     // setExtension //
     //--------------//
@@ -455,6 +496,22 @@ public class SlurInter
             leftExtension = other;
         } else {
             rightExtension = other;
+        }
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if (info == null) {
+            // Slur manually created out of a glyph
+            info = GlyphSlurInfo.create(glyph);
+            above = info.above() > 0;
+            curve = info.getCurve();
         }
     }
 
@@ -558,6 +615,37 @@ public class SlurInter
         logger.debug("{} --- {} deltaPitch:{} res:{}", prevSlur, this, deltaPitch, res);
 
         return res;
+    }
+
+    //-------------//
+    // lookupLinks //
+    //-------------//
+    /**
+     * Try to detect link between this Slur instance and head on left side
+     * plus head on right.
+     *
+     * @param systemHeads ordered collection of notes in system
+     * @return the collection of links found, perhaps null
+     */
+    private Collection<Link> lookupLinks (List<Inter> systemHeads,
+                                          SystemInfo system)
+    {
+        if (systemHeads.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        if (isVip()) {
+            logger.info("VIP searchLinks for {}", this);
+        }
+
+        SlurInter pruned = new SlursLinker(system.getSheet()).prune(
+                Collections.singleton((Inter) this));
+
+        if (pruned != null) {
+            logger.info("Got a slur");
+        }
+
+        return Collections.EMPTY_SET;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

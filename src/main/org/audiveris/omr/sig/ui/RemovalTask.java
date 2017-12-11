@@ -23,7 +23,7 @@ package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import java.util.Collection;
@@ -55,7 +55,7 @@ public class RemovalTask
     @Override
     public void performDo ()
     {
-        partnerships = partnershipsOf(inter);
+        links = linksOf(inter);
         inter.remove(false);
     }
 
@@ -71,8 +71,8 @@ public class RemovalTask
         inter.setBounds(initialBounds);
         sig.addVertex(inter);
 
-        for (Partnership partnership : partnerships) {
-            partnership.applyTo(inter);
+        for (Link link : links) {
+            link.applyTo(inter);
         }
     }
 
@@ -83,34 +83,33 @@ public class RemovalTask
     }
 
     /**
-     * Retrieve the current partnerships around the provided inter.
+     * Retrieve the current links around the provided inter.
      *
      * @param inter the provided inter
-     * @return its partnerships, perhaps empty
+     * @return its links, perhaps empty
      */
-    private static Collection<Partnership> partnershipsOf (Inter inter)
+    private static Collection<Link> linksOf (Inter inter)
     {
         final SIGraph sig = inter.getSig();
-        Set<Partnership> partnerships = null;
+        Set<Link> links = null;
 
         for (Relation rel : sig.edgesOf(inter)) {
-            if (partnerships == null) {
-                partnerships = new LinkedHashSet<Partnership>();
+            if (links == null) {
+                links = new LinkedHashSet<Link>();
             }
 
             Inter partner = sig.getOppositeInter(inter, rel);
 
-            partnerships.add(
-                    new Partnership(
+            links.add(new Link(
                             sig.getOppositeInter(inter, rel),
                             rel,
                             sig.getEdgeTarget(rel) == partner));
         }
 
-        if (partnerships == null) {
+        if (links == null) {
             return Collections.emptySet();
         }
 
-        return partnerships;
+        return links;
     }
 }

@@ -30,7 +30,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -233,16 +233,16 @@ public class DynamicsInter
      */
     public boolean linkWithChord ()
     {
-        return !searchPartnerships(sig.getSystem(), true).isEmpty();
+        return !searchLinks(sig.getSystem(), true).isEmpty();
     }
 
-    //-------------------//
-    // lookupPartnership //
-    //-------------------//
-    public Partnership lookupPartnership (SystemInfo system)
+    //------------//
+    // lookupLink //
+    //------------//
+    public Link lookupLink (SystemInfo system)
     {
         if (isVip()) {
-            logger.info("VIP lookupPartnership for {}", this);
+            logger.info("VIP lookupLink for {}", this);
         }
 
         final Scale scale = system.getSheet().getScale();
@@ -302,30 +302,30 @@ public class DynamicsInter
             }
 
             // For dynamics & for chord
-            return new Partnership(chord, new ChordDynamicsRelation(), false);
+            return new Link(chord, new ChordDynamicsRelation(), false);
         }
 
         return null;
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
-        Partnership partnership = lookupPartnership(system);
+        Link link = lookupLink(system);
 
-        if (partnership == null) {
+        if (link == null) {
             return Collections.emptySet();
         }
 
         if (doit) {
-            partnership.applyTo(this);
+            link.applyTo(this);
         }
 
-        return Collections.singleton(partnership);
+        return Collections.singleton(link);
     }
 
     //-----------//

@@ -161,8 +161,8 @@ public class SlotsBuilder
     private final Parameters params;
 
     /** Inter-chord relationships for the current measure stack. */
-    private SimpleDirectedGraph<AbstractChordInter, Link> graph = new SimpleDirectedGraph<AbstractChordInter, Link>(
-            Link.class);
+    private SimpleDirectedGraph<AbstractChordInter, Edge> graph = new SimpleDirectedGraph<AbstractChordInter, Edge>(
+            Edge.class);
 
     /** Current earliest term for each staff in stack. */
     private final Map<Staff, Rational> stackTerms = new LinkedHashMap<Staff, Rational>();
@@ -782,10 +782,10 @@ public class SlotsBuilder
     private Rel getRel (AbstractChordInter from,
                         AbstractChordInter to)
     {
-        Link link = graph.getEdge(from, to);
+        Edge edge = graph.getEdge(from, to);
 
-        if (link != null) {
-            return link.rel;
+        if (edge != null) {
+            return edge.rel;
         }
 
         return null;
@@ -1156,30 +1156,30 @@ public class SlotsBuilder
                          AbstractChordInter to,
                          Rel rel)
     {
-        Link link = graph.getEdge(from, to);
+        Edge edge = graph.getEdge(from, to);
 
-        if (link != null) {
-            link.rel = rel;
+        if (edge != null) {
+            edge.rel = rel;
         } else {
-            graph.addEdge(from, to, new Link(rel));
+            graph.addEdge(from, to, new Edge(rel));
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //------//
-    // Link //
+    // Edge //
     //------//
     /**
      * Meant to store a relation instance (edge) between two chords (vertices).
      */
-    protected static class Link
+    protected static class Edge
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Rel rel;
+        Rel rel; // Relationship carried by the concrete edge
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Link (Rel rel)
+        public Edge (Rel rel)
         {
             this.rel = rel;
         }

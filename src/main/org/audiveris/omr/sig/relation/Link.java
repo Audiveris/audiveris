@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      P a r t n e r s h i p                                     //
+//                                             L i n k                                            //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -25,31 +25,38 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 
 /**
- * Class {@code Partnership} encapsulates a partnering vertex with the related edge.
+ * Seen from an Inter instance, class {@code Link} describes a potential relation with
+ * another Inter instance (the partner).
+ * <p>
+ * This is meant to deal with a potential relation between the inter instance and the partner,
+ * before perhaps recording the relation as an edge within the SIG.
  *
  * @author Hervé Bitteur
  */
-public class Partnership
+public class Link
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
+    /** The other Inter instance, the one to be linked with. */
     public final Inter partner;
 
+    /** The concrete relation. */
     public final Relation relation;
 
+    /** True for Inter as source and Partner as target, false for the reverse. */
     public final boolean outgoing;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Partnership} object.
+     * Creates a new {@code Link} object.
      *
      * @param partner  the partnering inter instance
      * @param relation the relation with this partner
      * @param outgoing true if partner is target, false if it is source
      */
-    public Partnership (Inter partner,
-                        Relation relation,
-                        boolean outgoing)
+    public Link (Inter partner,
+                 Relation relation,
+                 boolean outgoing)
     {
         this.partner = partner;
         this.relation = relation;
@@ -74,7 +81,7 @@ public class Partnership
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("Partnership{");
+        StringBuilder sb = new StringBuilder("Link{");
         sb.append(partner);
         sb.append(" ").append(relation);
         sb.append(" ").append(outgoing ? "OUTGOING" : "INCOMING");

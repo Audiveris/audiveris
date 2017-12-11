@@ -34,7 +34,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigValue.InterSet;
 import org.audiveris.omr.sig.relation.Containment;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
@@ -884,12 +884,12 @@ public abstract class AbstractInter
         }
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         return Collections.emptySet(); // By default
     }

@@ -33,7 +33,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -188,10 +188,10 @@ public class AlterInter
      */
     public void detectHeadRelation (List<Inter> systemHeads)
     {
-        Collection<Partnership> partnerships = searchPartnerships(systemHeads);
+        Collection<Link> links = lookupLinks(systemHeads);
 
-        for (Partnership partnership : partnerships) {
-            partnership.applyTo(this);
+        for (Link link : links) {
+            link.applyTo(this);
         }
     }
 
@@ -275,26 +275,26 @@ public class AlterInter
         return null;
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         // Not very optimized!
         List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
         Collections.sort(systemHeads, Inters.byAbscissa);
 
-        Collection<Partnership> partnerships = searchPartnerships(systemHeads);
+        Collection<Link> links = lookupLinks(systemHeads);
 
         if (doit) {
-            for (Partnership partnership : partnerships) {
-                partnership.applyTo(this);
+            for (Link link : links) {
+                link.applyTo(this);
             }
         }
 
-        return partnerships;
+        return links;
     }
 
     //--------------//
@@ -359,24 +359,24 @@ public class AlterInter
         return super.internals() + " " + shape;
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // lookupLinks //
+    //-------------//
     /**
-     * Try to detect partnership between this Alter instance and a head nearby (and its
+     * Try to detect link between this Alter instance and a head nearby (and its
      * mirror head if any)
      *
      * @param systemHeads ordered collection of notes in system
-     * @return the collection of partnerships found, perhaps null
+     * @return the collection of links found, perhaps null
      */
-    private Collection<Partnership> searchPartnerships (List<Inter> systemHeads)
+    private Collection<Link> lookupLinks (List<Inter> systemHeads)
     {
         if (systemHeads.isEmpty()) {
             return Collections.emptySet();
         }
 
         if (isVip()) {
-            logger.info("VIP searchPartnerships for {}", this);
+            logger.info("VIP searchLinks for {}", this);
         }
 
         // Look for notes nearby on the right side of accidental
@@ -423,12 +423,12 @@ public class AlterInter
             }
 
             if (bestRel != null) {
-                Set<Partnership> set = new LinkedHashSet<Partnership>();
-                set.add(new Partnership(bestHead, bestRel, true));
+                Set<Link> set = new LinkedHashSet<Link>();
+                set.add(new Link(bestHead, bestRel, true));
 
                 // If any, include head mirror as well
                 if (bestHead.getMirror() != null) {
-                    set.add(new Partnership(bestHead.getMirror(), bestRel.duplicate(), true));
+                    set.add(new Link(bestHead.getMirror(), bestRel.duplicate(), true));
                 }
 
                 return set;

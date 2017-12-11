@@ -1160,7 +1160,7 @@ public class SlursBuilder
                 "High minimum angle (in degrees) between slur and vertical");
 
         private final Constant.Ratio quorumRatio = new Constant.Ratio(
-                0.5, //0.75,
+                0.5,
                 "Minimum length expressed as ratio of longest in clump");
 
         private final Scale.Fraction minProjection = new Scale.Fraction(

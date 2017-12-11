@@ -31,7 +31,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -117,11 +117,11 @@ public class ArticulationInter
         ArticulationInter artic = (ArticulationInter) SymbolFactory.createGhost(shape, grade);
         artic.setGlyph(glyph);
 
-        Partnership partnership = artic.lookupPartnership(systemHeadChords);
+        Link link = artic.lookupLink(systemHeadChords);
 
-        if (partnership != null) {
+        if (link != null) {
             system.getSig().addVertex(artic);
-            partnership.applyTo(artic);
+            link.applyTo(artic);
 
             return artic;
         }
@@ -159,28 +159,28 @@ public class ArticulationInter
         return null;
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         // Not very optimized!
         List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
-        Partnership partnership = lookupPartnership(systemHeadChords);
+        Link link = lookupLink(systemHeadChords);
 
-        if (partnership == null) {
+        if (link == null) {
             return Collections.emptyList();
         }
 
         if (doit) {
-            partnership.applyTo(this);
+            link.applyTo(this);
         }
 
-        return Collections.singleton(partnership);
+        return Collections.singleton(link);
     }
 
     //-----------//
@@ -192,17 +192,16 @@ public class ArticulationInter
         return super.internals() + " " + shape;
     }
 
-    //-------------------//
-    // lookupPartnership //
-    //-------------------//
+    //------------//
+    // lookupLink //
+    //------------//
     /**
-     * Try to detect a partnership between this articulation instance and a HeadChord
-     * nearby.
+     * Try to detect a link between this articulation instance and a HeadChord nearby.
      *
      * @param systemHeadChords ordered collection of head chords in system
-     * @return the partnership found or null
+     * @return the link found or null
      */
-    private Partnership lookupPartnership (List<Inter> systemHeadChords)
+    private Link lookupLink (List<Inter> systemHeadChords)
     {
         if (systemHeadChords.isEmpty()) {
             return null;
@@ -258,7 +257,7 @@ public class ArticulationInter
         }
 
         if (bestRel != null) {
-            return new Partnership(bestChord, bestRel, false);
+            return new Link(bestChord, bestRel, false);
         }
 
         return null;

@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.ui;
 import java.awt.Rectangle;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 
 import java.util.Collection;
 
@@ -44,14 +44,14 @@ public class AdditionTask
      * @param sig           the underlying sig
      * @param inter         the inter to add
      * @param initialBounds the initial bounds for this inter
-     * @param partnerships  the provided relations around inter
+     * @param links  the provided relations around inter
      */
     public AdditionTask (SIGraph sig,
                          Inter inter,
                          Rectangle initialBounds,
-                         Collection<Partnership> partnerships)
+                         Collection<Link> links)
     {
-        super(sig, inter, initialBounds, partnerships);
+        super(sig, inter, initialBounds, links);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -61,8 +61,8 @@ public class AdditionTask
         inter.setBounds(initialBounds);
         sig.addVertex(inter);
 
-        for (Partnership partnership : partnerships) {
-            partnership.applyTo(inter);
+        for (Link link : links) {
+            link.applyTo(inter);
         }
     }
 

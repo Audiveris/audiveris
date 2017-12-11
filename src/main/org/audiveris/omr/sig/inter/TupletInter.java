@@ -35,7 +35,7 @@ import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -279,30 +279,30 @@ public class TupletInter
         super.remove(extensive);
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     /**
      * {@inheritDoc}
      * <p>
      * Specifically, look for chords to link with this tuplet.
      *
-     * @return chords partnership, perhaps empty
+     * @return chords link, perhaps empty
      */
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         MeasureStack stack = system.getMeasureStackAt(getCenter());
-        Collection<Partnership> partnerships = new TupletsBuilder(stack).lookupPartnerships(this);
+        Collection<Link> links = new TupletsBuilder(stack).lookupLinks(this);
 
         if (doit) {
-            for (Partnership partnership : partnerships) {
-                partnership.applyTo(this);
+            for (Link link : links) {
+                link.applyTo(this);
             }
         }
 
-        return partnerships;
+        return links;
     }
 
     //-----------//

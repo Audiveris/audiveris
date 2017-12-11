@@ -31,7 +31,8 @@ import java.util.Collection;
  * of a slur or line shape (or a side portion for a long slur).
  * <p>
  * The main purpose is to decouple slur retrieval from the actual mathematical item handled (circle,
- * parabola, quadCurve, line, ...)
+ * parabola, quadCurve, line, ...).
+ * Actually, circles and lines are enough for Audiveris needs.
  *
  * @author Hervé Bitteur
  */
@@ -43,13 +44,19 @@ public interface Model
      * Report the item shape as /--\ (above) or \--/ (below) or ---- (flat).
      *
      * @return 1 for above, -1 for below, 0 for flat.
+     * @see #ccw()
      */
     int above ();
 
     /**
      * Report whether the curve turns counter-clockwise from first to last point.
+     * <p>
+     * Nota: 'above' is defined in absolute, while 'ccw' is defined with respect to points order:
+     * If first point is on left, then above = -ccw.
+     * If first point is on right, then above = ccw.
      *
      * @return 1 for counter-clockwise, -1 for clockwise, 0 for straight
+     * @see #above()
      */
     int ccw ();
 

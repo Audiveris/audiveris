@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.ui;
 import java.awt.Rectangle;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 
 import java.util.Collection;
 
@@ -46,7 +46,7 @@ public abstract class InterTask
     protected final Rectangle initialBounds;
 
     /** Relations inter is involved in. */
-    protected Collection<Partnership> partnerships;
+    protected Collection<Link> links;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -55,17 +55,17 @@ public abstract class InterTask
      * @param sig           the underlying sig
      * @param inter         the inter task is focused upon
      * @param initialBounds the inter initial bounds
-     * @param partnerships  the relations around inter
+     * @param links  the relations around inter
      */
     protected InterTask (SIGraph sig,
                          Inter inter,
                          Rectangle initialBounds,
-                         Collection<Partnership> partnerships)
+                         Collection<Link> links)
     {
         super(sig);
         this.inter = inter;
         this.initialBounds = new Rectangle(initialBounds); // Safer to use a copy...
-        this.partnerships = partnerships;
+        this.links = links;
     }
 
     /**

@@ -34,7 +34,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -115,11 +115,11 @@ public abstract class AbstractFlagInter
         AbstractFlagInter flag = (AbstractFlagInter) SymbolFactory.createGhost(shape, grade);
         flag.setGlyph(glyph);
 
-        Partnership partnership = flag.lookupPartnership(systemStems);
+        Link link = flag.lookupLink(systemStems);
 
-        if (partnership != null) {
+        if (link != null) {
             system.getSig().addVertex(flag);
-            partnership.applyTo(flag);
+            link.applyTo(flag);
 
             return flag;
         }
@@ -166,28 +166,28 @@ public abstract class AbstractFlagInter
         return null;
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         // Not very optimized!
         List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
 
-        Partnership partnership = lookupPartnership(systemStems);
+        Link link = lookupLink(systemStems);
 
-        if (partnership == null) {
+        if (link == null) {
             return Collections.emptyList();
         }
 
         if (doit) {
-            partnership.applyTo(this);
+            link.applyTo(this);
         }
 
-        return Collections.singleton(partnership);
+        return Collections.singleton(link);
     }
 
     //--------------//
@@ -230,16 +230,16 @@ public abstract class AbstractFlagInter
         return 0;
     }
 
-    //-------------------//
-    // lookupPartnership //
-    //-------------------//
+    //------------//
+    // lookupLink //
+    //------------//
     /**
-     * Try to detect a partnership between this Flag instance and a stem nearby.
+     * Try to detect a link between this Flag instance and a stem nearby.
      *
      * @param systemStems ordered collection of stems in system
-     * @return the partnership found or null
+     * @return the link found or null
      */
-    private Partnership lookupPartnership (List<Inter> systemStems)
+    private Link lookupLink (List<Inter> systemStems)
     {
         if (systemStems.isEmpty()) {
             return null;
@@ -333,7 +333,7 @@ public abstract class AbstractFlagInter
                     }
                 }
 
-                return new Partnership(stem, fRel, true);
+                return new Link(stem, fRel, true);
             }
         }
 

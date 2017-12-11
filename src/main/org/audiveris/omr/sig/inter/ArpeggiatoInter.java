@@ -32,7 +32,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -113,11 +113,11 @@ public class ArpeggiatoInter
                 grade);
         arpeggiato.setGlyph(glyph);
 
-        Partnership partnership = arpeggiato.lookupPartnership(systemHeadChords, system);
+        Link link = arpeggiato.lookupLink(systemHeadChords, system);
 
-        if (partnership != null) {
+        if (link != null) {
             system.getSig().addVertex(arpeggiato);
-            partnership.applyTo(arpeggiato);
+            link.applyTo(arpeggiato);
 
             return arpeggiato;
         }
@@ -138,42 +138,41 @@ public class ArpeggiatoInter
         return null;
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         // Not very optimized!
         List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
-        Partnership partnership = lookupPartnership(systemHeadChords, system);
+        Link link = lookupLink(systemHeadChords, system);
 
-        if (partnership == null) {
+        if (link == null) {
             return Collections.emptyList();
         }
 
         if (doit) {
-            partnership.applyTo(this);
+            link.applyTo(this);
         }
 
-        return Collections.singleton(partnership);
+        return Collections.singleton(link);
     }
 
-    //-------------------//
-    // lookupPartnership //
-    //-------------------//
+    //------------//
+    // lookupLink //
+    //------------//
     /**
-     * Try to detect a partnership between this arpeggiato instance and a HeadChord
-     * nearby.
+     * Try to detect a link between this arpeggiato instance and a HeadChord nearby.
      *
      * @param systemHeadChords ordered collection of head chords in system
-     * @return the partnership found or null
+     * @return the link found or null
      */
-    private Partnership lookupPartnership (List<Inter> systemHeadChords,
-                                           SystemInfo system)
+    private Link lookupLink (List<Inter> systemHeadChords,
+                             SystemInfo system)
     {
         // Look for a head-chord on right side of this symbol
         // Use a lookup box (glyph height, predefined width)
@@ -215,7 +214,7 @@ public class ArpeggiatoInter
             return null;
         }
 
-        return new Partnership(bestChord, rel, false);
+        return new Link(bestChord, rel, false);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

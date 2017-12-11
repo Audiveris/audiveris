@@ -51,7 +51,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.ByteUtil;
@@ -571,35 +571,35 @@ public class HeadInter
         bounds = glyph.getBounds();
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     /**
      * {@inheritDoc}
      * <p>
      * Specifically, look for stem to allow head attachment.
      *
-     * @return stem partnership, perhaps empty
+     * @return stem link, perhaps empty
      */
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         // Not very optimized!
         List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
 
-        Partnership partnership = lookupPartnership(systemStems);
+        Link link = lookupLink(systemStems);
 
-        if (partnership == null) {
+        if (link == null) {
             return Collections.emptyList();
         }
 
         if (doit) {
-            partnership.applyTo(this);
+            link.applyTo(this);
         }
 
-        return Collections.singleton(partnership);
+        return Collections.singleton(link);
     }
 
     //--------//
@@ -702,19 +702,19 @@ public class HeadInter
         // Perhaps check for a weak ledger, tangent to the note towards staff
     }
 
-    //-------------------//
-    // lookupPartnership //
-    //-------------------//
+    //------------//
+    // lookupLink //
+    //------------//
     /**
-     * Try to detect a partnership between this Head instance and a stem nearby.
+     * Try to detect a link between this Head instance and a stem nearby.
      * <p>
      * 1/ Use a lookup area on each horizontal side of the head to filter candidate stems.
      * 2/ Select the best connection among the compatible candidates.
      *
      * @param systemStems abscissa-ordered collection of stems in system
-     * @return the partnership found or null
+     * @return the link found or null
      */
-    private Partnership lookupPartnership (List<Inter> systemStems)
+    private Link lookupLink (List<Inter> systemStems)
     {
         if (systemStems.isEmpty()) {
             return null;
@@ -727,11 +727,12 @@ public class HeadInter
         final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
         final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum());
 
-        Partnership bestPartnership = null;
+        Link bestLink = null;
         double bestGrade = 0;
 
         for (Corner corner : Corner.values) {
-            Point refPt = PointUtil.rounded(getStemReferencePoint(corner.stemAnchor(), interline));
+            Point refPt = PointUtil.rounded(
+                    getStemReferencePoint(corner.stemAnchor(), interline));
             int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
             int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
             Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
@@ -758,16 +759,16 @@ public class HeadInter
                 rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
-                    if ((bestPartnership == null) || (rel.getGrade() > bestGrade)) {
+                    if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
                         rel.setExtensionPoint(refPt); // Approximately
-                        bestPartnership = new Partnership(stem, rel, true);
+                        bestLink = new Link(stem, rel, true);
                         bestGrade = rel.getGrade();
                     }
                 }
             }
         }
 
-        return bestPartnership;
+        return bestLink;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

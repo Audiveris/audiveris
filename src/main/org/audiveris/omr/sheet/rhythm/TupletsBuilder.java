@@ -33,7 +33,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -103,11 +103,11 @@ public class TupletsBuilder
             final SIGraph sig = stack.getSystem().getSig();
             sig.removeAllEdges(sig.getRelations(tuplet, ChordTupletRelation.class));
 
-            Collection<Partnership> partnerships = lookupPartnerships(tuplet);
+            Collection<Link> links = lookupLinks(tuplet);
 
-            if (!partnerships.isEmpty()) {
-                for (Partnership partnership : partnerships) {
-                    partnership.applyTo(tuplet);
+            if (!links.isEmpty()) {
+                for (Link link : links) {
+                    link.applyTo(tuplet);
                 }
             } else {
                 toDelete.add(tuplet);
@@ -118,15 +118,15 @@ public class TupletsBuilder
     }
 
     //--------------------//
-    // lookupPartnerships //
+    // lookupLinks //
     //--------------------//
     /**
      * Look up for tuplet relevant chords.
      *
      * @param tuplet the tuplet sign
-     * @return the collection of partnerships found, perhaps empty
+     * @return the collection of links found, perhaps empty
      */
-    public Collection<Partnership> lookupPartnerships (TupletInter tuplet)
+    public Collection<Link> lookupLinks (TupletInter tuplet)
     {
         // Try to link tuplet with proper chords found in measure stack
         // (just staff above and staff below)
@@ -141,14 +141,13 @@ public class TupletsBuilder
 
         logger.trace("{} connectable to {}", tuplet, chords);
 
-        List<Partnership> partnerships = new ArrayList<Partnership>();
+        List<Link> links = new ArrayList<Link>();
 
         for (AbstractChordInter chord : chords) {
-            partnerships.add(
-                    new Partnership(chord, new ChordTupletRelation(tuplet.getShape()), false));
+            links.add(new Link(chord, new ChordTupletRelation(tuplet.getShape()), false));
         }
 
-        return partnerships;
+        return links;
     }
 
     //---------------//

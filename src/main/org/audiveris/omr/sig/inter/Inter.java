@@ -31,7 +31,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
 
@@ -352,7 +352,7 @@ public interface Inter
     /**
      * Look for partners around this inter instance.
      * <p>
-     * Relationships that are searched for inters (which cannot survive without such partnership):
+     * Relationships that are searched for inters (which cannot survive without such link):
      * <ul>
      * <li>For a flag: 1 stem
      * <li>For a head: 1 stem
@@ -365,10 +365,10 @@ public interface Inter
      *
      * @param system containing system
      * @param doit   if true, relations are actually added to the sig
-     * @return the collection of partnerships found, perhaps empty
+     * @return the collection of links found, perhaps empty
      */
-    Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                boolean doit);
+    Collection<Link> searchLinks (SystemInfo system,
+                                  boolean doit);
 
     /**
      * Assign the bounding box for this interpretation.

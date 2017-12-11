@@ -33,7 +33,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -267,19 +267,19 @@ public class AugmentationDotInter
         super.remove(extensive);
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     /**
-     * Try to find a partnership with a note or another dot on the left.
+     * Try to find a link with a note or another dot on the left.
      *
      * @param system containing system
      * @param doit   true to apply
-     * @return the partnership found or null
+     * @return the link found or null
      */
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         // Not very optimized!
         List<Inter> systemNotes = system.getSig().inters(AbstractNoteInter.class);
@@ -288,17 +288,17 @@ public class AugmentationDotInter
         List<Inter> systemDots = system.getSig().inters(AugmentationDotInter.class);
         Collections.sort(systemDots, Inters.byAbscissa);
 
-        Partnership partnership = lookupPartnership(systemNotes, systemDots, system);
+        Link link = lookupLink(systemNotes, systemDots, system);
 
-        if (partnership == null) {
+        if (link == null) {
             return Collections.emptyList();
         }
 
         if (doit) {
-            partnership.applyTo(this);
+            link.applyTo(this);
         }
 
-        return Collections.singleton(partnership);
+        return Collections.singleton(link);
     }
 
     //-------------------//
@@ -359,21 +359,21 @@ public class AugmentationDotInter
         } while (modified);
     }
 
-    //-------------------//
-    // lookupPartnership //
-    //-------------------//
+    //------------//
+    // lookupLink //
+    //------------//
     /**
-     * Try to detect a partnership between this augmentation dot and either a note
+     * Try to detect a link between this augmentation dot and either a note
      * (head or rest) or another dot on left side.
      *
      * @param systemNotes ordered collection of notes (head/rest) in system
      * @param systemDots  ordered collection of augmentation dots in system
      * @param system      containing system
-     * @return the partnership found or null
+     * @return the link found or null
      */
-    private Partnership lookupPartnership (List<Inter> systemNotes,
-                                           List<Inter> systemDots,
-                                           SystemInfo system)
+    private Link lookupLink (List<Inter> systemNotes,
+                             List<Inter> systemDots,
+                             SystemInfo system)
     {
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
@@ -445,17 +445,17 @@ public class AugmentationDotInter
         }
 
         if (bestDot == null) {
-            return new Partnership(bestNote, new AugmentationRelation(), true);
+            return new Link(bestNote, new AugmentationRelation(), true);
         }
 
         if (bestNote == null) {
-            return new Partnership(bestDot, new DoubleDotRelation(), true);
+            return new Link(bestDot, new DoubleDotRelation(), true);
         }
 
         if (bestNoteGrade >= bestDotRel.getGrade()) {
-            return new Partnership(bestNote, new AugmentationRelation(), true);
+            return new Link(bestNote, new AugmentationRelation(), true);
         } else {
-            return new Partnership(bestDot, new DoubleDotRelation(), true);
+            return new Link(bestDot, new DoubleDotRelation(), true);
         }
     }
 }

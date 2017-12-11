@@ -33,7 +33,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
@@ -114,28 +114,28 @@ public class BeamHookInter
         return true;
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         // Not very optimized!
         List<Inter> systemStems = system.getSig().inters(StemInter.class);
         Collections.sort(systemStems, Inters.byAbscissa);
 
-        Partnership partnership = lookupPartnership(systemStems, system);
+        Link link = lookupLink(systemStems, system);
 
-        if (partnership == null) {
+        if (link == null) {
             return Collections.emptyList();
         }
 
         if (doit) {
-            partnership.applyTo(this);
+            link.applyTo(this);
         }
 
-        return Collections.singleton(partnership);
+        return Collections.singleton(link);
     }
 
     //----------//
@@ -159,19 +159,19 @@ public class BeamHookInter
         computeArea();
     }
 
-    //-------------------//
-    // lookupPartnership //
-    //-------------------//
+    //------------//
+    // lookupLink //
+    //------------//
     /**
-     * Try to detect a partnership between this beam hook instance and a stem
-     * nearby, either on left or on right side.
+     * Try to detect a link between this beam hook instance and a stem nearby,
+     * either on left or on right side.
      *
      * @param systemStems ordered collection of stems in system
      * @rapam system containing system
-     * @return the partnership found or null
+     * @return the link found or null
      */
-    private Partnership lookupPartnership (List<Inter> systemStems,
-                                           SystemInfo system)
+    private Link lookupLink (List<Inter> systemStems,
+                             SystemInfo system)
     {
         final Scale scale = system.getSheet().getScale();
         final int xMargin = scale.toPixels(constants.xMargin);
@@ -211,7 +211,7 @@ public class BeamHookInter
             return null;
         }
 
-        return new Partnership(bestStem, bestRel, true);
+        return new Link(bestStem, bestRel, true);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
