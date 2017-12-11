@@ -50,7 +50,6 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -363,6 +362,9 @@ public class SymbolsLinker
      */
     private void linkWedges ()
     {
+        final Scale scale = system.getSheet().getScale();
+        final double xMargin = scale.toPixels(WedgeInter.getStackAbscissaMargin());
+
         for (Inter inter : sig.inters(WedgeInter.class)) {
             try {
                 if (inter.isVip()) {
@@ -373,8 +375,13 @@ public class SymbolsLinker
                 final Line2D topLine = wedge.getLine1();
 
                 for (HorizontalSide side : HorizontalSide.values()) {
-                    final Point2D location = (side == LEFT) ? topLine.getP1()
-                            : topLine.getP2();
+                    final Point2D location = (side == LEFT)
+                            ? new Point2D.Double(
+                                    topLine.getX1() + xMargin,
+                                    topLine.getY1())
+                            : new Point2D.Double(
+                                    topLine.getX2() - xMargin,
+                                    topLine.getY2());
                     final MeasureStack stack = system.getMeasureStackAt(location);
                     final AbstractChordInter chordAbove = stack.getStandardChordAbove(
                             location,

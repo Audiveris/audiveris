@@ -21,7 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.util.HorizontalSide;
@@ -47,13 +49,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class WedgeInter
         extends AbstractDirectionInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    //
-    //    private final SegmentInter s1;
-    //
-    //    private final SegmentInter s2;
-    //
+    private static final Constants constants = new Constants();
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Top line. */
     @XmlElement
     private final Line2D l1;
@@ -146,6 +146,14 @@ public class WedgeInter
         }
     }
 
+    //------------------------//
+    // getStackAbscissaMargin //
+    //------------------------//
+    public static Scale.Fraction getStackAbscissaMargin ()
+    {
+        return constants.stackAbscissaMargin;
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -184,5 +192,18 @@ public class WedgeInter
             setImpact(3, openDy);
             setImpact(4, openBias);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction stackAbscissaMargin = new Scale.Fraction(
+                1.0,
+                "Margin beyond stack abscissa limits");
     }
 }
