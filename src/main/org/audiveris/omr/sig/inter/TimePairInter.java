@@ -28,6 +28,9 @@ import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.VerticalSide;
 import static org.audiveris.omr.util.VerticalSide.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Rectangle;
 import java.util.List;
 
@@ -47,8 +50,12 @@ public class TimePairInter
         extends AbstractTimeInter
         implements InterEnsemble
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(
+            TimePairInter.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data
     //----------------
     //
@@ -99,7 +106,7 @@ public class TimePairInter
      *
      * @param num numerator: non-null, registered in sig
      * @param den denominator: non-null, registered in sig
-     * @return the created instance
+     * @return the created instance, already added to sig
      */
     public static TimePairInter create (TimeNumberInter num,
                                         TimeNumberInter den)
@@ -110,6 +117,10 @@ public class TimePairInter
         sig.addVertex(pair);
         pair.addMember(num);
         pair.addMember(den);
+
+        if (pair.isVip()) {
+            logger.info("VIP created {} from num:{} den:{}", pair, num, den);
+        }
 
         return pair;
     }

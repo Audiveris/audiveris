@@ -116,6 +116,10 @@ public class TimeValue
             return specificShape.toString();
         }
 
-        return timeRational.toString();
+        if (timeRational != null) {
+            return timeRational.toString();
+        }
+
+        return "NoTimeRationalValue";
     }
 }

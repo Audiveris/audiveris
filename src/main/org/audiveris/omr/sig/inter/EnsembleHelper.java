@@ -28,6 +28,9 @@ import org.audiveris.omr.sig.relation.Relation;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,8 +43,11 @@ import java.util.List;
  */
 public abstract class EnsembleHelper
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(EnsembleHelper.class);
+
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addMember //
     //-----------//
@@ -78,6 +84,13 @@ public abstract class EnsembleHelper
                                           Comparator<Inter> comparator)
     {
         SIGraph sig = ensemble.getSig();
+
+        if (sig == null) {
+            logger.debug("Ensemble#{} not in sig", ensemble.getId());
+
+            return Collections.EMPTY_LIST;
+        }
+
         List<Inter> members = new ArrayList<Inter>();
 
         if (sig.containsVertex(ensemble)) {

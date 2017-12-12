@@ -52,6 +52,7 @@ import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -829,10 +830,14 @@ public abstract class AbstractInter
             removed = true;
 
             if (sig != null) {
-                // Handle ensemble - member cases?
                 // Extensive is true for non-manual removals only
                 if (extensive) {
-                    for (Relation rel : sig.incomingEdgesOf(this)) {
+                    // Handle ensemble - member cases?
+                    // Copy is needed to avoid concurrent modification exception
+                    List<Relation> relsCopy = new ArrayList<Relation>(sig.incomingEdgesOf(this));
+
+                    for (Relation rel : relsCopy) {
+                        // A member may be contained by several ensembles (case of TimeNumberInter)
                         if (rel instanceof Containment) {
                             InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(this, rel);
 
@@ -840,8 +845,6 @@ public abstract class AbstractInter
                                 logger.debug("{} removing a dying ensemble {}", this, ens);
                                 ens.remove(false);
                             }
-
-                            break;
                         }
                     }
 
