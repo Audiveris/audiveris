@@ -222,6 +222,10 @@ public class Measure
      */
     public void addInter (Inter inter)
     {
+        if (inter.isVip()) {
+            logger.info("VIP addInter {} into {}", inter, this);
+        }
+
         if (inter instanceof AbstractChordInter) {
             AbstractChordInter chord = (AbstractChordInter) inter;
             chord.setMeasure(this);
@@ -1194,6 +1198,10 @@ public class Measure
      */
     public void removeInter (Inter inter)
     {
+        if (inter.isVip()) {
+            logger.info("VIP removeInter {} from {}", inter, this);
+        }
+
         if (inter instanceof RestChordInter) {
             RestChordInter restChord = (RestChordInter) inter;
             restChords.remove(restChord);

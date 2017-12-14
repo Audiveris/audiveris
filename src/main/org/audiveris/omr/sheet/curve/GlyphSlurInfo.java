@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.curve;
 
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.math.CubicUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
@@ -56,12 +57,19 @@ public class GlyphSlurInfo
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Create proper GlyphSlurInfo for a slur defined by its glyph.
+     * The bezier curve is directly computed from the glyph.
+     *
+     * @param glyph the defining glyph
+     * @return the corresponding slur info
+     */
     public static GlyphSlurInfo create (Glyph glyph)
     {
         final List<Point> points = new KeyPointsBuilder(glyph).retrieveKeyPoints();
         final GlyphSlurInfo info = new GlyphSlurInfo(glyph, points);
 
-        // Curve
+        // Curve (nota: s1 and s2 are not control points, but intermediate points located on curve)
         final Point s0 = points.get(0);
         final Point s1 = points.get(1);
         final Point s2 = points.get(2);
@@ -70,8 +78,8 @@ public class GlyphSlurInfo
         info.curve = new CubicCurve2D.Double(
                 s0.x,
                 s0.y,
-                (((-5 * s0.x) + (18 * s1.x)) - (9 * s2.x) + (2 * s3.x)) / 6,
-                (((-5 * s0.y) + (18 * s1.y)) - (9 * s2.y) + (2 * s3.y)) / 6,
+                ((-(5 * s0.x) + (18 * s1.x)) - (9 * s2.x) + (2 * s3.x)) / 6,
+                ((-(5 * s0.y) + (18 * s1.y)) - (9 * s2.y) + (2 * s3.y)) / 6,
                 (((2 * s0.x) - (9 * s1.x) + (18 * s2.x)) - (5 * s3.x)) / 6,
                 (((2 * s0.y) - (9 * s1.y) + (18 * s2.y)) - (5 * s3.y)) / 6,
                 s3.x,
@@ -85,26 +93,12 @@ public class GlyphSlurInfo
         return info;
     }
 
+    //----------//
+    // getCurve //
+    //----------//
     @Override
     public CubicCurve2D getCurve ()
     {
-        if (curve == null) {
-            final Point s0 = points.get(0);
-            final Point s1 = points.get(1);
-            final Point s2 = points.get(2);
-            final Point s3 = points.get(3);
-
-            curve = new CubicCurve2D.Double(
-                    s0.x,
-                    s0.y,
-                    (((-5 * s0.x) + (18 * s1.x)) - (9 * s2.x) + (2 * s3.x)) / 6,
-                    (((-5 * s0.y) + (18 * s1.y)) - (9 * s2.y) + (2 * s3.y)) / 6,
-                    (((2 * s0.x) - (9 * s1.x) + (18 * s2.x)) - (5 * s3.x)) / 6,
-                    (((2 * s0.y) - (9 * s1.y) + (18 * s2.y)) - (5 * s3.y)) / 6,
-                    s3.x,
-                    s3.y);
-        }
-
         return curve;
     }
 
@@ -130,11 +124,7 @@ public class GlyphSlurInfo
     @Override
     public Point2D getMidPoint ()
     {
-        CubicCurve2D c = getCurve();
-
-        return new Point2D.Double(
-                (c.getX1() + (3 * c.getCtrlX1()) + (3 * c.getCtrlX2()) + c.getX2()) / 8,
-                (c.getY1() + (3 * c.getCtrlY1()) + (3 * c.getCtrlY2()) + c.getY2()) / 8);
+        return CubicUtil.getMidPoint(curve);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -146,8 +136,6 @@ public class GlyphSlurInfo
      * <p>
      * This class is meant for manual slur built on a selected glyph, by using exactly 4 key points
      * evenly spaced along the glyph abscissa axis.
-     *
-     * @author Hervé Bitteur
      */
     private static class KeyPointsBuilder
     {

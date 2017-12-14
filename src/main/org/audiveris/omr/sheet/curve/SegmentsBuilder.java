@@ -239,11 +239,6 @@ public class SegmentsBuilder
     }
 
     @Override
-    protected void filterInters (Set<Inter> inters)
-    {
-    }
-
-    @Override
     protected Integer getArcCheckLength ()
     {
         return null; // No limit
@@ -253,6 +248,11 @@ public class SegmentsBuilder
     protected Point2D getEndVector (Curve curve)
     {
         return curve.getModel().getEndVector(reverse);
+    }
+
+    @Override
+    protected void pruneClump (Set<Inter> clump)
+    {
     }
 
     @Override

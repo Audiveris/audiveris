@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
-import java.awt.geom.Area;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -36,6 +35,10 @@ import java.util.List;
 
 /**
  * Class {@code SlursInfo} gathers physical description of a slur.
+ * <p>
+ * It is not meant to be persistent.
+ * During slur building in SLURS step, it allows to check and implement the connection of smaller
+ * slurs into larger slurs.
  * <p>
  * Short and medium slurs generally fit a global circle rather well.
  * But a long slur may be closer to an ellipsis, hence the use of local osculating circles, one at
@@ -70,18 +73,6 @@ public class SlurInfo
 
     /** True for slur rather horizontal. */
     protected Boolean horizontal;
-
-    /** Area for first chords. */
-    protected Area firstChordArea;
-
-    /** Area for last chords. */
-    protected Area lastChordArea;
-
-    /** Target point for first chords. */
-    protected Point firstTarget;
-
-    /** Target point for last chords. */
-    protected Point lastTarget;
 
     /** Global Bézier curve for the slur. */
     protected CubicCurve2D curve;
@@ -178,14 +169,6 @@ public class SlurInfo
         return bisUnit;
     }
 
-    //--------------//
-    // getChordArea //
-    //--------------//
-    public Area getChordArea (boolean reverse)
-    {
-        return reverse ? firstChordArea : lastChordArea;
-    }
-
     //----------//
     // getCurve //
     //----------//
@@ -257,31 +240,6 @@ public class SlurInfo
         }
 
         return curve;
-
-        //        if (curve == null) {
-        //            // Pickup the 4 points at t = 0, 1/3, 2/3 & 1
-        //            double r = 0.28;
-        //            List<Point> points = pointsOf(arcs);
-        //            int         n = points.size();
-        //            int ir = (int) Math.rint(r*n);
-        //            Point       s0 = points.get(0);
-        //            //Point       s1 = points.get(n / 3); // Wrong!
-        //            Point       s1 = points.get(ir); // bof!
-        //            //Point       s2 = points.get((2 * n) / 3); // Wrong!
-        //            Point       s2 = points.get(n-1-ir); // bof!
-        //            Point       s3 = points.get(n - 1);
-        //            curve = new CubicCurve2D.Double(
-        //                s0.x,
-        //                s0.y,
-        //                (-5 * s0.x + 18 * s1.x - 9 * s2.x + 2 * s3.x) / 6,
-        //                (-5 * s0.y + 18 * s1.y - 9 * s2.y + 2 * s3.y) / 6,
-        //                (2 * s0.x - 9 * s1.x + 18 * s2.x - 5 * s3.x) / 6,
-        //                (2 * s0.y - 9 * s1.y + 18 * s2.y - 5 * s3.y) / 6,
-        //                s3.x,
-        //                s3.y);
-        //        }
-        //
-        //        return curve;
     }
 
     //--------------//
@@ -378,14 +336,6 @@ public class SlurInfo
         }
     }
 
-    //----------------//
-    // getTargetPoint //
-    //----------------//
-    public Point getTargetPoint (boolean reverse)
-    {
-        return reverse ? firstTarget : lastTarget;
-    }
-
     //--------------//
     // hasSideModel //
     //--------------//
@@ -415,23 +365,6 @@ public class SlurInfo
     public boolean isHorizontal ()
     {
         return horizontal;
-    }
-
-    //---------//
-    // setArea //
-    //---------//
-    /**
-     * @param area    the Area to set
-     * @param reverse desired end
-     */
-    public void setArea (Area area,
-                         boolean reverse)
-    {
-        if (reverse) {
-            firstChordArea = area;
-        } else {
-            lastChordArea = area;
-        }
     }
 
     //---------------//
@@ -468,23 +401,6 @@ public class SlurInfo
             firstModel = model;
         } else {
             lastModel = model;
-        }
-    }
-
-    //----------------//
-    // setTargetPoint //
-    //----------------//
-    /**
-     * @param reverse desired end
-     * @param target  the target point to set
-     */
-    public void setTargetPoint (boolean reverse,
-                                Point target)
-    {
-        if (reverse) {
-            firstTarget = target;
-        } else {
-            lastTarget = target;
         }
     }
 

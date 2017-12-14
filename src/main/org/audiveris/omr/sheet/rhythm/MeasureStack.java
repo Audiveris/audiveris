@@ -1361,6 +1361,10 @@ public class MeasureStack
     //-------------//
     public void removeInter (Inter inter)
     {
+        if (inter.isVip()) {
+            logger.info("VIP removeInter {} from [}", inter, this);
+        }
+
         final Part part = inter.getPart();
 
         if (part != null) {

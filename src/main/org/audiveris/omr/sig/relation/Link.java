@@ -38,7 +38,7 @@ public class Link
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The other Inter instance, the one to be linked with. */
-    public final Inter partner;
+    public Inter partner;
 
     /** The concrete relation. */
     public final Relation relation;

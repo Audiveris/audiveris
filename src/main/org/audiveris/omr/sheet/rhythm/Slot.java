@@ -30,7 +30,9 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Voice.SlotVoice;
+
 import static org.audiveris.omr.sheet.rhythm.Voice.Status.BEGIN;
+
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -45,6 +47,8 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -562,47 +566,45 @@ public class Slot
      */
     public String toVoiceString ()
     {
-        logger.warn("HB to be reimplemented");
-
         StringBuilder sb = new StringBuilder();
 
-        //        sb.append("slot#").append(getId()).append(" start=")
-        //                .append(String.format("%5s", getTimeOffset())).append(" [");
-        //
-        //        SortedMap<Integer, AbstractChordInter> voiceChords = new TreeMap<Integer, AbstractChordInter>();
-        //
-        //        for (AbstractChordInter chord : getChords()) {
-        //            voiceChords.put(chord.getVoice().getId(), chord);
-        //        }
-        //
-        //        boolean started = false;
-        //        int voiceMax = stack.getVoiceCount();
-        //
-        //        for (int iv = 1; iv <= voiceMax; iv++) {
-        //            if (started) {
-        //                sb.append(", ");
-        //            } else {
-        //                started = true;
-        //            }
-        //
-        //            AbstractChordInter chord = voiceChords.get(iv);
-        //
-        //            if (chord != null) {
-        //                sb.append("V").append(chord.getVoice().getId());
-        //                sb.append(" Ch#").append(String.format("%02d", chord.getId()));
-        //                sb.append(" St").append(chord.getTopStaff().getId());
-        //
-        //                if (chord.getBottomStaff() != chord.getTopStaff()) {
-        //                    sb.append("-").append(chord.getBottomStaff().getId());
-        //                }
-        //
-        //                sb.append(" Dur=").append(String.format("%5s", chord.getDuration()));
-        //            } else {
-        //                sb.append("----------------------");
-        //            }
-        //        }
-        //
-        //        sb.append("]");
+        sb.append("slot#").append(getId()).append(" start=")
+                .append(String.format("%5s", getTimeOffset())).append(" [");
+
+        SortedMap<Integer, AbstractChordInter> voiceChords = new TreeMap<Integer, AbstractChordInter>();
+
+        for (AbstractChordInter chord : getChords()) {
+            voiceChords.put(chord.getVoice().getId(), chord);
+        }
+
+        final int voiceMax = stack.getVoices().size();
+        boolean started = false;
+
+        for (int iv = 1; iv <= voiceMax; iv++) {
+            if (started) {
+                sb.append(", ");
+            } else {
+                started = true;
+            }
+
+            AbstractChordInter chord = voiceChords.get(iv);
+
+            if (chord != null) {
+                sb.append("V").append(chord.getVoice().getId());
+                sb.append(" Ch#").append(String.format("%02d", chord.getId()));
+                sb.append(" s:").append(chord.getTopStaff().getId());
+
+                if (chord.getBottomStaff() != chord.getTopStaff()) {
+                    sb.append("-").append(chord.getBottomStaff().getId());
+                }
+
+                sb.append(" Dur=").append(String.format("%5s", chord.getDuration()));
+            } else {
+                sb.append("----------------------");
+            }
+        }
+
+        sb.append("]");
         return sb.toString();
     }
 

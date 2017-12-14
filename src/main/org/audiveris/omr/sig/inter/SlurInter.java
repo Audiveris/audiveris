@@ -24,17 +24,20 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.curve.GlyphSlurInfo;
+import org.audiveris.omr.sheet.curve.SlurHeadLink;
 import org.audiveris.omr.sheet.curve.SlurInfo;
-import org.audiveris.omr.sheet.curve.SlursLinker;
+import org.audiveris.omr.sheet.curve.SlurLinker;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
@@ -47,12 +50,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
@@ -526,33 +534,6 @@ public class SlurInter
         tie = Boolean.TRUE;
     }
 
-    //------------------//
-    // switchMirrorHead //
-    //------------------//
-    /**
-     * Switch the slur link from head to its mirror on the provided side.
-     *
-     * @param side the desired side
-     */
-    public void switchMirrorHead (HorizontalSide side)
-    {
-        for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
-            SlurHeadRelation shRel = (SlurHeadRelation) rel;
-
-            if (shRel.getSide() == side) {
-                HeadInter head = (HeadInter) sig.getOppositeInter(this, rel);
-                HeadInter mirrorHead = (HeadInter) head.getMirror();
-
-                if (mirrorHead != null) {
-                    sig.removeEdge(rel);
-                    sig.addEdge(this, mirrorHead, rel);
-                } else {
-                    logger.error("No mirror head for {}", head);
-                }
-            }
-        }
-    }
-
     //----------------//
     // haveSameHeight //
     //----------------//
@@ -622,9 +603,10 @@ public class SlurInter
     //-------------//
     /**
      * Try to detect link between this Slur instance and head on left side
-     * plus head on right.
+     * plus head on right side.
      *
-     * @param systemHeads ordered collection of notes in system
+     * @param systemHeads ordered collection of heads in system
+     * @param system      the containing system
      * @return the collection of links found, perhaps null
      */
     private Collection<Link> lookupLinks (List<Inter> systemHeads,
@@ -635,17 +617,41 @@ public class SlurInter
         }
 
         if (isVip()) {
-            logger.info("VIP searchLinks for {}", this);
+            logger.info("VIP lookupLinks for {}", this);
         }
 
-        SlurInter pruned = new SlursLinker(system.getSheet()).prune(
-                Collections.singleton((Inter) this));
+        SlurLinker slurLinker = new SlurLinker(system.getSheet());
 
-        if (pruned != null) {
-            logger.info("Got a slur");
+        // Define slur side areas
+        Map<HorizontalSide, Area> sideAreas = slurLinker.defineAreaPair(this);
+
+        // Retrieve candidate chords
+        Map<HorizontalSide, List<Inter>> chords = new EnumMap<HorizontalSide, List<Inter>>(
+                HorizontalSide.class);
+        List<Inter> systemChords = system.getSig().inters(
+                HeadChordInter.class);
+
+        for (HorizontalSide side : HorizontalSide.values()) {
+            Rectangle box = sideAreas.get(side).getBounds();
+            chords.put(side, SIGraph.intersectedInters(systemChords, GeoOrder.NONE, box));
         }
 
-        return Collections.EMPTY_SET;
+        // Select the best link pair
+        Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
+                this,
+                sideAreas,
+                system,
+                chords);
+
+        List<Link> links = new ArrayList<Link>();
+
+        for (Link link : linkPair.values()) {
+            if (link != null) {
+                links.add(link);
+            }
+        }
+
+        return links;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

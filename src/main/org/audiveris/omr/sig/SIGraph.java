@@ -1184,15 +1184,17 @@ public class SIGraph
                 final Set<Inter> involved = involvedInters(getSupports(weaker));
                 involved.remove(weaker);
 
-                final Inter weakerEnsemble = weaker.getEnsemble(); // Before weaker is deleted!
+                final Set<Inter> weakerEnsembles = weaker.getAllEnsembles(); // Before weaker is deleted!
 
                 // Remove the weaker inter
                 removed.add(weaker);
                 weaker.remove();
 
-                // If removal of weaker has resulted in removal of its ensemble, count ensemble
-                if ((weakerEnsemble != null) && weakerEnsemble.isRemoved()) {
-                    removed.add(weakerEnsemble);
+                // If removal of weaker has resulted in removal of an ensemble, count this ensemble
+                for (Inter ensemble : weakerEnsembles) {
+                    if (ensemble.isRemoved()) {
+                        removed.add(ensemble);
+                    }
                 }
 
                 // Update contextual values for all inters that were involved with 'weaker'

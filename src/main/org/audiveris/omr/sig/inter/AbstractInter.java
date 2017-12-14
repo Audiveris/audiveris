@@ -55,9 +55,11 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -323,6 +325,31 @@ public abstract class AbstractInter
                 member.freeze();
             }
         }
+    }
+
+    //-----------------//
+    // getAllEnsembles //
+    //-----------------//
+    @Override
+    public Set<Inter> getAllEnsembles ()
+    {
+        Set<Inter> ensembles = null;
+
+        for (Relation rel : sig.incomingEdgesOf(this)) {
+            if (rel instanceof Containment) {
+                if (ensembles == null) {
+                    ensembles = new LinkedHashSet<Inter>();
+                }
+
+                ensembles.add(sig.getOppositeInter(this, rel));
+            }
+        }
+
+        if (ensembles != null) {
+            return ensembles;
+        }
+
+        return Collections.EMPTY_SET;
     }
 
     //---------//
@@ -851,9 +878,18 @@ public abstract class AbstractInter
                     if (this instanceof InterEnsemble) {
                         InterEnsemble ens = (InterEnsemble) this;
 
+                        // Delete all its members that are not part of another ensemble
                         for (Inter member : ens.getMembers()) {
-                            logger.debug("{} removing a member {}", this, member);
-                            member.remove(false);
+                            Set<Inter> ensembles = member.getAllEnsembles();
+
+                            if (!ensembles.isEmpty()) {
+                                ensembles.remove(this);
+
+                                if (ensembles.isEmpty()) {
+                                    logger.debug("{} removing a member {}", this, member);
+                                    member.remove(false);
+                                }
+                            }
                         }
                     }
                 }

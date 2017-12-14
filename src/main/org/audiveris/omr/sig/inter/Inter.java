@@ -40,6 +40,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
+import java.util.Set;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -110,6 +111,15 @@ public interface Inter
     void freeze ();
 
     /**
+     * Report all the ensembles this inter is member of.
+     * In rare cases, an inter may (temporarily) be part of several ensembles.
+     *
+     * @return the set of all containing ensembles, perhaps empty but never null
+     * @see #getEnsemble()
+     */
+    Set<Inter> getAllEnsembles ();
+
+    /**
      * Report the precise defining area
      *
      * @return the inter area, if any
@@ -167,8 +177,10 @@ public interface Inter
 
     /**
      * Report the ensemble this inter is member of, if any.
+     * Actually, it returns the first containing ensemble found.
      *
      * @return the containing ensemble or null
+     * @see #getAllEnsembles()
      */
     InterEnsemble getEnsemble ();
 

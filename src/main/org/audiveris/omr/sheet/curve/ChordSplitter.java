@@ -148,11 +148,15 @@ public class ChordSplitter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    public void process ()
+    //-------//
+    // split //
+    //-------//
+    public void split ()
     {
+        if (chord.isVip()) {
+            logger.info("VIP split {}, {} origins on {}", chord, origins.size(), side.opposite());
+        }
+
         // Detect all partitions of consistent heads in this chord
         allPartitions = getAllPartitions();
         logger.debug("allPartitions: {}", allPartitions);
@@ -343,7 +347,7 @@ public class ChordSplitter
      * Process the provided stem (either the rootStem or a subStem) with its
      * related partitions.
      *
-     * @param stem       the (sub?) stem to process
+     * @param stem       the (sub?) stem to split
      * @param partitions the partitions related to the provided stem
      */
     private void processStem (StemInter stem,
@@ -351,8 +355,8 @@ public class ChordSplitter
     {
         for (Partition partition : partitions) {
             // One sub-chord per partition
-            HeadChordInter ch = new HeadChordInter(chord.getGrade());
-            ch.setStem(stem);
+            HeadChordInter ch = new HeadChordInter(chord.getGrade(), stem);
+            sig.addVertex(ch);
 
             for (HeadInter head : partition) {
                 // Switch partition heads to sub-chord
@@ -369,8 +373,6 @@ public class ChordSplitter
                 }
             }
 
-            sheet.getInterIndex().register(ch);
-            sig.addVertex(ch);
             chord.getMeasure().addInter(ch);
         }
     }

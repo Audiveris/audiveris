@@ -221,7 +221,7 @@ public abstract class AbstractChordInter
                 stack.addInter(this);
             }
         } else {
-            logger.info("*** No bounds for chord {}", this);
+            logger.info("No bounds yet for chord {}", this);
         }
     }
 
@@ -919,7 +919,7 @@ public abstract class AbstractChordInter
             }
         }
 
-        if (sig != null) {
+        if (sig != null && !isRemoved()) {
             Point center = getCenter();
 
             if (center != null) {
