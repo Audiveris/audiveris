@@ -1074,10 +1074,13 @@ public class BeamGroup
                     }
                 }
 
-                // Notify updates to beam and shortChord
+                // Notify updates to beam
                 beam.invalidateCache();
-                shortChord.invalidateCache();
             }
+
+            // Notify updates to both chords
+            shortChord.invalidateCache();
+            pivotChord.invalidateCache();
 
             measure.getStack().addInter(shortChord);
         }
