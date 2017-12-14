@@ -221,15 +221,13 @@ public class SymbolsBuilder
             //
             Evaluation eval = evals[0];
 
-            if (evals2.length > 0) {
-                if (eval.shape == evals2[0].shape) {
-                    try {
-                        factory.create(eval, glyph, closestStaff);
-                    } catch (Exception ex) {
-                        logger.warn("Error in glyph evaluation " + ex, ex);
-                    }
-                }
+            ///if (evals2.length > 0 && eval.shape == evals2[0].shape) {
+            try {
+                factory.create(eval, glyph, closestStaff);
+            } catch (Exception ex) {
+                logger.warn("Error in glyph evaluation " + ex, ex);
             }
+            ///}
         }
     }
 
