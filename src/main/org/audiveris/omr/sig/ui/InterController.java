@@ -679,7 +679,7 @@ public class InterController
 
         if (interTask == null) {
             // seq contains only relation(s) and no inter
-            logger.warn("TODO: No inter in UI task sequence {}", seq);
+            logger.info("TODO: No inter in UI task sequence {}", seq);
 
             return null;
         }
