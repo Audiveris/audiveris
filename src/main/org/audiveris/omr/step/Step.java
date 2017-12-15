@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.text.TextsStep;
 
 import java.util.Collection;
+import org.audiveris.omr.sig.ui.UITask.OpKind;
 
 /**
  * Enum {@code Step} describes the steps of sheet processing pipeline.
@@ -248,11 +249,13 @@ public enum Step
     /**
      * Process the impact of the UI task sequence on this step.
      *
-     * @param seq the provided UI task sequence
+     * @param seq    the provided UI task sequence
+     * @param opKind which operation is done on seq
      */
-    public void impact (UITaskList seq)
+    public void impact (UITaskList seq,
+                        OpKind opKind)
     {
-        helper.impact(seq);
+        helper.impact(seq, opKind);
     }
 
     //-----------------------//

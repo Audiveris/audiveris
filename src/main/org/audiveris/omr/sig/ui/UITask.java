@@ -30,8 +30,19 @@ import org.audiveris.omr.sig.SIGraph;
  */
 public abstract class UITask
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
 
+    /** Operation kind performed on a UITask. */
+    public static enum OpKind
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        DO,
+        UNDO,
+        REDO;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying SIG. */
     protected final SIGraph sig;
 

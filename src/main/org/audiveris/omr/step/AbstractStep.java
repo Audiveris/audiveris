@@ -75,6 +75,7 @@ import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
 
 import org.slf4j.Logger;
@@ -213,9 +214,11 @@ public abstract class AbstractStep
     /**
      * Apply the provided UI sequence to this step.
      *
-     * @param seq the sequence of UI tasks
+     * @param seq    the sequence of UI tasks
+     * @param opKind which operation is done on seq
      */
-    public void impact (UITaskList seq)
+    public void impact (UITaskList seq,
+                        OpKind opKind)
     {
         // No-op by default
     }

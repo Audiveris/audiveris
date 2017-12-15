@@ -26,6 +26,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -124,7 +125,7 @@ public class SlurInter
         @Override
         public boolean check (SlurInter slur)
         {
-            if (slur.getHead(RIGHT) == null) {
+            if ((slur.getHead(RIGHT) == null) && (slur.getExtension(RIGHT) == null)) {
                 // Check we are in last measure
                 Point2D end = slur.getCurve().getP2();
                 SystemInfo system = slur.getSig().getSystem();
@@ -152,7 +153,7 @@ public class SlurInter
         @Override
         public boolean check (SlurInter slur)
         {
-            if (slur.getHead(LEFT) == null) {
+            if ((slur.getHead(LEFT) == null) && (slur.getExtension(LEFT) == null)) {
                 // Check we are in first measure
                 Point2D end = slur.getCurve().getP1();
                 SystemInfo system = slur.getSig().getSystem();
@@ -269,15 +270,17 @@ public class SlurInter
      * Since a slur instance is held by its containing part, make sure part
      * slurs collection is updated.
      *
-     * @see #remove()
+     * @see #remove(boolean)
      */
     @Override
     public void added ()
     {
         super.added();
 
-        if (part != null) {
-            part.addSlur(this);
+        if (getPart() != null) {
+            getPart().addSlur(this);
+        } else {
+            logger.info("{} no part to add to.", this);
         }
     }
 
@@ -292,6 +295,10 @@ public class SlurInter
      */
     public boolean canExtend (SlurInter prevSlur)
     {
+        if (isVip() || prevSlur.isVip()) {
+            logger.info("VIP canExtend prevSlur:{} slur:{}", prevSlur, this);
+        }
+
         return (this.getExtension(LEFT) == null) && (prevSlur.getExtension(RIGHT) == null)
                && this.isCompatibleWith(prevSlur);
     }
@@ -346,6 +353,14 @@ public class SlurInter
             sb.append(" ").append(info);
         }
 
+        for (HorizontalSide side : HorizontalSide.values()) {
+            SlurInter ext = getExtension(side);
+
+            if (ext != null) {
+                sb.append(" ").append(side).append("-extension:").append(ext);
+            }
+        }
+
         return sb.toString();
     }
 
@@ -394,6 +409,31 @@ public class SlurInter
     public SlurInfo getInfo ()
     {
         return info;
+    }
+
+    //---------//
+    // getPart //
+    //---------//
+    @Override
+    public Part getPart ()
+    {
+        Part p = super.getPart();
+
+        if (p != null) {
+            return p;
+        }
+
+        if (sig != null) {
+            for (HorizontalSide side : HorizontalSide.values()) {
+                HeadInter head = getHead(side);
+
+                if ((head != null) && (head.getPart() != null)) {
+                    return part = head.getPart();
+                }
+            }
+        }
+
+        return null;
     }
 
     //-------------------//
@@ -459,6 +499,18 @@ public class SlurInter
     {
         if (part != null) {
             part.removeSlur(this);
+        } else {
+            logger.info("{} no part to remove from.", this);
+        }
+
+        // Cut cross-system slur extension if any
+        for (HorizontalSide side : HorizontalSide.values()) {
+            SlurInter extension = getExtension(side);
+
+            if (extension != null) {
+                extension.setExtension(side.opposite(), null);
+                setExtension(side, null);
+            }
         }
 
         super.remove(extensive);

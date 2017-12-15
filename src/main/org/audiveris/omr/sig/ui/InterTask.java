@@ -21,11 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import java.awt.Rectangle;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Link;
 
+import java.awt.Rectangle;
 import java.util.Collection;
 
 /**
@@ -55,7 +55,7 @@ public abstract class InterTask
      * @param sig           the underlying sig
      * @param inter         the inter task is focused upon
      * @param initialBounds the inter initial bounds
-     * @param links  the relations around inter
+     * @param links         the relations around inter
      */
     protected InterTask (SIGraph sig,
                          Inter inter,
@@ -68,6 +68,7 @@ public abstract class InterTask
         this.links = links;
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Getter for involved inter.
      *
@@ -76,6 +77,11 @@ public abstract class InterTask
     public Inter getInter ()
     {
         return inter;
+    }
+
+    public Collection<Link> getLinks ()
+    {
+        return links;
     }
 
     @Override

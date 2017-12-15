@@ -24,14 +24,13 @@ package org.audiveris.omr.sheet.curve;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.Circle;
+import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
-
 import static org.audiveris.omr.sheet.curve.ArcShape.STAFF_ARC;
-
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
@@ -58,13 +57,11 @@ import java.awt.Stroke;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.toRadians;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -164,6 +161,11 @@ public class SlursBuilder
 
             // Dispatch slurs to their containing parts
             dispatchToParts();
+
+            // Try to connect orphans across systems (and purge the ones that don't connect)
+            for (Page page : sheet.getPages()) {
+                page.connectOrphanSlurs();
+            }
         } catch (Throwable ex) {
             logger.warn("Error in SlursBuilder: " + ex, ex);
         }

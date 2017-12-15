@@ -79,14 +79,20 @@ public class SigListener
     @Override
     public void vertexAdded (GraphVertexChangeEvent<Inter> e)
     {
-        // final Inter inter = e.getVertex();
-        // logger.info("GRAPH vertexAdded {}#{}", inter.getClass().getSimpleName(), inter.getId());
+        //        logger.info(
+        //                "GRAPH vertexAdded {} source:{} type:{}",
+        //                e.getVertex(),
+        //                e.getSource(),
+        //                e.getType());
     }
 
     @Override
     public void vertexRemoved (GraphVertexChangeEvent<Inter> e)
     {
-        // final Inter inter = e.getVertex();
-        // logger.info("GRAPH vertexRemoved {}#{}", inter.getClass().getSimpleName(), inter.getId());
+        //        logger.info(
+        //                "GRAPH vertexRemoved {} source:{} type:{}",
+        //                e.getVertex(),
+        //                e.getSource(),
+        //                e.getType());
     }
 }

@@ -40,12 +40,16 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.ui.UITask.OpKind;
+import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
 import org.audiveris.omr.step.Step;
+import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -323,7 +327,7 @@ public class InterController
         sheet.getStub().setModified(true);
         sheet.getInterIndex().publish(source);
 
-        epilog(seq);
+        epilog(seq, DO);
     }
 
     //------//
@@ -352,7 +356,7 @@ public class InterController
             sheet.getInterIndex().publish(source);
         }
 
-        epilog(seq);
+        epilog(seq, REDO);
     }
 
     //-------------//
@@ -406,6 +410,19 @@ public class InterController
             }
         }
 
+        // Slur extensions if any
+        if (inter instanceof SlurInter) {
+            SlurInter slur = (SlurInter) inter;
+
+            for (HorizontalSide side : HorizontalSide.values()) {
+                SlurInter ext = slur.getExtension(side);
+
+                if ((ext != null) && !ext.isRemoved()) {
+                    seq.add(new RemovalTask(ext));
+                }
+            }
+        }
+
         history.add(seq);
         seq.performDo();
 
@@ -413,7 +430,7 @@ public class InterController
         ///sheet.getGlyphIndex().publish(null); // Let glyph displayed, to ease new inter assignment
         sheet.getInterIndex().publish(null);
 
-        epilog(seq);
+        epilog(seq, DO);
     }
 
     //--------------//
@@ -518,7 +535,7 @@ public class InterController
             sheet.getInterIndex().publish(source);
         }
 
-        epilog(seq);
+        epilog(seq, UNDO);
     }
 
     /**
@@ -543,13 +560,13 @@ public class InterController
         sheet.getStub().setModified(true);
         sheet.getInterIndex().publish(source);
 
-        epilog(seq);
+        epilog(seq, DO);
     }
 
     /**
      * Perform ghost addition.
      *
-     * @param ghost        the ghost inter to add/drop
+     * @param ghost the ghost inter to add/drop
      * @param links its links
      */
     private void addGhost (Inter ghost,
@@ -560,15 +577,15 @@ public class InterController
         final SIGraph sig = staff.getSystem().getSig();
 
         // Inter addition
-        final UITaskList seq = new UITaskList(
-                new AdditionTask(sig, ghost, ghostBounds, links));
+        final UITaskList seq = new UITaskList(new AdditionTask(sig, ghost, ghostBounds, links));
 
         // Related additions if any
         if (ghost instanceof RestInter) {
             // Wrap this rest within a rest chord
             RestChordInter restChord = new RestChordInter(-1);
             restChord.setStaff(staff);
-            seq.add(new AdditionTask(
+            seq.add(
+                    new AdditionTask(
                             sig,
                             restChord,
                             ghostBounds,
@@ -616,15 +633,19 @@ public class InterController
         sheet.getGlyphIndex().publish(null);
         sheet.getInterIndex().publish(ghost);
 
-        epilog(seq);
+        epilog(seq, DO);
     }
 
     /**
      * Epilog for any user action sequence.
      * <p>
      * This depends on the impacted items (inters, relations) and on the current processing step.
+     *
+     * @param seq    the sequence of user tasks
+     * @param opKind how is seq used
      */
-    private void epilog (UITaskList seq)
+    private void epilog (UITaskList seq,
+                         OpKind opKind)
     {
         // Re-process impacted steps
         final Step latestStep = sheet.getStub().getLatestStep();
@@ -635,7 +656,7 @@ public class InterController
 
             for (Step step : steps) {
                 logger.debug("Impact {}", step);
-                step.impact(seq);
+                step.impact(seq, opKind);
             }
         }
 

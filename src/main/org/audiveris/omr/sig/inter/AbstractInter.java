@@ -234,11 +234,11 @@ public abstract class AbstractInter
     @Override
     public void added ()
     {
+        removed = false;
+
         if (isVip()) {
             logger.info("VIP added {}", this);
         }
-
-        removed = false;
     }
 
     //----------//

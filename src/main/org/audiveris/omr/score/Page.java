@@ -28,6 +28,9 @@ import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.SlurInter;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -37,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -173,6 +177,41 @@ public class Page
         }
 
         measureCount = count;
+    }
+
+    //--------------------//
+    // connectOrphanSlurs //
+    //--------------------//
+    /**
+     * Within the systems of this page, retrieve the connections between the orphan
+     * slurs at the beginning of each system and the orphan slurs at the end of the
+     * previous system if any.
+     * <p>
+     * Orphan slurs that don't connect are removed from their SIG.
+     */
+    public void connectOrphanSlurs ()
+    {
+        for (SystemInfo system : getSystems()) {
+            SystemInfo prevSystem = system.getPrecedingInPage();
+
+            if (prevSystem != null) {
+                // Examine every part in sequence
+                for (Part part : system.getParts()) {
+                    // Connect to ending orphans in preceding system/part (if such part exists)
+                    Part precedingPart = part.getPrecedingInPage();
+
+                    if (precedingPart != null) {
+                        // Links: Slur -> prevSlur
+                        Map<SlurInter, SlurInter> links = part.connectSlursWith(precedingPart);
+
+                        for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
+                            entry.getKey().setExtension(LEFT, entry.getValue());
+                            entry.getValue().setExtension(RIGHT, entry.getKey());
+                        }
+                    }
+                }
+            }
+        }
     }
 
     //-------------------//

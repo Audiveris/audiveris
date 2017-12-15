@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractStep;
 import org.audiveris.omr.step.StepException;
@@ -132,9 +133,10 @@ public class RhythmsStep
     // impact //
     //--------//
     @Override
-    public void impact (UITaskList seq)
+    public void impact (UITaskList seq,
+                        OpKind opKind)
     {
-        logger.info("RHYTHMS impact for {}", seq);
+        logger.info("RHYTHMS impact {} {}", opKind, seq);
 
         InterTask interTask = seq.getFirstInterTask();
 

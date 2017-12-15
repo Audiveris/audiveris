@@ -418,7 +418,7 @@ public class GuiActions
     @Action
     public void showMemory (ActionEvent e)
     {
-        logger.info("----- Occupied memory is {} bytes -----", Memory.getValue());
+        logger.info("\n----- Occupied memory is {} bytes -----\n", Memory.getValue());
     }
 
     //--------------//

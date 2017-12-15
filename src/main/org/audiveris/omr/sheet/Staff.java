@@ -815,10 +815,6 @@ public class Staff
      */
     public LineInfo getFirstLine ()
     {
-        if (lines == null) {
-            logger.info("BINGO lines is null");
-        }
-
         return lines.get(0);
     }
 

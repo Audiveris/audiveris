@@ -24,7 +24,6 @@ package org.audiveris.omr.step;
 import org.audiveris.omr.score.MeasureFixer;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageReduction;
-import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voices;
@@ -46,15 +45,13 @@ import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
-import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -145,8 +142,8 @@ public class PageStep
             // Connect parts across systems in the page
             new PageReduction(page).reduce();
 
-            // Inter-system connections
-            connectSlurs(page);
+            // Inter-system slurs connections
+            page.connectOrphanSlurs();
 
             // Lyrics
             refineLyrics(page);
@@ -163,9 +160,10 @@ public class PageStep
     // impact //
     //--------//
     @Override
-    public void impact (UITaskList seq)
+    public void impact (UITaskList seq,
+                        OpKind opKind)
     {
-        logger.info("PAGE impact for {}", seq);
+        logger.info("PAGE impact {} {}", opKind, seq);
 
         InterTask interTask = seq.getFirstInterTask();
 
@@ -175,7 +173,7 @@ public class PageStep
             Class<? extends AbstractInter> interClass = (Class<? extends AbstractInter>) inter.getClass();
 
             if (forSlurs.contains(interClass)) {
-                connectSlurs(page);
+                page.connectOrphanSlurs();
             }
 
             if (forLyrics.contains(interClass)) {
@@ -195,52 +193,6 @@ public class PageStep
     public Set<Class<? extends AbstractInter>> impactingInterClasses ()
     {
         return impactingInterClasses;
-    }
-
-    //--------------//
-    // connectSlurs //
-    //--------------//
-    /**
-     * Connect slurs across systems in page
-     *
-     * @param page provided page
-     */
-    private void connectSlurs (Page page)
-    {
-        for (SystemInfo system : page.getSystems()) {
-            connectSystemInitialSlurs(system);
-        }
-    }
-
-    //---------------------------//
-    // connectSystemInitialSlurs //
-    //---------------------------//
-    /**
-     * Within the current page only, retrieve the connections between the (orphan) slurs
-     * at the beginning of the provided system and the (orphan) slurs at the end of the
-     * previous system if any (within the same page).
-     */
-    private void connectSystemInitialSlurs (SystemInfo system)
-    {
-        SystemInfo prevSystem = system.getPrecedingInPage();
-
-        if (prevSystem != null) {
-            // Examine every part in sequence
-            for (Part part : system.getParts()) {
-                // Connect to ending orphans in preceding system/part (if such part exists)
-                Part precedingPart = part.getPrecedingInPage();
-
-                if (precedingPart != null) {
-                    // Links: Slur -> prevSlur
-                    Map<SlurInter, SlurInter> links = part.connectSlursWith(precedingPart);
-
-                    for (Entry<SlurInter, SlurInter> entry : links.entrySet()) {
-                        entry.getKey().setExtension(LEFT, entry.getValue());
-                        entry.getValue().setExtension(RIGHT, entry.getKey());
-                    }
-                }
-            }
-        }
     }
 
     //--------------//
