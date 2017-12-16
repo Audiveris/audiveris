@@ -1107,24 +1107,8 @@ public class BasicBook
             for (Score score : scores) {
                 // (re) build the score logical parts
                 modifs += new ScoreReduction(score).reduce();
-                //
-                //            for (Page page : score.getPages()) {
-                //                //                // - Retrieve the actual duration of every measure
-                //                //                page.accept(new DurationRetriever());
-                //                //
-                //                //                // - Check all voices timing, assign forward items if needed.
-                //                //                // - Detect special measures and assign proper measure ids
-                //                //                // If needed, we can trigger a reprocessing of this page
-                //                //                page.accept(new MeasureFixer());
-                //                //
-                //                // Check whether time signatures are consistent across all pages in score
-                //                // TODO: to be implemented
-                //                //
-                //                // Connect slurs across pages
-                //                page.getFirstSystem().connectPageInitialSlurs(score);
-                //            }
 
-                // Voices connection
+                // Slurs and voices connection across pages in score
                 modifs += Voices.refineScore(score);
             }
 

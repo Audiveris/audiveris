@@ -150,15 +150,15 @@ public class ClumpPruner
 
                         // Check there is no other chords in between
                         if (linker.isSpaceClear(leftHead, rightHead)) {
-                            slur.setTie();
+                            slur.setTie(true);
                         } else if (linker.isSpaceClear(leftMirror, rightHead)) {
-                            slur.setTie();
+                            slur.setTie(true);
                             switchMirrorHead(selected, LEFT);
                         } else if (linker.isSpaceClear(leftHead, rightMirror)) {
-                            slur.setTie();
+                            slur.setTie(true);
                             switchMirrorHead(selected, RIGHT);
                         } else if (linker.isSpaceClear(leftMirror, rightMirror)) {
-                            slur.setTie();
+                            slur.setTie(true);
                             switchMirrorHead(selected, LEFT);
                             switchMirrorHead(selected, RIGHT);
                         }

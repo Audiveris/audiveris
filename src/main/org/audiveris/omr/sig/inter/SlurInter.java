@@ -317,8 +317,8 @@ public class SlurInter
         boolean isATie = haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
 
         if (isATie) {
-            prevSlur.setTie();
-            setTie();
+            prevSlur.setTie(true);
+            setTie(true);
         }
 
         logger.debug("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
@@ -580,10 +580,18 @@ public class SlurInter
     //--------//
     /**
      * Set this slur as being a tie.
+     *
+     * @param tie new tie value
      */
-    public void setTie ()
+    public void setTie (boolean tie)
     {
-        tie = Boolean.TRUE;
+        if (this.tie != tie) {
+            this.tie = tie;
+
+            if (sig != null) {
+                sig.getSystem().getSheet().getStub().setModified(true);
+            }
+        }
     }
 
     //----------------//
