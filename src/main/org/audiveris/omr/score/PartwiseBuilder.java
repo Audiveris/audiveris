@@ -2116,7 +2116,7 @@ public class PartwiseBuilder
 
                 // [Encoding]/Software
                 encoding.getEncodingDateOrEncoderOrSoftware().add(
-                        factory.createEncodingSoftware("Audiveris" + " " + WellKnowns.TOOL_REF));
+                        factory.createEncodingSoftware(WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF));
 
                 // [Encoding]/EncodingDate
                 // Let the Marshalling class handle it

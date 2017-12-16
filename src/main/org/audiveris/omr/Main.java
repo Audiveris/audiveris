@@ -264,7 +264,7 @@ public class Main
         try {
             // First get the provided parameters if any
             cli = new CLI(WellKnowns.TOOL_NAME);
-            cli.getParameters(args);
+            cli.parseParameters(args);
         } catch (CmdLineException ex) {
             logger.warn("Error in command line: {}", ex.getLocalizedMessage(), ex);
             logger.warn("Exiting ...");

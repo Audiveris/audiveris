@@ -63,7 +63,7 @@ public class CLITest
             "omr.ui.tata=tataValue", "-option", "keyWithNoValue", "-option",
             "myKey : my value"
         };
-        CLI.Parameters params = instance.getParameters(args);
+        CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
     }
 
@@ -88,7 +88,7 @@ public class CLITest
         System.out.println("\n+++ testRun");
 
         String[] args = new String[]{"-run", "org.audiveris.omr.step.RunClass"};
-        CLI.Parameters params = instance.getParameters(args);
+        CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertNotNull("baratin", params.runClass);
     }
@@ -102,7 +102,7 @@ public class CLITest
         String[] args = new String[]{"-run", "fooBar"};
 
         try {
-            CLI.Parameters params = instance.getParameters(args);
+            CLI.Parameters params = instance.parseParameters(args);
 
             fail();
         } catch (CmdLineException ex) {
@@ -119,7 +119,7 @@ public class CLITest
         System.out.println("\n+++ testSheets");
 
         String[] args = new String[]{"-sheets", "3", "4", "6", "11 14"};
-        CLI.Parameters params = instance.getParameters(args);
+        CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertEquals(Arrays.asList(3, 4, 6, 11, 14).toString(), params.getSheetIds().toString());
     }
@@ -131,7 +131,7 @@ public class CLITest
         System.out.println("\n+++ testSheetsRange");
 
         String[] args = new String[]{"-sheets", "1", "3-6", "10"};
-        CLI.Parameters params = instance.getParameters(args);
+        CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertEquals(Arrays.asList(1, 3, 4, 5, 6, 10).toString(), params.getSheetIds().toString());
     }
@@ -143,7 +143,7 @@ public class CLITest
         System.out.println("\n+++ testSheetsRange2");
 
         String[] args = new String[]{"-sheets", "1", "4 - 6", "20"};
-        CLI.Parameters params = instance.getParameters(args);
+        CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertEquals(Arrays.asList(1, 4, 5, 6, 20).toString(), params.getSheetIds().toString());
     }
@@ -158,7 +158,7 @@ public class CLITest
             "-help", "-batch", "-sheets", "5 2", " 3", "-step", "PAGE",
             "myScript.xml", "my Input.pdf"
         };
-        CLI.Parameters params = instance.getParameters(args);
+        CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertEquals(true, params.batchMode);
         assertEquals(true, params.helpMode);
@@ -176,7 +176,7 @@ public class CLITest
         System.out.println("\n+++ testStep");
 
         String[] args = new String[]{"-step", "PAGE"};
-        CLI.Parameters params = instance.getParameters(args);
+        CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
         assertEquals(Step.PAGE, params.step);
     }
@@ -190,7 +190,7 @@ public class CLITest
         String[] args = new String[]{"-step"};
 
         try {
-            CLI.Parameters params = instance.getParameters(args);
+            CLI.Parameters params = instance.parseParameters(args);
 
             fail();
         } catch (CmdLineException ex) {
@@ -207,7 +207,7 @@ public class CLITest
         System.out.println("\n+++ testVoid");
 
         String[] args = new String[0];
-        CLI.Parameters params = instance.getParameters(args);
+        CLI.Parameters params = instance.parseParameters(args);
         new Dumping().dump(params);
     }
 }

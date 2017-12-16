@@ -1501,14 +1501,17 @@ public class BookActions
                 try {
                     // Actually open the book
                     Book book = OMR.engine.loadBook(path);
-                    LogUtil.start(book);
-                    book.createStubsTabs(null); // Tabs are now accessible
 
-                    // Focus on first valid stub in book, if any
-                    SheetStub firstValid = book.getFirstValidStub();
+                    if (book != null) {
+                        LogUtil.start(book);
+                        book.createStubsTabs(null); // Tabs are now accessible
 
-                    if (firstValid != null) {
-                        StubsController.invokeSelect(firstValid);
+                        // Focus on first valid stub in book, if any
+                        SheetStub firstValid = book.getFirstValidStub();
+
+                        if (firstValid != null) {
+                            StubsController.invokeSelect(firstValid);
+                        }
                     }
                 } finally {
                     LogUtil.stopBook();

@@ -161,10 +161,20 @@ public class MainGui
     @Override
     public boolean displayConfirmation (String message)
     {
+        return displayConfirmation(message, "Confirm");
+    }
+
+    //---------------------//
+    // displayConfirmation //
+    //---------------------//
+    @Override
+    public boolean displayConfirmation (String message,
+                                        String title)
+    {
         int answer = JOptionPane.showConfirmDialog(
                 frame,
                 message,
-                "Confirm - " + appName,
+                title + " - " + appName,
                 JOptionPane.YES_NO_OPTION);
 
         return answer == JOptionPane.YES_OPTION;
@@ -213,10 +223,20 @@ public class MainGui
     @Override
     public void displayWarning (String message)
     {
+        displayWarning(message, "Warning - " + appName);
+    }
+
+    //----------------//
+    // displayWarning //
+    //----------------//
+    @Override
+    public void displayWarning (String message,
+                                String title)
+    {
         JOptionPane.showMessageDialog(
                 frame,
                 message,
-                "Warning - " + appName,
+                title + " - " + appName,
                 JOptionPane.WARNING_MESSAGE);
     }
 
@@ -471,6 +491,7 @@ public class MainGui
     protected void startup ()
     {
         logger.debug("MainGui. 2/startup");
+        logger.info("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
 
         // Make the OmrGui instance available for the other classes
         OMR.gui = this;

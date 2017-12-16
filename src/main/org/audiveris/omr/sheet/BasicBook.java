@@ -21,8 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.ProgramId;
+import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -355,9 +357,17 @@ public class BasicBook
             book = (BasicBook) um.unmarshal(is);
             book.getLock().lock();
             LogUtil.start(book);
-            book.initTransients(null, bookPath);
-            is.close();
+
+            boolean ok = book.initTransients(null, bookPath);
+
+            is.close(); // Close input stream
             rootPath.getFileSystem().close(); // Close book file
+
+            if (!ok) {
+                logger.info("Discarded {}", bookPath);
+
+                return null;
+            }
 
             book.checkScore(); // TODO: remove ASAP
 
@@ -1141,6 +1151,8 @@ public class BasicBook
         for (SheetStub stub : getValidStubs()) {
             stub.reset();
         }
+
+        scores.clear();
     }
 
     //---------------//
@@ -1152,6 +1164,8 @@ public class BasicBook
         for (SheetStub stub : getValidStubs()) {
             stub.resetToBinary();
         }
+
+        scores.clear();
     }
 
     //--------//
@@ -1538,6 +1552,51 @@ public class BasicBook
         }
     }
 
+    //-----------------------//
+    // areVersionsCompatible //
+    //-----------------------//
+    /**
+     * Check whether the program version can operate on the file version.
+     * <p>
+     * All version strings are expected to be formatted like "5.0" or "5.0.1"
+     * and we don't take the 3rd number, if any, into account for compatibility checking.
+     *
+     * @param programVersion version of software
+     * @param fileVersion    version of book file
+     * @return true if OK
+     */
+    private boolean areVersionsCompatible (String programVersion,
+                                           String fileVersion)
+    {
+        try {
+            logger.debug("Book file version: {}", fileVersion);
+
+            final String[] programTokens = programVersion.split("\\.");
+
+            if (programTokens.length < 2) {
+                throw new IllegalArgumentException("Illegal Audiveris version " + programVersion);
+            }
+
+            final String[] fileTokens = fileVersion.split("\\.");
+
+            if (fileTokens.length < 2) {
+                throw new IllegalArgumentException("Illegal Book file version " + fileVersion);
+            }
+
+            for (int i = 0; i < 2; i++) {
+                if (Integer.decode(fileTokens[i]) < Integer.decode(programTokens[i])) {
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (Throwable ex) {
+            logger.error("Error while checking versions " + ex, ex);
+
+            return false; // Safer
+        }
+    }
+
     //------------//
     // checkAlias //
     //------------//
@@ -1645,6 +1704,20 @@ public class BasicBook
         return ZipFileSystem.open(bookPath);
     }
 
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
+        }
+
+        return jaxbContext;
+    }
+
     //--------------//
     // createScores //
     //--------------//
@@ -1689,20 +1762,6 @@ public class BasicBook
         }
 
         return list;
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
-        }
-
-        return jaxbContext;
     }
 
     //--------------//
@@ -1757,17 +1816,16 @@ public class BasicBook
     //----------------//
     // initTransients //
     //----------------//
-    private void initTransients (String nameSansExt,
-                                 Path bookPath)
+    /**
+     * Initialize transient data.
+     *
+     * @param nameSansExt book name without extension, if any
+     * @param bookPath    full path to book .omr file, if any
+     * @return true if OK
+     */
+    private boolean initTransients (String nameSansExt,
+                                    Path bookPath)
     {
-        if (version == null) {
-            version = ProgramId.PROGRAM_VERSION;
-        }
-
-        if (build == null) {
-            build = ProgramId.PROGRAM_BUILD;
-        }
-
         if (alias == null) {
             alias = checkAlias(getInputPath());
 
@@ -1777,16 +1835,51 @@ public class BasicBook
         }
 
         if (nameSansExt != null) {
-            this.radix = nameSansExt;
+            radix = nameSansExt;
         }
 
         if (bookPath != null) {
             this.bookPath = bookPath;
 
             if (nameSansExt == null) {
-                this.radix = FileUtil.getNameSansExtension(bookPath);
+                radix = FileUtil.getNameSansExtension(bookPath);
             }
         }
+
+        if (build == null) {
+            build = WellKnowns.TOOL_BUILD;
+        }
+
+        if (version == null) {
+            version = WellKnowns.TOOL_REF;
+        } else {
+            // Check compatibility between file version and program version
+            if (!areVersionsCompatible(ProgramId.PROGRAM_VERSION, version)) {
+                if (Main.getCli().isNoConversionMode()) {
+                    logger.info("Incompatible book version, but option \"-noconversion\" is set");
+                } else {
+                    final String msg = bookPath + " version " + version;
+                    logger.warn(msg);
+
+                    // Prompt user for resetting project sheets?
+                    if ((OMR.gui == null)
+                        || OMR.gui.displayConfirmation(
+                                    msg + "\nConfirm reset to binary?",
+                                    "Non compatible book version")) {
+                        resetToBinary();
+                        logger.info("Book {} reset to binary.", radix);
+                        version = WellKnowns.TOOL_REF;
+                        build = WellKnowns.TOOL_BUILD;
+
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     //--------------//

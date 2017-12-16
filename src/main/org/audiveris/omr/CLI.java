@@ -164,33 +164,6 @@ public class CLI
         return params.outputFolder;
     }
 
-    //---------------//
-    // getParameters //
-    //---------------//
-    /**
-     * Parse the CLI arguments and return the populated parameters structure.
-     *
-     * @param args the CLI arguments
-     * @return the parsed parameters, or null if failed
-     * @throws org.kohsuke.args4j.CmdLineException
-     */
-    public Parameters getParameters (final String... args)
-            throws CmdLineException
-    {
-        logger.info("CLI args: {}", Arrays.toString(args));
-        actualArgs = args;
-
-        parser.parseArgument(args);
-
-        if (logger.isDebugEnabled()) {
-            new Dumping().dump(params);
-        }
-
-        checkParams();
-
-        return params;
-    }
-
     //-------------//
     // isBatchMode //
     //-------------//
@@ -215,6 +188,46 @@ public class CLI
     public boolean isHelpMode ()
     {
         return params.helpMode;
+    }
+
+    //--------------------//
+    // isNoConversionMode //
+    //--------------------//
+    /**
+     * Report whether no conversion of project file is attempted.
+     *
+     * @return true for no conversion mode
+     */
+    public boolean isNoConversionMode ()
+    {
+        return params.noconversion;
+    }
+
+    //-----------------//
+    // parseParameters //
+    //-----------------//
+    /**
+     * Parse the CLI arguments and return the populated parameters structure.
+     *
+     * @param args the CLI arguments
+     * @return the parsed parameters, or null if failed
+     * @throws org.kohsuke.args4j.CmdLineException
+     */
+    public Parameters parseParameters (final String... args)
+            throws CmdLineException
+    {
+        logger.info("CLI args: {}", Arrays.toString(args));
+        actualArgs = args;
+
+        parser.parseArgument(args);
+
+        if (logger.isDebugEnabled()) {
+            new Dumping().dump(params);
+        }
+
+        checkParams();
+
+        return params;
     }
 
     //------------------//
@@ -340,8 +353,9 @@ public class CLI
             // Obtain the book instance
             final Book book = loadBook(path);
 
-            // Process the book instance
-            processBook(book);
+            if (book != null) {
+                processBook(book); // Process the book instance
+            }
 
             return null;
         }
@@ -513,6 +527,10 @@ public class CLI
         /** Help mode. */
         @Option(name = "-help", help = true, usage = "Display general help then stops")
         boolean helpMode;
+
+        /** Prevent conversion. */
+        @Option(name = "-noconversion", usage = "Apply no project file conversion")
+        boolean noconversion;
 
         /** The map of application options. */
         @Option(name = "-option", usage = "Define an application constant", handler = PropertyOptionHandler.class)

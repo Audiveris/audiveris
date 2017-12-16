@@ -279,8 +279,6 @@ public class SlurInter
 
         if (getPart() != null) {
             getPart().addSlur(this);
-        } else {
-            logger.info("{} no part to add to.", this);
         }
     }
 
