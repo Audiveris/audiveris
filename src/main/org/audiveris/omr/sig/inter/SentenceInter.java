@@ -39,9 +39,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -85,16 +82,6 @@ public class SentenceInter
     // Persistent data
     //----------------
     //
-    /**
-     * Sequence of sentence words.
-     * This is deprecated, replaced by the use of containment relation.
-     */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "words")
-    @Deprecated
-    protected List<WordInter> oldWords;
-
     /** Average font for the sentence. */
     @XmlAttribute(name = "font")
     @XmlJavaTypeAdapter(FontInfo.Adapter.class)
@@ -339,16 +326,6 @@ public class SentenceInter
     public void invalidateCache ()
     {
         bounds = null;
-    }
-
-    //----------------//
-    // linkOldMembers //
-    //----------------//
-    @Override
-    public void linkOldMembers ()
-    {
-        EnsembleHelper.linkOldMembers(this, oldWords);
-        oldWords = null;
     }
 
     //--------------//

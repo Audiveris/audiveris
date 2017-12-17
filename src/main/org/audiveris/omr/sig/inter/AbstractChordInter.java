@@ -54,10 +54,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlList;
-
 /**
  * Class {@code AbstractChordInter} represents an ensemble of notes (rests, heads)
  * attached to the same stem if any, and that start on the same time slot in a part.
@@ -84,20 +80,6 @@ public abstract class AbstractChordInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    // Persistent data
-    //----------------
-    //
-    /**
-     * Sequence of chord notes (one or several heads or just a single rest),
-     * kept ordered bottom-up.
-     * This is deprecated, replaced by the use of containment relation.
-     */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "notes")
-    @Deprecated
-    private List<AbstractNoteInter> oldNotes;
-
     // Transient data
     //---------------
     //
@@ -996,16 +978,6 @@ public abstract class AbstractChordInter
         }
 
         return false;
-    }
-
-    //----------------//
-    // linkOldMembers //
-    //----------------//
-    @Override
-    public void linkOldMembers ()
-    {
-        EnsembleHelper.linkOldMembers(this, oldNotes);
-        oldNotes = null;
     }
 
     //--------//

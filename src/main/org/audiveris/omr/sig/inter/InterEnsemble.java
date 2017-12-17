@@ -72,12 +72,6 @@ public interface InterEnsemble
     List<Inter> getMembers ();
 
     /**
-     * Convert old nested members to relation-based members.
-     */
-    @Deprecated
-    void linkOldMembers ();
-
-    /**
      * Remove a member from the ensemble.
      * <p>
      * This does not delete the member instance, but simply deletes the containment relationship

@@ -24,9 +24,13 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
+
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.Step.*;
+
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
+
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.*;
+
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -38,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -90,14 +93,6 @@ public class KeyInter
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /**
-     * Sequence of key components.
-     * This is deprecated, replaced by the use of containment relation.
-     */
-    @XmlElement(name = "key-alter")
-    @Deprecated
-    private List<KeyAlterInter> oldAlters;
-
     /** Numerical value for signature. */
     @XmlAttribute
     private int fifths;
@@ -469,14 +464,14 @@ public class KeyInter
         return bestKind;
     }
 
-    //----------------//
-    // linkOldMembers //
-    //----------------//
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
     @Override
-    public void linkOldMembers ()
+    public void invalidateCache ()
     {
-        EnsembleHelper.linkOldMembers(this, oldAlters);
-        oldAlters = null;
+        bounds = null;
+        fifths = 0;
     }
 
     //--------------//
@@ -556,16 +551,6 @@ public class KeyInter
         sb.append(" fifths:").append(getFifths());
 
         return sb.toString();
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    @Override
-    public void invalidateCache ()
-    {
-        bounds = null;
-        fifths = 0;
     }
 
     //---------//

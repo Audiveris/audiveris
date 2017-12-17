@@ -36,7 +36,6 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -52,20 +51,7 @@ public class TimePairInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            TimePairInter.class);
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    // Persistent data
-    //----------------
-    //
-    /**
-     * Signature halves: numerator then denominator.
-     * This is deprecated, replaced by the use of containment relation.
-     */
-    @XmlElement(name = "number")
-    @Deprecated
-    private List<TimeNumberInter> oldMembers;
+    private static final Logger logger = LoggerFactory.getLogger(TimePairInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -281,16 +267,6 @@ public class TimePairInter
     {
         bounds = null;
         timeRational = null;
-    }
-
-    //----------------//
-    // linkOldMembers //
-    //----------------//
-    @Override
-    public void linkOldMembers ()
-    {
-        EnsembleHelper.linkOldMembers(this, oldMembers);
-        oldMembers = null;
     }
 
     //--------------//

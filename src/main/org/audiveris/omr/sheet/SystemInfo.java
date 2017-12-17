@@ -39,7 +39,6 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigListener;
 import org.audiveris.omr.sig.SigValue.InterSet;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -276,12 +275,6 @@ public class SystemInfo
             for (Inter inter : sig.inters(SentenceInter.class)) {
                 SentenceInter sentence = (SentenceInter) inter;
                 sentence.assignStaff(this, sentence.getLocation());
-            }
-
-            // Temporary fix, for old ensemble implementations based on nesting.
-            for (Inter inter : sig.inters(InterEnsemble.class)) {
-                InterEnsemble ensemble = (InterEnsemble) inter;
-                ensemble.linkOldMembers();
             }
 
             // Listen to sig modifications

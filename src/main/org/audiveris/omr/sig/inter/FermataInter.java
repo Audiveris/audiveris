@@ -41,8 +41,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -69,8 +67,7 @@ public class FermataInter
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            FermataInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(FermataInter.class);
 
     private static Comparator<Inter> byFermataOrder = new Comparator<Inter>()
     {
@@ -81,22 +78,6 @@ public class FermataInter
             return (o1 instanceof FermataArcInter) ? (-1) : (+1); // Arc then dot
         }
     };
-
-    //~ Instance fields ----------------------------------------------------------------------------
-    // Persistent data
-    //----------------
-    //
-    /** Arc. */
-    @XmlIDREF
-    @XmlAttribute(name = "arc")
-    @Deprecated
-    private FermataArcInter oldArc;
-
-    /** Dot. */
-    @XmlIDREF
-    @XmlAttribute(name = "dot")
-    @Deprecated
-    private FermataDotInter oldDot;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -250,21 +231,13 @@ public class FermataInter
         return EnsembleHelper.getMembers(this, byFermataOrder);
     }
 
-    //----------------//
-    // linkOldMembers //
-    //----------------//
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
     @Override
-    public void linkOldMembers ()
+    public void invalidateCache ()
     {
-        if (oldArc != null) {
-            addMember(oldArc);
-            oldArc = null;
-        }
-
-        if (oldDot != null) {
-            addMember(oldDot);
-            oldDot = null;
-        }
+        bounds = null;
     }
 
     //-----------------//
@@ -379,15 +352,6 @@ public class FermataInter
     protected String internals ()
     {
         return super.internals() + " " + shape;
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    @Override
-    public void invalidateCache ()
-    {
-        bounds = null;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
