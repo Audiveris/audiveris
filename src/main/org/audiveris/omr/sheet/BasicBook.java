@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.ProgramId;
 import org.audiveris.omr.WellKnowns;
@@ -38,7 +37,9 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
+
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
+
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sheet.ui.BookBrowser;
 import org.audiveris.omr.sheet.ui.StubsController;
@@ -1853,29 +1854,31 @@ public class BasicBook
         if (version == null) {
             version = WellKnowns.TOOL_REF;
         } else {
-            // Check compatibility between file version and program version
-            if (!areVersionsCompatible(ProgramId.PROGRAM_VERSION, version)) {
-                if (Main.getCli().isNoConversionMode()) {
-                    logger.info("Incompatible book version, but option \"-noconversion\" is set");
-                } else {
-                    final String msg = bookPath + " version " + version;
-                    logger.warn(msg);
+            if (constants.checkBookVersion.isSet()) {
+                // Check compatibility between file version and program version
+                if (!areVersionsCompatible(ProgramId.PROGRAM_VERSION, version)) {
+                    if (constants.resetOldBooks.isSet()) {
+                        final String msg = bookPath + " version " + version;
+                        logger.warn(msg);
 
-                    // Prompt user for resetting project sheets?
-                    if ((OMR.gui == null)
-                        || OMR.gui.displayConfirmation(
-                                    msg + "\nConfirm reset to binary?",
-                                    "Non compatible book version")) {
-                        resetToBinary();
-                        logger.info("Book {} reset to binary.", radix);
-                        version = WellKnowns.TOOL_REF;
-                        build = WellKnowns.TOOL_BUILD;
+                        // Prompt user for resetting project sheets?
+                        if ((OMR.gui == null)
+                            || OMR.gui.displayConfirmation(
+                                        msg + "\nConfirm reset to binary?",
+                                        "Non compatible book version")) {
+                            resetToBinary();
+                            logger.info("Book {} reset to binary.", radix);
+                            version = WellKnowns.TOOL_REF;
+                            build = WellKnowns.TOOL_BUILD;
 
-                        return true;
+                            return true;
+                        }
+                    } else {
+                        logger.info("Incompatible book version, but not reset.");
                     }
-                }
 
-                return false;
+                    return false;
+                }
             }
         }
 
@@ -2004,5 +2007,13 @@ public class BasicBook
         private final Constant.Boolean processAllStubsInParallel = new Constant.Boolean(
                 false,
                 "Should we process all stubs of a book in parallel? (beware of many stubs)");
+
+        private final Constant.Boolean checkBookVersion = new Constant.Boolean(
+                true,
+                "Should we check version of loaded book files?");
+
+        private final Constant.Boolean resetOldBooks = new Constant.Boolean(
+                true,
+                "Should we reset to binary the too old book files?");
     }
 }

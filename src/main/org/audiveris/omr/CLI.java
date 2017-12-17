@@ -190,19 +190,6 @@ public class CLI
         return params.helpMode;
     }
 
-    //--------------------//
-    // isNoConversionMode //
-    //--------------------//
-    /**
-     * Report whether no conversion of project file is attempted.
-     *
-     * @return true for no conversion mode
-     */
-    public boolean isNoConversionMode ()
-    {
-        return params.noconversion;
-    }
-
     //-----------------//
     // parseParameters //
     //-----------------//
@@ -527,10 +514,6 @@ public class CLI
         /** Help mode. */
         @Option(name = "-help", help = true, usage = "Display general help then stops")
         boolean helpMode;
-
-        /** Prevent conversion. */
-        @Option(name = "-noconversion", usage = "Apply no project file conversion")
-        boolean noconversion;
 
         /** The map of application options. */
         @Option(name = "-option", usage = "Define an application constant", handler = PropertyOptionHandler.class)
