@@ -57,6 +57,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
@@ -88,6 +89,7 @@ import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
+import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
@@ -130,7 +132,6 @@ import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import org.audiveris.omr.sig.inter.OrnamentInter;
 
 /**
  * Class {@code SigValue} represents the content of a SIG for use by JAXB.
@@ -401,6 +402,7 @@ public class SigValue
             , @XmlElementRef(type = ChordNameRelation.class)
             , @XmlElementRef(type = ChordPedalRelation.class)
             , @XmlElementRef(type = ChordSentenceRelation.class)
+            , @XmlElementRef(type = ChordStemRelation.class)
             , @XmlElementRef(type = ChordSyllableRelation.class)
             , @XmlElementRef(type = ChordTupletRelation.class)
             , @XmlElementRef(type = ChordWedgeRelation.class)

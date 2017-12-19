@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
@@ -89,6 +90,7 @@ public class PageStep
         forVoices.add(RestChordInter.class);
         forVoices.add(RestInter.class);
         forVoices.add(SlurInter.class);
+        forVoices.add(StemInter.class);
         forVoices.add(TimeNumberInter.class);
         forVoices.add(TimePairInter.class);
         forVoices.add(TimeWholeInter.class);
@@ -163,7 +165,7 @@ public class PageStep
     public void impact (UITaskList seq,
                         OpKind opKind)
     {
-        logger.info("PAGE impact {} {}", opKind, seq);
+        logger.debug("PAGE impact {} {}", opKind, seq);
 
         InterTask interTask = seq.getFirstInterTask();
 

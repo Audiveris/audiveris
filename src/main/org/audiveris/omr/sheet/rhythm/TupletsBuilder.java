@@ -117,9 +117,9 @@ public class TupletsBuilder
         return toDelete;
     }
 
-    //--------------------//
+    //-------------//
     // lookupLinks //
-    //--------------------//
+    //-------------//
     /**
      * Look up for tuplet relevant chords.
      *

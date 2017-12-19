@@ -42,12 +42,15 @@ import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
+
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
+
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.HorizontalSide;
 
@@ -375,7 +378,9 @@ public class InterController
             return;
         }
 
-        logger.debug("removeInter on {}", inter);
+        if (inter.isVip()) {
+            logger.info("VIP removeInter {}", inter);
+        }
 
         if (toRemove == null) {
             toRemove = new LinkedHashSet<Inter>();
@@ -396,12 +401,22 @@ public class InterController
                     seq.add(new RemovalTask(member));
                 }
             }
+
+            if (inter instanceof HeadChordInter) {
+                // Remove the chord stem as well
+                final HeadChordInter chord = (HeadChordInter) inter;
+                final StemInter stem = chord.getStem();
+
+                if ((stem != null) && !toRemove.contains(stem)) {
+                    seq.add(new RemovalTask(stem));
+                }
+            }
         } else {
             // Delete containing ensemble if this is the last member in ensemble
-            SIGraph sig = inter.getSig();
+            final SIGraph sig = inter.getSig();
 
             for (Relation rel : sig.getRelations(inter, Containment.class)) {
-                InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
+                final InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
 
                 if (!toRemove.contains(ens) && (ens.getMembers().size() <= 1)) {
                     toRemove.add(ens);
@@ -412,10 +427,10 @@ public class InterController
 
         // Slur extensions if any
         if (inter instanceof SlurInter) {
-            SlurInter slur = (SlurInter) inter;
+            final SlurInter slur = (SlurInter) inter;
 
             for (HorizontalSide side : HorizontalSide.values()) {
-                SlurInter ext = slur.getExtension(side);
+                final SlurInter ext = slur.getExtension(side);
 
                 if ((ext != null) && !ext.isRemoved()) {
                     seq.add(new RemovalTask(ext));
@@ -596,18 +611,26 @@ public class InterController
 
             for (Link link : links) {
                 if (link.relation instanceof HeadStemRelation) {
-                    StemInter stem = (StemInter) link.partner;
-                    HeadChordInter headChord = stem.getChord();
+                    final StemInter stem = (StemInter) link.partner;
+                    final HeadChordInter headChord;
+                    final List<HeadChordInter> stemChords = stem.getChords();
 
-                    if (headChord == null) {
+                    if (stemChords.isEmpty()) {
                         // Create a chord based on stem
-                        headChord = new HeadChordInter(-1, stem);
+                        headChord = new HeadChordInter(-1);
+                        seq.add(new LinkTask(sig, headChord, stem, new ChordStemRelation()));
                         seq.add(
                                 new AdditionTask(
                                         sig,
                                         headChord,
                                         stem.getBounds(),
                                         Collections.EMPTY_SET));
+                    } else {
+                        if (stemChords.size() > 1) {
+                            logger.warn("Stem shared by several chords, picked one");
+                        }
+
+                        headChord = stemChords.get(0);
                     }
 
                     // Declare head part of head-chord
@@ -620,7 +643,7 @@ public class InterController
 
             if (!stemFound) {
                 // Head without stem
-                HeadChordInter headChord = new HeadChordInter(-1, null);
+                HeadChordInter headChord = new HeadChordInter(-1);
                 seq.add(new AdditionTask(sig, headChord, ghostBounds, Collections.EMPTY_SET));
             }
         }
@@ -765,7 +788,7 @@ public class InterController
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            Inter inter = sheet.getInterIndex().getEntityService().getSelectedEntity();
+            final Inter inter = sheet.getInterIndex().getEntityService().getSelectedEntity();
 
             if (inter != null) {
                 removeInter(inter, null);

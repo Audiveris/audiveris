@@ -426,6 +426,7 @@ public class SlotsBuilder
                     } else {
                         String prefix = stack.getSystem().getLogPrefix();
                         slot.setSuspicious(true);
+                        stack.setAbnormal(true);
                         logger.info("{}{} {}", prefix, stack, slot);
                     }
                 }

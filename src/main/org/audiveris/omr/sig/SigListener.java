@@ -84,6 +84,14 @@ public class SigListener
         //                e.getVertex(),
         //                e.getSource(),
         //                e.getType());
+        //
+        //        if (e.getVertex().isVip()) {
+        //            logger.info(
+        //                    "VIP GRAPH vertexAdded {} source:{} type:{}",
+        //                    e.getVertex(),
+        //                    e.getSource(),
+        //                    e.getType());
+        //        }
     }
 
     @Override
@@ -94,5 +102,13 @@ public class SigListener
         //                e.getVertex(),
         //                e.getSource(),
         //                e.getType());
+        //
+        //        if (e.getVertex().isVip()) {
+        //            logger.info(
+        //                    "VIP GRAPH vertexRemoved {} source:{} type:{}",
+        //                    e.getVertex(),
+        //                    e.getSource(),
+        //                    e.getType());
+        //        }
     }
 }

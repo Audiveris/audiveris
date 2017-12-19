@@ -35,11 +35,13 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractStep;
@@ -79,6 +81,7 @@ public class RhythmsStep
         forStack.add(HeadInter.class);
         forStack.add(RestChordInter.class);
         forStack.add(RestInter.class);
+        forStack.add(StemInter.class);
         forStack.add(TupletInter.class);
     }
 
@@ -136,27 +139,32 @@ public class RhythmsStep
     public void impact (UITaskList seq,
                         OpKind opKind)
     {
-        logger.info("RHYTHMS impact {} {}", opKind, seq);
+        logger.debug("RHYTHMS impact {} {}", opKind, seq);
 
-        InterTask interTask = seq.getFirstInterTask();
+        for (UITask task : seq.getTasks()) {
+            if (task instanceof InterTask) {
+                InterTask interTask = (InterTask) task;
+                Inter inter = interTask.getInter();
+                SystemInfo system = inter.getSig().getSystem();
+                Class<? extends AbstractInter> interClass = (Class<? extends AbstractInter>) inter.getClass();
 
-        if (interTask != null) {
-            Inter inter = interTask.getInter();
-            SystemInfo system = inter.getSig().getSystem();
-            Class<? extends AbstractInter> interClass = (Class<? extends AbstractInter>) inter.getClass();
+                if (forPage.contains(interClass)) {
+                    // Reprocess the whole page
+                    Page page = inter.getSig().getSystem().getPage();
+                    new PageRhythm(page).process();
 
-            if (forPage.contains(interClass)) {
-                // Reprocess the whole page
-                Page page = inter.getSig().getSystem().getPage();
-                new PageRhythm(page).process();
-            } else if (forStack.contains(interClass)) {
-                // Or reprocess just the stack
-                Point center = inter.getCenter();
+                    break; // We stop at first inter with concrete processing
+                } else if (forStack.contains(interClass)) {
+                    // Or reprocess just the stack
+                    Point center = inter.getCenter();
 
-                if (center != null) {
-                    MeasureStack stack = system.getMeasureStackAt(center);
-                    Page page = system.getPage();
-                    new PageRhythm(page).reprocessStack(stack);
+                    if (center != null) {
+                        MeasureStack stack = system.getMeasureStackAt(center);
+                        Page page = system.getPage();
+                        new PageRhythm(page).reprocessStack(stack);
+
+                        break; // We stop at first inter with concrete processing
+                    }
                 }
             }
         }

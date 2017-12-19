@@ -1073,9 +1073,6 @@ public class BeamGroup
                         sig.addEdge(beam, head.getMirror(), bh);
                     }
                 }
-
-                // Notify updates to beam
-                beam.invalidateCache();
             }
 
             // Notify updates to both chords

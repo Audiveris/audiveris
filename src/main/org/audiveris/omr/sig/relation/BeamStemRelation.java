@@ -103,7 +103,10 @@ public class BeamStemRelation
     // added //
     //-------//
     /**
-     * Update the chord if any, that uses this stem.
+     * Update the chord(s) if any, that use this stem.
+     * <p>
+     * In the rare case where a stem is shared by several chords, the beam connection applies to
+     * all these chords.
      *
      * @param e edge change event
      */
@@ -111,12 +114,11 @@ public class BeamStemRelation
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final StemInter stem = (StemInter) e.getEdgeTarget();
-        final HeadChordInter chord = stem.getChord();
 
-        if (chord != null) {
+        for (HeadChordInter chord : stem.getChords()) {
             chord.invalidateCache();
 
-            // Include in proper BeamGroup within containing Measure?
+            // Include in proper BeamGroup set within containing Measure?
             SystemInfo system = stem.getSig().getSystem();
             Staff staff1 = chord.getTopStaff();
             MeasureStack stack = system.getMeasureStackAt(stem.getCenter());

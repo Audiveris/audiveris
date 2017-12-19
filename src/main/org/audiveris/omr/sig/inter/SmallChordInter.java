@@ -46,19 +46,6 @@ public class SmallChordInter
     }
 
     /**
-     * Creates a new {@code SmallChordInter} object.
-     *
-     * @param grade the intrinsic grade
-     * @param stem  the related stem
-     */
-    public SmallChordInter (double grade,
-                            StemInter stem)
-    {
-        super(grade);
-        setStem(stem);
-    }
-
-    /**
      * No-arg constructor meant for JAXB.
      */
     private SmallChordInter ()

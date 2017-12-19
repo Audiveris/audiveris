@@ -132,10 +132,6 @@ public class MeasureStack
     @XmlAttribute
     private int right;
 
-    /** Unassigned tuplets within stack. */
-    @XmlElementRef
-    private final Set<TupletInter> stackTuplets = new LinkedHashSet<TupletInter>();
-
     /** Sequence of time slots within the measure, from left to right. */
     @XmlElementRef
     private final List<Slot> slots = new ArrayList<Slot>();
@@ -179,6 +175,9 @@ public class MeasureStack
     /** Vertical sequence of (Part) measures, from top to bottom. */
     private final List<Measure> measures = new ArrayList<Measure>();
 
+    /** Unassigned tuplets within stack. */
+    private final Set<TupletInter> stackTuplets = new LinkedHashSet<TupletInter>();
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasureStack} object.
@@ -209,6 +208,10 @@ public class MeasureStack
         if (part != null) {
             Measure measure = getMeasureAt(part);
             measure.addInter(inter);
+
+            if (inter instanceof TupletInter) {
+                stackTuplets.remove((TupletInter) inter);
+            }
         } else if (inter instanceof TupletInter) {
             stackTuplets.add((TupletInter) inter);
         } else {

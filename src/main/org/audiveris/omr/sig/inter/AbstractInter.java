@@ -302,8 +302,12 @@ public abstract class AbstractInter
             sb.append(String.format("   %s%n", getDetails()));
         }
 
-        for (Relation rel : sig.edgesOf(this)) {
-            sb.append(String.format("   rel: %s%n", rel.seenFrom(this)));
+        if (sig != null) {
+            for (Relation rel : sig.edgesOf(this)) {
+                sb.append(String.format("   rel: %s%n", rel.seenFrom(this)));
+            }
+        } else {
+            sb.append(" noSIG");
         }
 
         return sb.toString();

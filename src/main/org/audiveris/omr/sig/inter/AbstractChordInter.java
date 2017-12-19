@@ -203,7 +203,7 @@ public abstract class AbstractChordInter
                 stack.addInter(this);
             }
         } else {
-            logger.info("No bounds yet for chord {}", this);
+            logger.debug("No bounds yet for chord {}", this);
         }
     }
 
@@ -293,7 +293,7 @@ public abstract class AbstractChordInter
         }
 
         if (isVip()) {
-            logger.info("{} counted dots: {}", this, dotsNumber);
+            logger.info("VIP {} counted dots: {}", this, dotsNumber);
         }
     }
 
@@ -1168,7 +1168,7 @@ public abstract class AbstractChordInter
                 }
             }
         } else {
-            sb.append(" NOSIG");
+            sb.append(" noSIG");
         }
 
         return sb.toString();

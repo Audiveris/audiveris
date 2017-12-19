@@ -22,6 +22,8 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.relation.ChordStemRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.Entities;
@@ -33,14 +35,16 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code HeadChordInter} is a AbstractChordInter composed of heads.
+ * Class {@code HeadChordInter} is a AbstractChordInter composed of heads and possibly
+ * a stem.
+ * <p>
+ * Heads are linked via {@link Containment} relation and stem vis {@link ChordStemRelation}.
  *
  * @author Hervé Bitteur
  */
@@ -77,16 +81,6 @@ public class HeadChordInter
         }
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    //
-    // Persistent data
-    //----------------
-    //
-    /** Attached stem, if any. */
-    @XmlIDREF
-    @XmlAttribute(name = "stem")
-    protected StemInter stem;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code HeadChordInter} object.
@@ -96,19 +90,6 @@ public class HeadChordInter
     public HeadChordInter (double grade)
     {
         super(grade);
-    }
-
-    /**
-     * Creates a new {@code HeadChordInter} object.
-     *
-     * @param grade the intrinsic grade
-     * @param stem  the related stem
-     */
-    public HeadChordInter (double grade,
-                           StemInter stem)
-    {
-        this(grade);
-        setStem(stem);
     }
 
     /**
@@ -134,6 +115,8 @@ public class HeadChordInter
     @Override
     public boolean contains (Point point)
     {
+        final StemInter stem = getStem();
+
         if ((stem != null) && stem.contains(point)) {
             return true;
         }
@@ -199,13 +182,15 @@ public class HeadChordInter
     public Rectangle getBounds ()
     {
         if (bounds == null) {
-            bounds = Entities.getBounds(getMembers());
+            bounds = Entities.getBounds(getMembers()); // Based on heads
+
+            final StemInter stem = getStem();
 
             if (stem != null) {
                 if (bounds == null) {
                     bounds = stem.getBounds();
                 } else {
-                    bounds.add(stem.getBounds());
+                    bounds.add(getTailLocation());
                 }
             }
         }
@@ -220,6 +205,8 @@ public class HeadChordInter
     public String getDetails ()
     {
         StringBuilder sb = new StringBuilder(super.getDetails());
+
+        final StemInter stem = getStem();
 
         if (stem != null) {
             if (sb.length() > 0) {
@@ -244,6 +231,8 @@ public class HeadChordInter
     public int getFlagsNumber ()
     {
         int count = 0;
+
+        final StemInter stem = getStem();
 
         if ((stem != null) && !stem.isRemoved()) {
             final Set<Relation> rels = sig.getRelations(stem, FlagStemRelation.class);
@@ -280,11 +269,14 @@ public class HeadChordInter
      *
      * @return the leading note
      */
+    @Override
     public HeadInter getLeadingNote ()
     {
         final List<Inter> notes = getMembers();
 
         if (!notes.isEmpty()) {
+            final StemInter stem = getStem();
+
             if (stem != null) {
                 // Find the note farthest from stem middle point
                 Point middle = stem.getCenter();
@@ -316,12 +308,24 @@ public class HeadChordInter
     // getStem //
     //---------//
     /**
-     * @return the stem
+     * Report the chord stem. It may be null temporarily such as when building the chord.
+     *
+     * @return the chord stem, if any
      */
     @Override
     public StemInter getStem ()
     {
-        return stem;
+        if (isRemoved()) {
+            logger.debug("HeadChord#{} not in sig", id);
+
+            return null;
+        }
+
+        for (Relation rel : sig.getRelations(this, ChordStemRelation.class)) {
+            return (StemInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
     }
 
     //------------//
@@ -332,9 +336,10 @@ public class HeadChordInter
      *
      * @return -1 if stem is up, 0 if no stem, +1 if stem is down
      */
+    @Override
     public int getStemDir ()
     {
-        if (stem == null) {
+        if (getStem() == null) {
             return 0;
         } else {
             return Integer.signum(getTailLocation().y - getHeadLocation().y);
@@ -349,8 +354,9 @@ public class HeadChordInter
      */
     public final void setStem (StemInter stem)
     {
-        this.stem = stem;
-        invalidateCache();
+        Objects.requireNonNull(sig, "Chord not in SIG.");
+
+        sig.addEdge(this, stem, new ChordStemRelation());
     }
 
     //-------------//
@@ -376,6 +382,8 @@ public class HeadChordInter
         if (leading == null) {
             return;
         }
+
+        final StemInter stem = getStem();
 
         if (stem == null) {
             tailLocation = headLocation = leading.getCenter();

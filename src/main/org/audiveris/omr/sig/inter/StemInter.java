@@ -35,6 +35,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AbstractStemConnection;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -54,6 +55,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -131,14 +133,6 @@ public class StemInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
-    {
-        return AbstractInter.getMinGrade();
-    }
-
     //--------//
     // accept //
     //--------//
@@ -372,23 +366,38 @@ public class StemInter
         return bottom;
     }
 
-    //----------//
-    // getChord //
-    //----------//
+    //-----------//
+    // getChords //
+    //-----------//
     /**
-     * Report the chord this stem is part of, if any.
+     * Report the chord(s) currently attached to the provided stem.
+     * <p>
+     * We can have: <ul>
+     * <li>No chord found, simply because this stem has not yet been processed.</li>
+     * <li>One chord found, this is the normal case.</li>
+     * <li>Two chords found, when the same stem is "shared" by two chords (as in complex structures
+     * like in Dichterliebe example, part 2, page 2, measure 14).</li>
+     * </ul>
      *
-     * @return the related chord or null
+     * @return the perhaps empty collection of chords found for this stem
      */
-    public HeadChordInter getChord ()
+    public List<HeadChordInter> getChords ()
     {
-        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
-            HeadInter head = (HeadInter) sig.getEdgeSource(relation);
+        List<HeadChordInter> chords = null;
 
-            return (HeadChordInter) head.getChord();
+        for (Relation rel : sig.getRelations(this, ChordStemRelation.class)) {
+            if (chords == null) {
+                chords = new ArrayList<HeadChordInter>();
+            }
+
+            chords.add((HeadChordInter) sig.getOppositeInter(this, rel));
         }
 
-        return null;
+        if (chords == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return chords;
     }
 
     //----------//
@@ -408,6 +417,14 @@ public class StemInter
         }
 
         return set;
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    public static double getMinGrade ()
+    {
+        return AbstractInter.getMinGrade();
     }
 
     //--------//

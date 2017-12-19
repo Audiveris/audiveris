@@ -41,6 +41,7 @@ import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
@@ -121,10 +122,11 @@ public class ChordsBuilder
     {
         for (Part part : system.getParts()) {
             // Stem-based chords defined so far in part
-            List<AbstractChordInter> stemChords = new ArrayList<AbstractChordInter>();
+            List<HeadChordInter> stemChords = new ArrayList<HeadChordInter>();
 
             for (Staff staff : part.getStaves()) {
-                List<Inter> heads = sig.inters(staff, HeadInter.class); // Heads in staff
+                // Heads in staff
+                List<Inter> heads = sig.inters(staff, HeadInter.class);
                 Collections.sort(heads, Inters.byCenterAbscissa);
                 logger.debug("Staff#{} heads:{}", staff.getId(), heads.size());
 
@@ -167,6 +169,13 @@ public class ChordsBuilder
     //---------------------//
     // checkCanonicalShare //
     //---------------------//
+    /**
+     * Check if the provided head exhibits a canonical configuration with its 2 stems.
+     *
+     * @param head provided head
+     * @param rels the two head-stem relations
+     * @return null if OK, the wrong head side if not OK
+     */
     private HorizontalSide checkCanonicalShare (HeadInter head,
                                                 List<Relation> rels)
     {
@@ -201,7 +210,7 @@ public class ChordsBuilder
     // connectHead //
     //-------------//
     /**
-     * Connect the provided head into proper chord.
+     * Try to connect the provided head into proper stem-based chord.
      * <p>
      * If a head is linked to a stem then it is part of the "stem-based" chord.
      * If a head is linked to 2 stems, one on left and one on right side on opposite directions,
@@ -217,12 +226,12 @@ public class ChordsBuilder
      *
      * @param head       provided head
      * @param staff      related staff
-     * @param stemChords (output) stem-based chords defined so far
-     * @return true if connection was found, false otherwise (no stem, it's a whole)
+     * @param stemChords (input/output) stem-based chords defined so far
+     * @return true if stem connection was found, false otherwise (no stem, it's a whole)
      */
     private boolean connectHead (HeadInter head,
                                  Staff staff,
-                                 List<AbstractChordInter> stemChords)
+                                 List<HeadChordInter> stemChords)
     {
         if (head.isVip()) {
             logger.info("VIP connectHead {}", head);
@@ -269,8 +278,8 @@ public class ChordsBuilder
             }
 
             // Look for compatible existing chord
-            List<AbstractChordInter> chords = getStemChords(stem, stemChords);
-            final AbstractChordInter chord;
+            List<HeadChordInter> chords = getStemChords(stem, stemChords);
+            final HeadChordInter chord;
 
             if (!chords.isEmpty()) {
                 // At this point, we have exactly one chord per stem, so join the chord
@@ -279,8 +288,9 @@ public class ChordsBuilder
             } else {
                 // Create a brand-new stem-based chord
                 boolean isSmall = head.getShape().isSmall();
-                chord = isSmall ? new SmallChordInter(-1, stem) : new HeadChordInter(-1, stem);
+                chord = isSmall ? new SmallChordInter(-1) : new HeadChordInter(-1);
                 sig.addVertex(chord);
+                chord.setStem(stem);
                 chord.addMember(head);
                 stemChords.add(chord);
             }
@@ -436,12 +446,12 @@ public class ChordsBuilder
      * @param stemChords all stem-based chords already defined in part at hand
      * @return the perhaps empty collection of chords found for this stem
      */
-    private List<AbstractChordInter> getStemChords (StemInter stem,
-                                                    List<AbstractChordInter> stemChords)
+    private List<HeadChordInter> getStemChords (StemInter stem,
+                                                List<HeadChordInter> stemChords)
     {
-        final List<AbstractChordInter> found = new ArrayList<AbstractChordInter>();
+        final List<HeadChordInter> found = new ArrayList<HeadChordInter>();
 
-        for (AbstractChordInter chord : stemChords) {
+        for (HeadChordInter chord : stemChords) {
             if (chord.getStem() == stem) {
                 found.add(chord);
             }
@@ -454,22 +464,19 @@ public class ChordsBuilder
     // remove //
     //--------//
     /**
-     * Remove the provided poor stem, and the chord it may be part of
+     * Remove the provided poor stem, and the chord it may be part of.
      *
      * @param poorStem   the stem to delete
      * @param stemChords the chords created so far
      */
     private void remove (StemInter poorStem,
-                         List<AbstractChordInter> stemChords)
+                         List<HeadChordInter> stemChords)
     {
         // Make sure we have not already created a chord around the poor stem
-        for (AbstractChordInter chord : stemChords) {
-            if (chord.getStem() == poorStem) {
-                stemChords.remove(chord);
-                chord.remove();
-
-                break;
-            }
+        for (Relation rel : sig.getRelations(poorStem, ChordStemRelation.class)) {
+            HeadChordInter chord = (HeadChordInter) sig.getOppositeInter(poorStem, rel);
+            stemChords.remove(chord);
+            chord.remove();
         }
 
         // Delete stem from sig

@@ -1236,6 +1236,10 @@ public class SIGraph
         // Remove from inter index
         system.getSheet().getInterIndex().remove(inter);
 
+        if (inter.isVip()) {
+            logger.info("VIP removeVertex {}", inter);
+        }
+
         return super.removeVertex(inter);
     }
 

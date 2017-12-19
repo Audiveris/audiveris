@@ -28,7 +28,6 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.VerticalSide;
@@ -38,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -86,9 +86,6 @@ public abstract class AbstractBeamInter
     // Transient data
     //---------------
     //
-    /** Chords that are linked by this beam. */
-    private List<AbstractChordInter> chords;
-
     /** The containing beam group. */
     private BeamGroup group;
 
@@ -221,20 +218,17 @@ public abstract class AbstractBeamInter
      */
     public List<AbstractChordInter> getChords ()
     {
-        if (chords == null) {
-            chords = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> chords = new ArrayList<AbstractChordInter>();
 
-            for (StemInter stem : getStems()) {
-                for (Relation hs : sig.getRelations(stem, HeadStemRelation.class)) {
-                    HeadInter head = (HeadInter) sig.getOppositeInter(stem, hs);
-                    AbstractChordInter chord = head.getChord();
-
-                    if (chord != null) {
-                        chords.add(chord);
-                    }
+        for (StemInter stem : getStems()) {
+            for (AbstractChordInter chord : stem.getChords()) {
+                if (!chords.contains(chord)) {
+                    chords.add(chord);
                 }
             }
         }
+
+        Collections.sort(chords, Inters.byCenterAbscissa);
 
         return chords;
     }
@@ -307,15 +301,6 @@ public abstract class AbstractBeamInter
         }
 
         return null;
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    @Override
-    public void invalidateCache ()
-    {
-        chords = null;
     }
 
     //--------//

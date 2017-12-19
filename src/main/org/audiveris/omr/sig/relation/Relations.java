@@ -276,6 +276,7 @@ public abstract class Relations
         map(HeadChordInter.class, ChordNameRelation.class, ChordNameInter.class);
         map(HeadChordInter.class, ChordOrnamentRelation.class, OrnamentInter.class);
         map(HeadChordInter.class, ChordSentenceRelation.class, SentenceInter.class);
+        map(HeadChordInter.class, ChordStemRelation.class, StemInter.class);
         map(HeadChordInter.class, ChordSyllableRelation.class, LyricItemInter.class);
 
         map(HeadInter.class, HeadStemRelation.class, StemInter.class);
