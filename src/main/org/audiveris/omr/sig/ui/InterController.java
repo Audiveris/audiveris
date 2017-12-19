@@ -48,11 +48,10 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
-
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
-
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +86,8 @@ import javax.swing.KeyStroke;
  * <p>
  * Finally, a proper {@link UITask} is allocated, inserted in controller's history, and run.
  * Undo & Redo actions operate on this history.
+ * <p>
+ * User actions are processed asynchronously in background.
  *
  * @author Hervé Bitteur
  */
@@ -132,107 +133,118 @@ public class InterController
     /**
      * Add a shape interpretation based on a provided glyph.
      *
-     * @param glyph the glyph to interpret
-     * @param shape the shape to be assigned
+     * @param aGlyph the glyph to interpret
+     * @param shape  the shape to be assigned
      */
-    public void addInter (Glyph glyph,
-                          Shape shape)
+    public void addInter (Glyph aGlyph,
+                          final Shape shape)
     {
-        logger.debug("addInter {} as {}", glyph, shape);
+        logger.debug("addInter {} as {}", aGlyph, shape);
 
-        StaffManager staffManager = sheet.getStaffManager();
-        glyph = sheet.getGlyphIndex().registerOriginal(glyph);
+        final Glyph glyph = sheet.getGlyphIndex().registerOriginal(aGlyph);
 
-        // While interacting with user, make sure we have the related staff & system
-        SystemInfo system;
-        Staff staff = null;
-        Point center = glyph.getCenter();
-        List<Staff> staves = staffManager.getStavesOf(center);
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                StaffManager staffManager = sheet.getStaffManager();
 
-        if (staves.isEmpty()) {
-            throw new IllegalStateException("No staff for " + center);
-        }
+                // While interacting with user, make sure we have the related staff & system
+                SystemInfo system;
+                Staff staff = null;
+                Point center = glyph.getCenter();
+                List<Staff> staves = staffManager.getStavesOf(center);
 
-        Inter ghost = SymbolFactory.createGhost(shape, 1);
-        ghost.setBounds(glyph.getBounds());
-        ghost.setGlyph(glyph);
+                if (staves.isEmpty()) {
+                    throw new IllegalStateException("No staff for " + center);
+                }
 
-        Collection<Link> links = null;
+                Inter ghost = SymbolFactory.createGhost(shape, 1);
+                ghost.setBounds(glyph.getBounds());
+                ghost.setGlyph(glyph);
 
-        if (staves.size() == 1) {
-            // Staff is uniquely defined
-            staff = staves.get(0);
-            system = staff.getSystem();
-            links = ghost.searchLinks(system, false);
-        }
+                Collection<Link> links = null;
 
-        if ((staff == null) && constants.useStaffLink.isSet()) {
-            // Try to use link
-            SystemInfo prevSystem = null;
-            StaffLoop:
-            for (Staff stf : staves) {
-                system = stf.getSystem();
-
-                if (system != prevSystem) {
+                if (staves.size() == 1) {
+                    // Staff is uniquely defined
+                    staff = staves.get(0);
+                    system = staff.getSystem();
                     links = ghost.searchLinks(system, false);
+                }
 
-                    for (Link p : links) {
-                        if (p.partner.getStaff() != null) {
-                            staff = p.partner.getStaff();
+                if ((staff == null) && constants.useStaffLink.isSet()) {
+                    // Try to use link
+                    SystemInfo prevSystem = null;
+                    StaffLoop:
+                    for (Staff stf : staves) {
+                        system = stf.getSystem();
 
-                            // We stop on first link found. TODO: is this erroneous?
-                            break StaffLoop;
+                        if (system != prevSystem) {
+                            links = ghost.searchLinks(system, false);
+
+                            for (Link p : links) {
+                                if (p.partner.getStaff() != null) {
+                                    staff = p.partner.getStaff();
+
+                                    // We stop on first link found. TODO: is this erroneous?
+                                    break StaffLoop;
+                                }
+                            }
                         }
+
+                        prevSystem = system;
                     }
                 }
 
-                prevSystem = system;
-            }
-        }
+                if ((staff == null) && constants.useStaffProximity.isSet()) {
+                    // Use proximity to staff (vertical margin defined as ratio of gutter)
+                    double bestDist = Double.MAX_VALUE;
+                    Staff bestStf = null;
+                    double gutter = 0;
 
-        if ((staff == null) && constants.useStaffProximity.isSet()) {
-            // Use proximity to staff (vertical margin defined as ratio of gutter)
-            double bestDist = Double.MAX_VALUE;
-            Staff bestStf = null;
-            double gutter = 0;
+                    for (Staff stf : staves) {
+                        double dist = stf.distanceTo(center);
+                        gutter += dist;
 
-            for (Staff stf : staves) {
-                double dist = stf.distanceTo(center);
-                gutter += dist;
+                        if (bestDist > dist) {
+                            bestDist = dist;
+                            bestStf = stf;
+                        }
+                    }
 
-                if (bestDist > dist) {
-                    bestDist = dist;
-                    bestStf = stf;
+                    if (bestDist <= (gutter * constants.gutterRatio.getValue())) {
+                        staff = bestStf;
+                    }
                 }
+
+                if (staff == null) {
+                    // Finally, prompt user...
+                    int option = StaffSelection.getInstance().prompt();
+
+                    if (option >= 0) {
+                        staff = staves.get(option);
+                    }
+                }
+
+                if (staff == null) {
+                    logger.info("No staff, abandonned.");
+
+                    return null;
+                }
+
+                ghost.setStaff(staff);
+                system = staff.getSystem();
+
+                // If glyph used by another inter, delete this other inter
+                removeCompetitors(ghost, glyph, system);
+
+                addGhost(ghost, links);
+
+                return null;
             }
-
-            if (bestDist <= (gutter * constants.gutterRatio.getValue())) {
-                staff = bestStf;
-            }
-        }
-
-        if (staff == null) {
-            // Finally, prompt user...
-            int option = StaffSelection.getInstance().prompt();
-
-            if (option >= 0) {
-                staff = staves.get(option);
-            }
-        }
-
-        if (staff == null) {
-            logger.info("No staff, abandonned.");
-
-            return;
-        }
-
-        ghost.setStaff(staff);
-        system = staff.getSystem();
-
-        // If glyph used by another inter, delete this other inter
-        removeCompetitors(ghost, glyph, system);
-
-        addGhost(ghost, links);
+        }.execute();
     }
 
     //---------//
@@ -268,19 +280,29 @@ public class InterController
      * Add a shape interpretation by dropping a symbol at given location.
      *
      * @param ghost  the populated inter (staff & bounds are already set)
-     * @param center the target location for inter center
+     * @param center the target location for inter center (TODO: useful?)
      */
-    public void dropInter (Inter ghost,
+    public void dropInter (final Inter ghost,
                            Point center)
     {
         logger.debug("dropInter {} at {}", ghost, center);
 
-        SystemInfo system = ghost.getStaff().getSystem();
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                SystemInfo system = ghost.getStaff().getSystem();
 
-        // Edges? this depends on ghost class...
-        Collection<Link> links = ghost.searchLinks(system, false);
+                // Edges? this depends on ghost class...
+                Collection<Link> links = ghost.searchLinks(system, false);
 
-        addGhost(ghost, links);
+                addGhost(ghost, links);
+
+                return null;
+            }
+        }.execute();
     }
 
     //---------------//
@@ -296,6 +318,9 @@ public class InterController
         return interFocus;
     }
 
+    //------------------------//
+    // getRelationClassAction //
+    //------------------------//
     /**
      * @return the relationClassAction
      */
@@ -315,22 +340,32 @@ public class InterController
      * @param target   the target inter
      * @param relation the relation to add
      */
-    public void link (SIGraph sig,
-                      Inter source,
-                      Inter target,
-                      Relation relation)
+    public void link (final SIGraph sig,
+                      final Inter source,
+                      final Inter target,
+                      final Relation relation)
     {
-        logger.debug("link on {} between {} and {}", relation, source, target);
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                logger.debug("link on {} between {} and {}", relation, source, target);
 
-        UITaskList seq = new UITaskList();
-        seq.add(new LinkTask(sig, source, target, relation));
-        history.add(seq);
-        seq.performDo();
+                UITaskList seq = new UITaskList();
+                seq.add(new LinkTask(sig, source, target, relation));
+                history.add(seq);
+                seq.performDo();
 
-        sheet.getStub().setModified(true);
-        sheet.getInterIndex().publish(source);
+                sheet.getStub().setModified(true);
+                sheet.getInterIndex().publish(source);
 
-        epilog(seq, DO);
+                epilog(seq, DO);
+
+                return null;
+            }
+        }.execute();
     }
 
     //------//
@@ -341,25 +376,35 @@ public class InterController
      */
     public void redo ()
     {
-        UITaskList seq = history.toRedo();
-        seq.performRedo();
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                UITaskList seq = history.toRedo();
+                seq.performRedo();
 
-        sheet.getStub().setModified(true);
+                sheet.getStub().setModified(true);
 
-        UITask task = seq.getLastTask();
+                UITask task = seq.getLastTask();
 
-        if (task instanceof InterTask) {
-            sheet.getGlyphIndex().publish(null);
+                if (task instanceof InterTask) {
+                    sheet.getGlyphIndex().publish(null);
 
-            Inter inter = ((InterTask) task).getInter();
-            sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
-        } else {
-            RelationTask relTask = (RelationTask) task;
-            Inter source = relTask.getSource();
-            sheet.getInterIndex().publish(source);
-        }
+                    Inter inter = ((InterTask) task).getInter();
+                    sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
+                } else {
+                    RelationTask relTask = (RelationTask) task;
+                    Inter source = relTask.getSource();
+                    sheet.getInterIndex().publish(source);
+                }
 
-        epilog(seq, REDO);
+                epilog(seq, REDO);
+
+                return null;
+            }
+        }.execute();
     }
 
     //-------------//
@@ -368,84 +413,31 @@ public class InterController
     /**
      * Remove the provided inter (with its relations)
      *
-     * @param inter    the inter to remove
-     * @param toRemove current set of inters to remove, or null
+     * @param inter the inter to remove
      */
-    public void removeInter (Inter inter,
-                             Set<Inter> toRemove)
+    public void removeInter (final Inter inter)
     {
         if (inter.isRemoved()) {
             return;
         }
 
-        if (inter.isVip()) {
-            logger.info("VIP removeInter {}", inter);
-        }
+        final Set<Inter> toRemove = new LinkedHashSet<Inter>();
 
-        if (toRemove == null) {
-            toRemove = new LinkedHashSet<Inter>();
-        }
-
-        toRemove.add(inter);
-
-        final UITaskList seq = new UITaskList();
-        seq.add(new RemovalTask(inter));
-
-        if (inter instanceof InterEnsemble) {
-            // Remove all the ensemble members
-            final InterEnsemble ens = (InterEnsemble) inter;
-            final List<? extends Inter> members = ens.getMembers();
-
-            for (Inter member : members) {
-                if (!toRemove.contains(member)) {
-                    seq.add(new RemovalTask(member));
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                if (inter.isVip()) {
+                    logger.info("VIP removeInter {}", inter);
                 }
+
+                syncRemoveInter(inter, toRemove);
+
+                return null;
             }
-
-            if (inter instanceof HeadChordInter) {
-                // Remove the chord stem as well
-                final HeadChordInter chord = (HeadChordInter) inter;
-                final StemInter stem = chord.getStem();
-
-                if ((stem != null) && !toRemove.contains(stem)) {
-                    seq.add(new RemovalTask(stem));
-                }
-            }
-        } else {
-            // Delete containing ensemble if this is the last member in ensemble
-            final SIGraph sig = inter.getSig();
-
-            for (Relation rel : sig.getRelations(inter, Containment.class)) {
-                final InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
-
-                if (!toRemove.contains(ens) && (ens.getMembers().size() <= 1)) {
-                    toRemove.add(ens);
-                    seq.add(new RemovalTask(ens));
-                }
-            }
-        }
-
-        // Slur extensions if any
-        if (inter instanceof SlurInter) {
-            final SlurInter slur = (SlurInter) inter;
-
-            for (HorizontalSide side : HorizontalSide.values()) {
-                final SlurInter ext = slur.getExtension(side);
-
-                if ((ext != null) && !ext.isRemoved()) {
-                    seq.add(new RemovalTask(ext));
-                }
-            }
-        }
-
-        history.add(seq);
-        seq.performDo();
-
-        sheet.getStub().setModified(true);
-        ///sheet.getGlyphIndex().publish(null); // Let glyph displayed, to ease new inter assignment
-        sheet.getInterIndex().publish(null);
-
-        epilog(seq, DO);
+        }.execute();
     }
 
     //--------------//
@@ -454,21 +446,27 @@ public class InterController
     /**
      * Remove the provided collection of inter (with their relations)
      *
-     * @param inters   the inters to remove
-     * @param toRemove current set of inters to remove, or null
+     * @param inters the inters to remove
      */
-    public void removeInters (Collection<? extends Inter> inters,
-                              Set<Inter> toRemove)
+    public void removeInters (final Collection<? extends Inter> inters)
     {
-        if (toRemove == null) {
-            toRemove = new LinkedHashSet<Inter>();
-        }
+        final Set<Inter> toRemove = new LinkedHashSet<Inter>();
 
-        for (Inter inter : inters) {
-            if (!toRemove.contains(inter)) {
-                removeInter(inter, toRemove);
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                for (Inter inter : inters) {
+                    if (!toRemove.contains(inter)) {
+                        syncRemoveInter(inter, toRemove);
+                    }
+                }
+
+                return null;
             }
-        }
+        }.execute();
     }
 
     //---------------//
@@ -491,6 +489,9 @@ public class InterController
         editor.refresh();
     }
 
+    //------------------------//
+    // setRelationClassAction //
+    //------------------------//
     /**
      * @param relationClassAction the relationClassAction to set
      */
@@ -532,50 +533,73 @@ public class InterController
      */
     public void undo ()
     {
-        UITaskList seq = history.toUndo();
-        seq.performUndo();
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                UITaskList seq = history.toUndo();
+                seq.performUndo();
 
-        sheet.getStub().setModified(true);
+                sheet.getStub().setModified(true);
 
-        UITask task = seq.getFirstTask();
+                UITask task = seq.getFirstTask();
 
-        if (task instanceof InterTask) {
-            sheet.getGlyphIndex().publish(null);
+                if (task instanceof InterTask) {
+                    sheet.getGlyphIndex().publish(null);
 
-            Inter inter = ((InterTask) task).getInter();
-            sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
-        } else {
-            RelationTask relTask = (RelationTask) task;
-            Inter source = relTask.getSource();
-            sheet.getInterIndex().publish(source);
-        }
+                    Inter inter = ((InterTask) task).getInter();
+                    sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
+                } else {
+                    RelationTask relTask = (RelationTask) task;
+                    Inter source = relTask.getSource();
+                    sheet.getInterIndex().publish(source);
+                }
 
-        epilog(seq, UNDO);
+                epilog(seq, UNDO);
+
+                return null;
+            }
+        }.execute();
     }
 
+    //--------//
+    // unlink //
+    //--------//
     /**
      * Remove a relation between inters.
      *
      * @param sig      the containing SIG
      * @param relation the relation to remove
      */
-    public void unlink (SIGraph sig,
-                        Relation relation)
+    public void unlink (final SIGraph sig,
+                        final Relation relation)
     {
-        logger.debug("unlink on {}", relation);
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                logger.debug("unlink on {}", relation);
 
-        UITaskList seq = new UITaskList();
-        seq.add(new UnlinkTask(sig, relation));
+                UITaskList seq = new UITaskList();
+                seq.add(new UnlinkTask(sig, relation));
 
-        Inter source = sig.getEdgeSource(relation);
-        history.add(seq);
+                Inter source = sig.getEdgeSource(relation);
+                history.add(seq);
 
-        seq.performDo();
+                seq.performDo();
 
-        sheet.getStub().setModified(true);
-        sheet.getInterIndex().publish(source);
+                sheet.getStub().setModified(true);
+                sheet.getInterIndex().publish(source);
 
-        epilog(seq, DO);
+                epilog(seq, DO);
+
+                return null;
+            }
+        }.execute();
     }
 
     /**
@@ -682,14 +706,8 @@ public class InterController
                 step.impact(seq, opKind);
             }
         }
-
-        // Finally, refresh user interface
-        refreshUI();
     }
 
-    //-------------------//
-    // firstImpactedStep //
-    //-------------------//
     /**
      * Report the first step impacted by the provided task sequence
      *
@@ -747,9 +765,95 @@ public class InterController
 
         for (Inter inter : intersected) {
             if ((inter != ghost) && (inter.getGlyph() == glyph)) {
-                removeInter(inter, null);
+                syncRemoveInter(inter, null);
             }
         }
+    }
+
+    //-----------------//
+    // syncRemoveInter //
+    //-----------------//
+    /**
+     * Remove the provided inter (with its relations)
+     *
+     * @param inter    the inter to remove
+     * @param toRemove current set of inters to remove, or null
+     */
+    private void syncRemoveInter (Inter inter,
+                                  Set<Inter> toRemove)
+    {
+        if (inter.isRemoved()) {
+            return;
+        }
+
+        if (inter.isVip()) {
+            logger.info("VIP removeInter {}", inter);
+        }
+
+        if (toRemove == null) {
+            toRemove = new LinkedHashSet<Inter>();
+        }
+
+        toRemove.add(inter);
+
+        final UITaskList seq = new UITaskList();
+        seq.add(new RemovalTask(inter));
+
+        if (inter instanceof InterEnsemble) {
+            // Remove all the ensemble members
+            final InterEnsemble ens = (InterEnsemble) inter;
+            final List<? extends Inter> members = ens.getMembers();
+
+            for (Inter member : members) {
+                if (!toRemove.contains(member)) {
+                    seq.add(new RemovalTask(member));
+                }
+            }
+
+            if (inter instanceof HeadChordInter) {
+                // Remove the chord stem as well
+                final HeadChordInter chord = (HeadChordInter) inter;
+                final StemInter stem = chord.getStem();
+
+                if ((stem != null) && !toRemove.contains(stem)) {
+                    seq.add(new RemovalTask(stem));
+                }
+            }
+        } else {
+            // Delete containing ensemble if this is the last member in ensemble
+            final SIGraph sig = inter.getSig();
+
+            for (Relation rel : sig.getRelations(inter, Containment.class)) {
+                final InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
+
+                if (!toRemove.contains(ens) && (ens.getMembers().size() <= 1)) {
+                    toRemove.add(ens);
+                    seq.add(new RemovalTask(ens));
+                }
+            }
+        }
+
+        // Slur extensions if any
+        if (inter instanceof SlurInter) {
+            final SlurInter slur = (SlurInter) inter;
+
+            for (HorizontalSide side : HorizontalSide.values()) {
+                final SlurInter ext = slur.getExtension(side);
+
+                if ((ext != null) && !ext.isRemoved()) {
+                    seq.add(new RemovalTask(ext));
+                }
+            }
+        }
+
+        history.add(seq);
+        seq.performDo();
+
+        sheet.getStub().setModified(true);
+        ///sheet.getGlyphIndex().publish(null); // Let glyph displayed, to ease new inter assignment
+        sheet.getInterIndex().publish(null);
+
+        epilog(seq, DO);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -774,11 +878,30 @@ public class InterController
                 "Vertical margin as ratio of inter-staff gutter");
     }
 
+    //----------//
+    // CtrlTask //
+    //----------//
+    /**
+     * Task class to run user-initiated processing asynchronously.
+     */
+    private abstract class CtrlTask
+            extends VoidTask
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        protected void finished ()
+        {
+            // Refresh user display
+            refreshUI();
+        }
+    }
+
     //--------------//
     // RemoveAction //
     //--------------//
     /**
-     * Action to remove the selected inter.
+     * Action to remove the selected inter. (Bound to DELETE key)
      */
     private class RemoveAction
             extends AbstractAction
@@ -791,7 +914,7 @@ public class InterController
             final Inter inter = sheet.getInterIndex().getEntityService().getSelectedEntity();
 
             if (inter != null) {
-                removeInter(inter, null);
+                removeInter(inter);
             }
         }
     }
@@ -800,7 +923,7 @@ public class InterController
     // UnfocusAction //
     //---------------//
     /**
-     * Action to remove inter focus.
+     * Action to remove inter focus. (Bound to ESCAPE key)
      */
     private class UnfocusAction
             extends AbstractAction

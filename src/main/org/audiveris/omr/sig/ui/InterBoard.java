@@ -387,7 +387,7 @@ public class InterBoard
             final Inter inter = InterBoard.this.getSelectedEntity();
             logger.debug("Deleting {}", inter);
 
-            sheet.getInterController().removeInter(inter, null);
+            sheet.getInterController().removeInter(inter);
 
             sheet.getStub().setModified(true);
             getSelectionService().publish(

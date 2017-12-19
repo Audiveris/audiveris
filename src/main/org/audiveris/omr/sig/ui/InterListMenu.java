@@ -88,8 +88,11 @@ public class InterListMenu
         super.updateUserLocation(rect);
     }
 
-    private void insertDeletion (SystemInfo system,
-                                 final List<Inter> sysInters)
+    //--------------------//
+    // insertDeletionItem //
+    //--------------------//
+    private void insertDeletionItem (SystemInfo system,
+                                     final List<Inter> sysInters)
     {
         JMenuItem item = new JMenuItem(
                 "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
@@ -99,9 +102,7 @@ public class InterListMenu
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                final InterController interController = sheet.getInterController();
-
-                interController.removeInters(sysInters, null);
+                sheet.getInterController().removeInters(sysInters);
             }
         });
         this.add(item);
@@ -156,7 +157,7 @@ public class InterListMenu
                     //                            this,
                     //                            sysInters.size() + " inters for System #" + system.getId() + ":");
                     List<Inter> sysInters = entry.getValue();
-                    insertDeletion(system, sysInters);
+                    insertDeletionItem(system, sysInters);
 
                     for (Inter inter : sysInters) {
                         // A menu dedicated to this inter instance

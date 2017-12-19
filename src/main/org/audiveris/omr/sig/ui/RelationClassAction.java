@@ -35,7 +35,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
 /**
- * Class {@code RelationClassAction} displays the name of a relation class and allow to
+ * Class {@code RelationClassAction} displays the name of a relation class and allows to
  * create the relation instance between provided source and target inter instances.
  *
  * @author Hervé Bitteur
