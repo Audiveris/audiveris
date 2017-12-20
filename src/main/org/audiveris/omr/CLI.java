@@ -494,11 +494,10 @@ public class CLI
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        //
-        //        /** Should annotations be produced?. */
-        //        @Option(name = "-annotate", usage = "Annotates book symbols")
-        //        boolean annotate;
-        //
+        /** Should symbols annotations be produced?. */
+        @Option(name = "-annotate", usage = "Annotate book symbols")
+        boolean annotate;
+
         /** Batch mode. */
         @Option(name = "-batch", usage = "Run with no graphic user interface")
         boolean batchMode;
@@ -790,6 +789,12 @@ public class CLI
                 if (params.sample) {
                     logger.debug("Sample book");
                     book.sample();
+                }
+
+                // Book annotate?
+                if (params.annotate) {
+                    logger.debug("Annotate book");
+                    book.annotate();
                 }
 
                 // Book save?

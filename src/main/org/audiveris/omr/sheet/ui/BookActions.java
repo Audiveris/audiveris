@@ -256,6 +256,70 @@ public class BookActions
         return INSTANCE;
     }
 
+    //--------------//
+    // annotateBook //
+    //--------------//
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> annotateBook (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        return new VoidTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws InterruptedException
+            {
+                try {
+                    LogUtil.start(book);
+                    book.annotate();
+                } finally {
+                    LogUtil.stopBook();
+                }
+
+                return null;
+            }
+        };
+    }
+
+    //---------------//
+    // annotateSheet //
+    //---------------//
+    @Action(enabledProperty = STUB_IDLE)
+    public Task<Void, Void> annotateSheet (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        final Sheet sheet = stub.getSheet();
+
+        return new VoidTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws InterruptedException
+            {
+                try {
+                    LogUtil.start(sheet.getStub());
+                    sheet.annotate();
+                } catch (Exception ex) {
+                    logger.warn("Annotations failed {}", ex);
+                } finally {
+                    LogUtil.stopBook();
+                }
+
+                return null;
+            }
+        };
+    }
+
     //-------------//
     // bookHistory //
     //-------------//

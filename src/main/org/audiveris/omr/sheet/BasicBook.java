@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.ProgramId;
 import org.audiveris.omr.WellKnowns;
+import static org.audiveris.omr.classifier.Annotations.BOOK_ANNOTATIONS_SUFFIX;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -37,9 +38,7 @@ import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
 import org.audiveris.omr.score.ScoreReduction;
 import org.audiveris.omr.score.ui.BookPdfOutput;
-
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
-
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sheet.ui.BookBrowser;
 import org.audiveris.omr.sheet.ui.StubsController;
@@ -234,55 +233,6 @@ public class BasicBook
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------//
-    // close //
-    //-------//
-    @Override
-    public void close ()
-    {
-        setClosing(true);
-
-        // Close contained stubs/sheets
-        if (OMR.gui != null) {
-            SwingUtilities.invokeLater(
-                    new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    try {
-                        LogUtil.start(BasicBook.this);
-
-                        for (SheetStub stub : new ArrayList<SheetStub>(stubs)) {
-                            LogUtil.start(stub);
-
-                            // Close stub UI, if any
-                            if (stub.getAssembly() != null) {
-                                StubsController.getInstance().deleteAssembly(stub);
-                                stub.getAssembly().close();
-                            }
-                        }
-                    } finally {
-                        LogUtil.stopBook();
-                    }
-                }
-            });
-        }
-
-        // Close browser if any
-        if (bookBrowser != null) {
-            bookBrowser.close();
-        }
-
-        // Remove from OMR instances
-        OMR.engine.removeBook(this);
-
-        // Time for some cleanup...
-        Memory.gc();
-
-        logger.debug("Book closed.");
-    }
-
     //-----------------//
     // closeFileSystem //
     //-----------------//
@@ -300,128 +250,6 @@ public class BasicBook
         } catch (Exception ex) {
             logger.warn("Could not close book file system " + ex, ex);
         }
-    }
-
-    //-----//
-    // ids //
-    //-----//
-    /**
-     * Build a string with just the IDs of the stub collection.
-     *
-     * @param stubs the collection of stub instances
-     * @return the string built
-     */
-    public static String ids (List<SheetStub> stubs)
-    {
-        if (stubs == null) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        for (SheetStub entity : stubs) {
-            sb.append("#").append(entity.getNumber());
-        }
-
-        sb.append("]");
-
-        return sb.toString();
-    }
-
-    //----------//
-    // loadBook //
-    //----------//
-    /**
-     * Load a book out of a provided book file.
-     *
-     * @param bookPath path to the (zipped) book file
-     * @return the loaded book if successful
-     */
-    public static Book loadBook (Path bookPath)
-    {
-        StopWatch watch = new StopWatch("loadBook " + bookPath);
-        BasicBook book = null;
-
-        try {
-            logger.info("Loading book {} ...", bookPath);
-            watch.start("book");
-
-            // Open book file
-            Path rootPath = ZipFileSystem.open(bookPath);
-
-            // Load book internals (just the stubs) out of book.xml
-            Path internalsPath = rootPath.resolve(Book.BOOK_INTERNALS);
-            InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ);
-
-            Unmarshaller um = getJaxbContext().createUnmarshaller();
-            book = (BasicBook) um.unmarshal(is);
-            book.getLock().lock();
-            LogUtil.start(book);
-
-            boolean ok = book.initTransients(null, bookPath);
-
-            is.close(); // Close input stream
-            rootPath.getFileSystem().close(); // Close book file
-
-            if (!ok) {
-                logger.info("Discarded {}", bookPath);
-
-                return null;
-            }
-
-            book.checkScore(); // TODO: remove ASAP
-
-            return book;
-        } catch (Exception ex) {
-            logger.warn("Error loading book " + bookPath + " " + ex, ex);
-
-            return null;
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-
-            if (book != null) {
-                book.getLock().unlock();
-            }
-
-            LogUtil.stopBook();
-        }
-    }
-
-    //--------------//
-    // openBookFile //
-    //--------------//
-    /**
-     * Open the book file (supposed to already exist at location provided by
-     * '{@code bookPath}' parameter) for reading or writing.
-     * <p>
-     * When IO operations are finished, the book file must be closed via
-     * {@link #closeFileSystem(java.nio.file.FileSystem)}
-     *
-     * @param bookPath book path name
-     * @return the root path of the (zipped) book file system
-     */
-    public static Path openBookFile (Path bookPath)
-    {
-        if (bookPath == null) {
-            throw new IllegalStateException("bookPath is null");
-        }
-
-        try {
-            logger.debug("Book file system opened");
-
-            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, null);
-
-            return fileSystem.getPath(fileSystem.getSeparator());
-        } catch (FileNotFoundException ex) {
-            logger.warn("File not found: " + bookPath, ex);
-        } catch (IOException ex) {
-            logger.warn("Error reading book:" + bookPath, ex);
-        }
-
-        return null;
     }
 
     //-------------//
@@ -698,6 +526,222 @@ public class BasicBook
     public Lock getLock ()
     {
         return lock;
+    }
+
+    //-----//
+    // ids //
+    //-----//
+    /**
+     * Build a string with just the IDs of the stub collection.
+     *
+     * @param stubs the collection of stub instances
+     * @return the string built
+     */
+    public static String ids (List<SheetStub> stubs)
+    {
+        if (stubs == null) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+
+        for (SheetStub entity : stubs) {
+            sb.append("#").append(entity.getNumber());
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // loadBook //
+    //----------//
+    /**
+     * Load a book out of a provided book file.
+     *
+     * @param bookPath path to the (zipped) book file
+     * @return the loaded book if successful
+     */
+    public static Book loadBook (Path bookPath)
+    {
+        StopWatch watch = new StopWatch("loadBook " + bookPath);
+        BasicBook book = null;
+
+        try {
+            logger.info("Loading book {} ...", bookPath);
+            watch.start("book");
+
+            // Open book file
+            Path rootPath = ZipFileSystem.open(bookPath);
+
+            // Load book internals (just the stubs) out of book.xml
+            Path internalsPath = rootPath.resolve(Book.BOOK_INTERNALS);
+            InputStream is = Files.newInputStream(internalsPath, StandardOpenOption.READ);
+
+            Unmarshaller um = getJaxbContext().createUnmarshaller();
+            book = (BasicBook) um.unmarshal(is);
+            book.getLock().lock();
+            LogUtil.start(book);
+
+            boolean ok = book.initTransients(null, bookPath);
+
+            is.close(); // Close input stream
+            rootPath.getFileSystem().close(); // Close book file
+
+            if (!ok) {
+                logger.info("Discarded {}", bookPath);
+
+                return null;
+            }
+
+            book.checkScore(); // TODO: remove ASAP
+
+            return book;
+        } catch (Exception ex) {
+            logger.warn("Error loading book " + bookPath + " " + ex, ex);
+
+            return null;
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+
+            if (book != null) {
+                book.getLock().unlock();
+            }
+
+            LogUtil.stopBook();
+        }
+    }
+
+    //--------------//
+    // openBookFile //
+    //--------------//
+    /**
+     * Open the book file (supposed to already exist at location provided by
+     * '{@code bookPath}' parameter) for reading or writing.
+     * <p>
+     * When IO operations are finished, the book file must be closed via
+     * {@link #closeFileSystem(java.nio.file.FileSystem)}
+     *
+     * @param bookPath book path name
+     * @return the root path of the (zipped) book file system
+     */
+    public static Path openBookFile (Path bookPath)
+    {
+        if (bookPath == null) {
+            throw new IllegalStateException("bookPath is null");
+        }
+
+        try {
+            logger.debug("Book file system opened");
+
+            FileSystem fileSystem = FileSystems.newFileSystem(bookPath, null);
+
+            return fileSystem.getPath(fileSystem.getSeparator());
+        } catch (FileNotFoundException ex) {
+            logger.warn("File not found: " + bookPath, ex);
+        } catch (IOException ex) {
+            logger.warn("Error reading book:" + bookPath, ex);
+        }
+
+        return null;
+    }
+
+    //----------//
+    // annotate //
+    //----------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Generate a whole zip file, in which each valid sheet is represented by a pair
+     * composed of sheet image (.png) and sheet annotations (.xml).
+     */
+    @Override
+    public void annotate ()
+    {
+        Path root = null;
+
+        try {
+            final Path bookFolder = BookManager.getDefaultBookFolder(this);
+            final Path path = bookFolder.resolve(getRadix() + BOOK_ANNOTATIONS_SUFFIX);
+            root = ZipFileSystem.create(path);
+
+            for (SheetStub stub : getValidStubs()) {
+                try {
+                    LogUtil.start(stub);
+
+                    final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
+                    final Sheet sheet = stub.getSheet();
+                    sheet.annotate(sheetFolder);
+                    logger.info("Book annotated as {}", path);
+                } catch (Exception ex) {
+                    logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
+                } finally {
+                    LogUtil.stopStub();
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("Error annotating book {} {}", this, ex.toString(), ex);
+        } finally {
+            if (root != null) {
+                try {
+                    root.getFileSystem().close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+
+    //-------//
+    // close //
+    //-------//
+    @Override
+    public void close ()
+    {
+        setClosing(true);
+
+        // Close contained stubs/sheets
+        if (OMR.gui != null) {
+            SwingUtilities.invokeLater(
+                    new Runnable()
+            {
+                @Override
+                public void run ()
+                {
+                    try {
+                        LogUtil.start(BasicBook.this);
+
+                        for (SheetStub stub : new ArrayList<SheetStub>(stubs)) {
+                            LogUtil.start(stub);
+
+                            // Close stub UI, if any
+                            if (stub.getAssembly() != null) {
+                                StubsController.getInstance().deleteAssembly(stub);
+                                stub.getAssembly().close();
+                            }
+                        }
+                    } finally {
+                        LogUtil.stopBook();
+                    }
+                }
+            });
+        }
+
+        // Close browser if any
+        if (bookBrowser != null) {
+            bookBrowser.close();
+        }
+
+        // Remove from OMR instances
+        OMR.engine.removeBook(this);
+
+        // Time for some cleanup...
+        Memory.gc();
+
+        logger.debug("Book closed.");
     }
 
     //-----------//
@@ -1613,6 +1657,103 @@ public class BasicBook
         return null;
     }
 
+    //----------------//
+    // createBookFile //
+    //----------------//
+    /**
+     * Create a new book file system dedicated to this book at the location provided
+     * by '{@code bookpath}' member.
+     * If such file already exists, it is deleted beforehand.
+     * <p>
+     * When IO operations are finished, the book file must be closed via
+     * {@link #closeFileSystem(java.nio.file.FileSystem)}
+     *
+     * @return the root path of the (zipped) book file system
+     */
+    private static Path createBookFile (Path bookPath)
+            throws IOException
+    {
+        if (bookPath == null) {
+            throw new IllegalStateException("bookPath is null");
+        }
+
+        try {
+            Files.deleteIfExists(bookPath);
+        } catch (IOException ex) {
+            logger.warn("Error deleting book: " + bookPath, ex);
+        }
+
+        // Make sure the containing folder exists
+        Files.createDirectories(bookPath.getParent());
+
+        // Make it a zip file
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(bookPath.toFile()));
+        zos.close();
+
+        // Finally open the book file just created
+        return ZipFileSystem.open(bookPath);
+    }
+
+    //--------------//
+    // createScores //
+    //--------------//
+    /**
+     * Create scores out of all book stubs.
+     */
+    private void createScores ()
+    {
+        Score score = null;
+
+        // Group provided sheets pages into scores
+        for (SheetStub stub : stubs) {
+            // An invalid or not-yet-processed stub triggers a score break
+            if (stub.getPageRefs().isEmpty()) {
+                score = null;
+            } else {
+                for (PageRef pageRef : stub.getPageRefs()) {
+                    if ((score == null) || pageRef.isMovementStart()) {
+                        scores.add(score = new Score());
+                        score.setBook(this);
+                    }
+
+                    score.addPageRef(stub.getNumber(), pageRef);
+                }
+            }
+        }
+
+        logger.debug("Created scores:{}", scores);
+    }
+
+    //-------------------//
+    // getConcernedStubs //
+    //-------------------//
+    private List<SheetStub> getConcernedStubs (Set<Integer> sheetIds)
+    {
+        List<SheetStub> list = new ArrayList<SheetStub>();
+
+        for (SheetStub stub : getValidStubs()) {
+            if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
+                list.add(stub);
+            }
+        }
+
+        return list;
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
+        }
+
+        return jaxbContext;
+    }
+
     //------------------//
     // checkRadixChange //
     //------------------//
@@ -1666,103 +1807,6 @@ public class BasicBook
                 break;
             }
         }
-    }
-
-    //----------------//
-    // createBookFile //
-    //----------------//
-    /**
-     * Create a new book file system dedicated to this book at the location provided
-     * by '{@code bookpath}' member.
-     * If such file already exists, it is deleted beforehand.
-     * <p>
-     * When IO operations are finished, the book file must be closed via
-     * {@link #closeFileSystem(java.nio.file.FileSystem)}
-     *
-     * @return the root path of the (zipped) book file system
-     */
-    private static Path createBookFile (Path bookPath)
-            throws IOException
-    {
-        if (bookPath == null) {
-            throw new IllegalStateException("bookPath is null");
-        }
-
-        try {
-            Files.deleteIfExists(bookPath);
-        } catch (IOException ex) {
-            logger.warn("Error deleting book: " + bookPath, ex);
-        }
-
-        // Make sure the containing folder exists
-        Files.createDirectories(bookPath.getParent());
-
-        // Make it a zip file
-        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(bookPath.toFile()));
-        zos.close();
-
-        // Finally open the book file just created
-        return ZipFileSystem.open(bookPath);
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
-        }
-
-        return jaxbContext;
-    }
-
-    //--------------//
-    // createScores //
-    //--------------//
-    /**
-     * Create scores out of all book stubs.
-     */
-    private void createScores ()
-    {
-        Score score = null;
-
-        // Group provided sheets pages into scores
-        for (SheetStub stub : stubs) {
-            // An invalid or not-yet-processed stub triggers a score break
-            if (stub.getPageRefs().isEmpty()) {
-                score = null;
-            } else {
-                for (PageRef pageRef : stub.getPageRefs()) {
-                    if ((score == null) || pageRef.isMovementStart()) {
-                        scores.add(score = new Score());
-                        score.setBook(this);
-                    }
-
-                    score.addPageRef(stub.getNumber(), pageRef);
-                }
-            }
-        }
-
-        logger.debug("Created scores:{}", scores);
-    }
-
-    //-------------------//
-    // getConcernedStubs //
-    //-------------------//
-    private List<SheetStub> getConcernedStubs (Set<Integer> sheetIds)
-    {
-        List<SheetStub> list = new ArrayList<SheetStub>();
-
-        for (SheetStub stub : getValidStubs()) {
-            if ((sheetIds == null) || sheetIds.contains(stub.getNumber())) {
-                list.add(stub);
-            }
-        }
-
-        return list;
     }
 
     //--------------//

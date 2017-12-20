@@ -105,8 +105,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getScores}</li>
  * </ul></dd>
  *
- * <dt>Samples</dt>
+ * <dt>Symbols</dt>
  * <dd><ul>
+ * <li>{@link #annotate}</li>
  * <li>{@link #getSampleRepository}</li>
  * <li>{@link #getSpecificSampleRepository}</li>
  * <li>{@link #hasAllocatedRepository}</li>
@@ -143,6 +144,11 @@ public interface Book
     static final String BOOK_INTERNALS = "book.xml";
 
     //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Write the book symbol annotations.
+     */
+    void annotate ();
+
     /**
      * Delete this book instance, as well as its related resources.
      */

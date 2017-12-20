@@ -56,7 +56,8 @@ public interface InterEnsemble
      * <p>
      * Both the ensemble and the member instances must already exist in the SIG.
      * <p>
-     * This will trigger {@link #memberAdded(Inter)} via any SIG listener.
+     * Setting this containment relationship will, via the SIG listener, trigger
+     * {@link #invalidateCache()} in the ensemble.
      *
      * @param member the member to add
      */
@@ -80,7 +81,8 @@ public interface InterEnsemble
      * On the opposite, directly deleting a (member) instance, automatically triggers the removal of
      * this member from any containing ensemble.
      * <p>
-     * This will trigger {@link #memberRemoved(Inter)} via any SIG listener.
+     * Deleting this containment relationship will, via the SIG listener, trigger
+     * {@link #invalidateCache()} in the ensemble.
      *
      * @param member the member to remove
      */

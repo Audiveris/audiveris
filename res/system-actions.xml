@@ -33,6 +33,7 @@
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="sampleBook"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="viewBookRepository"/>
     <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookRepository"/>
+    <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="annotateBook"/>
     <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBook"           button="javax.swing.JButton"/>
     <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookAs"/>
     <action domain="BOOK" section="60" class="org.audiveris.omr.sheet.ui.BookActions" method="closeBook"/>
@@ -51,8 +52,9 @@
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayNoStaff"/>
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayStaffLineGlyphs"/>
     <action domain="SHEET" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printSheetAs"/>
-    <action domain="SHEET" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="sampleSheet"/>
     <action domain="SHEET" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportSheetAs"/>
+    <action domain="SHEET" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="sampleSheet"/>
+    <action domain="SHEET" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="annotateSheet"/>
 
 <!--    STEP menu is generated automatically and thus not listed here -->
 

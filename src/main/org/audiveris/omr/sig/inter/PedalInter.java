@@ -23,6 +23,8 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.relation.ChordPedalRelation;
+import org.audiveris.omr.sig.relation.Relation;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -67,6 +69,27 @@ public class PedalInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------//
+    // getChord //
+    //----------//
+    /**
+     * Report the related chord, if any.
+     *
+     * @return the related chord, or null
+     */
+    public AbstractChordInter getChord ()
+    {
+        if (sig != null) {
+            for (Relation rel : sig.getRelations(this, ChordPedalRelation.class)) {
+                AbstractChordInter chord = (AbstractChordInter) sig.getOppositeInter(this, rel);
+
+                return chord;
+            }
+        }
+
+        return null;
     }
 
     //-----------//

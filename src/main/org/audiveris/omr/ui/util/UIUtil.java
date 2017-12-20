@@ -397,7 +397,7 @@ public abstract class UIUtil
     // setAbsoluteDashedStroke //
     //-------------------------//
     /**
-     * Similar to {@link #setAbsoluteStroke(java.awt.Graphics, float) but for a dashed
+     * Similar to {@link #setAbsoluteStroke(java.awt.Graphics, float)} but for a dashed
      * stroke.
      *
      * @param g     the current graphics context
