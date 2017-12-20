@@ -23,7 +23,12 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +65,7 @@ public class SlurHeadRelation
     //
     /** Left or right side of the slur. */
     @XmlAttribute(name = "side")
-    private final HorizontalSide side;
+    private HorizontalSide side;
 
     // Transient data
     //---------------
@@ -80,14 +85,31 @@ public class SlurHeadRelation
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-arg constructor meant for JAXB and user allocation.
      */
-    private SlurHeadRelation ()
+    public SlurHeadRelation ()
     {
-        this.side = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Populate side if needed.
+     *
+     * @param e edge change event
+     */
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        if (side == null) {
+            final Inter slur = e.getEdgeSource();
+            final Inter head = e.getEdgeTarget();
+            side = (slur.getCenter().x < head.getCenter().x) ? RIGHT : LEFT;
+        }
+    }
+
     //--------------//
     // getEuclidean //
     //--------------//
@@ -140,81 +162,6 @@ public class SlurHeadRelation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //    //-------------------//
-    //    // getXOutGapMaximum //
-    //    //-------------------//
-    //    public static Scale.Fraction getXOutGapMaximum ()
-    //    {
-    //        return constants.xOutGapMax;
-    //    }
-    //
-    //    //----------------//
-    //    // getYGapMaximum //
-    //    //----------------//
-    //    public static Scale.Fraction getYGapMaximum ()
-    //    {
-    //        return constants.yGapMax;
-    //    }
-    //
-    //    //------------------//
-    //    // getXInGapMaximum //
-    //    //------------------//
-    //    public static Scale.Fraction getXInGapMaximum ()
-    //    {
-    //        return constants.xInGapMax;
-    //    }
-    //
-    //    //--------------//
-    //    // getInWeights //
-    //    //--------------//
-    //    @Override
-    //    protected double[] getInWeights ()
-    //    {
-    //        return IN_WEIGHTS;
-    //    }
-    //
-    //    //---------------//
-    //    // getOutWeights //
-    //    //---------------//
-    //    @Override
-    //    protected double[] getOutWeights ()
-    //    {
-    //        return OUT_WEIGHTS;
-    //    }
-    //
-    //    //----------------//
-    //    // getTargetCoeff //
-    //    //----------------//
-    //    /**
-    //     * StaccatoNoteRelation brings no support on target (Note) side.
-    //     *
-    //     * @return 0
-    //     */
-    //    @Override
-    //    protected double getTargetCoeff ()
-    //    {
-    //        return 0.0;
-    //    }
-    //
-    //    @Override
-    //    protected Scale.Fraction getXInGapMax ()
-    //    {
-    //        return getXInGapMaximum();
-    //    }
-    //
-    //    @Override
-    //    protected Scale.Fraction getXOutGapMax ()
-    //    {
-    //        return getXOutGapMaximum();
-    //    }
-    //
-    //    @Override
-    //    protected Scale.Fraction getYGapMax ()
-    //    {
-    //        return getYGapMaximum();
-    //    }
-    //
-    //    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -226,26 +173,5 @@ public class SlurHeadRelation
         private final Constant.Ratio slurSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (source) slur coeff in support formula");
-
-        //
-        //            private final Scale.Fraction xInGapMax = new Scale.Fraction(
-        //                    0.5,
-        //                    "Maximum horizontal overlap between slur end & note reference point");
-        //
-        //            private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-        //                    0.75,
-        //                    "Maximum horizontal gap between slur end & note reference point");
-        //
-        //            private final Scale.Fraction yGapMax = new Scale.Fraction(
-        //                    6.0,
-        //                    "Maximum vertical gap between slur end & note reference point");
-        //
-        //            private final Constant.Ratio xInWeight = new Constant.Ratio(3, "Relative impact weight for xInGap");
-        //
-        //            private final Constant.Ratio xOutWeight = new Constant.Ratio(
-        //                    3,
-        //                    "Relative impact weight for xOutGap");
-        //
-        //            private final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
     }
 }

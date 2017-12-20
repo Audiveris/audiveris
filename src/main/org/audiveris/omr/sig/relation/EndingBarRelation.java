@@ -21,7 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.EndingInter;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.*;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -39,7 +45,7 @@ public class EndingBarRelation
 
     /** Which side of ending is used?. */
     @XmlAttribute(name = "side")
-    private final HorizontalSide endingSide;
+    private HorizontalSide endingSide;
 
     /** Horizontal delta (in interline) between bar line and ending side. */
     private final double xDistance;
@@ -59,16 +65,38 @@ public class EndingBarRelation
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-arg constructor meant for JAXB and user allocation.
      */
-    private EndingBarRelation ()
+    public EndingBarRelation ()
     {
-        this.endingSide = null;
         this.xDistance = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
     /**
+     * Populate endingSide if needed.
+     *
+     * @param e edge change event
+     */
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        if (endingSide == null) {
+            final EndingInter ending = (EndingInter) e.getEdgeSource();
+            final BarlineInter barline = (BarlineInter) e.getEdgeTarget();
+            endingSide = (barline.getCenter().x < ending.getCenter().x) ? LEFT : RIGHT;
+        }
+    }
+
+    //---------------//
+    // getEndingSide //
+    //---------------//
+    /**
+     * Report the horizontal side of ending where the barline is located
+     *
      * @return the endingSide
      */
     public HorizontalSide getEndingSide ()

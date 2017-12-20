@@ -30,9 +30,11 @@ import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
+import static org.audiveris.omr.sig.relation.BeamPortion.*;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -103,7 +105,7 @@ public class BeamStemRelation
     // added //
     //-------//
     /**
-     * Update the chord(s) if any, that use this stem.
+     * Populate beam portion if needed and update the chord(s) if any that use this stem.
      * <p>
      * In the rare case where a stem is shared by several chords, the beam connection applies to
      * all these chords.
@@ -114,6 +116,28 @@ public class BeamStemRelation
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final StemInter stem = (StemInter) e.getEdgeTarget();
+
+        if (beamPortion == null) {
+            final AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
+
+            if (beam instanceof BeamHookInter) {
+                beamPortion = (beam.getCenter().x < stem.getCenter().x) ? RIGHT : LEFT;
+            } else {
+                int xStem = stem.getCenter().x;
+                Scale scale = stem.getSig().getSystem().getSheet().getScale();
+                int maxDx = scale.toPixels(getXInGapMaximum());
+                double left = beam.getMedian().getX1();
+                double right = beam.getMedian().getX2();
+
+                if (xStem < (left + maxDx)) {
+                    beamPortion = LEFT;
+                } else if (xStem > (right - maxDx)) {
+                    beamPortion = RIGHT;
+                } else {
+                    beamPortion = CENTER;
+                }
+            }
+        }
 
         for (HeadChordInter chord : stem.getChords()) {
             chord.invalidateCache();

@@ -57,9 +57,9 @@ public class ChordTupletRelation
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-arg constructor meant for JAXB and user allocation.
      */
-    private ChordTupletRelation ()
+    public ChordTupletRelation ()
     {
         this.tupletCoeff = 0;
     }

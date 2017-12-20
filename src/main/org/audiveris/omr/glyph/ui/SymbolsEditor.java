@@ -607,14 +607,17 @@ public class SymbolsEditor
 
                     // Inter: main links
                     SIGraph sig = inter.getSig();
-                    Set<Relation> supports = sig.getRelations(inter, Support.class);
 
-                    if (!supports.isEmpty()) {
-                        SheetGradedPainter painter = new SheetGradedPainter(sheet, g);
+                    if (sig != null) {
+                        Set<Relation> supports = sig.getRelations(inter, Support.class);
 
-                        for (Relation rel : supports) {
-                            Inter opp = sig.getOppositeInter(inter, rel);
-                            painter.drawSupport(inter, opp, rel.getClass(), false);
+                        if (!supports.isEmpty()) {
+                            SheetGradedPainter painter = new SheetGradedPainter(sheet, g);
+
+                            for (Relation rel : supports) {
+                                Inter opp = sig.getOppositeInter(inter, rel);
+                                painter.drawSupport(inter, opp, rel.getClass(), false);
+                            }
                         }
                     }
 

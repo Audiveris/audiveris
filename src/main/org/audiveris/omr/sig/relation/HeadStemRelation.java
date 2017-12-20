@@ -27,6 +27,10 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.inter.Inter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +71,24 @@ public class HeadStemRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Populate headSide if needed.
+     *
+     * @param e edge change event
+     */
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        if (headSide == null) {
+            final Inter head = e.getEdgeSource();
+            final Inter stem = e.getEdgeTarget();
+            headSide = (stem.getCenter().x < head.getCenter().x) ? LEFT : RIGHT;
+        }
+    }
+
     //------------------//
     // getXInGapMaximum //
     //------------------//

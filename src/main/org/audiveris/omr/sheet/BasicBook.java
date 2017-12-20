@@ -679,13 +679,14 @@ public class BasicBook
                     final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
                     final Sheet sheet = stub.getSheet();
                     sheet.annotate(sheetFolder);
-                    logger.info("Book annotated as {}", path);
                 } catch (Exception ex) {
                     logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
                 } finally {
                     LogUtil.stopStub();
                 }
             }
+
+            logger.info("Book annotated as {}", path);
         } catch (Exception ex) {
             logger.warn("Error annotating book {} {}", this, ex.toString(), ex);
         } finally {

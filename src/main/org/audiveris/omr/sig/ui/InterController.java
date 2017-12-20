@@ -642,13 +642,13 @@ public class InterController
                     if (stemChords.isEmpty()) {
                         // Create a chord based on stem
                         headChord = new HeadChordInter(-1);
-                        seq.add(new LinkTask(sig, headChord, stem, new ChordStemRelation()));
                         seq.add(
                                 new AdditionTask(
                                         sig,
                                         headChord,
                                         stem.getBounds(),
                                         Collections.EMPTY_SET));
+                        seq.add(new LinkTask(sig, headChord, stem, new ChordStemRelation()));
                     } else {
                         if (stemChords.size() > 1) {
                             logger.warn("Stem shared by several chords, picked one");

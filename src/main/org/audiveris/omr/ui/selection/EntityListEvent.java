@@ -81,7 +81,8 @@ public class EntityListEvent<E extends Entity>
             return null;
         }
 
-        return entities.get(entities.size() - 1);
+        return entities.get(0); // Use first
+        ///return entities.get(entities.size() - 1); // Use last
     }
 
     //----------------//

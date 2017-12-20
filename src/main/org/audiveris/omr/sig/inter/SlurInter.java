@@ -694,12 +694,16 @@ public class SlurInter
             chords.put(side, SIGraph.intersectedInters(systemChords, GeoOrder.NONE, box));
         }
 
-        // Select the best link pair
+        // Select the best link pair, if any
         Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
                 this,
                 sideAreas,
                 system,
                 chords);
+
+        if (linkPair == null) {
+            return Collections.emptySet();
+        }
 
         List<Link> links = new ArrayList<Link>();
 
