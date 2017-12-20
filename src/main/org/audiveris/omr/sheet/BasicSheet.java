@@ -554,7 +554,8 @@ public class BasicSheet
                     : ((ext.equals(OMR.SCORE_EXTENSION)) ? false
                     : BookManager.useCompression());
             final boolean useSig = BookManager.useSignature();
-            int modifs = 0;
+
+            int modifs = 0; // Count of modifications
 
             if (pages.size() > 1) {
                 // One file per page
