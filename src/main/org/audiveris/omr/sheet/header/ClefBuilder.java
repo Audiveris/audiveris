@@ -36,13 +36,9 @@ import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.Shape.*;
-
 import org.audiveris.omr.glyph.Symbol.Group;
-
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -56,13 +52,12 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.ui.symbol.Symbol;
 import org.audiveris.omr.ui.symbol.Symbols;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -374,7 +369,7 @@ public class ClefBuilder
     {
         final double maxContrib = ClefKeyRelation.maxContributionForClef();
         final List<ClefInter> inters = new ArrayList<ClefInter>(bestMap.values());
-        Collections.sort(inters, Inter.byReverseGrade);
+        Collections.sort(inters, Inters.byReverseGrade);
 
         interLoop:
         for (int i = 0; i < inters.size(); i++) {
@@ -442,7 +437,7 @@ public class ClefBuilder
     {
         // Sort clefs by decreasing grade
         final List<ClefInter> clefList = new ArrayList<ClefInter>(clefSet);
-        Collections.sort(clefList, Inter.byReverseGrade);
+        Collections.sort(clefList, Inters.byReverseGrade);
 
         for (int idx = 0; idx < clefList.size(); idx++) {
             final ClefInter inter = clefList.get(idx);
@@ -492,7 +487,7 @@ public class ClefBuilder
                 sig.computeContextualGrade(clef);
             }
 
-            Collections.sort(clefs, Inter.byReverseBestGrade);
+            Collections.sort(clefs, Inters.byReverseBestGrade);
 
             // Pickup the first one as header clef
             ClefInter bestClef = clefs.get(0);
@@ -501,7 +496,7 @@ public class ClefBuilder
 
             // Delete the other clef candidates
             for (Inter other : clefs.subList(1, clefs.size())) {
-                other.delete();
+                other.remove();
             }
         }
     }

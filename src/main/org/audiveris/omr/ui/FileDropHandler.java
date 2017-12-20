@@ -204,7 +204,10 @@ public class FileDropHandler
                 throws Exception
         {
             book = OMR.engine.loadBook(file.toPath());
-            book.createStubsTabs(null); // Tabs are now accessible
+
+            if (book != null) {
+                book.createStubsTabs(null); // Tabs are now accessible
+            }
 
             return null;
         }
@@ -212,11 +215,13 @@ public class FileDropHandler
         @Override
         protected void finished ()
         {
-            // Focus UI on book just dropped
-            SheetStub firstValid = book.getFirstValidStub();
+            if (book != null) {
+                // Focus UI on book just dropped
+                SheetStub firstValid = book.getFirstValidStub();
 
-            if (firstValid != null) {
-                StubsController.getInstance().selectAssembly(firstValid);
+                if (firstValid != null) {
+                    StubsController.getInstance().selectAssembly(firstValid);
+                }
             }
         }
     }

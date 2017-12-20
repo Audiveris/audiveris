@@ -53,7 +53,7 @@ public class StackConfig
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Rhythm data for this config, always ordered byFullAbscissa. */
-    private final TreeSet<Inter> inters = new TreeSet<Inter>(Inter.byFullAbscissa);
+    private final TreeSet<Inter> inters = new TreeSet<Inter>(Inters.byFullAbscissa);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

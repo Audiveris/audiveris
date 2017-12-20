@@ -31,9 +31,11 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -41,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,7 +59,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "tuplet")
 public class TupletInter
-        extends AbstractNotationInter
+        extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -98,6 +101,35 @@ public class TupletInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Add it from containing stack and/or measure.
+     *
+     * @see #remove(boolean)
+     */
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
+        }
+    }
+
+    //--------//
     // create //
     //--------//
     /**
@@ -132,22 +164,6 @@ public class TupletInter
         }
 
         return new TupletInter(glyph, shape, grade);
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    @Override
-    public void delete ()
-    {
-        // Remove it from containing stack and/or measure
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
-
-        if (stack != null) {
-            stack.removeInter(this);
-        }
-
-        super.delete();
     }
 
     //-----------------//
@@ -186,7 +202,7 @@ public class TupletInter
                 list.add((AbstractChordInter) sig.getOppositeInter(this, tcRel));
             }
 
-            Collections.sort(list, Inter.byAbscissa);
+            Collections.sort(list, Inters.byAbscissa);
             chords = Collections.unmodifiableList(list);
         }
 
@@ -240,6 +256,53 @@ public class TupletInter
         }
 
         return null;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove it from containing stack and/or measure.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+
+        if (stack != null) {
+            stack.removeInter(this);
+        }
+
+        super.remove(extensive);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Specifically, look for chords to link with this tuplet.
+     *
+     * @return chords link, perhaps empty
+     */
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        MeasureStack stack = system.getMeasureStackAt(getCenter());
+        Collection<Link> links = new TupletsBuilder(stack).lookupLinks(this);
+
+        if (doit) {
+            for (Link link : links) {
+                link.applyTo(this);
+            }
+        }
+
+        return links;
     }
 
     //-----------//

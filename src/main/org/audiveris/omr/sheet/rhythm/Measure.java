@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
@@ -106,11 +107,11 @@ public class Measure
     @XmlElement(name = "right-barline")
     private PartBarline rightBarline;
 
-    /** Groups of beams in this measure. */
+    /** Groups of beams in this measure, initially populated by CHORDS step. */
     @XmlElementRef
     private final Set<BeamGroup> beamGroups = new LinkedHashSet<BeamGroup>();
 
-    /** Head chords, populated once for all by CHORDS step. */
+    /** Head chords, initially populated by CHORDS step. */
     @XmlElementRef
     private final Set<HeadChordInter> headChords = new LinkedHashSet<HeadChordInter>();
 
@@ -144,7 +145,7 @@ public class Measure
     private MeasureStack stack;
 
     /** Possibly several Clefs per staff. (Abscissa-ordered) */
-    private final TreeSet<ClefInter> clefs = new TreeSet<ClefInter>(Inter.byFullAbscissa);
+    private final TreeSet<ClefInter> clefs = new TreeSet<ClefInter>(Inters.byFullAbscissa);
 
     /** Possibly one Key signature per staff, since keys may differ between staves.
      * Implemented as a map: (staff index in part) -> Key sig
@@ -153,9 +154,6 @@ public class Measure
 
     /** Potential one Time signature per staff. */
     private final Set<AbstractTimeInter> timeSigs = new LinkedHashSet<AbstractTimeInter>();
-
-    /** Only whole rest-based chords (handled outside time slots). (subset of restChords) */
-    private final Set<AbstractChordInter> wholeRestChords = new LinkedHashSet<AbstractChordInter>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -224,6 +222,10 @@ public class Measure
      */
     public void addInter (Inter inter)
     {
+        if (inter.isVip()) {
+            logger.info("VIP addInter {} into {}", inter, this);
+        }
+
         if (inter instanceof AbstractChordInter) {
             AbstractChordInter chord = (AbstractChordInter) inter;
             chord.setMeasure(this);
@@ -232,10 +234,6 @@ public class Measure
                 headChords.add((HeadChordInter) chord);
             } else if (chord instanceof RestChordInter) {
                 restChords.add((RestChordInter) chord);
-
-                if (chord.getMembers().get(0).getShape() == Shape.WHOLE_REST) {
-                    wholeRestChords.add(chord);
-                }
             }
         } else if (inter instanceof ClefInter) {
             clefs.add((ClefInter) inter);
@@ -302,13 +300,20 @@ public class Measure
         }
     }
 
+    //-----------------//
+    // clearBeamGroups //
+    //-----------------//
+    public void clearBeamGroups ()
+    {
+        beamGroups.clear();
+    }
+
     //------------//
     // clearFrats //
     //------------//
     public void clearFrats ()
     {
         restChords.clear();
-        wholeRestChords.clear();
         otherRhythms.clear();
     }
 
@@ -1007,17 +1012,6 @@ public class Measure
         return Collections.unmodifiableList(voices);
     }
 
-    //--------------------//
-    // getWholeRestChords //
-    //--------------------//
-    /**
-     * @return the wholeRestChords
-     */
-    public Set<AbstractChordInter> getWholeRestChords ()
-    {
-        return wholeRestChords;
-    }
-
     //----------//
     // getWidth //
     //----------//
@@ -1185,6 +1179,14 @@ public class Measure
         setRightBarline(right.rightBarline);
     }
 
+    //-----------------//
+    // removeBeamGroup //
+    //-----------------//
+    public void removeBeamGroup (BeamGroup beamGroup)
+    {
+        beamGroups.remove(beamGroup);
+    }
+
     //-------------//
     // removeInter //
     //-------------//
@@ -1196,10 +1198,13 @@ public class Measure
      */
     public void removeInter (Inter inter)
     {
+        if (inter.isVip()) {
+            logger.info("VIP removeInter {} from {}", inter, this);
+        }
+
         if (inter instanceof RestChordInter) {
             RestChordInter restChord = (RestChordInter) inter;
             restChords.remove(restChord);
-            wholeRestChords.remove(restChord); // Just in case
         } else if (inter instanceof FlagInter
                    || inter instanceof AugmentationDotInter
                    || inter instanceof TupletInter) {

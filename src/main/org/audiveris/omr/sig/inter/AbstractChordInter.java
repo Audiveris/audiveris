@@ -30,13 +30,15 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
-import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
@@ -52,15 +54,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlList;
-
 /**
  * Class {@code AbstractChordInter} represents an ensemble of notes (rests, heads)
  * attached to the same stem if any, and that start on the same time slot in a part.
+ * <p>
+ * A chord made of small heads (typically used in Acciaccatura and Appoggiatura) is a
+ * {@link SmallChordInter}.
+ * A chord made of (non-small) heads or rests is called a "standard" chord by opposition to "small".
  * <p>
  * <b>NOTA:</b>We assume that all notes of a chord have the same duration.
  * Otherwise separate chord instances must be created.
@@ -69,7 +69,7 @@ import javax.xml.bind.annotation.XmlList;
  */
 public abstract class AbstractChordInter
         extends AbstractInter
-        implements InterMutableEnsemble
+        implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -80,32 +80,15 @@ public abstract class AbstractChordInter
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    // Persistent data
-    //----------------
-    //
-    /**
-     * Sequence of chord notes (one or several heads or just a single rest),
-     * kept ordered bottom-up.
-     */
-    /** Attached stem if any. */
-    @XmlIDREF
-    @XmlAttribute(name = "stem")
-    protected StemInter stem;
-
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "notes")
-    protected final List<AbstractNoteInter> notes = new ArrayList<AbstractNoteInter>();
-
-    /** Sequence of beams if any this chord is linked to, kept ordered from tail to head. */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "beams")
-    protected List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
-
     // Transient data
     //---------------
     //
+    /**
+     * Sequence of beams if any this chord is linked to,
+     * kept ordered from tail to head. Lazily computed.
+     */
+    protected List<AbstractBeamInter> beams;
+
     /** Location for chord head (head farthest from chord tail). Lazily computed. */
     protected Point headLocation;
 
@@ -121,14 +104,11 @@ public abstract class AbstractChordInter
     /** Containing slot, if any (no slot for whole/multi rests). */
     protected Slot slot;
 
-    /** Start time, if any, since beginning of the containing measure. */
+    /** Start time (since beginning of the containing measure). */
     protected Rational timeOffset;
 
     /** Voice this chord belongs to. */
     protected Voice voice;
-
-    /** Ratio to get actual rawDuration WRT graphical notation. */
-    protected DurationFactor tupletFactor;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -149,6 +129,35 @@ public abstract class AbstractChordInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // getClosestChord //
+    //-----------------//
+    /**
+     * From a provided Chord collection, report the chord which has the
+     * closest abscissa to a provided point.
+     *
+     * @param chords the collection of chords to browse
+     * @param point  the reference point
+     * @return the abscissa-wise closest chord
+     */
+    public static AbstractChordInter getClosestChord (Collection<AbstractChordInter> chords,
+                                                      Point point)
+    {
+        AbstractChordInter bestChord = null;
+        int bestDx = Integer.MAX_VALUE;
+
+        for (AbstractChordInter chord : chords) {
+            int dx = Math.abs(chord.getHeadLocation().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestChord = chord;
+            }
+        }
+
+        return bestChord;
+    }
+
     //--------//
     // accept //
     //--------//
@@ -158,62 +167,43 @@ public abstract class AbstractChordInter
         visitor.visit(this);
     }
 
-    //---------//
-    // addBeam //
-    //---------//
-    /**
-     * Insert a beam as attached to this chord
-     *
-     * @param beam the attached beam
-     */
-    public void addBeam (AbstractBeamInter beam)
-    {
-        if (beams == null) {
-            beams = new ArrayList<AbstractBeamInter>();
-        }
-
-        if (!beams.contains(beam)) {
-            beams.add(beam);
-
-            // Keep the sequence sorted from chord tail
-            Collections.sort(
-                    beams,
-                    new Comparator<AbstractBeamInter>()
-            {
-                @Override
-                public int compare (AbstractBeamInter b1,
-                                    AbstractBeamInter b2)
-                {
-                    int x = stem.getCenter().x;
-                    double y1 = LineUtil.yAtX(b1.getMedian(), x);
-                    double y2 = LineUtil.yAtX(b2.getMedian(), x);
-                    int yHead = getHeadLocation().y;
-
-                    return Double.compare(Math.abs(yHead - y2), Math.abs(yHead - y1));
-                }
-            });
-        }
-    }
-
     //-----------//
     // addMember //
     //-----------//
     @Override
     public void addMember (Inter member)
     {
-        if (member instanceof AbstractNoteInter) {
-            AbstractNoteInter note = (AbstractNoteInter) member;
-            notes.add(note);
-
-            if (notes.size() > 1) {
-                Collections.sort(notes, AbstractPitchedInter.bottomUp);
-            }
-
-            note.setEnsemble(this);
-            reset();
-        } else {
+        if (!(member instanceof AbstractNoteInter)) {
             throw new IllegalArgumentException(
                     "Only AbstractNoteInter can be added to AbstractChordInter");
+        }
+
+        EnsembleHelper.addMember(this, member);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Add the chord to containing measure.
+     *
+     * @see #remove(boolean)
+     */
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        Point center = getCenter();
+
+        if (center != null) {
+            MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+
+            if (stack != null) {
+                stack.addInter(this);
+            }
+        } else {
+            logger.debug("No bounds yet for chord {}", this);
         }
     }
 
@@ -227,18 +217,6 @@ public abstract class AbstractChordInter
 
             // Augmentation dot(s)?
             countDots();
-
-            if (sig == null) {
-                logger.error("No sig for inter#" + getId());
-            } else {
-                // Tuplet?
-                for (Relation rel : sig.getRelations(this, ChordTupletRelation.class)) {
-                    TupletInter tuplet = (TupletInter) sig.getOppositeInter(this, rel);
-                    setTupletFactor(tuplet.getDurationFactor());
-
-                    break; // safer, although there should be at most one such relation.
-                }
-            }
 
             // Staff for rest chord
             if (this instanceof RestChordInter) {
@@ -271,17 +249,19 @@ public abstract class AbstractChordInter
      */
     public void countDots ()
     {
+        final List<Inter> notes = getMembers();
+
         if (notes.isEmpty()) {
             return;
         }
 
         if (notes.size() == 1) {
-            dotsNumber = notes.get(0).getDotCount();
+            dotsNumber = ((AbstractNoteInter) notes.get(0)).getDotCount();
         } else {
             Population pop = new Population();
 
-            for (AbstractNoteInter note : notes) {
-                pop.includeValue(note.getDotCount());
+            for (Inter note : notes) {
+                pop.includeValue(((AbstractNoteInter) note).getDotCount());
             }
 
             double val = pop.getMeanValue();
@@ -293,8 +273,8 @@ public abstract class AbstractChordInter
 
                 if (dotsNumber == 0) {
                     // Delete the discarded augmentation relations
-                    for (AbstractNoteInter note : notes) {
-                        int count = note.getDotCount();
+                    for (Inter note : notes) {
+                        int count = ((AbstractNoteInter) note).getDotCount();
 
                         if (count != 0) {
                             for (Relation dn : sig.getRelations(note, AugmentationRelation.class)) {
@@ -304,7 +284,7 @@ public abstract class AbstractChordInter
                                     measure.removeInter(dot);
                                 }
 
-                                dot.delete();
+                                dot.remove();
                             }
                         }
                     }
@@ -313,21 +293,8 @@ public abstract class AbstractChordInter
         }
 
         if (isVip()) {
-            logger.info("{} counted dots: {}", this, dotsNumber);
+            logger.info("VIP {} counted dots: {}", this, dotsNumber);
         }
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    @Override
-    public void delete ()
-    {
-        if (measure != null) {
-            measure.removeInter(this);
-        }
-
-        super.delete();
     }
 
     //--------------//
@@ -358,11 +325,38 @@ public abstract class AbstractChordInter
      */
     public List<AbstractBeamInter> getBeams ()
     {
-        if (beams != null) {
-            return beams;
-        } else {
-            return NO_BEAM;
+        if (beams == null) {
+            beams = new ArrayList<AbstractBeamInter>();
+
+            final StemInter stem = getStem();
+
+            if (stem != null) {
+                for (Relation bs : sig.getRelations(stem, BeamStemRelation.class)) {
+                    AbstractBeamInter beam = (AbstractBeamInter) sig.getOppositeInter(stem, bs);
+                    beams.add(beam);
+                }
+
+                // Keep the sequence sorted from chord tail
+                Collections.sort(
+                        beams,
+                        new Comparator<AbstractBeamInter>()
+                {
+                    @Override
+                    public int compare (AbstractBeamInter b1,
+                                        AbstractBeamInter b2)
+                    {
+                        int x = getCenter().x;
+                        double y1 = LineUtil.yAtX(b1.getMedian(), x);
+                        double y2 = LineUtil.yAtX(b2.getMedian(), x);
+                        int yHead = getHeadLocation().y;
+
+                        return Double.compare(Math.abs(yHead - y2), Math.abs(yHead - y1));
+                    }
+                });
+            }
         }
+
+        return beams;
     }
 
     //----------------//
@@ -375,6 +369,8 @@ public abstract class AbstractChordInter
      */
     public Staff getBottomStaff ()
     {
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty()) {
             return notes.get(0).getStaff();
         }
@@ -389,70 +385,10 @@ public abstract class AbstractChordInter
     public Rectangle getBounds ()
     {
         if (bounds == null) {
-            if (stem != null) {
-                bounds = stem.getBounds();
-            }
-
-            for (Inter member : notes) {
-                final Rectangle memberBounds = member.getBounds();
-
-                if (bounds == null) {
-                    bounds = memberBounds;
-                } else {
-                    bounds = bounds.union(memberBounds);
-                }
-            }
+            bounds = Entities.getBounds(getMembers());
         }
 
         return super.getBounds();
-    }
-
-    //-----------------//
-    // getClosestChord //
-    //-----------------//
-    /**
-     * From a provided Chord collection, report the chord which has the
-     * closest abscissa to a provided point.
-     *
-     * @param chords the collection of chords to browse
-     * @param point  the reference point
-     * @return the abscissa-wise closest chord
-     */
-    public static AbstractChordInter getClosestChord (Collection<AbstractChordInter> chords,
-                                                      Point point)
-    {
-        AbstractChordInter bestChord = null;
-        int bestDx = Integer.MAX_VALUE;
-
-        for (AbstractChordInter chord : chords) {
-            int dx = Math.abs(chord.getHeadLocation().x - point.x);
-
-            if (dx < bestDx) {
-                bestDx = dx;
-                bestChord = chord;
-            }
-        }
-
-        return bestChord;
-    }
-
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
-    {
-        StringBuilder sb = new StringBuilder(super.getDetails());
-
-        if (stem != null) {
-            if (sb.length() > 0) {
-                sb.append(' ');
-            }
-
-            sb.append("stem:").append(stem);
-        }
-
-        return sb.toString();
     }
 
     //---------------//
@@ -487,6 +423,8 @@ public abstract class AbstractChordInter
         } else {
             Rational sansTuplet = getDurationSansTuplet();
 
+            DurationFactor tupletFactor = getTupletFactor();
+
             if (tupletFactor == null) {
                 return sansTuplet;
             } else {
@@ -515,11 +453,12 @@ public abstract class AbstractChordInter
      */
     public Rational getDurationSansDotOrTuplet ()
     {
+        final List<Inter> notes = getMembers();
         Rational dur = null;
 
         if (!notes.isEmpty()) {
             // All note heads are assumed to be the same within one chord
-            AbstractNoteInter note = notes.get(0);
+            Inter note = notes.get(0);
             Shape noteShape = note.getShape();
 
             // Duration from note shape
@@ -528,7 +467,7 @@ public abstract class AbstractChordInter
             if (!noteShape.isWholeRest()) {
                 // Apply flags/beams for non-rests
                 if (!noteShape.isRest()) {
-                    final int beamNb = (beams != null) ? beams.size() : 0;
+                    final int beamNb = (getBeams() != null) ? getBeams().size() : 0;
                     final int fbn = getFlagsNumber() + beamNb;
 
                     if (fbn > 0) {
@@ -573,11 +512,12 @@ public abstract class AbstractChordInter
      */
     public Rational getDurationSansTuplet ()
     {
-        Rational sansDot = getDurationSansDotOrTuplet();
+        final List<Inter> notes = getMembers();
+        final Rational sansDot = getDurationSansDotOrTuplet();
 
         if ((sansDot != null) && !notes.isEmpty()) {
             // All note heads are assumed to be the same within one chord
-            AbstractNoteInter note = notes.get(0);
+            Inter note = notes.get(0);
             Shape noteShape = note.getShape();
 
             if (!noteShape.isWholeRest()) {
@@ -620,24 +560,13 @@ public abstract class AbstractChordInter
     // getFlagsNumber //
     //----------------//
     /**
-     * Report the number of (individual) flags attached to the chord stem
+     * Report the number of (individual) flags attached to the chord
      *
      * @return the number of individual flags
      */
     public int getFlagsNumber ()
     {
-        int count = 0;
-
-        if (stem != null) {
-            final Set<Relation> rels = sig.getRelations(stem, FlagStemRelation.class);
-
-            for (Relation rel : rels) {
-                AbstractFlagInter flagInter = (AbstractFlagInter) sig.getOppositeInter(stem, rel);
-                count += flagInter.getValue();
-            }
-        }
-
-        return count;
+        return 0;
     }
 
     //------------------------//
@@ -668,7 +597,7 @@ public abstract class AbstractChordInter
             }
         }
 
-        Collections.sort(tied, AbstractChordInter.byAbscissa);
+        Collections.sort(tied, Inters.byAbscissa);
 
         return tied;
     }
@@ -702,27 +631,10 @@ public abstract class AbstractChordInter
      */
     public AbstractNoteInter getLeadingNote ()
     {
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty()) {
-            if (stem != null) {
-                // Find the note farthest from stem middle point
-                Point middle = stem.getCenter();
-                AbstractNoteInter bestNote = null;
-                int bestDy = Integer.MIN_VALUE;
-
-                for (AbstractNoteInter note : notes) {
-                    int noteY = note.getCenter().y;
-                    int dy = Math.abs(noteY - middle.y);
-
-                    if (dy > bestDy) {
-                        bestNote = note;
-                        bestDy = dy;
-                    }
-                }
-
-                return bestNote;
-            } else {
-                return notes.get(0);
-            }
+            return (AbstractNoteInter) notes.get(0);
         } else {
             logger.warn("No notes in chord " + this);
 
@@ -741,15 +653,25 @@ public abstract class AbstractChordInter
     //------------//
     // getMembers //
     //------------//
+    /**
+     * {@inheritDoc}
+     *
+     * @return the chord notes, ordered bottom up
+     */
     @Override
-    public List<? extends Inter> getMembers ()
+    public List<Inter> getMembers ()
     {
-        return notes;
+        return EnsembleHelper.getMembers(this, Inters.byReverseCenterOrdinate);
     }
 
     //----------//
     // getNotes //
     //----------//
+    /**
+     * Report the chord notes.
+     *
+     * @return the chord notes, ordered bottom up
+     */
     public List<? extends Inter> getNotes ()
     {
         return getMembers();
@@ -762,6 +684,8 @@ public abstract class AbstractChordInter
     public Part getPart ()
     {
         if (part == null) {
+            final List<Inter> notes = getMembers();
+
             if (!notes.isEmpty()) {
                 part = notes.get(0).getPart();
             }
@@ -788,7 +712,7 @@ public abstract class AbstractChordInter
     //----------//
     /**
      * If the chord embraces just one staff, this staff is returned, but if it embraces
-     * two staves, null is returned then {@link #getStaves()} should be used instead.
+     * two staves, null is returned and {@link #getStaves()} should be used instead.
      *
      * @return the single embraced staff, or null
      */
@@ -830,28 +754,22 @@ public abstract class AbstractChordInter
     // getStem //
     //---------//
     /**
-     * @return the stem
+     * @return null
      */
     public StemInter getStem ()
     {
-        return stem;
+        return null;
     }
 
     //------------//
     // getStemDir //
     //------------//
     /**
-     * Report the stem direction of this chord, from head to tail
-     *
-     * @return -1 if stem is up, 0 if no stem, +1 if stem is down
+     * @return 0 since no stem
      */
     public int getStemDir ()
     {
-        if (stem == null) {
-            return 0;
-        } else {
-            return Integer.signum(getTailLocation().y - getHeadLocation().y);
-        }
+        return 0;
     }
 
     //-----------------//
@@ -894,6 +812,8 @@ public abstract class AbstractChordInter
      */
     public Staff getTopStaff ()
     {
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty()) {
             return notes.get(notes.size() - 1).getStaff();
         }
@@ -928,7 +848,13 @@ public abstract class AbstractChordInter
      */
     public DurationFactor getTupletFactor ()
     {
-        return tupletFactor;
+        for (Relation rel : sig.getRelations(this, ChordTupletRelation.class)) {
+            TupletInter tuplet = (TupletInter) sig.getOppositeInter(this, rel);
+
+            return tuplet.getDurationFactor();
+        }
+
+        return null;
     }
 
     //----------//
@@ -945,6 +871,51 @@ public abstract class AbstractChordInter
         return voice;
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    /**
+     * Invalidate cached information. (following the addition or removal of a stem or note)
+     */
+    @Override
+    public void invalidateCache ()
+    {
+        beams = null;
+        bounds = null;
+        headLocation = null;
+        tailLocation = null;
+
+        // Compute global grade based on contained notes (TODO: +stem as well?)
+        if ((sig != null) && sig.containsVertex(this)) {
+            final List<Inter> notes = getMembers();
+
+            if (!notes.isEmpty()) {
+                double gr = 0;
+
+                for (Inter inter : notes) {
+                    gr += sig.computeContextualGrade(inter);
+                }
+
+                gr /= notes.size();
+                setGrade(gr);
+            }
+        }
+
+        if (sig != null && !isRemoved()) {
+            Point center = getCenter();
+
+            if (center != null) {
+                MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+
+                if (stack != null) {
+                    stack.addInter(this);
+                }
+            } else {
+                logger.debug("invalidateCache. No bounds for chord {}", this);
+            }
+        }
+    }
+
     //--------------//
     // isEmbracedBy //
     //--------------//
@@ -958,7 +929,9 @@ public abstract class AbstractChordInter
     public boolean isEmbracedBy (Point top,
                                  Point bottom)
     {
-        for (AbstractNoteInter note : notes) {
+        final List<Inter> notes = getMembers();
+
+        for (Inter note : notes) {
             Point center = note.getCenter();
 
             if ((center.y >= top.y) && (center.y <= bottom.y)) {
@@ -979,6 +952,8 @@ public abstract class AbstractChordInter
      */
     public boolean isRest ()
     {
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty()) {
             return notes.get(0).getShape().isRest();
         }
@@ -996,11 +971,32 @@ public abstract class AbstractChordInter
      */
     public boolean isWholeRest ()
     {
+        final List<Inter> notes = getMembers();
+
         if (!notes.isEmpty()) {
             return notes.get(0).getShape().isWholeRest();
         }
 
         return false;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove the chord from containing measure.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (measure != null) {
+            measure.removeInter(this);
+        }
+
+        super.remove(extensive);
     }
 
     //--------------//
@@ -1009,13 +1005,12 @@ public abstract class AbstractChordInter
     @Override
     public void removeMember (Inter member)
     {
-        if (member instanceof AbstractNoteInter) {
-            notes.remove((AbstractNoteInter) member);
-            reset();
-        } else {
+        if (!(member instanceof AbstractNoteInter)) {
             throw new IllegalArgumentException(
                     "Only AbstractNoteInter can be removed from ChordInter");
         }
+
+        EnsembleHelper.removeMember(this, member);
     }
 
     //-------------//
@@ -1027,7 +1022,6 @@ public abstract class AbstractChordInter
         slot = null;
         voice = null;
         timeOffset = null;
-        tupletFactor = null;
     }
 
     //------------//
@@ -1044,18 +1038,6 @@ public abstract class AbstractChordInter
     public void setSlot (Slot slot)
     {
         this.slot = slot;
-    }
-
-    //---------//
-    // setStem //
-    //---------//
-    /**
-     * @param stem the stem to set
-     */
-    public void setStem (StemInter stem)
-    {
-        this.stem = stem;
-        reset();
     }
 
     //----_----------//
@@ -1083,19 +1065,6 @@ public abstract class AbstractChordInter
         }
 
         return true;
-    }
-
-    //-----------------//
-    // setTupletFactor //
-    //-----------------//
-    /**
-     * Assign a tuplet factor to this chord
-     *
-     * @param tupletFactor the factor to apply
-     */
-    public void setTupletFactor (DurationFactor tupletFactor)
-    {
-        this.tupletFactor = tupletFactor;
     }
 
     //----------//
@@ -1163,21 +1132,21 @@ public abstract class AbstractChordInter
         }
     }
 
-    //---------------//
-    // beforeMarshal //
-    //---------------//
+    //------------------//
+    // computeLocations //
+    //------------------//
     /**
-     * Called immediately before the marshalling of this object begins.
+     * Compute the head and tail locations for this chord.
      */
-    @SuppressWarnings("unused")
-    protected void beforeMarshal (Marshaller m)
+    protected void computeLocations ()
     {
-        // Nullify 'beams', so that no empty element appears in XML output.
-        if ((beams != null) && beams.isEmpty()) {
-            beams = null;
+        AbstractNoteInter leading = getLeadingNote();
+
+        if (leading == null) {
+            return;
         }
 
-        super.beforeMarshal(m);
+        tailLocation = headLocation = leading.getCenter();
     }
 
     //-----------//
@@ -1189,76 +1158,19 @@ public abstract class AbstractChordInter
         StringBuilder sb = new StringBuilder(super.internals());
 
         if (sig != null) {
-            Rational sansTuplet = getDurationSansTuplet();
+            if (sig.containsVertex(this)) {
+                Rational sansTuplet = getDurationSansTuplet();
 
-            if (sansTuplet != null) {
-                sb.append(" dur:").append(sansTuplet);
-            } else {
-                sb.append(" noDur");
+                if (sansTuplet != null) {
+                    sb.append(" dur:").append(sansTuplet);
+                } else {
+                    sb.append(" noDur");
+                }
             }
         } else {
-            sb.append(" NOSIG");
+            sb.append(" noSIG");
         }
 
         return sb.toString();
-    }
-
-    //------------------//
-    // computeLocations //
-    //------------------//
-    /**
-     * Compute the head and tail locations for this chord.
-     */
-    private void computeLocations ()
-    {
-        AbstractNoteInter leading = getLeadingNote();
-
-        if (leading == null) {
-            return;
-        }
-
-        if (stem == null) {
-            tailLocation = headLocation = leading.getCenter();
-        } else {
-            Rectangle stemBox = stem.getBounds();
-
-            if (stem.getCenter().y < leading.getCenter().y) {
-                // Stem is up
-                tailLocation = new Point(stemBox.x + (stemBox.width / 2), stemBox.y);
-            } else {
-                // Stem is down
-                tailLocation = new Point(
-                        stemBox.x + (stemBox.width / 2),
-                        ((stemBox.y + stemBox.height) - 1));
-            }
-
-            headLocation = new Point(tailLocation.x, leading.getCenter().y);
-        }
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Invalidate cached information. (following the addition or removal of a stem or note)
-     */
-    private void reset ()
-    {
-        staff = null;
-        bounds = null;
-        headLocation = null;
-        tailLocation = null;
-
-        // Compute global grade based on contained notes (TODO: +stem as well?)
-        if (!notes.isEmpty() && (sig != null)) {
-            double gr = 0;
-
-            for (Inter inter : notes) {
-                gr += sig.computeContextualGrade(inter);
-            }
-
-            gr /= notes.size();
-            setGrade(gr);
-        }
     }
 }

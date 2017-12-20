@@ -115,19 +115,22 @@ public abstract class AbstractEntity
     @Override
     public String toString ()
     {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(getClass().getSimpleName()).append("{").append("#").append(id);
+
         try {
-            StringBuilder sb = new StringBuilder();
-
-            sb.append(getClass().getSimpleName()).append("{").append("#").append(id);
             sb.append(internals());
-            sb.append("}");
-
-            return sb.toString();
         } catch (Throwable ex) {
-            logger.warn("toString ex:" + ex, ex);
-
-            return null;
+            // Temporarily, some internals may not be printable
+            // Hence, to not perturb debugging print outs, we use a basic placeholder here
+            ///logger.warn("toString ex:" + ex, ex);
+            sb.append("<invalid-internals>");
         }
+
+        sb.append("}");
+
+        return sb.toString();
     }
 
     //-----------//

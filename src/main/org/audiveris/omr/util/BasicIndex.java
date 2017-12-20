@@ -272,7 +272,7 @@ public class BasicIndex<E extends Entity>
 
         if (isVipId(id)) {
             entity.setVip(true);
-            logger.info("VIP entity {} registered", entity);
+            logger.info("VIP registered {}", entity);
         }
 
         return id;
@@ -471,8 +471,8 @@ public class BasicIndex<E extends Entity>
         //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElementRefs({
-            @XmlElementRef(type = BasicGlyph.class),
-            @XmlElementRef(type = BasicSymbol.class)
+            @XmlElementRef(type = BasicGlyph.class)
+            , @XmlElementRef(type = BasicSymbol.class)
         })
         ArrayList<E> list; // Flat list of entities (each with its embedded id)
     }

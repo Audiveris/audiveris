@@ -28,8 +28,10 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -37,19 +39,21 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code ArticulationInter} represents an articulation sign
- * (tenuto, accent, staccato, staccatissimo, mercato).
+ * (tenuto, accent, staccato, staccatissimo, marcato).
  *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "articulation")
 public class ArticulationInter
-        extends AbstractNotationInter
+        extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -60,7 +64,7 @@ public class ArticulationInter
      * Creates a new ArticulationInter object.
      *
      * @param glyph underlying glyph
-     * @param shape precise shape (tenuto, accent, staccato, staccatissimo, mercato)
+     * @param shape precise shape (tenuto, accent, staccato, staccatissimo, marcato)
      * @param grade evaluation value
      */
     public ArticulationInter (Glyph glyph,
@@ -78,34 +82,13 @@ public class ArticulationInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------//
-    // getVoice //
-    //----------//
+    //--------//
+    // accept //
+    //--------//
     @Override
-    public Voice getVoice ()
+    public void accept (InterVisitor visitor)
     {
-        for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
-            return sig.getOppositeInter(this, rel).getVoice();
-        }
-
-        return null;
-    }
-
-    //----------//
-    // getStaff //
-    //----------//
-    @Override
-    public Staff getStaff ()
-    {
-        if (staff == null) {
-            for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
-                HeadChordInter chord = (HeadChordInter) sig.getOppositeInter(this, rel);
-
-                return staff = chord.getStaff();
-            }
-        }
-
-        return staff;
+        visitor.visit(this);
     }
 
     //--------//
@@ -131,13 +114,106 @@ public class ArticulationInter
             logger.info("VIP ArticulationInter create {} as {}", glyph, shape);
         }
 
-        Scale scale = system.getSheet().getScale();
-        SIGraph sig = system.getSig();
+        ArticulationInter artic = (ArticulationInter) SymbolFactory.createGhost(shape, grade);
+        artic.setGlyph(glyph);
+
+        Link link = artic.lookupLink(systemHeadChords);
+
+        if (link != null) {
+            system.getSig().addVertex(artic);
+            link.applyTo(artic);
+
+            return artic;
+        }
+
+        return null;
+    }
+
+    //----------//
+    // getStaff //
+    //----------//
+    @Override
+    public Staff getStaff ()
+    {
+        if (staff == null) {
+            for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
+                HeadChordInter chord = (HeadChordInter) sig.getOppositeInter(this, rel);
+
+                return staff = chord.getStaff();
+            }
+        }
+
+        return staff;
+    }
+
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
+    {
+        for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
+            return sig.getOppositeInter(this, rel).getVoice();
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        Link link = lookupLink(systemHeadChords);
+
+        if (link == null) {
+            return Collections.emptyList();
+        }
+
+        if (doit) {
+            link.applyTo(this);
+        }
+
+        return Collections.singleton(link);
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this articulation instance and a HeadChord nearby.
+     *
+     * @param systemHeadChords ordered collection of head chords in system
+     * @return the link found or null
+     */
+    private Link lookupLink (List<Inter> systemHeadChords)
+    {
+        if (systemHeadChords.isEmpty()) {
+            return null;
+        }
+
+        final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
+        final Scale scale = system.getSheet().getScale();
         final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum());
         final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum());
-        final Rectangle glyphBox = glyph.getBounds();
-        final Point glyphCenter = glyph.getCenter();
-        final Rectangle luBox = new Rectangle(glyphCenter);
+        final Rectangle articBox = getBounds();
+        final Point arcticCenter = getCenter();
+        final Rectangle luBox = new Rectangle(arcticCenter);
         luBox.grow(maxDx, maxDy);
 
         final List<Inter> chords = SIGraph.intersectedInters(
@@ -157,17 +233,17 @@ public class ArticulationInter
             Rectangle chordBox = chord.getBounds();
 
             // The articulation cannot intersect the chord
-            if (chordBox.intersects(glyphBox)) {
+            if (chordBox.intersects(articBox)) {
                 continue;
             }
 
             Point center = chord.getCenter();
 
             // Select proper chord reference point (top or bottom)
-            int yRef = (glyphCenter.y > center.y) ? (chordBox.y + chordBox.height)
-                    : chordBox.y;
-            double xGap = Math.abs(center.x - glyphCenter.x);
-            double yGap = Math.abs(yRef - glyphCenter.y);
+            int yRef = (arcticCenter.y > center.y)
+                    ? (chordBox.y + chordBox.height) : chordBox.y;
+            double xGap = Math.abs(center.x - arcticCenter.x);
+            double yGap = Math.abs(yRef - arcticCenter.y);
             ChordArticulationRelation rel = new ChordArticulationRelation();
             rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
@@ -181,23 +257,9 @@ public class ArticulationInter
         }
 
         if (bestRel != null) {
-            ArticulationInter articulation = new ArticulationInter(glyph, shape, grade);
-            sig.addVertex(articulation);
-            sig.addEdge(bestChord, articulation, bestRel);
-            logger.debug("Created {}", articulation);
-
-            return articulation;
+            return new Link(bestChord, bestRel, false);
         }
 
         return null;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
     }
 }

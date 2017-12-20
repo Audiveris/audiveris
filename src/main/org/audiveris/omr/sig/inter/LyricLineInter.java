@@ -27,13 +27,11 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
-import org.audiveris.omr.text.TextWord;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -70,10 +68,9 @@ public class LyricLineInter
      */
     private LyricLineInter (Rectangle bounds,
                             double grade,
-                            FontInfo meanFont,
-                            List<WordInter> words)
+                            FontInfo meanFont)
     {
-        super(bounds, grade, meanFont, TextRole.Lyrics, words);
+        super(bounds, grade, meanFont, TextRole.Lyrics);
     }
 
     /**
@@ -85,6 +82,15 @@ public class LyricLineInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //--------//
     // create //
     //--------//
     /**
@@ -95,18 +101,10 @@ public class LyricLineInter
      */
     public static LyricLineInter create (TextLine line)
     {
-        List<WordInter> wordInters = new ArrayList<WordInter>();
-
-        for (TextWord word : line.getWords()) {
-            LyricItemInter item = new LyricItemInter(word);
-            wordInters.add(item);
-        }
-
         LyricLineInter lyricLine = new LyricLineInter(
                 line.getBounds(),
                 line.getConfidence() * Inter.intrinsicRatio,
-                line.getMeanFont(),
-                wordInters);
+                line.getMeanFont());
 
         return lyricLine;
     }
@@ -200,6 +198,8 @@ public class LyricLineInter
         }
 
         // Now browse sequentially all our line items
+        final List<? extends Inter> words = getMembers();
+
         for (int i = 0; i < words.size(); i++) {
             LyricItemInter item = (LyricItemInter) words.get(i);
 

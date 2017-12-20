@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import org.audiveris.omr.OMR;
+import org.audiveris.omr.ui.OmrGui;
 
 import org.jdesktop.application.Task;
 
@@ -45,6 +45,6 @@ public abstract class BasicTask<T, V>
      */
     public BasicTask ()
     {
-        super(OMR.gui.getApplication());
+        super(OmrGui.getApplication());
     }
 }

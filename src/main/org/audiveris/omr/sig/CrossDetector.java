@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
@@ -151,12 +152,12 @@ public class CrossDetector
     private void detectCrossOverlaps (List<Inter> aboves,
                                       List<Inter> belows)
     {
-        Collections.sort(aboves, Inter.byAbscissa);
-        Collections.sort(belows, Inter.byAbscissa);
+        Collections.sort(aboves, Inters.byAbscissa);
+        Collections.sort(belows, Inters.byAbscissa);
 
         NextLeft:
         for (Inter above : aboves) {
-            if (above.isDeleted()) {
+            if (above.isRemoved()) {
                 continue;
             }
 
@@ -165,7 +166,7 @@ public class CrossDetector
             final double xMax = aboveBox.getMaxX();
 
             for (Inter below : belows) {
-                if (below.isDeleted()) {
+                if (below.isRemoved()) {
                     continue;
                 }
 
@@ -236,7 +237,7 @@ public class CrossDetector
                 logger.info("VIP Deleting weaker {}", weaker);
             }
 
-            weaker.delete();
+            weaker.remove();
         } else {
             final double aDist = Math.min(staffDistance(above), partnerDistance(above));
             final double bDist = Math.min(staffDistance(below), partnerDistance(below));
@@ -246,7 +247,7 @@ public class CrossDetector
                 logger.info("Deleting farther {}", farther);
             }
 
-            farther.delete();
+            farther.remove();
         }
     }
 

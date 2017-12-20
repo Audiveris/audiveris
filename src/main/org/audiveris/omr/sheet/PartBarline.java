@@ -25,7 +25,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataInter;
-import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
@@ -153,7 +153,7 @@ public class PartBarline
 
         if (!fermatas.isEmpty()) {
             List<FermataInter> list = new ArrayList<FermataInter>(fermatas);
-            Collections.sort(list, Inter.byCenterOrdinate);
+            Collections.sort(list, Inters.byCenterOrdinate);
 
             return list;
         }

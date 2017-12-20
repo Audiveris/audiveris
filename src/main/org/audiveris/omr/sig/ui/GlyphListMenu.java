@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                        G l y p h M e n u                                       //
+//                                    G l y p h L i s t M e n u                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.classifier.ui.SampleMenu;
+import org.audiveris.omr.classifier.ui.ShapeMenu;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -42,16 +42,16 @@ import java.util.Collection;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code GlyphMenu} displays a collection of glyphs.
+ * Class {@code GlyphListMenu} displays a collection of glyphs.
  *
  * @author Hervé Bitteur
  */
-public class GlyphMenu
+public class GlyphListMenu
         extends LocationDependentMenu
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(GlyphMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphListMenu.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     private final GlyphListener glyphListener = new GlyphListener();
@@ -60,11 +60,11 @@ public class GlyphMenu
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new GlyphMenu object.
+     * Creates a new {@code GlyphMenu} object.
      *
      * @param sheet the related sheet
      */
-    public GlyphMenu (Sheet sheet)
+    public GlyphListMenu (Sheet sheet)
     {
         super("Glyphs");
         this.sheet = sheet;
@@ -83,7 +83,8 @@ public class GlyphMenu
             UIUtil.insertTitle(this, "Glyphs:");
 
             for (Glyph glyph : glyphs) {
-                JMenuItem item = new SampleMenu(glyph, sheet);
+                ///JMenuItem item = new SampleMenu(glyph, sheet);
+                JMenuItem item = new ShapeMenu(glyph, sheet);
 
                 if (!glyph.getGroups().isEmpty()) {
                     item.setToolTipText(glyph.getGroups().toString());
@@ -116,8 +117,8 @@ public class GlyphMenu
         @Override
         public void mouseEntered (MouseEvent e)
         {
-            SampleMenu sampleMenu = (SampleMenu) e.getSource();
-            Glyph glyph = sampleMenu.getGlyph();
+            ShapeMenu shapeMenu = (ShapeMenu) e.getSource();
+            Glyph glyph = shapeMenu.getGlyph();
 
             sheet.getGlyphIndex().getEntityService().publish(
                     new EntityListEvent<Glyph>(

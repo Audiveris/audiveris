@@ -23,10 +23,8 @@ package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
-
-import org.jdesktop.application.Task;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -50,82 +48,68 @@ public class RemovalTask
      */
     public RemovalTask (Inter inter)
     {
-        super(inter.getSig(), inter, partnershipsOf(inter));
+        super(inter.getSig(), inter, inter.getBounds(), null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public Task<Void, Void> performDo ()
+    public void performDo ()
     {
-        getInter().delete();
-
-        return null;
+        links = linksOf(inter);
+        inter.remove(false);
     }
 
     @Override
-    public Task<Void, Void> performRedo ()
+    public void performRedo ()
     {
-        return performDo();
+        performDo();
     }
 
     @Override
-    public Task<Void, Void> performUndo ()
+    public void performUndo ()
     {
-        getInter().undelete();
-        sig.addVertex(getInter());
+        inter.setBounds(initialBounds);
+        sig.addVertex(inter);
 
-        for (Partnership partnership : partnerships) {
-            partnership.applyTo(getInter());
+        for (Link link : links) {
+            link.applyTo(inter);
         }
+    }
 
-        return null;
+    @Override
+    protected String actionName ()
+    {
+        return "del";
     }
 
     /**
-     * Retrieve the current partnerships around the provided inter.
+     * Retrieve the current links around the provided inter.
      *
      * @param inter the provided inter
-     * @return its partnerships, perhaps empty
+     * @return its links, perhaps empty
      */
-    private static Collection<Partnership> partnershipsOf (Inter inter)
+    private static Collection<Link> linksOf (Inter inter)
     {
         final SIGraph sig = inter.getSig();
-        Set<Partnership> partnerships = null;
+        Set<Link> links = null;
 
         for (Relation rel : sig.edgesOf(inter)) {
-            if (partnerships == null) {
-                partnerships = new LinkedHashSet<Partnership>();
+            if (links == null) {
+                links = new LinkedHashSet<Link>();
             }
 
             Inter partner = sig.getOppositeInter(inter, rel);
 
-            partnerships.add(
-                    new Partnership(
+            links.add(new Link(
                             sig.getOppositeInter(inter, rel),
                             rel,
                             sig.getEdgeTarget(rel) == partner));
         }
 
-        //        // Incomings
-        //        for (Relation rel : sig.incomingEdgesOf(inter)) {
-        //            if (partnerships == null) {
-        //                partnerships = new LinkedHashSet<Partnership>();
-        //            }
-        //
-        //            partnerships.add(new Partnership(sig.getOppositeInter(inter, rel), rel, false));
-        //        }
-        //
-        //        // Outgoings
-        //        for (Relation rel : sig.outgoingEdgesOf(inter)) {
-        //            if (partnerships == null) {
-        //                partnerships = new LinkedHashSet<Partnership>();
-        //            }
-        //
-        //        }
-        if (partnerships == null) {
+        if (links == null) {
             return Collections.emptySet();
         }
 
-        return partnerships;
+        return links;
     }
 }

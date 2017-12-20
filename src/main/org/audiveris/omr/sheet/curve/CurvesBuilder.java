@@ -254,11 +254,11 @@ public abstract class CurvesBuilder
                                          Set<Inter> inters);
 
     /**
-     * Additional filtering if any on the provided collection of inters.
+     * Additional filtering if any on the provided clump.
      *
-     * @param inters the collection of inters to further filter
+     * @param clump the collection of slur candidates to be pruned down to one slur
      */
-    protected abstract void filterInters (Set<Inter> inters);
+    protected abstract void pruneClump (Set<Inter> clump);
 
     /**
      * Report the number of points at beginning of arc tested for connection.
@@ -350,21 +350,21 @@ public abstract class CurvesBuilder
         }
 
         // Combine candidates from both sides
-        Set<Inter> inters = new LinkedHashSet<Inter>();
+        Set<Inter> clump = new LinkedHashSet<Inter>();
 
         // Connect lefts & rights
         // Both endings must be OK, hence none of the side clumps is allowed to be empty
         for (Curve sl : leftClump) {
             for (Curve sr : rightClump) {
                 Curve curve = (sl == sr) ? sl : createCurve(sl, sr);
-                createInter(curve, inters);
+                createInter(curve, clump);
             }
         }
 
         // Finally, filter candidates using their potential links to embraced head-chords
-        if (!inters.isEmpty()) {
-            ///register(inters); // For DEBUG only
-            filterInters(inters);
+        if (!clump.isEmpty()) {
+            ///register(clump); // For DEBUG only
+            pruneClump(clump);
         }
     }
 

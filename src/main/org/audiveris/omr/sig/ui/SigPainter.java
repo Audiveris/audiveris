@@ -30,8 +30,8 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
-import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
+import org.audiveris.omr.sig.inter.AbstractInterVisitor;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.BarConnectorInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
@@ -42,9 +42,7 @@ import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterVisitor;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
-import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
@@ -87,11 +85,17 @@ import java.util.Set;
 
 /**
  * Class {@code SigPainter} paints all the {@link Inter} instances of a SIG.
+ * <p>
+ * Remarks on no-op visit() for:<ul>
+ * <li>AbstractChordInter: Notes and stem are painted on their own
+ * <li>KeyInter: Each key item is painted on its own
+ * <li>WordInter: Painting is handled from sentence
+ * </ul>
  *
  * @author Hervé Bitteur
  */
 public class SigPainter
-        implements InterVisitor
+        extends AbstractInterVisitor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -163,7 +167,7 @@ public class SigPainter
         Set<Inter> copy = new LinkedHashSet<Inter>(sig.vertexSet());
 
         for (Inter inter : copy) {
-            if (!inter.isDeleted()) {
+            if (!inter.isRemoved()) {
                 Rectangle bounds = inter.getBounds();
 
                 if (bounds != null) {
@@ -193,15 +197,6 @@ public class SigPainter
         } catch (Exception ex) {
             logger.warn("Error painting {} {}", beam, ex.toString());
         }
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (AbstractChordInter inter)
-    {
-        // Nothing: let note & stem be painted on their own
     }
 
     //-------//
@@ -475,15 +470,6 @@ public class SigPainter
     // visit //
     //-------//
     @Override
-    public void visit (KeyInter key)
-    {
-        // Nothing: Let each key item be painted on its own
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
     public void visit (LedgerInter ledger)
     {
         try {
@@ -515,8 +501,6 @@ public class SigPainter
     @Override
     public void visit (SentenceInter sentence)
     {
-        setColor(sentence);
-
         FontInfo lineMeanFont = sentence.getMeanFont();
 
         for (Inter member : sentence.getMembers()) {
@@ -583,15 +567,6 @@ public class SigPainter
         g.setStroke(lineStroke);
         g.draw(wedge.getLine1());
         g.draw(wedge.getLine2());
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (WordInter word)
-    {
-        // Nothing, painting is handled from sentence
     }
 
     //--------------//
@@ -664,6 +639,7 @@ public class SigPainter
             Font font = new TextFont(lineMeanFont);
             FontRenderContext frc = g.getFontRenderContext();
             TextLayout layout = new TextLayout(word.getValue(), font, frc);
+            setColor(word);
 
             if (word.getValue().length() > 2) {
                 paint(layout, word.getLocation(), BASELINE_LEFT);

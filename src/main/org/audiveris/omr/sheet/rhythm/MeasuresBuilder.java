@@ -34,6 +34,8 @@ import org.audiveris.omr.sheet.StaffBarline;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.HeadInter;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
 import org.audiveris.omr.util.HorizontalSide;
@@ -129,6 +131,9 @@ public class MeasuresBuilder
         for (Part part : system.getParts()) {
             buildPartMeasures(part);
         }
+
+        // Purge courtesy measure if any
+        purgeCourtesyMeasure();
     }
 
     //-------------//
@@ -332,6 +337,56 @@ public class MeasuresBuilder
         }
     }
 
+    //----------------------//
+    // purgeCourtesyMeasure //
+    //----------------------//
+    /**
+     * Purge head notes in very short ending measure (courtesy measure) if any.
+     */
+    private void purgeCourtesyMeasure ()
+    {
+        MeasureStack lastStack = system.getLastMeasureStack();
+        Measure topMeasure = lastStack.getFirstMeasure();
+
+        // Check it is a short measure with no ending barline
+        if (topMeasure.getRightBarline() != null) {
+            return;
+        }
+
+        int minStandardWidth = system.getSheet().getScale().toPixels(constants.minStandardWidth);
+
+        if (topMeasure.getWidth() >= minStandardWidth) {
+            return;
+        }
+
+        // Min abscissa value for the stack
+        int minX = Integer.MAX_VALUE;
+
+        for (Staff staff : system.getStaves()) {
+            Measure measure = lastStack.getMeasureAt(staff);
+            minX = Math.min(minX, measure.getAbscissa(LEFT, staff));
+        }
+
+        // Look for heads in courtesy stack
+        for (Inter inter : system.getSig().inters(HeadInter.class)) {
+            if (inter.getCenter().x < minX) {
+                continue;
+            }
+
+            HeadInter head = (HeadInter) inter;
+            Part part = head.getPart();
+            Measure measure = part.getMeasureAt(head.getCenter());
+
+            if (measure.getStack() == lastStack) {
+                if (logger.isDebugEnabled() || head.isVip()) {
+                    logger.info("Courtesy {} purging {}", lastStack, head);
+                }
+
+                head.remove();
+            }
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Column //
@@ -416,7 +471,7 @@ public class MeasuresBuilder
                 staffMap.get(staff).remove(group);
 
                 for (BarlineInter barline : group) {
-                    barline.delete();
+                    barline.remove();
                 }
             }
         }
@@ -510,6 +565,10 @@ public class MeasuresBuilder
         private final Scale.Fraction maxShift = new Scale.Fraction(
                 1.0,
                 "Maximum deskewed abscissa difference within a column");
+
+        private final Scale.Fraction minStandardWidth = new Scale.Fraction(
+                4.0,
+                "Minimum measure width for not being a courtesy measure");
     }
 
     //-------//

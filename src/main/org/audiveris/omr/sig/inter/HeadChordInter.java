@@ -22,17 +22,29 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.relation.ChordStemRelation;
+import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.FlagStemRelation;
+import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code HeadChordInter} is a AbstractChordInter composed of heads.
+ * Class {@code HeadChordInter} is a AbstractChordInter composed of heads and possibly
+ * a stem.
+ * <p>
+ * Heads are linked via {@link Containment} relation and stem vis {@link ChordStemRelation}.
  *
  * @author Hervé Bitteur
  */
@@ -46,8 +58,8 @@ public class HeadChordInter
             HeadChordInter.class);
 
     /**
-     * Compare two heads of the same chord, ordered by increasing distance from chord
-     * head ordinate.
+     * Compare two heads (assumed to be) of the same chord, ordered by
+     * increasing distance from chord head ordinate.
      */
     public static final Comparator<HeadInter> headComparator = new Comparator<HeadInter>()
     {
@@ -59,12 +71,12 @@ public class HeadChordInter
                 return 0;
             }
 
-            HeadChordInter c1 = (HeadChordInter) n1.getEnsemble();
+            AbstractChordInter c1 = n1.getChord();
 
-            if (c1 != n2.getEnsemble()) {
-                logger.error("Comparing notes from different chords");
-            }
-
+            //            if (c1 != n2.getChord()) {
+            //                logger.error("Comparing notes from different chords");
+            //            }
+            //
             return c1.getStemDir() * (n1.getCenter().y - n2.getCenter().y);
         }
     };
@@ -83,11 +95,35 @@ public class HeadChordInter
     /**
      * No-arg constructor meant for JAXB.
      */
-    private HeadChordInter ()
+    protected HeadChordInter ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //----------//
+    // contains //
+    //----------//
+    @Override
+    public boolean contains (Point point)
+    {
+        final StemInter stem = getStem();
+
+        if ((stem != null) && stem.contains(point)) {
+            return true;
+        }
+
+        return super.contains(point);
+    }
+
     //-----------//
     // duplicate //
     //-----------//
@@ -110,7 +146,7 @@ public class HeadChordInter
         clone.setStaff(staff);
 
         // Notes (we make a deep copy of each note head)
-        for (AbstractNoteInter note : notes) {
+        for (Inter note : getMembers()) {
             HeadInter head = (HeadInter) note;
             AbstractNoteInter newHead = null;
 
@@ -139,6 +175,77 @@ public class HeadChordInter
         return clone;
     }
 
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (bounds == null) {
+            bounds = Entities.getBounds(getMembers()); // Based on heads
+
+            final StemInter stem = getStem();
+
+            if (stem != null) {
+                if (bounds == null) {
+                    bounds = stem.getBounds();
+                } else {
+                    bounds.add(getTailLocation());
+                }
+            }
+        }
+
+        return super.getBounds();
+    }
+
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        StringBuilder sb = new StringBuilder(super.getDetails());
+
+        final StemInter stem = getStem();
+
+        if (stem != null) {
+            if (sb.length() > 0) {
+                sb.append(' ');
+            }
+
+            sb.append("stem:").append(stem);
+        }
+
+        return sb.toString();
+    }
+
+    //----------------//
+    // getFlagsNumber //
+    //----------------//
+    /**
+     * Report the number of (individual) flags attached to the chord stem
+     *
+     * @return the number of individual flags
+     */
+    @Override
+    public int getFlagsNumber ()
+    {
+        int count = 0;
+
+        final StemInter stem = getStem();
+
+        if ((stem != null) && !stem.isRemoved()) {
+            final Set<Relation> rels = sig.getRelations(stem, FlagStemRelation.class);
+
+            for (Relation rel : rels) {
+                AbstractFlagInter flagInter = (AbstractFlagInter) sig.getOppositeInter(stem, rel);
+                count += flagInter.getValue();
+            }
+        }
+
+        return count;
+    }
+
     //----------------//
     // getHeadsBounds //
     //----------------//
@@ -149,17 +256,107 @@ public class HeadChordInter
      */
     public Rectangle getHeadsBounds ()
     {
-        Rectangle box = null;
+        return Entities.getBounds(getMembers());
+    }
 
-        for (Inter head : notes) {
-            if (box == null) {
-                box = head.getBounds();
+    //----------------//
+    // getLeadingNote //
+    //----------------//
+    /**
+     * Report the note which if vertically farthest from stem tail.
+     * For wholes and breves, it's the head itself.
+     * For rest chords, it's the rest itself
+     *
+     * @return the leading note
+     */
+    @Override
+    public HeadInter getLeadingNote ()
+    {
+        final List<Inter> notes = getMembers();
+
+        if (!notes.isEmpty()) {
+            final StemInter stem = getStem();
+
+            if (stem != null) {
+                // Find the note farthest from stem middle point
+                Point middle = stem.getCenter();
+                Inter bestNote = null;
+                int bestDy = Integer.MIN_VALUE;
+
+                for (Inter note : notes) {
+                    int noteY = note.getCenter().y;
+                    int dy = Math.abs(noteY - middle.y);
+
+                    if (dy > bestDy) {
+                        bestNote = note;
+                        bestDy = dy;
+                    }
+                }
+
+                return (HeadInter) bestNote;
             } else {
-                box = box.union(head.getBounds());
+                return (HeadInter) notes.get(0);
             }
+        } else {
+            logger.warn("No notes in chord " + this);
+
+            return null;
+        }
+    }
+
+    //---------//
+    // getStem //
+    //---------//
+    /**
+     * Report the chord stem. It may be null temporarily such as when building the chord.
+     *
+     * @return the chord stem, if any
+     */
+    @Override
+    public StemInter getStem ()
+    {
+        if (isRemoved()) {
+            logger.debug("HeadChord#{} not in sig", id);
+
+            return null;
         }
 
-        return box;
+        for (Relation rel : sig.getRelations(this, ChordStemRelation.class)) {
+            return (StemInter) sig.getOppositeInter(this, rel);
+        }
+
+        return null;
+    }
+
+    //------------//
+    // getStemDir //
+    //------------//
+    /**
+     * Report the stem direction of this chord, from head to tail
+     *
+     * @return -1 if stem is up, 0 if no stem, +1 if stem is down
+     */
+    @Override
+    public int getStemDir ()
+    {
+        if (getStem() == null) {
+            return 0;
+        } else {
+            return Integer.signum(getTailLocation().y - getHeadLocation().y);
+        }
+    }
+
+    //---------//
+    // setStem //
+    //---------//
+    /**
+     * @param stem the stem to set
+     */
+    public final void setStem (StemInter stem)
+    {
+        Objects.requireNonNull(sig, "Chord not in SIG.");
+
+        sig.addEdge(this, stem, new ChordStemRelation());
     }
 
     //-------------//
@@ -169,5 +366,41 @@ public class HeadChordInter
     public String shapeString ()
     {
         return "HeadChord";
+    }
+
+    //------------------//
+    // computeLocations //
+    //------------------//
+    /**
+     * Compute the head and tail locations for this chord.
+     */
+    @Override
+    protected void computeLocations ()
+    {
+        AbstractNoteInter leading = getLeadingNote();
+
+        if (leading == null) {
+            return;
+        }
+
+        final StemInter stem = getStem();
+
+        if (stem == null) {
+            tailLocation = headLocation = leading.getCenter();
+        } else {
+            Rectangle stemBox = stem.getBounds();
+
+            if (stem.getCenter().y < leading.getCenter().y) {
+                // Stem is up
+                tailLocation = new Point(stemBox.x + (stemBox.width / 2), stemBox.y);
+            } else {
+                // Stem is down
+                tailLocation = new Point(
+                        stemBox.x + (stemBox.width / 2),
+                        ((stemBox.y + stemBox.height) - 1));
+            }
+
+            headLocation = new Point(tailLocation.x, leading.getCenter().y);
+        }
     }
 }

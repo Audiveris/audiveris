@@ -21,17 +21,18 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Interface {@code Exclusion} is a relation that indicates exclusion between two
+ * Class {@code Exclusion} is a relation that indicates exclusion between two
  * possible interpretations.
  *
  * @author Hervé Bitteur
  */
-@XmlJavaTypeAdapter(BasicExclusion.Adapter.class)
-public interface Exclusion
-        extends Relation
+@XmlRootElement(name = "exclusion")
+public class Exclusion
+        extends AbstractRelation
 {
     //~ Enumerations -------------------------------------------------------------------------------
 
@@ -41,5 +42,35 @@ public interface Exclusion
 
         OVERLAP,
         INCOMPATIBLE;
+    }
+
+    //~ Instance fields ----------------------------------------------------------------------------
+    @XmlAttribute
+    public final Cause cause;
+
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new Exclusion object.
+     *
+     * @param cause root cause of this exclusion
+     */
+    public Exclusion (Cause cause)
+    {
+        this.cause = cause;
+    }
+
+    /**
+     * No-arg constructor meant for JAXB.
+     */
+    private Exclusion ()
+    {
+        this.cause = null;
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + cause;
     }
 }

@@ -22,6 +22,8 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.OMR;
+import org.audiveris.omr.classifier.Annotations;
+import org.audiveris.omr.classifier.AnnotationsBuilder;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
 import org.audiveris.omr.glyph.Glyph;
@@ -73,9 +75,13 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static java.nio.file.StandardOpenOption.CREATE;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -83,6 +89,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.imageio.ImageIO;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -331,6 +338,53 @@ public class BasicSheet
             interIndex.initTransients(this);
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
+        }
+    }
+
+    //----------//
+    // annotate //
+    //----------//
+    @Override
+    public void annotate ()
+    {
+        try {
+            final Book book = stub.getBook();
+            final Path bookFolder = BookManager.getDefaultBookFolder(book);
+            annotate(bookFolder);
+        } catch (Exception ex) {
+            logger.warn("Annotations failed {}", ex);
+        }
+    }
+
+    //----------//
+    // annotate //
+    //----------//
+    @Override
+    public void annotate (Path sheetFolder)
+    {
+        OutputStream os = null;
+
+        try {
+            // Sheet annotations
+            Path annPath = sheetFolder.resolve(getId() + Annotations.SHEET_ANNOTATIONS_SUFFIX);
+            new AnnotationsBuilder(this, annPath).processSheet();
+
+            // Sheet image
+            Path imgPath = sheetFolder.resolve(getId() + Annotations.SHEET_IMAGE_SUFFIX);
+            RunTable runTable = picture.getTable(Picture.TableKey.BINARY);
+            BufferedImage img = runTable.getBufferedImage();
+            os = Files.newOutputStream(imgPath, CREATE);
+            ImageIO.write(img, Annotations.SHEET_IMAGE_FORMAT, os);
+        } catch (Exception ex) {
+            logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
+        } finally {
+            if (os != null) {
+                try {
+                    os.flush();
+                    os.close();
+                } catch (Exception ignored) {
+                }
+            }
         }
     }
 
@@ -1038,6 +1092,29 @@ public class BasicSheet
         }
     }
 
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(BasicSheet.class);
+        }
+
+        return jaxbContext;
+    }
+
+    //------------------------//
+    // createGlyphsController //
+    //------------------------//
+    private void createGlyphsController ()
+    {
+        GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
+        glyphsController = new GlyphsController(model);
+    }
+
     //------//
     // done //
     //------//
@@ -1077,29 +1154,6 @@ public class BasicSheet
         }
 
         return glyphIndex.getEntities();
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(BasicSheet.class);
-        }
-
-        return jaxbContext;
-    }
-
-    //------------------------//
-    // createGlyphsController //
-    //------------------------//
-    private void createGlyphsController ()
-    {
-        GlyphsModel model = new GlyphsModel(this, getGlyphIndex().getEntityService());
-        glyphsController = new GlyphsController(model);
     }
 
     //-----------//

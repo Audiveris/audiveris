@@ -34,8 +34,15 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.ui.ExtractionMenu;
-import org.audiveris.omr.sig.ui.GlyphMenu;
-import org.audiveris.omr.sig.ui.InterMenu;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.ui.GlyphListMenu;
+import org.audiveris.omr.sig.ui.InterListMenu;
+import org.audiveris.omr.ui.selection.LocationEvent;
+import static org.audiveris.omr.ui.selection.MouseMovement.PRESSING;
+import static org.audiveris.omr.ui.selection.SelectionHint.LOCATION_INIT;
+import org.audiveris.omr.ui.selection.SelectionService;
+import org.audiveris.omr.ui.util.AbstractMouseListener;
+import org.audiveris.omr.ui.view.LocationDependent;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 
 import org.slf4j.Logger;
@@ -44,10 +51,13 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 /**
  * Class {@code EditorMenu} defines the pop-up menu which is linked to the current
@@ -64,6 +74,9 @@ public class EditorMenu
 
     private static final Logger logger = LoggerFactory.getLogger(EditorMenu.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
+    private JMenuItem focusItem;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create the editor page menu.
@@ -77,13 +90,32 @@ public class EditorMenu
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    @Override
+    public JPopupMenu getPopup ()
+    {
+        // Update focus
+        final Inter interFocus = sheet.getInterController().getInterFocus();
+        final boolean focused = interFocus != null;
+
+        if (focused) {
+            focusItem.setText("Unfocus " + interFocus);
+        }
+
+        focusItem.setVisible(focused);
+
+        // Return the popup menu
+        return super.getPopup();
+    }
+
     //--------------//
     // defineLayout //
     //--------------//
     private void defineLayout ()
     {
-        addMenu(new InterMenu(sheet));
-        addMenu(new GlyphMenu(sheet));
+        popup.add(focusItem = new FocusItem());
+
+        addMenu(new InterListMenu(sheet));
+        addMenu(new GlyphListMenu(sheet));
 
         if (SampleRepository.USE_TRIBES) {
             addMenu(new TribesMenu(sheet));
@@ -124,6 +156,64 @@ public class EditorMenu
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // FocusItem //
+    //-----------//
+    private final class FocusItem
+            extends JMenuItem
+            implements LocationDependent, ActionListener
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private Rectangle userLocation;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public FocusItem ()
+        {
+            super("Unset focus");
+
+            setToolTipText("Unset user focus");
+            addMouseListener(new Listener());
+            addActionListener(this);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            sheet.getInterController().setInterFocus(null);
+        }
+
+        @Override
+        public void updateUserLocation (Rectangle rect)
+        {
+            userLocation = rect;
+        }
+
+        //~ Inner Classes --------------------------------------------------------------------------
+        private class Listener
+                extends AbstractMouseListener
+        {
+            //~ Methods ----------------------------------------------------------------------------
+
+            @Override
+            public void mouseEntered (MouseEvent e)
+            {
+                // Move location to focused inter
+                final Inter interFocus = sheet.getInterController().getInterFocus();
+                interFocus.getSig().publish(interFocus);
+            }
+
+            @Override
+            public void mouseExited (MouseEvent e)
+            {
+                // Restore user location
+                SelectionService service = sheet.getLocationService();
+                service.publish(new LocationEvent(this, LOCATION_INIT, PRESSING, userLocation));
+            }
+        }
+    }
+
     //    //-----------//
     //    // ChordMenu //
     //    //-----------//

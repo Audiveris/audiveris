@@ -23,8 +23,6 @@ package org.audiveris.omr.sheet.curve;
 
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
-import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.SIGraph;
@@ -61,13 +59,15 @@ import java.util.TreeSet;
  * The situation is similar for ties departing from different heads of a same chord.
  * <p>
  * The chord stem can be divided in smaller stems only if the resulting chunks are long enough.
- * This is the case for the right-most chord below:<br>
- * <img src="doc-files/longDoubleStem.png" alt="Long double stem example">
+ * This is the case for the right-most chord below,
+ * found in Dichterliebe01 example, part 2, page 1, measure 1:<br>
+ * <img src="doc-files/longDoubleStem.png" alt="Example of long stem portions">
  * <p>
  * Otherwise, the chord stem is kept as it is, but belongs to several sub-chords, and consequently
  * any stem-related beam (or flag detected later) will apply to several sub-chords.
- * This is the case for the right-most chord below:<br>
- * <img src="doc-files/shortDoubleStem.png" alt="Short double stem example">
+ * This is the case for the right-most chord below,
+ * found in Dichterliebe01 example, part 2, page 2, measure 14:<br>
+ * <img src="doc-files/shortDoubleStem.png" alt="Example of shared stem">
  * <p>
  * The general approach works in three phases:
  * <ol>
@@ -148,11 +148,15 @@ public class ChordSplitter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
-    public void process ()
+    //-------//
+    // split //
+    //-------//
+    public void split ()
     {
+        if (chord.isVip()) {
+            logger.info("VIP split {}, {} origins on {}", chord, origins.size(), side.opposite());
+        }
+
         // Detect all partitions of consistent heads in this chord
         allPartitions = getAllPartitions();
         logger.debug("allPartitions: {}", allPartitions);
@@ -180,7 +184,7 @@ public class ChordSplitter
                     sig.removeEdge(oldRel);
                 }
 
-                rootStem.delete();
+                rootStem.remove();
             } else {
                 processStem(rootStem, allPartitions); // Shared mode
             }
@@ -189,7 +193,7 @@ public class ChordSplitter
             // TODO: to be implemented
         }
 
-        chord.delete();
+        chord.remove();
     }
 
     //------------------//
@@ -244,7 +248,6 @@ public class ChordSplitter
     private Map<StemInter, List<Partition>> getSubStems ()
     {
         final Map<StemInter, List<Partition>> stemMap = new LinkedHashMap<StemInter, List<Partition>>();
-        final RunTableFactory factory = new RunTableFactory(VERTICAL);
         final Glyph rootGlyph = rootStem.getGlyph();
         int iFirst = 0; // Index of first partition pending
         int iLastAddressed = -1; // Index of last addressed partition
@@ -343,7 +346,7 @@ public class ChordSplitter
      * Process the provided stem (either the rootStem or a subStem) with its
      * related partitions.
      *
-     * @param stem       the (sub?) stem to process
+     * @param stem       the (sub?) stem to split
      * @param partitions the partitions related to the provided stem
      */
     private void processStem (StemInter stem,
@@ -352,6 +355,7 @@ public class ChordSplitter
         for (Partition partition : partitions) {
             // One sub-chord per partition
             HeadChordInter ch = new HeadChordInter(chord.getGrade());
+            sig.addVertex(ch);
             ch.setStem(stem);
 
             for (HeadInter head : partition) {
@@ -369,8 +373,6 @@ public class ChordSplitter
                 }
             }
 
-            sheet.getInterIndex().register(ch);
-            sig.addVertex(ch);
             chord.getMeasure().addInter(ch);
         }
     }

@@ -149,7 +149,7 @@ public class SymbolsLinker
                 }
 
                 if (dot == null) {
-                    arc.delete();
+                    arc.remove();
 
                     continue;
                 }
@@ -174,9 +174,9 @@ public class SymbolsLinker
 
                     if (!fermata.linkWithChords(chords)) {
                         // No link to barline, no link to chord, discard it
-                        fermata.delete();
-                        arc.delete();
-                        dot.delete();
+                        fermata.remove();
+                        arc.remove();
+                        dot.remove();
                     }
                 }
             } catch (Exception ex) {
@@ -198,7 +198,7 @@ public class SymbolsLinker
             final SmallChordInter smallChord = (SmallChordInter) chordInter;
 
             if (smallChord.isVip()) {
-                logger.info("VIP linkGracesl for {}", smallChord);
+                logger.info("VIP linkGraces for {}", smallChord);
             }
 
             try {
@@ -362,6 +362,9 @@ public class SymbolsLinker
      */
     private void linkWedges ()
     {
+        final Scale scale = system.getSheet().getScale();
+        final double xMargin = scale.toPixels(WedgeInter.getStackAbscissaMargin());
+
         for (Inter inter : sig.inters(WedgeInter.class)) {
             try {
                 if (inter.isVip()) {
@@ -372,8 +375,13 @@ public class SymbolsLinker
                 final Line2D topLine = wedge.getLine1();
 
                 for (HorizontalSide side : HorizontalSide.values()) {
-                    final Point2D location = (side == LEFT) ? topLine.getP1()
-                            : topLine.getP2();
+                    final Point2D location = (side == LEFT)
+                            ? new Point2D.Double(
+                                    topLine.getX1() + xMargin,
+                                    topLine.getY1())
+                            : new Point2D.Double(
+                                    topLine.getX2() - xMargin,
+                                    topLine.getY2());
                     final MeasureStack stack = system.getMeasureStackAt(location);
                     final AbstractChordInter chordAbove = stack.getStandardChordAbove(
                             location,

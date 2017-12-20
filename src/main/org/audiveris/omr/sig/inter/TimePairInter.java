@@ -23,16 +23,19 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -46,33 +49,21 @@ public class TimePairInter
         extends AbstractTimeInter
         implements InterEnsemble
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    // Persistent data
-    //----------------
-    //
-    /** Signature halves: numerator then denominator. */
-    @XmlElement(name = "number")
-    private final List<TimeNumberInter> members = new ArrayList<TimeNumberInter>();
+    private static final Logger logger = LoggerFactory.getLogger(TimePairInter.class);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) constructor.
      *
-     * @param num
-     * @param den
      * @param timeRational
      * @param grade
      */
-    private TimePairInter (TimeNumberInter num,
-                           TimeNumberInter den,
-                           Rectangle bounds,
-                           TimeRational timeRational,
+    private TimePairInter (TimeRational timeRational,
                            double grade)
     {
-        super(null, bounds, timeRational, grade);
-        members.add(num);
-        members.add(den);
+        super(null, null, timeRational, grade);
     }
 
     /**
@@ -99,22 +90,42 @@ public class TimePairInter
     /**
      * Create a {@code TimePairInter} object from its two halves.
      *
-     * @param num numerator
-     * @param den denominator
-     * @return the created instance
+     * @param num numerator: non-null, registered in sig
+     * @param den denominator: non-null, registered in sig
+     * @return the created instance, already added to sig
      */
     public static TimePairInter create (TimeNumberInter num,
                                         TimeNumberInter den)
     {
-        Rectangle box = num.getBounds();
-        box.add(den.getBounds());
-
-        TimeRational timeRational = new TimeRational(num.getValue(), den.getValue());
         double grade = 0.5 * (num.getGrade() + den.getGrade());
-        TimePairInter pair = new TimePairInter(num, den, box, timeRational, grade);
+        TimePairInter pair = new TimePairInter(null, grade);
+        SIGraph sig = num.getSig();
+        sig.addVertex(pair);
+        pair.addMember(num);
+        pair.addMember(den);
 
-        ///pair.setContextualGrade(0.5 * (num.getContextualGrade() + den.getContextualGrade()));
+        if (pair.isVip()) {
+            logger.info("VIP created {} from num:{} den:{}", pair, num, den);
+        }
+
         return pair;
+    }
+
+    //-----------//
+    // addMember //
+    //-----------//
+    @Override
+    public void addMember (Inter member)
+    {
+        if (!(member instanceof TimeNumberInter)) {
+            throw new IllegalArgumentException("Only TimeNumberInter can be added to TimePair");
+        }
+
+        if (getMembers().size() >= 2) {
+            throw new IllegalStateException("TimePairInter is already full");
+        }
+
+        EnsembleHelper.addMember(this, member);
     }
 
     //-----------//
@@ -140,7 +151,7 @@ public class TimePairInter
      */
     public TimeNumberInter getDen ()
     {
-        return members.get(1);
+        return getMember(BOTTOM);
     }
 
     //-----------//
@@ -150,11 +161,31 @@ public class TimePairInter
      * Convenient method to report the pair member on desired side.
      *
      * @param side TOP or BOTTOM
-     * @return the numerator
+     * @return the numerator or denominator, or null
      */
     public TimeNumberInter getMember (VerticalSide side)
     {
-        return members.get((side == VerticalSide.TOP) ? 0 : 1);
+        final List<Inter> members = getMembers();
+
+        switch (members.size()) {
+        case 2:
+            return (TimeNumberInter) members.get((side == TOP) ? 0 : 1);
+
+        case 1:
+
+            if (staff != null) {
+                final TimeNumberInter tni = (TimeNumberInter) members.get(0);
+                final double pp = staff.pitchPositionOf(tni.getCenter());
+
+                if (((side == TOP) && (pp < 0)) || ((side == BOTTOM) && (pp > 0))) {
+                    return tni;
+                }
+            }
+
+        default:
+        case 0:
+            return null;
+        }
     }
 
     //------------//
@@ -166,9 +197,9 @@ public class TimePairInter
      * @return sequence of pair half members
      */
     @Override
-    public List<? extends Inter> getMembers ()
+    public List<Inter> getMembers ()
     {
-        return members;
+        return EnsembleHelper.getMembers(this, Inters.byCenterOrdinate);
     }
 
     //--------//
@@ -181,7 +212,7 @@ public class TimePairInter
      */
     public TimeNumberInter getNum ()
     {
-        return members.get(0);
+        return getMember(TOP);
     }
 
     //-----------------//
@@ -204,13 +235,60 @@ public class TimePairInter
         return rect;
     }
 
+    //-----------------//
+    // getTimeRational //
+    //-----------------//
+    /**
+     * Report the timeRational value, lazily computed.
+     *
+     * @return the timeRational
+     */
+    @Override
+    public TimeRational getTimeRational ()
+    {
+        if (timeRational == null) {
+            final List<Inter> members = getMembers();
+
+            if (members.size() == 2) {
+                timeRational = new TimeRational(
+                        ((TimeNumberInter) members.get(0)).getValue(),
+                        ((TimeNumberInter) members.get(1)).getValue());
+            }
+        }
+
+        return timeRational;
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        bounds = null;
+        timeRational = null;
+    }
+
+    //--------------//
+    // removeMember //
+    //--------------//
+    @Override
+    public void removeMember (Inter member)
+    {
+        if (!(member instanceof TimeNumberInter)) {
+            throw new IllegalArgumentException("Only TimeNumberInter can be removed from TimePair");
+        }
+
+        EnsembleHelper.removeMember(this, member);
+    }
+
     //-----------//
     // replicate //
     //-----------//
     @Override
     public TimePairInter replicate (Staff targetStaff)
     {
-        TimePairInter inter = new TimePairInter(null, null, null, timeRational, 0);
+        TimePairInter inter = new TimePairInter(getTimeRational(), 0);
         inter.setStaff(targetStaff);
 
         return inter;
@@ -222,6 +300,6 @@ public class TimePairInter
     @Override
     public String shapeString ()
     {
-        return "TIME_SIG_" + timeRational;
+        return "TIME_SIG_" + getTimeRational();
     }
 }

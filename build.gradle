@@ -6,7 +6,7 @@ sourceCompatibility = '1.7'
 
 ext.programName     = 'Audiveris'
 ext.programId       = 'audiveris'
-ext.programVersion  = '5.0.0'
+ext.programVersion  = '5.1.0'
 ext.companyName     = "$programName Ltd."
 ext.companyId       = "${programName}Ltd"
 
@@ -66,6 +66,7 @@ repositories {
     }
     mavenLocal()
     //flatDir(dirs: 'dev/externals') // for libraries not in any other repository
+    flatDir(dirs: 'dev/temp-externals') // Used for omrdataset, TO BE REMOVED ASAP!
 }
 
 sourceSets {
@@ -99,7 +100,7 @@ dependencies {
         [group: 'net.imagej', name: 'ij', version: '1.51f'],
         [group: 'de.intarsys.opensource', name: 'jPodRenderer', version: '5.6'],
         [group: 'org.audiveris', name: 'proxymusic', version: '3.0.1'],
-        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.0.0'],
+        [group: 'org.jgrapht', name: 'jgrapht-core', version: '1.0.1'],
         [group: 'org.jfree', name: 'jfreechart', version: '1.0.19'],
         [group: 'com.itextpdf', name: 'itextpdf', version: '5.5.9'],
         [group: 'gov.nist.math', name: 'jama', version: '1.0.3'],
@@ -110,7 +111,8 @@ dependencies {
         [group: 'com.github.jai-imageio', name: 'jai-imageio-core', version: '1.3.1'],
         [group: 'org.deeplearning4j', name: 'deeplearning4j-core', version: "${project.ext.dl4jVersion}"],
         [group: 'org.nd4j', name: 'nd4j-native', version: "${project.ext.nd4jVersion}"],
-        [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4']
+        [group: 'org.apache.directory.studio', name: 'org.apache.commons.io', version: '2.4'],
+        [group: 'org.audiveris', name: 'omrdataset', version: '1.0.0'] // To be updated when omrdataset is officially published
     )
 
     runtime(
@@ -121,7 +123,7 @@ dependencies {
 
     testCompile(
         [group: 'junit', name: 'junit', version: '4.10'],
-        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.0.0']
+        [group: 'org.jgrapht', name: 'jgrapht-ext', version: '1.0.1']
     )
 }
 
@@ -193,15 +195,6 @@ sourceSets {
     main { 
         java {
             srcDir { "$buildDir/generated-src/org/audiveris/omr" }
-        }
-    }
-}
-
-// Avoid JDK8 too strict javadoc
-if (JavaVersion.current().isJava8Compatible()) {
-    allprojects {
-        tasks.withType(Javadoc) {
-            options.addStringOption('Xdoclint:none', '-quiet')
         }
     }
 }

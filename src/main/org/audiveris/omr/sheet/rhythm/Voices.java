@@ -30,6 +30,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
@@ -115,7 +116,7 @@ public abstract class Voices
 
                 AbstractChordInter c2 = vc2.chord;
 
-                return Inter.byOrdinate.compare(c1, c2);
+                return Inters.byOrdinate.compare(c1, c2);
             }
 
             // No common slot found, use index of first slot for each voice
@@ -127,7 +128,7 @@ public abstract class Voices
             AbstractChordInter c1 = v1.getFirstChord();
             AbstractChordInter c2 = v2.getFirstChord();
 
-            return Inter.byOrdinate.compare(c1, c2);
+            return Inters.byOrdinate.compare(c1, c2);
         }
     };
 

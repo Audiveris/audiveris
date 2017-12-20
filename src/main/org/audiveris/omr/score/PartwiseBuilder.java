@@ -56,6 +56,7 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
@@ -1699,7 +1700,7 @@ public class PartwiseBuilder
             // For first note in chord
             if (!current.measure.isDummy()) {
                 if (isFirstInChord) {
-                    // Chord direction events (statement, pedal, dynamics, TODO: others?)
+                    // Chord events (direction, pedal, dynamics, TODO: others?)
                     for (Relation rel : sig.edgesOf(chord)) {
                         if (rel instanceof ChordSentenceRelation) {
                             processDirection((SentenceInter) sig.getOppositeInter(chord, rel));
@@ -1772,13 +1773,15 @@ public class PartwiseBuilder
 
                 current.pmNote.setRest(rest);
             } else {
+                HeadChordInter headChord = (HeadChordInter) chord;
+
                 // Grace?
                 if (isFirstInChord && note.getShape().isSmall()) {
                     Grace grace = factory.createGrace();
                     current.pmNote.setGrace(grace);
 
                     // Slash? (check the flag)
-                    StemInter stem = chord.getStem();
+                    StemInter stem = headChord.getStem();
 
                     if (stem != null) {
                         for (Relation rel : sig.getRelations(stem, FlagStemRelation.class)) {
@@ -1926,9 +1929,11 @@ public class PartwiseBuilder
                 }
 
                 // Beams ?
+                int beamCounter = 0;
+
                 for (AbstractBeamInter beam : chord.getBeams()) {
                     Beam pmBeam = factory.createBeam();
-                    pmBeam.setNumber(1 + chord.getBeams().indexOf(beam));
+                    pmBeam.setNumber(1 + beamCounter++);
 
                     if (beam.isHook()) {
                         if (beam.getCenter().x > chord.getStem().getCenter().x) {
@@ -2111,7 +2116,7 @@ public class PartwiseBuilder
 
                 // [Encoding]/Software
                 encoding.getEncodingDateOrEncoderOrSoftware().add(
-                        factory.createEncodingSoftware("Audiveris" + " " + WellKnowns.TOOL_REF));
+                        factory.createEncodingSoftware(WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF));
 
                 // [Encoding]/EncodingDate
                 // Let the Marshalling class handle it
@@ -2843,7 +2848,7 @@ public class PartwiseBuilder
 
             for (Map.Entry<Staff, List<ClefInter>> entry : map.entrySet()) {
                 List<ClefInter> list = entry.getValue();
-                Collections.sort(list, Inter.byCenterAbscissa); // not needed? (already sorted)
+                Collections.sort(list, Inters.byCenterAbscissa); // not needed? (already sorted)
                 iters.put(entry.getKey(), list.listIterator());
             }
         }

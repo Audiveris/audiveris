@@ -200,23 +200,23 @@ public abstract class AbstractNoteInter
         return shapeDurations.get(shape);
     }
 
-    //--------//
-    // delete //
-    //--------//
+    //-------//
+    // added //
+    //-------//
     /**
      * Since a note instance is held by its containing staff, make sure staff
      * notes collection is updated.
      *
-     * @see #undelete()
+     * @see #remove()
      */
     @Override
-    public void delete ()
+    public void added ()
     {
-        if (staff != null) {
-            staff.removeNote(this);
-        }
+        super.added();
 
-        super.delete();
+        if (staff != null) {
+            staff.addNote(this);
+        }
     }
 
     //-----------//
@@ -231,7 +231,7 @@ public abstract class AbstractNoteInter
     public int getOctave ()
     {
         if (octave == null) {
-            AbstractChordInter chord = (AbstractChordInter) getEnsemble();
+            AbstractChordInter chord = getChord();
             Measure measure = chord.getMeasure();
             octave = ClefInter.octaveOf(measure.getClefBefore(getCenter(), getStaff()), pitch);
         }
@@ -250,7 +250,7 @@ public abstract class AbstractNoteInter
     public Step getStep ()
     {
         if (step == null) {
-            AbstractChordInter chord = (AbstractChordInter) getEnsemble();
+            AbstractChordInter chord = getChord();
             Measure measure = chord.getMeasure();
             step = ClefInter.noteStepOf(
                     measure.getClefBefore(getCenter(), staff),
@@ -275,23 +275,24 @@ public abstract class AbstractNoteInter
         return null;
     }
 
-    //----------//
-    // undelete //
-    //----------//
+    //--------//
+    // remove //
+    //--------//
     /**
      * Since a note instance is held by its containing staff, make sure staff
      * notes collection is updated.
      *
-     * @see #delete()
+     * @param extensive true for non-manual removals only
+     * @see #added()
      */
     @Override
-    public void undelete ()
+    public void remove (boolean extensive)
     {
-        super.undelete();
-
         if (staff != null) {
-            staff.addNote(this);
+            staff.removeNote(this);
         }
+
+        super.remove(extensive);
     }
 
     //---------------------//

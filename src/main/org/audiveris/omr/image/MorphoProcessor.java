@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Class {@code MorphoProcessor}
  *
- * @author Hervé Bitteur
+ * @author ?
  */
 public class MorphoProcessor
         implements MorphoConstants

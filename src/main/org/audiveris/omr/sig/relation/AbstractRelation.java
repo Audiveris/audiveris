@@ -24,6 +24,8 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 
+import org.jgrapht.event.GraphEdgeChangeEvent;
+
 /**
  * Class {@code AbstractRelation} is the abstract basis for any Relation implementation.
  *
@@ -33,6 +35,15 @@ public abstract class AbstractRelation
         implements Relation, Cloneable
 {
     //~ Methods ------------------------------------------------------------------------------------
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        // No-op by default
+    }
 
     //-----------//
     // duplicate //
@@ -62,7 +73,16 @@ public abstract class AbstractRelation
     @Override
     public String getName ()
     {
-        return getClass().getSimpleName().replaceFirst("Relation", "");
+        return Relations.nameOf(getClass());
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        // No-op by default
     }
 
     //----------//

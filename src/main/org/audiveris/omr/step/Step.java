@@ -37,7 +37,12 @@ import org.audiveris.omr.sheet.stem.StemsStep;
 import org.audiveris.omr.sheet.symbol.LinksStep;
 import org.audiveris.omr.sheet.symbol.SymbolsStep;
 import org.audiveris.omr.sheet.ui.SheetTab;
+import org.audiveris.omr.sig.inter.AbstractInter;
+import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.text.TextsStep;
+
+import java.util.Collection;
+import org.audiveris.omr.sig.ui.UITask.OpKind;
 
 /**
  * Enum {@code Step} describes the steps of sheet processing pipeline.
@@ -236,5 +241,33 @@ public enum Step
 
             return Step.valueOf(str);
         }
+    }
+
+    //--------//
+    // impact //
+    //--------//
+    /**
+     * Process the impact of the UI task sequence on this step.
+     *
+     * @param seq    the provided UI task sequence
+     * @param opKind which operation is done on seq
+     */
+    public void impact (UITaskList seq,
+                        OpKind opKind)
+    {
+        helper.impact(seq, opKind);
+    }
+
+    //-----------------------//
+    // impactingInterClasses //
+    //-----------------------//
+    /**
+     * Report the Inter classes that impact this step.
+     *
+     * @return the collection of Inter classes this step cares about
+     */
+    public Collection<Class<? extends AbstractInter>> impactingInterClasses ()
+    {
+        return helper.impactingInterClasses();
     }
 }

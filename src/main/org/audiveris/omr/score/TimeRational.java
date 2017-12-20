@@ -102,7 +102,7 @@ public class TimeRational
 
             return new TimeRational(num, den);
         } else {
-            logger.warn("Illegal rational value: ", str);
+            logger.warn("Illegal TimeRational value: ", str);
 
             return null;
         }
@@ -195,6 +195,10 @@ public class TimeRational
         public String marshal (TimeRational val)
                 throws Exception
         {
+            if (val == null) {
+                return null;
+            }
+
             return val.toString();
         }
 
@@ -202,6 +206,10 @@ public class TimeRational
         public TimeRational unmarshal (String str)
                 throws Exception
         {
+            if (str == null) {
+                return null;
+            }
+
             return decode(str);
         }
     }

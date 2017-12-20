@@ -60,4 +60,14 @@ public class BeamInter
     {
         super(null, null, null, 0);
     }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
 }

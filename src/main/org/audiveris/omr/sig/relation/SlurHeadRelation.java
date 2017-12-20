@@ -54,9 +54,19 @@ public class SlurHeadRelation
             SlurHeadRelation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** Left or right side of the slur. */
     @XmlAttribute(name = "side")
     private final HorizontalSide side;
+
+    // Transient data
+    //---------------
+    //
+    /** Euclidean distance from slur end to chord middle vertical. */
+    private double euclidean;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -78,6 +88,17 @@ public class SlurHeadRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------//
+    // getEuclidean //
+    //--------------//
+    /**
+     * @return the euclidean distance
+     */
+    public double getEuclidean ()
+    {
+        return euclidean;
+    }
+
     //---------//
     // getSide //
     //---------//
@@ -87,6 +108,17 @@ public class SlurHeadRelation
     public HorizontalSide getSide ()
     {
         return side;
+    }
+
+    //--------------//
+    // setEuclidean //
+    //--------------//
+    /**
+     * @param euclidean the euclidean distance to set
+     */
+    public void setEuclidean (double euclidean)
+    {
+        this.euclidean = euclidean;
     }
 
     //----------//

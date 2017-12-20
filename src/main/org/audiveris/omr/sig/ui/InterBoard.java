@@ -34,10 +34,12 @@ import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
+import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.field.LComboBox;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 
@@ -74,6 +76,9 @@ public class InterBoard
 
     /** Output : shape icon. */
     private final JLabel shapeIcon = new JLabel();
+
+    /** Input/Output : focus check box. */
+    private final LCheckBox focus = new LCheckBox("Focus", "Is this inter focused upon?");
 
     /** Output : grade (intrinsic/contextual). */
     private final LTextField grade = new LTextField("Grade", "Intrinsic / Contextual");
@@ -125,14 +130,30 @@ public class InterBoard
         details.setToolTipText("Grade details");
         details.setHorizontalAlignment(SwingConstants.CENTER);
 
+        focus.addActionListener(this);
+
         // Initial status
         grade.setEnabled(false);
+        focus.setEnabled(false);
         details.setEnabled(false);
 
         defineLayout();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // actionPerformed //
+    //-----------------//
+    @Override
+    public void actionPerformed (ActionEvent e)
+    {
+        if (focus.getField() == e.getSource()) {
+            focusActionPerformed(e);
+        } else {
+            super.actionPerformed(e);
+        }
+    }
+
     //---------//
     // onEvent //
     //---------//
@@ -171,7 +192,7 @@ public class InterBoard
         final Inter inter = getSelectedEntity();
 
         // Compute contextual grade
-        if ((inter.getSig() != null) && !inter.isDeleted()) {
+        if ((inter.getSig() != null) && !inter.isRemoved()) {
             inter.getSig().computeContextualGrade(inter);
         }
 
@@ -214,6 +235,9 @@ public class InterBoard
 
         r += 2; // --------------------------------
 
+        builder.add(focus.getLabel(), cst.xy(3, r));
+        builder.add(focus.getField(), cst.xy(5, r, "left,fill"));
+
         builder.add(shapeField.getField(), cst.xyw(7, r, 5));
 
         r += 2; // --------------------------------
@@ -232,6 +256,15 @@ public class InterBoard
         r += 2; // --------------------------------
 
         builder.add(details, cst.xyw(1, r, 11));
+    }
+
+    //----------------------//
+    // focusActionPerformed //
+    //----------------------//
+    private void focusActionPerformed (ActionEvent e)
+    {
+        final InterController interController = sheet.getInterController();
+        interController.setInterFocus(focus.getField().isSelected() ? getSelectedEntity() : null);
     }
 
     //-------------//
@@ -259,9 +292,9 @@ public class InterBoard
 
         // Inter characteristics
         textField.setVisible(false);
-        textField.setEnabled(false); // TEMPORARY
+        textField.setEnabled(true); // TEMPORARY false
         roleCombo.setVisible(false);
-        roleCombo.setEnabled(false); // TEMPORARY
+        roleCombo.setEnabled(true); // TEMPORARY falses
 
         if (inter != null) {
             vip.getLabel().setEnabled(true);
@@ -277,7 +310,12 @@ public class InterBoard
             }
 
             details.setText((inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
-            deassignAction.putValue(Action.NAME, inter.isDeleted() ? "deleted" : "Deassign");
+            deassignAction.putValue(Action.NAME, inter.isRemoved() ? "deleted" : "Deassign");
+
+            focus.setEnabled(true);
+
+            final InterController interController = sheet.getInterController();
+            focus.getField().setSelected(inter == interController.getInterFocus());
 
             if (inter instanceof WordInter) {
                 WordInter word = (WordInter) inter;
@@ -295,13 +333,15 @@ public class InterBoard
             vip.setEnabled(false);
             vip.getField().setSelected(false);
 
+            focus.setEnabled(false);
+            focus.getField().setSelected(false);
+
             grade.setText("");
             details.setText("");
             deassignAction.putValue(Action.NAME, " ");
         }
 
-        ///TEMPORARY deassignAction.setEnabled((inter != null) && !inter.isDeleted());
-        ///
+        deassignAction.setEnabled((inter != null) && !inter.isRemoved());
         grade.setEnabled(inter != null);
         shapeField.setEnabled(inter != null);
         details.setEnabled(inter != null);
@@ -328,7 +368,7 @@ public class InterBoard
     //----------------//
     // DeassignAction //
     //----------------//
-    private static class DeassignAction
+    private class DeassignAction
             extends AbstractAction
     {
         //~ Constructors ---------------------------------------------------------------------------
@@ -343,7 +383,20 @@ public class InterBoard
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            logger.info("Not yet implemented");
+            // Delete the inter
+            final Inter inter = InterBoard.this.getSelectedEntity();
+            logger.debug("Deleting {}", inter);
+
+            sheet.getInterController().removeInter(inter);
+
+            sheet.getStub().setModified(true);
+            getSelectionService().publish(
+                    new EntityListEvent<Inter>(
+                            this,
+                            SelectionHint.ENTITY_INIT,
+                            MouseMovement.PRESSING,
+                            null));
+            sheet.getSymbolsEditor().refresh();
         }
     }
 }

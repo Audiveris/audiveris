@@ -45,8 +45,10 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.WordInter;
 import static org.audiveris.omr.text.TextRole.PartName;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.symbol.TextFont;
@@ -600,7 +602,7 @@ public class TextBuilder
         // Retrieve candidate sections and map words to glyphs
         watch.start("getSections");
 
-        // Brand new sections (not the horizontal or vertical sheet sections)
+        // Brand new sections (not the usual horizontal or vertical sheet sections)
         List<Section> allSections = getSections(buffer, systemLines);
         watch.start("mapGlyphs");
         mapGlyphs(systemLines, allSections, sheet.getStub().getLanguageParam().getActual());
@@ -635,21 +637,39 @@ public class TextBuilder
     public SortedSet<Section> retrieveSections (List<TextChar> chars,
                                                 Collection<Section> allSections)
     {
-        SortedSet<Section> set = new TreeSet<Section>(Section.byFullAbscissa);
+        final SortedSet<Section> wordSections = new TreeSet<Section>(Section.byFullAbscissa);
+        final CompoundConstructor constructor = new CompoundConstructor()
+        {
+            @Override
+            public SectionCompound newInstance ()
+            {
+                return new SectionCompound(sheet.getInterline());
+            }
+        };
 
         for (TextChar charDesc : chars) {
-            Rectangle charBox = charDesc.getBounds();
+            final Rectangle charBox = charDesc.getBounds();
+            final SortedSet<Section> charSections = new TreeSet<Section>(Section.byFullAbscissa);
 
             for (Section section : allSections) {
                 // Do we contain a section not (yet) assigned?
                 if (!isProcessed(section) && charBox.contains(section.getBounds())) {
-                    set.add(section);
+                    charSections.add(section);
                     setProcessed(section);
                 }
             }
+
+            if (!charSections.isEmpty()) {
+                wordSections.addAll(charSections);
+
+                SectionCompound compound = CompoundFactory.buildCompound(charSections, constructor);
+                Glyph charGlyph = sheet.getGlyphIndex().registerOriginal(
+                        compound.toGlyph(null));
+                system.addFreeGlyph(charGlyph);
+            }
         }
 
-        return set;
+        return wordSections;
     }
 
     //-----------//
@@ -892,22 +912,27 @@ public class TextBuilder
                             : SentenceInter.create(line));
 
             // Related staff (can still be modified later)
-            sentence.assignStaff(system);
+            Staff staff = sentence.assignStaff(system, line.getLocation());
 
-            if (sentence.getStaff() != null) {
-                // For PartName. TODO: Perhaps later in transcription?
-                assignSentence(sentence);
-
+            if (staff != null) {
                 // Populate sig
-                for (Inter wordInter : sentence.getMembers()) {
-                    sig.addVertex(wordInter);
-                }
-
                 sig.addVertex(sentence);
 
-                if (sentence instanceof LyricLineInter) {
-                    sentence.getStaff().getPart().addLyric((LyricLineInter) sentence);
+                // Link sentence and words
+                for (TextWord word : line.getWords()) {
+                    WordInter wordInter = (role == TextRole.Lyrics) ? new LyricItemInter(word)
+                            : new WordInter(word);
+                    wordInter.setStaff(staff);
+                    sig.addVertex(wordInter);
+                    sentence.addMember(wordInter);
                 }
+
+                if (sentence instanceof LyricLineInter) {
+                    staff.getPart().addLyric((LyricLineInter) sentence);
+                }
+
+                // For PartName. TODO: Perhaps later in transcription?
+                assignSentence(sentence);
             }
         }
     }
@@ -1145,6 +1170,7 @@ public class TextBuilder
     /**
      * By searching through the provided sections, build one glyph for each word and
      * one sentence for each line.
+     * Build also one glyph per word char, to allow manual re-assignment.
      *
      * @param lines       the lines (and contained words) to be mapped
      * @param allSections the population of sections to browse

@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
-import org.audiveris.omr.score.ui.PaintingParameters;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
@@ -79,7 +78,6 @@ public class EntityView<E extends Entity>
         // (Weakly) listening on ViewParameters and PaintingParameters
         PropertyChangeListener listener = new WeakPropertyChangeListener(this);
         ViewParameters.getInstance().addPropertyChangeListener(listener);
-        PaintingParameters.getInstance().addPropertyChangeListener(listener);
 
         // Subscribe to entity
         entityService.subscribeStrongly(EntityListEvent.class, this);

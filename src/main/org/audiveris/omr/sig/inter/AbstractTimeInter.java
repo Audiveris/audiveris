@@ -58,6 +58,11 @@ public abstract class AbstractTimeInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(
+            AbstractTimeInter.class);
+
     /** Collection of default num/den combinations. */
     private static final Set<TimeRational> defaultTimes = new LinkedHashSet<TimeRational>(
             Arrays.asList(
@@ -74,14 +79,9 @@ public abstract class AbstractTimeInter
                     new TimeRational(12, 8) // Triple compound
             ));
 
-    private static final Constants constants = new Constants();
-
     /** Collection of optional num/den combinations. */
     private static final List<TimeRational> optionalTimes = TimeRational.parseValues(
             constants.optionalTimes.getValue());
-
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractTimeInter.class);
 
     /** Rational value of each (full) time sig shape. */
     private static final Map<Shape, TimeRational> rationals = new EnumMap<Shape, TimeRational>(
@@ -163,16 +163,6 @@ public abstract class AbstractTimeInter
      */
     public abstract AbstractTimeInter replicate (Staff targetStaff);
 
-    //--------//
-    // create //
-    //--------//
-    public static List<Inter> create (Shape shape,
-                                      Glyph glyph,
-                                      double grade)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     //------------//
     // rationalOf //
     //------------//
@@ -227,7 +217,7 @@ public abstract class AbstractTimeInter
      */
     public int getDenominator ()
     {
-        return timeRational.den;
+        return (getTimeRational() != null) ? getTimeRational().den : (-1);
     }
 
     //--------------//
@@ -240,7 +230,7 @@ public abstract class AbstractTimeInter
      */
     public int getNumerator ()
     {
-        return timeRational.num;
+        return (getTimeRational() != null) ? getTimeRational().num : (-1);
     }
 
     //-----------------//
@@ -264,11 +254,17 @@ public abstract class AbstractTimeInter
      */
     public TimeValue getValue ()
     {
+        getTimeRational();
+
         if (ShapeSet.SingleWholeTimes.contains(shape)) {
             // COMMON_TIME or CUT_TIME only
             return new TimeValue(shape, timeRational);
         } else {
-            return new TimeValue(null, timeRational);
+            if (timeRational != null) {
+                return new TimeValue(null, timeRational);
+            } else {
+                return null;
+            }
         }
     }
 
@@ -312,7 +308,13 @@ public abstract class AbstractTimeInter
     @Override
     protected String internals ()
     {
-        return super.internals() + " " + getValue();
+        TimeValue timeValue = getValue();
+
+        if (timeValue != null) {
+            return super.internals() + " " + timeValue;
+        } else {
+            return super.internals() + " NO_VALUE";
+        }
     }
 
     //-----------------//

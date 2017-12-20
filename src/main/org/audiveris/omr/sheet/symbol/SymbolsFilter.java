@@ -353,7 +353,7 @@ public class SymbolsFilter
                 systemWeaks = null;
 
                 for (Inter inter : sig.vertexSet()) {
-                    if (inter.isDeleted()) {
+                    if (inter.isRemoved()) {
                         continue;
                     }
 

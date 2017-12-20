@@ -22,7 +22,6 @@
 package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.Main;
-import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -33,6 +32,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
@@ -209,7 +209,7 @@ public class BookBrowser
             frame.add(component);
 
             // Resources injection
-            ResourceMap resource = OMR.gui.getApplication().getContext().getResourceMap(getClass());
+            ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(getClass());
             resource.injectComponents(frame);
             frame.setTitle(resource.getString("frameTitleMask", book.getRadix()));
         }

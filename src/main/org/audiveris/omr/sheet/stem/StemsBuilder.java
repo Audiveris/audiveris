@@ -33,8 +33,6 @@ import org.audiveris.omr.glyph.dynamic.CompoundFactory;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory.CompoundConstructor;
 import org.audiveris.omr.glyph.dynamic.SectionCompound;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
-import org.audiveris.omr.image.Anchored.Anchor;
-import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
@@ -52,6 +50,7 @@ import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
@@ -248,7 +247,7 @@ public class StemsBuilder
      * - retrieve systemSeeds, systemBeams, systemHeads
      *
      * FOREACH head in systemHeads:
-     *      FOREACH corner of the head:
+     *      FOREACH stem corner of the head:
      *          - getReferencePoint()
      *          - getLookupArea()
      *          - link()
@@ -263,7 +262,7 @@ public class StemsBuilder
      * - retrieve systemStems
      *
      * FOREACH head in systemHeads:
-     *      FOREACH corner of the head:
+     *      FOREACH stem corner of the head:
      *          - reuse()
      *              - connectHeadStem() for relevant stems
      *
@@ -285,25 +284,25 @@ public class StemsBuilder
 
         // The abscissa-sorted beam (and beam hook) interpretations for this system
         systemBeams = sig.inters(AbstractBeamInter.class);
-        Collections.sort(systemBeams, Inter.byAbscissa);
+        Collections.sort(systemBeams, Inters.byAbscissa);
 
         // The abscissa-sorted head interpretations for this system
         final List<Inter> systemHeads = sig.inters(ShapeSet.StemTemplateNotes);
-        Collections.sort(systemHeads, Inter.byAbscissa);
+        Collections.sort(systemHeads, Inters.byAbscissa);
 
         // First phase, look around heads for stems (and beams if any)
         watch.start("phase #1");
 
         for (Inter head : systemHeads) {
-            new HeadLinker(head).linkAllCorners();
+            new HeadLinker(head).linkStemCorners();
         }
 
         // Second phase, look for reuse of existing stems interpretations
         watch.start("phase #2");
-        Collections.sort(systemStems, Inter.byAbscissa);
+        Collections.sort(systemStems, Inters.byAbscissa);
 
         for (Inter head : systemHeads) {
-            new HeadLinker(head).reuseAllCorners();
+            new HeadLinker(head).reuseStemCorners();
         }
 
         // Handle stems mutual exclusions
@@ -473,7 +472,7 @@ public class StemsBuilder
                 return;
             }
 
-            Collections.sort(stems, Inter.byAbscissa);
+            Collections.sort(stems, Inters.byAbscissa);
 
             for (int i = 0; i < (size - 1); i++) {
                 final Inter one = stems.get(i);
@@ -563,7 +562,7 @@ public class StemsBuilder
     //------------//
     /**
      * A HeadLinker tries to establish links from a head to nearby stem interpretations,
-     * processing all 4 corners.
+     * processing stem corners (TOP_LEFT and BOTTOM_RIGHT).
      */
     private class HeadLinker
     {
@@ -592,23 +591,6 @@ public class StemsBuilder
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        //----------------//
-        // linkAllCorners //
-        //----------------//
-        public void linkAllCorners ()
-        {
-            if (head.isVip()) {
-                logger.info("VIP linkAllCorners? {}", head);
-            }
-
-            neighborBeams = getNeighboringInters(systemBeams);
-            neighborSeeds = getNeighboringSeeds();
-
-            for (Corner corner : Corner.values) {
-                new CornerLinker(corner).link();
-            }
-        }
-
         //---------------//
         // linkCueCorner //
         //---------------//
@@ -620,12 +602,29 @@ public class StemsBuilder
         }
 
         //-----------------//
-        // reuseAllCorners //
+        // linkStemCorners //
         //-----------------//
-        public void reuseAllCorners ()
+        public void linkStemCorners ()
         {
             if (head.isVip()) {
-                logger.info("VIP reuseAllCorners? {}", head);
+                logger.info("VIP linkStemCorners? {}", head);
+            }
+
+            neighborBeams = getNeighboringInters(systemBeams);
+            neighborSeeds = getNeighboringSeeds();
+
+            for (Corner corner : Corner.values) {
+                new CornerLinker(corner).link();
+            }
+        }
+
+        //------------------//
+        // reuseStemCorners //
+        //------------------//
+        public void reuseStemCorners ()
+        {
+            if (head.isVip()) {
+                logger.info("VIP reuseStemCorners? {}", head);
             }
 
             neighborStems = getNeighboringInters(systemStems);
@@ -806,6 +805,9 @@ public class StemsBuilder
                 }
             }
 
+            //---------//
+            // linkCue //
+            //---------//
             /**
              * Specific link for cue (head & beam).
              */
@@ -1196,14 +1198,8 @@ public class StemsBuilder
             private Point2D getReferencePoint ()
             {
                 HeadInter note = (HeadInter) head;
-                ShapeDescriptor desc = note.getDescriptor();
-                Anchor anchor = corner.stemAnchor();
-                Point offset = desc.getOffset(anchor);
 
-                final Point ref = headBox.getLocation();
-                ref.translate(offset.x, offset.y);
-
-                return ref;
+                return note.getStemReferencePoint(corner.stemAnchor(), scale.getInterline());
             }
 
             //-----------//

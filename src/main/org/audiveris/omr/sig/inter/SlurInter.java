@@ -22,16 +22,24 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.curve.GlyphSlurInfo;
+import org.audiveris.omr.sheet.curve.SlurHeadLink;
 import org.audiveris.omr.sheet.curve.SlurInfo;
+import org.audiveris.omr.sheet.curve.SlurLinker;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.HorizontalSide;
@@ -43,9 +51,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
@@ -109,7 +125,7 @@ public class SlurInter
         @Override
         public boolean check (SlurInter slur)
         {
-            if (slur.getHead(RIGHT) == null) {
+            if ((slur.getHead(RIGHT) == null) && (slur.getExtension(RIGHT) == null)) {
                 // Check we are in last measure
                 Point2D end = slur.getCurve().getP2();
                 SystemInfo system = slur.getSig().getSystem();
@@ -137,7 +153,7 @@ public class SlurInter
         @Override
         public boolean check (SlurInter slur)
         {
-            if (slur.getHead(LEFT) == null) {
+            if ((slur.getHead(LEFT) == null) && (slur.getExtension(LEFT) == null)) {
                 // Check we are in first measure
                 Point2D end = slur.getCurve().getP1();
                 SystemInfo system = slur.getSig().getSystem();
@@ -193,11 +209,11 @@ public class SlurInter
     //---------------
     //
     /** Physical characteristics. */
-    private final SlurInfo info;
+    private SlurInfo info;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new SlurInter object.
+     * Creates a new {@code SlurInter} object.
      *
      * @param info    the underlying slur information
      * @param impacts the assignment details
@@ -218,6 +234,18 @@ public class SlurInter
     }
 
     /**
+     * Creates a new {@code SlurInter} object (meant for manual assignment).
+     *
+     * @param grade inter grade
+     */
+    public SlurInter (double grade)
+    {
+        super(null, null, Shape.SLUR, grade);
+
+        info = null;
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
     private SlurInter ()
@@ -235,6 +263,25 @@ public class SlurInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Since a slur instance is held by its containing part, make sure part
+     * slurs collection is updated.
+     *
+     * @see #remove(boolean)
+     */
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        if (getPart() != null) {
+            getPart().addSlur(this);
+        }
+    }
+
     //-----------//
     // canExtend //
     //-----------//
@@ -246,6 +293,10 @@ public class SlurInter
      */
     public boolean canExtend (SlurInter prevSlur)
     {
+        if (isVip() || prevSlur.isVip()) {
+            logger.info("VIP canExtend prevSlur:{} slur:{}", prevSlur, this);
+        }
+
         return (this.getExtension(LEFT) == null) && (prevSlur.getExtension(RIGHT) == null)
                && this.isCompatibleWith(prevSlur);
     }
@@ -264,30 +315,11 @@ public class SlurInter
         boolean isATie = haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
 
         if (isATie) {
-            prevSlur.setTie();
-            setTie();
+            prevSlur.setTie(true);
+            setTie(true);
         }
 
         logger.debug("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    /**
-     * Since a slur instance is held by its containing part, make sure part
-     * slurs collection is updated.
-     *
-     * @see #undelete()
-     */
-    @Override
-    public void delete ()
-    {
-        if (part != null) {
-            part.removeSlur(this);
-        }
-
-        super.delete();
     }
 
     //----------//
@@ -317,6 +349,14 @@ public class SlurInter
 
         if (info != null) {
             sb.append(" ").append(info);
+        }
+
+        for (HorizontalSide side : HorizontalSide.values()) {
+            SlurInter ext = getExtension(side);
+
+            if (ext != null) {
+                sb.append(" ").append(side).append("-extension:").append(ext);
+            }
         }
 
         return sb.toString();
@@ -369,6 +409,31 @@ public class SlurInter
         return info;
     }
 
+    //---------//
+    // getPart //
+    //---------//
+    @Override
+    public Part getPart ()
+    {
+        Part p = super.getPart();
+
+        if (p != null) {
+            return p;
+        }
+
+        if (sig != null) {
+            for (HorizontalSide side : HorizontalSide.values()) {
+                HeadInter head = getHead(side);
+
+                if ((head != null) && (head.getPart() != null)) {
+                    return part = head.getPart();
+                }
+            }
+        }
+
+        return null;
+    }
+
     //-------------------//
     // getRelationCenter //
     //-------------------//
@@ -417,6 +482,60 @@ public class SlurInter
         return tie;
     }
 
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Since a slur instance is held by its containing part, make sure part
+     * slurs collection is updated.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (part != null) {
+            part.removeSlur(this);
+        } else {
+            logger.info("{} no part to remove from.", this);
+        }
+
+        // Cut cross-system slur extension if any
+        for (HorizontalSide side : HorizontalSide.values()) {
+            SlurInter extension = getExtension(side);
+
+            if (extension != null) {
+                extension.setExtension(side.opposite(), null);
+                setExtension(side, null);
+            }
+        }
+
+        super.remove(extensive);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
+        Collections.sort(systemHeads, Inters.byAbscissa);
+
+        Collection<Link> links = lookupLinks(systemHeads, system);
+
+        if (doit) {
+            for (Link link : links) {
+                link.applyTo(this);
+            }
+        }
+
+        return links;
+    }
+
     //--------------//
     // setExtension //
     //--------------//
@@ -438,40 +557,37 @@ public class SlurInter
         }
     }
 
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if (info == null) {
+            // Slur manually created out of a glyph
+            info = GlyphSlurInfo.create(glyph);
+            above = info.above() > 0;
+            curve = info.getCurve();
+        }
+    }
+
     //--------//
     // setTie //
     //--------//
     /**
      * Set this slur as being a tie.
-     */
-    public void setTie ()
-    {
-        tie = Boolean.TRUE;
-    }
-
-    //------------------//
-    // switchMirrorHead //
-    //------------------//
-    /**
-     * Switch the slur link from head to its mirror on the provided side.
      *
-     * @param side the desired side
+     * @param tie new tie value
      */
-    public void switchMirrorHead (HorizontalSide side)
+    public void setTie (boolean tie)
     {
-        for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
-            SlurHeadRelation shRel = (SlurHeadRelation) rel;
+        if (this.tie != tie) {
+            this.tie = tie;
 
-            if (shRel.getSide() == side) {
-                HeadInter head = (HeadInter) sig.getOppositeInter(this, rel);
-                HeadInter mirrorHead = (HeadInter) head.getMirror();
-
-                if (mirrorHead != null) {
-                    sig.removeEdge(rel);
-                    sig.addEdge(this, mirrorHead, rel);
-                } else {
-                    logger.error("No mirror head for {}", head);
-                }
+            if (sig != null) {
+                sig.getSystem().getSheet().getStub().setModified(true);
             }
         }
     }
@@ -538,6 +654,62 @@ public class SlurInter
         logger.debug("{} --- {} deltaPitch:{} res:{}", prevSlur, this, deltaPitch, res);
 
         return res;
+    }
+
+    //-------------//
+    // lookupLinks //
+    //-------------//
+    /**
+     * Try to detect link between this Slur instance and head on left side
+     * plus head on right side.
+     *
+     * @param systemHeads ordered collection of heads in system
+     * @param system      the containing system
+     * @return the collection of links found, perhaps null
+     */
+    private Collection<Link> lookupLinks (List<Inter> systemHeads,
+                                          SystemInfo system)
+    {
+        if (systemHeads.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        if (isVip()) {
+            logger.info("VIP lookupLinks for {}", this);
+        }
+
+        SlurLinker slurLinker = new SlurLinker(system.getSheet());
+
+        // Define slur side areas
+        Map<HorizontalSide, Area> sideAreas = slurLinker.defineAreaPair(this);
+
+        // Retrieve candidate chords
+        Map<HorizontalSide, List<Inter>> chords = new EnumMap<HorizontalSide, List<Inter>>(
+                HorizontalSide.class);
+        List<Inter> systemChords = system.getSig().inters(
+                HeadChordInter.class);
+
+        for (HorizontalSide side : HorizontalSide.values()) {
+            Rectangle box = sideAreas.get(side).getBounds();
+            chords.put(side, SIGraph.intersectedInters(systemChords, GeoOrder.NONE, box));
+        }
+
+        // Select the best link pair
+        Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
+                this,
+                sideAreas,
+                system,
+                chords);
+
+        List<Link> links = new ArrayList<Link>();
+
+        for (Link link : linkPair.values()) {
+            if (link != null) {
+                links.add(link);
+            }
+        }
+
+        return links;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

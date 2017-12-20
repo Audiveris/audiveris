@@ -127,6 +127,17 @@ public class PageRhythm
         processRanges();
     }
 
+    /**
+     * (first version of) stack-focused re-processing.
+     *
+     * @param stack the stack to re-process
+     */
+    public void reprocessStack (MeasureStack stack)
+    {
+        Rational expectedDuration = stack.getExpectedDuration();
+        new StackTuner(stack, false).process(expectedDuration);
+    }
+
     //---------------//
     // populateFRATs //
     //---------------//
@@ -137,7 +148,7 @@ public class PageRhythm
     {
         for (SystemInfo system : page.getSystems()) {
             List<Inter> systemFrats = system.getSig().inters(FRAT_CLASSES);
-            Collections.sort(systemFrats, Inter.byAbscissa);
+            Collections.sort(systemFrats, Inters.byAbscissa);
 
             for (MeasureStack stack : system.getMeasureStacks()) {
                 final List<Inter> frats = stack.filter(systemFrats);
@@ -163,7 +174,7 @@ public class PageRhythm
             List<Inter> systemTimes = system.getSig().inters(AbstractTimeInter.class);
 
             if (!systemTimes.isEmpty()) {
-                Collections.sort(systemTimes, Inter.byAbscissa);
+                Collections.sort(systemTimes, Inters.byAbscissa);
 
                 for (MeasureStack stack : system.getMeasureStacks()) {
                     boolean found = false;

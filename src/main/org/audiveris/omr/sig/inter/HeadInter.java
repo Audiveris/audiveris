@@ -26,6 +26,7 @@ import ij.process.ByteProcessor;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.BasicGlyph;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.image.Anchored.Anchor;
@@ -33,29 +34,41 @@ import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.image.TemplateFactory.Catalog;
+import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.ByteUtil;
+import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -132,6 +145,17 @@ public class HeadInter
         this.anchor = anchor;
     }
 
+    /**
+     * Creates a new {@code HeadInter} object.
+     *
+     * @param pivot  the template pivot
+     * @param anchor relative pivot configuration
+     * @param bounds the object bounds
+     * @param shape  the underlying shape
+     * @param grade  quality grade
+     * @param staff  the related staff
+     * @param pitch  the note pitch
+     */
     public HeadInter (Point pivot,
                       Anchor anchor,
                       Rectangle bounds,
@@ -357,6 +381,77 @@ public class HeadInter
         return constants.shrinkVertRatio.getValue();
     }
 
+    //--------------//
+    // getSideStems //
+    //--------------//
+    /**
+     * Report the stems linked to this head, organized by head side.
+     *
+     * @return the map of linked stems, organized by head side
+     * @see #getStems()
+     */
+    public Map<HorizontalSide, Set<StemInter>> getSideStems ()
+    {
+        // Split connected stems into left and right sides
+        final Map<HorizontalSide, Set<StemInter>> map = new EnumMap<HorizontalSide, Set<StemInter>>(
+                HorizontalSide.class);
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            HeadStemRelation rel = (HeadStemRelation) relation;
+            HorizontalSide side = rel.getHeadSide();
+            Set<StemInter> set = map.get(side);
+
+            if (set == null) {
+                map.put(side, set = new LinkedHashSet<StemInter>());
+            }
+
+            set.add((StemInter) sig.getEdgeTarget(rel));
+        }
+
+        return map;
+    }
+
+    //-----------------------//
+    // getStemReferencePoint //
+    //-----------------------//
+    /**
+     * Report the reference point for a stem connection.
+     *
+     * @param anchor    desired side for stem (typically TOP_RIGHT_STEM or BOTTOM_LEFT_STEM)
+     * @param interline relevant interline value
+     * @return the reference point
+     */
+    public Point2D getStemReferencePoint (Anchor anchor,
+                                          int interline)
+    {
+        ShapeDescriptor desc = getDescriptor(interline);
+        Point ref = getBounds().getLocation();
+        Point offset = desc.getOffset(anchor);
+        ref.translate(offset.x, offset.y);
+
+        return ref;
+    }
+
+    //----------//
+    // getStems //
+    //----------//
+    /**
+     * Report the stems linked to this head, whatever the side.
+     *
+     * @return set of linked stems
+     * @see #getSideStems()
+     */
+    public Set<StemInter> getStems ()
+    {
+        final Set<StemInter> set = new LinkedHashSet<StemInter>();
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            set.add((StemInter) sig.getEdgeTarget(relation));
+        }
+
+        return set;
+    }
+
     //----------//
     // overlaps //
     //----------//
@@ -476,6 +571,37 @@ public class HeadInter
         bounds = glyph.getBounds();
     }
 
+    //-------------//
+    // searchLinks //
+    //-------------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Specifically, look for stem to allow head attachment.
+     *
+     * @return stem link, perhaps empty
+     */
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemStems = system.getSig().inters(StemInter.class);
+        Collections.sort(systemStems, Inters.byAbscissa);
+
+        Link link = lookupLink(systemStems);
+
+        if (link == null) {
+            return Collections.emptyList();
+        }
+
+        if (doit) {
+            link.applyTo(this);
+        }
+
+        return Collections.singleton(link);
+    }
+
     //--------//
     // shrink //
     //--------//
@@ -568,7 +694,7 @@ public class HeadInter
                     ? this : that;
 
             logger.debug("Deleting duplicated {}", dupli);
-            dupli.delete();
+            dupli.remove();
             throw new DeletedInterException(dupli);
         }
 
@@ -576,54 +702,73 @@ public class HeadInter
         // Perhaps check for a weak ledger, tangent to the note towards staff
     }
 
-    //--------------//
-    // getSideStems //
-    //--------------//
+    //------------//
+    // lookupLink //
+    //------------//
     /**
-     * Report the stems linked to this head, organized by head side.
+     * Try to detect a link between this Head instance and a stem nearby.
+     * <p>
+     * 1/ Use a lookup area on each horizontal side of the head to filter candidate stems.
+     * 2/ Select the best connection among the compatible candidates.
      *
-     * @return the map of linked stems, organized by head side
-     * @see #getStems()
+     * @param systemStems abscissa-ordered collection of stems in system
+     * @return the link found or null
      */
-    public Map<HorizontalSide, Set<StemInter>> getSideStems ()
+    private Link lookupLink (List<Inter> systemStems)
     {
-        // Split connected stems into left and right sides
-        final Map<HorizontalSide, Set<StemInter>> map = new EnumMap<HorizontalSide, Set<StemInter>>(
-                HorizontalSide.class);
+        if (systemStems.isEmpty()) {
+            return null;
+        }
 
-        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
-            HeadStemRelation rel = (HeadStemRelation) relation;
-            HorizontalSide side = rel.getHeadSide();
-            Set<StemInter> set = map.get(side);
+        final SystemInfo system = systemStems.get(0).getSig().getSystem();
+        final Scale scale = system.getSheet().getScale();
+        final int interline = scale.getInterline();
+        final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum());
+        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
+        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum());
 
-            if (set == null) {
-                map.put(side, set = new LinkedHashSet<StemInter>());
+        Link bestLink = null;
+        double bestGrade = 0;
+
+        for (Corner corner : Corner.values) {
+            Point refPt = PointUtil.rounded(
+                    getStemReferencePoint(corner.stemAnchor(), interline));
+            int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
+            int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
+            Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
+            List<Inter> stems = SIGraph.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+
+            for (Inter inter : stems) {
+                StemInter stem = (StemInter) inter;
+                Glyph stemGlyph = stem.getGlyph();
+                Point2D start = stemGlyph.getStartPoint(VERTICAL);
+                Point2D stop = stemGlyph.getStopPoint(VERTICAL);
+                double crossX = LineUtil.xAtY(start, stop, refPt.getY());
+                final double xGap = refPt.getX() - crossX;
+                final double yGap;
+
+                if (refPt.getY() < start.getY()) {
+                    yGap = start.getY() - refPt.getY();
+                } else if (refPt.getY() > stop.getY()) {
+                    yGap = refPt.getY() - stop.getY();
+                } else {
+                    yGap = 0;
+                }
+
+                HeadStemRelation rel = new HeadStemRelation();
+                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+
+                if (rel.getGrade() >= rel.getMinGrade()) {
+                    if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
+                        rel.setExtensionPoint(refPt); // Approximately
+                        bestLink = new Link(stem, rel, true);
+                        bestGrade = rel.getGrade();
+                    }
+                }
             }
-
-            set.add((StemInter) sig.getEdgeTarget(rel));
         }
 
-        return map;
-    }
-
-    //----------//
-    // getStems //
-    //----------//
-    /**
-     * Report the stems linked to this head, whatever the side.
-     *
-     * @return set of linked stems
-     * @see #getSideStems()
-     */
-    public Set<StemInter> getStems ()
-    {
-        final Set<StemInter> set = new LinkedHashSet<StemInter>();
-
-        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
-            set.add((StemInter) sig.getEdgeTarget(relation));
-        }
-
-        return set;
+        return bestLink;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

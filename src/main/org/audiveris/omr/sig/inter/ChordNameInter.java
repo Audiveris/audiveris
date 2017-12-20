@@ -272,7 +272,15 @@ public class ChordNameInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     //--------//
     // create //
     //--------//
@@ -285,19 +293,11 @@ public class ChordNameInter
      */
     public static SentenceInter create (TextLine line)
     {
-        List<WordInter> wordInters = new ArrayList<WordInter>();
-
-        for (TextWord word : line.getWords()) {
-            ChordNameInter wordInter = create(word);
-            wordInters.add(wordInter);
-        }
-
         SentenceInter sentence = new SentenceInter(
                 line.getBounds(),
                 line.getConfidence() * Inter.intrinsicRatio,
                 line.getMeanFont(),
-                line.getRole(),
-                wordInters);
+                line.getRole());
 
         return sentence;
     }

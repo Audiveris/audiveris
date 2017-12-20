@@ -25,7 +25,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.audiveris.omr.OMR;
+import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.field.IntegerListSpinner;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.field.LHexaSpinner;
@@ -227,7 +227,7 @@ public class SymbolRipper
         // Frame behavior
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        OMR.gui.getApplication().show(frame);
+        OmrGui.getApplication().show(frame);
 
         // Actions
         image = buildImage();

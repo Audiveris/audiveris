@@ -264,16 +264,28 @@ public class Part
             }
 
             // No connection for this orphan
-            logger.info("Could not left-connect slur#" + slur.getId());
-            slur.delete();
+            if (slur.isVip()) {
+                logger.info("VIP could not left-connect {}", slur);
+            }
+
+            // Remove unless it's a manually assigned slur
+            if (slur.getGrade() < 1.0) {
+                slur.remove();
+            }
         }
 
         // Check previous orphans for non-connected ones
         precedingOrphans.removeAll(links.values());
 
         for (SlurInter prevSlur : precedingOrphans) {
-            logger.info("Could not right-connect slur#" + prevSlur.getId());
-            prevSlur.delete();
+            if (prevSlur.isVip()) {
+                logger.info("VIP could not right-connect {}", prevSlur);
+            }
+
+            // Remove unless it's a manually assigned slur
+            if (prevSlur.getGrade() < 1.0) {
+                prevSlur.remove();
+            }
         }
 
         return links;
@@ -696,7 +708,7 @@ public class Part
         for (Iterator<LyricLineInter> it = lyrics.iterator(); it.hasNext();) {
             LyricLineInter lyric = it.next();
 
-            if (lyric.isDeleted()) {
+            if (lyric.isRemoved()) {
                 it.remove();
             }
         }

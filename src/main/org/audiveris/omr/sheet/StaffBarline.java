@@ -30,6 +30,7 @@ import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -102,7 +103,7 @@ public class StaffBarline
     {
         if (!bars.contains(inter)) {
             bars.add(inter);
-            Collections.sort(bars, Inter.byFullAbscissa);
+            Collections.sort(bars, Inters.byFullAbscissa);
         }
     }
 

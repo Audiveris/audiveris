@@ -48,6 +48,7 @@ import org.audiveris.omr.sig.inter.AbstractBeamInter.Impacts;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -761,7 +762,7 @@ public class BeamsBuilder
 
         // Extend each orphan beam as much as possible
         for (Inter inter : new ArrayList<Inter>(rawSystemBeams)) {
-            if (inter.isDeleted()) {
+            if (inter.isRemoved()) {
                 continue;
             }
 
@@ -960,8 +961,8 @@ public class BeamsBuilder
             newBeam.setVip(true);
         }
 
-        beam.delete();
-        other.delete();
+        beam.remove();
+        other.remove();
 
         if (newBeam.isVip() || logger.isDebugEnabled()) {
             logger.info("VIP Merged {} & {} into {}", beam, other, newBeam);
@@ -1047,7 +1048,7 @@ public class BeamsBuilder
 
             sig.addVertex(newBeam);
             rawSystemBeams.add(newBeam);
-            beam.delete();
+            beam.remove();
 
             if (logging) {
                 logger.info("VIP {} extended as {} {}", beam, newBeam, newBeam.getImpacts());
@@ -1177,7 +1178,7 @@ public class BeamsBuilder
             @Override
             public boolean check (Inter inter)
             {
-                if (inter.isDeleted() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
+                if (inter.isRemoved() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
                     return false;
                 }
 
@@ -1193,7 +1194,7 @@ public class BeamsBuilder
             return aggregates;
         }
 
-        Collections.sort(smallBlacks, Inter.byAbscissa);
+        Collections.sort(smallBlacks, Inters.byAbscissa);
         logger.debug("S#{} cues:{}", system.getId(), smallBlacks);
 
         // Look for aggregates of close instances
@@ -1572,7 +1573,6 @@ public class BeamsBuilder
         }
     }
 
-    //
     //-----------//
     // Constants //
     //-----------//

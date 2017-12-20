@@ -161,8 +161,8 @@ public class SlotsBuilder
     private final Parameters params;
 
     /** Inter-chord relationships for the current measure stack. */
-    private SimpleDirectedGraph<AbstractChordInter, Link> graph = new SimpleDirectedGraph<AbstractChordInter, Link>(
-            Link.class);
+    private SimpleDirectedGraph<AbstractChordInter, Edge> graph = new SimpleDirectedGraph<AbstractChordInter, Edge>(
+            Edge.class);
 
     /** Current earliest term for each staff in stack. */
     private final Map<Staff, Rational> stackTerms = new LinkedHashMap<Staff, Rational>();
@@ -337,7 +337,7 @@ public class SlotsBuilder
         // Sort measure standard chords by abscissa
         List<AbstractChordInter> stdChords = new ArrayList<AbstractChordInter>(
                 stack.getStandardChords());
-        Collections.sort(stdChords, Inter.byAbscissa);
+        Collections.sort(stdChords, Inters.byAbscissa);
 
         // Populate graph with chords
         Graphs.addAllVertices(graph, stdChords);
@@ -374,7 +374,7 @@ public class SlotsBuilder
         // time slot being considered. Initially, it contains just the whole chords.
         List<AbstractChordInter> actives = new ArrayList<AbstractChordInter>(
                 stack.getWholeRestChords());
-        Collections.sort(actives, AbstractChordInter.byAbscissa);
+        Collections.sort(actives, Inters.byAbscissa);
 
         // Create voices for whole chords
         handleWholeVoices(actives);
@@ -399,6 +399,8 @@ public class SlotsBuilder
                     logger.info("Stack#{} suspicious {}", stack.getIdValue(), lastSlot);
 
                     return false;
+                } else {
+                    stack.setAbnormal(true);
                 }
             }
 
@@ -424,6 +426,7 @@ public class SlotsBuilder
                     } else {
                         String prefix = stack.getSystem().getLogPrefix();
                         slot.setSuspicious(true);
+                        stack.setAbnormal(true);
                         logger.info("{}{} {}", prefix, stack, slot);
                     }
                 }
@@ -432,7 +435,7 @@ public class SlotsBuilder
                 slot.buildVoices(freeEndings);
             } else if (term.equals(prevTerm)) {
                 logger.info("Stack#{} endless loop detected", stack.getIdValue());
-                stack.setAbnormal();
+                stack.setAbnormal(true);
 
                 break;
             }
@@ -780,10 +783,10 @@ public class SlotsBuilder
     private Rel getRel (AbstractChordInter from,
                         AbstractChordInter to)
     {
-        Link link = graph.getEdge(from, to);
+        Edge edge = graph.getEdge(from, to);
 
-        if (link != null) {
-            return link.rel;
+        if (edge != null) {
+            return edge.rel;
         }
 
         return null;
@@ -857,7 +860,7 @@ public class SlotsBuilder
 
                 final List<AbstractChordInter> groupChords = new ArrayList<AbstractChordInter>(
                         chordSet);
-                Collections.sort(groupChords, AbstractChordInter.byAbscissa);
+                Collections.sort(groupChords, Inters.byAbscissa);
 
                 for (int i = 0; i < groupChords.size(); i++) {
                     AbstractChordInter ch1 = groupChords.get(i);
@@ -1154,30 +1157,30 @@ public class SlotsBuilder
                          AbstractChordInter to,
                          Rel rel)
     {
-        Link link = graph.getEdge(from, to);
+        Edge edge = graph.getEdge(from, to);
 
-        if (link != null) {
-            link.rel = rel;
+        if (edge != null) {
+            edge.rel = rel;
         } else {
-            graph.addEdge(from, to, new Link(rel));
+            graph.addEdge(from, to, new Edge(rel));
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //------//
-    // Link //
+    // Edge //
     //------//
     /**
      * Meant to store a relation instance (edge) between two chords (vertices).
      */
-    protected static class Link
+    protected static class Edge
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Rel rel;
+        Rel rel; // Relationship carried by the concrete edge
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Link (Rel rel)
+        public Edge (Rel rel)
         {
             this.rel = rel;
         }

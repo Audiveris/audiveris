@@ -164,33 +164,6 @@ public class CLI
         return params.outputFolder;
     }
 
-    //---------------//
-    // getParameters //
-    //---------------//
-    /**
-     * Parse the CLI arguments and return the populated parameters structure.
-     *
-     * @param args the CLI arguments
-     * @return the parsed parameters, or null if failed
-     * @throws CmdLineException if there was any error parsing CLI arguments
-     */
-    public Parameters getParameters (final String... args)
-            throws CmdLineException
-    {
-        logger.info("CLI args: {}", Arrays.toString(args));
-        actualArgs = args;
-
-        parser.parseArgument(args);
-
-        if (logger.isDebugEnabled()) {
-            new Dumping().dump(params);
-        }
-
-        checkParams();
-
-        return params;
-    }
-
     //-------------//
     // isBatchMode //
     //-------------//
@@ -215,6 +188,33 @@ public class CLI
     public boolean isHelpMode ()
     {
         return params.helpMode;
+    }
+
+    //-----------------//
+    // parseParameters //
+    //-----------------//
+    /**
+     * Parse the CLI arguments and return the populated parameters structure.
+     *
+     * @param args the CLI arguments
+     * @return the parsed parameters, or null if failed
+     * @throws org.kohsuke.args4j.CmdLineException if error found in arguments
+     */
+    public Parameters parseParameters (final String... args)
+            throws CmdLineException
+    {
+        logger.info("CLI args: {}", Arrays.toString(args));
+        actualArgs = args;
+
+        parser.parseArgument(args);
+
+        if (logger.isDebugEnabled()) {
+            new Dumping().dump(params);
+        }
+
+        checkParams();
+
+        return params;
     }
 
     //------------------//
@@ -340,8 +340,9 @@ public class CLI
             // Obtain the book instance
             final Book book = loadBook(path);
 
-            // Process the book instance
-            processBook(book);
+            if (book != null) {
+                processBook(book); // Process the book instance
+            }
 
             return null;
         }
@@ -493,11 +494,10 @@ public class CLI
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        //
-        //        /** Should annotations be produced?. */
-        //        @Option(name = "-annotate", usage = "Annotates book symbols")
-        //        boolean annotate;
-        //
+        /** Should symbols annotations be produced?. */
+        @Option(name = "-annotate", usage = "Annotate book symbols")
+        boolean annotate;
+
         /** Batch mode. */
         @Option(name = "-batch", usage = "Run with no graphic user interface")
         boolean batchMode;
@@ -789,6 +789,12 @@ public class CLI
                 if (params.sample) {
                     logger.debug("Sample book");
                     book.sample();
+                }
+
+                // Book annotate?
+                if (params.annotate) {
+                    logger.debug("Annotate book");
+                    book.annotate();
                 }
 
                 // Book save?

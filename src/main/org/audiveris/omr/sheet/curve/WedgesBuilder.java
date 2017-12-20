@@ -29,7 +29,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.GradeImpacts;
-import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.util.Dumping;
@@ -100,7 +100,7 @@ public class WedgesBuilder
         List<SegmentInter> segments = curves.getSegments();
 
         for (final boolean rev : new boolean[]{true, false}) {
-            Collections.sort(segments, rev ? Inter.byAbscissa : Inter.byRightAbscissa);
+            Collections.sort(segments, rev ? Inters.byAbscissa : Inters.byRightAbscissa);
 
             for (int index = 0; index < segments.size(); index++) {
                 SegmentInter s1 = segments.get(index);

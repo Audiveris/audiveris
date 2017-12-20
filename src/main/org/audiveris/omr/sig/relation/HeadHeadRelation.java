@@ -68,7 +68,7 @@ public class HeadHeadRelation
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
-                2,
+                1,
                 "Value for (source or target) head coeff in head-head support formula");
     }
 }

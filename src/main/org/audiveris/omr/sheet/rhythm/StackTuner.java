@@ -90,6 +90,7 @@ public class StackTuner
         try {
             if (!check() && !failFast) {
                 logger.info("{}{} no correct rhythm", stack.getSystem().getLogPrefix(), stack);
+                stack.setAbnormal(true);
             }
         } catch (Exception ex) {
             logger.warn("Error " + ex + " checkConfig ", ex);
@@ -134,11 +135,11 @@ public class StackTuner
         countChordDots();
 
         // Link tuplets
-        final Set<TupletInter> toDelete = new TupletsBuilder(stack).linkTuplets();
+        final Set<TupletInter> toDelete = new TupletsBuilder(stack).linkStackTuplets();
 
         if (!toDelete.isEmpty()) {
             for (TupletInter tuplet : toDelete) {
-                tuplet.delete();
+                tuplet.remove();
             }
         }
 

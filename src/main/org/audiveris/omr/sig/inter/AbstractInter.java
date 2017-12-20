@@ -33,7 +33,9 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigValue.InterSet;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Containment;
+import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
@@ -50,10 +52,14 @@ import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -133,17 +139,14 @@ public abstract class AbstractInter
     @Navigable(false)
     protected SIGraph sig;
 
-    /** Deleted flag, if any. */
-    protected boolean deleted;
-
-    /** Containing ensemble, if any. */
-    protected InterEnsemble ensemble;
-
     /** Object precise area, if any. */
     protected Area area;
 
     /** Details about grade. */
     protected GradeImpacts impacts;
+
+    /** Already removed from SIG?. */
+    private boolean removed;
 
     /** Potential attachments, lazily allocated. */
     private AttachmentHolder attachments;
@@ -225,6 +228,19 @@ public abstract class AbstractInter
         attachments.addAttachment(id, attachment);
     }
 
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        removed = false;
+
+        if (isVip()) {
+            logger.info("VIP added {}", this);
+        }
+    }
+
     //----------//
     // contains //
     //----------//
@@ -245,6 +261,14 @@ public abstract class AbstractInter
             return true;
         }
 
+        if (this instanceof InterEnsemble) {
+            for (Inter member : ((InterEnsemble) this).getMembers()) {
+                if (member.contains(point)) {
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
@@ -255,36 +279,6 @@ public abstract class AbstractInter
     public void decrease (double ratio)
     {
         grade *= (1 - ratio);
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    @Override
-    public void delete ()
-    {
-        if (!deleted) {
-            ///logger.info("delete {}", this);
-            if (isVip()) {
-                logger.info("VIP delete {}", this);
-            }
-
-            deleted = true;
-
-            if (ensemble instanceof InterMutableEnsemble) {
-                InterMutableEnsemble ime = (InterMutableEnsemble) ensemble;
-
-                if (ime.getMembers().size() == 1) {
-                    ime.delete();
-                } else {
-                    ime.removeMember(this);
-                }
-            }
-
-            if (sig != null) {
-                sig.removeVertex(this);
-            }
-        }
     }
 
     //--------//
@@ -301,16 +295,19 @@ public abstract class AbstractInter
                         getClass().getSimpleName(),
                         Integer.toHexString(this.hashCode()),
                         (sig != null) ? (" System#" + sig.getSystem().getId()) : "",
-                        deleted ? " deleted" : ""));
+                        removed ? " REMOVED" : ""));
         sb.append(String.format("   %s%n", this));
 
         if (!getDetails().isEmpty()) {
             sb.append(String.format("   %s%n", getDetails()));
         }
 
-        if (this instanceof InterEnsemble) {
-            InterEnsemble ens = (InterEnsemble) this;
-            sb.append("   members:").append(ens.getMembers());
+        if (sig != null) {
+            for (Relation rel : sig.edgesOf(this)) {
+                sb.append(String.format("   rel: %s%n", rel.seenFrom(this)));
+            }
+        } else {
+            sb.append(" noSIG");
         }
 
         return sb.toString();
@@ -332,6 +329,31 @@ public abstract class AbstractInter
                 member.freeze();
             }
         }
+    }
+
+    //-----------------//
+    // getAllEnsembles //
+    //-----------------//
+    @Override
+    public Set<Inter> getAllEnsembles ()
+    {
+        Set<Inter> ensembles = null;
+
+        for (Relation rel : sig.incomingEdgesOf(this)) {
+            if (rel instanceof Containment) {
+                if (ensembles == null) {
+                    ensembles = new LinkedHashSet<Inter>();
+                }
+
+                ensembles.add(sig.getOppositeInter(this, rel));
+            }
+        }
+
+        if (ensembles != null) {
+            return ensembles;
+        }
+
+        return Collections.EMPTY_SET;
     }
 
     //---------//
@@ -477,7 +499,13 @@ public abstract class AbstractInter
     @Override
     public InterEnsemble getEnsemble ()
     {
-        return ensemble;
+        for (Relation rel : sig.incomingEdgesOf(this)) {
+            if (rel instanceof Containment) {
+                return (InterEnsemble) sig.getOppositeInter(this, rel);
+            }
+        }
+
+        return null;
     }
 
     //----------//
@@ -649,6 +677,15 @@ public abstract class AbstractInter
     }
 
     //----------//
+    // hasStaff //
+    //----------//
+    @Override
+    public boolean hasStaff ()
+    {
+        return staff != null;
+    }
+
+    //----------//
     // increase //
     //----------//
     @Override
@@ -657,6 +694,15 @@ public abstract class AbstractInter
         if (grade < intrinsicRatio) {
             grade += (ratio * (intrinsicRatio - grade));
         }
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        // No-op by default
     }
 
     //--------------------//
@@ -670,15 +716,6 @@ public abstract class AbstractInter
         }
 
         return grade >= getGoodGrade();
-    }
-
-    //-----------//
-    // isDeleted //
-    //-----------//
-    @Override
-    public boolean isDeleted ()
-    {
-        return deleted;
     }
 
     //----------//
@@ -708,6 +745,15 @@ public abstract class AbstractInter
         return grade >= getReallyGoodGrade();
     }
 
+    //-----------//
+    // isRemoved //
+    //-----------//
+    @Override
+    public boolean isRemoved ()
+    {
+        return removed;
+    }
+
     //----------//
     // isSameAs //
     //----------//
@@ -733,22 +779,20 @@ public abstract class AbstractInter
             throws DeletedInterException
     {
         // Trivial case?
-        Rectangle2D thisBounds = this.getCoreBounds();
-        Rectangle2D thatBounds = that.getCoreBounds();
-
-        if (!thisBounds.intersects(thatBounds)) {
+        if (!this.getCoreBounds().intersects(that.getCoreBounds())) {
             return false;
         }
 
         // Ensemble <--> that?
         if (this instanceof InterEnsemble) {
-            InterEnsemble thisEnsemble = (InterEnsemble) this;
+            final InterEnsemble thisEnsemble = (InterEnsemble) this;
+            final List<? extends Inter> members = thisEnsemble.getMembers();
 
-            if (thisEnsemble.getMembers().contains(that)) {
+            if (members.contains(that)) {
                 return false;
             }
 
-            for (Inter thisMember : thisEnsemble.getMembers()) {
+            for (Inter thisMember : members) {
                 if (thisMember.overlaps(that)
                     && that.overlaps(thisMember)
                     && sig.noSupport(thisMember, that)) {
@@ -792,6 +836,73 @@ public abstract class AbstractInter
         return true;
     }
 
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove ()
+    {
+        remove(true);
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (!removed) {
+            logger.debug("Removing {} extensive:{}", this, extensive);
+
+            if (isVip()) {
+                logger.info("VIP remove {}", this);
+            }
+
+            removed = true;
+
+            if (sig != null) {
+                // Extensive is true for non-manual removals only
+                if (extensive) {
+                    // Handle ensemble - member cases?
+                    // Copy is needed to avoid concurrent modification exception
+                    List<Relation> relsCopy = new ArrayList<Relation>(sig.incomingEdgesOf(this));
+
+                    for (Relation rel : relsCopy) {
+                        // A member may be contained by several ensembles (case of TimeNumberInter)
+                        if (rel instanceof Containment) {
+                            InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(this, rel);
+
+                            if (ens.getMembers().size() == 1) {
+                                logger.debug("{} removing a dying ensemble {}", this, ens);
+                                ens.remove(false);
+                            }
+                        }
+                    }
+
+                    if (this instanceof InterEnsemble) {
+                        InterEnsemble ens = (InterEnsemble) this;
+
+                        // Delete all its members that are not part of another ensemble
+                        for (Inter member : ens.getMembers()) {
+                            Set<Inter> ensembles = member.getAllEnsembles();
+
+                            if (!ensembles.isEmpty()) {
+                                ensembles.remove(this);
+
+                                if (ensembles.isEmpty()) {
+                                    logger.debug("{} removing a member {}", this, member);
+                                    member.remove(false);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                sig.removeVertex(this);
+            }
+        }
+    }
+
     //-------------------//
     // removeAttachments //
     //-------------------//
@@ -816,12 +927,12 @@ public abstract class AbstractInter
         }
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         return Collections.emptySet(); // By default
     }
@@ -842,15 +953,6 @@ public abstract class AbstractInter
     public void setContextualGrade (double value)
     {
         ctxGrade = value;
-    }
-
-    //-------------//
-    // setEnsemble //
-    //-------------//
-    @Override
-    public void setEnsemble (InterEnsemble ensemble)
-    {
-        this.ensemble = ensemble;
     }
 
     //----------//
@@ -939,26 +1041,13 @@ public abstract class AbstractInter
         return shape.toString();
     }
 
-    //----------//
-    // undelete //
-    //----------//
-    @Override
-    public void undelete ()
-    {
-        if (isVip()) {
-            logger.info("VIP undelete {}", this);
-        }
-
-        deleted = false;
-    }
-
     //---------------//
     // beforeMarshal //
     //---------------//
     /**
      * Called immediately before marshalling of this object begins.
      *
-     * @param m unused
+     * @param m (not used)
      */
     @SuppressWarnings("unused")
     protected void beforeMarshal (Marshaller m)
@@ -992,8 +1081,8 @@ public abstract class AbstractInter
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
-        if (isDeleted()) {
-            sb.append(" DELETED");
+        if (isRemoved()) {
+            sb.append(" REMOVED");
         }
 
         sb.append(String.format("(%.3f", grade));
@@ -1006,10 +1095,6 @@ public abstract class AbstractInter
 
         if (mirror != null) {
             sb.append(" mirror#").append(mirror.getId());
-        }
-
-        if (ensemble != null) {
-            sb.append(" e#").append(ensemble.getId());
         }
 
         if (staff != null) {

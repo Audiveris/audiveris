@@ -36,6 +36,7 @@ import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.SigListener;
 import org.audiveris.omr.sig.SigValue.InterSet;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -210,6 +211,7 @@ public class SystemInfo
         setStaves(staves);
 
         sig = new SIGraph(this);
+        sig.addGraphListener(new SigListener());
     }
 
     /**
@@ -271,8 +273,12 @@ public class SystemInfo
             }
 
             for (Inter inter : sig.inters(SentenceInter.class)) {
-                ((SentenceInter) inter).assignStaff(this);
+                SentenceInter sentence = (SentenceInter) inter;
+                sentence.assignStaff(this, sentence.getLocation());
             }
+
+            // Listen to sig modifications
+            sig.addGraphListener(new SigListener());
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }

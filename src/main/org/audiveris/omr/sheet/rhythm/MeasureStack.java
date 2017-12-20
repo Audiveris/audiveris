@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.rhythm;
 
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Page;
@@ -35,6 +36,7 @@ import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -130,10 +132,6 @@ public class MeasureStack
     @XmlAttribute
     private int right;
 
-    /** Unassigned tuplets within stack. */
-    @XmlElementRef
-    private final Set<TupletInter> stackTuplets = new LinkedHashSet<TupletInter>();
-
     /** Sequence of time slots within the measure, from left to right. */
     @XmlElementRef
     private final List<Slot> slots = new ArrayList<Slot>();
@@ -177,6 +175,9 @@ public class MeasureStack
     /** Vertical sequence of (Part) measures, from top to bottom. */
     private final List<Measure> measures = new ArrayList<Measure>();
 
+    /** Unassigned tuplets within stack. */
+    private final Set<TupletInter> stackTuplets = new LinkedHashSet<TupletInter>();
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MeasureStack} object.
@@ -205,13 +206,16 @@ public class MeasureStack
         final Part part = inter.getPart();
 
         if (part != null) {
-            int partIndex = system.getParts().indexOf(part);
-            Measure measure = measures.get(partIndex);
+            Measure measure = getMeasureAt(part);
             measure.addInter(inter);
+
+            if (inter instanceof TupletInter) {
+                stackTuplets.remove((TupletInter) inter);
+            }
         } else if (inter instanceof TupletInter) {
             stackTuplets.add((TupletInter) inter);
         } else {
-            throw new IllegalStateException("No part for " + inter);
+            logger.debug("No part yet for {}", inter);
         }
     }
 
@@ -1132,10 +1136,16 @@ public class MeasureStack
     //--------------------//
     public Set<AbstractChordInter> getWholeRestChords ()
     {
-        Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
+        final Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
 
         for (Measure measure : measures) {
-            set.addAll(measure.getWholeRestChords());
+            for (RestChordInter chord : measure.getRestChords()) {
+                final List<Inter> members = chord.getMembers();
+
+                if (!members.isEmpty() && (members.get(0).getShape() == Shape.WHOLE_REST)) {
+                    set.add(chord);
+                }
+            }
         }
 
         return set;
@@ -1354,16 +1364,20 @@ public class MeasureStack
     //-------------//
     public void removeInter (Inter inter)
     {
+        if (inter.isVip()) {
+            logger.info("VIP removeInter {} from [}", inter, this);
+        }
+
         final Part part = inter.getPart();
 
         if (part != null) {
             int partIndex = system.getParts().indexOf(part);
             Measure measure = measures.get(partIndex);
             measure.removeInter(inter);
-        } else if (inter instanceof TupletInter) {
+        }
+
+        if (inter instanceof TupletInter) {
             stackTuplets.remove((TupletInter) inter);
-        } else {
-            throw new IllegalStateException("No part for " + inter);
         }
     }
 
@@ -1394,7 +1408,8 @@ public class MeasureStack
         // Most inters from first measure
         Staff firstStaff = system.getFirstStaff();
         Measure firstMeasure = getMeasureAt(firstStaff);
-        int top = Integer.MAX_VALUE;
+        LineInfo firstLine = firstStaff.getFirstLine();
+        int top = Math.min(firstLine.yAt(left), firstLine.yAt(right));
 
         for (Inter inter : firstMeasure.getTimingInters()) {
             top = Math.min(top, inter.getBounds().y);
@@ -1403,7 +1418,8 @@ public class MeasureStack
         // Most inters from last measure
         Staff lastStaff = system.getLastStaff();
         Measure lastMeasure = getMeasureAt(lastStaff);
-        int bottom = 0;
+        LineInfo lastLine = lastStaff.getLastLine();
+        int bottom = Math.max(lastLine.yAt(left), lastLine.yAt(right));
 
         for (Inter inter : lastMeasure.getTimingInters()) {
             Rectangle bounds = inter.getBounds();
@@ -1427,10 +1443,12 @@ public class MeasureStack
     //-------------//
     public void resetRhythm ()
     {
+        setAbnormal(false);
+        excess = null;
         slots.clear();
         actualDuration = null;
 
-        // Reset every measure
+        // Reset every measure within this stack
         for (Measure measure : measures) {
             measure.resetRhythm();
         }
@@ -1440,11 +1458,13 @@ public class MeasureStack
     // setAbnormal //
     //-------------//
     /**
-     * Mark this stack as being abnormal.
+     * Mark this stack as being abnormal or not.
+     *
+     * @param abnormal new value
      */
-    public void setAbnormal ()
+    public void setAbnormal (boolean abnormal)
     {
-        abnormal = Boolean.TRUE;
+        this.abnormal = abnormal;
     }
 
     //-------------------//
@@ -1479,7 +1499,7 @@ public class MeasureStack
     public void setExcess (Rational excess)
     {
         this.excess = excess;
-        setAbnormal();
+        setAbnormal(true);
     }
 
     //---------------------//

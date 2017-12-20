@@ -27,6 +27,8 @@ import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -35,15 +37,16 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -74,17 +77,11 @@ public abstract class AbstractBeamInter
     /** Beam height. */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
-    private final double height;
+    protected double height;
 
     /** Median line. */
     @XmlElement
-    private final Line2D median;
-
-    /** Chords that are linked by this beam. */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "chords")
-    private final List<AbstractChordInter> chords = new ArrayList<AbstractChordInter>();
+    protected Line2D median;
 
     // Transient data
     //---------------
@@ -116,6 +113,23 @@ public abstract class AbstractBeamInter
         }
     }
 
+    /**
+     * Creates a new AbstractBeamInter <b>ghost</b> object.
+     * Median and height must be assigned later
+     *
+     * @param shape BEAM or BEAM_HOOK
+     * @param grade the grade
+     */
+    protected AbstractBeamInter (Shape shape,
+                                 double grade)
+    {
+        super(null, null, shape, grade);
+
+        if (median != null) {
+            computeArea();
+        }
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
@@ -126,14 +140,15 @@ public abstract class AbstractBeamInter
         visitor.visit(this);
     }
 
-    //----------//
-    // addChord //
-    //----------//
-    public void addChord (AbstractChordInter chord)
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
     {
-        if (!chords.contains(chord)) {
-            chords.add(chord);
-        }
+        super.added();
+
+        // Update group?
     }
 
     //
@@ -147,9 +162,12 @@ public abstract class AbstractBeamInter
     //     *
     //     * @param measure containing measure
     //     */
-    //    public void determineGroup (Measure measure)
+    //    private void determineGroup ()
     //    {
     //        // Check if this beam should belong to an existing group
+    //        Point center = getCenter();
+    //        MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+    //        stack.getMeasureAt(part)
     //        for (BeamGroup grp : measure.getBeamGroups()) {
     //            for (AbstractBeamInter beam : grp.getBeams()) {
     //                for (AbstractChordInter chord : beam.getChords()) {
@@ -200,6 +218,18 @@ public abstract class AbstractBeamInter
      */
     public List<AbstractChordInter> getChords ()
     {
+        List<AbstractChordInter> chords = new ArrayList<AbstractChordInter>();
+
+        for (StemInter stem : getStems()) {
+            for (AbstractChordInter chord : stem.getChords()) {
+                if (!chords.contains(chord)) {
+                    chords.add(chord);
+                }
+            }
+        }
+
+        Collections.sort(chords, Inters.byCenterAbscissa);
+
         return chords;
     }
 
@@ -241,6 +271,26 @@ public abstract class AbstractBeamInter
     }
 
     //----------//
+    // getStems //
+    //----------//
+    /**
+     * Report the stems connected to this beam.
+     *
+     * @return the set of connected stems, perhaps empty
+     */
+    public Set<StemInter> getStems ()
+    {
+        Set<StemInter> stems = new LinkedHashSet<StemInter>();
+
+        for (Relation bs : sig.getRelations(this, BeamStemRelation.class)) {
+            StemInter stem = (StemInter) sig.getOppositeInter(this, bs);
+            stems.add(stem);
+        }
+
+        return stems;
+    }
+
+    //----------//
     // getVoice //
     //----------//
     @Override
@@ -270,12 +320,21 @@ public abstract class AbstractBeamInter
         return false;
     }
 
-    //-------------//
-    // removeChord //
-    //-------------//
-    public void removeChord (AbstractChordInter chord)
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove (boolean extensive)
     {
-        chords.remove(chord);
+        if (group != null) {
+            group.removeBeam(this);
+        }
+
+        for (AbstractChordInter chord : getChords()) {
+            chord.invalidateCache();
+        }
+
+        super.remove(extensive);
     }
 
     //----------//
@@ -318,6 +377,17 @@ public abstract class AbstractBeamInter
         this.group = group;
     }
 
+    //-------------//
+    // computeArea //
+    //-------------//
+    protected void computeArea ()
+    {
+        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
+
+        // Define precise bounds based on this path
+        setBounds(getArea().getBounds());
+    }
+
     //----------------//
     // afterUnmarshal //
     //----------------//
@@ -332,17 +402,6 @@ public abstract class AbstractBeamInter
         if (median != null) {
             computeArea();
         }
-    }
-
-    //-------------//
-    // computeArea //
-    //-------------//
-    private void computeArea ()
-    {
-        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
-
-        // Define precise bounds based on this path
-        setBounds(getArea().getBounds());
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

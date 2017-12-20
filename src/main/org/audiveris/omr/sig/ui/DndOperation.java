@@ -119,7 +119,7 @@ public class DndOperation
     /**
      * Drop the ghost inter at provided location.
      * <p>
-     * Finalize ghost info (staff &amp; bounds), insert into proper SIG
+     * Finalize ghost info (staff and bounds), insert into proper SIG
      * and link to partners if any.
      *
      * @param center provided location
@@ -150,7 +150,7 @@ public class DndOperation
         sheet.getInterController().dropInter(ghost, center);
 
         sheet.getInterIndex().publish(ghost);
-        logger.info("Dropped {} at {}", this, center);
+        logger.debug("Dropped {} at {}", this, center);
     }
 
     //----------------//

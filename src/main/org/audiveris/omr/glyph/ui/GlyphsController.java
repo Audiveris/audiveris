@@ -32,7 +32,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.SelectionHint;
@@ -153,11 +153,11 @@ public class GlyphsController
                         system = staves.get(i).getSystem();
 
                         if (system != prevSystem) {
-                            Collection<Partnership> partnerships = ghost.searchPartnerships(
+                            Collection<Link> links = ghost.searchLinks(
                                     system,
                                     false);
 
-                            for (Partnership p : partnerships) {
+                            for (Link p : links) {
                                 if (p.partner.getStaff() != null) {
                                     staff = p.partner.getStaff();
 

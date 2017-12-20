@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      P a r t n e r s h i p                                     //
+//                                     R e l a t i o n T a s k                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2017. All rights reserved.
+//  Copyright ©  Audiveris 2017. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -19,68 +19,74 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sig.relation;
+package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.relation.Relation;
 
 /**
- * Class {@code Partnership} encapsulates a partnering vertex with the related edge.
+ * Class {@code RelationTask}
  *
  * @author Hervé Bitteur
  */
-public class Partnership
+public abstract class RelationTask
+        extends UITask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    public final Inter partner;
+    protected final Relation relation;
 
-    public final Relation relation;
+    protected Inter source;
 
-    public final boolean outgoing;
+    protected Inter target;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code Partnership} object.
+     * Creates a new {@code RelationTask} object.
      *
-     * @param partner  the partnering inter instance
-     * @param relation the relation with this partner
-     * @param outgoing true if partner is target, false if it is source
+     * @param sig      the underlying sig
+     * @param relation the relation task is focused upon
      */
-    public Partnership (Inter partner,
-                        Relation relation,
-                        boolean outgoing)
+    public RelationTask (SIGraph sig,
+                         Relation relation)
     {
-        this.partner = partner;
+        super(sig);
         this.relation = relation;
-        this.outgoing = outgoing;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Add the relation between the provided inter and the partner.
-     *
-     * @param inter the provided inter
+     * @return the relation
      */
-    public void applyTo (Inter inter)
+    public Relation getRelation ()
     {
-        SIGraph sig = inter.getSig();
+        return relation;
+    }
 
-        if (outgoing) {
-            sig.addEdge(inter, partner, relation);
-        } else {
-            sig.addEdge(partner, inter, relation);
-        }
+    /**
+     * @return the source
+     */
+    public Inter getSource ()
+    {
+        return source;
+    }
+
+    /**
+     * @return the target
+     */
+    public Inter getTarget ()
+    {
+        return target;
     }
 
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("Partnership{");
-        sb.append(partner);
+        StringBuilder sb = new StringBuilder(actionName());
         sb.append(" ").append(relation);
-        sb.append(" ").append(outgoing ? "OUTGOING" : "INCOMING");
-        sb.append("}");
+        sb.append(" src:").append(source);
+        sb.append(" tgt:").append(target);
 
         return sb.toString();
     }

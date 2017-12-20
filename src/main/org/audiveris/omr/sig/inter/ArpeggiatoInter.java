@@ -29,14 +29,18 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -49,7 +53,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "arpeggiato")
 public class ArpeggiatoInter
-        extends AbstractNotationInter
+        extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -87,19 +91,6 @@ public class ArpeggiatoInter
         visitor.visit(this);
     }
 
-    //----------//
-    // getVoice //
-    //----------//
-    @Override
-    public Voice getVoice ()
-    {
-        for (Relation rel : sig.getRelations(this, ChordArpeggiatoRelation.class)) {
-            return sig.getOppositeInter(this, rel).getVoice();
-        }
-
-        return null;
-    }
-
     //--------//
     // create //
     //--------//
@@ -117,10 +108,76 @@ public class ArpeggiatoInter
                                           SystemInfo system,
                                           List<Inter> systemHeadChords)
     {
+        ArpeggiatoInter arpeggiato = (ArpeggiatoInter) SymbolFactory.createGhost(
+                Shape.ARPEGGIATO,
+                grade);
+        arpeggiato.setGlyph(glyph);
+
+        Link link = arpeggiato.lookupLink(systemHeadChords, system);
+
+        if (link != null) {
+            system.getSig().addVertex(arpeggiato);
+            link.applyTo(arpeggiato);
+
+            return arpeggiato;
+        }
+
+        return null;
+    }
+
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
+    {
+        for (Relation rel : sig.getRelations(this, ChordArpeggiatoRelation.class)) {
+            return sig.getOppositeInter(this, rel).getVoice();
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        Link link = lookupLink(systemHeadChords, system);
+
+        if (link == null) {
+            return Collections.emptyList();
+        }
+
+        if (doit) {
+            link.applyTo(this);
+        }
+
+        return Collections.singleton(link);
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
+    /**
+     * Try to detect a link between this arpeggiato instance and a HeadChord nearby.
+     *
+     * @param systemHeadChords ordered collection of head chords in system
+     * @return the link found or null
+     */
+    private Link lookupLink (List<Inter> systemHeadChords,
+                             SystemInfo system)
+    {
         // Look for a head-chord on right side of this symbol
         // Use a lookup box (glyph height, predefined width)
         // For intersected head-chords, measure y overlap WRT glyph height
-        Rectangle luBox = glyph.getBounds();
+        Rectangle luBox = getBounds();
         luBox.x += luBox.width;
         luBox.width = system.getSheet().getScale().toPixels(constants.areaDx);
 
@@ -157,12 +214,7 @@ public class ArpeggiatoInter
             return null;
         }
 
-        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
-        system.getSig().addVertex(arpeggiato);
-        system.getSig().addEdge(bestChord, arpeggiato, rel);
-        arpeggiato.setStaff(bestChord.getLeadingNote().getStaff());
-
-        return arpeggiato;
+        return new Link(bestChord, rel, false);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

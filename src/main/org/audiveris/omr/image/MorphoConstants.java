@@ -24,7 +24,7 @@ package org.audiveris.omr.image;
 /**
  * Interface {@code MorphoConstants}
  *
- * @author Hervé Bitteur
+ * @author ?
  */
 public interface MorphoConstants
 {

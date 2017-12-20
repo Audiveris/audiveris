@@ -31,7 +31,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
 
@@ -40,7 +40,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.Set;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -48,7 +48,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Interface {@code Inter} defines a possible interpretation.
  * <p>
  * Every Inter instance is assigned an <i>intrinsic</i> grade in range [0..1].
- * There usually exists two thresholds on grade value:<ol>
+ * There usually exist two thresholds on grade value:<ol>
  * <li><b>Minimum</b> grade: this is the minimum value required to actually create (or keep) any
  * interpretation instance.</li>
  * <li><b>Good</b> grade: this is the value which designates a really reliable interpretation, which
@@ -73,176 +73,6 @@ public interface Inter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /**
-     * For comparing interpretations by id.
-     */
-    public static final Comparator<Inter> byId = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getId(), i2.getId());
-        }
-    };
-
-    /**
-     * For comparing interpretations by left abscissa.
-     */
-    public static final Comparator<Inter> byAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getBounds().x, i2.getBounds().x);
-        }
-    };
-
-    /**
-     * For comparing interpretations by center abscissa.
-     */
-    public static final Comparator<Inter> byCenterAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getCenter().x, i2.getCenter().x);
-        }
-    };
-
-    /**
-     * For comparing interpretations by center ordinate.
-     */
-    public static final Comparator<Inter> byCenterOrdinate = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getCenter().y, i2.getCenter().y);
-        }
-    };
-
-    /**
-     * For comparing interpretations by right abscissa.
-     */
-    public static final Comparator<Inter> byRightAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            Rectangle b1 = i1.getBounds();
-            Rectangle b2 = i2.getBounds();
-
-            return Integer.compare(b1.x + b1.width, b2.x + b2.width);
-        }
-    };
-
-    /**
-     * For comparing interpretations by abscissa, ensuring that only identical
-     * interpretations are found equal.
-     * This comparator can thus be used for a TreeSet.
-     */
-    public static final Comparator<Inter> byFullAbscissa = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter o1,
-                            Inter o2)
-        {
-            if (o1 == o2) {
-                return 0;
-            }
-
-            Point loc1 = o1.getBounds().getLocation();
-            Point loc2 = o2.getBounds().getLocation();
-
-            // Are x values different?
-            int dx = loc1.x - loc2.x;
-
-            if (dx != 0) {
-                return dx;
-            }
-
-            // Vertically aligned, so use ordinates
-            int dy = loc1.y - loc2.y;
-
-            if (dy != 0) {
-                return dy;
-            }
-
-            // Finally, use id ...
-            return Integer.compare(o1.getId(), o2.getId());
-        }
-    };
-
-    /**
-     * For comparing interpretations by ordinate.
-     */
-    public static final Comparator<Inter> byOrdinate = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Integer.compare(i1.getBounds().y, i2.getBounds().y);
-        }
-    };
-
-    /**
-     * For comparing interpretations by increasing grade.
-     */
-    public static final Comparator<Inter> byGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i1.getGrade(), i2.getGrade());
-        }
-    };
-
-    /**
-     * For comparing interpretations by decreasing grade.
-     */
-    public static final Comparator<Inter> byReverseGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i2.getGrade(), i1.getGrade());
-        }
-    };
-
-    /**
-     * For comparing interpretations by best grade.
-     */
-    public static final Comparator<Inter> byBestGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i1.getBestGrade(), i2.getBestGrade());
-        }
-    };
-
-    /**
-     * For comparing interpretations by decreasing best grade.
-     */
-    public static final Comparator<Inter> byReverseBestGrade = new Comparator<Inter>()
-    {
-        @Override
-        public int compare (Inter i1,
-                            Inter i2)
-        {
-            return Double.compare(i2.getBestGrade(), i1.getBestGrade()); // Reverse order
-        }
-    };
-
     static final Constants constants = new Constants();
 
     /** Ratio applied on intrinsic value, to leave room for contextual. */
@@ -262,6 +92,12 @@ public interface Inter
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
+     * Call-back when this instance has just been added to SIG.
+     * This is meant for additional inter house keeping.
+     */
+    void added ();
+
+    /**
      * Decrease the inter grade.
      *
      * @param ratio ratio applied
@@ -269,15 +105,19 @@ public interface Inter
     void decrease (double ratio);
 
     /**
-     * Delete this instance, and remove it from its containing SIG.
-     */
-    void delete ();
-
-    /**
      * Mark this inter as frozen, that cannot be deleted even by a conflicting
      * instance with higher grade.
      */
     void freeze ();
+
+    /**
+     * Report all the ensembles this inter is member of.
+     * In rare cases, an inter may (temporarily) be part of several ensembles.
+     *
+     * @return the set of all containing ensembles, perhaps empty but never null
+     * @see #getEnsemble()
+     */
+    Set<Inter> getAllEnsembles ();
 
     /**
      * Report the precise defining area
@@ -337,8 +177,10 @@ public interface Inter
 
     /**
      * Report the ensemble this inter is member of, if any.
+     * Actually, it returns the first containing ensemble found.
      *
      * @return the containing ensemble or null
+     * @see #getAllEnsembles()
      */
     InterEnsemble getEnsemble ();
 
@@ -410,6 +252,7 @@ public interface Inter
      *
      * @param interline scaling factor
      * @return the symbol bounding box
+     * @see #getBounds()
      */
     Rectangle getSymbolBounds (int interline);
 
@@ -421,6 +264,13 @@ public interface Inter
     Voice getVoice ();
 
     /**
+     * Report whether a staff has been assigned.
+     *
+     * @return true if staff assigned
+     */
+    boolean hasStaff ();
+
+    /**
      * Increase the inter grade.
      *
      * @param ratio ratio applied
@@ -428,18 +278,16 @@ public interface Inter
     void increase (double ratio);
 
     /**
+     * Nullify cached data.
+     */
+    void invalidateCache ();
+
+    /**
      * Report whether the interpretation has a good contextual grade.
      *
      * @return true if contextual grade is good
      */
     boolean isContextuallyGood ();
-
-    /**
-     * Report whether this instance has been deleted.
-     *
-     * @return true if deleted
-     */
-    boolean isDeleted ();
 
     /**
      * Report whether this instance has been frozen.
@@ -461,6 +309,13 @@ public interface Inter
      * @return true if grade is good
      */
     boolean isReallyGood ();
+
+    /**
+     * Report whether this instance has been removed from SIG.
+     *
+     * @return true if removed
+     */
+    boolean isRemoved ();
 
     /**
      * Report whether this interpretation represents the same thing as that interpretation
@@ -494,14 +349,38 @@ public interface Inter
             throws DeletedInterException;
 
     /**
-     * Look for additional partners around this inter instance.
+     * Remove this Inter instance from its containing SIG.
+     * This is equivalent to remove(true).
+     */
+    void remove ();
+
+    /**
+     * Remove this Inter instance from its containing SIG.
+     *
+     * @param extensive option to forward removal to containing ensemble if any
+     */
+    void remove (boolean extensive);
+
+    /**
+     * Look for partners around this inter instance.
+     * <p>
+     * Relationships that are searched for inters (which cannot survive without such link):
+     * <ul>
+     * <li>For a flag: 1 stem
+     * <li>For a head: 1 stem
+     * <li>For an alteration: 1 head
+     * <li>For an arpeggiato: 1 headChord
+     * <li>For an articulation: 1 headChord
+     * <li>For a dynamic: 1 chord
+     * <li>For a tuplet: 3 or 6 chords (approximately)
+     * </ul>
      *
      * @param system containing system
      * @param doit   if true, relations are actually added to the sig
-     * @return the collection of additional partnerships found, perhaps empty
+     * @return the collection of links found, perhaps empty
      */
-    Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                boolean doit);
+    Collection<Link> searchLinks (SystemInfo system,
+                                  boolean doit);
 
     /**
      * Assign the bounding box for this interpretation.
@@ -512,19 +391,11 @@ public interface Inter
     void setBounds (Rectangle box);
 
     /**
-     * Assign the contextual grade, (0..1 probability) computed for
-     * interpretation.
+     * Assign the contextual grade, (0..1 probability) computed for interpretation.
      *
      * @param value the contextual grade value
      */
     void setContextualGrade (double value);
-
-    /**
-     * Set the containing ensemble for this inter.
-     *
-     * @param ensemble the containing ensemble
-     */
-    void setEnsemble (InterEnsemble ensemble);
 
     /**
      * Assign the glyph which is concerned by this interpretation.
@@ -574,11 +445,6 @@ public interface Inter
      * @return shape.toString() by default. To be overridden if shape is null.
      */
     String shapeString ();
-
-    /**
-     * Un-delete this instance.
-     */
-    void undelete ();
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//

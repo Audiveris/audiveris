@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -164,7 +165,7 @@ public class Staff
 
     /** Sequence of bar lines. */
     @XmlElement(name = "bar")
-    private List<BarlineInter> bars;
+    private List<BarlineInter> bars = new ArrayList<BarlineInter>();
 
     /** Map of ledgers nearby. */
     @XmlElement(name = "ledgers")
@@ -288,7 +289,7 @@ public class Staff
     public void addBarline (BarlineInter barline)
     {
         bars.add(barline);
-        Collections.sort(bars, Inter.byCenterAbscissa);
+        Collections.sort(bars, Inters.byCenterAbscissa);
         retrieveSideBars();
     }
 
@@ -516,7 +517,7 @@ public class Staff
                 sig.computeContextualGrade(clef);
             }
 
-            Collections.sort(clefs, Inter.byReverseBestGrade);
+            Collections.sort(clefs, Inters.byReverseBestGrade);
         }
 
         return clefs.get(0);
@@ -692,7 +693,7 @@ public class Staff
         // Look for clef on left side in staff (together with its competing clefs)
         SIGraph sig = getSystem().getSig();
         List<Inter> staffClefs = sig.inters(this, ClefInter.class);
-        Collections.sort(staffClefs, Inter.byAbscissa);
+        Collections.sort(staffClefs, Inters.byAbscissa);
 
         Inter lastClef = null;
 
@@ -1801,10 +1802,12 @@ public class Staff
         public static void checkStaffHolder (Inter inter,
                                              StaffManager mgr)
         {
-            Staff staff = inter.getStaff();
+            if (inter.hasStaff()) {
+                Staff staff = inter.getStaff();
 
-            if (staff instanceof StaffHolder) {
-                inter.setStaff(mgr.getStaff(staff.getId() - 1));
+                if (staff instanceof StaffHolder) {
+                    inter.setStaff(mgr.getStaff(staff.getId() - 1));
+                }
             }
         }
 

@@ -23,60 +23,73 @@ package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 
-import org.jdesktop.application.Task;
-
+import java.awt.Rectangle;
 import java.util.Collection;
 
 /**
  * Class {@code InterTask} is the elementary task (focused on an Inter) that can be
- * done, undone and redone by the IntersController.
+ * done, undone and redone by the {@link InterController}.
  *
  * @author Hervé Bitteur
  */
 public abstract class InterTask
+        extends UITask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Underlying SIG. */
-    protected final SIGraph sig;
-
     /** Task focus. */
-    private final Inter inter;
+    protected final Inter inter;
+
+    /** Initial bounds of inter. */
+    protected final Rectangle initialBounds;
 
     /** Relations inter is involved in. */
-    protected final Collection<Partnership> partnerships;
+    protected Collection<Link> links;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterTask} object.
      *
-     * @param sig          the underlying sig
-     * @param inter        the inter task is focused upon
-     * @param partnerships the relations around inter
+     * @param sig           the underlying sig
+     * @param inter         the inter task is focused upon
+     * @param initialBounds the inter initial bounds
+     * @param links         the relations around inter
      */
     protected InterTask (SIGraph sig,
                          Inter inter,
-                         Collection<Partnership> partnerships)
+                         Rectangle initialBounds,
+                         Collection<Link> links)
     {
-        this.sig = sig;
+        super(sig);
         this.inter = inter;
-        this.partnerships = partnerships;
+        this.initialBounds = new Rectangle(initialBounds); // Safer to use a copy...
+        this.links = links;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    public abstract Task<Void, Void> performDo ();
-
-    public abstract Task<Void, Void> performRedo ();
-
-    public abstract Task<Void, Void> performUndo ();
-
     /**
-     * @return the inter
+     * Getter for involved inter.
+     *
+     * @return the inter involved
      */
     public Inter getInter ()
     {
         return inter;
+    }
+
+    public Collection<Link> getLinks ()
+    {
+        return links;
+    }
+
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(actionName());
+        sb.append(" ").append(inter);
+
+        return sb.toString();
     }
 }

@@ -41,6 +41,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
@@ -645,14 +646,14 @@ public class KeyBuilder
                 sig.computeContextualGrade(clef);
             }
 
-            Collections.sort(clefs, Inter.byReverseBestGrade);
+            Collections.sort(clefs, Inters.byReverseBestGrade);
 
             if (!clefs.isEmpty()) {
                 ClefInter bestClef = clefs.get(0);
 
                 for (ClefInter clef : clefs) {
                     if (clef != bestClef) {
-                        clef.delete();
+                        clef.remove();
                     }
                 }
 
@@ -809,7 +810,7 @@ public class KeyBuilder
 
                 if ((index == null) || (index >= sourceBuilder.roi.size())) {
                     if (alter != null) {
-                        alter.delete();
+                        alter.remove();
                     }
 
                     it.remove();
@@ -829,7 +830,7 @@ public class KeyBuilder
                             alter = slice.getAlter();
 
                             if (alter != null) {
-                                alter.delete();
+                                alter.remove();
                             }
 
                             it.remove();
@@ -900,7 +901,7 @@ public class KeyBuilder
 
             // Create a brand new KeyInter with current slices & alters
             if (keyInter != null) {
-                keyInter.delete();
+                keyInter.remove();
                 keyInter = null;
             }
 
@@ -928,7 +929,7 @@ public class KeyBuilder
             roi.destroy();
 
             if (keyInter != null) {
-                keyInter.delete();
+                keyInter.remove();
                 keyInter = null;
             }
         }
@@ -1060,8 +1061,6 @@ public class KeyBuilder
                 if ((lastValidSlice != null) && (lastValidSlice.getId() == 1)) {
                     if (!checkTrailingSpace()) {
                         destroy();
-
-                        return;
                     }
                 }
             }
@@ -1416,7 +1415,7 @@ public class KeyBuilder
                 // Keep only the best clef
                 for (ClefInter clef : clefs) {
                     if (clef != bestClef) {
-                        clef.delete();
+                        clef.remove();
                     }
                 }
 
@@ -1624,17 +1623,7 @@ public class KeyBuilder
                 }
             }
 
-            double grade = 0;
-
-            for (KeyAlterInter alter : alters) {
-                grade += sig.computeContextualGrade(alter);
-            }
-
-            grade /= alters.size();
-
-            keyInter = new KeyInter(box, grade, getFifths(), alters);
-            keyInter.setStaff(staff);
-            sig.addVertex(keyInter);
+            keyInter = KeyInter.create(staff, alters);
 
             // Postpone staff header assignment until key is finalized...
         }

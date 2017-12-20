@@ -24,6 +24,8 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 
+import org.jgrapht.event.GraphEdgeChangeEvent;
+
 /**
  * Interface {@code Relation} describes a relation between two Interpretation instances.
  *
@@ -39,6 +41,20 @@ public interface Relation
      * @return the cloned relation
      */
     Relation duplicate ();
+
+    /**
+     * Notifies that this relation has been added to the sig.
+     *
+     * @param e the relation event.
+     */
+    void added (GraphEdgeChangeEvent<Inter, Relation> e);
+
+    /**
+     * Notifies that this relation has been removed from the sig.
+     *
+     * @param e the relation event.
+     */
+    void removed (GraphEdgeChangeEvent<Inter, Relation> e);
 
     /**
      * Details for tip.

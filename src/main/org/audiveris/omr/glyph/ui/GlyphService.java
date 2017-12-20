@@ -25,6 +25,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.ui.ViewParameters;
+import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.IdEvent;
@@ -114,8 +115,8 @@ public class GlyphService
      */
     private void handleEvent (LocationEvent locationEvent)
     {
-        // In glyph-selection mode?
-        if (ViewParameters.getInstance().isSectionMode()) {
+        // Which selection mode?
+        if (ViewParameters.getInstance().getSelectionMode() != SelectionMode.MODE_GLYPH) {
             return;
         }
 

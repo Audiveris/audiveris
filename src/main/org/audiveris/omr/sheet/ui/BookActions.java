@@ -45,6 +45,7 @@ import org.audiveris.omr.sheet.stem.StemScaler;
 import static org.audiveris.omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
+import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.OmrGui;
@@ -253,6 +254,70 @@ public class BookActions
         }
 
         return INSTANCE;
+    }
+
+    //--------------//
+    // annotateBook //
+    //--------------//
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> annotateBook (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        return new VoidTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws InterruptedException
+            {
+                try {
+                    LogUtil.start(book);
+                    book.annotate();
+                } finally {
+                    LogUtil.stopBook();
+                }
+
+                return null;
+            }
+        };
+    }
+
+    //---------------//
+    // annotateSheet //
+    //---------------//
+    @Action(enabledProperty = STUB_IDLE)
+    public Task<Void, Void> annotateSheet (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        final Sheet sheet = stub.getSheet();
+
+        return new VoidTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws InterruptedException
+            {
+                try {
+                    LogUtil.start(sheet.getStub());
+                    sheet.annotate();
+                } catch (Exception ex) {
+                    logger.warn("Annotations failed {}", ex);
+                } finally {
+                    LogUtil.stopBook();
+                }
+
+                return null;
+            }
+        };
     }
 
     //-------------//
@@ -910,6 +975,31 @@ public class BookActions
         return new PrintSheetTask(stub.getSheet(), sheetPrintPath);
     }
 
+    //------//
+    // redo //
+    //------//
+    /**
+     * Action to redo undone user modification.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = REDOABLE)
+    public void redo (ActionEvent e)
+    {
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return;
+        }
+
+        Sheet sheet = stub.getSheet();
+        InterController controller = sheet.getInterController();
+        controller.redo();
+
+        setUndoable(controller.canUndo());
+        setRedoable(controller.canRedo());
+    }
+
     //-----------//
     // resetBook //
     //-----------//
@@ -1207,6 +1297,30 @@ public class BookActions
         return new TranscribeSheetTask(stub.getSheet());
     }
 
+    //------//
+    // undo //
+    //------//
+    /**
+     * Action to undo last user modification.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = UNDOABLE)
+    public void undo (ActionEvent e)
+    {
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return;
+        }
+
+        Sheet sheet = stub.getSheet();
+        InterController controller = sheet.getInterController();
+        controller.undo();
+        setUndoable(controller.canUndo());
+        setRedoable(controller.canRedo());
+    }
+
     //--------------------//
     // viewBookRepository //
     //--------------------//
@@ -1367,7 +1481,7 @@ public class BookActions
             });
 
             dialog.pack();
-            OMR.gui.getApplication().show(dialog);
+            OmrGui.getApplication().show(dialog);
 
             return apply.value;
         } catch (Exception ex) {
@@ -1452,14 +1566,17 @@ public class BookActions
                 try {
                     // Actually open the book
                     Book book = OMR.engine.loadBook(path);
-                    LogUtil.start(book);
-                    book.createStubsTabs(null); // Tabs are now accessible
 
-                    // Focus on first valid stub in book, if any
-                    SheetStub firstValid = book.getFirstValidStub();
+                    if (book != null) {
+                        LogUtil.start(book);
+                        book.createStubsTabs(null); // Tabs are now accessible
 
-                    if (firstValid != null) {
-                        StubsController.invokeSelect(firstValid);
+                        // Focus on first valid stub in book, if any
+                        SheetStub firstValid = book.getFirstValidStub();
+
+                        if (firstValid != null) {
+                            StubsController.invokeSelect(firstValid);
+                        }
                     }
                 } finally {
                     LogUtil.stopBook();

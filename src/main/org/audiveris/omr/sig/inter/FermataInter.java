@@ -30,7 +30,6 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
-import org.audiveris.omr.sig.relation.FermataNoteRelation;
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -38,12 +37,10 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -64,49 +61,36 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "fermata")
 public class FermataInter
-        extends AbstractNotationInter
+        extends AbstractInter
         implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            FermataInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(FermataInter.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    // Persistent data
-    //----------------
-    //
-    /** Arc. */
-    @XmlIDREF
-    @XmlAttribute(name = "arc")
-    private final FermataArcInter arc;
-
-    /** Dot. */
-    @XmlIDREF
-    @XmlAttribute(name = "dot")
-    private final FermataDotInter dot;
+    private static Comparator<Inter> byFermataOrder = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter o1,
+                            Inter o2)
+        {
+            return (o1 instanceof FermataArcInter) ? (-1) : (+1); // Arc then dot
+        }
+    };
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code FermataInter} object.
      *
-     * @param arc    the fermata arc (of shape FERMATA_ARC or FERMATA_ARC_BELOW)
-     * @param bounds bounding box
-     * @param shape  the fermata shape (FERMATA or FERMATA_BELOW)
-     * @param grade  the interpretation quality
-     * @param dot    the fermata dot
+     * @param shape the fermata shape (FERMATA or FERMATA_BELOW)
+     * @param grade the interpretation quality
      */
-    public FermataInter (FermataArcInter arc,
-                         Rectangle bounds,
-                         Shape shape,
-                         double grade,
-                         FermataDotInter dot)
+    public FermataInter (Shape shape,
+                         double grade)
     {
-        super(null, bounds, shape, grade);
-        this.arc = arc;
-        this.dot = dot;
+        super(null, null, shape, grade);
     }
 
     /**
@@ -114,8 +98,6 @@ public class FermataInter
      */
     private FermataInter ()
     {
-        arc = null;
-        dot = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -158,14 +140,42 @@ public class FermataInter
         sig.computeContextualGrade(dot);
 
         final double grade = 0.5 * (arc.getContextualGrade() + dot.getContextualGrade());
-        final Shape shape = (arcShape == Shape.FERMATA_ARC) ? Shape.FERMATA : Shape.FERMATA_BELOW;
-        final Rectangle box = arc.getBounds();
-        box.add(dot.getBounds());
-
-        final FermataInter fermata = new FermataInter(arc, box, shape, grade, dot);
+        final Shape shape = (arcShape == Shape.FERMATA_ARC) ? Shape.FERMATA
+                : Shape.FERMATA_BELOW;
+        final FermataInter fermata = new FermataInter(shape, grade);
         fermata.setStaff(staff);
+        sig.addVertex(fermata);
+        fermata.addMember(arc);
+        fermata.addMember(dot);
 
         return fermata;
+    }
+
+    //-----------//
+    // addMember //
+    //-----------//
+    @Override
+    public void addMember (Inter member)
+    {
+        if (member instanceof FermataArcInter) {
+            FermataArcInter arc = getArc();
+
+            if (arc != null) {
+                throw new IllegalStateException("Arc already defined");
+            }
+
+            EnsembleHelper.addMember(this, member);
+        }
+
+        if (member instanceof FermataDotInter) {
+            FermataDotInter dot = getDot();
+
+            if (dot != null) {
+                throw new IllegalStateException("Dot already defined");
+            }
+
+            EnsembleHelper.addMember(this, member);
+        }
     }
 
     //--------//
@@ -173,7 +183,15 @@ public class FermataInter
     //--------//
     public FermataArcInter getArc ()
     {
-        return arc;
+        final List<Inter> members = getMembers();
+
+        for (Inter member : members) {
+            if (member instanceof FermataArcInter) {
+                return (FermataArcInter) member;
+            }
+        }
+
+        return null;
     }
 
     //-----------//
@@ -194,16 +212,33 @@ public class FermataInter
     //--------//
     public FermataDotInter getDot ()
     {
-        return dot;
+        final List<Inter> members = getMembers();
+
+        for (Inter member : members) {
+            if (member instanceof FermataDotInter) {
+                return (FermataDotInter) member;
+            }
+        }
+
+        return null;
     }
 
     //------------//
     // getMembers //
     //------------//
     @Override
-    public List<? extends Inter> getMembers ()
+    public List<Inter> getMembers ()
     {
-        return Arrays.asList(arc, dot);
+        return EnsembleHelper.getMembers(this, byFermataOrder);
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        bounds = null;
     }
 
     //-----------------//
@@ -291,17 +326,24 @@ public class FermataInter
             // For fermata & for chord
             sig.addEdge(this, chord, new FermataChordRelation());
 
-            // For chord members (notes). TODO: is this useful???
-            for (Inter member : chord.getMembers()) {
-                if (member instanceof AbstractNoteInter) {
-                    sig.addEdge(this, member, new FermataNoteRelation());
-                }
-            }
-
             return true;
         }
 
         return false;
+    }
+
+    //--------------//
+    // removeMember //
+    //--------------//
+    @Override
+    public void removeMember (Inter member)
+    {
+        if (!(member instanceof FermataArcInter) && !(member instanceof FermataDotInter)) {
+            throw new IllegalArgumentException(
+                    "Only FermataArcInter or FermataDotInter can be removed from FermataInter");
+        }
+
+        EnsembleHelper.removeMember(this, member);
     }
 
     //-----------//

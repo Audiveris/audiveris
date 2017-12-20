@@ -21,16 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import java.awt.Rectangle;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
-
-import org.jdesktop.application.Task;
+import org.audiveris.omr.sig.relation.Link;
 
 import java.util.Collection;
 
 /**
- * Class {@code AdditionTask} adds an Inter instance, together with relations.
+ * Class {@code AdditionTask} adds an Inter instance, together with its relations.
  *
  * @author Hervé Bitteur
  */
@@ -42,43 +41,46 @@ public class AdditionTask
     /**
      * Add an inter instance with its provided relations.
      *
-     * @param sig          the underlying sig
-     * @param inter        the inter to add
-     * @param partnerships the provided relations around inter
+     * @param sig           the underlying sig
+     * @param inter         the inter to add
+     * @param initialBounds the initial bounds for this inter
+     * @param links  the provided relations around inter
      */
     public AdditionTask (SIGraph sig,
                          Inter inter,
-                         Collection<Partnership> partnerships)
+                         Rectangle initialBounds,
+                         Collection<Link> links)
     {
-        super(sig, inter, partnerships);
+        super(sig, inter, initialBounds, links);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public Task<Void, Void> performDo ()
+    public void performDo ()
     {
-        sig.addVertex(getInter());
+        inter.setBounds(initialBounds);
+        sig.addVertex(inter);
 
-        for (Partnership partnership : partnerships) {
-            partnership.applyTo(getInter());
+        for (Link link : links) {
+            link.applyTo(inter);
         }
-
-        return null;
     }
 
     @Override
-    public Task<Void, Void> performRedo ()
+    public void performRedo ()
     {
-        getInter().undelete();
-
-        return performDo();
+        performDo();
     }
 
     @Override
-    public Task<Void, Void> performUndo ()
+    public void performUndo ()
     {
-        getInter().delete();
+        inter.remove();
+    }
 
-        return null;
+    @Override
+    protected String actionName ()
+    {
+        return "add";
     }
 }

@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sig;
 
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
@@ -54,6 +57,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
@@ -77,7 +81,6 @@ import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
-import org.audiveris.omr.sig.relation.BasicExclusion;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
@@ -86,17 +89,19 @@ import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
+import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
+import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
-import org.audiveris.omr.sig.relation.FermataNoteRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -109,8 +114,6 @@ import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
-
-import org.jgrapht.Graphs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -194,6 +197,7 @@ public class SigValue
         @XmlElementRef(type = LyricItemInter.class)
         , @XmlElementRef(type = LyricLineInter.class)
         , @XmlElementRef(type = MarkerInter.class)
+        , @XmlElementRef(type = OrnamentInter.class)
         , @XmlElementRef(type = PedalInter.class)
         , @XmlElementRef(type = PluckingInter.class)
         , @XmlElementRef(type = RepeatDotInter.class)
@@ -237,18 +241,20 @@ public class SigValue
      */
     public void populateSig (SIGraph sig)
     {
-        final InterIndex index = sig.getSystem().getSheet().getInterIndex();
+        final Sheet sheet = sig.getSystem().getSheet();
+        final StaffManager mgr = sheet.getStaffManager();
+        final InterIndex index = sheet.getInterIndex();
 
-        // Allocate vertices
-        Graphs.addAllVertices(sig, interRefs);
-        Graphs.addAllVertices(sig, interDefs);
+        // Populate inters
+        sig.populateAllInters(interRefs);
+        sig.populateAllInters(interDefs);
 
         for (Inter inter : sig.vertexSet()) {
             inter.setSig(sig);
             index.insert(inter);
         }
 
-        // Allocate edges
+        // Populate relations
         for (RelationValue rel : relations) {
             try {
                 Inter source = index.getEntity(rel.sourceId);
@@ -257,6 +263,15 @@ public class SigValue
             } catch (Throwable ex) {
                 logger.error("Error unmarshalling relation " + rel + " ex:" + ex, ex);
             }
+        }
+
+        // Replace StaffHolder instances with real Staff instances
+        for (Inter inter : interRefs) {
+            Staff.StaffHolder.checkStaffHolder(inter, mgr);
+        }
+
+        for (Inter inter : interDefs) {
+            Staff.StaffHolder.checkStaffHolder(inter, mgr);
         }
     }
 
@@ -372,14 +387,13 @@ public class SigValue
          * The relation instance.
          * <p>
          * Here we list alphabetically all CONCRETE relation types. No abstract!
-         * CrossExclusion is not listed here, because it must be handled outside any specific sig.
          */
         @XmlElementRefs({
             @XmlElementRef(type = AlterHeadRelation.class)
             , @XmlElementRef(type = AugmentationRelation.class)
             , @XmlElementRef(type = BarConnectionRelation.class)
             , @XmlElementRef(type = BarGroupRelation.class)
-            , @XmlElementRef(type = BasicExclusion.class)
+            , @XmlElementRef(type = Exclusion.class)
             , @XmlElementRef(type = BeamHeadRelation.class)
             , @XmlElementRef(type = BeamStemRelation.class)
             , @XmlElementRef(type = ChordArpeggiatoRelation.class)
@@ -388,17 +402,18 @@ public class SigValue
             , @XmlElementRef(type = ChordNameRelation.class)
             , @XmlElementRef(type = ChordPedalRelation.class)
             , @XmlElementRef(type = ChordSentenceRelation.class)
+            , @XmlElementRef(type = ChordStemRelation.class)
             , @XmlElementRef(type = ChordSyllableRelation.class)
             , @XmlElementRef(type = ChordTupletRelation.class)
             , @XmlElementRef(type = ChordWedgeRelation.class)
             , @XmlElementRef(type = ClefKeyRelation.class)
+            , @XmlElementRef(type = Containment.class)
             , @XmlElementRef(type = DotFermataRelation.class)
             , @XmlElementRef(type = DoubleDotRelation.class)
             , @XmlElementRef(type = EndingBarRelation.class)
             , @XmlElementRef(type = EndingSentenceRelation.class)
             , @XmlElementRef(type = FermataBarRelation.class)
             , @XmlElementRef(type = FermataChordRelation.class)
-            , @XmlElementRef(type = FermataNoteRelation.class)
             , @XmlElementRef(type = FlagStemRelation.class)
             , @XmlElementRef(type = HeadHeadRelation.class)
             , @XmlElementRef(type = HeadStemRelation.class)

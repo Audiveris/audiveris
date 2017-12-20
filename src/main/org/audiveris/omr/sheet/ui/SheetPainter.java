@@ -21,18 +21,27 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.ui.SigPainter;
+import org.audiveris.omr.ui.symbol.Alignment;
+import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
 import java.util.ConcurrentModificationException;
 
 /**
@@ -52,7 +61,18 @@ public abstract class SheetPainter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
+
+    /** Font for annotations. */
+    protected static final Font basicFont = new Font(
+            "Sans Serif",
+            Font.PLAIN,
+            constants.basicFontSize.getValue());
+
+    /** A transformation to half scale. (used for slot time annotation) */
+    protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(0.5, 0.5);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sheet. */
@@ -107,10 +127,48 @@ public abstract class SheetPainter
         }
     }
 
+    //-------------//
+    // basicLayout //
+    //-------------//
+    /**
+     * Build a TextLayout from a String of BasicFont characters
+     * (transformed by the provided AffineTransform if any)
+     *
+     * @param str the string of proper codes
+     * @param fat potential affine transformation
+     * @return the (sized) TextLayout ready to be drawn
+     */
+    protected TextLayout basicLayout (String str,
+                                      AffineTransform fat)
+    {
+        FontRenderContext frc = g.getFontRenderContext();
+        Font font = (fat == null) ? basicFont : basicFont.deriveFont(fat);
+
+        return new TextLayout(str, font, frc);
+    }
+
     //---------------//
     // getSigPainter //
     //---------------//
     protected abstract SigPainter getSigPainter ();
+
+    //-------//
+    // paint //
+    //-------//
+    /**
+     * This is the general paint method for drawing a symbol layout, at a specified
+     * location, using a specified alignment
+     *
+     * @param layout    what: the symbol, perhaps transformed
+     * @param location  where: the precise location in the display
+     * @param alignment how: the way the symbol is aligned wrt the location
+     */
+    protected void paint (TextLayout layout,
+                          Point location,
+                          Alignment alignment)
+    {
+        OmrFont.paint(g, layout, location, alignment);
+    }
 
     //---------------//
     // processSystem //
@@ -131,5 +189,20 @@ public abstract class SheetPainter
         } catch (Exception ex) {
             logger.warn("Cannot paint system#{}", system.getId(), ex);
         }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Integer basicFontSize = new Constant.Integer(
+                "points",
+                30,
+                "Standard font size for annotations");
     }
 }

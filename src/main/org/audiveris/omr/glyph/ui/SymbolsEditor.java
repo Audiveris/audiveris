@@ -33,9 +33,7 @@ import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.ui.SectionBoard;
 import org.audiveris.omr.run.Orientation;
-import org.audiveris.omr.run.RunBoard;
 import org.audiveris.omr.score.ui.EditorMenu;
-import org.audiveris.omr.score.ui.PaintingParameters;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -49,16 +47,19 @@ import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.NoExclusion;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
+import org.audiveris.omr.sig.ui.InterService;
+import org.audiveris.omr.sig.ui.RelationClassAction;
+import org.audiveris.omr.sig.ui.ShapeBoard;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.ViewParameters;
+import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -71,6 +72,7 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -78,13 +80,12 @@ import java.awt.Rectangle;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import java.awt.Stroke;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -115,8 +116,8 @@ public class SymbolsEditor
     /** Pop-up menu related to page selection. */
     private final EditorMenu pageMenu;
 
-    /** The entity used for display focus. */
-    private final ShapeFocusBoard focus;
+    /** View parameters. */
+    private final ViewParameters viewParams = ViewParameters.getInstance();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -133,7 +134,6 @@ public class SymbolsEditor
     {
         this.sheet = sheet;
 
-        focus = null;
         pageMenu = new EditorMenu(sheet);
 
         List<Board> boards = new ArrayList<Board>();
@@ -145,10 +145,16 @@ public class SymbolsEditor
             hLag = new BasicLag(Lags.HLAG, Orientation.HORIZONTAL);
             sheet.getLagManager().setLag(Lags.HLAG, hLag);
         } else {
-            if (hLag.getRunTable() != null) {
-                boards.add(new RunBoard(hLag, false));
-            }
-
+            //            RunTable hTable = hLag.getRunTable();
+            //
+            //            if (hTable != null) {
+            //                if (hTable.getRunService() == null) {
+            //                    hTable.setRunService(new RunService("hLagRuns", hTable));
+            //                }
+            //
+            //                boards.add(new RunBoard(hLag, false));
+            //            }
+            //
             boards.add(new SectionBoard(hLag, false));
         }
 
@@ -158,16 +164,22 @@ public class SymbolsEditor
             vLag = new BasicLag(Lags.VLAG, Orientation.VERTICAL);
             sheet.getLagManager().setLag(Lags.VLAG, vLag);
         } else {
-            if (vLag.getRunTable() != null) {
-                boards.add(new RunBoard(vLag, false));
-            }
-
+            //            RunTable vTable = vLag.getRunTable();
+            //
+            //            if (vTable != null) {
+            //                if (vTable.getRunService() == null) {
+            //                    vTable.setRunService(new RunService("vLagRuns", vTable));
+            //                }
+            //
+            //                boards.add(new RunBoard(vLag, false));
+            //            }
+            //
             boards.add(new SectionBoard(vLag, false));
         }
 
         boards.add(new SymbolGlyphBoard(glyphsController, true, true));
         boards.add(new InterBoard(sheet));
-        // boards.add(new ShapeBoard(sheet, false)); // Use of ShapeBoard is disabled for 5.0
+        boards.add(new ShapeBoard(sheet, true));
         boards.add(
                 new EvaluationBoard(
                         true,
@@ -175,7 +187,7 @@ public class SymbolsEditor
                         BasicClassifier.getInstance(),
                         sheet.getGlyphIndex().getEntityService(),
                         interController,
-                        false));
+                        true));
         boards.add(
                 new EvaluationBoard(
                         true,
@@ -183,7 +195,7 @@ public class SymbolsEditor
                         DeepClassifier.getInstance(),
                         sheet.getGlyphIndex().getEntityService(),
                         interController,
-                        false));
+                        true));
 
         BoardsPane boardsPane = new BoardsPane(boards);
 
@@ -343,8 +355,8 @@ public class SymbolsEditor
         public void contextAdded (Point pt,
                                   MouseMovement movement)
         {
-            if (!ViewParameters.getInstance().isSectionMode()) {
-                // Glyph mode
+            if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
+                // Glyph or Inter modes
                 setFocusLocation(new Rectangle(pt), movement, CONTEXT_ADD);
 
                 // Update highlighted slot if possible
@@ -371,8 +383,8 @@ public class SymbolsEditor
         public void contextSelected (Point pt,
                                      MouseMovement movement)
         {
-            if (!ViewParameters.getInstance().isSectionMode()) {
-                // Glyph mode
+            if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
+                // Glyph or Inter mode
                 setFocusLocation(new Rectangle(pt), movement, CONTEXT_INIT);
 
                 // Update highlighted slot if possible
@@ -490,9 +502,8 @@ public class SymbolsEditor
         public void render (Graphics2D g)
         {
             final Color oldColor = g.getColor();
-            final PaintingParameters painting = PaintingParameters.getInstance();
 
-            if (painting.isErrorPainting()) {
+            if (viewParams.isErrorPainting()) {
                 // Use specific background for stacks in error
                 for (SystemInfo system : sheet.getSystems()) {
                     for (MeasureStack stack : system.getMeasureStacks()) {
@@ -503,9 +514,21 @@ public class SymbolsEditor
                 }
             }
 
-            if (painting.isInputPainting()) {
+            if (viewParams.isInputPainting()) {
+                // Focused inter, if any
+                final InterController interController = sheet.getInterController();
+                final Inter focus = interController.getInterFocus();
+
+                if ((focus != null) && !focus.isRemoved()) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setColor(Color.PINK);
+                    g2.setStroke(new BasicStroke(6f));
+                    renderBoxArea(focus.getBounds(), g2);
+                    g2.dispose();
+                }
+
                 // Sections
-                final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
+                final boolean drawBorders = viewParams.getSelectionMode() == SelectionMode.MODE_SECTION;
                 final Stroke oldStroke = (drawBorders) ? UIUtil.setAbsoluteStroke(g, 1f) : null;
 
                 for (Lag lag : lags) {
@@ -535,15 +558,15 @@ public class SymbolsEditor
                 }
             }
 
-            if (painting.isOutputPainting()) {
+            if (viewParams.isOutputPainting()) {
                 // Inters (with opaque colors)
                 g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
 
-                boolean mixed = painting.isInputPainting();
+                boolean mixed = viewParams.isInputPainting();
                 g.setColor(mixed ? Colors.MUSIC_SYMBOLS : Colors.MUSIC_ALONE);
 
-                final boolean coloredVoices = mixed ? false : painting.isVoicePainting();
-                final boolean annots = painting.isAnnotationPainting();
+                final boolean coloredVoices = mixed ? false : viewParams.isVoicePainting();
+                final boolean annots = viewParams.isAnnotationPainting();
                 new SheetResultPainter(sheet, g, coloredVoices, false, annots).process();
             }
 
@@ -556,10 +579,9 @@ public class SymbolsEditor
         @Override
         protected void renderItems (Graphics2D g)
         {
-            PaintingParameters painting = PaintingParameters.getInstance();
             g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_ON);
 
-            if (painting.isInputPainting()) {
+            if (viewParams.isInputPainting()) {
                 // Normal display of selected glyphs
                 super.renderItems(g);
 
@@ -573,52 +595,54 @@ public class SymbolsEditor
                     }
                 }
 
-                Inter inter = (Inter) sheet.getInterIndex().getEntityService().getSelectedEntity();
+                // Selected inter
+                InterService interService = (InterService) sheet.getInterIndex().getEntityService();
+                Inter inter = interService.getSelectedEntity();
 
-                if ((inter != null) && !inter.isDeleted()) {
+                if ((inter != null) && !inter.isRemoved()) {
                     // Inter: attachments for selected inter, if any
                     Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
                     inter.renderAttachments(g);
                     g.setStroke(oldStroke);
 
-                    // Inter: main partnerships
+                    // Inter: main links
                     SIGraph sig = inter.getSig();
+                    Set<Relation> supports = sig.getRelations(inter, Support.class);
 
-                    for (Relation rel : sig.getRelations(inter, Support.class)) {
-                        Inter opp = sig.getOppositeInter(inter, rel);
-                        drawSupport(g, inter, opp, rel);
+                    if (!supports.isEmpty()) {
+                        SheetGradedPainter painter = new SheetGradedPainter(sheet, g);
+
+                        for (Relation rel : supports) {
+                            Inter opp = sig.getOppositeInter(inter, rel);
+                            painter.drawSupport(inter, opp, rel.getClass(), false);
+                        }
+                    }
+
+                    // Suggested support?
+                    InterController interController = sheet.getInterController();
+                    RelationClassAction rca = interController.getRelationClassAction();
+
+                    if (rca != null) {
+                        SheetGradedPainter painter = new SheetGradedPainter(sheet, g);
+                        painter.drawSupport(
+                                rca.getSource(),
+                                rca.getTarget(),
+                                rca.getRelationClass(),
+                                true);
                     }
                 }
             }
 
-            if (painting.isOutputPainting()) {
+            if (viewParams.isOutputPainting()) {
                 // Selected slot, if any
                 if (highlightedSlot != null) {
-                    boolean mixed = painting.isInputPainting();
-                    final boolean coloredVoices = mixed ? false : painting.isVoicePainting();
-                    final boolean annots = painting.isAnnotationPainting();
+                    boolean mixed = viewParams.isInputPainting();
+                    final boolean coloredVoices = mixed ? false : viewParams.isVoicePainting();
+                    final boolean annots = viewParams.isAnnotationPainting();
                     new SheetResultPainter(sheet, g, coloredVoices, false, annots).highlightSlot(
                             highlightedSlot);
                 }
             }
-        }
-
-        private void drawSupport (Graphics2D g,
-                                  Inter one,
-                                  Inter two,
-                                  Relation rel)
-        {
-            final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-            g.setColor((rel instanceof NoExclusion) ? Color.GRAY : Color.GREEN);
-
-            final double r = 2; // Radius
-            final Point oneCenter = one.getRelationCenter();
-            Ellipse2D e1 = new Ellipse2D.Double(oneCenter.x - r, oneCenter.y - r, 2 * r, 2 * r);
-            final Point twoCenter = two.getRelationCenter();
-            Ellipse2D e2 = new Ellipse2D.Double(twoCenter.x - r, twoCenter.y - r, 2 * r, 2 * r);
-            g.fill(e1);
-            g.fill(e2);
-            g.draw(new Line2D.Double(oneCenter, twoCenter));
         }
 
         //---------------//
