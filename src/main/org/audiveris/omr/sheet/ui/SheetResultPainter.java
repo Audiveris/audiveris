@@ -107,23 +107,23 @@ public class SheetResultPainter
     protected static final ViewParameters viewParams = ViewParameters.getInstance();
 
     /** Sequence of colors for voices. */
-    private static final int alpha = 150;
+    private static final int alpha = 200;
 
     private static final Color[] voiceColors = new Color[]{
+        /** Blue */
+        new Color(0, 0, 255, alpha),
+        /** Green */
+        new Color(0, 255, 0, alpha),
+        /** Brown */
+        new Color(165, 42, 42, alpha),
+        /** Magenta */
+        new Color(255, 0, 255, alpha),
         /** Cyan */
         new Color(0, 255, 255, alpha),
         /** Orange */
         new Color(255, 200, 0, alpha),
         /** Pink */
-        new Color(255, 150, 150, alpha),
-        /** Green */
-        new Color(0, 255, 0, alpha),
-        /** Magenta */
-        new Color(255, 0, 255, alpha),
-        /** Blue */
-        new Color(0, 0, 255, alpha),
-        /** Yellow */
-        new Color(255, 255, 0, alpha)
+        new Color(255, 150, 150, alpha)
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -240,7 +240,7 @@ public class SheetResultPainter
     {
         final int length = voiceColors.length;
         final Font font = new Font("SansSerif", Font.BOLD, 22);
-        final Color background = new Color(220, 220, 220);
+        final Color background = Color.WHITE; //new Color(220, 220, 220);
         final FormLayout layout = Panel.makeLabelsLayout(1, length, "0dlu", "10dlu");
         final Panel panel = new Panel();
         final PanelBuilder builder = new PanelBuilder(layout, panel);

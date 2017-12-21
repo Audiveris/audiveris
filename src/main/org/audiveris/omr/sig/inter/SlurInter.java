@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.CubicUtil;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Part;
@@ -36,6 +37,7 @@ import org.audiveris.omr.sheet.curve.SlurInfo;
 import org.audiveris.omr.sheet.curve.SlurLinker;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
@@ -439,23 +441,28 @@ public class SlurInter
     //-------------------//
     /**
      * We use curve middle point rather than bounds center.
-     * P: middle of segment P1..P2
-     * C: middle of segment CP1..CP2
-     * M: middle of curve
-     * PM = 3/4 * PC
      *
      * @return curve middle point
      */
     @Override
     public Point getRelationCenter ()
     {
-        final Point2D m = new Point2D.Double(
-                (0.125 * curve.getX1()) + (0.125 * curve.getX2()) + (0.375 * curve.getCtrlX1())
-                + (0.375 * curve.getCtrlX2()),
-                ((0.125 * curve.getY1()) + (0.125 * curve.getY2()))
-                + ((0.375 * curve.getCtrlY1()) + (0.375 * curve.getCtrlY2())));
+        return PointUtil.rounded(CubicUtil.getMidPoint(curve));
+    }
 
-        return PointUtil.rounded(m);
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
+    {
+        if (isTie()) {
+            for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
+                return sig.getOppositeInter(this, rel).getVoice();
+            }
+        }
+
+        return null;
     }
 
     //---------//

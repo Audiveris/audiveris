@@ -45,6 +45,10 @@ public abstract class CubicUtil
     /**
      * Report the point on the curve, located at t = 1-t = 0.5.
      * It splits the curve length equally.
+     * P: middle of segment P1..P2
+     * C: middle of segment CP1..CP2
+     * M: middle of curve
+     * PM = 3/4 * PC
      *
      * @param c the provided curve
      * @return the mid point on curve
