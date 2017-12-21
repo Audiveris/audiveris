@@ -23,7 +23,7 @@ Full GUIs, meant for the end-user, are expected to be provided by external edito
 First of all, you'll need the following dependencies installed and working from
 the command line:
 
-+ [Java Development Kit (JDK) version 7 or later (version 8 is recommended)][1].
++ [Java Development Kit (JDK) version 7 or 8 (version 8 is recommended; version 9 is not yet supported)][1].
   **Please ensure you're running a 64-bit JVM. Audiveris doesn't support a 32-bit
   JVM because deeplearning4j is 64-bit only.**
 + [Git](https://git-scm.com) version control system.
