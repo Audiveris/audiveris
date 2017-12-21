@@ -45,9 +45,9 @@ public class RestChordInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-arg constructor meant for JAXB (and for DummyWholeRestChordInter subclass).
      */
-    private RestChordInter ()
+    protected RestChordInter ()
     {
     }
 

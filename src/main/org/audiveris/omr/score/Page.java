@@ -219,7 +219,7 @@ public class Page
     // dumpMeasureCounts //
     //-------------------//
     /**
-     * Log the detailed number of measures in the score.
+     * Log the detailed number of measures in the page.
      */
     public void dumpMeasureCounts ()
     {
@@ -320,6 +320,24 @@ public class Page
         return firstSystemId;
     }
 
+    //---------------------//
+    // getFollowingInScore //
+    //---------------------//
+    /**
+     * Report the following page of this one within the score.
+     *
+     * @param score the containing score
+     * @return the following page, or null if none
+     */
+    public Page getFollowingInScore (Score score)
+    {
+        if (score != null) {
+            return score.getFollowingPage(this);
+        }
+
+        return null;
+    }
+
     /**
      * @return the id
      */
@@ -367,32 +385,6 @@ public class Page
         }
 
         return null;
-    }
-
-    //--------------------//
-    // getSystemPartsById //
-    //--------------------//
-    /**
-     * Report the list of (system physical) parts that exhibit the desired ID.
-     *
-     * @param id the desired ID
-     * @return the parts with this ID
-     */
-    public List<Part> getSystemPartsById (int id)
-    {
-        List<Part> parts = new ArrayList<Part>();
-
-        for (SystemInfo system : getSystems()) {
-            for (Part part : system.getParts()) {
-                if (part.getId() == id) {
-                    parts.add(part);
-
-                    break;
-                }
-            }
-        }
-
-        return parts;
     }
 
     //-----------------//
@@ -449,6 +441,10 @@ public class Page
      */
     public Score getScore ()
     {
+        if (score == null) {
+            score = sheet.getStub().getBook().getScore(this);
+        }
+
         return score;
     }
 
@@ -463,6 +459,32 @@ public class Page
     public Sheet getSheet ()
     {
         return sheet;
+    }
+
+    //--------------------//
+    // getSystemPartsById //
+    //--------------------//
+    /**
+     * Report the list of (system physical) parts that exhibit the desired ID.
+     *
+     * @param id the desired ID
+     * @return the parts with this ID
+     */
+    public List<Part> getSystemPartsById (int id)
+    {
+        List<Part> parts = new ArrayList<Part>();
+
+        for (SystemInfo system : getSystems()) {
+            for (Part part : system.getParts()) {
+                if (part.getId() == id) {
+                    parts.add(part);
+
+                    break;
+                }
+            }
+        }
+
+        return parts;
     }
 
     //------------//

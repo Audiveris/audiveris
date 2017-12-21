@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.Rational;
+import org.audiveris.omr.sheet.DurationFactor;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Staff;
@@ -42,7 +43,9 @@ import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -195,21 +198,57 @@ public class Measure
      * Insert a whole rest, with related chord, on provided staff in this measure.
      *
      * @param staff specified staff in measure
-     * @return the whole rest created
      */
-    public RestInter addDummyWholeRest (Staff staff)
+    public void addDummyWholeRest (Staff staff)
     {
-        RestChordInter chord = new RestChordInter(0);
+        // We use fakes that mimic a rest chord with its whole rest.
+        class FakeChord
+                extends RestChordInter
+        {
+
+            List<Inter> members;
+
+            @Override
+            public List<Inter> getMembers ()
+            {
+                return members;
+            }
+
+            @Override
+            public DurationFactor getTupletFactor ()
+            {
+                return null;
+            }
+        }
+
+        class FakeRest
+                extends RestInter
+        {
+
+            FakeChord chord;
+
+            public FakeRest (Staff staff)
+            {
+                super(null, Shape.WHOLE_REST, 0, staff, -1.0);
+            }
+
+            @Override
+            public RestChordInter getChord ()
+            {
+                return chord;
+            }
+        }
+
+        FakeRest whole = new FakeRest(staff);
+        FakeChord chord = new FakeChord();
+
         chord.setStaff(staff);
         chord.setTimeOffset(Rational.ZERO);
+        chord.members = Collections.singletonList((Inter) whole);
+        whole.chord = chord;
 
-        RestInter whole = new RestInter(null, Shape.WHOLE_REST, 0, staff, -1.0);
-        chord.addMember(whole);
         addInter(chord);
-
         addVoice(Voice.createWholeVoice(chord, this));
-
-        return whole;
     }
 
     //----------//

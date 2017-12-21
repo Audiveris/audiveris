@@ -33,6 +33,7 @@ import org.audiveris.omr.image.ImageLoading;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.OpusExporter;
+import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
@@ -471,15 +472,6 @@ public class BasicBook
         return bookBrowser.getFrame();
     }
 
-    //----------------------//
-    // getExportPathSansExt //
-    //----------------------//
-    @Override
-    public Path getExportPathSansExt ()
-    {
-        return exportPathSansExt;
-    }
-
     //----------------//
     // getFilterParam //
     //----------------//
@@ -489,21 +481,6 @@ public class BasicBook
         return filterParam;
     }
 
-    //-------------------//
-    // getFirstValidStub //
-    //-------------------//
-    @Override
-    public SheetStub getFirstValidStub ()
-    {
-        for (SheetStub stub : stubs) {
-            if (stub.isValid()) {
-                return stub;
-            }
-        }
-
-        return null; // No valid stub found!
-    }
-
     //--------------//
     // getInputPath //
     //--------------//
@@ -511,15 +488,6 @@ public class BasicBook
     public Path getInputPath ()
     {
         return path;
-    }
-
-    //------------------//
-    // getLanguageParam //
-    //------------------//
-    @Override
-    public Param<String> getLanguageParam ()
-    {
-        return languageParam;
     }
 
     //---------//
@@ -748,6 +716,39 @@ public class BasicBook
         logger.debug("Book closed.");
     }
 
+    //----------------------//
+    // getExportPathSansExt //
+    //----------------------//
+    @Override
+    public Path getExportPathSansExt ()
+    {
+        return exportPathSansExt;
+    }
+
+    //-------------------//
+    // getFirstValidStub //
+    //-------------------//
+    @Override
+    public SheetStub getFirstValidStub ()
+    {
+        for (SheetStub stub : stubs) {
+            if (stub.isValid()) {
+                return stub;
+            }
+        }
+
+        return null; // No valid stub found!
+    }
+
+    //------------------//
+    // getLanguageParam //
+    //------------------//
+    @Override
+    public Param<String> getLanguageParam ()
+    {
+        return languageParam;
+    }
+
     //-----------//
     // getOffset //
     //-----------//
@@ -789,6 +790,28 @@ public class BasicBook
 
         // No specific repository is possible, so use global
         return SampleRepository.getGlobalInstance();
+    }
+
+    //----------//
+    // getScore //
+    //----------//
+    /**
+     * Report the score which contains the provided page.
+     *
+     * @param page provided page
+     * @return containing score (can it be null?)
+     */
+    public Score getScore (Page page)
+    {
+        for (Score score : scores) {
+            int pageIndex = score.getPageIndex(page);
+
+            if (pageIndex != -1) {
+                return score;
+            }
+        }
+
+        return null;
     }
 
     //-----------//

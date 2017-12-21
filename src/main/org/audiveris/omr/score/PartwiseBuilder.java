@@ -275,7 +275,7 @@ public class PartwiseBuilder
      *
      * @param score the underlying score
      * @throws InterruptedException if the thread has been interrupted
-     * @throws ExecutionException if a checked exception was thrown
+     * @throws ExecutionException   if a checked exception was thrown
      */
     private PartwiseBuilder (Score score)
             throws InterruptedException, ExecutionException
@@ -296,7 +296,7 @@ public class PartwiseBuilder
      * @param score the score to export (cannot be null)
      * @return the populated ScorePartwise
      * @throws InterruptedException if the thread has been interrupted
-     * @throws ExecutionException if a checked exception was thrown
+     * @throws ExecutionException   if a checked exception was thrown
      */
     public static ScorePartwise build (Score score)
             throws InterruptedException, ExecutionException
@@ -1733,9 +1733,11 @@ public class PartwiseBuilder
                 //                    ///node.accept(this);
                 //                    process(node);
                 //                }
-                for (Relation rel : sig.edgesOf(chord)) {
-                    if (rel instanceof FermataChordRelation) {
-                        processFermata((FermataInter) sig.getOppositeInter(chord, rel), null);
+                if (sig != null) {
+                    for (Relation rel : sig.edgesOf(chord)) {
+                        if (rel instanceof FermataChordRelation) {
+                            processFermata((FermataInter) sig.getOppositeInter(chord, rel), null);
+                        }
                     }
                 }
             } else {
@@ -2116,7 +2118,8 @@ public class PartwiseBuilder
 
                 // [Encoding]/Software
                 encoding.getEncodingDateOrEncoderOrSoftware().add(
-                        factory.createEncodingSoftware(WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF));
+                        factory.createEncodingSoftware(
+                                WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF));
 
                 // [Encoding]/EncodingDate
                 // Let the Marshalling class handle it

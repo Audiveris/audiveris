@@ -123,6 +123,26 @@ public class Score
         return constants.defaultVolume.getValue();
     }
 
+    //------------------//
+    // getFollowingPage //
+    //------------------//
+    /**
+     * Report the page, if any, that follows the provided page within containing score.
+     *
+     * @param page the provided page
+     * @return the following page or null
+     */
+    public Page getFollowingPage (Page page)
+    {
+        int index = getPageIndex(page);
+
+        if (index < (pageRefs.size() - 1)) {
+            return getPage(pageRefs.get(index + 1));
+        }
+
+        return null;
+    }
+
     //-----------------//
     // setDefaultTempo //
     //-----------------//

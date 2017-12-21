@@ -22,6 +22,8 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.score.LogicalPart;
+import org.audiveris.omr.score.Page;
+import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -321,7 +323,8 @@ public class Part
      */
     public Part createDummyPart (int id)
     {
-        logger.info("S#{} {} createDummyPart for id={}", system.getId(), this, id);
+        final int sn = system.getSheet().getStub().getNumber();
+        logger.info("Sheet#{} System#{} {} dummyPart id: {}", sn, system.getId(), this, id);
 
         // Find some concrete system part for the provided id
         Part refPart = findRefPart(id);
@@ -851,47 +854,68 @@ public class Part
     /**
      * Look in following systems, then in previous systems, for a real part with the
      * provided ID.
+     * <p>
+     * Method extended to search beyond the current page.
      *
      * @param id the desired part ID
      * @return the first real part with this ID, either in following or in preceding systems.
      */
     private Part findRefPart (int id)
     {
-        // First look in the following systems in the same page
-        SystemInfo nextSystem = system;
+        // First look in the following systems in this page and the following ones
+        final Score score = system.getPage().getScore();
+        Page currentPage = system.getPage();
+        SystemInfo otherSystem = system.getFollowingInPage();
 
         while (true) {
-            nextSystem = nextSystem.getFollowingInPage();
-
-            if (nextSystem != null) {
-                Part part = nextSystem.getPartById(id);
+            if (otherSystem != null) {
+                Part part = otherSystem.getPartById(id);
 
                 if ((part != null) && !part.isDummy()) {
                     return part;
                 }
             } else {
-                break;
+                // Reached end of page
+                Page otherPage = score.getFollowingPage(currentPage);
+
+                if (otherPage != null) {
+                    currentPage = otherPage;
+                    otherSystem = otherPage.getFirstSystem();
+                } else {
+                    break; // Reached end of score
+                }
             }
+
+            otherSystem = otherSystem.getFollowingInPage();
         }
 
-        // Then look in the preceding systems in the same page
-        SystemInfo prevSystem = system;
+        // Then look in the preceding systems in this page and the preceding ones
+        currentPage = system.getPage();
+        otherSystem = system.getPrecedingInPage();
 
         while (true) {
-            prevSystem = prevSystem.getPrecedingInPage();
-
-            if (prevSystem != null) {
-                Part part = prevSystem.getPartById(id);
+            if (otherSystem != null) {
+                Part part = otherSystem.getPartById(id);
 
                 if ((part != null) && !part.isDummy()) {
                     return part;
                 }
             } else {
-                break;
+                // Reached start of page
+                Page otherPage = score.getPrecedingPage(currentPage);
+
+                if (otherPage != null) {
+                    currentPage = otherPage;
+                    otherSystem = otherPage.getLastSystem();
+                } else {
+                    break; // Reached start of score
+                }
             }
+
+            otherSystem = otherSystem.getPrecedingInPage();
         }
 
-        logger.warn("{} Cannot find real system part with id {}", this, id);
+        logger.warn("{} Cannot find any real system part with id {}", this, id);
 
         return null;
     }

@@ -79,9 +79,9 @@ public class RestInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-arg constructor meant for JAXB (and dummy measure).
      */
-    private RestInter ()
+    protected RestInter ()
     {
     }
 

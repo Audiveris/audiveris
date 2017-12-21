@@ -37,6 +37,7 @@ import java.util.concurrent.locks.Lock;
 
 import javax.swing.JFrame;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.score.Page;
 
 /**
  * Interface {@code Book} is the root class for handling a physical set of image input
@@ -276,6 +277,14 @@ public interface Book
      * @return a specific book repository if possible, otherwise the global one
      */
     SampleRepository getSampleRepository ();
+
+    /**
+     * Report the score which contains the provided page.
+     *
+     * @param page provided page
+     * @return containing score (can it be null?)
+     */
+    Score getScore (Page page);
 
     /**
      * Report the scores (movements) detected in this book.
