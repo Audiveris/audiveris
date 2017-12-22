@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -39,10 +42,18 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "ending-bar")
 public class EndingBarRelation
-        extends AbstractRelation
+        extends AbstractConnection
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    private static final double[] WEIGHTS = new double[]{
+        constants.xWeight.getValue(),
+        constants.yWeight.getValue()
+    };
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Which side of ending is used?. */
     @XmlAttribute(name = "side")
     private HorizontalSide endingSide;
@@ -73,6 +84,14 @@ public class EndingBarRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // getXGapMax //
+    //------------//
+    public static Scale.Fraction getXGapMax ()
+    {
+        return constants.xGapMax;
+    }
+
     //-------//
     // added //
     //-------//
@@ -104,6 +123,71 @@ public class EndingBarRelation
         return endingSide;
     }
 
+    //--------------//
+    // getXInGapMax //
+    //--------------//
+    @Override
+    public Scale.Fraction getXInGapMax ()
+    {
+        return constants.xGapMax;
+    }
+
+    //---------------//
+    // getXOutGapMax //
+    //---------------//
+    @Override
+    public Scale.Fraction getXOutGapMax ()
+    {
+        return constants.xGapMax;
+    }
+
+    //------------//
+    // getYGapMax //
+    //------------//
+    @Override
+    public Scale.Fraction getYGapMax ()
+    {
+        return constants.yGapMax;
+    }
+
+    //--------------//
+    // getInWeights //
+    //--------------//
+    @Override
+    protected double[] getInWeights ()
+    {
+        return WEIGHTS;
+    }
+
+    //---------------//
+    // getOutWeights //
+    //---------------//
+    @Override
+    protected double[] getOutWeights ()
+    {
+        return WEIGHTS;
+    }
+
+    //----------------//
+    // getSourceCoeff //
+    //----------------//
+    @Override
+    protected double getSourceCoeff ()
+    {
+        // Support for ending
+        return constants.endingSupportCoeff.getValue();
+    }
+
+    //----------------//
+    // getTargetCoeff //
+    //----------------//
+    @Override
+    protected double getTargetCoeff ()
+    {
+        // No support for barline
+        return 0.0;
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -115,5 +199,35 @@ public class EndingBarRelation
         sb.append(endingSide).append("@(").append(String.format("%.2f", xDistance)).append(")");
 
         return sb.toString();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Ratio endingSupportCoeff = new Constant.Ratio(
+                3,
+                "Supporting coeff for (source) ending");
+
+        private final Scale.Fraction xGapMax = new Scale.Fraction(
+                2.0,
+                "Maximum horizontal gap between ending and barline");
+
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                10.0,
+                "Maximum vertical gap between bottom of ending leg and top of barline");
+
+        private final Constant.Ratio xWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for xGap (in or out)");
+
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                0,
+                "Relative impact weight for yGap");
     }
 }

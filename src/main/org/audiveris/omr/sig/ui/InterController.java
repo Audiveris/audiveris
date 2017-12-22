@@ -162,6 +162,7 @@ public class InterController
                 }
 
                 Inter ghost = SymbolFactory.createGhost(shape, 1);
+                ghost.setManual(true);
                 ghost.setBounds(glyph.getBounds());
                 ghost.setGlyph(glyph);
 

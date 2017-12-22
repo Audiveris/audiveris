@@ -271,7 +271,7 @@ public class Part
             }
 
             // Remove unless it's a manually assigned slur
-            if (slur.getGrade() < 1.0) {
+            if (!slur.isManual()) {
                 slur.remove();
             }
         }
@@ -285,7 +285,7 @@ public class Part
             }
 
             // Remove unless it's a manually assigned slur
-            if (prevSlur.getGrade() < 1.0) {
+            if (!prevSlur.isManual()) {
                 prevSlur.remove();
             }
         }

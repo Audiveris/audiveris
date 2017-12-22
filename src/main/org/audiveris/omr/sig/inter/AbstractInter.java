@@ -114,10 +114,15 @@ public abstract class AbstractInter
     @XmlAttribute(name = "mirror")
     protected AbstractInter mirror;
 
-    /** Frozen flag, if any. */
+    /** Is it frozen?. */
     @XmlAttribute(name = "frozen")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean frozen;
+
+    /** Is it manual?. */
+    @XmlAttribute(name = "manual")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean manual;
 
     /** The contextual grade of this interpretation, if any. */
     @XmlAttribute(name = "ctx-grade")
@@ -736,6 +741,17 @@ public abstract class AbstractInter
         return grade >= getGoodGrade();
     }
 
+    //----------//
+    // isManual //
+    //----------//
+    /**
+     * @return the manual
+     */
+    public boolean isManual ()
+    {
+        return manual;
+    }
+
     //--------------//
     // isReallyGood //
     //--------------//
@@ -991,6 +1007,17 @@ public abstract class AbstractInter
     }
 
     //-----------//
+    // setManual //
+    //-----------//
+    /**
+     * @param manual the manual to set
+     */
+    public void setManual (boolean manual)
+    {
+        this.manual = manual;
+    }
+
+    //-----------//
     // setMirror //
     //-----------//
     @Override
@@ -1083,6 +1110,10 @@ public abstract class AbstractInter
 
         if (isRemoved()) {
             sb.append(" REMOVED");
+        }
+
+        if (isManual()) {
+            sb.append(" MANUAL");
         }
 
         sb.append(String.format("(%.3f", grade));

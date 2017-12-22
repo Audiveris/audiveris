@@ -23,7 +23,10 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
@@ -32,6 +35,8 @@ import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -103,10 +108,23 @@ public class SlurHeadRelation
     @Override
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
+        final SlurInter slur = (SlurInter) e.getEdgeSource();
+
         if (side == null) {
-            final Inter slur = e.getEdgeSource();
             final Inter head = e.getEdgeTarget();
             side = (slur.getCenter().x < head.getCenter().x) ? RIGHT : LEFT;
+        }
+
+        if (isManual() || slur.isManual()) {
+            // Check for a tie
+            List<Inter> systemChords = slur.getSig().inters(HeadChordInter.class); // Costly...
+
+            HeadInter leftHead = slur.getHead(LEFT);
+            HeadInter rightHead = slur.getHead(RIGHT);
+
+            if (slur.checkTie(leftHead, rightHead, systemChords)) {
+                slur.setTie(true);
+            }
         }
     }
 

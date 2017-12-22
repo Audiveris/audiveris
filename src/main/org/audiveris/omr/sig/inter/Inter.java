@@ -304,6 +304,13 @@ public interface Inter
     boolean isGood ();
 
     /**
+     * Report whether this instance has been set manually.
+     *
+     * @return true if manual
+     */
+    boolean isManual ();
+
+    /**
      * Report whether the interpretation has a really good (intrinsic) grade.
      *
      * @return true if grade is good
@@ -410,6 +417,13 @@ public interface Inter
      * @param grade the new value for intrinsic grade
      */
     void setGrade (double grade);
+
+    /**
+     * Set this inter as a manual one.
+     *
+     * @param manual new value
+     */
+    void setManual (boolean manual);
 
     /**
      * Assign the mirror instance.

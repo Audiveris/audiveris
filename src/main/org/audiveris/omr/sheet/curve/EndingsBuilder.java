@@ -284,6 +284,8 @@ public class EndingsBuilder
      */
     private void processSegment (SegmentInter segment)
     {
+        final Scale scale = sheet.getScale();
+
         // Check segment characteristics: length, slope, bar line alignments, legs.
         SegmentInfo seg = segment.getInfo();
         Point leftEnd = seg.getEnd(true);
@@ -328,8 +330,8 @@ public class EndingsBuilder
             }
 
             // Left bar (or header)
-            BarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
-            final Double leftDist;
+            final BarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
+            final EndingBarRelation leftRel = new EndingBarRelation(LEFT, 0.5);
 
             if (leftBar == null) {
                 // Check the special case of a staff start (with header?, with no barline?)
@@ -339,10 +341,10 @@ public class EndingsBuilder
                 if (leftEnd.x >= firstMeasure.getAbscissa(RIGHT, staff)) {
                     continue; // segment starts after end of first measure
                 }
-
-                leftDist = null;
             } else {
-                leftDist = Math.abs(LineUtil.xAtY(leftBar.getMedian(), leftEnd.y) - leftEnd.x);
+                double leftDist = Math.abs(
+                        LineUtil.xAtY(leftBar.getMedian(), leftEnd.y) - leftEnd.x);
+                leftRel.setDistances(leftDist, 0);
             }
 
             // Right leg (optional)
@@ -355,20 +357,20 @@ public class EndingsBuilder
                 continue;
             }
 
-            double rightDist = Math.abs(
+            final double rightDist = Math.abs(
                     LineUtil.xAtY(rightBar.getMedian(), rightEnd.y) - rightEnd.x);
+            final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
+            rightRel.setDistances(rightDist, 0);
 
             // Create ending inter
             GradeImpacts segImp = segment.getImpacts();
             double straight = segImp.getGrade() / segImp.getIntrinsicRatio();
-            double leftImpact = (leftDist != null) ? (1 - (leftDist / params.maxBarShift)) : 0.5;
-
             GradeImpacts impacts = new EndingInter.Impacts(
                     straight,
                     1 - (slope / params.maxSlope),
                     (length - params.minLengthLow) / (params.minLengthHigh - params.minLengthLow),
-                    leftImpact,
-                    1 - (rightDist / params.maxBarShift));
+                    leftRel.getGrade(),
+                    rightRel.getGrade());
 
             if (impacts.getGrade() >= EndingInter.getMinGrade()) {
                 Line2D leftLine = new Line2D.Double(
@@ -387,19 +389,11 @@ public class EndingsBuilder
                         impacts);
                 sig.addVertex(endingInter);
 
-                Scale scale = sheet.getScale();
-
                 if (leftBar != null) {
-                    sig.addEdge(
-                            endingInter,
-                            leftBar,
-                            new EndingBarRelation(LEFT, scale.pixelsToFrac(leftDist)));
+                    sig.addEdge(endingInter, leftBar, leftRel);
                 }
 
-                sig.addEdge(
-                        endingInter,
-                        rightBar,
-                        new EndingBarRelation(RIGHT, scale.pixelsToFrac(rightDist)));
+                sig.addEdge(endingInter, rightBar, rightRel);
 
                 // Ending text?
                 grabSentence(endingInter);
@@ -443,10 +437,6 @@ public class EndingsBuilder
         private final Scale.Fraction maxLegYGap = new Scale.Fraction(
                 0.5,
                 "Maximum ordinate gap between ending and leg");
-
-        private final Scale.Fraction maxBarShift = new Scale.Fraction(
-                2.0,
-                "High maximum abscissa shift between ending and barline");
 
         private final Constant.Double maxSlope = new Constant.Double(
                 "tangent",
@@ -508,7 +498,7 @@ public class EndingsBuilder
             legYMargin = scale.toPixels(constants.legYMargin);
             maxLegXGap = scale.toPixels(constants.maxLegXGap);
             maxLegYGap = scale.toPixels(constants.maxLegYGap);
-            maxBarShift = scale.toPixels(constants.maxBarShift);
+            maxBarShift = scale.toPixels(EndingBarRelation.getXGapMax());
             maxSlope = constants.maxSlope.getValue();
 
             if (logger.isDebugEnabled()) {

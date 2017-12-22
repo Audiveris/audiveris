@@ -88,6 +88,8 @@ public class RelationClassAction
     {
         try {
             Relation relation = relationClass.newInstance();
+            relation.setManual(true);
+
             SIGraph sig = source.getSig();
             Sheet sheet = sig.getSystem().getSheet();
             InterController interController = sheet.getInterController();
@@ -95,6 +97,30 @@ public class RelationClassAction
         } catch (Exception ex) {
             logger.error("Error allocating {}", relationClass, ex);
         }
+    }
+
+    /**
+     * @return the relationClass
+     */
+    public Class<? extends Relation> getRelationClass ()
+    {
+        return relationClass;
+    }
+
+    /**
+     * @return the source
+     */
+    public Inter getSource ()
+    {
+        return source;
+    }
+
+    /**
+     * @return the target
+     */
+    public Inter getTarget ()
+    {
+        return target;
     }
 
     /**
@@ -118,29 +144,5 @@ public class RelationClassAction
         Sheet sheet = sig.getSystem().getSheet();
         InterController interController = sheet.getInterController();
         interController.setRelationClassAction(null);
-    }
-
-    /**
-     * @return the source
-     */
-    public Inter getSource ()
-    {
-        return source;
-    }
-
-    /**
-     * @return the target
-     */
-    public Inter getTarget ()
-    {
-        return target;
-    }
-
-    /**
-     * @return the relationClass
-     */
-    public Class<? extends Relation> getRelationClass ()
-    {
-        return relationClass;
     }
 }

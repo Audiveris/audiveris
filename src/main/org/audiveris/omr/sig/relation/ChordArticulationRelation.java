@@ -54,7 +54,7 @@ public class ChordArticulationRelation
     //------------------//
     // getXInGapMaximum //
     //------------------//
-    public static Scale.Fraction getInGapMaximum ()
+    public static Scale.Fraction getXInGapMaximum ()
     {
         return constants.xGapMax;
     }

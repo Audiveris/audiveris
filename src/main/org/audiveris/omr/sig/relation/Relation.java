@@ -36,13 +36,6 @@ public interface Relation
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Clone a relation.
-     *
-     * @return the cloned relation
-     */
-    Relation duplicate ();
-
-    /**
      * Notifies that this relation has been added to the sig.
      *
      * @param e the relation event.
@@ -50,11 +43,11 @@ public interface Relation
     void added (GraphEdgeChangeEvent<Inter, Relation> e);
 
     /**
-     * Notifies that this relation has been removed from the sig.
+     * Clone a relation.
      *
-     * @param e the relation event.
+     * @return the cloned relation
      */
-    void removed (GraphEdgeChangeEvent<Inter, Relation> e);
+    Relation duplicate ();
 
     /**
      * Details for tip.
@@ -71,12 +64,33 @@ public interface Relation
     String getName ();
 
     /**
+     * Report whether this relation has been set manually.
+     *
+     * @return true if manual
+     */
+    boolean isManual ();
+
+    /**
+     * Notifies that this relation has been removed from the sig.
+     *
+     * @param e the relation event.
+     */
+    void removed (GraphEdgeChangeEvent<Inter, Relation> e);
+
+    /**
      * Relation description when seen from one of its involved inters
      *
      * @param inter the interpretation point of view
      * @return the inter-based description
      */
     String seenFrom (Inter inter);
+
+    /**
+     * Set this relation as a manual one.
+     *
+     * @param manual new value
+     */
+    void setManual (boolean manual);
 
     /**
      * Report a long description of the relation

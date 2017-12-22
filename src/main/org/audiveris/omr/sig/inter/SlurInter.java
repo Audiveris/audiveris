@@ -31,6 +31,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.curve.GlyphSlurInfo;
 import org.audiveris.omr.sheet.curve.SlurHeadLink;
 import org.audiveris.omr.sheet.curve.SlurInfo;
@@ -62,6 +63,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -325,6 +327,28 @@ public class SlurInter
     }
 
     //----------//
+    // checkTie //
+    //----------//
+    /**
+     * Check whether the slur is a tie between the two provided heads, with no check
+     * for mirror heads potential mirrors.
+     *
+     * @param leftHead     head of left side
+     * @param rightHead    head on right side
+     * @param systemChords system head chords, not null
+     * @return true if this slur can be considered as a tie
+     */
+    public boolean checkTie (HeadInter leftHead,
+                             HeadInter rightHead,
+                             List<Inter> systemChords)
+    {
+        return (leftHead != null) && (rightHead != null)
+               && (leftHead.getIntegerPitch() == rightHead.getIntegerPitch())
+               && (leftHead.getStaff() == rightHead.getStaff())
+               && isSpaceClear(leftHead, rightHead, systemChords);
+    }
+
+    //----------//
     // getCurve //
     //----------//
     /**
@@ -474,6 +498,71 @@ public class SlurInter
     public boolean isAbove ()
     {
         return above;
+    }
+
+    //--------------//
+    // isSpaceClear //
+    //--------------//
+    /**
+     * Check if the space between leftHead and rightHead is clear of other heads.
+     * <p>
+     * This is meant to allow a tie.
+     *
+     * @param leftHead         left side head
+     * @param rightHead        right side head
+     * @param systemHeadChords the set of head chords in system
+     * @return true if clear
+     */
+    public boolean isSpaceClear (HeadInter leftHead,
+                                 HeadInter rightHead,
+                                 List<Inter> systemHeadChords)
+    {
+        if ((leftHead == null) || (rightHead == null)) {
+            return false;
+        }
+
+        final AbstractChordInter leftChord = leftHead.getChord();
+        final AbstractChordInter rightChord = rightHead.getChord();
+
+        final BeamGroup leftGroup = leftChord.getBeamGroup();
+        final BeamGroup rightGroup = rightChord.getBeamGroup();
+
+        // Define a lookup box limited to heads and stems tail ends
+        Rectangle box = leftHead.getCoreBounds().getBounds();
+        box.add(rightHead.getCoreBounds().getBounds());
+        box.add(leftChord.getTailLocation());
+        box.add(rightChord.getTailLocation());
+
+        List<Inter> found = SIGraph.intersectedInters(systemHeadChords, null, box);
+
+        // Exclude left & right chords
+        found.remove(leftChord);
+        found.remove(rightChord);
+
+        // Exclude mirrors if any
+        if (leftHead.getMirror() != null) {
+            found.remove(leftHead.getMirror().getEnsemble());
+        }
+
+        if (rightHead.getMirror() != null) {
+            found.remove(rightHead.getMirror().getEnsemble());
+        }
+
+        ChordLoop:
+        for (Iterator it = found.iterator(); it.hasNext();) {
+            AbstractChordInter chord = (AbstractChordInter) it.next();
+
+            // This intersected chord cannot be in the same beam group as left or right chords
+            final BeamGroup group = chord.getBeamGroup();
+
+            if ((group != null) && ((group == leftGroup) || (group == rightGroup))) {
+                logger.debug("Tie forbidden across {}", chord);
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     //-------//

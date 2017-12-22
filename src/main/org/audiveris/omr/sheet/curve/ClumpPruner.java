@@ -24,9 +24,7 @@ package org.audiveris.omr.sheet.curve;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
-import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -126,7 +124,8 @@ public class ClumpPruner
 
         SystemLoop:
         for (SystemInfo system : systems) {
-            ClumpLinker linker = new ClumpLinker(system, clump, bounds);
+            final List<Inter> sysChords = system.getSig().inters(HeadChordInter.class);
+            final ClumpLinker linker = new ClumpLinker(system, clump, bounds, sysChords);
 
             // Select the slur with best chord links, if any
             SlurEntry selected = linker.selectSlur(areas);
@@ -149,15 +148,15 @@ public class ClumpPruner
                         final SlurInter slur = selected.slur;
 
                         // Check there is no other chords in between
-                        if (linker.isSpaceClear(leftHead, rightHead)) {
+                        if (slur.isSpaceClear(leftHead, rightHead, sysChords)) {
                             slur.setTie(true);
-                        } else if (linker.isSpaceClear(leftMirror, rightHead)) {
+                        } else if (slur.isSpaceClear(leftMirror, rightHead, sysChords)) {
                             slur.setTie(true);
                             switchMirrorHead(selected, LEFT);
-                        } else if (linker.isSpaceClear(leftHead, rightMirror)) {
+                        } else if (slur.isSpaceClear(leftHead, rightMirror, sysChords)) {
                             slur.setTie(true);
                             switchMirrorHead(selected, RIGHT);
-                        } else if (linker.isSpaceClear(leftMirror, rightMirror)) {
+                        } else if (slur.isSpaceClear(leftMirror, rightMirror, sysChords)) {
                             slur.setTie(true);
                             switchMirrorHead(selected, LEFT);
                             switchMirrorHead(selected, RIGHT);
@@ -326,13 +325,13 @@ public class ClumpPruner
         //~ Constructors ---------------------------------------------------------------------------
         public ClumpLinker (SystemInfo system,
                             Set<Inter> clump,
-                            Map<HorizontalSide, Rectangle> bounds)
+                            Map<HorizontalSide, Rectangle> bounds,
+                            List<Inter> sysChords)
         {
             this.system = system;
             this.clump = clump;
+            this.sysChords = sysChords;
             sig = system.getSig();
-
-            sysChords = sig.inters(HeadChordInter.class);
 
             // Pre-select chords candidates according to clump side
             filterChords(bounds);
@@ -361,69 +360,6 @@ public class ClumpPruner
                     sig.addEdge(slur, head, link.relation);
                 }
             }
-        }
-
-        //--------------//
-        // isSpaceClear //
-        //--------------//
-        /**
-         * Check if the space between leftHead and rightHead is clear of other heads.
-         * <p>
-         * This is meant to allow a tie.
-         *
-         * @param leftHead  left side head
-         * @param rightHead right side head
-         * @return true if clear
-         */
-        public boolean isSpaceClear (HeadInter leftHead,
-                                     HeadInter rightHead)
-        {
-            if ((leftHead == null) || (rightHead == null)) {
-                return false;
-            }
-
-            final AbstractChordInter leftChord = leftHead.getChord();
-            final AbstractChordInter rightChord = rightHead.getChord();
-
-            final BeamGroup leftGroup = leftChord.getBeamGroup();
-            final BeamGroup rightGroup = rightChord.getBeamGroup();
-
-            // Define a lookup box limited to heads and stems tail ends
-            Rectangle box = leftHead.getCoreBounds().getBounds();
-            box.add(rightHead.getCoreBounds().getBounds());
-            box.add(leftChord.getTailLocation());
-            box.add(rightChord.getTailLocation());
-
-            List<Inter> found = SIGraph.intersectedInters(sysChords, null, box);
-
-            // Exclude left & right chords
-            found.remove(leftChord);
-            found.remove(rightChord);
-
-            // Exclude mirrors if any
-            if (leftHead.getMirror() != null) {
-                found.remove(leftHead.getMirror().getEnsemble());
-            }
-
-            if (rightHead.getMirror() != null) {
-                found.remove(rightHead.getMirror().getEnsemble());
-            }
-
-            ChordLoop:
-            for (Iterator it = found.iterator(); it.hasNext();) {
-                AbstractChordInter chord = (AbstractChordInter) it.next();
-
-                // This intersected chord cannot be in the same beam group as left or right chords
-                final BeamGroup group = chord.getBeamGroup();
-
-                if ((group != null) && ((group == leftGroup) || (group == rightGroup))) {
-                    logger.debug("Tie forbidden across {}", chord);
-
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         //------------//

@@ -110,7 +110,10 @@ public class DndOperation
                                        Zoom zoom,
                                        Shape shape)
     {
-        return new DndOperation(sheet, zoom, SymbolFactory.createGhost(shape, 1.0));
+        final Inter ghost = SymbolFactory.createGhost(shape, 1.0);
+        ghost.setManual(true);
+
+        return new DndOperation(sheet, zoom, ghost);
     }
 
     //------//
