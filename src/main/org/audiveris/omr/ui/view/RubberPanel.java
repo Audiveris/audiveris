@@ -665,7 +665,6 @@ public class RubberPanel
     /**
      * Room for rendering additional items, typically some user-selected items if any,
      * on top of the global ones already rendered by the {@link #render} method.
-     * This is just a place holder, the real items rendering must be provided by a subclass.
      *
      * @param g the graphic context
      */

@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -912,10 +913,17 @@ public class InterController
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            final Inter inter = sheet.getInterIndex().getEntityService().getSelectedEntity();
+            List<Inter> inters = sheet.getInterIndex().getEntityService().getSelectedEntityList();
 
-            if (inter != null) {
-                removeInter(inter);
+            if ((inters == null) || inters.isEmpty()) {
+                return;
+            }
+
+            if ((inters.size() == 1)
+                || OMR.gui.displayConfirmation(
+                            "Do you confirm this multiple deletion?",
+                            "Deletion of " + inters.size() + " inters")) {
+                removeInters(inters);
             }
         }
     }

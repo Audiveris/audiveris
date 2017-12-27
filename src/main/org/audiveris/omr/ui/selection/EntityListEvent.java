@@ -75,6 +75,13 @@ public class EntityListEvent<E extends Entity>
     //-----------//
     // getEntity //
     //-----------//
+    /**
+     * Report the selected entity, <b>but mind the case where several entities have
+     * been selected</b>.
+     *
+     * @return the selected entity, whatever that means
+     * @see EntityService#getSelectedEntity()
+     */
     public E getEntity ()
     {
         if ((entities == null) || entities.isEmpty()) {

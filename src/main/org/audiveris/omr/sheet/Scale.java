@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -105,10 +104,6 @@ public class Scale
     @XmlElement(name = "small-interline")
     private InterlineScale smallInterlineScale;
 
-    /** Second interline scale, if any. Temporarily kept for compatibility. */
-    @XmlElement(name = "second-interline")
-    private InterlineScale interlineScale2;
-
     /** Beam scale. */
     @XmlElement(name = "beam")
     private final BeamScale beamScale;
@@ -135,8 +130,6 @@ public class Scale
         this.interlineScale = interlineScale;
         this.smallInterlineScale = smallInterlineScale;
         this.beamScale = beamScale;
-
-        interlineScale2 = null;
     }
 
     /** No-arg constructor, needed by JAXB. */
@@ -505,7 +498,7 @@ public class Scale
     /**
      * Remember vertical distance between grouped beams
      *
-     * @param meanValue the mean value of the distance
+     * @param meanValue         the mean value of the distance
      * @param standardDeviation the standard deviation of the distance
      */
     public void setBeamDistance (double meanValue,
@@ -631,29 +624,6 @@ public class Scale
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        // Migrate old interline / interline2 to (large) interline / small interline
-        if (interlineScale2 != null) {
-            InterlineScale larger = (interlineScale.main > interlineScale2.main) ? interlineScale
-                    : interlineScale2;
-            InterlineScale smaller = (interlineScale.main < interlineScale2.main) ? interlineScale
-                    : interlineScale2;
-            interlineScale = larger;
-            smallInterlineScale = smaller;
-            interlineScale2 = null;
-        }
     }
 
     //--------------//
@@ -918,18 +888,6 @@ public class Scale
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Compute the interline fraction that corresponds to the given number of pixels.
-         *
-         * @param pixels the equivalent in number of pixels
-         * @return the interline fraction
-         * @see #toPixels
-         */
-        public double pixelsToFrac (double pixels)
-        {
-            return pixels / main;
-        }
-
         public static int toPixels (int interline,
                                     Fraction frac)
         {
@@ -950,12 +908,6 @@ public class Scale
             return (int) Math.rint(interline * interline * areaFrac.getValue());
         }
 
-        public static double toPixelsDouble (int interline,
-                                             Fraction frac)
-        {
-            return interline * frac.getWrappedValue().doubleValue();
-        }
-
         /**
          * Compute the squared-normalized number of pixels.
          *
@@ -965,6 +917,24 @@ public class Scale
         public int toPixels (AreaFraction areaFrac)
         {
             return toPixels(main, areaFrac);
+        }
+
+        public static double toPixelsDouble (int interline,
+                                             Fraction frac)
+        {
+            return interline * frac.getWrappedValue().doubleValue();
+        }
+
+        /**
+         * Compute the interline fraction that corresponds to the given number of pixels.
+         *
+         * @param pixels the equivalent in number of pixels
+         * @return the interline fraction
+         * @see #toPixels
+         */
+        public double pixelsToFrac (double pixels)
+        {
+            return pixels / main;
         }
 
         /**

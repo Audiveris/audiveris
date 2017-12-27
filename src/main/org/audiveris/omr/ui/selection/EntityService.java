@@ -158,9 +158,11 @@ public class EntityService<E extends Entity>
     // getSelectedEntity //
     //-------------------//
     /**
-     * Report the currently selected entity if any
+     * Report the currently selected entity if any, <b>but mind the case where several
+     * entities have been selected</b>.
      *
      * @return the current entity or null
+     * @see EntityListEvent#getEntity()
      */
     @SuppressWarnings("unchecked")
     public E getSelectedEntity ()
@@ -277,7 +279,7 @@ public class EntityService<E extends Entity>
     // handleEvent //
     //-------------//
     /**
-     * Interest in EntityList => location contour of last entity
+     * Interest in EntityList => location contour of "selected" entity
      *
      * @param EntityListEvent
      */
