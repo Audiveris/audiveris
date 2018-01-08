@@ -32,7 +32,6 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.SigValue.InterSet;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -1086,12 +1085,6 @@ public abstract class AbstractInter
 
         if (sig == null) {
             logger.error("Marshalling an inter with no sig " + this);
-        } else {
-            InterSet interSet = sig.getSystem().getInterSet();
-
-            if (interSet != null) {
-                interSet.addInter(this);
-            }
         }
     }
 

@@ -37,7 +37,6 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.SigListener;
-import org.audiveris.omr.sig.SigValue.InterSet;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.util.HorizontalSide;
@@ -62,7 +61,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -190,9 +188,6 @@ public class SystemInfo
 
     /** Width of the system. */
     private int width = -1;
-
-    /** Very temporary set, used only during SIG marshalling. */
-    private InterSet interSet;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -553,17 +548,6 @@ public class SystemInfo
     public int getIndexInPage ()
     {
         return getPage().getSystems().indexOf(this);
-    }
-
-    //-------------//
-    // getInterSet //
-    //-------------//
-    /**
-     * @return the interSet
-     */
-    public InterSet getInterSet ()
-    {
-        return interSet;
     }
 
     //---------------------//
@@ -1306,21 +1290,6 @@ public class SystemInfo
         }
     }
 
-    //-------------//
-    // setInterSet //
-    //-------------//
-    /**
-     * Trick used during marshalling.
-     * <p>
-     * If interSet is not null, then any inter being marshalled is also included in this set.
-     *
-     * @param interSet the interSet to set
-     */
-    public void setInterSet (InterSet interSet)
-    {
-        this.interSet = interSet;
-    }
-
     //---------//
     // setPage //
     //---------//
@@ -1443,15 +1412,5 @@ public class SystemInfo
     {
         this.sheet = sheet;
         this.page = page;
-    }
-
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
-    {
-        logger.debug("SystemInfo.beforeMarshal for {}", this);
-        setInterSet(new InterSet());
     }
 }

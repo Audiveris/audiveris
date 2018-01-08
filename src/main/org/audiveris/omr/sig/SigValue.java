@@ -129,8 +129,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
@@ -154,17 +152,11 @@ public class SigValue
             SigValue.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Inters already defined in system structure, hence gathered here as mere refs. */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "inter-refs")
-    private final ArrayList<AbstractInter> interRefs = new ArrayList<AbstractInter>();
-
     /**
      * All CONCRETE inters found in sig, gathered here as true defs. No abstract!
      * For easier review, class names are listed alphabetically.
      */
-    @XmlElementWrapper(name = "inter-defs")
+    @XmlElementWrapper(name = "inters")
     @XmlElementRefs({
         @XmlElementRef(type = AlterInter.class)
         , @XmlElementRef(type = AugmentationDotInter.class)
@@ -217,7 +209,7 @@ public class SigValue
         , @XmlElementRef(type = WedgeInter.class)
         , @XmlElementRef(type = WordInter.class)
     })
-    private final ArrayList<AbstractInter> interDefs = new ArrayList<AbstractInter>();
+    private final ArrayList<AbstractInter> inters = new ArrayList<AbstractInter>();
 
     /** Sig edges: relations between inters. */
     @XmlElementWrapper(name = "relations")
@@ -246,8 +238,7 @@ public class SigValue
         final InterIndex index = sheet.getInterIndex();
 
         // Populate inters
-        sig.populateAllInters(interRefs);
-        sig.populateAllInters(interDefs);
+        sig.populateAllInters(inters);
 
         for (Inter inter : sig.vertexSet()) {
             inter.setSig(sig);
@@ -266,11 +257,7 @@ public class SigValue
         }
 
         // Replace StaffHolder instances with real Staff instances
-        for (Inter inter : interRefs) {
-            Staff.StaffHolder.checkStaffHolder(inter, mgr);
-        }
-
-        for (Inter inter : interDefs) {
+        for (Inter inter : inters) {
             Staff.StaffHolder.checkStaffHolder(inter, mgr);
         }
     }
@@ -302,19 +289,9 @@ public class SigValue
         {
             SigValue sigValue = new SigValue();
 
-            // Dispose of interSet: from now on, any marshalling will go directly to interDefs
-            InterSet interSet = sig.getSystem().getInterSet();
-            LinkedHashSet<AbstractInter> defined = interSet.getInters();
-            sig.getSystem().setInterSet(null);
-
             for (Inter inter : sig.vertexSet()) {
                 AbstractInter abstractInter = (AbstractInter) inter;
-
-                if (!defined.contains(abstractInter)) {
-                    sigValue.interDefs.add(abstractInter);
-                } else {
-                    sigValue.interRefs.add(abstractInter);
-                }
+                sigValue.inters.add(abstractInter);
             }
 
             for (Relation edge : sig.edgeSet()) {
