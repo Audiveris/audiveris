@@ -65,10 +65,10 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -99,16 +99,16 @@ public class BeamGroup
     @XmlAttribute
     private final int id;
 
-    /** Set of contained beams. */
-    @XmlList
-    @XmlIDREF
-    @XmlElement
-    private final LinkedHashSet<AbstractBeamInter> beams = new LinkedHashSet<AbstractBeamInter>();
-
     /** Indicates a beam group that is linked to more than one staff. */
     @XmlAttribute(name = "multi-staff")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean multiStaff;
+
+    /** Set of contained beams. */
+    @XmlList
+    @XmlIDREF
+    @XmlValue
+    private final LinkedHashSet<AbstractBeamInter> beams = new LinkedHashSet<AbstractBeamInter>();
 
     // Transient data
     //---------------
@@ -147,22 +147,6 @@ public class BeamGroup
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    /**
-     * Find proper unique ID for a new group.
-     *
-     * @return proper ID
-     */
-    private int getNextGroupId (Measure measure)
-    {
-        int max = 0;
-
-        for (BeamGroup group : measure.getBeamGroups()) {
-            max = Math.max(max, group.getId());
-        }
-
-        return ++max;
-    }
-
     //-------------//
     // includeBeam //
     //-------------//
@@ -298,6 +282,7 @@ public class BeamGroup
     //-------------//
     /**
      * Report the total duration of the sequence of chords within this group.
+     * <p>
      * Beware, there may be rests inserted within beam-grouped notes.
      *
      * @return the total group duration, perhaps null
@@ -375,6 +360,8 @@ public class BeamGroup
     // isMultiStaff //
     //--------------//
     /**
+     * Tell whether this beam group is linked to more than one staff.
+     *
      * @return the multiStaff
      */
     public boolean isMultiStaff ()
@@ -462,7 +449,7 @@ public class BeamGroup
     }
 
     //-------------//
-    // resetRhythm //
+    // resetTiming //
     //-------------//
     public void resetTiming ()
     {
@@ -561,32 +548,6 @@ public class BeamGroup
         }
     }
 
-    //
-    //    //-----------------//
-    //    // checkBeamGroups //
-    //    //-----------------//
-    //    /**
-    //     * Check all the BeamGroup instances of the given measure, to find the first split
-    //     * if any to perform.
-    //     *
-    //     * @param measure the given measure
-    //     * @return the first split parameters, or null if everything is OK
-    //     */
-    //    private static boolean checkBeamGroups (Measure measure)
-    //    {
-    //        for (BeamGroup group : measure.getBeamGroups()) {
-    //            AbstractChordInter alienChord = group.checkForSplit();
-    //
-    //            if (alienChord != null) {
-    //                group.split(alienChord);
-    //
-    //                return true;
-    //            }
-    //        }
-    //
-    //        return false;
-    //    }
-    //
     //-----------------//
     // checkBeamGroups //
     //-----------------//
@@ -610,6 +571,22 @@ public class BeamGroup
         }
 
         return false;
+    }
+
+    /**
+     * Find proper unique ID for a new group.
+     *
+     * @return proper ID
+     */
+    private static int getNextGroupId (Measure measure)
+    {
+        int max = 0;
+
+        for (BeamGroup group : measure.getBeamGroups()) {
+            max = Math.max(max, group.getId());
+        }
+
+        return ++max;
     }
 
     //---------------//
@@ -1083,3 +1060,29 @@ public class BeamGroup
         }
     }
 }
+//
+//    //-----------------//
+//    // checkBeamGroups //
+//    //-----------------//
+//    /**
+//     * Check all the BeamGroup instances of the given measure, to find the first split
+//     * if any to perform.
+//     *
+//     * @param measure the given measure
+//     * @return the first split parameters, or null if everything is OK
+//     */
+//    private static boolean checkBeamGroups (Measure measure)
+//    {
+//        for (BeamGroup group : measure.getBeamGroups()) {
+//            AbstractChordInter alienChord = group.checkForSplit();
+//
+//            if (alienChord != null) {
+//                group.split(alienChord);
+//
+//                return true;
+//            }
+//        }
+//
+//        return false;
+//    }
+//

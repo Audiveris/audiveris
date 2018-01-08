@@ -121,7 +121,7 @@ public class MeasuresBuilder
     {
         // Determine groups of BarlineInter's for each staff within system
         for (Staff staff : system.getStaves()) {
-            staffMap.put(staff, buildGroups(staff.getBars()));
+            staffMap.put(staff, buildGroups(staff.getBarlines()));
         }
 
         // Enforce consistency within system

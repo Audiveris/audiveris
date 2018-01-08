@@ -1204,7 +1204,7 @@ public class SigReducer
 
                 if (notePrev != -1) {
                     // Position WRT Bars in staff
-                    List<BarlineInter> bars = staff.getBars();
+                    List<BarlineInter> bars = staff.getBarlines();
                     int barPrev = -2
                                   - Collections.binarySearch(
                                     bars,

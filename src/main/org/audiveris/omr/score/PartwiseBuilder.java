@@ -56,7 +56,6 @@ import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
@@ -2847,11 +2846,10 @@ public class PartwiseBuilder
             }
 
             // Populate iterators
-            iters = new HashMap<Staff, ListIterator<ClefInter>>();
+            iters = new LinkedHashMap<Staff, ListIterator<ClefInter>>();
 
             for (Map.Entry<Staff, List<ClefInter>> entry : map.entrySet()) {
-                List<ClefInter> list = entry.getValue();
-                Collections.sort(list, Inters.byCenterAbscissa); // not needed? (already sorted)
+                List<ClefInter> list = entry.getValue(); // Already sorted by full center abscissa
                 iters.put(entry.getKey(), list.listIterator());
             }
         }

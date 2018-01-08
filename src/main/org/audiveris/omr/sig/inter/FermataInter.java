@@ -252,7 +252,7 @@ public class FermataInter
     public boolean linkWithBarline ()
     {
         Point center = getCenter();
-        List<BarlineInter> bars = getStaff().getBars();
+        List<BarlineInter> bars = getStaff().getBarlines();
         BarlineInter bar = BarlineInter.getClosestBarline(bars, center);
 
         if ((bar != null) && (GeoUtil.xOverlap(getBounds(), bar.getBounds()) > 0)) {

@@ -45,6 +45,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.selection.AnchoredTemplateEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
+
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 

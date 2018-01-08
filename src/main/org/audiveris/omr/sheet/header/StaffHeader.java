@@ -24,8 +24,6 @@ package org.audiveris.omr.sheet.header;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.KeyInter;
-import org.audiveris.omr.sig.inter.TimePairInter;
-import org.audiveris.omr.sig.inter.TimeWholeInter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +34,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlIDREF;
 
 /**
  * Class {@code StaffHeader} gathers information about the (Clef + Key + Time) sequence
@@ -71,18 +68,21 @@ public class StaffHeader
     public int stop;
 
     /** Clef found. */
+    @XmlIDREF
     @XmlElement(name = "clef")
     public ClefInter clef;
 
     /** Key-sig found, if any. */
+    @XmlIDREF
     @XmlElement(name = "key")
     public KeyInter key;
 
     /** Time-sig found, if any. */
-    @XmlElementRefs({
-        @XmlElementRef(type = TimePairInter.class)
-        , @XmlElementRef(type = TimeWholeInter.class)
-    })
+    @XmlIDREF
+//    @XmlElementRefs({
+//        @XmlElementRef(type = TimePairInter.class)
+//        , @XmlElementRef(type = TimeWholeInter.class)
+//    })
     public AbstractTimeInter time;
 
     // Transient data
@@ -121,6 +121,27 @@ public class StaffHeader
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // freeze //
+    //--------//
+    /**
+     * Freeze all component inters of this header.
+     */
+    public void freeze ()
+    {
+        if (clef != null) {
+            clef.freeze();
+        }
+
+        if (key != null) {
+            key.freeze();
+        }
+
+        if (time != null) {
+            time.freeze();
+        }
+    }
+
     @Override
     public String toString ()
     {
@@ -154,27 +175,6 @@ public class StaffHeader
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //--------//
-    // freeze //
-    //--------//
-    /**
-     * Freeze all component inters of this header.
-     */
-    public void freeze ()
-    {
-        if (clef != null) {
-            clef.freeze();
-        }
-
-        if (key != null) {
-            key.freeze();
-        }
-
-        if (time != null) {
-            time.freeze();
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

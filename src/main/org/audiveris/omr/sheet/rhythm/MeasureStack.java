@@ -83,7 +83,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>A pickup measure has ID 0, instead of 1.</li>
  * <li>A special value (Xn) is used for second half repeats, when first half repeat is n.</li>
  * <li>Courtesy measures that may be found at end of system (containing just cautionary key or time
- * signatures) are simply ignored, hence they have no ID.</li>
+ * signatures) have an ID with C suffix (nC).</li>
  * </ul>
  * <li>IDs, as exported in MusicXML, combine the page-based IDs to provide score-based (absolute)
  * IDs.</li>
@@ -101,8 +101,11 @@ public class MeasureStack
 
     private static final Logger logger = LoggerFactory.getLogger(MeasureStack.class);
 
-    /** String prefix for a second half id. */
-    private static final String SH_STRING = "X";
+    /** String prefix for a second half id: {@value}. */
+    public static final String SECOND_HALF_PREFIX = "X";
+
+    /** String suffix for a cautionary id: {@value}. */
+    public static final String CAUTIONARY_SUFFIX = "C";
 
     //~ Enumerations -------------------------------------------------------------------------------
     public enum Special
@@ -811,7 +814,8 @@ public class MeasureStack
     public String getPageId ()
     {
         if (id != null) {
-            return ((special == Special.SECOND_HALF) ? SH_STRING : "") + id;
+            return ((special == Special.SECOND_HALF) ? SECOND_HALF_PREFIX : "") + id
+                   + (isCautionary() ? CAUTIONARY_SUFFIX : "");
         }
 
         // No id defined yet
@@ -868,35 +872,6 @@ public class MeasureStack
         return null;
     }
 
-    //
-    //    //---------------//
-    //    // getRestChords //
-    //    //---------------//
-    //    public Collection<AbstractChordInter> getRestChords ()
-    //    {
-    //        List<AbstractChordInter> rests = new ArrayList<AbstractChordInter>();
-    //
-    //        for (Measure measure : measures) {
-    //            rests.addAll(measure.getRestChords());
-    //        }
-    //
-    //        return rests;
-    //    }
-    //
-    //    //------------//
-    //    // getRhythms //
-    //    //------------//
-    //    public Collection<Inter> getRhythms ()
-    //    {
-    //        List<Inter> rhythms = new ArrayList<Inter>();
-    //
-    //        for (Measure measure : measures) {
-    //            rhythms.addAll(measure.getRhythms());
-    //        }
-    //
-    //        return rhythms;
-    //    }
-    //
     //------------//
     // getScoreId //
     //------------//
@@ -915,7 +890,8 @@ public class MeasureStack
         final Page page = system.getPage();
         final int pageMeasureIdOffset = score.getMeasureIdOffset(page);
 
-        return ((special == Special.SECOND_HALF) ? SH_STRING : "") + (pageMeasureIdOffset + id);
+        return ((special == Special.SECOND_HALF) ? SECOND_HALF_PREFIX : "")
+               + (pageMeasureIdOffset + id);
     }
 
     //----------//
@@ -1614,14 +1590,12 @@ public class MeasureStack
     public String toString ()
     {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        ///sb.append("{");
         sb.append('#').append(getPageId());
 
         if (isCautionary()) {
-            sb.append("C");
+            sb.append(CAUTIONARY_SUFFIX);
         }
 
-        ///sb.append("}");
         return sb.toString();
     }
 

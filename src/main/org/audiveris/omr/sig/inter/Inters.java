@@ -155,6 +155,43 @@ public abstract class Inters
     };
 
     /**
+     * For comparing interpretations by abscissa, ensuring that only identical
+     * interpretations are found equal.
+     * This comparator can thus be used for a TreeSet.
+     */
+    public static final Comparator<Inter> byFullCenterAbscissa = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter o1,
+                            Inter o2)
+        {
+            if (o1 == o2) {
+                return 0;
+            }
+
+            Point loc1 = o1.getCenter();
+            Point loc2 = o2.getCenter();
+
+            // Are x values different?
+            int dx = loc1.x - loc2.x;
+
+            if (dx != 0) {
+                return dx;
+            }
+
+            // Vertically aligned, so use ordinates
+            int dy = loc1.y - loc2.y;
+
+            if (dy != 0) {
+                return dy;
+            }
+
+            // Finally, use id ...
+            return Integer.compare(o1.getId(), o2.getId());
+        }
+    };
+
+    /**
      * For comparing interpretations by ordinate.
      */
     public static final Comparator<Inter> byOrdinate = new Comparator<Inter>()

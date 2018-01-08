@@ -2379,7 +2379,7 @@ public class BarsRetriever
                     }
                 }
 
-                staff.setBars(bars);
+                staff.setBarlines(bars);
             }
         }
     }

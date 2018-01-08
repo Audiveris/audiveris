@@ -87,6 +87,7 @@ import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
+import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
@@ -193,8 +194,7 @@ public class SigValue
         , @XmlElementRef(type = KeyAlterInter.class)
         , @XmlElementRef(type = KeyInter.class)
         , @XmlElementRef(type = LedgerInter.class)
-        , // Cannot occur ???
-        @XmlElementRef(type = LyricItemInter.class)
+        , @XmlElementRef(type = LyricItemInter.class)
         , @XmlElementRef(type = LyricLineInter.class)
         , @XmlElementRef(type = MarkerInter.class)
         , @XmlElementRef(type = OrnamentInter.class)
@@ -400,6 +400,7 @@ public class SigValue
             , @XmlElementRef(type = ChordArticulationRelation.class)
             , @XmlElementRef(type = ChordDynamicsRelation.class)
             , @XmlElementRef(type = ChordNameRelation.class)
+            , @XmlElementRef(type = ChordOrnamentRelation.class)
             , @XmlElementRef(type = ChordPedalRelation.class)
             , @XmlElementRef(type = ChordSentenceRelation.class)
             , @XmlElementRef(type = ChordStemRelation.class)

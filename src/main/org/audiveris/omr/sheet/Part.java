@@ -56,6 +56,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -137,12 +139,16 @@ public class Part
     private final List<Measure> measures = new ArrayList<Measure>();
 
     /** Lyric lines in this part. */
-    @XmlElement(name = "lyric-line")
-    private final List<LyricLineInter> lyrics = new ArrayList<LyricLineInter>();
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "lyric-lines")
+    private List<LyricLineInter> lyrics;
 
     /** Slurs in this part. */
-    @XmlElement(name = "slur")
-    private final List<SlurInter> slurs = new ArrayList<SlurInter>();
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "slurs")
+    private List<SlurInter> slurs;
 
     // Transient data
     //---------------
@@ -175,6 +181,10 @@ public class Part
     //----------//
     public void addLyric (LyricLineInter lyric)
     {
+        if (lyrics == null) {
+            lyrics = new ArrayList<LyricLineInter>();
+        }
+
         lyrics.add(lyric);
     }
 
@@ -191,6 +201,10 @@ public class Part
     //---------//
     public void addSlur (SlurInter slur)
     {
+        if (slurs == null) {
+            slurs = new ArrayList<SlurInter>();
+        }
+
         slurs.add(slur);
     }
 
@@ -212,8 +226,10 @@ public class Part
                 measure.afterReload();
             }
 
-            for (SlurInter slur : slurs) {
-                slur.setPart(this);
+            if (slurs != null) {
+                for (SlurInter slur : slurs) {
+                    slur.setPart(this);
+                }
             }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
@@ -508,7 +524,7 @@ public class Part
     //-----------//
     public List<LyricLineInter> getLyrics ()
     {
-        return lyrics;
+        return (lyrics != null) ? Collections.unmodifiableList(lyrics) : Collections.EMPTY_LIST;
     }
 
     //--------------//
@@ -611,9 +627,11 @@ public class Part
     {
         List<SlurInter> selectedSlurs = new ArrayList<SlurInter>();
 
-        for (SlurInter slur : slurs) {
-            if (predicate.check(slur)) {
-                selectedSlurs.add(slur);
+        if (slurs != null) {
+            for (SlurInter slur : slurs) {
+                if (predicate.check(slur)) {
+                    selectedSlurs.add(slur);
+                }
             }
         }
 
@@ -708,11 +726,13 @@ public class Part
     public void purgeContainers ()
     {
         // Lyrics
-        for (Iterator<LyricLineInter> it = lyrics.iterator(); it.hasNext();) {
-            LyricLineInter lyric = it.next();
+        if (lyrics != null) {
+            for (Iterator<LyricLineInter> it = lyrics.iterator(); it.hasNext();) {
+                LyricLineInter lyric = it.next();
 
-            if (lyric.isRemoved()) {
-                it.remove();
+                if (lyric.isRemoved()) {
+                    it.remove();
+                }
             }
         }
     }
@@ -728,7 +748,17 @@ public class Part
      */
     public boolean removeSlur (SlurInter slur)
     {
-        return slurs.remove(slur);
+        boolean result = false;
+
+        if (slurs != null) {
+            result = slurs.remove(slur);
+
+            if (slurs.isEmpty()) {
+                slurs = null;
+            }
+        }
+
+        return result;
     }
 
     //----------//
