@@ -40,6 +40,7 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
+import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
@@ -198,7 +199,28 @@ public class ChordsBuilder
         }
 
         if (!ok) {
-            final int idx = (stems.get(0).getGrade() < stems.get(1).getGrade()) ? 0 : 1;
+            // Here we must discard one head-stem connection, but which one?
+            // A stem attached to a side portion of a beam can no longer be deleted
+            for (HorizontalSide side : HorizontalSide.values()) {
+                int idx = (side == LEFT) ? 0 : 1;
+                StemInter stem = stems.get(idx);
+                Set<HeadInter> remainingHeads = stem.getHeads();
+                remainingHeads.remove(head);
+
+                for (Relation rel : sig.getRelations(stem, BeamStemRelation.class)) {
+                    BeamStemRelation bsRel = (BeamStemRelation) rel;
+                    BeamPortion beamPortion = bsRel.getBeamPortion();
+
+                    if ((beamPortion != BeamPortion.CENTER) && remainingHeads.isEmpty()) {
+                        return HorizontalSide.values()[1 - idx];
+                    }
+                }
+            }
+
+            // No beam-stuck stem found, use global quality...
+            double leftGrade = stems.get(0).getGrade() * ((HeadStemRelation) rels.get(0)).getGrade();
+            double rightGrade = stems.get(1).getGrade() * ((HeadStemRelation) rels.get(1)).getGrade();
+            final int idx = (leftGrade < rightGrade) ? 0 : 1;
 
             return HorizontalSide.values()[idx];
         }
@@ -253,9 +275,13 @@ public class ChordsBuilder
             if (poorSide != null) {
                 Relation poorRel = rels.get((poorSide == LEFT) ? 0 : 1);
                 StemInter poorStem = (StemInter) sig.getOppositeInter(head, poorRel);
-                logger.info("Deleting {} on {} side of {}", poorStem, poorSide, head);
-                remove(poorStem, stemChords);
+                sig.removeEdge(poorRel);
                 rels.remove(poorRel);
+
+                if (poorStem.getHeads().isEmpty()) {
+                    logger.info("Deleting {} on {} side of {}", poorStem, poorSide, head);
+                    remove(poorStem, stemChords);
+                }
             }
         }
 
