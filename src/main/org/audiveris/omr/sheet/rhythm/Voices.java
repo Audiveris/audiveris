@@ -39,7 +39,6 @@ import static org.audiveris.omr.util.HorizontalSide.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -198,16 +197,31 @@ public abstract class Voices
                     final LogicalPart logicalPart = page.getLogicalPartById(scorePart.getId());
 
                     if (logicalPart == null) {
-                        continue; // scorePart not found in this page
+                        continue; // logical part not found in this page
                     }
 
                     final Part part = page.getFirstSystem().getPartById(logicalPart.getId());
 
                     if (part == null) {
-                        continue; // logicalPart not found in the first system
+                        continue; // logical part not found in the first system of this page
                     }
 
-                    final Map<SlurInter, SlurInter> links = getLinks(logicalPart, page, prevSystem);
+                    final Part precedingPart = prevSystem.getPartById(logicalPart.getId());
+
+                    if (precedingPart == null) {
+                        continue; // logical part not found at end of preceding page
+                    }
+
+                    final Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(precedingPart); // Links: Slur -> prevSlur
+
+                    // Apply the links possibilities
+                    for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
+                        final SlurInter slur = entry.getKey();
+                        final SlurInter prevSlur = entry.getValue();
+
+                        slur.checkTie(prevSlur);
+                    }
+
                     final SlurAdapter pageSlurAdapter = new SlurAdapter()
                     {
                         @Override
@@ -297,35 +311,6 @@ public abstract class Voices
                 }
             }
         }
-    }
-
-    //----------//
-    // getLinks //
-    //----------//
-    /**
-     * Within the same logical part, retrieve the connections between the (orphan) slurs
-     * at beginning of this page and the (orphan) slurs at end of the previous page.
-     *
-     * @param logicalPart     the logicalPart to connect
-     * @param page            the containing page
-     * @param precedingSystem the last system of previous page, if any
-     * @return the links (slur-> prevSlur), perhaps empty but not null
-     */
-    private static Map<SlurInter, SlurInter> getLinks (LogicalPart logicalPart,
-                                                       Page page,
-                                                       SystemInfo precedingSystem)
-    {
-        if (precedingSystem != null) {
-            final SystemInfo firstSystem = page.getFirstSystem();
-            final Part part = firstSystem.getPartById(logicalPart.getId());
-            final Part precedingPart = precedingSystem.getPartById(logicalPart.getId());
-
-            if ((part != null) && (precedingPart != null)) {
-                return part.connectSlursWith(precedingPart); // Links: Slur -> prevSlur
-            }
-        }
-
-        return Collections.emptyMap();
     }
 
     //-----------//

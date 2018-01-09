@@ -29,6 +29,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Jaxb;
@@ -146,19 +147,6 @@ public class Page
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // initTransients //
-    //----------------//
-    /**
-     * Initialize transient data after construction or unmarshalling.
-     *
-     * @param sheet the containing sheet
-     */
-    public final void initTransients (Sheet sheet)
-    {
-        this.sheet = sheet;
-    }
-
     //---------------------//
     // computeMeasureCount //
     //---------------------//
@@ -188,7 +176,7 @@ public class Page
      * slurs at the beginning of each system and the orphan slurs at the end of the
      * previous system if any.
      * <p>
-     * Orphan slurs that don't connect are removed from their SIG.
+     * Orphan slurs that don't connect (and are not manual) are removed from their SIG.
      */
     public void connectOrphanSlurs ()
     {
@@ -198,18 +186,36 @@ public class Page
             if (prevSystem != null) {
                 // Examine every part in sequence
                 for (Part part : system.getParts()) {
+                    List<SlurInter> orphans = part.getSlurs(SlurInter.isBeginningOrphan);
+
                     // Connect to ending orphans in preceding system/part (if such part exists)
-                    Part precedingPart = part.getPrecedingInPage();
+                    Part precPart = part.getPrecedingInPage();
 
-                    if (precedingPart != null) {
+                    if (precPart != null) {
+                        List<SlurInter> precOrphans = precPart.getSlurs(
+                                SlurInter.isEndingOrphan);
+
                         // Links: Slur -> prevSlur
-                        Map<SlurInter, SlurInter> links = part.connectSlursWith(precedingPart);
+                        Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(precPart);
 
+                        // Apply the links possibilities
                         for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
-                            entry.getKey().setExtension(LEFT, entry.getValue());
-                            entry.getValue().setExtension(RIGHT, entry.getKey());
+                            final SlurInter slur = entry.getKey();
+                            final SlurInter prevSlur = entry.getValue();
+
+                            slur.setExtension(LEFT, prevSlur);
+                            prevSlur.setExtension(RIGHT, slur);
+
+                            slur.checkTie(prevSlur);
                         }
+
+                        orphans.removeAll(links.keySet());
+                        precOrphans.removeAll(links.values());
+
+                        discardOrphans(precOrphans, RIGHT);
                     }
+
+                    discardOrphans(orphans, LEFT);
                 }
             }
         }
@@ -500,6 +506,19 @@ public class Page
         return systems;
     }
 
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * Initialize transient data after construction or unmarshalling.
+     *
+     * @param sheet the containing sheet
+     */
+    public final void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
+    }
+
     //-----------------//
     // isMovementStart //
     //-----------------//
@@ -709,6 +728,29 @@ public class Page
             logger.warn(getClass().getSimpleName() + " Error visiting " + this, ex);
 
             return 0;
+        }
+    }
+
+    //----------------//
+    // discardOrphans //
+    //----------------//
+    /**
+     * Discard every orphan left over, unless it's a manual one.
+     *
+     * @param orphans the orphan slurs left over
+     * @param side    side of missing connection
+     */
+    private void discardOrphans (List<SlurInter> orphans,
+                                 HorizontalSide side)
+    {
+        for (SlurInter slur : orphans) {
+            if (slur.isVip()) {
+                logger.info("VIP could not {}-connect {}", side, slur);
+            }
+
+            if (!slur.isManual()) {
+                slur.remove();
+            }
         }
     }
 }

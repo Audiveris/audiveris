@@ -290,19 +290,46 @@ public class SlurInter
     // canExtend //
     //-----------//
     /**
-     * Check whether this slur can extend the prevSlur of the preceding system.
+     * Check whether two slurs to-be-connected between two systems in sequence are
+     * roughly compatible with each other. (same staff id, and similar pitch positions).
      *
-     * @param prevSlur the slur candidate in the preceding system
-     * @return true if connection is possible
+     * @param prevSlur the previous slur
+     * @return true if found compatible
      */
     public boolean canExtend (SlurInter prevSlur)
     {
-        if (isVip() || prevSlur.isVip()) {
-            logger.info("VIP canExtend prevSlur:{} slur:{}", prevSlur, this);
+        // Retrieve prev staff, using the left note head of the prev slur
+        Staff prevStaff = prevSlur.getHead(LEFT).getStaff();
+
+        // Retrieve this staff, using the right note head of this slur
+        Staff thisStaff = getHead(RIGHT).getStaff();
+
+        // Check that part-based staff indices are the same
+        if (prevStaff.getIndexInPart() != thisStaff.getIndexInPart()) {
+            logger.debug(
+                    "{} prevStaff:{} {} staff:{} different part-based staff indices",
+                    prevSlur,
+                    prevStaff.getId(),
+                    this,
+                    thisStaff.getId());
+
+            return false;
         }
 
-        return (this.getExtension(LEFT) == null) && (prevSlur.getExtension(RIGHT) == null)
-               && this.isCompatibleWith(prevSlur);
+        // Retrieve prev position, using the right point of the prev slur
+        double prevPp = prevStaff.pitchPositionOf(PointUtil.rounded(prevSlur.getCurve().getP2()));
+
+        // Retrieve position, using the left point of the slur
+        double pp = thisStaff.pitchPositionOf(PointUtil.rounded(getCurve().getP1()));
+
+        // Compare pitch positions (very roughly)
+        double deltaPitch = pp - prevPp;
+
+        // Beware: maxDeltaY is specified in interlines, and 1 interline = 2 pitches
+        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
+        logger.debug("{} --- {} deltaPitch:{} res:{}", prevSlur, this, deltaPitch, res);
+
+        return res;
     }
 
     //----------//
@@ -316,14 +343,21 @@ public class SlurInter
     public void checkTie (SlurInter prevSlur)
     {
         // Tie?
-        boolean isATie = haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
+        boolean result = haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
 
-        if (isATie) {
-            prevSlur.setTie(true);
-            setTie(true);
+        if (prevSlur.isTie() != result) {
+            prevSlur.setTie(result);
+            prevSlur.getSig().getSystem().getSheet().getStub().setModified(true);
         }
 
-        logger.debug("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
+        if (this.isTie() != result) {
+            this.setTie(result);
+            this.getSig().getSystem().getSheet().getStub().setModified(true);
+        }
+
+        if (isVip() || prevSlur.isVip()) {
+            logger.info("VIP {} connection {} -> {}", result ? "Tie" : "Slur", prevSlur, this);
+        }
     }
 
     //----------//
@@ -706,50 +740,6 @@ public class SlurInter
                && (n1.getOctave() == n2.getOctave());
 
         // TODO: what about alteration, if we have not processed them yet ???
-    }
-
-    //------------------//
-    // isCompatibleWith //
-    //------------------//
-    /**
-     * Check whether two slurs to-be-connected between two systems in sequence are
-     * roughly compatible with each other. (same staff id, and similar pitch positions).
-     *
-     * @param prevSlur the previous slur
-     * @return true if found compatible
-     */
-    private boolean isCompatibleWith (SlurInter prevSlur)
-    {
-        // Retrieve prev staff, using the left note head of the prev slur
-        Staff prevStaff = prevSlur.getHead(LEFT).getStaff();
-
-        // Retrieve this staff, using the right note head of this slur
-        Staff thisStaff = getHead(RIGHT).getStaff();
-
-        // Check that part-based staff indices are the same
-        if (prevStaff.getIndexInPart() != thisStaff.getIndexInPart()) {
-            logger.debug(
-                    "{} prevStaff:{} {} staff:{} different part-based staff indices",
-                    prevSlur,
-                    prevStaff.getId(),
-                    this,
-                    thisStaff.getId());
-
-            return false;
-        }
-
-        // Retrieve prev position, using the right point of the prev slur
-        double prevPp = prevStaff.pitchPositionOf(PointUtil.rounded(prevSlur.getCurve().getP2()));
-
-        // Retrieve position, using the left point of the slur
-        double pp = thisStaff.pitchPositionOf(PointUtil.rounded(getCurve().getP1()));
-
-        // Compare pitch positions (very roughly)
-        double deltaPitch = pp - prevPp;
-        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
-        logger.debug("{} --- {} deltaPitch:{} res:{}", prevSlur, this, deltaPitch, res);
-
-        return res;
     }
 
     //-------------//

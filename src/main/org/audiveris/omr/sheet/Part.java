@@ -236,79 +236,6 @@ public class Part
         }
     }
 
-    //------------------//
-    // connectSlursWith //
-    //------------------//
-    /**
-     * Try to connect the orphan slurs at the beginning of this part
-     * with the orphan slurs at the end of the provided preceding part.
-     * <p>
-     * Ending orphan slurs that cannot connect are deleted.
-     * <p>
-     * This method is called in two contexts:<ol>
-     * <li>Within a page: it processes slur connections between systems of the page.
-     * <li>Within a score: it processes slur connections between pages of a score.
-     * </ol>
-     *
-     * @param precedingPart the part to connect to, in the preceding system,
-     *                      [perhaps the last system of the preceding page]
-     * @return the map (slur &rarr; prevSlur) of connections detected
-     */
-    public Map<SlurInter, SlurInter> connectSlursWith (Part precedingPart)
-    {
-        Objects.requireNonNull(precedingPart, "Null part to connectSlursWith");
-
-        // Links: Slur -> prevSlur
-        Map<SlurInter, SlurInter> links = new LinkedHashMap<SlurInter, SlurInter>();
-
-        // Orphans slurs at the beginning of the current system part
-        List<SlurInter> orphans = getSlurs(SlurInter.isBeginningOrphan);
-        Collections.sort(orphans, SlurInter.verticalComparator);
-
-        List<SlurInter> precedingOrphans = precedingPart.getSlurs(SlurInter.isEndingOrphan);
-        Collections.sort(precedingOrphans, SlurInter.verticalComparator);
-
-        // Connect the orphans as much as possible
-        SlurLoop:
-        for (SlurInter slur : orphans) {
-            for (SlurInter prevSlur : precedingOrphans) {
-                if (slur.canExtend(prevSlur)) {
-                    // Cross-extensions
-                    links.put(slur, prevSlur);
-                    slur.checkTie(prevSlur);
-
-                    continue SlurLoop;
-                }
-            }
-
-            // No connection for this orphan
-            if (slur.isVip()) {
-                logger.info("VIP could not left-connect {}", slur);
-            }
-
-            // Remove unless it's a manually assigned slur
-            if (!slur.isManual()) {
-                slur.remove();
-            }
-        }
-
-        // Check previous orphans for non-connected ones
-        precedingOrphans.removeAll(links.values());
-
-        for (SlurInter prevSlur : precedingOrphans) {
-            if (prevSlur.isVip()) {
-                logger.info("VIP could not right-connect {}", prevSlur);
-            }
-
-            // Remove unless it's a manually assigned slur
-            if (!prevSlur.isManual()) {
-                prevSlur.remove();
-            }
-        }
-
-        return links;
-    }
-
     //-----------------//
     // createDummyPart //
     //-----------------//
@@ -406,6 +333,66 @@ public class Part
         }
 
         return dummyPart;
+    }
+
+    //-------------------//
+    // getCrossSlurLinks //
+    //-------------------//
+    /**
+     * Retrieve possible links between the orphan slurs at the beginning of this part
+     * and the orphan slurs at the end of the provided preceding part.
+     * <p>
+     * Important: Nothing is written in slurs yet, only in links map.
+     * <p>
+     * This method is called in two contexts:<ol>
+     * <li>Within a page: it processes slur connections between systems of the page.
+     * <li>Within a score: it processes slur connections between pages of a score.
+     * </ol>
+     *
+     * @param precedingPart the part to connect to, in the preceding system,
+     *                      [perhaps the last system of the preceding page]
+     * @return the map (slur &rarr; prevSlur) of connections detected
+     */
+    public Map<SlurInter, SlurInter> getCrossSlurLinks (Part precedingPart)
+    {
+        Objects.requireNonNull(precedingPart, "Null part to connect Slurs with");
+
+        // Links: Slur -> prevSlur
+        Map<SlurInter, SlurInter> links = new LinkedHashMap<SlurInter, SlurInter>();
+
+        // Orphans slurs at the beginning of the current system part
+        List<SlurInter> orphans = getSlurs(SlurInter.isBeginningOrphan);
+        Collections.sort(orphans, SlurInter.verticalComparator);
+
+        List<SlurInter> precedingOrphans = precedingPart.getSlurs(SlurInter.isEndingOrphan);
+        Collections.sort(precedingOrphans, SlurInter.verticalComparator);
+
+        // Connect the orphans as much as possible
+        SlurLoop:
+        for (SlurInter slur : orphans) {
+            for (SlurInter prevSlur : precedingOrphans) {
+                if (slur.isVip() || prevSlur.isVip()) {
+                    logger.info("VIP cross test prevSlur:{} slur:{}", prevSlur, slur);
+                }
+
+                // Check left side of slur
+                if ((slur.getExtension(LEFT) != null) || (links.get(slur) != null)) {
+                    continue SlurLoop;
+                }
+
+                // Check right side of previous slur
+                if ((prevSlur.getExtension(RIGHT) == null) && !links.containsValue(prevSlur)) {
+                    // Check pitches compatibility
+                    if (slur.canExtend(prevSlur)) {
+                        links.put(slur, prevSlur);
+
+                        continue SlurLoop;
+                    }
+                }
+            }
+        }
+
+        return links;
     }
 
     //-----------------//

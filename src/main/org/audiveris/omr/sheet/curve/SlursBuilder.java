@@ -150,9 +150,6 @@ public class SlursBuilder
                 }
             }
 
-            // Handle slurs collision on same head (TODO: not yet fully implemented!!!!!!!!!!!!!!!)
-            handleCollisions();
-
             // Handle tie collisions on same chord
             handleTieCollisions();
 
@@ -166,6 +163,9 @@ public class SlursBuilder
             for (Page page : sheet.getPages()) {
                 page.connectOrphanSlurs();
             }
+
+            // Handle slurs collision on same head (TODO: just for information right now)
+            handleCollisions();
         } catch (Throwable ex) {
             logger.warn("Error in SlursBuilder: " + ex, ex);
         }

@@ -26,17 +26,11 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.GeoPath;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
-
 import static org.audiveris.omr.math.LineUtil.bisector;
 import static org.audiveris.omr.math.LineUtil.intersection;
 import static org.audiveris.omr.math.LineUtil.intersectionAtX;
-
 import org.audiveris.omr.math.PointUtil;
-
-import static org.audiveris.omr.math.PointUtil.dotProduct;
-import static org.audiveris.omr.math.PointUtil.extension;
-import static org.audiveris.omr.math.PointUtil.subtraction;
-
+import static org.audiveris.omr.math.PointUtil.*;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -49,7 +43,6 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
@@ -60,9 +53,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-
 import static java.lang.Math.abs;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -72,11 +63,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * Class {@code SlurLinker} retrieves the potential left and right links of a single slur
  * with the most suitable heads found in slur side areas.
+ * <ul>
+ * <li>Rather <b>horizontal</b> slurs have specific side areas, select intersected chords,
+ * then select the closest head within those chords.
+ * <li>Rather <b>vertical</b> slurs have specific side areas, select intersected chords and also
+ * check that heads centers are contained by side areas, then select the closest head.
+ * Head center must be on the same side (same half plane) of slur bisector than the slur end.
+ * </ul>
+ * In both cases, head center location is checked with respect to slur concavity.
  * <p>
  * <img alt="Areas image" src="doc-files/SlurAreas.png">
  *
@@ -175,7 +173,7 @@ public class SlurLinker
                 lastPath.append(new Line2D.Double(lastBase, midBase), true);
             }
         } else {
-            // Vertical: Use slanted separation (TODO: OK with chords???)
+            // Vertical: Use slanted separation
             info.setHorizontal(false);
             firstExt = extension(mid, first, params.coverageVExt);
             lastExt = extension(mid, last, params.coverageVExt);
@@ -222,7 +220,7 @@ public class SlurLinker
         firstPath.closePath();
         lastPath.closePath();
 
-        Map<HorizontalSide, Area> areaMap = new TreeMap<HorizontalSide, Area>();
+        Map<HorizontalSide, Area> areaMap = new EnumMap<HorizontalSide, Area>(HorizontalSide.class);
         Area firstArea = new Area(firstPath);
         ///info.setArea(firstArea, true);
         areaMap.put(LEFT, firstArea);
@@ -261,7 +259,7 @@ public class SlurLinker
      * The other slurs must exhibit links on both sides.
      *
      * @param slur   the slur candidate to check for links
-     * @param areas  the slur area on each side
+     * @param areas  the lookup area on each slur side
      * @param system the containing system
      * @param chords the potential candidate chords on left and right side
      * @return the pair of links if acceptable (only half-filled for orphan), null if not
@@ -478,6 +476,7 @@ public class SlurLinker
         final SlurInfo info = slur.getInfo();
         final Point end = info.getEnd(side == LEFT);
         final Point target = getTargetPoint(slur, side);
+        final Point2D bisUnit = info.getBisUnit();
 
         // Look for intersected chords
         for (Inter chordInter : chords) {
@@ -486,7 +485,7 @@ public class SlurLinker
 
             if (area.intersects(chordBox)) {
                 // Check the chord contains at least one suitable head on desired slur side
-                HeadInter head = selectBestHead(chord, end, target, info.getBisUnit());
+                HeadInter head = selectBestHead(slur, chord, end, target, bisUnit, area);
 
                 if (head != null) {
                     found.put(chord, SlurHeadLink.create(target, side, chord, head));
@@ -502,33 +501,52 @@ public class SlurLinker
     //----------------//
     /**
      * Select the best note head in the selected head-based chord.
-     * We select the note head which is closest to slur target end.
+     * We select the compatible note head which is closest to slur target end.
      *
      * @param chord   the selected chord
      * @param end     the slur end point
      * @param target  the slur target point
-     * @param bisUnit unity vector pointing to slur center
+     * @param bisUnit the direction from slur middle to slur center (unit length)
+     * @param area    target area
      * @return the best note head or null
      */
-    private HeadInter selectBestHead (AbstractChordInter chord,
+    private HeadInter selectBestHead (SlurInter slur,
+                                      AbstractChordInter chord,
                                       Point end,
                                       Point target,
-                                      Point2D bisUnit)
+                                      Point2D bisUnit,
+                                      Area area)
     {
+        final boolean horizontal = slur.getInfo().isHorizontal();
+        final boolean above = slur.isAbove();
+
         double bestDist = Double.MAX_VALUE;
         HeadInter bestHead = null;
 
         for (Inter head : chord.getNotes()) {
             Point center = head.getCenter();
 
-            // Check relative position WRT slur
-            if (dotProduct(subtraction(center, end), bisUnit) > 0) {
-                double dist = center.distance(target);
-
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    bestHead = (HeadInter) head;
+            if (!horizontal) {
+                // We require head center to be contained by lookup area
+                if (!area.contains(center)) {
+                    continue;
                 }
+            }
+
+            // Check head reference point WRT slur concavity
+            Rectangle bounds = head.getBounds();
+            Point refPt = new Point(center.x, bounds.y + (above ? (bounds.height - 1) : 0));
+
+            if (dotProduct(subtraction(refPt, end), bisUnit) <= 0) {
+                continue;
+            }
+
+            // Keep the closest head
+            final double dist = center.distanceSq(target);
+
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestHead = (HeadInter) head;
             }
         }
 
