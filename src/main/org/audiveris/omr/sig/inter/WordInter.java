@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextWord;
@@ -75,7 +76,7 @@ public class WordInter
                 textWord.getGlyph(),
                 textWord.getBounds(),
                 Shape.TEXT,
-                textWord.getConfidence() * Inter.intrinsicRatio);
+                textWord.getConfidence() * Grades.intrinsicRatio);
         value = textWord.getValue();
         fontInfo = textWord.getFontInfo();
         location = textWord.getLocation();

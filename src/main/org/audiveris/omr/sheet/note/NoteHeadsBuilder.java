@@ -27,6 +27,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.Symbol;
@@ -281,7 +282,7 @@ public class NoteHeadsBuilder
      */
     public static double dist2grade (double distance)
     {
-        return Inter.intrinsicRatio * (1 - (distance / constants.maxMatchingDistance.getValue()));
+        return Grades.intrinsicRatio * (1 - (distance / constants.maxMatchingDistance.getValue()));
     }
 
     //------------------//

@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.sig.inter.ChordNameInter.Degree.DegreeType;
 import static org.audiveris.omr.sig.inter.ChordNameInter.Kind.Type.*;
 import org.audiveris.omr.text.TextLine;
@@ -295,7 +296,7 @@ public class ChordNameInter
     {
         SentenceInter sentence = new SentenceInter(
                 line.getBounds(),
-                line.getConfidence() * Inter.intrinsicRatio,
+                line.getConfidence() * Grades.intrinsicRatio,
                 line.getMeanFont(),
                 line.getRole());
 

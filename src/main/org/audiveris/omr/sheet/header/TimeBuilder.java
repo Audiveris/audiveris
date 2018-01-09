@@ -38,9 +38,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.math.IntegerFunction;
-
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.score.TimeRational;
@@ -51,9 +49,7 @@ import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-
 import static org.audiveris.omr.sheet.header.TimeBuilder.TimeKind.*;
-
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
@@ -1619,24 +1615,20 @@ public abstract class TimeBuilder
                     glyph,
                     staff.getSpecificInterline(),
                     params.maxEvalRank,
-                    Grades.timeMinGrade / Inter.intrinsicRatio,
+                    Grades.timeMinGrade / Grades.intrinsicRatio,
                     null);
 
             for (Evaluation eval : evals) {
                 final Shape shape = eval.shape;
 
                 if (halfShapes.contains(shape)) {
-                    final double grade = Inter.intrinsicRatio * eval.grade;
+                    final double grade = Grades.intrinsicRatio * eval.grade;
                     logger.debug("   {} eval {} for glyph#{}", half, eval, glyph.getId());
 
                     Inter bestInter = bestMap.get(shape);
 
                     if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        TimeNumberInter inter = TimeNumberInter.create(
-                                glyph,
-                                shape,
-                                grade,
-                                staff);
+                        TimeNumberInter inter = TimeNumberInter.create(glyph, shape, grade, staff);
 
                         if (inter != null) {
                             bestMap.put(shape, inter);
@@ -1732,14 +1724,14 @@ public abstract class TimeBuilder
                     glyph,
                     staff.getSpecificInterline(),
                     params.maxEvalRank,
-                    Grades.timeMinGrade / Inter.intrinsicRatio,
+                    Grades.timeMinGrade / Grades.intrinsicRatio,
                     null);
 
             for (Evaluation eval : evals) {
                 final Shape shape = eval.shape;
 
                 if (wholeShapes.contains(shape)) {
-                    final double grade = Inter.intrinsicRatio * eval.grade;
+                    final double grade = Grades.intrinsicRatio * eval.grade;
                     logger.debug("   WHOLE eval {} for glyph#{}", eval, glyph.getId());
 
                     Inter bestInter = bestMap.get(shape);

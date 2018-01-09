@@ -50,7 +50,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 
 import org.jgrapht.alg.ConnectivityInspector;
@@ -160,7 +159,7 @@ public class KeyExtractor
         new GlyphCluster(adapter, null).decompose();
 
         if (slice.getEval() != null) {
-            double grade = Inter.intrinsicRatio * slice.getEval().grade;
+            double grade = Grades.intrinsicRatio * slice.getEval().grade;
 
             if (grade >= minGrade) {
                 if ((slice.getAlter() == null)
@@ -418,7 +417,7 @@ public class KeyExtractor
 
         for (KeySlice slice : roi) {
             if (slice.getEval() != null) {
-                double grade = Inter.intrinsicRatio * slice.getEval().grade;
+                double grade = Grades.intrinsicRatio * slice.getEval().grade;
                 KeyAlterInter alterInter = KeyAlterInter.create(
                         slice.getGlyph(),
                         slice.getEval().shape,
@@ -724,7 +723,7 @@ public class KeyExtractor
                     glyph,
                     sheet.getInterline(),
                     params.maxEvalRank,
-                    minGrade / Inter.intrinsicRatio,
+                    minGrade / Grades.intrinsicRatio,
                     null);
 
             for (Evaluation eval : evals) {

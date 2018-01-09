@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.symbol;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
@@ -440,7 +441,7 @@ public class DotFactory
 
         if (bestRel != null) {
             final Staff staff = system.getClosestStaff(center); // Staff is OK
-            double grade = Inter.intrinsicRatio * dot.eval.grade;
+            double grade = Grades.intrinsicRatio * dot.eval.grade;
             double pitch = (pp > 0) ? 1 : (-1);
             RepeatDotInter repeat = new RepeatDotInter(dot.glyph, grade, staff, pitch);
             sig.addVertex(repeat);
@@ -467,7 +468,7 @@ public class DotFactory
         ArticulationInter.create(
                 dot.glyph,
                 Shape.STACCATO,
-                Inter.intrinsicRatio * dot.eval.grade,
+                Grades.intrinsicRatio * dot.eval.grade,
                 system,
                 symbolFactory.getSystemHeadChords());
     }
@@ -536,7 +537,7 @@ public class DotFactory
 
                     if (rel.getGrade() >= rel.getMinGrade()) {
                         if (dotInter == null) {
-                            double grade = Inter.intrinsicRatio * dot.eval.grade;
+                            double grade = Grades.intrinsicRatio * dot.eval.grade;
                             dotInter = new FermataDotInter(dot.glyph, grade);
                             sig.addVertex(dotInter);
                             logger.debug("Created {}", dotInter);
@@ -592,7 +593,7 @@ public class DotFactory
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if (augInter == null) {
-                        double grade = Inter.intrinsicRatio * dot.eval.grade;
+                        double grade = Grades.intrinsicRatio * dot.eval.grade;
                         augInter = new AugmentationDotInter(dot.glyph, grade);
                         sig.addVertex(augInter);
                         augInter.setStaff(note.getStaff());
@@ -684,7 +685,7 @@ public class DotFactory
 
         if (bestRel != null) {
             if (second == null) {
-                double grade = Inter.intrinsicRatio * dot.eval.grade;
+                double grade = Grades.intrinsicRatio * dot.eval.grade;
                 second = new AugmentationDotInter(dot.glyph, grade);
                 sig.addVertex(second);
                 logger.debug("Created {}", second);

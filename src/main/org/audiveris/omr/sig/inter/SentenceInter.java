@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -181,7 +182,7 @@ public class SentenceInter
     {
         SentenceInter sentence = new SentenceInter(
                 line.getBounds(),
-                line.getConfidence() * Inter.intrinsicRatio,
+                line.getConfidence() * Grades.intrinsicRatio,
                 line.getMeanFont(),
                 line.getRole());
 

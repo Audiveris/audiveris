@@ -23,7 +23,7 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.glyph.Grades;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -60,8 +60,8 @@ public class ClefKeyRelation
      */
     public static double maxContributionForClef ()
     {
-        // Maximum key grade value is Inter.intrinsicRatio
-        return Inter.intrinsicRatio * constants.clefSupportCoeff.getValue();
+        // Maximum key grade value is Grades.intrinsicRatio
+        return Grades.intrinsicRatio * constants.clefSupportCoeff.getValue();
     }
 
     //----------------//

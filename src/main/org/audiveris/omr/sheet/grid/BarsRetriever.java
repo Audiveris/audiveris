@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory.CompoundConstructor;
@@ -551,7 +552,7 @@ public class BarsRetriever
                         // Retrieve the full brace filament
                         Filament braceFilament = buildBraceFilament(portions);
                         Glyph glyph = glyphIndex.registerOriginal(braceFilament.toGlyph(null));
-                        BraceInter braceInter = new BraceInter(glyph, Inter.intrinsicRatio * 1);
+                        BraceInter braceInter = new BraceInter(glyph, Grades.intrinsicRatio * 1);
                         SIGraph sig = staff.getSystem().getSig();
                         sig.addVertex(braceInter);
                     }

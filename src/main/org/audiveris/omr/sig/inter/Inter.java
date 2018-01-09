@@ -21,8 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
@@ -71,26 +69,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public interface Inter
         extends Entity, VisitableInter, AttachmentHolder
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    static final Constants constants = new Constants();
-
-    /** Ratio applied on intrinsic value, to leave room for contextual. */
-    static double intrinsicRatio = constants.intrinsicRatio.getValue();
-
-    /** The minimum grade to consider an interpretation as acceptable. */
-    static double minGrade = intrinsicRatio * constants.minGrade.getValue();
-
-    /** The minimum contextual grade for an interpretation. */
-    static double minContextualGrade = constants.minContextualGrade.getValue();
-
-    /** The minimum grade to consider an interpretation as good. */
-    static double goodGrade = intrinsicRatio * constants.goodGrade.getValue();
-
-    /** The minimum grade to consider an interpretation as really good. */
-    static double reallyGoodGrade = intrinsicRatio * constants.reallyGoodGrade.getValue();
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Call-back when this instance has just been added to SIG.
      * This is meant for additional inter house keeping.
@@ -311,13 +291,6 @@ public interface Inter
     boolean isManual ();
 
     /**
-     * Report whether the interpretation has a really good (intrinsic) grade.
-     *
-     * @return true if grade is good
-     */
-    boolean isReallyGood ();
-
-    /**
      * Report whether this instance has been removed from SIG.
      *
      * @return true if removed
@@ -459,34 +432,4 @@ public interface Inter
      * @return shape.toString() by default. To be overridden if shape is null.
      */
     String shapeString ();
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Ratio intrinsicRatio = new Constant.Ratio(
-                0.8,
-                "Reduction ratio applied on any intrinsic grade");
-
-        private final Constant.Ratio minGrade = new Constant.Ratio(
-                0.1,
-                "Default minimum interpretation grade");
-
-        private final Constant.Ratio minContextualGrade = new Constant.Ratio(
-                0.5,
-                "Default minimum interpretation contextual grade");
-
-        private final Constant.Ratio goodGrade = new Constant.Ratio(
-                0.5,
-                "Default good interpretation grade");
-
-        private final Constant.Ratio reallyGoodGrade = new Constant.Ratio(
-                0.75,
-                "Default really good interpretation grade");
-    }
 }

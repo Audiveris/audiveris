@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.symbol;
 
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.glyph.ShapeSet;
@@ -175,7 +176,7 @@ public class SymbolFactory
                         Staff closestStaff)
     {
         final Shape shape = eval.shape;
-        final double grade = Inter.intrinsicRatio * eval.grade;
+        final double grade = Grades.intrinsicRatio * eval.grade;
 
         if (glyph.isVip()) {
             logger.info("VIP glyph#{} symbol created as {}", glyph.getId(), eval.shape);

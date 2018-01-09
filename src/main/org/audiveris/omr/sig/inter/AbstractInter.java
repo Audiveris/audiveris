@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.GeoUtil;
@@ -531,7 +532,7 @@ public abstract class AbstractInter
      */
     public static double getGoodGrade ()
     {
-        return goodGrade;
+        return Grades.goodInterGrade;
     }
 
     //----------//
@@ -562,7 +563,7 @@ public abstract class AbstractInter
      */
     public static double getMinGrade ()
     {
-        return minGrade;
+        return Grades.minInterGrade;
     }
 
     //-----------//
@@ -588,19 +589,6 @@ public abstract class AbstractInter
         }
 
         return part;
-    }
-
-    //--------------------//
-    // getReallyGoodGrade //
-    //--------------------//
-    /**
-     * Report the minimum grade to consider an interpretation as really good.
-     *
-     * @return the minimum grade value for a really good interpretation
-     */
-    public static double getReallyGoodGrade ()
-    {
-        return goodGrade;
     }
 
     //-------------------//
@@ -695,8 +683,8 @@ public abstract class AbstractInter
     @Override
     public void increase (double ratio)
     {
-        if (grade < intrinsicRatio) {
-            grade += (ratio * (intrinsicRatio - grade));
+        if (grade < Grades.intrinsicRatio) {
+            grade += (ratio * (Grades.intrinsicRatio - grade));
         }
     }
 
@@ -749,15 +737,6 @@ public abstract class AbstractInter
     public boolean isManual ()
     {
         return manual;
-    }
-
-    //--------------//
-    // isReallyGood //
-    //--------------//
-    @Override
-    public boolean isReallyGood ()
-    {
-        return grade >= getReallyGoodGrade();
     }
 
     //-----------//

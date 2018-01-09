@@ -683,14 +683,14 @@ public class ClefBuilder
                     glyph,
                     staff.getSpecificInterline(),
                     params.maxEvalRank,
-                    Grades.clefMinGrade / Inter.intrinsicRatio,
+                    Grades.clefMinGrade / Grades.intrinsicRatio,
                     null);
 
             for (Evaluation eval : evals) {
                 final Shape shape = eval.shape;
 
                 if (HEADER_CLEF_SHAPES.contains(shape)) {
-                    final double grade = Inter.intrinsicRatio * eval.grade;
+                    final double grade = Grades.intrinsicRatio * eval.grade;
                     ClefKind kind = ClefInter.kindOf(glyph, shape, staff);
                     ClefInter bestInter = bestMap.get(kind);
 

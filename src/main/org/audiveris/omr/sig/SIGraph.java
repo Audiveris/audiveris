@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig;
 
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import static org.audiveris.omr.math.GeoOrder.*;
@@ -305,7 +306,7 @@ public class SIGraph
                 continue;
             }
 
-            if (inter.getContextualGrade() < Inter.minContextualGrade) {
+            if (inter.getContextualGrade() < Grades.minContextualGrade) {
                 if (inter.isVip()) {
                     logger.info("VIP deleted weak {}", inter);
                 }
