@@ -27,6 +27,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.image.AreaMask;
@@ -1186,7 +1187,7 @@ public class BeamsBuilder
                     sig.computeContextualGrade(inter);
                 }
 
-                return inter.getContextualGrade() >= Inter.minContextualGrade;
+                return inter.getContextualGrade() >= Grades.minContextualGrade;
             }
         });
 
@@ -1557,9 +1558,9 @@ public class BeamsBuilder
         public ItemParameters (Scale scale,
                                double ratio)
         {
-            minBeamWidthLow = scale.toPixelsDouble(constants.minBeamWidthLow) * ratio; // ?
+            minBeamWidthLow = scale.toPixelsDouble(constants.minBeamWidthLow);
             minBeamWidthHigh = scale.toPixelsDouble(constants.minBeamWidthHigh);
-            minHookWidthLow = scale.toPixelsDouble(constants.minHookWidthLow) * ratio; // ?
+            minHookWidthLow = scale.toPixelsDouble(constants.minHookWidthLow);
             minHookWidthHigh = scale.toPixelsDouble(constants.minHookWidthHigh);
             maxHookWidth = scale.toPixelsDouble(constants.maxHookWidth);
 
@@ -1584,7 +1585,7 @@ public class BeamsBuilder
         // Item parameters
         //----------------
         private final Scale.Fraction minBeamWidthLow = new Scale.Fraction(
-                1.5,
+                1.0, // 1.5,
                 "Low minimum width for a beam");
 
         private final Scale.Fraction minBeamWidthHigh = new Scale.Fraction(

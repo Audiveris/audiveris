@@ -24,9 +24,11 @@ package org.audiveris.omr.sig;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
+
 import static org.audiveris.omr.glyph.ShapeSet.Accidentals;
 import static org.audiveris.omr.glyph.ShapeSet.CoreBarlines;
 import static org.audiveris.omr.glyph.ShapeSet.Flags;
+
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
@@ -70,13 +72,17 @@ import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
+
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_MIDDLE;
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
+
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 
@@ -721,7 +727,12 @@ public class SigReducer
             }
 
             sig.removeEdge(rel);
-            sig.insertExclusion(head, stem, Exclusion.Cause.INCOMPATIBLE);
+//
+//            // Should we insert an exclusion between head inter and stem inter?
+//            if (rel.getGrade() >= Grades.goodRelationGrade) {
+//                sig.insertExclusion(head, stem, Exclusion.Cause.INCOMPATIBLE);
+//            }
+//
             modifs++;
         }
 
