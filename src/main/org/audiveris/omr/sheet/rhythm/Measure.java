@@ -606,7 +606,7 @@ public class Measure
      */
     public List<ClefInter> getClefs ()
     {
-        return Collections.unmodifiableList(clefs);
+        return (clefs != null) ? Collections.unmodifiableList(clefs) : Collections.EMPTY_LIST;
     }
 
     //---------------------//
