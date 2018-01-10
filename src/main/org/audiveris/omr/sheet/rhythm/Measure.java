@@ -1228,7 +1228,15 @@ public class Measure
      */
     public void mergeWithRight (Measure right)
     {
-        clefs.addAll(right.clefs);
+        if ((right.clefs != null) && !right.clefs.isEmpty()) {
+            if (clefs == null) {
+                clefs = new ArrayList<ClefInter>();
+            }
+
+            clefs.removeAll(right.clefs); // Just in cases
+            clefs.addAll(right.clefs);
+            Collections.sort(clefs, Inters.byFullCenterAbscissa);
+        }
 
         if (right.hasKeys()) {
             if (hasKeys()) {

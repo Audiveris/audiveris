@@ -1612,7 +1612,10 @@ public class PartwiseBuilder
                     AbstractChordInter chord = voice.getWholeChord();
                     clefIters.push(measure.getWidth(), chord.getTopStaff());
                     processChord(chord);
-                    timeCounter = stack.getActualDuration();
+
+                    if (stack.getActualDuration() != null) {
+                        timeCounter = stack.getActualDuration();
+                    }
                 } else {
                     for (Slot slot : stack.getSlots()) {
                         Voice.SlotVoice info = voice.getSlotInfo(slot);
@@ -1853,7 +1856,8 @@ public class PartwiseBuilder
                     final Rational dur;
 
                     if (chord.isWholeRest()) {
-                        dur = current.measure.getStack().getActualDuration();
+                        Rational measureDur = current.measure.getStack().getActualDuration();
+                        dur = (measureDur != null) ? measureDur : Rational.ONE; // Not too bad...
                     } else {
                         dur = chord.getDuration();
                     }

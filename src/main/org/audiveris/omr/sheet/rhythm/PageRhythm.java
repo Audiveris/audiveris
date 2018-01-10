@@ -58,9 +58,10 @@ import java.util.List;
  * <li><b>T</b>: Tuplets for head and rest chords.</li>
  * </ul>
  * <p>
- * We have tried very hard to use the FRATs as adjustment variables to come up with a "good"
- * configuration within each stack. Unfortunately, this turned out to be impractical.
- * So now we check the "time correctness" of each stack regarding its time slots and voices.
+ * Note: In earlier software versions, we tried very hard to play with FRATs as adjustment
+ * variables to come up with a "good" configuration within each stack.
+ * Unfortunately, this took endless computations and led to no practical results.
+ * So now we simply check the "time correctness" of each stack regarding its time slots and voices.
  * <p>
  * Processing is done system per system <b>sequentially</b> because of impact of potential
  * key-sig changes on the following systems. Hence, parallelism is NOT provided for this step.
@@ -114,21 +115,24 @@ public class PageRhythm
      */
     public void process ()
     {
-        // Populate all stacks in page with potential time signatures, and derive ranges.
-        populateTimeSignatures(); // -> ranges (ts are assigned to their containing measure)
+        // Populate all stacks in page with potential time signatures (TS), and derive ranges.
+        populateTimeSignatures(); // -> ranges (TS are assigned to their containing measure)
 
         // Populate all stacks/measures in page with their FRATs
         populateFRATs();
 
-        // Check typical duration for each range
+        // Check typical duration for each range, using StackTuner 1st pass
         retrieveRangeDurations();
 
-        // For each range, adjust TS if needed, then process each contained measure
+        // For each range, adjust TS if needed, then process each measure, using StackTuner 2nd pass
         processRanges();
     }
 
+    //----------------//
+    // reprocessStack //
+    //----------------//
     /**
-     * (first version of) stack-focused re-processing.
+     * Stack-focused re-processing.
      *
      * @param stack the stack to re-process
      */
@@ -221,10 +225,11 @@ public class PageRhythm
 
         for (SystemInfo system : page.getSystems()) {
             for (MeasureStack stack : system.getMeasureStacks()) {
+                // Start of range?
                 if (stack.getIdValue() == range.startId) {
                     logger.debug("Starting {}", range);
 
-                    // Adjust time signature?
+                    // Adjust time signature? (TODO: today we don't adjust anything in fact)
                     if ((range.duration != null)
                         && ((range.ts == null)
                             || !range.ts.getTimeRational().getValue().equals(range.duration))) {
@@ -251,7 +256,7 @@ public class PageRhythm
                 }
             }
 
-            // Refine voices IDs (and thus colors) across all measures of the system
+            // Refine voices IDs (and thus display colors) across all measures of the system
             Voices.refineSystem(system);
         }
     }
@@ -297,11 +302,9 @@ public class PageRhythm
         }
 
         // We aim at a duration value in the set: [1/2, 3/4, 1, 5/4]
-        Rational avgGuess = null;
         final Rational minDur = new Rational(1, 2);
-
-        ///final Rational maxDur = new Rational(5, 4);
         final Rational maxDur = new Rational(3, 2);
+        Rational avgGuess = null;
         double val = 0.0;
         int count = 0;
 
@@ -390,7 +393,7 @@ public class PageRhythm
 
         AbstractTimeInter ts; // Time signature found in first stack of range, if any
 
-        Rational duration; // Inferred duration for the range
+        Rational duration; // Inferred measure duration for the range
 
         //~ Constructors ---------------------------------------------------------------------------
         public Range (int startId,

@@ -107,7 +107,7 @@ public class RhythmsStep
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code TimingStep} object.
+     * Creates a new {@code RhythmsStep} object.
      */
     public RhythmsStep ()
     {

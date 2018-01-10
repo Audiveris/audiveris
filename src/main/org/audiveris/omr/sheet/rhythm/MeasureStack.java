@@ -108,6 +108,9 @@ public class MeasureStack
     public static final String CAUTIONARY_SUFFIX = "C";
 
     //~ Enumerations -------------------------------------------------------------------------------
+    /**
+     * All special kinds of measures.
+     */
     public enum Special
     {
         //~ Enumeration constant initializers ------------------------------------------------------
@@ -139,7 +142,7 @@ public class MeasureStack
     @XmlElementRef
     private final List<Slot> slots = new ArrayList<Slot>();
 
-    /** Flag for special measure. */
+    /** Indication for special measure stack. */
     @XmlAttribute
     private Special special;
 
@@ -153,7 +156,13 @@ public class MeasureStack
     @XmlJavaTypeAdapter(Rational.Adapter.class)
     private Rational expectedDuration;
 
-    /** Actual measure stack duration, based on durations of contained chords. */
+    /**
+     * Actual measure stack duration, based on durations of contained chords.
+     * If the stack contains no note (head or rest), actual duration is ZERO.
+     * If the stack contains only whole rest(s), actual duration is given by current time signature.
+     * Otherwise, duration is computed from contained slots and voices.
+     * If stack timing fails for whatever reason, actual duration may be left as null.
+     */
     @XmlAttribute(name = "duration")
     @XmlJavaTypeAdapter(Rational.Adapter.class)
     private Rational actualDuration;
@@ -439,15 +448,12 @@ public class MeasureStack
     /**
      * Report the duration of this measure stack , as computed from its contained voices.
      *
-     * @return the (actual) measure stack duration, or 0 if no rest / note exists in this stack
+     * @return the (actual) measure stack duration, 0 if no rest / note exists in this stack,
+     *         null if it could not be computed.
      */
     public Rational getActualDuration ()
     {
-        if (actualDuration != null) {
-            return actualDuration;
-        } else {
-            return Rational.ZERO;
-        }
+        return actualDuration;
     }
 
     //-----------------//
@@ -505,35 +511,6 @@ public class MeasureStack
         }
 
         return bestSlot;
-    }
-
-    //--------------------//
-    // getCurrentDuration //
-    //--------------------//
-    /**
-     * Report the current duration for this measure, as computed from current content in
-     * terms of slots and chords.
-     *
-     * @return the current measure duration
-     */
-    public Rational getCurrentDuration ()
-    {
-        Rational measureDur = Rational.ZERO;
-
-        // Whole/multi rests are handled outside of slots
-        for (Slot slot : slots) {
-            if (slot.getTimeOffset() != null) {
-                for (AbstractChordInter chord : slot.getChords()) {
-                    Rational chordEnd = slot.getTimeOffset().plus(chord.getDuration());
-
-                    if (chordEnd.compareTo(measureDur) > 0) {
-                        measureDur = chordEnd;
-                    }
-                }
-            }
-        }
-
-        return measureDur;
     }
 
     //-------------------------//
@@ -907,6 +884,38 @@ public class MeasureStack
         return slots;
     }
 
+    //------------------//
+    // getSlotsDuration //
+    //------------------//
+    /**
+     * Report the duration for this measure, as computed from content in terms of slots
+     * and chords.
+     * <p>
+     * <b>NOTA</b>: if measure has no slot (case of a whole rest or case of an empty stack),
+     * result is ZERO.
+     *
+     * @return the measure duration as computed on slots and chords
+     */
+    public Rational getSlotsDuration ()
+    {
+        Rational measureDur = Rational.ZERO;
+
+        // Whole/multi rests are handled outside of slots
+        for (Slot slot : slots) {
+            if (slot.getTimeOffset() != null) {
+                for (AbstractChordInter chord : slot.getChords()) {
+                    Rational chordEnd = slot.getTimeOffset().plus(chord.getDuration());
+
+                    if (chordEnd.compareTo(measureDur) > 0) {
+                        measureDur = chordEnd;
+                    }
+                }
+            }
+        }
+
+        return measureDur;
+    }
+
     //-----------------------//
     // getStandardChordAbove //
     //-----------------------//
@@ -1275,7 +1284,11 @@ public class MeasureStack
 
         // Merge the stacks data
         right = rightStack.right;
-        actualDuration = this.getActualDuration().plus(rightStack.getActualDuration());
+
+        if (rightStack.actualDuration != null) {
+            actualDuration = (actualDuration == null) ? rightStack.actualDuration
+                    : actualDuration.plus(rightStack.actualDuration);
+        }
 
         // Beware, merged slots must have their stack & xOffset updated accordingly
         slots.addAll(rightStack.slots);
@@ -1318,7 +1331,7 @@ public class MeasureStack
                     }
                 }
 
-                sb.append("|").append(getCurrentDuration());
+                sb.append("|").append(getSlotsDuration());
             }
 
             for (Measure measure : measures) {
@@ -1422,7 +1435,7 @@ public class MeasureStack
         setAbnormal(false);
         excess = null;
         slots.clear();
-        actualDuration = null;
+        setActualDuration(null);
 
         // Reset every measure within this stack
         for (Measure measure : measures) {
@@ -1597,19 +1610,5 @@ public class MeasureStack
         }
 
         return sb.toString();
-    }
-
-    //--------------------------//
-    // getCurrentDurationString //
-    //--------------------------//
-    private String getCurrentDurationString ()
-    {
-        Rational measureDuration = getCurrentDuration();
-
-        //
-        //        if (measureDuration.equals(Rational.ZERO) && !wholeRestChords.isEmpty()) {
-        //            return "W";
-        //        }
-        return String.format("%-5s", measureDuration.toString());
     }
 }

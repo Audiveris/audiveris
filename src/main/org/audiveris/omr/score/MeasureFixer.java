@@ -145,9 +145,11 @@ public class MeasureFixer
      *
      * @return true if so
      */
-    private boolean isEmpty ()
+    private boolean isEmpty (MeasureStack stack)
     {
-        return stack.getCurrentDuration().equals(Rational.ZERO);
+        final Rational actualDuration = stack.getActualDuration();
+
+        return (actualDuration != null) ? actualDuration.equals(Rational.ZERO) : false;
     }
 
     //----------//
@@ -176,7 +178,7 @@ public class MeasureFixer
      */
     private boolean isRealStart (int im)
     {
-        return (im == 1) && (prevStack.getCurrentDuration().equals(Rational.ZERO));
+        return (im == 1) && isEmpty(prevStack);
 
         ///&& (stackTermination != null); // Too strict!
     }
@@ -244,7 +246,7 @@ public class MeasureFixer
                     stackTermination,
                     (stackTermination != null) ? ("=" + stackTermination) : "");
 
-            if (isEmpty()) {
+            if (isEmpty(stack)) {
                 logger.debug("empty");
 
                 // This whole stack is empty (no notes/rests, hence no voices)
