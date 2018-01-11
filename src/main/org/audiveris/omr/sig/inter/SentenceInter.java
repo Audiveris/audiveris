@@ -90,7 +90,7 @@ public class SentenceInter
 
     /** Role of this sentence. */
     @XmlAttribute
-    protected final TextRole role;
+    protected TextRole role;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -283,9 +283,9 @@ public class SentenceInter
     // getRole //
     //---------//
     /**
-     * Report the line role.
+     * Report the sentence role.
      *
-     * @return the roleInfo
+     * @return the sentence role
      */
     public TextRole getRole ()
     {
@@ -340,6 +340,19 @@ public class SentenceInter
         }
 
         EnsembleHelper.removeMember(this, member);
+    }
+
+    //---------//
+    // setRole //
+    //---------//
+    /**
+     * Assign a new role.
+     *
+     * @param role the new role
+     */
+    public void setRole (TextRole role)
+    {
+        this.role = role;
     }
 
     //-------------//

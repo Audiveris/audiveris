@@ -53,7 +53,7 @@ public class WordInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Word text content. */
     @XmlAttribute
-    protected final String value;
+    protected String value;
 
     /** Detected font attributes. */
     @XmlAttribute(name = "font")
@@ -136,6 +136,19 @@ public class WordInter
     public String getValue ()
     {
         return value;
+    }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Assign a new text value.
+     *
+     * @param value the new value
+     */
+    public void setValue (String value)
+    {
+        this.value = value;
     }
 
     //-------------//

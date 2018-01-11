@@ -52,8 +52,10 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 /**
@@ -99,14 +101,20 @@ public class InterBoard
     //    /** Denominator of time signature */
     //    private final LIntegerField timeDen;
     //
-    /** ComboBox for text role */
+    /** ComboBox for text role. */
     private final LComboBox<TextRole> roleCombo = new LComboBox<TextRole>(
             "Role",
             "Role of the Text",
             TextRole.values());
 
-    /** Input/Output : textual content */
+    /** Input/Output : textual content. */
     private final LTextField textField = new LTextField(true, "Text", "Content of textual item");
+
+    /** Handling of entered / selected values. */
+    private final Action paramAction;
+
+    /** To avoid unwanted events. */
+    private boolean selfUpdatingText;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -131,6 +139,8 @@ public class InterBoard
         details.setHorizontalAlignment(SwingConstants.CENTER);
 
         focus.addActionListener(this);
+
+        paramAction = new ParamAction();
 
         // Initial status
         grade.setEnabled(false);
@@ -243,8 +253,7 @@ public class InterBoard
         r += 2; // --------------------------------
 
         roleCombo.getField().setMaximumRowCount(TextRole.values().length);
-        ///paramAction = new ParamAction();
-        ///roleCombo.addActionListener(paramAction);
+        roleCombo.addActionListener(paramAction);
         roleCombo.setVisible(false);
         builder.add(roleCombo.getField(), cst.xyw(3, r, 4));
 
@@ -256,6 +265,12 @@ public class InterBoard
         r += 2; // --------------------------------
 
         builder.add(details, cst.xyw(1, r, 11));
+
+        // Needed to process user input when RETURN/ENTER is pressed
+        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke("ENTER"),
+                "TextAction");
+        getComponent().getActionMap().put("TextAction", paramAction);
     }
 
     //----------------------//
@@ -292,9 +307,8 @@ public class InterBoard
 
         // Inter characteristics
         textField.setVisible(false);
-        textField.setEnabled(true); // TEMPORARY false
+        textField.setEnabled(false);
         roleCombo.setVisible(false);
-        roleCombo.setEnabled(true); // TEMPORARY falses
 
         if (inter != null) {
             vip.getLabel().setEnabled(true);
@@ -318,15 +332,20 @@ public class InterBoard
             focus.getField().setSelected(inter == interController.getInterFocus());
 
             if (inter instanceof WordInter) {
+                selfUpdatingText = true;
                 WordInter word = (WordInter) inter;
                 textField.setText(word.getValue());
+                textField.setEnabled(true);
                 textField.setVisible(true);
+                selfUpdatingText = false;
             } else if (inter instanceof SentenceInter) {
+                selfUpdatingText = true;
                 SentenceInter sentence = (SentenceInter) inter;
                 textField.setText(sentence.getValue());
                 textField.setVisible(true);
                 roleCombo.setSelectedItem(sentence.getRole());
                 roleCombo.setVisible(true);
+                selfUpdatingText = false;
             } else {
             }
         } else {
@@ -397,6 +416,61 @@ public class InterBoard
                             MouseMovement.PRESSING,
                             null));
             sheet.getSymbolsEditor().refresh();
+        }
+    }
+
+    //-------------//
+    // ParamAction //
+    //-------------//
+    private class ParamAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        /**
+         * Method run whenever user presses Return/Enter in one of the parameter fields
+         *
+         * @param e unused?
+         */
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Discard irrelevant action events
+            if (selfUpdatingText) {
+                return;
+            }
+
+            // Current inter
+            final Inter inter = getSelectedEntity();
+
+            if (inter != null) {
+                // Word or Sentence
+                if (inter instanceof WordInter) {
+                    WordInter word = (WordInter) inter;
+
+                    // Change text value?
+                    final String newValue = textField.getText().trim();
+
+                    if (!word.getValue().equals(newValue)) {
+                        word.setValue(newValue);
+                        logger.debug("Word=\"{}\"", newValue);
+                        sheet.getStub().setModified(true);
+                        sheet.getSymbolsEditor().refresh();
+                    }
+                } else if (inter instanceof SentenceInter) {
+                    SentenceInter sentence = (SentenceInter) inter;
+
+                    // Change sentence role?
+                    final TextRole newRole = roleCombo.getSelectedItem();
+
+                    if (newRole != sentence.getRole()) {
+                        sentence.setRole(newRole);
+                        logger.debug("Sentence=\"{}\" Role={}", textField.getText().trim(), newRole);
+                        sheet.getStub().setModified(true);
+                        sheet.getSymbolsEditor().refresh();
+                    }
+                }
+            }
         }
     }
 }

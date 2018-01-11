@@ -299,7 +299,8 @@ public class EntityBoard<E extends Entity>
         final List<E> list = (List<E>) getSelectionService().getSelection(EntityListEvent.class);
 
         if ((list != null) && !list.isEmpty()) {
-            return list.get(list.size() - 1);
+            return list.get(0); // Use first
+            ///return list.get(list.size() - 1); // Use last
         } else {
             return null;
         }

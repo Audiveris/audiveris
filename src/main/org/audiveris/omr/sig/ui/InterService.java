@@ -22,11 +22,19 @@
 package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.IdEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.EntityIndex;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Class {@code InterService} is an EntityService for inters.
@@ -37,6 +45,8 @@ public class InterService
         extends EntityService<Inter>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(InterService.class);
 
     /** Events that can be published on inter service. */
     private static final Class<?>[] eventsAllowed = new Class<?>[]{
@@ -54,5 +64,52 @@ public class InterService
                          SelectionService locationService)
     {
         super(index, locationService, eventsAllowed);
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // publish //
+    //---------//
+    /**
+     * This method is overridden to sort inters with members first and ensembles last.
+     *
+     * @param event the published event
+     */
+    @Override
+    public void publish (Object event)
+    {
+        if (event instanceof EntityListEvent) {
+            List<Inter> inters = (List<Inter>) ((EntityListEvent) event).getData();
+
+            if ((inters != null) && (inters.size() > 1)) {
+                // Sort list so that ensembles appear after the members
+                ///                List<Inter> sorted = new ArrayList<Inter>(inters);
+                Collections.sort(
+                        inters,
+                        new Comparator<Inter>()
+                {
+                    @Override
+                    public int compare (Inter o1,
+                                        Inter o2)
+                    {
+                        if (o1 instanceof InterEnsemble) {
+                            if (o2 instanceof InterEnsemble) {
+                                return 0;
+                            }
+
+                            return 1;
+                        } else {
+                            if (o2 instanceof InterEnsemble) {
+                                return -1;
+                            }
+
+                            return 0;
+                        }
+                    }
+                });
+            }
+        }
+
+        super.publish(event);
     }
 }
