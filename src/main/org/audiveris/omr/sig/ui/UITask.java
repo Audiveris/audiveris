@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.SIGraph;
 
 /**
@@ -38,11 +39,13 @@ public abstract class UITask
         //~ Enumeration constant initializers ------------------------------------------------------
 
         DO,
-        UNDO,
-        REDO;
+        UNDO;
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Underlying sheet. */
+    protected final Sheet sheet;
+
     /** Underlying SIG. */
     protected final SIGraph sig;
 
@@ -55,12 +58,11 @@ public abstract class UITask
     public UITask (SIGraph sig)
     {
         this.sig = sig;
+        sheet = sig.getSystem().getSheet();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     public abstract void performDo ();
-
-    public abstract void performRedo ();
 
     public abstract void performUndo ();
 

@@ -29,6 +29,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.text.TextWord;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;

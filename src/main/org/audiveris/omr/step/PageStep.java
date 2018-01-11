@@ -39,6 +39,7 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
@@ -48,6 +49,7 @@ import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.ui.InterTask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
+import org.audiveris.omr.text.TextRole;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,6 +116,14 @@ public class PageStep
         forSlurs.add(SlurInter.class);
     }
 
+    /** Inter classes that may impact parts. */
+    private static final Set<Class<? extends AbstractInter>> forParts;
+
+    static {
+        forParts = new HashSet<Class<? extends AbstractInter>>();
+        forParts.add(SentenceInter.class);
+    }
+
     /** All impacting Inter classes. */
     private static final Set<Class<? extends AbstractInter>> impactingInterClasses;
 
@@ -122,6 +132,7 @@ public class PageStep
         impactingInterClasses.addAll(forVoices);
         impactingInterClasses.addAll(forLyrics);
         impactingInterClasses.addAll(forSlurs);
+        impactingInterClasses.addAll(forParts);
     }
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -173,6 +184,16 @@ public class PageStep
             Inter inter = interTask.getInter();
             Page page = inter.getSig().getSystem().getPage();
             Class<? extends AbstractInter> interClass = (Class<? extends AbstractInter>) inter.getClass();
+
+            if (forParts.contains(interClass)) {
+                if (inter instanceof SentenceInter) {
+                    SentenceInter sentence = (SentenceInter) inter;
+
+                    if (sentence.getRole() == TextRole.PartName) {
+                        new PageReduction(page).reduce();
+                    }
+                }
+            }
 
             if (forSlurs.contains(interClass)) {
                 page.connectOrphanSlurs();

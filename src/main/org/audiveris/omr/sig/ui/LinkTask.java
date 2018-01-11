@@ -58,18 +58,16 @@ public class LinkTask
     public void performDo ()
     {
         sig.addEdge(getSource(), getTarget(), getRelation());
-    }
 
-    @Override
-    public void performRedo ()
-    {
-        performDo();
+        sheet.getInterIndex().publish(source);
     }
 
     @Override
     public void performUndo ()
     {
         sig.removeEdge(getRelation());
+
+        sheet.getInterIndex().publish(source);
     }
 
     @Override

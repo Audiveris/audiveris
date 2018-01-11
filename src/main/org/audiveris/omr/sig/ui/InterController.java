@@ -41,8 +41,10 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -51,6 +53,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
 import org.audiveris.omr.step.Step;
+import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.VoidTask;
 
@@ -275,6 +278,70 @@ public class InterController
         return history.canUndo();
     }
 
+    //----------------//
+    // changeSentence //
+    //----------------//
+    /**
+     * Change the role of a sentence.
+     *
+     * @param sentence the sentence to modify
+     * @param newRole  the new role for the sentence
+     */
+    public void changeSentence (final SentenceInter sentence,
+                                final TextRole newRole)
+    {
+        logger.debug("changeSentence {} for {}", sentence, newRole);
+
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                final UITaskList seq = new UITaskList(new SentenceTask(sentence, newRole));
+                history.add(seq);
+
+                seq.performDo();
+
+                epilog(seq, DO);
+
+                return null;
+            }
+        }.execute();
+    }
+
+    //------------//
+    // changeWord //
+    //------------//
+    /**
+     * Change the text content of a word.
+     *
+     * @param word     the word to modify
+     * @param newValue the new word content
+     */
+    public void changeWord (final WordInter word,
+                            final String newValue)
+    {
+        logger.debug("changeWord {} for {}", word, newValue);
+
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                final UITaskList seq = new UITaskList(new WordTask(word, newValue));
+                history.add(seq);
+
+                seq.performDo();
+
+                epilog(seq, DO);
+
+                return null;
+            }
+        }.execute();
+    }
+
     //-----------//
     // dropInter //
     //-----------//
@@ -360,7 +427,6 @@ public class InterController
                 history.add(seq);
                 seq.performDo();
 
-                sheet.getStub().setModified(true);
                 sheet.getInterIndex().publish(source);
 
                 epilog(seq, DO);
@@ -385,24 +451,9 @@ public class InterController
                     throws Exception
             {
                 UITaskList seq = history.toRedo();
-                seq.performRedo();
+                seq.performDo();
 
-                sheet.getStub().setModified(true);
-
-                UITask task = seq.getLastTask();
-
-                if (task instanceof InterTask) {
-                    sheet.getGlyphIndex().publish(null);
-
-                    Inter inter = ((InterTask) task).getInter();
-                    sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
-                } else {
-                    RelationTask relTask = (RelationTask) task;
-                    Inter source = relTask.getSource();
-                    sheet.getInterIndex().publish(source);
-                }
-
-                epilog(seq, REDO);
+                epilog(seq, DO);
 
                 return null;
             }
@@ -544,21 +595,6 @@ public class InterController
                 UITaskList seq = history.toUndo();
                 seq.performUndo();
 
-                sheet.getStub().setModified(true);
-
-                UITask task = seq.getFirstTask();
-
-                if (task instanceof InterTask) {
-                    sheet.getGlyphIndex().publish(null);
-
-                    Inter inter = ((InterTask) task).getInter();
-                    sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
-                } else {
-                    RelationTask relTask = (RelationTask) task;
-                    Inter source = relTask.getSource();
-                    sheet.getInterIndex().publish(source);
-                }
-
                 epilog(seq, UNDO);
 
                 return null;
@@ -594,7 +630,6 @@ public class InterController
 
                 seq.performDo();
 
-                sheet.getStub().setModified(true);
                 sheet.getInterIndex().publish(source);
 
                 epilog(seq, DO);
@@ -604,6 +639,9 @@ public class InterController
         }.execute();
     }
 
+    //----------//
+    // addGhost //
+    //----------//
     /**
      * Perform ghost addition.
      *
@@ -678,13 +716,15 @@ public class InterController
 
         seq.performDo();
 
-        sheet.getStub().setModified(true);
         sheet.getGlyphIndex().publish(null);
         sheet.getInterIndex().publish(ghost);
 
         epilog(seq, DO);
     }
 
+    //--------//
+    // epilog //
+    //--------//
     /**
      * Epilog for any user action sequence.
      * <p>
@@ -696,6 +736,8 @@ public class InterController
     private void epilog (UITaskList seq,
                          OpKind opKind)
     {
+        sheet.getStub().setModified(true);
+
         // Re-process impacted steps
         final Step latestStep = sheet.getStub().getLatestStep();
         final Step firstStep = firstImpactedStep(seq);
@@ -710,6 +752,9 @@ public class InterController
         }
     }
 
+    //-------------------//
+    // firstImpactedStep //
+    //-------------------//
     /**
      * Report the first step impacted by the provided task sequence
      *
@@ -739,6 +784,9 @@ public class InterController
         return null;
     }
 
+    //-----------//
+    // refreshUI //
+    //-----------//
     /**
      * Refresh UI after any user action sequence.
      */
@@ -753,6 +801,9 @@ public class InterController
         bookActions.setRedoable(canRedo());
     }
 
+    //-------------------//
+    // removeCompetitors //
+    //-------------------//
     /**
      * Discard any existing Inter with the same underlying glyph.
      *
@@ -850,10 +901,6 @@ public class InterController
 
         history.add(seq);
         seq.performDo();
-
-        sheet.getStub().setModified(true);
-        ///sheet.getGlyphIndex().publish(null); // Let glyph displayed, to ease new inter assignment
-        sheet.getInterIndex().publish(null);
 
         epilog(seq, DO);
     }

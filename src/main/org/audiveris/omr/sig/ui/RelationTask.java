@@ -26,7 +26,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Relation;
 
 /**
- * Class {@code RelationTask}
+ * Class {@code RelationTask} acts on relations, by linking or unlinking inters.
  *
  * @author Hervé Bitteur
  */

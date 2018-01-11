@@ -21,11 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import java.awt.Rectangle;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Link;
 
+import java.awt.Rectangle;
 import java.util.Collection;
 
 /**
@@ -44,7 +44,7 @@ public class AdditionTask
      * @param sig           the underlying sig
      * @param inter         the inter to add
      * @param initialBounds the initial bounds for this inter
-     * @param links  the provided relations around inter
+     * @param links         the provided relations around inter
      */
     public AdditionTask (SIGraph sig,
                          Inter inter,
@@ -64,18 +64,18 @@ public class AdditionTask
         for (Link link : links) {
             link.applyTo(inter);
         }
-    }
 
-    @Override
-    public void performRedo ()
-    {
-        performDo();
+        sheet.getGlyphIndex().publish(null);
+        sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
     }
 
     @Override
     public void performUndo ()
     {
         inter.remove();
+
+        sheet.getGlyphIndex().publish(null);
+        sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
     }
 
     @Override

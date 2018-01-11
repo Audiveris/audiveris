@@ -27,12 +27,23 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.CrossDetector;
 import org.audiveris.omr.sig.SigReducer;
+import org.audiveris.omr.sig.inter.AbstractInter;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.SentenceTask;
+import org.audiveris.omr.sig.ui.UITask.OpKind;
+import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class {@code LinksStep} implements <b>LINKS</b> step, which assigns relations between
@@ -47,7 +58,25 @@ public class LinksStep
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(LinksStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            LinksStep.class);
+
+    /** Inter classes that may impact texts. */
+    private static final Set<Class<? extends AbstractInter>> forTexts;
+
+    static {
+        forTexts = new HashSet<Class<? extends AbstractInter>>();
+        forTexts.add(WordInter.class);
+        forTexts.add(SentenceInter.class);
+    }
+
+    /** All impacting Inter classes. */
+    private static final Set<Class<? extends AbstractInter>> impactingInterClasses;
+
+    static {
+        impactingInterClasses = new HashSet<Class<? extends AbstractInter>>();
+        impactingInterClasses.addAll(forTexts);
+    }
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -88,6 +117,45 @@ public class LinksStep
         }
     }
 
+    //--------//
+    // impact //
+    //--------//
+    @Override
+    public void impact (UITaskList seq,
+                        OpKind opKind)
+    {
+        logger.debug("LINKS impact {} {}", opKind, seq);
+
+        InterTask interTask = seq.getFirstInterTask();
+
+        if (interTask != null) {
+            Inter inter = interTask.getInter();
+            SystemInfo system = inter.getSig().getSystem();
+            Class<? extends AbstractInter> interClass = (Class<? extends AbstractInter>) inter.getClass();
+
+            if (forTexts.contains(interClass)) {
+                if (inter instanceof SentenceInter) {
+                    SentenceInter sentence = (SentenceInter) inter;
+                    SentenceTask task = (SentenceTask) interTask;
+                    SymbolsLinker linker = new SymbolsLinker(system);
+                    linker.unlinkOneSentence(
+                            sentence,
+                            (opKind == OpKind.DO) ? task.getOldRole() : task.getNewRole());
+                    linker.linkOneSentence(sentence);
+                }
+            }
+        }
+    }
+
+    //-----------------------//
+    // impactingInterClasses //
+    //-----------------------//
+    @Override
+    public Set<Class<? extends AbstractInter>> impactingInterClasses ()
+    {
+        return impactingInterClasses;
+    }
+
     //----------//
     // doEpilog //
     //----------//
@@ -109,8 +177,8 @@ public class LinksStep
     private static final class Constants
             extends ConstantSet
     {
-
         //~ Instance fields ------------------------------------------------------------------------
+
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");

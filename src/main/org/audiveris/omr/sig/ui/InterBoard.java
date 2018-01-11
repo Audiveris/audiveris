@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.TextRole;
@@ -39,7 +40,6 @@ import org.audiveris.omr.ui.field.LComboBox;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
-import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 
@@ -333,6 +333,7 @@ public class InterBoard
 
             if (inter instanceof WordInter) {
                 selfUpdatingText = true;
+
                 WordInter word = (WordInter) inter;
                 textField.setText(word.getValue());
                 textField.setEnabled(true);
@@ -340,11 +341,14 @@ public class InterBoard
                 selfUpdatingText = false;
             } else if (inter instanceof SentenceInter) {
                 selfUpdatingText = true;
+
                 SentenceInter sentence = (SentenceInter) inter;
                 textField.setText(sentence.getValue());
                 textField.setVisible(true);
                 roleCombo.setSelectedItem(sentence.getRole());
                 roleCombo.setVisible(true);
+                roleCombo.setEnabled(!(sentence instanceof LyricLineInter));
+
                 selfUpdatingText = false;
             } else {
             }
@@ -407,15 +411,6 @@ public class InterBoard
             logger.debug("Deleting {}", inter);
 
             sheet.getInterController().removeInter(inter);
-
-            sheet.getStub().setModified(true);
-            getSelectionService().publish(
-                    new EntityListEvent<Inter>(
-                            this,
-                            SelectionHint.ENTITY_INIT,
-                            MouseMovement.PRESSING,
-                            null));
-            sheet.getSymbolsEditor().refresh();
         }
     }
 
@@ -452,10 +447,8 @@ public class InterBoard
                     final String newValue = textField.getText().trim();
 
                     if (!word.getValue().equals(newValue)) {
-                        word.setValue(newValue);
                         logger.debug("Word=\"{}\"", newValue);
-                        sheet.getStub().setModified(true);
-                        sheet.getSymbolsEditor().refresh();
+                        sheet.getInterController().changeWord(word, newValue);
                     }
                 } else if (inter instanceof SentenceInter) {
                     SentenceInter sentence = (SentenceInter) inter;
@@ -464,10 +457,16 @@ public class InterBoard
                     final TextRole newRole = roleCombo.getSelectedItem();
 
                     if (newRole != sentence.getRole()) {
-                        sentence.setRole(newRole);
-                        logger.debug("Sentence=\"{}\" Role={}", textField.getText().trim(), newRole);
-                        sheet.getStub().setModified(true);
-                        sheet.getSymbolsEditor().refresh();
+                        logger.debug(
+                                "Sentence=\"{}\" Role={}",
+                                textField.getText().trim(),
+                                newRole);
+
+                        if (newRole == TextRole.Lyrics) {
+                            logger.info("You cannot change role to lyrics");
+                        } else {
+                            sheet.getInterController().changeSentence(sentence, newRole);
+                        }
                     }
                 }
             }

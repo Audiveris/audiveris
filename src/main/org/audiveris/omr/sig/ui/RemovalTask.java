@@ -21,15 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Link;
-import org.audiveris.omr.sig.relation.Relation;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /**
  * Class {@code RemovalTask} removes an inter (with its relations).
@@ -57,12 +50,9 @@ public class RemovalTask
     {
         links = linksOf(inter);
         inter.remove(false);
-    }
 
-    @Override
-    public void performRedo ()
-    {
-        performDo();
+        sheet.getGlyphIndex().publish(null);
+        sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
     }
 
     @Override
@@ -74,42 +64,14 @@ public class RemovalTask
         for (Link link : links) {
             link.applyTo(inter);
         }
+
+        sheet.getGlyphIndex().publish(null);
+        sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
     }
 
     @Override
     protected String actionName ()
     {
         return "del";
-    }
-
-    /**
-     * Retrieve the current links around the provided inter.
-     *
-     * @param inter the provided inter
-     * @return its links, perhaps empty
-     */
-    private static Collection<Link> linksOf (Inter inter)
-    {
-        final SIGraph sig = inter.getSig();
-        Set<Link> links = null;
-
-        for (Relation rel : sig.edgesOf(inter)) {
-            if (links == null) {
-                links = new LinkedHashSet<Link>();
-            }
-
-            Inter partner = sig.getOppositeInter(inter, rel);
-
-            links.add(new Link(
-                            sig.getOppositeInter(inter, rel),
-                            rel,
-                            sig.getEdgeTarget(rel) == partner));
-        }
-
-        if (links == null) {
-            return Collections.emptySet();
-        }
-
-        return links;
     }
 }

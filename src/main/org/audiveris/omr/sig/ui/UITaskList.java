@@ -112,15 +112,6 @@ public class UITaskList
         }
     }
 
-    public void performRedo ()
-    {
-        logger.info("redo {}", this);
-
-        for (UITask task : list) {
-            task.performRedo();
-        }
-    }
-
     public void performUndo ()
     {
         logger.info("undo {}", this);

@@ -49,7 +49,6 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import static org.audiveris.omr.text.TextRole.PartName;
 import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Navigable;
@@ -846,31 +845,6 @@ public class TextBuilder
         //        }
     }
 
-    //----------------//
-    // assignSentence //
-    //----------------//
-    /**
-     * Additional processing depending on sentence role.
-     * TODO: complete with all relevant roles (see old Text.populate method)
-     *
-     * @param sentence the created sentence
-     */
-    private void assignSentence (SentenceInter sentence)
-    {
-        switch (sentence.getRole()) {
-        case PartName:
-
-            // Assign the sentence as part name
-            Staff staff = system.getClosestStaff(sentence.getCenter());
-            Part part = staff.getPart();
-            part.setName(sentence.getValue());
-
-            break;
-
-        default:
-        }
-    }
-
     //-----------//
     // checkRole //
     //-----------//
@@ -930,9 +904,6 @@ public class TextBuilder
                 if (sentence instanceof LyricLineInter) {
                     staff.getPart().addLyric((LyricLineInter) sentence);
                 }
-
-                // For PartName. TODO: Perhaps later in transcription?
-                assignSentence(sentence);
             }
         }
     }

@@ -24,9 +24,13 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 
 import java.awt.Rectangle;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Class {@code InterTask} is the elementary task (focused on an Inter) that can be
@@ -91,5 +95,37 @@ public abstract class InterTask
         sb.append(" ").append(inter);
 
         return sb.toString();
+    }
+
+    //---------//
+    // linksOf //
+    //---------//
+    /**
+     * Retrieve the current links around the provided inter.
+     *
+     * @param inter the provided inter
+     * @return its links, perhaps empty
+     */
+    protected static Collection<Link> linksOf (Inter inter)
+    {
+        final SIGraph sig = inter.getSig();
+        Set<Link> links = null;
+
+        for (Relation rel : sig.edgesOf(inter)) {
+            if (links == null) {
+                links = new LinkedHashSet<Link>();
+            }
+
+            Inter partner = sig.getOppositeInter(inter, rel);
+
+            links.add(
+                    new Link(sig.getOppositeInter(inter, rel), rel, sig.getEdgeTarget(rel) == partner));
+        }
+
+        if (links == null) {
+            return Collections.emptySet();
+        }
+
+        return links;
     }
 }

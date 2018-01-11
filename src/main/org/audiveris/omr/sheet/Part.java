@@ -31,6 +31,7 @@ import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
+import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.step.PageStep;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -118,8 +119,9 @@ public class Part
     private int id;
 
     /** Name, if any, that faces this system part. */
+    @XmlIDREF
     @XmlAttribute
-    private String name;
+    private SentenceInter name;
 
     /** Indicate a dummy physical part. */
     @XmlAttribute
@@ -566,7 +568,7 @@ public class Part
      */
     public String getName ()
     {
-        return name;
+        return (name != null) ? name.getValue() : null;
     }
 
     //--------//
@@ -791,7 +793,7 @@ public class Part
     /**
      * @param name the name to set
      */
-    public void setName (String name)
+    public void setName (SentenceInter name)
     {
         this.name = name;
     }

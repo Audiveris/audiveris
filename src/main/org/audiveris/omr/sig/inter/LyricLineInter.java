@@ -240,6 +240,6 @@ public class LyricLineInter
     @Override
     public String shapeString ()
     {
-        return "LYRICS_\"" + getValue() + "\"";
+        return "LYRICS";
     }
 }
