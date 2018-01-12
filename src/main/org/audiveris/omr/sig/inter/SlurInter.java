@@ -382,6 +382,29 @@ public class SlurInter
                && isSpaceClear(leftHead, rightHead, systemChords);
     }
 
+    //----------------//
+    // discardOrphans //
+    //----------------//
+    /**
+     * Discard every orphan left over, unless it's a manual one.
+     *
+     * @param orphans the orphan slurs left over
+     * @param side    side of missing connection
+     */
+    public static void discardOrphans (List<SlurInter> orphans,
+                                       HorizontalSide side)
+    {
+        for (SlurInter slur : orphans) {
+            if (slur.isVip()) {
+                logger.info("VIP could not {}-connect {}", side, slur);
+            }
+
+            if (!slur.isManual()) {
+                slur.remove();
+            }
+        }
+    }
+
     //----------//
     // getCurve //
     //----------//

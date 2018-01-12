@@ -223,6 +223,10 @@ public class Staff
     @Navigable(false)
     private SystemInfo system;
 
+    /** Containing part. */
+    @Navigable(false)
+    private Part part;
+
     /** Potential attachments. */
     private final AttachmentHolder attachments = new BasicAttachmentHolder();
 
@@ -1157,7 +1161,16 @@ public class Staff
      */
     public Part getPart ()
     {
-        return system.getPartOf(this);
+        if (part == null) {
+            // This should not occur
+            for (Part p : system.getParts()) {
+                if (p.getStaves().contains(this)) {
+                    return part = p;
+                }
+            }
+        }
+
+        return part;
     }
 
     //----------------//
@@ -1560,6 +1573,17 @@ public class Staff
     {
         header.keyRange.setStop(keyStop);
         header.keyRange.valid = true;
+    }
+
+    //---------//
+    // setPart //
+    //---------//
+    /**
+     * @param part the part to set
+     */
+    public void setPart (Part part)
+    {
+        this.part = part;
     }
 
     //----------//

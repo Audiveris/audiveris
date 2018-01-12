@@ -29,9 +29,10 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.SlurInter;
-import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -211,11 +212,10 @@ public class Page
 
                         orphans.removeAll(links.keySet());
                         precOrphans.removeAll(links.values());
-
-                        discardOrphans(precOrphans, RIGHT);
+                        SlurInter.discardOrphans(precOrphans, RIGHT);
                     }
 
-                    discardOrphans(orphans, LEFT);
+                    SlurInter.discardOrphans(orphans, LEFT);
                 }
             }
         }
@@ -728,29 +728,6 @@ public class Page
             logger.warn(getClass().getSimpleName() + " Error visiting " + this, ex);
 
             return 0;
-        }
-    }
-
-    //----------------//
-    // discardOrphans //
-    //----------------//
-    /**
-     * Discard every orphan left over, unless it's a manual one.
-     *
-     * @param orphans the orphan slurs left over
-     * @param side    side of missing connection
-     */
-    private void discardOrphans (List<SlurInter> orphans,
-                                 HorizontalSide side)
-    {
-        for (SlurInter slur : orphans) {
-            if (slur.isVip()) {
-                logger.info("VIP could not {}-connect {}", side, slur);
-            }
-
-            if (!slur.isManual()) {
-                slur.remove();
-            }
         }
     }
 }

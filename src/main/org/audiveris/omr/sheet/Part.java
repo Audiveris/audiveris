@@ -216,6 +216,7 @@ public class Part
     public void addStaff (Staff staff)
     {
         staves.add(staff);
+        staff.setPart(this);
     }
 
     //-------------//

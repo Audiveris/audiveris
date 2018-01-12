@@ -193,7 +193,7 @@ public class StackTuner
                     logger.debug("{} ends at {} ts: {}", voice, voiceDur, inferred);
                 }
 
-                if (voiceDur != null) {
+                if ((voiceDur != null) && (expectedDuration != null)) {
                     Rational delta = voiceDur.minus(expectedDuration);
                     final int sign = delta.compareTo(Rational.ZERO);
 

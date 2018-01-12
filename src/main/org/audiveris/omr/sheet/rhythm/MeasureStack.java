@@ -1605,10 +1605,6 @@ public class MeasureStack
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append('#').append(getPageId());
 
-        if (isCautionary()) {
-            sb.append(CAUTIONARY_SUFFIX);
-        }
-
         return sb.toString();
     }
 }

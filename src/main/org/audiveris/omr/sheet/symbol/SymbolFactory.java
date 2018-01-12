@@ -296,7 +296,7 @@ public class SymbolFactory
         case F_CLEF_8VB:
         case C_CLEF:
         case PERCUSSION_CLEF:
-            return new ClefInter(null, shape, grade, null, null, null);
+            return new ClefInter(shape, grade);
 
         // Time sig
         case TIME_ZERO:

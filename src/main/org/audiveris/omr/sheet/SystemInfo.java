@@ -758,7 +758,7 @@ public class SystemInfo
         if (staff == null) {
             return getFirstPart();
         } else {
-            return getPartOf(staff);
+            return staff.getPart();
         }
     }
 
@@ -795,24 +795,6 @@ public class SystemInfo
     public List<PartGroup> getPartGroups ()
     {
         return partGroups;
-    }
-
-    //-----------//
-    // getPartOf //
-    //-----------//
-    public Part getPartOf (Staff staff)
-    {
-        if (staff == null) {
-            return null;
-        }
-
-        for (Part part : parts) {
-            if (part.getStaves().contains(staff)) {
-                return part;
-            }
-        }
-
-        return null;
     }
 
     //----------//

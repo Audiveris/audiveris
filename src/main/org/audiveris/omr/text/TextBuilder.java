@@ -1448,7 +1448,7 @@ public class TextBuilder
 
         for (LyricLineInter line : lines) {
             Staff staff = line.getStaff();
-            Part newPart = system.getPartOf(staff);
+            Part newPart = staff.getPart();
 
             if (newPart != part) {
                 lyricNumber = 0;

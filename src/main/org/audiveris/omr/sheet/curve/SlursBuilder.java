@@ -669,7 +669,7 @@ public class SlursBuilder
                     HeadInter head = slur.getHead(side);
 
                     if (head != null) {
-                        Part headPart = system.getPartOf(head.getStaff());
+                        Part headPart = head.getStaff().getPart();
 
                         if (slurPart == null) {
                             slurPart = headPart;

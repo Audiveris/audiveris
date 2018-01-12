@@ -99,6 +99,18 @@ public class ClefInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
+     * Creates a <b>ghost</b> ClefInter object.
+     *
+     * @param shape the possible shape
+     * @param grade the interpretation quality
+     */
+    public ClefInter (Shape shape,
+                      double grade)
+    {
+        this(null, shape, grade, null, null, null);
+    }
+
+    /**
      * Creates a new ClefInter object.
      *
      * @param glyph the glyph to interpret
@@ -108,12 +120,12 @@ public class ClefInter
      * @param pitch pitch position
      * @param kind  clef kind
      */
-    public ClefInter (Glyph glyph,
-                      Shape shape,
-                      double grade,
-                      Staff staff,
-                      Double pitch,
-                      ClefKind kind)
+    private ClefInter (Glyph glyph,
+                       Shape shape,
+                       double grade,
+                       Staff staff,
+                       Double pitch,
+                       ClefKind kind)
     {
         super(glyph, null, shape, grade, staff, pitch);
         this.kind = kind;

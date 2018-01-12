@@ -689,9 +689,11 @@ public class Measure
      */
     public KeyInter getKey (int staffIndexInPart)
     {
-        for (KeyInter key : keys) {
-            if (key.getStaff().getIndexInPart() == staffIndexInPart) {
-                return key;
+        if (keys != null) {
+            for (KeyInter key : keys) {
+                if (key.getStaff().getIndexInPart() == staffIndexInPart) {
+                    return key;
+                }
             }
         }
 

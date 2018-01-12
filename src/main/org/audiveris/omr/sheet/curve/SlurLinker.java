@@ -31,10 +31,12 @@ import static org.audiveris.omr.math.LineUtil.intersection;
 import static org.audiveris.omr.math.LineUtil.intersectionAtX;
 import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.math.PointUtil.*;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -419,9 +421,21 @@ public class SlurLinker
             return false;
         }
 
-        // Check horizontal gap to staff limit
+        // A left orphan must start in first measure.
+        // A right orphan must stop in last measure.
         Point slurEnd = info.getEnd(side == LEFT);
         Staff staff = system.getClosestStaff(slurEnd);
+        Part part = staff.getPart();
+        Measure sideMeasure = (side == LEFT) ? part.getFirstMeasure() : part.getLastMeasure();
+        Measure endMeasure = part.getMeasureAt(slurEnd);
+
+        if (endMeasure != sideMeasure) {
+            logger.debug("{} orphan side not in part side measure", slur);
+
+            return false;
+        }
+
+        // Also, check horizontal gap to staff limit
         int staffEnd = (side == LEFT) ? staff.getHeaderStop() : staff.getAbscissa(side);
 
         if (abs(slurEnd.x - staffEnd) > params.maxOrphanDx) {

@@ -447,7 +447,7 @@ public class SheetResultPainter
                 // Work with top non-dummy staff & measure
                 SystemInfo system = stack.getSystem();
                 Staff staff = system.getFirstStaff();
-                Part topRealPart = system.getPartOf(staff);
+                Part topRealPart = staff.getPart();
                 int stackIndex = system.getMeasureStacks().indexOf(stack);
                 Measure topRealMeasure = topRealPart.getMeasures().get(stackIndex);
                 int left = topRealMeasure.getAbscissa(HorizontalSide.LEFT, staff);

@@ -1254,6 +1254,7 @@ public class BasicSheet
                     part.setSystem(system);
 
                     for (Staff staff : part.getStaves()) {
+                        staff.setPart(part);
                         systemStaves.add(staff);
                     }
                 }

@@ -206,39 +206,51 @@ public abstract class Voices
                         continue; // logical part not found in the first system of this page
                     }
 
-                    final Part precedingPart = prevSystem.getPartById(logicalPart.getId());
+                    final List<SlurInter> orphans = part.getSlurs(SlurInter.isBeginningOrphan);
 
-                    if (precedingPart == null) {
-                        continue; // logical part not found at end of preceding page
-                    }
+                    final Part precedingPart = prevSystem.getPartById(
+                            logicalPart.getId());
 
-                    final Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(precedingPart); // Links: Slur -> prevSlur
+                    if (precedingPart != null) {
+                        final List<SlurInter> precOrphans = precedingPart.getSlurs(
+                                SlurInter.isEndingOrphan);
 
-                    // Apply the links possibilities
-                    for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
-                        final SlurInter slur = entry.getKey();
-                        final SlurInter prevSlur = entry.getValue();
+                        final Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(
+                                precedingPart); // Links: Slur -> prevSlur
 
-                        slur.checkTie(prevSlur);
-                    }
+                        // Apply the links possibilities
+                        for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
+                            final SlurInter slur = entry.getKey();
+                            final SlurInter prevSlur = entry.getValue();
 
-                    final SlurAdapter pageSlurAdapter = new SlurAdapter()
-                    {
-                        @Override
-                        public SlurInter getInitialSlur (SlurInter slur)
+                            slur.checkTie(prevSlur);
+                        }
+
+                        // Purge orphans across pages
+                        orphans.removeAll(links.keySet());
+                        precOrphans.removeAll(links.values());
+                        SlurInter.discardOrphans(precOrphans, RIGHT);
+
+                        final SlurAdapter pageSlurAdapter = new SlurAdapter()
                         {
-                            return links.get(slur);
-                        }
-                    };
+                            @Override
+                            public SlurInter getInitialSlur (SlurInter slur)
+                            {
+                                return links.get(slur);
+                            }
+                        };
 
-                    for (Voice voice : part.getFirstMeasure().getVoices()) {
-                        Integer tiedId = getTiedId(voice, pageSlurAdapter);
+                        for (Voice voice : part.getFirstMeasure().getVoices()) {
+                            Integer tiedId = getTiedId(voice, pageSlurAdapter);
 
-                        if ((tiedId != null) && (voice.getId() != tiedId)) {
-                            logicalPart.swapVoiceId(page, voice.getId(), tiedId);
-                            modifs++;
+                            if ((tiedId != null) && (voice.getId() != tiedId)) {
+                                logicalPart.swapVoiceId(page, voice.getId(), tiedId);
+                                modifs++;
+                            }
                         }
                     }
+
+                    SlurInter.discardOrphans(orphans, LEFT);
                 }
             }
 

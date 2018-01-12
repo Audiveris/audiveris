@@ -323,17 +323,17 @@ public class PageRhythm
             avgGuess = new Rational(quarters, 4);
         }
 
-        Rational topGuess = histo.getMaxBucket();
-        logger.info(
-                "{} Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
-                range,
-                avgGuess,
-                topGuess,
-                String.format("%.2f", val),
-                stackNb,
-                voiceNb,
-                histo);
-
+//        Rational topGuess = histo.getMaxBucket();
+//        logger.info(
+//                "{} Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
+//                range,
+//                avgGuess,
+//                topGuess,
+//                String.format("%.2f", val),
+//                stackNb,
+//                voiceNb,
+//                histo);
+//
         return avgGuess;
     }
 
@@ -364,8 +364,15 @@ public class PageRhythm
                 // End of range?
                 if (stack.getIdValue() == range.stopId) {
                     // Use CURRENT MATERIAL of voices to determine expected duration on this range
-                    Rational duration = retrieveExpectedDuration(range);
-                    range.duration = duration;
+                    Rational guess = retrieveExpectedDuration(range);
+
+                    if (guess != null) {
+                        range.duration = guess;
+                    } else if (range.ts != null) {
+                        range.duration = range.ts.getTimeRational().getValue();
+                    }
+
+                    logger.info("{} guess:{}", range, guess);
 
                     if (it.hasNext()) {
                         range = it.next();
