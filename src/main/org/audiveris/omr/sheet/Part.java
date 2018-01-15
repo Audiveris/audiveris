@@ -275,9 +275,8 @@ public class Part
         // Find some concrete system part for the provided id
         Part refPart = findRefPart(id);
         Part dummyPart = new Part(system);
-
-        dummyPart.setId(id);
         dummyPart.setDummy();
+        dummyPart.setId(id);
 
         Measure refMeasure = refPart.getFirstMeasure();
 
@@ -771,7 +770,10 @@ public class Part
     {
         if (this.id != id) {
             this.id = id;
-            this.getSystem().getSheet().getStub().setModified(true);
+
+            if (!isDummy()) {
+                getSystem().getSheet().getStub().setModified(true);
+            }
         }
     }
 

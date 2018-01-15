@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                   P l u g i n M a n a g e r                                    //
+//                                  P l u g i n s M a n a g e r                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -27,65 +27,54 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.ui.util.AbstractMenuListener;
 import org.audiveris.omr.ui.util.SeparableMenu;
-import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Collections;
+import java.util.List;
 
+import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code PluginManager} handles the collection of registered plugins.
+ * Class {@code PluginsManager} handles the collection of registered plugins.
  * <p>
  * Each registered plugin is represented by a menu item.
- * One of these plugins can be set as the default editor plugin and directly launched by the
- * dedicated toolbar button.
+ * A plugin can be manually selected as default and directly launched by a dedicated toolbar button.
  * <p>
- * Any file, with the ".js" extension, found in the <code>plugins</code> folder will lead to the
- * creation of a corresponding Plugin instance.</p>
+ * The <code>config</code> folder is lookup for a potential plugins file.
  *
  * @author Hervé Bitteur
  */
-public class PluginManager
+public class PluginsManager
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(PluginManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(PluginsManager.class);
+
+    /** File name for plugins definitions: {@value}. */
+    private static final String PLUGINS_FILE_NAME = "plugins.xml";
 
     /** Singleton. */
-    private static PluginManager INSTANCE;
+    private static PluginsManager INSTANCE;
 
-    /** Filter for plugin script files. */
-    private static final FileFilter pluginFilter = new FileFilter()
-    {
-        @Override
-        public boolean accept (File pathname)
-        {
-            // Check for proper extension
-            String ext = FileUtil.getExtension(pathname);
-
-            if (ext.equalsIgnoreCase(".js")) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    };
-
-    /** Default plugin id. */
+    /** Persistent default plugin id. */
     public static final Param<String> defaultPluginId = new Default();
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -93,60 +82,38 @@ public class PluginManager
     /** The concrete UI menu. */
     private JMenu menu;
 
-    /** The sorted collection of registered plugins: ID -> Plugin. */
-    private final Map<String, Plugin> map = new TreeMap<String, Plugin>();
+    /** The list of registered plugins. */
+    private final List<Plugin> plugins;
 
-    /** The default plugin. */
+    /** The current default plugin. */
     private Plugin defaultPlugin;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Generates the menu to be inserted in the plugin menu hierarchy,
-     * based on the script files discovered in the plugin folder.
+     * based on the plugins file discovered in Audiveris user config folder.
      *
      * @param menu the hosting menu, or null
      */
-    private PluginManager ()
+    private PluginsManager ()
     {
-        // Browse the plugin folder for relevant scripts
-        Path pluginDir = WellKnowns.PLUGINS_FOLDER;
+        // Load all defined plugins
+        plugins = loadPlugins();
 
-        if (Files.exists(pluginDir) && Files.isDirectory(pluginDir)) {
-            for (File file : pluginDir.toFile().listFiles(pluginFilter)) {
-                try {
-                    Plugin plugin = new Plugin(file);
-                    map.put(plugin.getId(), plugin);
-                } catch (Exception ex) {
-                    logger.warn("Could not process plugin file {} [{}]", file, ex);
-                }
-            }
-
-            // Default plugin, if any is defined
+        // Default plugin, if any is defined
+        if (!constants.defaultPlugin.getValue().trim().isEmpty()) {
             setDefaultPlugin(constants.defaultPlugin.getValue().trim());
         }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     //------------------//
-    // getDefaultPlugin //
-    //------------------//
-    /**
-     * Return the default plugin if any.
-     *
-     * @return the default plugin, or null if none is defined
-     */
-    public Plugin getDefaultPlugin ()
-    {
-        return defaultPlugin;
-    }
-
-    //------------------//
     // setDefaultPlugin //
     //------------------//
     /**
-     * Assign the default plugin.
+     * Assign the default plugin via its id.
      *
-     * @param pluginId the ID of default plugin
+     * @param pluginId id of new default plugin
      */
     public final void setDefaultPlugin (String pluginId)
     {
@@ -165,18 +132,24 @@ public class PluginManager
     /**
      * Assign the default plugin.
      *
-     * @param defaultPlugin new plugin to become the default one
+     * @param defaultPlugin the new default plugin
      */
     public final void setDefaultPlugin (Plugin defaultPlugin)
     {
-        Plugin oldDefaultPlugin = this.defaultPlugin;
         this.defaultPlugin = defaultPlugin;
+    }
 
-        if (oldDefaultPlugin != null) {
-            // TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-            //            PluginStep pluginStep = (PluginStep) Steps.valueOf(Steps.PLUGIN);
-            //            pluginStep.setPlugin(defaultPlugin);
-        }
+    //------------------//
+    // getDefaultPlugin //
+    //------------------//
+    /**
+     * Return the default plugin if any.
+     *
+     * @return the default plugin, or null if none is defined
+     */
+    public Plugin getDefaultPlugin ()
+    {
+        return defaultPlugin;
     }
 
     //-------------//
@@ -187,10 +160,10 @@ public class PluginManager
      *
      * @return the unique instance of this class
      */
-    public static synchronized PluginManager getInstance ()
+    public static synchronized PluginsManager getInstance ()
     {
         if (INSTANCE == null) {
-            INSTANCE = new PluginManager();
+            INSTANCE = new PluginsManager();
         }
 
         return INSTANCE;
@@ -211,7 +184,7 @@ public class PluginManager
             menu = new SeparableMenu();
         }
 
-        for (Plugin plugin : map.values()) {
+        for (Plugin plugin : plugins) {
             menu.add(new JMenuItem(new PluginAction(plugin)));
         }
 
@@ -233,7 +206,13 @@ public class PluginManager
      */
     public Collection<String> getPluginIds ()
     {
-        return map.keySet();
+        List<String> ids = new ArrayList<String>();
+
+        for (Plugin plugin : plugins) {
+            ids.add(plugin.getId());
+        }
+
+        return ids;
     }
 
     //-------------------//
@@ -241,13 +220,44 @@ public class PluginManager
     //-------------------//
     private Plugin findDefaultPlugin (String pluginId)
     {
-        for (Plugin plugin : map.values()) {
+        for (Plugin plugin : plugins) {
             if (plugin.getId().equalsIgnoreCase(pluginId)) {
                 return plugin;
             }
         }
 
         return null;
+    }
+
+    //-------------//
+    // loadPlugins //
+    //-------------//
+    private List<Plugin> loadPlugins ()
+    {
+        final Path folder = WellKnowns.CONFIG_FOLDER;
+        final Path pluginsPath = folder.resolve(PLUGINS_FILE_NAME);
+
+        if (Files.exists(pluginsPath)) {
+            try {
+                JAXBContext jaxbContext = JAXBContext.newInstance(PluginsHolder.class);
+                Unmarshaller um = jaxbContext.createUnmarshaller();
+                PluginsHolder pluginsHolder = (PluginsHolder) um.unmarshal(pluginsPath.toFile());
+
+                for (Plugin plugin : pluginsHolder.list) {
+                    plugin.check();
+                }
+
+                logger.info("Loaded plugins from {}", pluginsPath);
+
+                return pluginsHolder.list; // Normal exit
+            } catch (Throwable ex) {
+                logger.warn("Error loading {}", pluginsPath, ex);
+            }
+        } else {
+            logger.info("No {} file found", pluginsPath);
+        }
+
+        return Collections.EMPTY_LIST;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -259,9 +269,7 @@ public class PluginManager
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Constant.String defaultPlugin = new Constant.String(
-                "",
-                "Name of default plugin");
+        Constant.String defaultPlugin = new Constant.String("", "Name of default plugin");
     }
 
     //---------//
@@ -284,7 +292,7 @@ public class PluginManager
             if (!getSpecific().equals(specific)) {
                 constants.defaultPlugin.setValue(specific);
                 getInstance().setDefaultPlugin(specific);
-                logger.info("Default plugin is now ''{}''", specific);
+                logger.info("Default plugin is now '{}'", specific);
 
                 return true;
             }
@@ -298,7 +306,9 @@ public class PluginManager
     //----------------//
     /**
      * Class {@code MyMenuListener} is triggered when menu is entered.
-     * This is meant to enable menu items only when a sheet is selected.
+     * <p>
+     * This is meant to enable menu items only when a sheet is selected,
+     * and to indicate the default plugin if any.
      */
     private class MyMenuListener
             extends AbstractMenuListener
@@ -311,13 +321,45 @@ public class PluginManager
             boolean enabled = StubsController.getCurrentStub() != null;
 
             for (int i = 0; i < menu.getItemCount(); i++) {
-                JMenuItem menuItem = menu.getItem(i);
+                JMenuItem item = menu.getItem(i);
 
                 // Beware of separators (for which returned menuItem is null)
-                if (menuItem != null) {
-                    menuItem.setEnabled(enabled);
+                if (item != null) {
+                    item.setEnabled(enabled);
+
+                    // Indicate which plugin is the default (if any)
+                    Action action = item.getAction();
+
+                    if (action instanceof PluginAction) {
+                        Plugin plugin = ((PluginAction) action).getPlugin();
+                        item.setText(
+                                plugin.getId() + ((plugin == defaultPlugin) ? " (default)" : ""));
+                    }
                 }
             }
+        }
+    }
+
+    //---------------//
+    // PluginsHolder //
+    //---------------//
+    /**
+     * Class {@code PluginsHolder} is used to unmarshal the plugins root element.
+     */
+    @XmlAccessorType(XmlAccessType.NONE)
+    @XmlRootElement(name = "plugins")
+    private static class PluginsHolder
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** List of plugins. */
+        @XmlElementRef
+        private List<Plugin> list = new ArrayList<Plugin>();
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /** No-arg constructor meant for JAXB. */
+        private PluginsHolder ()
+        {
         }
     }
 }

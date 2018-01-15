@@ -29,7 +29,7 @@ import org.audiveris.omr.image.AdaptiveDescriptor;
 import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.FilterKind;
 import org.audiveris.omr.image.GlobalDescriptor;
-import org.audiveris.omr.plugin.PluginManager;
+import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.MidiAbstractions;
 import org.audiveris.omr.score.PartData;
@@ -1142,11 +1142,11 @@ public class ScoreParameters
         //~ Constructors ---------------------------------------------------------------------------
         public PluginPane ()
         {
-            super("Plugin", null, null, null, PluginManager.defaultPluginId);
+            super("Plugin", null, null, null, PluginsManager.defaultPluginId);
 
             // ComboBox for triggered step
             pluginCombo = new JComboBox<String>(
-                    PluginManager.getInstance().getPluginIds().toArray(new String[0]));
+                    PluginsManager.getInstance().getPluginIds().toArray(new String[0]));
             pluginCombo.setToolTipText("Default plugin to be launched");
         }
 

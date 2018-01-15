@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    
+<!-- 
+====================================================================================================
+
+                                        p l u g i n s . x m l
+
+====================================================================================================
+
+    This file will be looked up in user config folder.
+
+    It defines the list of Audiveris export plugins.
+
+    Each plugin element is defined as follows:
+
+    - Attribute id: (mandatory) Unique name for the plugin
+
+    - Attribute tip: (optional) Description to be used as a tip
+
+    - Elements arg: (mandatory) One separate element for each argument. 
+                    At least one arg element must equal {} to indicate where to insert at run-time
+                    the export file path.    
+====================================================================================================
+-->
+    
+<plugins>
+    
+    <!-- EasyABC -->
+    <plugin id="EasyABC" tip="Export to EasyABC">
+        <arg>C:\Program Files (x86)\EasyABC\easy_abc.exe</arg>
+        <arg>{}</arg>
+    </plugin>
+    
+    <!-- MuseScore -->
+    <plugin id="MuseScore" tip="Invoke MuseScore on score XML">
+        <arg>C:\Program Files (x86)\MuseScore 2\bin\MuseScore.exe</arg>
+        <arg>{}</arg>
+    </plugin>
+    
+    <!-- Finale -->
+    <plugin id="Finale" tip="Export to Finale">
+        <arg>C:\Program Files (x86)\Finale 2014\Finale.exe</arg>
+        <arg>{}</arg>
+    </plugin>
+    
+    <!-- PriMus -->
+    <plugin id="PriMus" tip="Use of PriMus">
+        <arg>C:\Program Files (x86)\PriMus Demo\PriMus.exe</arg>
+        <arg>{}</arg>
+    </plugin>
+    
+    <!-- Finale Notepad -->
+    <plugin id="Finale Notepad" tip="Export to notepad of Finale">
+        <arg>C:\Program Files (x86)\Finale NotePad 2012\Finale NotePad.exe</arg>
+        <arg>{}</arg>
+    </plugin>
+    
+</plugins>

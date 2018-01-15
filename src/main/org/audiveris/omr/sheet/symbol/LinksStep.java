@@ -136,12 +136,15 @@ public class LinksStep
             if (forTexts.contains(interClass)) {
                 if (inter instanceof SentenceInter) {
                     SentenceInter sentence = (SentenceInter) inter;
-                    SentenceTask task = (SentenceTask) interTask;
-                    SymbolsLinker linker = new SymbolsLinker(system);
-                    linker.unlinkOneSentence(
-                            sentence,
-                            (opKind == OpKind.DO) ? task.getOldRole() : task.getNewRole());
-                    linker.linkOneSentence(sentence);
+
+                    if (interTask instanceof SentenceTask) {
+                        SentenceTask task = (SentenceTask) interTask;
+                        SymbolsLinker linker = new SymbolsLinker(system);
+                        linker.unlinkOneSentence(
+                                sentence,
+                                (opKind == OpKind.DO) ? task.getOldRole() : task.getNewRole());
+                        linker.linkOneSentence(sentence);
+                    }
                 }
             }
         }

@@ -30,7 +30,7 @@ import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.jai.JaiLoader;
 import org.audiveris.omr.log.LogPane;
-import org.audiveris.omr.plugin.PluginManager;
+import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.PartwiseBuilder;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
@@ -618,7 +618,7 @@ public class MainGui
         stepMenu = new StepMenu(new SeparableMenu());
 
         // Specific plugin menu
-        JMenu pluginMenu = PluginManager.getInstance().getMenu(null);
+        JMenu pluginMenu = PluginsManager.getInstance().getMenu(null);
 
         // For some specific top-level menus
         ActionManager mgr = ActionManager.getInstance();

@@ -28,7 +28,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.Plugin;
-import org.audiveris.omr.plugin.PluginManager;
+import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.ui.ScoreParameters;
 import org.audiveris.omr.sheet.BasicSheet;
 import org.audiveris.omr.sheet.Book;
@@ -42,9 +42,11 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.stem.StemScaler;
+
 import static org.audiveris.omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
+
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;
@@ -685,7 +687,7 @@ public class BookActions
     @Action(enabledProperty = STUB_IDLE)
     public Task<Void, Void> invokeDefaultPlugin (ActionEvent e)
     {
-        Plugin defaultPlugin = PluginManager.getInstance().getDefaultPlugin();
+        Plugin defaultPlugin = PluginsManager.getInstance().getDefaultPlugin();
 
         if (defaultPlugin == null) {
             logger.warn("No default plugin defined");

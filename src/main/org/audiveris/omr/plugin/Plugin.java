@@ -21,12 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.plugin;
 
-import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.sheet.Book;
-import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.step.Step;
-import org.audiveris.omr.util.FileUtil;
+import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.util.VoidTask;
 
 import org.jdesktop.application.Task;
@@ -35,101 +32,138 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code Plugin} describes a plugin instance, encapsulating the relationship
- * with the underlying javascript file.
+ * with an external program to consume MusicXML export.
  * <p>
- * A plugin is meant to describe the connection between Audiveris and an external program, which
- * will consume the MusicXML file exported by Audiveris.</p>
- * <p>
- * A plugin is a javascript file, meant to export:
+ * A plugin element is an XML fragment, made of:
  * <dl>
- * <dt>pluginTitle</dt>
- * <dd>(string) The title to appear in Plugins pull-down menu</dd>
- * <dt>pluginTip</dt>
- * <dd>(string) A description text to appear as a user tip in Plugins menu</dd>
- * <dt>pluginCli</dt>
- * <dd>(function) A javascript function which returns the precise list of arguments used when
- * calling the external program. Note that the actual call is not made by the javascript code, but
- * by Audiveris itself for an easier handling of input and output streams.</dd>
+ * <dt>id</dt>
+ * <dd>(mandatory attribute) Unique name for the plugin</dd>
+ * <dt>tip</dt>
+ * <dd>(optional attribute) A description text to appear as a user tip</dd>
+ * <dt>arg</dt>
+ * <dd>(mandatory element) There must be one arg element for each object in the command line.
+ * A specific arg value ({}) indicates where to insert at run-time the path to MusicXML file.
+ * </dd>
  * </dl>
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "plugin")
 public class Plugin
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(Plugin.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Plugin.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    //
-    /** Related javascript file. */
-    private final File file;
-
-    /** Related engine. */
-    private ScriptEngine engine;
-
-    /** Plugin title. */
-    private String title;
+    /** Id. */
+    @XmlAttribute(name = "id")
+    private final String id;
 
     /** Description used for tool tip. */
-    private String tip;
+    @XmlAttribute(name = "tip")
+    private final String tip;
+
+    /** Sequence of arguments. */
+    @XmlElement(name = "arg")
+    private final List<String> args;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new Plugin object.
+     * Creates a new {@code Plugin} object.
      *
-     * @param file related javascript file
-     * @throws JavascriptUnavailableException if no Javascript engine is available
+     * @param id   Unique name
+     * @param tip  Description text
+     * @param args list of arguments
      */
-    public Plugin (File file)
-            throws JavascriptUnavailableException
+    public Plugin (String id,
+                   String tip,
+                   List<String> args)
     {
-        this.file = file;
+        this.id = id;
+        this.tip = tip;
+        this.args = args;
+    }
 
-        evaluateScript();
-
-        logger.debug("Created {}", this);
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private Plugin ()
+    {
+        id = null;
+        tip = null;
+        args = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // check //
+    //-------//
+    /**
+     * Check if the plugin description is correct.
+     *
+     * @return true if OK
+     */
+    public boolean check ()
+    {
+        if ((id == null) || id.isEmpty()) {
+            logger.warn("No id for {}", this);
+
+            return false;
+        }
+
+        for (String arg : args) {
+            if (arg.trim().equals("{}")) {
+                return true;
+            }
+        }
+
+        logger.warn("Missing special '{}' arg in plugin {}", getId());
+
+        return false;
+    }
+
     //----------------//
     // getDescription //
     //----------------//
     /**
      * Report a descriptive sentence for this plugin.
      *
-     * @return a sentence meant for tool tip
+     * @return a sentence meant for tool tip, perhaps null
      */
     public String getDescription ()
     {
-        if (tip != null) {
-            return tip;
-        } else {
-            // Default value
-            return getId();
-        }
+        return tip;
     }
 
-    //-------//
-    // getId //
-    //-------//
+    //---------//
+    // getname //
+    //---------//
     /**
-     * Report a unique ID for this plugin.
+     * Report a name meant for user interface.
      *
-     * @return plugin unique ID
+     * @return a name for this plugin
      */
     public String getId ()
     {
-        return FileUtil.getNameSansExtension(file);
+        return id;
     }
 
     //---------//
@@ -146,99 +180,44 @@ public class Plugin
         return new PluginTask(book);
     }
 
-    //----------//
-    // getTitle //
-    //----------//
-    /**
-     * Report a title meant for user interface.
-     *
-     * @return a title for this plugin
-     */
-    public String getTitle ()
-    {
-        if (title != null) {
-            return title;
-        } else {
-            return getId();
-        }
-    }
-
     //-----------//
     // runPlugin //
     //-----------//
     public Void runPlugin (Book book)
     {
-        // Make sure all sheets have been transcribed
-        for (SheetStub stub : book.getStubs()) {
-            stub.reachStep(Step.PAGE, false);
-        }
+        Path exportPath = retrieveExport(book);
 
-        // Make sure we have the export file
-        ///TODO: Stepping.ensureBookStep(Steps.valueOf(Steps.EXPORT_BOOK), book);
-        final Path exportPathSansExt = book.getExportPathSansExt();
-
-        if (exportPathSansExt == null) {
-            logger.warn("Could not get export path");
+        if (exportPath == null) {
+            logger.warn("No suitable export");
 
             return null;
         }
 
-        // Retrieve proper sequence of command items
-        List<String> args;
+        // Build process
+        List<String> cli = buildCli(exportPath);
+        logger.info("Process: {}", cli);
+
+        ProcessBuilder pb = new ProcessBuilder(cli);
+        pb = pb.redirectErrorStream(true); // Merge process error stream with its output stream
 
         try {
-            logger.debug("{} doInBackground on {}", Plugin.this, exportPathSansExt);
+            final Process process = pb.start(); // Start process
 
-            Invocable inv = (Invocable) engine;
-            Object obj = inv.invokeFunction(
-                    "pluginCli",
-                    exportPathSansExt + OMR.COMPRESSED_SCORE_EXTENSION);
-
-            if (obj instanceof List) {
-                args = (List<String>) obj; // Unchecked by compiler
-                logger.debug("{} command args: {}", this, args);
-            } else {
-                return null;
-            }
-        } catch (Exception ex) {
-            logger.warn(this + " error invoking javascript", ex);
-
-            return null;
-        }
-
-        // Spawn the command
-        logger.info("Launching {} on {}", getTitle(), book.getRadix());
-
-        ProcessBuilder pb = new ProcessBuilder(args);
-        pb = pb.redirectErrorStream(true);
-
-        try {
-            Process process = pb.start();
-            InputStream is = process.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
-            BufferedReader br = new BufferedReader(isr);
-
-            // Consume process output
+            // Consume process output (process output is an input stream for us)
+            final InputStream is = process.getInputStream();
+            final InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
+            final BufferedReader br = new BufferedReader(isr);
             String line;
 
             while ((line = br.readLine()) != null) {
-                logger.debug(line);
+                System.out.println(line);
             }
 
             // Wait to get exit value
-            try {
-                int exitValue = process.waitFor();
-
-                if (exitValue != 0) {
-                    logger.warn("{} exited with value {}", Plugin.this, exitValue);
-                } else {
-                    logger.debug("{} exit value is {}", Plugin.this, exitValue);
-                }
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-        } catch (IOException ex) {
-            logger.warn(Plugin.this + " error launching editor", ex);
+            final int exitValue = process.waitFor();
+            logger.info("{} exit value: {}", getId(), exitValue);
+        } catch (Throwable ex) {
+            logger.warn("Error launching {} {}" + this, ex.toString(), ex);
         }
 
         return null;
@@ -253,40 +232,87 @@ public class Plugin
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append("{");
 
-        sb.append(" ").append(getId());
+        sb.append("id:\"").append(id).append("\"");
 
+        if (tip != null) {
+            sb.append(" tip:\"").append(tip).append("\"");
+        }
+
+        sb.append(" args:").append(args);
         sb.append("}");
 
         return sb.toString();
     }
 
+    //----------//
+    // buildCli //
+    //----------//
+    private List<String> buildCli (Path exportPath)
+    {
+        List<String> cli = new ArrayList<String>(args.size());
+
+        for (String arg : args) {
+            if (arg.trim().equals("{}")) {
+                cli.add(exportPath.toString());
+            } else {
+                cli.add(arg);
+            }
+        }
+
+        return cli;
+    }
+
     //----------------//
-    // evaluateScript //
+    // retrieveExport //
     //----------------//
     /**
-     * Evaluate the plugin script to get precise information built.
+     * Try to retrieve an up-to-date export file
+     *
+     * @param book the related book
+     * @return path to suitable export, or null
      */
-    private void evaluateScript ()
-            throws JavascriptUnavailableException
+    private Path retrieveExport (Book book)
     {
-        ScriptEngineManager mgr = new ScriptEngineManager();
-        engine = mgr.getEngineByName("JavaScript");
+        try {
+            // Make sure we have the export file
+            final Path exportPathSansExt = BookManager.getDefaultExportPathSansExt(book);
 
-        if (engine != null) {
-            try {
-                InputStream is = new FileInputStream(file);
-                Reader reader = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
-                engine.eval(reader);
+            if (exportPathSansExt == null) {
+                logger.warn("Could not get export path");
 
-                // Retrieve information from script
-                title = (String) engine.get("pluginTitle");
-                tip = (String) engine.get("pluginTip");
-            } catch (Exception ex) {
-                logger.warn("{} error", this, ex);
+                return null;
             }
-        } else {
-            throw new JavascriptUnavailableException();
+
+            final Path exportPath = Paths.get(exportPathSansExt + BookManager.getExportExtension());
+
+            if (Files.exists(exportPath)) {
+                FileTime exportTime = Files.getLastModifiedTime(exportPath);
+
+                if (!book.isModified()) {
+                    Path bookPath = book.getBookPath();
+
+                    if ((bookPath != null) && Files.exists(bookPath)) {
+                        FileTime bookTime = Files.getLastModifiedTime(bookPath);
+
+                        if (exportTime.compareTo(bookTime) > 0) {
+                            return exportPath; // We can use this export file
+                        }
+                    }
+                }
+            }
+
+            book.export();
+
+            if (Files.exists(exportPath)) {
+                return exportPath;
+            }
+
+            logger.warn("Cannot find file {}", exportPath);
+        } catch (Exception ex) {
+            logger.warn("Error getting export file " + ex, ex);
         }
+
+        return null;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
