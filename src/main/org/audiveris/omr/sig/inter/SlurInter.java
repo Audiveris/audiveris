@@ -45,6 +45,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
+import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Jaxb;
@@ -53,6 +54,7 @@ import org.audiveris.omr.util.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
@@ -299,10 +301,22 @@ public class SlurInter
     public boolean canExtend (SlurInter prevSlur)
     {
         // Retrieve prev staff, using the left note head of the prev slur
-        Staff prevStaff = prevSlur.getHead(LEFT).getStaff();
+        HeadInter prevHead = prevSlur.getHead(LEFT);
+
+        if (prevHead == null) {
+            return false;
+        }
+
+        Staff prevStaff = prevHead.getStaff();
 
         // Retrieve this staff, using the right note head of this slur
-        Staff thisStaff = getHead(RIGHT).getStaff();
+        HeadInter head = getHead(RIGHT);
+
+        if (head == null) {
+            return false;
+        }
+
+        Staff thisStaff = head.getStaff();
 
         // Check that part-based staff indices are the same
         if (prevStaff.getIndexInPart() != thisStaff.getIndexInPart()) {
@@ -403,6 +417,22 @@ public class SlurInter
                 slur.remove();
             }
         }
+    }
+
+    //----------//
+    // getColor //
+    //----------//
+    @Override
+    public Color getColor ()
+    {
+        // Check if slur is connected (or extened) on both ends
+        for (HorizontalSide side : HorizontalSide.values()) {
+            if ((this.getHead(side) == null) && (this.getExtension(side) == null)) {
+                return Colors.INTER_INVALID;
+            }
+        }
+
+        return super.getColor();
     }
 
     //----------//

@@ -46,6 +46,7 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -69,6 +70,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.ui.Colors;
 
 /**
  * Class {@code AbstractInter} is the abstract implementation basis for {@link Inter}
@@ -252,7 +254,7 @@ public abstract class AbstractInter
     @Override
     public boolean contains (Point point)
     {
-        Rectangle bounds = getBounds();
+        getBounds();
 
         if ((bounds != null) && !bounds.contains(point)) {
             return false;
@@ -272,6 +274,11 @@ public abstract class AbstractInter
                     return true;
                 }
             }
+        }
+
+        if (isManual()) {
+            // Here we use bounds only...
+            return true; // Audaces fortuna juvat!
         }
 
         return false;
@@ -455,6 +462,19 @@ public abstract class AbstractInter
         Rectangle bounds = getBounds();
 
         return new Point((bounds.x + bounds.width) - 1, bounds.y + (bounds.height / 2));
+    }
+
+    //----------//
+    // getColor //
+    //----------//
+    @Override
+    public Color getColor ()
+    {
+        if (shape != null) {
+            return shape.getColor();
+        } else {
+            return Colors.SHAPE_UNKNOWN;
+        }
     }
 
     //--------------------//

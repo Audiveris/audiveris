@@ -763,21 +763,27 @@ public class InterController
      */
     private Step firstImpactedStep (UITaskList seq)
     {
-        InterTask interTask = seq.getFirstInterTask();
+        Inter inter = null;
+        final InterTask interTask = seq.getFirstInterTask();
 
-        if (interTask == null) {
+        if (interTask != null) {
+            inter = interTask.inter;
+        } else {
             // seq contains only relation(s) and no inter
-            logger.info("TODO: No inter in UI task sequence {}", seq);
+            RelationTask relationTask = seq.getFirstRelationTask();
 
-            return null;
+            if (relationTask != null) {
+                inter = relationTask.getSource();
+            }
         }
 
-        Inter inter = interTask.inter;
-        Class interClass = inter.getClass();
+        if (inter != null) {
+            Class interClass = inter.getClass();
 
-        for (Step step : Step.values()) {
-            if (step.impactingInterClasses().contains(interClass)) {
-                return step;
+            for (Step step : Step.values()) {
+                if (step.impactingInterClasses().contains(interClass)) {
+                    return step;
+                }
             }
         }
 

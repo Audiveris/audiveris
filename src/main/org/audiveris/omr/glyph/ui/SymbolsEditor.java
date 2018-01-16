@@ -32,9 +32,11 @@ import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.ui.SectionBoard;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.score.ui.EditorMenu;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -47,7 +49,9 @@ import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.Relations;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
@@ -64,9 +68,9 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
-import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
+import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -80,10 +84,12 @@ import java.awt.Rectangle;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import java.awt.Stroke;
+import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -317,6 +323,10 @@ public class SymbolsEditor
         private final PixelCount measureMargin = new PixelCount(
                 10,
                 "Number of pixels as margin when highlighting a measure");
+
+        private final Scale.Fraction minVectorLength = new Scale.Fraction(
+                0.5,
+                "Minimum length for significant vector");
     }
 
     //--------//
@@ -329,6 +339,12 @@ public class SymbolsEditor
 
         /** Currently highlighted slot, if any. */
         private Slot highlightedSlot;
+
+        /** Current vector. */
+        private Vector vector;
+
+        /** Threshold for relevant vector ength. */
+        private final double minVectorLengthSq;
 
         //~ Constructors ---------------------------------------------------------------------------
         private MyView (GlyphIndex glyphIndex)
@@ -345,6 +361,9 @@ public class SymbolsEditor
             for (Lag lag : lags) {
                 lag.getEntityService().subscribeStrongly(EntityListEvent.class, this);
             }
+
+            double minLg = sheet.getScale().toPixels(constants.minVectorLength);
+            minVectorLengthSq = minLg * minLg;
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -355,6 +374,8 @@ public class SymbolsEditor
         public void contextAdded (Point pt,
                                   MouseMovement movement)
         {
+            vector = null;
+
             if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
                 // Glyph or Inter modes
                 setFocusLocation(new Rectangle(pt), movement, CONTEXT_ADD);
@@ -383,6 +404,8 @@ public class SymbolsEditor
         public void contextSelected (Point pt,
                                      MouseMovement movement)
         {
+            vector = null;
+
             if (viewParams.getSelectionMode() != SelectionMode.MODE_SECTION) {
                 // Glyph or Inter mode
                 setFocusLocation(new Rectangle(pt), movement, CONTEXT_INIT);
@@ -437,35 +460,6 @@ public class SymbolsEditor
             //            showFocusLocation(rect, false);
         }
 
-        //---------//
-        // onEvent //
-        //---------//
-        /**
-         * Handling of specific events: Location and SectionSet.
-         *
-         * @param event the notified event
-         */
-        @Override
-        public void onEvent (UserEvent event)
-        {
-            try {
-                // Ignore RELEASING
-                if (event.movement == MouseMovement.RELEASING) {
-                    return;
-                }
-
-                // Default nest view behavior (locationEvent)
-                super.onEvent(event);
-
-                //
-                //                if (event instanceof SectionSetEvent) { // SectionSet => Compound
-                //                    handleEvent((SectionSetEvent) event);
-                //                }
-            } catch (Exception ex) {
-                logger.warn(getClass().getName() + " onEvent error", ex);
-            }
-        }
-
         //------------//
         // pointAdded //
         //------------//
@@ -473,6 +467,8 @@ public class SymbolsEditor
         public void pointAdded (Point pt,
                                 MouseMovement movement)
         {
+            vector = null;
+
             // Cancel slot highlighting
             highLight(null);
 
@@ -486,13 +482,45 @@ public class SymbolsEditor
         public void pointSelected (Point pt,
                                    MouseMovement movement)
         {
+            super.pointSelected(pt, movement);
+
             // Cancel slot highlighting
             highLight(null);
 
             // Request focus to allow key handling
             requestFocusInWindow();
 
-            super.pointSelected(pt, movement);
+            // Handle vector
+            if (null != movement) {
+                switch (movement) {
+                case PRESSING:
+                    vector = tryVector(pt); // Starting vector, perhaps null
+
+                    break;
+
+                case DRAGGING:
+
+                    if (vector != null) {
+                        vector.extendTo(pt); // Extension
+                        ///vector.handle(false); // Dry run?
+                    }
+
+                    break;
+
+                case RELEASING:
+
+                    if ((vector != null)) {
+                        vector.process(true); // Handle end of vector
+                    }
+
+                    vector = null; // This is the end
+
+                    break;
+
+                default:
+                    break;
+                }
+            }
         }
 
         //--------//
@@ -646,6 +674,13 @@ public class SymbolsEditor
                             highlightedSlot);
                 }
             }
+
+            // Vector?
+            if (vector != null) {
+                g.setColor(Color.BLACK);
+                UIUtil.setAbsoluteDashedStroke(g, 1f);
+                g.draw(vector.line);
+            }
         }
 
         //---------------//
@@ -657,6 +692,145 @@ public class SymbolsEditor
             if (pageMenu.updateMenu(new Rectangle(rect))) {
                 JPopupMenu popup = pageMenu.getPopup();
                 popup.show(this, getZoom().scaled(pt.x) + 50, getZoom().scaled(pt.y) + 50);
+            }
+        }
+
+        //-----------//
+        // tryVector //
+        //-----------//
+        /**
+         * Try to create a vector, from just a starting point, which requires to find
+         * an inter at this location.
+         *
+         * @param p1 starting point
+         * @return the created vector, if any Inter was found at p1 location
+         */
+        private Vector tryVector (Point p1)
+        {
+            // Look for required start inter
+            final List<Inter> starts = new ArrayList<Inter>(
+                    Entities.containingEntities(sheet.getInterIndex().iterator(), p1));
+
+            if (starts.isEmpty()) {
+                return null;
+            }
+
+            Collections.sort(starts, Inters.membersFirst);
+
+            return new Vector(p1, starts.get(0));
+        }
+
+        //~ Inner Classes --------------------------------------------------------------------------
+        //--------//
+        // Vector //
+        //--------//
+        /**
+         * Class {@code Vector} represents a dynamic vector from one starting inter to a
+         * potential stopping inter, in order to finally set a relation between them.
+         */
+        private class Vector
+        {
+            //~ Instance fields --------------------------------------------------------------------
+
+            /** Line from starting point to current stopping point. */
+            private final Line2D line;
+
+            /** Starting inter, needed to initially create a vector. */
+            private final Inter start;
+
+            /** Current stopping inter, if any. */
+            private Inter stop;
+
+            //~ Constructors -----------------------------------------------------------------------
+            /**
+             * Create a useful vector.
+             *
+             * @param p1    starting point
+             * @param start starting inter (cannot be null)
+             */
+            public Vector (Point p1,
+                           Inter start)
+            {
+                line = new Line2D.Double(p1, p1);
+                this.start = start;
+            }
+
+            //~ Methods ----------------------------------------------------------------------------
+            @Override
+            public String toString ()
+            {
+                StringBuilder sb = new StringBuilder("Vector{");
+                sb.append("[").append(line.getX1()).append(",").append(line.getY1()).append("]");
+                sb.append(" start:").append(start);
+
+                if (stop != null) {
+                    sb.append(" stop:").append(stop);
+                }
+
+                sb.append("}");
+
+                return sb.toString();
+            }
+
+            /**
+             * Modify vector stopping point.
+             *
+             * @param pt new stopping point
+             */
+            private void extendTo (Point pt)
+            {
+                line.setLine(line.getP1(), pt);
+            }
+
+            /**
+             * Process the vector into a relation.
+             *
+             * @param doit true to actually set the relation, false for just a dry run
+             */
+            private void process (boolean doit)
+            {
+                final Point p2 = PointUtil.rounded(line.getP2());
+                final List<Inter> stops = new ArrayList<Inter>(
+                        Entities.containingEntities(sheet.getInterIndex().iterator(), p2));
+                stops.remove(start); // No looping vector!
+
+                if (stops.isEmpty()) {
+                    return;
+                }
+
+                Collections.sort(stops, Inters.membersFirst);
+                stop = stops.get(0);
+                logger.debug("stop: {}", stop);
+
+                for (boolean reverse : new boolean[]{false, true}) {
+                    final Inter source = reverse ? stop : start;
+                    final Inter target = reverse ? start : stop;
+                    final Set<Class<? extends Relation>> sugs = Relations.suggestedRelationsBetween(
+                            source,
+                            target);
+
+                    if (!sugs.isEmpty()) {
+                        logger.debug("suggestions: {}", sugs);
+
+                        if (doit) {
+                            try {
+                                Class<? extends Relation> relationClass = sugs.iterator().next();
+                                SIGraph sig = source.getSig();
+                                Sheet sheet = sig.getSystem().getSheet();
+                                InterController interController = sheet.getInterController();
+                                Relation relation = relationClass.newInstance();
+                                relation.setManual(true);
+                                interController.link(sig, source, target, relation);
+
+                                return; // Normal exit
+                            } catch (Exception ex) {
+                                logger.warn("Linking error " + ex, ex);
+                            }
+                        } else {
+                            //TODO: Draw a dummy relation, perhaps using some special color?
+                        }
+                    }
+                }
             }
         }
     }

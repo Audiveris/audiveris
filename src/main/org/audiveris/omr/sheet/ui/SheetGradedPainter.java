@@ -167,7 +167,7 @@ public class SheetGradedPainter
         protected void setColor (Inter inter)
         {
             // Shape base color
-            final Color base = inter.getShape().getColor();
+            final Color base = inter.getColor();
 
             // Prefer contextual grade over intrinsic grade when available
             final double grade = inter.getBestGrade();

@@ -324,17 +324,55 @@ public class StubsController
 
         if (stub.hasSheet()) {
             final Sheet sheet = stub.getSheet();
-            sheet.getLocationService().dumpSubscribers();
+
+            if (sheet.getLocationService() != null) {
+                sheet.getLocationService().dumpSubscribers();
+            } else {
+                logger.info("No locationService");
+            }
+
+            if (sheet.getPicture() != null) {
+                if (sheet.getPicture().getPixelService() != null) {
+                    sheet.getPicture().getPixelService().dumpSubscribers();
+                } else {
+                    logger.info("No pixelService");
+                }
+            }
 
             for (Lag lag : sheet.getLagManager().getAllLags()) {
                 if (lag != null) {
-                    lag.getEntityService().dumpSubscribers();
-                    lag.getRunService().dumpSubscribers();
+                    if (lag.getEntityService() != null) {
+                        lag.getEntityService().dumpSubscribers();
+                    }
+
+                    if (lag.getRunService() != null) {
+                        lag.getRunService().dumpSubscribers();
+                    }
+                }
+            }
+
+            if (sheet.getFilamentIndex() != null) {
+                if (sheet.getFilamentIndex().getEntityService() != null) {
+                    sheet.getFilamentIndex().getEntityService().dumpSubscribers();
+                } else {
+                    logger.info("No filamentService");
                 }
             }
 
             if (sheet.getGlyphIndex() != null) {
-                sheet.getGlyphIndex().getEntityService().dumpSubscribers();
+                if (sheet.getGlyphIndex().getEntityService() != null) {
+                    sheet.getGlyphIndex().getEntityService().dumpSubscribers();
+                } else {
+                    logger.info("No glyphService");
+                }
+            }
+
+            if (sheet.getInterIndex() != null) {
+                if (sheet.getInterIndex().getEntityService() != null) {
+                    sheet.getInterIndex().getEntityService().dumpSubscribers();
+                } else {
+                    logger.info("No interService");
+                }
             }
         }
     }

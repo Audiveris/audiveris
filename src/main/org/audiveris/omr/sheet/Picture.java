@@ -175,7 +175,7 @@ public class Picture
      * Service object where gray level of pixel is to be written to when so asked for
      * by the onEvent() method.
      */
-    private final SelectionService levelService;
+    final SelectionService pixelService;
 
     /** The initial (gray-level) image, if any. */
     private BufferedImage initialImage;
@@ -191,7 +191,7 @@ public class Picture
                     RunTable binaryTable)
     {
         initTransients(sheet);
-        levelService = null;
+        pixelService = null;
 
         width = binaryTable.getWidth();
         height = binaryTable.getHeight();
@@ -208,16 +208,16 @@ public class Picture
      *
      * @param sheet        the related sheet
      * @param image        the provided original image
-     * @param levelService service where pixel events are to be written
-     * @throws ImageFormatException  if the image format is unsupported
+     * @param pixelService service where pixel events are to be written
+     * @throws ImageFormatException if the image format is unsupported
      */
     public Picture (Sheet sheet,
                     BufferedImage image,
-                    SelectionService levelService)
+                    SelectionService pixelService)
             throws ImageFormatException
     {
         initTransients(sheet);
-        this.levelService = levelService;
+        this.pixelService = pixelService;
 
         // Make sure format, colors, etc are OK for us
         ///ImageUtil.printInfo(image, "Original image");
@@ -238,7 +238,7 @@ public class Picture
         this.sheet = null;
         this.width = 0;
         this.height = 0;
-        this.levelService = null;
+        this.pixelService = null;
         logger.debug("Picture unmarshalled by JAXB");
     }
 
@@ -496,6 +496,17 @@ public class Picture
         }
     }
 
+    //-----------------//
+    // getLevelService //
+    //-----------------//
+    /**
+     * @return the pixelService
+     */
+    public SelectionService getPixelService ()
+    {
+        return pixelService;
+    }
+
     //---------//
     // getName //
     //---------//
@@ -710,7 +721,7 @@ public class Picture
                 }
             }
 
-            levelService.publish(new PixelEvent(this, event.hint, event.movement, level));
+            pixelService.publish(new PixelEvent(this, event.hint, event.movement, level));
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }

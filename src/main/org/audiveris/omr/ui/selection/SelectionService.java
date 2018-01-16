@@ -201,13 +201,6 @@ public class SelectionService
     public String toString ()
     {
         return name;
-
-        //        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        //        sb.append("{");
-        //        sb.append(name);
-        //        sb.append("}");
-        //
-        //        return sb.toString();
     }
 
     //-------------//

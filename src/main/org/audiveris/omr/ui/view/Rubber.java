@@ -24,13 +24,17 @@ package org.audiveris.omr.ui.view;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.Colors;
+
 import static org.audiveris.omr.ui.selection.MouseMovement.*;
 import static org.audiveris.omr.ui.util.UIPredicates.*;
+
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -41,6 +45,7 @@ import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.Line2D;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JComponent;
@@ -127,6 +132,9 @@ public class Rubber
     // The normalized unzoomed rubber rectangle, inside the component, with
     // x & y at the top left and positive width & height.
     private Rectangle rect;
+
+    // Normalized unzoomed vector
+    private Line2D vector;
 
     // To ease debugging
     private final int id;
@@ -465,6 +473,23 @@ public class Rubber
                 Rectangle bounds = component.getBounds(null);
                 g.drawLine(x, 0, x, bounds.height); // Vertical
                 g.drawLine(0, y, bounds.width, y); // Horizontal
+            }
+
+            // Vector
+            if (vector != null) {
+                Line2D v = new Line2D.Double(
+                        vector.getX1(),
+                        vector.getY1(),
+                        vector.getX2(),
+                        vector.getY2());
+
+                if (zoom != null) {
+                    zoom.scale(v);
+                }
+
+                final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+                g.setColor(Color.BLACK);
+                g.draw(v);
             }
 
             g.dispose();

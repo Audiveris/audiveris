@@ -96,7 +96,7 @@ public class EntityService<E extends Entity>
                           SelectionService locationService,
                           Class[] eventsAllowed)
     {
-        super(index.getName(), eventsAllowed);
+        super(index.getName() + "Service", eventsAllowed);
 
         this.index = index;
         this.locationService = locationService;
@@ -209,7 +209,7 @@ public class EntityService<E extends Entity>
             } else if (event instanceof IdEvent) {
                 handleEvent((IdEvent) event); // Id => indexed entity
             } else if (event instanceof EntityListEvent) {
-                handleEvent((EntityListEvent) event); // List => display contour of last entity
+                handleEvent((EntityListEvent) event); // List => display contour of (first) entity
             }
         } catch (ConcurrentModificationException cme) {
             // This can happen because of processing being done on EntityIndex...
@@ -234,7 +234,8 @@ public class EntityService<E extends Entity>
         MouseMovement movement = locationEvent.movement;
         Rectangle rect = locationEvent.getData();
 
-        if (!hint.isLocation() && !hint.isContext()) {
+        ///if (!hint.isLocation() && !hint.isContext()) {
+        if (!hint.isLocation()) {
             return;
         }
 

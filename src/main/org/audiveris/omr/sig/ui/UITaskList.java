@@ -88,6 +88,17 @@ public class UITaskList
         return null;
     }
 
+    public RelationTask getFirstRelationTask ()
+    {
+        for (UITask task : getTasks()) {
+            if (task instanceof RelationTask) {
+                return (RelationTask) task;
+            }
+        }
+
+        return null;
+    }
+
     public UITask getFirstTask ()
     {
         return list.get(0);

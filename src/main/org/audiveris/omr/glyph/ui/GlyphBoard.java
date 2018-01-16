@@ -134,27 +134,6 @@ public class GlyphBoard
         }
     }
 
-    //    //--------------//
-    //    // stateChanged //
-    //    //--------------//
-    //    /**
-    //     * CallBack triggered by a change in one of the spinners.
-    //     *
-    //     * @param e the change event, this allows to retrieve the originating spinner
-    //     */
-    //    @Override
-    //    public void stateChanged (ChangeEvent e)
-    //    {
-    //        JSpinner spinner = (JSpinner) e.getSource();
-    //
-    //        if (spinner == groupSpinner) {
-    //            //            getSelectionService().publish(
-    //            //                    new GroupEvent(this, SelectionHint.ENTITY_INIT, null, (Group) spinner.getValue()));
-    //        } else {
-    //            super.stateChanged(e);
-    //        }
-    //    }
-    //
     //---------------//
     // getFormLayout //
     //---------------//
@@ -168,7 +147,7 @@ public class GlyphBoard
     // defineLayout //
     //--------------//
     /**
-     * Define the layout for common fields of all GlyphBoard classes
+     * Define the layout for common fields of all GlyphBoard classes.
      */
     private void defineLayout ()
     {

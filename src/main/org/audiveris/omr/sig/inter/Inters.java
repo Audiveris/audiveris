@@ -37,6 +37,31 @@ public abstract class Inters
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
+     * Comparator to put members first and ensembles last.
+     */
+    public static final Comparator<Inter> membersFirst = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter o1,
+                            Inter o2)
+        {
+            if (o1 instanceof InterEnsemble) {
+                if (o2 instanceof InterEnsemble) {
+                    return 0;
+                }
+
+                return 1;
+            } else {
+                if (o2 instanceof InterEnsemble) {
+                    return -1;
+                }
+
+                return 0;
+            }
+        }
+    };
+
+    /**
      * For comparing interpretations by id.
      */
     public static final Comparator<Inter> byId = new Comparator<Inter>()

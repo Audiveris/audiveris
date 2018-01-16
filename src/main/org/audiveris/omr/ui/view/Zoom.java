@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -224,6 +225,23 @@ public class Zoom
         rect.y = scaled(rect.y);
         rect.width = scaled(rect.width);
         rect.height = scaled(rect.height);
+    }
+
+    //-------//
+    // scale //
+    //-------//
+    /**
+     * Scale provided line
+     *
+     * @param line the line to be scaled
+     */
+    public void scale (Line2D line)
+    {
+        line.setLine(
+                scaled(line.getX1()),
+                scaled(line.getY1()),
+                scaled(line.getX2()),
+                scaled(line.getY2()));
     }
 
     //--------//

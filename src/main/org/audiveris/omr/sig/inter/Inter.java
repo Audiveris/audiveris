@@ -33,6 +33,7 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
@@ -133,6 +134,13 @@ public interface Inter
      * @return right point at mid height
      */
     Point getCenterRight ();
+
+    /**
+     * Report the color to use, depending on inter shape and status.
+     *
+     * @return the color to display inter
+     */
+    Color getColor ();
 
     /**
      * Report the contextual grade, (0..1 probability) computed for interpretation.

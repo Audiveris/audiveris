@@ -178,7 +178,7 @@ public class SampleBrowser
         this.repository = repository;
         sampleContext = new SampleContext(repository);
 
-        sampleService = new EntityService<Sample>("sample service", null, eventsAllowed);
+        sampleService = new EntityService<Sample>("sampleService", null, eventsAllowed);
         sampleContext.connect(sampleService);
         sampleModel = new SampleModel(repository, sampleService);
         sampleController = new SampleController(sampleModel);

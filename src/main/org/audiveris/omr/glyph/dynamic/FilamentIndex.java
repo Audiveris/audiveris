@@ -124,7 +124,7 @@ public class FilamentIndex
     @Override
     public String getName ()
     {
-        return "filaments";
+        return "filamentIndex";
     }
 
     //----------//

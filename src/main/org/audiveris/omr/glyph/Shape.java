@@ -85,7 +85,7 @@ public enum Shape
     //
     // Sets --------------------------------------------------------------------
     //
-    DOT_set("Dot set", new Color(0x0cccc)),
+    DOT_set("Dot set", new Color(0xcccccc)),
     HW_REST_set("Half & Whole Rest set"),
 
     //
@@ -326,7 +326,7 @@ public enum Shape
     BEAM_SMALL("Small beam for cue notes"),
     BEAM_HOOK("Hook of a beam attached on one stem"),
     BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
-    SLUR("Slur tying notes", new Color(0xff4444)),
+    SLUR("Slur tying notes", new Color(0x806040)),
     //
     // Key signatures ----------------------------------------------------------
     //

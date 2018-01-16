@@ -114,7 +114,7 @@ public class InterIndex
     @Override
     public String getName ()
     {
-        return "inters";
+        return "interIndex";
     }
 
     //---------//

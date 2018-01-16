@@ -230,7 +230,7 @@ public class GlyphIndex
     @Override
     public String getName ()
     {
-        return "weakGlyphs";
+        return "glyphIndex";
     }
 
     //------------------//
