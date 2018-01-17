@@ -26,6 +26,9 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.ui.selection.EntityListEvent;
+import org.audiveris.omr.ui.selection.MouseMovement;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 
@@ -91,7 +94,7 @@ public class InterListMenu
     //--------------------//
     // insertDeletionItem //
     //--------------------//
-    private void insertDeletionItem (SystemInfo system,
+    private void insertDeletionItem (final SystemInfo system,
                                      final List<Inter> sysInters)
     {
         JMenuItem item = new JMenuItem(
@@ -103,6 +106,20 @@ public class InterListMenu
             public void actionPerformed (ActionEvent e)
             {
                 sheet.getInterController().removeInters(sysInters);
+            }
+        });
+        item.addMouseListener(
+                new AbstractMouseListener()
+        {
+            @Override
+            public void mouseEntered (MouseEvent e)
+            {
+                system.getSheet().getInterIndex().getEntityService().publish(
+                        new EntityListEvent<Inter>(
+                                this,
+                                SelectionHint.ENTITY_INIT,
+                                MouseMovement.PRESSING,
+                                sysInters));
             }
         });
         this.add(item);

@@ -44,6 +44,7 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.ui.PixelBoard;
+import org.audiveris.omr.sheet.ui.SelectionPainter;
 import org.audiveris.omr.sheet.ui.SheetGradedPainter;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
@@ -623,43 +624,49 @@ public class SymbolsEditor
                     }
                 }
 
-                // Selected inter
+                // Selected inter(s)
                 InterService interService = (InterService) sheet.getInterIndex().getEntityService();
-                Inter inter = interService.getSelectedEntity();
+                List<Inter> inters = interService.getSelectedEntityList();
 
-                if ((inter != null) && !inter.isRemoved()) {
-                    // Inter: attachments for selected inter, if any
-                    Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-                    inter.renderAttachments(g);
-                    g.setStroke(oldStroke);
+                if (inters != null) {
+                    SelectionPainter painter = new SelectionPainter(sheet, g);
 
-                    // Inter: main links
-                    SIGraph sig = inter.getSig();
+                    for (Inter inter : inters) {
+                        if ((inter != null) && !inter.isRemoved()) {
+                            // Highlight selected inter
+                            painter.render(inter);
 
-                    if (sig != null) {
-                        Set<Relation> supports = sig.getRelations(inter, Support.class);
+                            // Inter: attachments for selected inter, if any
+                            Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+                            inter.renderAttachments(g);
+                            g.setStroke(oldStroke);
 
-                        if (!supports.isEmpty()) {
-                            SheetGradedPainter painter = new SheetGradedPainter(sheet, g);
+                            // Inter: main links
+                            SIGraph sig = inter.getSig();
 
-                            for (Relation rel : supports) {
-                                Inter opp = sig.getOppositeInter(inter, rel);
-                                painter.drawSupport(inter, opp, rel.getClass(), false);
+                            if (sig != null) {
+                                Set<Relation> supports = sig.getRelations(inter, Support.class);
+
+                                if (!supports.isEmpty()) {
+                                    for (Relation rel : supports) {
+                                        Inter opp = sig.getOppositeInter(inter, rel);
+                                        painter.drawSupport(inter, opp, rel.getClass(), false);
+                                    }
+                                }
+                            }
+
+                            // Suggested support?
+                            InterController interController = sheet.getInterController();
+                            RelationClassAction rca = interController.getRelationClassAction();
+
+                            if (rca != null) {
+                                painter.drawSupport(
+                                        rca.getSource(),
+                                        rca.getTarget(),
+                                        rca.getRelationClass(),
+                                        true);
                             }
                         }
-                    }
-
-                    // Suggested support?
-                    InterController interController = sheet.getInterController();
-                    RelationClassAction rca = interController.getRelationClassAction();
-
-                    if (rca != null) {
-                        SheetGradedPainter painter = new SheetGradedPainter(sheet, g);
-                        painter.drawSupport(
-                                rca.getSource(),
-                                rca.getTarget(),
-                                rca.getRelationClass(),
-                                true);
                     }
                 }
             }

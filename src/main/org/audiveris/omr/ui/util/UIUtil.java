@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FileDialog;
@@ -84,6 +85,20 @@ public abstract class UIUtil
     };
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------------//
+    // complementaryColor //
+    //--------------------//
+    /**
+     * Report the complementary of provided color.
+     *
+     * @param color provided color
+     * @return the reverse color
+     */
+    public static Color complementaryColor (Color color)
+    {
+        return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+    }
+
     //------------------//
     // directoryChooser //
     //------------------//
