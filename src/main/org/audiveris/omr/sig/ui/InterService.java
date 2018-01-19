@@ -104,12 +104,11 @@ public class InterService
      * @param locationEvent
      */
     @Override
-    protected void handleEvent (LocationEvent locationEvent)
+    protected void handleLocationEvent (LocationEvent locationEvent)
     {
-        // Which selection mode?
-        ///if (ViewParameters.getInstance().getSelectionMode() != ViewParameters.SelectionMode.MODE_INTER) {
+        // Search only when in MODE_INTER or MODE_GLYPH
         if (ViewParameters.getInstance().getSelectionMode() != ViewParameters.SelectionMode.MODE_SECTION) {
-            super.handleEvent(locationEvent);
+            super.handleLocationEvent(locationEvent);
         }
     }
 

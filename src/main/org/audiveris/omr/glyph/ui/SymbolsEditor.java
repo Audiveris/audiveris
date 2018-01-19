@@ -67,9 +67,7 @@ import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
-
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
-
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.Navigable;
@@ -81,10 +79,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
-
 import java.awt.Stroke;
 import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
@@ -703,15 +699,9 @@ public class SymbolsEditor
         private Vector tryVector (Point p1)
         {
             // Look for required start inter
-            final List<Inter> starts = sheet.getInterIndex().getContainingEntities(p1);
+            final Inter start = sheet.getInterIndex().getEntityService().getSelectedEntity();
 
-            if (starts.isEmpty()) {
-                return null;
-            }
-
-            Collections.sort(starts, Inters.membersFirst);
-
-            return new Vector(p1, starts.get(0));
+            return (start != null) ? new Vector(p1, start) : null;
         }
 
         //~ Inner Classes --------------------------------------------------------------------------

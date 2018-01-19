@@ -205,7 +205,7 @@ public class EntityService<E extends Entity>
 
             ///logger.info("{} {}", this.getClass().getSimpleName(), event);
             if (event instanceof LocationEvent) {
-                handleEvent((LocationEvent) event); // Location => enclosed/enclosing entities(s)
+                handleLocationEvent((LocationEvent) event); // Location => enclosed/enclosing entities(s)
             } else if (event instanceof IdEvent) {
                 handleEvent((IdEvent) event); // Id => indexed entity
             } else if (event instanceof EntityListEvent) {
@@ -232,6 +232,48 @@ public class EntityService<E extends Entity>
         }
     }
 
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
+    /**
+     * Interest in EntityList => location contour of "selected" entity
+     *
+     * @param EntityListEvent
+     */
+    protected void handleEntityListEvent (EntityListEvent<E> listEvent)
+    {
+        final SelectionHint hint = listEvent.hint;
+
+        if (hint == ENTITY_INIT) {
+            final E entity = listEvent.getEntity();
+
+            if (entity != null) {
+                if (locationService != null) {
+                    locationService.publish(
+                            new LocationEvent(this, hint, listEvent.movement, entity.getBounds()));
+                }
+
+                // Use this entity to start a basket
+                basket.clear();
+                basket.add(entity);
+            }
+        }
+    }
+
+    //---------------//
+    // handleIdEvent //
+    //---------------//
+    /**
+     * Interest in Id => entity
+     *
+     * @param idEvent
+     */
+    protected void handleEvent (IdEvent idEvent)
+    {
+        final E entity = index.getEntity(idEvent.getData());
+        publish(new EntityListEvent<E>(this, idEvent.hint, idEvent.movement, entity));
+    }
+
     //---------------------//
     // handleLocationEvent //
     //---------------------//
@@ -240,7 +282,7 @@ public class EntityService<E extends Entity>
      *
      * @param locationEvents
      */
-    protected void handleEvent (LocationEvent locationEvent)
+    protected void handleLocationEvent (LocationEvent locationEvent)
     {
         SelectionHint hint = locationEvent.hint;
         MouseMovement movement = locationEvent.movement;
@@ -250,19 +292,8 @@ public class EntityService<E extends Entity>
             return;
         }
 
-        List<E> selection = getSelectedEntityList();
+        final List<E> selection = getSelectedEntityList();
 
-        //
-        //        if (getName().equals("glyphIndexService")) {
-        //            logger.info(
-        //                    "{} hint:{} rect:{} basket:{} selection:{}",
-        //                    String.format("%25s", getName()),
-        //                    hint,
-        //                    rect,
-        //                    basket,
-        //                    selection);
-        //        }
-        //
         if (hint.isLocation() || (hint.isContext() && selection.isEmpty())) {
             if ((rect.width > 0) && (rect.height > 0)) {
                 // Non-degenerated rectangle: look for contained entities
@@ -317,48 +348,6 @@ public class EntityService<E extends Entity>
 
                 // Publish basket
                 publish(new EntityListEvent<E>(this, null, movement, basket));
-            }
-        }
-    }
-
-    //---------------//
-    // handleIdEvent //
-    //---------------//
-    /**
-     * Interest in Id => entity
-     *
-     * @param idEvent
-     */
-    protected void handleEvent (IdEvent idEvent)
-    {
-        final E entity = index.getEntity(idEvent.getData());
-        publish(new EntityListEvent<E>(this, idEvent.hint, idEvent.movement, entity));
-    }
-
-    //-----------------------//
-    // handleEntityListEvent //
-    //-----------------------//
-    /**
-     * Interest in EntityList => location contour of "selected" entity
-     *
-     * @param EntityListEvent
-     */
-    protected void handleEntityListEvent (EntityListEvent<E> listEvent)
-    {
-        final SelectionHint hint = listEvent.hint;
-
-        if (hint == ENTITY_INIT) {
-            final E entity = listEvent.getEntity();
-
-            if (entity != null) {
-                if (locationService != null) {
-                    locationService.publish(
-                            new LocationEvent(this, hint, listEvent.movement, entity.getBounds()));
-                }
-
-                // Use this entity to start a basket
-                basket.clear();
-                basket.add(entity);
             }
         }
     }

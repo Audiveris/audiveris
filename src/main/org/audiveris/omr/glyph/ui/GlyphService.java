@@ -103,10 +103,11 @@ public class GlyphService
      * @param locationEvent
      */
     @Override
-    protected void handleEvent (LocationEvent locationEvent)
+    protected void handleLocationEvent (LocationEvent locationEvent)
     {
+        // Search only when in MODE_GLYPH or MODE_INTER
         if (ViewParameters.getInstance().getSelectionMode() != SelectionMode.MODE_SECTION) {
-            super.handleEvent(locationEvent);
+            super.handleLocationEvent(locationEvent);
 
             if (basket.size() > 1) {
                 // Build compound on-the-fly and publish it (no impact on basket)
