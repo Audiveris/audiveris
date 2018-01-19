@@ -227,7 +227,7 @@ public class EntityBoard<E extends Entity>
             if (event instanceof EntityListEvent) {
                 // Display entity parameters (while preventing circular updates)
                 selfUpdating = true;
-                handleEvent((EntityListEvent<E>) event);
+                handleEntityListEvent((EntityListEvent<E>) event);
                 selfUpdating = false;
             }
         } catch (Exception ex) {
@@ -351,21 +351,21 @@ public class EntityBoard<E extends Entity>
         }
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
     /**
-     * Interest in EntityList
+     * Interest in EntityList for Vip, Dump, Id fields
      *
-     * @param EntityListEvent
+     * @param listEvent EntityListEvent
      */
-    private void handleEvent (EntityListEvent<E> listEvent)
+    protected void handleEntityListEvent (EntityListEvent<E> listEvent)
     {
         // Count
         final List<E> entities = listEvent.getData();
 
         if (count != null) {
-            if ((entities != null) && !entities.isEmpty()) {
+            if (!entities.isEmpty()) {
                 count.setText(Integer.toString(entities.size()));
             } else {
                 count.setText("");

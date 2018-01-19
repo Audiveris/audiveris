@@ -30,23 +30,16 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.IdEvent;
 import org.audiveris.omr.ui.selection.LocationEvent;
-import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
-import static org.audiveris.omr.ui.selection.SelectionHint.*;
 import org.audiveris.omr.ui.selection.SelectionService;
-import org.audiveris.omr.ui.selection.UserEvent;
-import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.EntityIndex;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Class {@code GlyphService} is an EntityService for glyphs.
@@ -65,10 +58,6 @@ public class GlyphService
         IdEvent.class, EntityListEvent.class
     };
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Manual and incremental user selection of glyphs. */
-    private final Set<Glyph> basket = new LinkedHashSet<Glyph>();
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code GlyphService} object.
@@ -83,135 +72,51 @@ public class GlyphService
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
+    //-----------------//
+    // getMostRelevant //
+    //-----------------//
     @Override
-    public void onEvent (UserEvent event)
+    protected Glyph getMostRelevant (List<Glyph> list)
     {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
+        switch (list.size()) {
+        case 0:
+            return null;
 
-            if (event instanceof LocationEvent) {
-                handleEvent((LocationEvent) event); // Location -> basket
-            } else {
-                super.onEvent(event); // Id, List contour
-            }
-        } catch (Throwable ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
+        case 1:
+            return list.get(0);
+
+        default:
+
+            List<Glyph> copy = new ArrayList<Glyph>(list);
+            Collections.sort(copy, Glyphs.byWeight);
+
+            return copy.get(0);
         }
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
     /**
      * Interest in location => list (basket?)
      *
      * @param locationEvent
      */
-    private void handleEvent (LocationEvent locationEvent)
+    @Override
+    protected void handleEvent (LocationEvent locationEvent)
     {
-        // Which selection mode?
-        if (ViewParameters.getInstance().getSelectionMode() != SelectionMode.MODE_GLYPH) {
-            return;
-        }
-
-        SelectionHint hint = locationEvent.hint;
-        MouseMovement movement = locationEvent.movement;
-        Rectangle rect = locationEvent.getData();
-
-        if (!hint.isLocation() && !hint.isContext()) {
-            return;
-        }
-
-        if (rect == null) {
-            return;
-        }
-
-        final Set<Glyph> found;
-
-        if ((rect.width > 0) && (rect.height > 0)) {
-            // Non-degenerated rectangle: look for contained entities
-            found = Entities.containedEntities(index.iterator(), rect);
-            publish(
-                    new EntityListEvent<Glyph>(this, hint, movement, new ArrayList<Glyph>(found)));
-        } else {
-            // Just a point: look for smallest containing entity
-            found = Entities.containingEntities(index.iterator(), rect.getLocation());
-
-            // Specific behavior for displayed glyph
-            ArrayList<Glyph> list = new ArrayList<Glyph>(found);
-            Glyph glyph = null;
-
-            if (!list.isEmpty()) {
-                // Pick up the smallest containing glyph
-                Collections.sort(list, Glyphs.byWeight);
-                glyph = list.get(0);
-            }
-
-            // Update basket
-            switch (hint) {
-            case LOCATION_INIT:
-
-                if (glyph != null) {
-                    basket.clear();
-                    basket.add(glyph);
-                } else {
-                    basket.clear();
-                }
-
-                break;
-
-            case LOCATION_ADD:
-
-                if (glyph != null) {
-                    if (basket.contains(glyph)) {
-                        basket.remove(glyph);
-                    } else {
-                        basket.add(glyph);
-                    }
-                }
-
-                break;
-
-            case CONTEXT_INIT:
-
-                if (glyph != null) {
-                    if (!basket.contains(glyph)) {
-                        basket.clear();
-                        basket.add(glyph);
-                    }
-                } else {
-                    basket.clear();
-                }
-
-                break;
-
-            case CONTEXT_ADD:
-            default:
-            }
-
-            // Publish basket
-            publish(
-                    new EntityListEvent<Glyph>(
-                            this,
-                            SelectionHint.GLYPH_TRANSIENT,
-                            movement,
-                            new ArrayList<Glyph>(basket)));
+        if (ViewParameters.getInstance().getSelectionMode() != SelectionMode.MODE_SECTION) {
+            super.handleEvent(locationEvent);
 
             if (basket.size() > 1) {
-                // Build compound on-the-fly and publish it
+                // Build compound on-the-fly and publish it (no impact on basket)
                 Glyph compound = GlyphFactory.buildGlyph(basket);
                 publish(
                         new EntityListEvent<Glyph>(
                                 this,
-                                SelectionHint.GLYPH_TRANSIENT,
-                                movement,
-                                Arrays.asList(compound)));
+                                SelectionHint.ENTITY_TRANSIENT,
+                                locationEvent.movement,
+                                compound));
             }
         }
     }

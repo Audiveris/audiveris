@@ -37,7 +37,6 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -160,7 +159,7 @@ public class FilamentIndex
                                     this,
                                     SelectionHint.ENTITY_INIT,
                                     MouseMovement.PRESSING,
-                                    (filament != null) ? Arrays.asList(filament) : null));
+                                    filament));
                 }
             });
         }

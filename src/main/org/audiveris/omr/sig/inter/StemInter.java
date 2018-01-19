@@ -355,6 +355,25 @@ public class StemInter
         return subStem;
     }
 
+    //----------//
+    // getBeams //
+    //----------//
+    /**
+     * Report the beams linked to this stem.
+     *
+     * @return set of linked beams
+     */
+    public Set<AbstractBeamInter> getBeams ()
+    {
+        final Set<AbstractBeamInter> set = new LinkedHashSet<AbstractBeamInter>();
+
+        for (Relation relation : sig.getRelations(this, BeamStemRelation.class)) {
+            set.add((AbstractBeamInter) sig.getEdgeSource(relation));
+        }
+
+        return set;
+    }
+
     //-----------//
     // getBottom //
     //-----------//

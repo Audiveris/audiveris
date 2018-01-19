@@ -122,48 +122,59 @@ public class BinarizationBoard
             logger.debug("BinarizationBoard: {}", event);
 
             if (event instanceof LocationEvent) {
-                // Display rectangle attributes
-                LocationEvent sheetLocation = (LocationEvent) event;
-                Rectangle rect = sheetLocation.getData();
-
-                if (rect != null) {
-                    FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
-                    ByteProcessor source = sheet.getPicture().getSource(
-                            Picture.SourceKey.INITIAL);
-                    PixelFilter filter = desc.getFilter(source);
-
-                    if (filter == null) {
-                        filter = new RandomFilter(
-                                source,
-                                AdaptiveFilter.getDefaultMeanCoeff(),
-                                AdaptiveFilter.getDefaultStdDevCoeff());
-                    }
-
-                    PixelFilter.Context context = filter.getContext(rect.x, rect.y);
-
-                    if (context != null) {
-                        if (context instanceof AdaptiveContext) {
-                            AdaptiveContext ctx = (AdaptiveContext) context;
-                            mean.setValue(ctx.mean);
-                            stdDev.setValue(ctx.standardDeviation);
-                        } else {
-                            mean.setText("");
-                            stdDev.setText("");
-                        }
-
-                        threshold.setValue(context.threshold);
-
-                        return;
-                    }
-                }
-
-                mean.setText("");
-                stdDev.setText("");
-                threshold.setText("");
+                handleLocationEvent((LocationEvent) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Interest in LocationEvent
+     *
+     * @param sheetLocation location
+     */
+    protected void handleLocationEvent (LocationEvent sheetLocation)
+    {
+        // Display rectangle attributes
+        Rectangle rect = sheetLocation.getData();
+
+        if (rect != null) {
+            FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
+            ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.INITIAL);
+            PixelFilter filter = desc.getFilter(source);
+
+            if (filter == null) {
+                filter = new RandomFilter(
+                        source,
+                        AdaptiveFilter.getDefaultMeanCoeff(),
+                        AdaptiveFilter.getDefaultStdDevCoeff());
+            }
+
+            PixelFilter.Context context = filter.getContext(rect.x, rect.y);
+
+            if (context != null) {
+                if (context instanceof AdaptiveContext) {
+                    AdaptiveContext ctx = (AdaptiveContext) context;
+                    mean.setValue(ctx.mean);
+                    stdDev.setValue(ctx.standardDeviation);
+                } else {
+                    mean.setText("");
+                    stdDev.setText("");
+                }
+
+                threshold.setValue(context.threshold);
+
+                return;
+            }
+        }
+
+        mean.setText("");
+        stdDev.setText("");
+        threshold.setText("");
     }
 
     //--------------//

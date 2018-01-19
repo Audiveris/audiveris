@@ -26,7 +26,9 @@ import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
+
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
+
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.util.ClassUtil;
@@ -263,9 +265,7 @@ public class RubberPanel
             logger.debug("{} onEvent {}", getClass().getName(), event);
 
             if (event instanceof LocationEvent) {
-                // Location => move view focus on this location w/ markers
-                LocationEvent locationEvent = (LocationEvent) event;
-                showFocusLocation(locationEvent.getData(), false);
+                handleLocationEvent((LocationEvent) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -623,6 +623,15 @@ public class RubberPanel
                 g.dispose();
             }
         }
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    protected void handleLocationEvent (LocationEvent locationEvent)
+    {
+        // Location => move view focus on this location w/ markers
+        showFocusLocation(locationEvent.getData(), false); // Centered: false
     }
 
     //--------//

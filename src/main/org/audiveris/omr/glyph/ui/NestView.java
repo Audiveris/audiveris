@@ -131,7 +131,7 @@ public class NestView
             // Render the selected glyph(s) if any
             List<Glyph> selectedGlyphs = glyphIndex.getSelectedGlyphList();
 
-            if (selectedGlyphs != null) {
+            if (!selectedGlyphs.isEmpty()) {
                 // Decorations first
                 g.setColor(Color.RED);
 
@@ -200,12 +200,8 @@ public class NestView
         case MODE_SECTION:
 
             for (Lag lag : lags) {
-                List<Section> selectedSections = lag.getEntityService().getSelectedEntityList();
-
-                if ((selectedSections != null) && !selectedSections.isEmpty()) {
-                    for (Section section : selectedSections) {
-                        section.renderSelected(g);
-                    }
+                for (Section section : lag.getEntityService().getSelectedEntityList()) {
+                    section.renderSelected(g);
                 }
             }
         }

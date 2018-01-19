@@ -121,12 +121,56 @@ public class PixelBoard
             logger.debug("PixelBoard: {}", event);
 
             if (event instanceof LocationEvent) {
-                handleEvent((LocationEvent) event); // Display rectangle attributes
+                handleLocationEvent((LocationEvent) event); // Display rectangle attributes
             } else if (event instanceof PixelEvent) {
-                handleEvent((PixelEvent) event); // Display pixel gray level
+                handlePixelEvent((PixelEvent) event); // Display pixel gray level
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Display rectangle attributes
+     *
+     * @param locEvent
+     */
+    protected void handleLocationEvent (LocationEvent locEvent)
+    {
+        Rectangle rect = locEvent.getData();
+
+        if (rect != null) {
+            x.setValue(rect.x);
+            y.setValue(rect.y);
+            width.setValue(rect.width);
+            height.setValue(rect.height);
+        } else {
+            x.setText("");
+            y.setText("");
+            width.setText("");
+            height.setText("");
+        }
+    }
+
+    //------------------//
+    // handlePixelEvent //
+    //------------------//
+    /**
+     * Display pixel gray level
+     *
+     * @param pixelEvent
+     */
+    protected void handlePixelEvent (PixelEvent pixelEvent)
+    {
+        final Integer pixelLevel = pixelEvent.getData();
+
+        if (pixelLevel != null) {
+            level.setValue(pixelLevel);
+        } else {
+            level.setText("");
         }
     }
 
@@ -165,50 +209,6 @@ public class PixelBoard
 
         builder.add(height.getLabel(), cst.xy(9, r));
         builder.add(height.getField(), cst.xy(11, r));
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Display rectangle attributes
-     *
-     * @param locEvent
-     */
-    private void handleEvent (LocationEvent locEvent)
-    {
-        Rectangle rect = locEvent.getData();
-
-        if (rect != null) {
-            x.setValue(rect.x);
-            y.setValue(rect.y);
-            width.setValue(rect.width);
-            height.setValue(rect.height);
-        } else {
-            x.setText("");
-            y.setText("");
-            width.setText("");
-            height.setText("");
-        }
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Display pixel gray level
-     *
-     * @param pixelEvent
-     */
-    private void handleEvent (PixelEvent pixelEvent)
-    {
-        final Integer pixelLevel = pixelEvent.getData();
-
-        if (pixelLevel != null) {
-            level.setValue(pixelLevel);
-        } else {
-            level.setText("");
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

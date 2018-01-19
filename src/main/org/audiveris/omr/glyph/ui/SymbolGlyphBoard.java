@@ -26,8 +26,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
-import org.audiveris.omr.ui.selection.MouseMovement;
-import org.audiveris.omr.ui.selection.UserEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,33 +87,6 @@ public class SymbolGlyphBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when Glyph Selection has been modified.
-     *
-     * @param event the (Glyph or glyph set) Selection
-     */
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            super.onEvent(event);
-
-            if (event instanceof EntityListEvent) {
-                handleEvent((EntityListEvent<Glyph>) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
     //--------------//
     // defineLayout //
     //--------------//
@@ -142,11 +113,19 @@ public class SymbolGlyphBoard
         builder.add(height.getField(), cst.xy(11, r));
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
-    private void handleEvent (EntityListEvent<Glyph> listEvent)
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
+    /**
+     * Interest in EntityList for Weight, Width, Height fields
+     *
+     * @param listEvent EntityListEvent
+     */
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Glyph> listEvent)
     {
+        super.handleEntityListEvent(listEvent);
+
         final Glyph glyph = listEvent.getEntity();
 
         // Fill symbol characteristics

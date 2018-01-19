@@ -30,8 +30,6 @@ import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
-import org.audiveris.omr.ui.selection.MouseMovement;
-import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
@@ -104,36 +102,6 @@ public class GlyphBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when Glyph Selection has been modified
-     *
-     * @param event of current glyph or glyph set
-     */
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        logger.debug("GlyphBoard event:{}", event);
-
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            super.onEvent(event); // count, vip, dump, id
-
-            if (event instanceof EntityListEvent) {
-                // Display additional entity parameters
-                handleEvent((EntityListEvent<Glyph>) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
     //---------------//
     // getFormLayout //
     //---------------//
@@ -160,16 +128,19 @@ public class GlyphBoard
         r += 2; // --------------------------------
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
     /**
-     * Interest in EntityList
+     * Interest in EntityList for Group field
      *
-     * @param EntityListEvent
+     * @param listEvent EntityListEvent
      */
-    private void handleEvent (EntityListEvent<Glyph> listEvent)
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Glyph> listEvent)
     {
+        super.handleEntityListEvent(listEvent);
+
         final Glyph entity = listEvent.getEntity();
 
         if (entity != null) {

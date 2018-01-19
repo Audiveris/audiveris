@@ -23,12 +23,12 @@ package org.audiveris.omr.util;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Class {@code Entities}
@@ -55,42 +55,6 @@ public class Entities
     // containedEntities //
     //-------------------//
     /**
-     * Look up in a collection of Entity instances for <b>all</b> instances contained
-     * in a provided rectangle.
-     *
-     * @param <E>        precise type of entity handled
-     * @param collection the collection of entities to be browsed
-     * @param rect       the coordinates rectangle
-     * @return the entities found, which may be an empty list
-     */
-    public static <E extends Entity> Set<E> containedEntities (Collection<? extends E> collection,
-                                                               Rectangle rect)
-    {
-        Set<E> set = null;
-
-        for (E entity : collection) {
-            final Rectangle bounds = entity.getBounds();
-
-            if ((bounds != null) && rect.contains(bounds)) {
-                if (set == null) {
-                    set = new LinkedHashSet<E>();
-                }
-
-                set.add(entity);
-            }
-        }
-
-        if (set != null) {
-            return set;
-        } else {
-            return Collections.emptySet();
-        }
-    }
-
-    //-------------------//
-    // containedEntities //
-    //-------------------//
-    /**
      * Look up in an iteration on Entity instances for <b>all</b> instances contained
      * in a provided rectangle.
      *
@@ -99,62 +63,28 @@ public class Entities
      * @param rect     the coordinates rectangle
      * @return the entities found, which may be an empty list
      */
-    public static <E extends Entity> Set<E> containedEntities (Iterator<? extends E> iterator,
-                                                               Rectangle rect)
+    public static <E extends Entity> List<E> containedEntities (Iterator<? extends E> iterator,
+                                                                Rectangle rect)
     {
-        Set<E> set = null;
+        List<E> list = null;
 
         while (iterator.hasNext()) {
             E entity = iterator.next();
             final Rectangle bounds = entity.getBounds();
 
             if ((bounds != null) && rect.contains(bounds)) {
-                if (set == null) {
-                    set = new LinkedHashSet<E>();
+                if (list == null) {
+                    list = new ArrayList<E>();
                 }
 
-                set.add(entity);
+                list.add(entity);
             }
         }
 
-        if (set != null) {
-            return set;
+        if (list != null) {
+            return list;
         } else {
-            return Collections.emptySet();
-        }
-    }
-
-    //--------------------//
-    // containingEntities //
-    //--------------------//
-    /**
-     * Look up in a collection of Entity instances for <b>all</b> instances that
-     * contain the provided point.
-     *
-     * @param <E>        precise type of entity handled
-     * @param collection the collection of entities to be browsed
-     * @param point      the provided point
-     * @return the entities found, which may be an empty list but not null
-     */
-    public static <E extends Entity> Set<E> containingEntities (Collection<? extends E> collection,
-                                                                Point point)
-    {
-        Set<E> set = null;
-
-        for (E entity : collection) {
-            if (entity.contains(point)) {
-                if (set == null) {
-                    set = new LinkedHashSet<E>();
-                }
-
-                set.add(entity);
-            }
-        }
-
-        if (set != null) {
-            return set;
-        } else {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
     }
 
@@ -170,27 +100,27 @@ public class Entities
      * @param point    the provided point
      * @return the entities found, which may be an empty list but not null
      */
-    public static <E extends Entity> Set<E> containingEntities (Iterator<? extends E> iterator,
-                                                                Point point)
+    public static <E extends Entity> List<E> containingEntities (Iterator<? extends E> iterator,
+                                                                 Point point)
     {
-        Set<E> set = null;
+        List<E> list = null;
 
         while (iterator.hasNext()) {
             E entity = iterator.next();
 
             if (entity.contains(point)) {
-                if (set == null) {
-                    set = new LinkedHashSet<E>();
+                if (list == null) {
+                    list = new ArrayList<E>();
                 }
 
-                set.add(entity);
+                list.add(entity);
             }
         }
 
-        if (set != null) {
-            return set;
+        if (list != null) {
+            return list;
         } else {
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
     }
 

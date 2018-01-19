@@ -35,12 +35,9 @@ import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.PixelCount;
-import org.audiveris.omr.ui.field.LCheckBox;
 import org.audiveris.omr.ui.field.LComboBox;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
-import org.audiveris.omr.ui.selection.MouseMovement;
-import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
@@ -78,9 +75,6 @@ public class InterBoard
 
     /** Output : shape icon. */
     private final JLabel shapeIcon = new JLabel();
-
-    /** Input/Output : focus check box. */
-    private final LCheckBox focus = new LCheckBox("Focus", "Is this inter focused upon?");
 
     /** Output : grade (intrinsic/contextual). */
     private final LTextField grade = new LTextField("Grade", "Intrinsic / Contextual");
@@ -138,61 +132,16 @@ public class InterBoard
         details.setToolTipText("Grade details");
         details.setHorizontalAlignment(SwingConstants.CENTER);
 
-        focus.addActionListener(this);
-
         paramAction = new ParamAction();
 
         // Initial status
         grade.setEnabled(false);
-        focus.setEnabled(false);
         details.setEnabled(false);
 
         defineLayout();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------------//
-    // actionPerformed //
-    //-----------------//
-    @Override
-    public void actionPerformed (ActionEvent e)
-    {
-        if (focus.getField() == e.getSource()) {
-            focusActionPerformed(e);
-        } else {
-            super.actionPerformed(e);
-        }
-    }
-
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when Inter Selection has been modified
-     *
-     * @param event of current inter list
-     */
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        logger.debug("InterBoard event:{}", event);
-
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            super.onEvent(event);
-
-            if (event instanceof EntityListEvent) {
-                handleEvent((EntityListEvent<Inter>) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
     //---------------------//
     // dumpActionPerformed //
     //---------------------//
@@ -218,80 +167,19 @@ public class InterBoard
         return Panel.makeFormLayout(4, 3);
     }
 
-    //--------------//
-    // defineLayout //
-    //--------------//
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
     /**
-     * Define the layout for InterBoard specific fields.
-     */
-    private void defineLayout ()
-    {
-        final CellConstraints cst = new CellConstraints();
-
-        // Layout
-        int r = 1; // -----------------------------
-
-        // Shape Icon (start, spans several rows) + grade + Deassign button
-        builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
-
-        builder.add(grade.getLabel(), cst.xy(5, r));
-        builder.add(grade.getField(), cst.xy(7, r));
-
-        JButton deassignButton = new JButton(deassignAction);
-        deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
-        deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
-        deassignAction.setEnabled(false);
-        builder.add(deassignButton, cst.xyw(9, r, 3));
-
-        r += 2; // --------------------------------
-
-        builder.add(focus.getLabel(), cst.xy(3, r));
-        builder.add(focus.getField(), cst.xy(5, r, "left,fill"));
-
-        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
-
-        r += 2; // --------------------------------
-
-        roleCombo.getField().setMaximumRowCount(TextRole.values().length);
-        roleCombo.addActionListener(paramAction);
-        roleCombo.setVisible(false);
-        builder.add(roleCombo.getField(), cst.xyw(3, r, 4));
-
-        // Text field
-        textField.getField().setHorizontalAlignment(JTextField.LEFT);
-        textField.setVisible(false);
-        builder.add(textField.getField(), cst.xyw(7, r, 5));
-
-        r += 2; // --------------------------------
-
-        builder.add(details, cst.xyw(1, r, 11));
-
-        // Needed to process user input when RETURN/ENTER is pressed
-        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                KeyStroke.getKeyStroke("ENTER"),
-                "TextAction");
-        getComponent().getActionMap().put("TextAction", paramAction);
-    }
-
-    //----------------------//
-    // focusActionPerformed //
-    //----------------------//
-    private void focusActionPerformed (ActionEvent e)
-    {
-        final InterController interController = sheet.getInterController();
-        interController.setInterFocus(focus.getField().isSelected() ? getSelectedEntity() : null);
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in InterList
+     * Interest in InterList for shape, icon, text, role, etc... fields
      *
      * @param interListEvent
      */
-    private void handleEvent (EntityListEvent<Inter> interListEvent)
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Inter> interListEvent)
     {
+        super.handleEntityListEvent(interListEvent);
+
         final Inter inter = interListEvent.getEntity();
 
         // Shape text and icon
@@ -326,11 +214,6 @@ public class InterBoard
             details.setText((inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
             deassignAction.putValue(Action.NAME, inter.isRemoved() ? "deleted" : "Deassign");
 
-            focus.setEnabled(true);
-
-            final InterController interController = sheet.getInterController();
-            focus.getField().setSelected(inter == interController.getInterFocus());
-
             if (inter instanceof WordInter) {
                 selfUpdatingText = true;
 
@@ -356,9 +239,6 @@ public class InterBoard
             vip.setEnabled(false);
             vip.getField().setSelected(false);
 
-            focus.setEnabled(false);
-            focus.getField().setSelected(false);
-
             grade.setText("");
             details.setText("");
             deassignAction.putValue(Action.NAME, " ");
@@ -368,6 +248,58 @@ public class InterBoard
         grade.setEnabled(inter != null);
         shapeField.setEnabled(inter != null);
         details.setEnabled(inter != null);
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout for InterBoard specific fields.
+     */
+    private void defineLayout ()
+    {
+        final CellConstraints cst = new CellConstraints();
+
+        // Layout
+        int r = 1; // -----------------------------
+
+        // Shape Icon (start, spans several rows) + grade + Deassign button
+        builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
+
+        builder.add(grade.getLabel(), cst.xy(5, r));
+        builder.add(grade.getField(), cst.xy(7, r));
+
+        JButton deassignButton = new JButton(deassignAction);
+        deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
+        deassignButton.setHorizontalAlignment(SwingConstants.RIGHT);
+        deassignAction.setEnabled(false);
+        builder.add(deassignButton, cst.xyw(9, r, 3));
+
+        r += 2; // --------------------------------
+
+        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
+
+        r += 2; // --------------------------------
+
+        roleCombo.getField().setMaximumRowCount(TextRole.values().length);
+        roleCombo.addActionListener(paramAction);
+        roleCombo.setVisible(false);
+        builder.add(roleCombo.getField(), cst.xyw(3, r, 4));
+
+        // Text field
+        textField.getField().setHorizontalAlignment(JTextField.LEFT);
+        textField.setVisible(false);
+        builder.add(textField.getField(), cst.xyw(7, r, 5));
+
+        r += 2; // --------------------------------
+
+        builder.add(details, cst.xyw(1, r, 11));
+
+        // Needed to process user input when RETURN/ENTER is pressed
+        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke("ENTER"),
+                "TextAction");
+        getComponent().getActionMap().put("TextAction", paramAction);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

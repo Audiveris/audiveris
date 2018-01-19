@@ -33,9 +33,7 @@ import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.inter.BraceInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Link;
-import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
-import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.VoidTask;
 
@@ -46,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -153,9 +150,7 @@ public class GlyphsController
                         system = staves.get(i).getSystem();
 
                         if (system != prevSystem) {
-                            Collection<Link> links = ghost.searchLinks(
-                                    system,
-                                    false);
+                            Collection<Link> links = ghost.searchLinks(system, false);
 
                             for (Link p : links) {
                                 if (p.partner.getStaff() != null) {
@@ -251,22 +246,6 @@ public class GlyphsController
     public void setLatestShapeAssigned (Shape shape)
     {
         model.setLatestShape(shape);
-    }
-
-    //---------//
-    // publish //
-    //---------//
-    protected void publish (Glyph glyph)
-    {
-        // Update immediately the glyph info as displayed
-        if (model.getGlyphService() != null) {
-            model.getGlyphService().publish(
-                    new EntityListEvent<Glyph>(
-                            this,
-                            SelectionHint.GLYPH_MODIFIED,
-                            null,
-                            Arrays.asList(glyph)));
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

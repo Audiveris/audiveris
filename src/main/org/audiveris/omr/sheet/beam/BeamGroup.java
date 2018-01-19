@@ -40,7 +40,6 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.StemInter;
-import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.NoExclusion;
@@ -1038,18 +1037,18 @@ public class BeamGroup
                 Relation bs = sig.getRelation(beam, pivotStem, BeamStemRelation.class);
                 sig.removeEdge(bs);
                 sig.addEdge(beam, shortStem, bs);
-
-                // Move BeamHead relation(s) from pivot to short
-                Set<Relation> bhRels = sig.getRelations(beam, BeamHeadRelation.class);
-
-                for (Relation bh : bhRels) {
-                    Inter head = sig.getOppositeInter(beam, bh);
-
-                    if (head.getEnsemble() == pivotChord) {
-                        sig.removeEdge(bh);
-                        sig.addEdge(beam, head.getMirror(), bh);
-                    }
-                }
+//
+//                // Move BeamHead relation(s) from pivot to short
+//                Set<Relation> bhRels = sig.getRelations(beam, BeamHeadRelation.class);
+//
+//                for (Relation bh : bhRels) {
+//                    Inter head = sig.getOppositeInter(beam, bh);
+//
+//                    if (head.getEnsemble() == pivotChord) {
+//                        sig.removeEdge(bh);
+//                        sig.addEdge(beam, head.getMirror(), bh);
+//                    }
+//                }
             }
 
             // Notify updates to both chords

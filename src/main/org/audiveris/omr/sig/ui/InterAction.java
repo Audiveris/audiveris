@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
@@ -103,12 +102,7 @@ public class InterAction
     //---------//
     public void publish ()
     {
-        // Publish underlying glyph, if any
-        final Glyph glyph = inter.getGlyph();
         final SIGraph sig = inter.getSig();
-        sig.getSystem().getSheet().getGlyphIndex().publish(glyph);
-
-        // Publish selected inter last, so that display of its bounds remains visible
         sig.publish(inter);
     }
 }

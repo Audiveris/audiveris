@@ -31,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
-import java.util.Arrays;
 
 import javax.swing.AbstractAction;
 
@@ -101,7 +100,7 @@ public class GlyphAction
                             this,
                             SelectionHint.ENTITY_INIT,
                             MouseMovement.PRESSING,
-                            Arrays.asList(glyph)));
+                            glyph));
         }
     }
 

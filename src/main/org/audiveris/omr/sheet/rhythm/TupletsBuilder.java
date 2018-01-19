@@ -28,13 +28,11 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
-import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TupletInter;
-import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.Link;
-import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -429,7 +427,6 @@ public class TupletsBuilder
             if (!chords.contains(chord)) {
                 // Chord together with its beam-siblings
                 Set<AbstractChordInter> siblings = getBeamSiblings(chord);
-                siblings.add(chord);
 
                 for (AbstractChordInter ch : siblings) {
                     doInclude(ch);
@@ -462,6 +459,28 @@ public class TupletsBuilder
             return status == Status.OK;
         }
 
+        /**
+         * Retrieve all chords linked via a beam to the provided chord.
+         *
+         * @param chord the provided chord
+         * @return all sibling chords, including the chord provided
+         */
+        protected Set<AbstractChordInter> getBeamSiblings (AbstractChordInter chord)
+        {
+            final Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
+            StemInter stem = chord.getStem();
+
+            if (stem != null) {
+                for (AbstractBeamInter beam : stem.getBeams()) {
+                    for (StemInter s : beam.getStems()) {
+                        set.addAll(s.getChords());
+                    }
+                }
+            }
+
+            return set;
+        }
+
         /** Include a chord into the collection */
         private void doInclude (AbstractChordInter chord)
         {
@@ -476,25 +495,6 @@ public class TupletsBuilder
                     expectedTotal = base.times(expectedCount);
                 }
             }
-        }
-
-        /** Retrieve all chords linked via a beam to the provided chord. */
-        private Set<AbstractChordInter> getBeamSiblings (AbstractChordInter chord)
-        {
-            SIGraph sig = chord.getSig();
-            Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
-
-            for (AbstractBeamInter beam : chord.getBeams()) {
-                Set<Relation> bhRels = sig.getRelations(beam, BeamHeadRelation.class);
-
-                for (Relation bh : bhRels) {
-                    Inter head = sig.getOppositeInter(beam, bh);
-                    AbstractChordInter ch = (AbstractChordInter) head.getEnsemble();
-                    set.add(ch);
-                }
-            }
-
-            return set;
         }
 
         /** Check whether the tuplet sign lies between the chords abscissae. */

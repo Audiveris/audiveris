@@ -154,47 +154,7 @@ public class TemplateBoard
     {
         try {
             if (event instanceof LocationEvent) {
-                AnchoredTemplate anchoredTemplate = (AnchoredTemplate) templateService.getSelection(
-                        AnchoredTemplateEvent.class);
-
-                if (anchoredTemplate == null) {
-                    return;
-                }
-
-                Rectangle rect = (Rectangle) event.getData();
-
-                if ((rect == null) || (rect.width != 0) || (rect.height != 0)) {
-                    return;
-                }
-
-                Point pt = rect.getLocation();
-
-                if (event.hint == SelectionHint.CONTEXT_INIT) {
-                    // Template reference point has been changed, re-eval template at this location
-                    refPoint = pt;
-                    tryEvaluate(refPoint, anchoredTemplate);
-                } else if (event.hint == SelectionHint.LOCATION_INIT) {
-                    // User inspects location, display template key point value if any
-                    if (refPoint != null) {
-                        Template template = anchoredTemplate.template;
-                        Anchored.Anchor anchor = anchoredTemplate.anchor;
-                        Rectangle tplRect = template.getBoundsAt(
-                                refPoint.x,
-                                refPoint.y,
-                                anchor);
-                        pt.translate(-tplRect.x, -tplRect.y);
-
-                        for (PixelDistance pix : template.getKeyPoints()) {
-                            if ((pix.x == pt.x) && (pix.y == pt.y)) {
-                                keyPointField.setValue(pix.d / table.getNormalizer());
-
-                                return;
-                            }
-                        }
-
-                        keyPointField.setText("");
-                    }
-                }
+                handleLocationEvent((LocationEvent) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -227,6 +187,56 @@ public class TemplateBoard
         templateService.publish(
                 new AnchoredTemplateEvent(this, SelectionHint.ENTITY_INIT, null, at));
         tryEvaluate(refPoint, at);
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Display rectangle attributes
+     *
+     * @param locEvent
+     */
+    protected void handleLocationEvent (LocationEvent locEvent)
+    {
+        AnchoredTemplate anchoredTemplate = (AnchoredTemplate) templateService.getSelection(
+                AnchoredTemplateEvent.class);
+
+        if (anchoredTemplate == null) {
+            return;
+        }
+
+        Rectangle rect = locEvent.getData();
+
+        if ((rect == null) || (rect.width != 0) || (rect.height != 0)) {
+            return;
+        }
+
+        Point pt = rect.getLocation();
+
+        if (locEvent.hint == SelectionHint.CONTEXT_INIT) {
+            // Template reference point has been changed, re-eval template at this location
+            refPoint = pt;
+            tryEvaluate(refPoint, anchoredTemplate);
+        } else if (locEvent.hint == SelectionHint.LOCATION_INIT) {
+            // User inspects location, display template key point value if any
+            if (refPoint != null) {
+                Template template = anchoredTemplate.template;
+                Anchored.Anchor anchor = anchoredTemplate.anchor;
+                Rectangle tplRect = template.getBoundsAt(refPoint.x, refPoint.y, anchor);
+                pt.translate(-tplRect.x, -tplRect.y);
+
+                for (PixelDistance pix : template.getKeyPoints()) {
+                    if ((pix.x == pt.x) && (pix.y == pt.y)) {
+                        keyPointField.setValue(pix.d / table.getNormalizer());
+
+                        return;
+                    }
+                }
+
+                keyPointField.setText("");
+            }
+        }
     }
 
     //---------------//

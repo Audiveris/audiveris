@@ -25,8 +25,6 @@ import org.audiveris.omr.image.ChamferDistance;
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.selection.LocationEvent;
-import org.audiveris.omr.ui.selection.MouseMovement;
-import org.audiveris.omr.ui.selection.UserEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,44 +68,37 @@ public class DistanceBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Display rectangle attributes
+     *
+     * @param locEvent
+     */
     @Override
-    public void onEvent (UserEvent event)
+    protected void handleLocationEvent (LocationEvent locEvent)
     {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
+        super.handleLocationEvent(locEvent);
 
-            if (event instanceof LocationEvent) {
-                super.onEvent(event); // To display location coordinates
+        Rectangle rect = locEvent.getData();
 
-                LocationEvent sheetLocation = (LocationEvent) event;
-                Rectangle rect = sheetLocation.getData();
+        if (rect != null) {
+            Point point = rect.getLocation();
 
-                if (rect != null) {
-                    Point point = rect.getLocation();
+            if ((point.x < table.getWidth()) && (point.y < table.getHeight())) {
+                // Display distance value
+                int raw = table.getValue(point.x, point.y);
 
-                    if ((point.x < table.getWidth()) && (point.y < table.getHeight())) {
-                        // Display distance value
-                        int raw = table.getValue(point.x, point.y);
-
-                        if (raw == ChamferDistance.VALUE_UNKNOWN) {
-                            level.setText("none");
-                        } else {
-                            double distance = raw / (double) table.getNormalizer();
-                            level.setText(String.format("%.1f", distance));
-                        }
-                    } else {
-                        level.setText("");
-                    }
+                if (raw == ChamferDistance.VALUE_UNKNOWN) {
+                    level.setText("none");
+                } else {
+                    double distance = raw / (double) table.getNormalizer();
+                    level.setText(String.format("%.1f", distance));
                 }
+            } else {
+                level.setText("");
             }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 }

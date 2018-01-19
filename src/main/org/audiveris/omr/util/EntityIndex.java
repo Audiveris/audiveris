@@ -23,8 +23,11 @@ package org.audiveris.omr.util;
 
 import org.audiveris.omr.ui.selection.EntityService;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -40,6 +43,22 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public interface EntityIndex<E extends Entity>
 {
     //~ Methods ------------------------------------------------------------------------------------
+
+    /**
+     * Look up the index for all entities contained in the provided rectangle.
+     *
+     * @param rectangle provided containing rectangle
+     * @return the list of contained entities found, perhaps empty but not null
+     */
+    List<E> getContainedEntities (Rectangle rectangle);
+
+    /**
+     * Look up the index for all entities that contain the provided point.
+     *
+     * @param point the provided points
+     * @return the list of all contained entities found, perhaps empty but not null
+     */
+    List<E> getContainingEntities (Point point);
 
     /**
      * Export the whole unmodifiable collection of entities in the index, sorted on ID.

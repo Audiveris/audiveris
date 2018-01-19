@@ -52,29 +52,14 @@ public enum SelectionHint
      */
     CONTEXT_ADD,
     /**
-     * Designation is at Section level, so we display the pixel contour of the Section, Run
-     * information is not available, and related Glyph information is displayed
-     */
-    SECTION_INIT,
-    /**
-     * Designation is at Glyph level, for which a characteristic (typically the shape) has just been
-     * modified
-     */
-    GLYPH_MODIFIED,
-    /**
-     * Glyph information is for temporary display / evaluation only, with no impact on other
-     * structures such as glyph set
-     */
-    GLYPH_TRANSIENT,
-    /**
-     * Designation is at entity list level
+     * Designation is at entity level
      */
     ENTITY_INIT,
     /**
-     * Designation is at entity list level, while adding to the existing selection(s)
+     * Entity information is for temporary display / evaluation only, with no impact on other
+     * structures such as entity basket
      */
-    ENTITY_ADD;
-    //
+    ENTITY_TRANSIENT;
 
     //------------//
     // isLocation //
@@ -113,43 +98,4 @@ public enum SelectionHint
 
         return false;
     }
-
-    //
-    //    //-----------//
-    //    // isSection //
-    //    //-----------//
-    //    /**
-    //     * Predicate for SECTION_XXX.
-    //     *
-    //     * @return true for section-related hints
-    //     */
-    //    public boolean isSection ()
-    //    {
-    //        switch (this) {
-    //        case SECTION_INIT:
-    //            return true;
-    //        }
-    //
-    //        return false;
-    //    }
-    //
-    //    //---------//
-    //    // isGlyph //
-    //    //---------//
-    //    /**
-    //     * Predicate for GLYPH_XXX.
-    //     *
-    //     * @return true for glyph-related hints
-    //     */
-    //    public boolean isGlyph ()
-    //    {
-    //        switch (this) {
-    //        case GLYPH_INIT:
-    //        case GLYPH_MODIFIED:
-    //        case GLYPH_TRANSIENT:
-    //            return true;
-    //        }
-    //
-    //        return false;
-    //    }
 }

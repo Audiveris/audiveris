@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.BeamHeadCleaner;
 import org.audiveris.omr.sig.CrossDetector;
 import org.audiveris.omr.sig.SigReducer;
 import org.audiveris.omr.sig.inter.AbstractInter;
@@ -171,6 +172,8 @@ public class LinksStep
 
         // Handle inters conflicts across systems
         new CrossDetector(sheet).process();
+
+        new BeamHeadCleaner(sheet).process();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

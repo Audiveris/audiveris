@@ -159,16 +159,37 @@ public class SampleContext
                 }
 
                 if (event instanceof LocationEvent) {
-                    // Location => move view focus on this location w/ markers
-                    LocationEvent locationEvent = (LocationEvent) event;
-                    showFocusLocation(locationEvent.getData(), true);
+                    handleLocationEvent((LocationEvent) event);
                 } else if (event instanceof EntityListEvent) {
-                    // Sample => sample, sheet & location
-                    display(((EntityListEvent<Sample>) event).getEntity());
+                    handleEntityListEvent((EntityListEvent) event);
                 }
             } catch (Exception ex) {
                 logger.warn(getClass().getName() + " onEvent error", ex);
             }
+        }
+
+        //-----------------------//
+        // handleEntityListEvent //
+        //-----------------------//
+        /**
+         * Interest in EntityList
+         *
+         * @param listEvent list of inters
+         */
+        protected void handleEntityListEvent (EntityListEvent<Sample> listEvent)
+        {
+            // Sample => sample, sheet & location
+            display(listEvent.getEntity());
+        }
+
+        //---------------------//
+        // handleLocationEvent //
+        //---------------------//
+        @Override
+        protected void handleLocationEvent (LocationEvent locationEvent)
+        {
+            // Location => move view focus on this location w/ markers
+            showFocusLocation(locationEvent.getData(), true); // Centered: true
         }
 
         @Override

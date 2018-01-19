@@ -239,6 +239,7 @@ public abstract class Relations
      * A few relations are used only for support during reduction, rather than symbolic relation.
      * They are thus excluded for lack of usefulness at UI level:<ul>
      * <li>BarConnectionRelation
+     * <li>BeamHeadRelation
      * <li>ClefKeyRelation
      * <li>HeadHeadRelation
      * <li>KeyAltersRelation
@@ -248,7 +249,6 @@ public abstract class Relations
      */
     private static void buildMaps ()
     {
-        map(AbstractBeamInter.class, BeamHeadRelation.class, HeadInter.class);
         map(AbstractBeamInter.class, BeamStemRelation.class, StemInter.class);
 
         map(AbstractChordInter.class, ChordDynamicsRelation.class, DynamicsInter.class);

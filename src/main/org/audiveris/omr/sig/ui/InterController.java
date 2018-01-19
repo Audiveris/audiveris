@@ -113,9 +113,6 @@ public class InterController
     /** User pane. Lazily assigned */
     private SymbolsEditor editor;
 
-    /** User focus on a given Inter, if any. */
-    private Inter interFocus;
-
     /** User relation suggestion, if any. TODO: use a set for multiple items? */
     private RelationClassAction relationClassAction;
 
@@ -374,19 +371,6 @@ public class InterController
         }.execute();
     }
 
-    //---------------//
-    // getInterFocus //
-    //---------------//
-    /**
-     * Report the inter, if any, which has UI focus.
-     *
-     * @return the interFocus, perhaps null
-     */
-    public Inter getInterFocus ()
-    {
-        return interFocus;
-    }
-
     //------------------------//
     // getRelationClassAction //
     //------------------------//
@@ -522,26 +506,6 @@ public class InterController
         }.execute();
     }
 
-    //---------------//
-    // setInterFocus //
-    //---------------//
-    /**
-     * Set UI focus on provided inter.
-     *
-     * @param interFocus the interFocus to set
-     */
-    public void setInterFocus (Inter interFocus)
-    {
-        if (interFocus != null) {
-            logger.info("Focus set on {}", interFocus);
-        } else {
-            logger.info("Focus unset");
-        }
-
-        this.interFocus = interFocus;
-        editor.refresh();
-    }
-
     //------------------------//
     // setRelationClassAction //
     //------------------------//
@@ -572,10 +536,6 @@ public class InterController
         // Support for delete key
         inputMap.put(KeyStroke.getKeyStroke("DELETE"), "RemoveAction");
         view.getActionMap().put("RemoveAction", new RemoveAction());
-
-        // Support for escape key
-        inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "UnfocusAction");
-        view.getActionMap().put("UnfocusAction", new UnfocusAction());
     }
 
     //------//
@@ -977,26 +937,6 @@ public class InterController
                             "Do you confirm this multiple deletion?",
                             "Deletion of " + inters.size() + " inters")) {
                 removeInters(inters);
-            }
-        }
-    }
-
-    //---------------//
-    // UnfocusAction //
-    //---------------//
-    /**
-     * Action to remove inter focus. (Bound to ESCAPE key)
-     */
-    private class UnfocusAction
-            extends AbstractAction
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            if (getInterFocus() != null) {
-                setInterFocus(null);
             }
         }
     }

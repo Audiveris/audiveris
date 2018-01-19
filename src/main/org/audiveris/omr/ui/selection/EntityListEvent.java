@@ -23,6 +23,8 @@ package org.audiveris.omr.ui.selection;
 
 import org.audiveris.omr.util.Entity;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,7 +43,7 @@ public class EntityListEvent<E extends Entity>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** The selected entity list, which may be null. */
+    /** The selected entity list, which may be empty but not null. */
     private final List<E> entities;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -59,13 +61,45 @@ public class EntityListEvent<E extends Entity>
                             List<E> entities)
     {
         super(source, hint, movement);
-        this.entities = entities;
+
+        if (entities != null) {
+            this.entities = Collections.unmodifiableList(entities);
+        } else {
+            this.entities = Collections.emptyList();
+        }
+    }
+
+    /**
+     * Creates a new {@code EntityListEvent} object.
+     *
+     * @param source   the entity that created this event
+     * @param hint     hint about event origin (or null)
+     * @param movement the user movement
+     * @param entities the selected entities (perhaps null)
+     */
+    public EntityListEvent (Object source,
+                            SelectionHint hint,
+                            MouseMovement movement,
+                            E... entities)
+    {
+        super(source, hint, movement);
+
+        if ((entities != null) && (entities.length > 0) && (entities[0] != null)) {
+            this.entities = Arrays.asList(entities);
+        } else {
+            this.entities = Collections.emptyList();
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//
+    /**
+     * Report the carried list, perhaps empty but never null.
+     *
+     * @return the carried list of entities
+     */
     @Override
     public List<E> getData ()
     {
@@ -88,8 +122,8 @@ public class EntityListEvent<E extends Entity>
             return null;
         }
 
-        return entities.get(0); // Use first
-        ///return entities.get(entities.size() - 1); // Use last
+        ///return entities.get(0); // Use first
+        return entities.get(entities.size() - 1); // Use last
     }
 
     //----------------//

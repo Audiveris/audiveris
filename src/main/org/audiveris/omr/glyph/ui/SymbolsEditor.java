@@ -36,7 +36,6 @@ import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.score.ui.EditorMenu;
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -68,22 +67,24 @@ import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
+
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
+
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
-import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
+
 import java.awt.Stroke;
 import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
@@ -324,10 +325,6 @@ public class SymbolsEditor
         private final PixelCount measureMargin = new PixelCount(
                 10,
                 "Number of pixels as margin when highlighting a measure");
-
-        private final Scale.Fraction minVectorLength = new Scale.Fraction(
-                0.5,
-                "Minimum length for significant vector");
     }
 
     //--------//
@@ -343,9 +340,6 @@ public class SymbolsEditor
 
         /** Current vector. */
         private Vector vector;
-
-        /** Threshold for relevant vector ength. */
-        private final double minVectorLengthSq;
 
         //~ Constructors ---------------------------------------------------------------------------
         private MyView (GlyphIndex glyphIndex)
@@ -363,8 +357,7 @@ public class SymbolsEditor
                 lag.getEntityService().subscribeStrongly(EntityListEvent.class, this);
             }
 
-            double minLg = sheet.getScale().toPixels(constants.minVectorLength);
-            minVectorLengthSq = minLg * minLg;
+            sheet.getInterIndex().getEntityService().subscribeStrongly(EntityListEvent.class, this);
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -544,18 +537,6 @@ public class SymbolsEditor
             }
 
             if (viewParams.isInputPainting()) {
-                // Focused inter, if any
-                final InterController interController = sheet.getInterController();
-                final Inter focus = interController.getInterFocus();
-
-                if ((focus != null) && !focus.isRemoved()) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setColor(Color.PINK);
-                    g2.setStroke(new BasicStroke(6f));
-                    renderBoxArea(focus.getBounds(), g2);
-                    g2.dispose();
-                }
-
                 // Sections
                 final boolean drawBorders = viewParams.getSelectionMode() == SelectionMode.MODE_SECTION;
                 final Stroke oldStroke = (drawBorders) ? UIUtil.setAbsoluteStroke(g, 1f) : null;
@@ -628,7 +609,7 @@ public class SymbolsEditor
                 InterService interService = (InterService) sheet.getInterIndex().getEntityService();
                 List<Inter> inters = interService.getSelectedEntityList();
 
-                if (inters != null) {
+                if (!inters.isEmpty()) {
                     SelectionPainter painter = new SelectionPainter(sheet, g);
 
                     for (Inter inter : inters) {
@@ -693,12 +674,19 @@ public class SymbolsEditor
         //---------------//
         // showPagePopup //
         //---------------//
+        /**
+         * Update the popup menu with current selection, then display the popup slightly
+         * on south east of current location.
+         *
+         * @param pt   current location
+         * @param rect current rubber rectangle
+         */
         private void showPagePopup (Point pt,
                                     Rectangle rect)
         {
             if (pageMenu.updateMenu(new Rectangle(rect))) {
                 JPopupMenu popup = pageMenu.getPopup();
-                popup.show(this, getZoom().scaled(pt.x) + 50, getZoom().scaled(pt.y) + 50);
+                popup.show(this, getZoom().scaled(pt.x) + 10, getZoom().scaled(pt.y) + 10);
             }
         }
 
@@ -715,8 +703,7 @@ public class SymbolsEditor
         private Vector tryVector (Point p1)
         {
             // Look for required start inter
-            final List<Inter> starts = new ArrayList<Inter>(
-                    Entities.containingEntities(sheet.getInterIndex().iterator(), p1));
+            final List<Inter> starts = sheet.getInterIndex().getContainingEntities(p1);
 
             if (starts.isEmpty()) {
                 return null;
@@ -797,9 +784,11 @@ public class SymbolsEditor
             private void process (boolean doit)
             {
                 final Point p2 = PointUtil.rounded(line.getP2());
-                final List<Inter> stops = new ArrayList<Inter>(
-                        Entities.containingEntities(sheet.getInterIndex().iterator(), p2));
-                stops.remove(start); // No looping vector!
+                final List<Inter> stops = sheet.getInterIndex().getContainingEntities(p2);
+
+                if (!stops.isEmpty()) {
+                    stops.remove(start); // No looping vector!
+                }
 
                 if (stops.isEmpty()) {
                     return;

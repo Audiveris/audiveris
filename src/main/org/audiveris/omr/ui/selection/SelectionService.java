@@ -91,7 +91,14 @@ public class SelectionService
                         (last != null) ? (" " + last) : "");
 
                 for (Object obj : subscribers) {
-                    logger.info(String.format("      @%8h %s", obj, obj));
+                    String size = "";
+
+                    if (obj instanceof EntityService) {
+                        EntityService service = (EntityService) obj;
+                        size = "size:" + service.getIndex().getEntities().size();
+                    }
+
+                    logger.info(String.format("      @%8h %s %s", obj, obj, size));
                 }
             }
         }

@@ -30,8 +30,6 @@ import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
-import org.audiveris.omr.ui.selection.MouseMovement;
-import org.audiveris.omr.ui.selection.UserEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,37 +110,6 @@ public class SectionBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when Section Selection has been modified
-     *
-     * @param event the section event
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            logger.debug("SectionBoard: {}", event);
-
-            // Standard behavior
-            super.onEvent(event); // ->  (count, vip, dump, id)
-
-            if (event instanceof EntityListEvent) {
-                handleEvent((EntityListEvent<Section>) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
     //--------------//
     // defineLayout //
     //--------------//
@@ -168,16 +135,19 @@ public class SectionBoard
         builder.add(height.getField(), cst.xy(11, r));
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
     /**
-     * Interest in EntityListEvent
+     * Interest in EntityListEvent for x, y, width, height fields.
      *
      * @param listEvent
      */
-    private void handleEvent (EntityListEvent<Section> listEvent)
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Section> listEvent)
     {
+        super.handleEntityListEvent(listEvent);
+
         // Info on last section in list
         final Section section = listEvent.getEntity();
 

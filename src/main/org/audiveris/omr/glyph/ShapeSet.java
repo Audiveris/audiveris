@@ -357,7 +357,7 @@ public class ShapeSet
 
     public static final ShapeSet Holds = new ShapeSet(
             FERMATA,
-            new Color(0x888888),
+            new Color(0x3d9868),
             shapesOf(BREATH_MARK, CAESURA, FERMATA, FERMATA_BELOW));
 
     public static final ShapeSet Keys = new ShapeSet(
@@ -372,7 +372,7 @@ public class ShapeSet
 
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
-            new Color(0x888888),
+            new Color(0xff8844),
             shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA));
 
     public static final ShapeSet Ornaments = new ShapeSet(
