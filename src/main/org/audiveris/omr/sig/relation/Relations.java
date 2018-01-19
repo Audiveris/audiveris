@@ -267,7 +267,7 @@ public abstract class Relations
         map(FermataDotInter.class, DotFermataRelation.class, FermataArcInter.class); // Temporary!
 
         map(FermataInter.class, FermataBarRelation.class, BarlineInter.class);
-        map(FermataInter.class, FermataChordRelation.class, AbstractNoteInter.class);
+        map(FermataInter.class, FermataChordRelation.class, AbstractChordInter.class);
 
         map(FlagInter.class, FlagStemRelation.class, StemInter.class);
 

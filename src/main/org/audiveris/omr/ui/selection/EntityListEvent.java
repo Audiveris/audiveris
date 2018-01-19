@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.ui.selection;
 
+import java.util.ArrayList;
 import org.audiveris.omr.util.Entity;
 
 import java.util.Arrays;
@@ -63,7 +64,7 @@ public class EntityListEvent<E extends Entity>
         super(source, hint, movement);
 
         if (entities != null) {
-            this.entities = Collections.unmodifiableList(entities);
+            this.entities = Collections.unmodifiableList(new ArrayList<E>(entities));
         } else {
             this.entities = Collections.emptyList();
         }
@@ -85,7 +86,7 @@ public class EntityListEvent<E extends Entity>
         super(source, hint, movement);
 
         if ((entities != null) && (entities.length > 0) && (entities[0] != null)) {
-            this.entities = Arrays.asList(entities);
+            this.entities = new ArrayList<E>(Arrays.asList(entities));
         } else {
             this.entities = Collections.emptyList();
         }
