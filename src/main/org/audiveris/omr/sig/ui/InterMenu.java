@@ -21,10 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.ui.selection.EntityListEvent;
+import org.audiveris.omr.ui.selection.MouseMovement;
+import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.AbstractMouseListener;
 import org.audiveris.omr.ui.util.SeparableMenu;
 
@@ -62,12 +66,17 @@ public class InterMenu
      *
      * @param inter originating inter
      */
-    public InterMenu (Inter inter)
+    public InterMenu (final Inter inter)
     {
         this.inter = inter;
-        menu = new SeparableMenu(new InterAction(inter, null));
 
         final Sheet sheet = inter.getSig().getSystem().getSheet();
+        menu = new SeparableMenu(new InterAction(inter, null));
+
+        // Title
+        menu.add(buildTitle(sheet, inter));
+        menu.addSeparator();
+
         interController = sheet.getInterController();
 
         // Existing relations (available for unlinking)
@@ -90,6 +99,32 @@ public class InterMenu
     public JMenu getMenu ()
     {
         return menu;
+    }
+
+    //------------//
+    // buildTitle //
+    //------------//
+    private JMenuItem buildTitle (final Sheet sheet,
+                                  final Inter inter)
+    {
+        JMenuItem title = new JMenuItem("Relations:");
+        title.setEnabled(false);
+        title.addMouseListener(
+                new AbstractMouseListener()
+        {
+            @Override
+            public void mouseEntered (MouseEvent e)
+            {
+                sheet.getInterIndex().getEntityService().publish(
+                        new EntityListEvent<Inter>(
+                                this,
+                                SelectionHint.ENTITY_INIT,
+                                MouseMovement.PRESSING,
+                                inter));
+            }
+        });
+
+        return title;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -115,7 +150,12 @@ public class InterMenu
             JMenuItem item = (JMenuItem) e.getSource();
             RelationAction ra = (RelationAction) item.getAction();
             SIGraph sig = ra.getInter().getSig();
-            interController.unlink(sig, ra.getRelation());
+            Relation relation = ra.getRelation();
+            String relStr = relation.getName();
+
+            if (OMR.gui.displayConfirmation("Remove " + relStr + " relation?")) {
+                interController.unlink(sig, relation);
+            }
         }
     }
 }

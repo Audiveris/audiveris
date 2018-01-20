@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.OMR;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
@@ -99,15 +100,22 @@ public class InterListMenu
     {
         JMenuItem item = new JMenuItem(
                 "Delete " + sysInters.size() + " inters for System #" + system.getId() + ":");
+
+        // To delete all listed inters when item is clicked upon
         item.addActionListener(
                 new ActionListener()
         {
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                sheet.getInterController().removeInters(sysInters);
+                if (OMR.gui.displayConfirmation(
+                        "Do you confirm the removal of " + sysInters.size() + " inter(s)?")) {
+                    sheet.getInterController().removeInters(sysInters);
+                }
             }
         });
+
+        // To (re)focus on all the listed inters when moving the mouse on the item
         item.addMouseListener(
                 new AbstractMouseListener()
         {

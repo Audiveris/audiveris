@@ -670,7 +670,7 @@ public class SymbolsEditor
         // showPagePopup //
         //---------------//
         /**
-         * Update the popup menu with current selection, then display the popup slightly
+         * Update the popup menu with current selection, then display the popup
          * on south east of current location.
          *
          * @param pt   current location
@@ -681,7 +681,7 @@ public class SymbolsEditor
         {
             if (pageMenu.updateMenu(new Rectangle(rect))) {
                 JPopupMenu popup = pageMenu.getPopup();
-                popup.show(this, getZoom().scaled(pt.x) + 10, getZoom().scaled(pt.y) + 10);
+                popup.show(this, getZoom().scaled(pt.x), getZoom().scaled(pt.y));
             }
         }
 
