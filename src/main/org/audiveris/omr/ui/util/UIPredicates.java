@@ -79,11 +79,7 @@ public abstract class UIPredicates
      */
     public static boolean isContextWanted (MouseEvent e)
     {
-        if (WellKnowns.MAC_OS_X) {
-            return e.isPopupTrigger();
-        } else {
-            return SwingUtilities.isRightMouseButton(e) && !SwingUtilities.isLeftMouseButton(e);
-        }
+        return SwingUtilities.isRightMouseButton(e) && !SwingUtilities.isLeftMouseButton(e);
     }
 
     //--------------//
