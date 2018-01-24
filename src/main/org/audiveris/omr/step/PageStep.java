@@ -27,7 +27,6 @@ import org.audiveris.omr.score.PageReduction;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voices;
-import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
@@ -55,6 +54,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -75,14 +77,13 @@ public class PageStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            PageStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(PageStep.class);
 
-    /** Inter classes that may impact voices. */
-    private static final Set<Class<? extends AbstractInter>> forVoices;
+    /** Classes that may impact voices. */
+    private static final Set<Class> forVoices;
 
     static {
-        forVoices = new HashSet<Class<? extends AbstractInter>>();
+        forVoices = new HashSet<Class>();
         forVoices.add(AugmentationDotInter.class);
         forVoices.add(BeamHookInter.class);
         forVoices.add(BeamInter.class);
@@ -99,40 +100,40 @@ public class PageStep
         forVoices.add(TupletInter.class);
     }
 
-    /** Inter classes that may impact lyrics. */
-    private static final Set<Class<? extends AbstractInter>> forLyrics;
+    /** Classes that may impact lyrics. */
+    private static final Set<Class> forLyrics;
 
     static {
-        forLyrics = new HashSet<Class<? extends AbstractInter>>();
+        forLyrics = new HashSet<Class>();
         forLyrics.add(LyricItemInter.class);
         forLyrics.add(LyricLineInter.class);
     }
 
-    /** Inter classes that may impact slurs. */
-    private static final Set<Class<? extends AbstractInter>> forSlurs;
+    /** Classes that may impact slurs. */
+    private static final Set<Class> forSlurs;
 
     static {
-        forSlurs = new HashSet<Class<? extends AbstractInter>>();
+        forSlurs = new HashSet<Class>();
         forSlurs.add(SlurInter.class);
     }
 
-    /** Inter classes that may impact parts. */
-    private static final Set<Class<? extends AbstractInter>> forParts;
+    /** Classes that may impact parts. */
+    private static final Set<Class> forParts;
 
     static {
-        forParts = new HashSet<Class<? extends AbstractInter>>();
+        forParts = new HashSet<Class>();
         forParts.add(SentenceInter.class);
     }
 
-    /** All impacting Inter classes. */
-    private static final Set<Class<? extends AbstractInter>> impactingInterClasses;
+    /** All impacting classes. */
+    private static final Set<Class> impactingClasses;
 
     static {
-        impactingInterClasses = new HashSet<Class<? extends AbstractInter>>();
-        impactingInterClasses.addAll(forVoices);
-        impactingInterClasses.addAll(forLyrics);
-        impactingInterClasses.addAll(forSlurs);
-        impactingInterClasses.addAll(forParts);
+        impactingClasses = new HashSet<Class>();
+        impactingClasses.addAll(forVoices);
+        impactingClasses.addAll(forLyrics);
+        impactingClasses.addAll(forSlurs);
+        impactingClasses.addAll(forParts);
     }
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -178,44 +179,77 @@ public class PageStep
     {
         logger.debug("PAGE impact {} {}", opKind, seq);
 
+        // First, determine what will be impacted
+        Map<Page, Impact> map = new LinkedHashMap<Page, Impact>();
+
         InterTask interTask = seq.getFirstInterTask();
 
         if (interTask != null) {
             Inter inter = interTask.getInter();
             Page page = inter.getSig().getSystem().getPage();
-            Class<? extends AbstractInter> interClass = (Class<? extends AbstractInter>) inter.getClass();
+            Impact impact = map.get(page);
 
-            if (forParts.contains(interClass)) {
+            if (impact == null) {
+                map.put(page, impact = new Impact());
+            }
+
+            Class interClass = (Class) inter.getClass();
+
+            if (isImpactedBy(interClass, forParts)) {
                 if (inter instanceof SentenceInter) {
                     SentenceInter sentence = (SentenceInter) inter;
 
                     if (sentence.getRole() == TextRole.PartName) {
-                        new PageReduction(page).reduce();
+                        impact.onParts = true;
                     }
                 }
             }
 
-            if (forSlurs.contains(interClass)) {
+            if (isImpactedBy(interClass, forSlurs)) {
+                impact.onSlurs = true;
+            }
+
+            if (isImpactedBy(interClass, forLyrics)) {
+                impact.onLyrics = true;
+            }
+
+            if (isImpactedBy(interClass, forVoices)) {
+                impact.onVoices = true;
+            }
+        }
+
+        logger.debug("map: {}", map);
+
+        // Second, handle each page impact
+        for (Entry<Page, Impact> entry : map.entrySet()) {
+            Page page = entry.getKey();
+            Impact impact = entry.getValue();
+
+            if (impact.onParts) {
+                new PageReduction(page).reduce();
+            }
+
+            if (impact.onSlurs) {
                 page.connectOrphanSlurs();
             }
 
-            if (forLyrics.contains(interClass)) {
+            if (impact.onLyrics) {
                 refineLyrics(page);
             }
 
-            if (forVoices.contains(interClass)) {
+            if (impact.onVoices) {
                 Voices.refinePage(page);
             }
         }
     }
 
-    //-----------------------//
-    // impactingInterClasses //
-    //-----------------------//
+    //--------------//
+    // isImpactedBy //
+    //--------------//
     @Override
-    public Set<Class<? extends AbstractInter>> impactingInterClasses ()
+    public boolean isImpactedBy (Class classe)
     {
-        return impactingInterClasses;
+        return isImpactedBy(classe, impactingClasses);
     }
 
     //--------------//
@@ -233,6 +267,37 @@ public class PageStep
                 LyricLineInter line = (LyricLineInter) inter;
                 line.refineLyricSyllables();
             }
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // Impact //
+    //--------//
+    private static class Impact
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        boolean onParts = false;
+
+        boolean onSlurs = false;
+
+        boolean onLyrics = false;
+
+        boolean onVoices = false;
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("PageImpact{");
+            sb.append("parts:").append(onParts);
+            sb.append(" slurs:").append(onSlurs);
+            sb.append(" lyrics:").append(onLyrics);
+            sb.append(" voices:").append(onVoices);
+            sb.append("}");
+
+            return sb.toString();
         }
     }
 }

@@ -91,6 +91,19 @@ public class LyricLineInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        if (staff != null) {
+            staff.getPart().addLyric(this);
+        }
+    }
+
     //--------//
     // create //
     //--------//
@@ -185,6 +198,24 @@ public class LyricLineInter
         return sb.toString();
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    /**
+     * Invalidate cached information. (following the addition or removal of a word)
+     */
+    @Override
+    public void invalidateCache ()
+    {
+        super.invalidateCache();
+
+        if (getMembers().size() == 1) {
+            // First item in lyric line, now we can sort lyrics within part
+            Part part = getPart();
+            part.sortLyricLines();
+        }
+    }
+
     //----------------------//
     // refineLyricSyllables //
     //----------------------//
@@ -224,6 +255,19 @@ public class LyricLineInter
 
             precedingItem = item;
         }
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (staff != null) {
+            staff.getPart().removeLyric(this);
+        }
+
+        super.remove(extensive);
     }
 
     //-----------//

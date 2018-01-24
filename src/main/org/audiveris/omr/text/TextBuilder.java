@@ -25,6 +25,7 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory;
@@ -83,6 +84,10 @@ import java.util.regex.PatternSyntaxException;
 /**
  * Class {@code TextBuilder} works at system level, to provide features to check, build
  * and reorganize text items, including interacting with the OCR engine.
+ * <p>
+ * When created with the 'isManual' flag set to true, a TextBuilder instance assumes that the user
+ * explicitly asked for glyph OCR and thus knows that the glyph is a block of text.
+ * In this case, many of the checks performed by TextBuilder are relaxed, if not bypassed.
  *
  * @author Hervé Bitteur
  */
@@ -90,10 +95,8 @@ public class TextBuilder
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters. */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility. */
     private static final Logger logger = LoggerFactory.getLogger(TextBuilder.class);
 
     /** The related OCR. */
@@ -129,11 +132,13 @@ public class TextBuilder
     /** Processed sections. true/false */
     private final Set<Section> processedSections = new LinkedHashSet<Section>();
 
+    /** User-selected text role for the buffer to process. */
+    private final TextRole expectedTextRole;
+
+    /** True for manual processing on certified text buffer. */
+    private final boolean isManual;
+
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //-------------//
-    // TextBuilder //
-    //-------------//
     /**
      * Creates a new TextBuilder object.
      *
@@ -145,10 +150,203 @@ public class TextBuilder
 
         sheet = system.getSheet();
         skew = sheet.getSkew();
-        params = new Parameters(sheet.getScale());
+        expectedTextRole = null;
+        isManual = false;
+        params = new Parameters(sheet.getScale(), isManual);
+    }
+
+    /**
+     * Creates a new TextBuilder object.
+     *
+     * @param system           the related system
+     * @param expectedTextRole the expected role for retrieved sentences
+     * @param isManual         true for manual assignment (on a glyph assumed to be text)
+     */
+    public TextBuilder (SystemInfo system,
+                        TextRole expectedTextRole,
+                        boolean isManual)
+    {
+        this.system = system;
+        this.expectedTextRole = expectedTextRole;
+        this.isManual = isManual;
+
+        sheet = system.getSheet();
+        skew = sheet.getSkew();
+        params = new Parameters(sheet.getScale(), isManual);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // getOcr //
+    //--------//
+    /**
+     * Report the related OCR engine, if one is available.
+     *
+     * @return the available OCR engine, or null
+     */
+    public static OCR getOcr ()
+    {
+        return ocr;
+    }
+
+    //----------------//
+    // isMainlyItalic //
+    //----------------//
+    /**
+     * Check whether the (majority of) line is in italic font.
+     *
+     * @param line the line to check
+     * @return true if mainly italics
+     */
+    public static boolean isMainlyItalic (TextLine line)
+    {
+        int reliableWords = 0;
+        int italicWords = 0;
+
+        for (TextWord word : line.getWords()) {
+            if ((word.getConfidence() >= constants.minConfidence.getValue())
+                && (word.getLength() > 1)) {
+                reliableWords++;
+
+                if (word.getFontInfo().isItalic) {
+                    italicWords++;
+                }
+            }
+        }
+
+        // Check for majority among reliable words
+        if (reliableWords != 0) {
+            return (italicWords * 2) >= reliableWords;
+        } else {
+            return false;
+        }
+    }
+
+    //--------------------//
+    // retrieveGlyphLines //
+    //--------------------//
+    /**
+     * Retrieve the glyph lines, among the lines OCR'ed from the glyph buffer.
+     *
+     * @param buffer     the (glyph) pixel buffer
+     * @param glyphLines the glyph raw OCR lines, relative to buffer origin
+     * @param offset     glyph top left corner (with respect to sheet origin)
+     * @return the final absolute text lines, ready to be inserted in sig
+     */
+    public List<TextLine> retrieveGlyphLines (ByteProcessor buffer,
+                                              List<TextLine> glyphLines,
+                                              Point offset)
+    {
+        // Pre-assign text role?
+        if (expectedTextRole != null) {
+            for (TextLine line : glyphLines) {
+                line.setRole(expectedTextRole);
+            }
+        }
+
+        glyphLines = recomposeLines(glyphLines);
+
+        List<Section> relativeSections = getSections(buffer, glyphLines);
+        mapGlyphs(glyphLines, relativeSections, offset);
+
+        // Translate to absolute coordinates
+        for (TextLine glyphLine : glyphLines) {
+            glyphLine.translate(offset.x, offset.y);
+        }
+
+        return glyphLines;
+    }
+
+    //---------------------//
+    // retrieveSystemLines //
+    //---------------------//
+    /**
+     * Retrieve the system-relevant lines, among all the lines OCR'ed at sheet level.
+     *
+     * @param buffer     the (sheet) pixel buffer
+     * @param sheetLines the sheet raw OCR lines
+     */
+    public void retrieveSystemLines (ByteProcessor buffer,
+                                     List<TextLine> sheetLines)
+    {
+        StopWatch watch = new StopWatch("Texts retrieveLines system#" + system.getId());
+        watch.start("Pickup system lines");
+
+        List<TextLine> systemLines = new ArrayList<TextLine>();
+
+        // We pick up the words that are contained by system area
+        // Beware: a text located between two systems must be deep copied to each system!
+        final Area area = system.getArea();
+        final Rectangle areaBounds = area.getBounds();
+
+        for (TextLine sheetLine : sheetLines) {
+            if (areaBounds.intersects(sheetLine.getBounds())) {
+                TextLine line = new TextLine();
+
+                for (TextWord sheetWord : sheetLine.getWords()) {
+                    final Rectangle wordBox = sheetWord.getBounds();
+
+                    if (area.contains(wordBox)) {
+                        TextWord word = sheetWord.copy();
+                        line.appendWord(word);
+                    }
+                }
+
+                if (!line.getWords().isEmpty()) {
+                    systemLines.add(line);
+                }
+            }
+        }
+
+        Collections.sort(systemLines, TextLine.byOrdinate(skew));
+
+        watch.start("recomposeLines");
+        systemLines = recomposeLines(systemLines);
+
+        // Retrieve candidate sections and map words to glyphs
+        watch.start("getSections");
+
+        // Brand new sections (not the usual horizontal or vertical sheet sections)
+        List<Section> relSections = getSections(buffer, systemLines);
+        watch.start("mapGlyphs");
+        mapGlyphs(systemLines, relSections, null);
+
+        // Allocate corresponding inters based on role (Sentences or LyricLines of LyricItems)
+        watch.start("createInters");
+        createInters();
+
+        watch.start("numberLyricLines()");
+        numberLyricLines();
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
+
+        if (logger.isDebugEnabled()) {
+            dump("Retrieved lines", systemLines);
+        }
+    }
+
+    //-----------//
+    // checkRole //
+    //-----------//
+    /**
+     * Try to assign a role to the provided line, if none is already assigned.
+     *
+     * @param line the line to check for role
+     */
+    private void checkRole (TextLine line)
+    {
+        if (line.getRole() == null) {
+            TextRole role = (expectedTextRole != null) ? expectedTextRole
+                    : TextRole.guessRole(line, system);
+
+            if (role != null) {
+                line.setRole(role);
+            }
+        }
+    }
+
     //---------------//
     // checkValidity //
     //---------------//
@@ -163,7 +361,7 @@ public class TextBuilder
      * @param line the OCR output
      * @return reason for invalidity if any, otherwise null
      */
-    public String checkValidity (TextLine line)
+    private String checkValidity (TextLine line)
     {
         {
             // Discard really invalid words
@@ -238,7 +436,7 @@ public class TextBuilder
      * @param word the word to check
      * @return reason for invalidity if any, otherwise null
      */
-    public String checkValidity (TextWord word)
+    private String checkValidity (TextWord word)
     {
         final String value = word.getValue();
 
@@ -317,553 +515,6 @@ public class TextBuilder
         return null; // OK
     }
 
-    //---------------//
-    // dumpTextLines //
-    //---------------//
-    /**
-     * Debug method to list current system text lines.
-     *
-     * @param title a title for the dump
-     */
-    public void dumpTextLines (String title)
-    {
-        logger.info("{} lines: {}", title, textLines.size());
-
-        for (TextLine line : textLines) {
-            logger.info("   {}", line);
-        }
-    }
-
-    //--------//
-    // getOcr //
-    //--------//
-    /**
-     * Report the related OCR engine, if one is available.
-     *
-     * @return the available OCR engine, or null
-     */
-    public static OCR getOcr ()
-    {
-        return ocr;
-    }
-
-    //----------------//
-    // isMainlyItalic //
-    //----------------//
-    /**
-     * Check whether the (majority of) line is in italic font.
-     *
-     * @param line the line to check
-     * @return true if mainly italics
-     */
-    public static boolean isMainlyItalic (TextLine line)
-    {
-        int reliableWords = 0;
-        int italicWords = 0;
-
-        for (TextWord word : line.getWords()) {
-            if ((word.getConfidence() >= constants.minConfidence.getValue())
-                && (word.getLength() > 1)) {
-                reliableWords++;
-
-                if (word.getFontInfo().isItalic) {
-                    italicWords++;
-                }
-            }
-        }
-
-        // Check for majority among reliable words
-        if (reliableWords != 0) {
-            return (italicWords * 2) >= reliableWords;
-        } else {
-            return false;
-        }
-    }
-
-    //-----------------//
-    // isValidFontSize //
-    //-----------------//
-    /**
-     * Check whether all words in the provided line have a valid font size.
-     *
-     * @param line the OCR'ed line to check
-     * @return true if valid
-     */
-    public boolean isValidFontSize (TextLine line)
-    {
-        for (TextWord word : line.getWords()) {
-            FontInfo fontInfo = word.getFontInfo();
-
-            if (fontInfo.pointsize > params.maxFontSize) {
-                logger.debug(
-                        "Too big font {} vs {} on {}",
-                        fontInfo.pointsize,
-                        params.maxFontSize,
-                        line);
-
-                return false;
-            } else if (fontInfo.pointsize < params.minFontSize) {
-                logger.debug(
-                        "Too small font {} vs {} on {}",
-                        fontInfo.pointsize,
-                        params.minFontSize,
-                        line);
-
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    //------------//
-    // mergeLines //
-    //------------//
-    /**
-     * Merge a sequence of TextLine instances into a single instance.
-     *
-     * @param lines the lines to merge
-     * @return a single TextLine
-     */
-    public TextLine mergeLines (List<TextLine> lines)
-    {
-        List<TextWord> words = new ArrayList<TextWord>();
-
-        for (TextLine line : lines) {
-            line.setProcessed(true);
-            words.addAll(line.getWords());
-        }
-
-        Collections.sort(words, TextWord.byAbscissa);
-
-        return new TextLine(words);
-    }
-
-    //
-    //    //----------------//
-    //    // purgeTextLines //
-    //    //----------------//
-    //    /**
-    //     * Remove words whose glyphs no longer point back to them,
-    //     * and finally remove text lines which have no word left.
-    //     * <p>
-    //     * TODO: is this still useful?
-    //     */
-    //    public void purgeTextLines ()
-    //    {
-    //        for (Iterator<TextLine> itLine = system.getTextLines().iterator(); itLine.hasNext();) {
-    //            TextLine line = itLine.next();
-    //            List<TextWord> toRemove = new ArrayList<TextWord>();
-    //
-    //            for (TextWord word : line.getWords()) {
-    //                Glyph glyph = word.getCompound();
-    //
-    //                if ((glyph == null) || (glyph.getTextWord() != word)) {
-    //                    logger.debug("{} purging old {}", sheet.getLogPrefix(), word);
-    //                    toRemove.add(word);
-    //                }
-    //            }
-    //
-    //            if (!toRemove.isEmpty()) {
-    //                line.removeWords(toRemove);
-    //            }
-    //
-    //            if (line.getWords().isEmpty()) {
-    //                logger.debug("{} purging empty {}", sheet.getLogPrefix(), line);
-    //                itLine.remove();
-    //            }
-    //        }
-    //    }
-    //----------------//
-    // recomposeLines //
-    //----------------//
-    /**
-     * Check and modify the provided raw TextLine instances for correct composition.
-     * <ul>
-     * <li>Except for lyrics line, a too large inter-word gap triggers a line split</li>
-     * <li>A too large inter-char gap triggers a word split</li>
-     * <li>A too small inter-word gap triggers a word merge</li>
-     * <li>For lyrics, separate lines with similar ordinate trigger a line merge</li>
-     * <li>For lyrics, a separation character triggers a word split into syllables</li>
-     * </ul>
-     *
-     * @param rawLines the lines to process
-     * @return the sequence of re-composed lines
-     */
-    public List<TextLine> recomposeLines (Collection<TextLine> rawLines)
-    {
-        logger.debug("System#{} recomposeLines", system.getId());
-
-        // Separate lyrics and standard lines, based on their roles
-        List<TextLine> standards = new ArrayList<TextLine>();
-        List<TextLine> lyrics = new ArrayList<TextLine>();
-        separatePopulations(rawLines, standards, lyrics);
-
-        // Process lyrics
-        if (!lyrics.isEmpty()) {
-            lyrics = purgeInvalidLines("lyrics", lyrics);
-            lyrics = mergeLyricLines(lyrics);
-
-            logger.debug("splitWords for lyrics");
-
-            for (TextLine line : lyrics) {
-                splitWords(line.getWords(), line);
-            }
-        }
-
-        // Process standards
-        if (!standards.isEmpty()) {
-            // Reject invalid standard lines
-            standards = splitStandardLines(standards);
-            standards = purgeInvalidLines("standards", standards);
-
-            // Recut standard lines
-            standards = mergeStandardLines(standards);
-            standards = splitStandardLines(standards);
-
-            // Recut standard words
-            logger.debug("recutStandardWords");
-
-            for (TextLine line : standards) {
-                recutStandardWords(line);
-            }
-        }
-
-        // Gather and sort all lines (standard & lyrics)
-        List<TextLine> allLines = new ArrayList<TextLine>();
-        allLines.addAll(lyrics);
-        allLines.addAll(standards);
-        Collections.sort(allLines, TextLine.byOrdinate(skew));
-
-        return allLines;
-    }
-
-    //--------------------//
-    // recutStandardWords //
-    //--------------------//
-    /**
-     * Re-cut (merge &amp; split) words within a standard TextLine.
-     *
-     * @param line the line to re-cut words
-     */
-    public void recutStandardWords (TextLine line)
-    {
-        mergeStandardWords(line);
-        splitWords(line.getWords(), line);
-    }
-
-    //---------------//
-    // retrieveLines //
-    //---------------//
-    /**
-     * Retrieve the system-relevant lines, among all the lines OCR'ed at sheet level.
-     *
-     * @param buffer     the pixel buffer
-     * @param sheetLines the sheet raw OCR lines
-     */
-    public void retrieveLines (ByteProcessor buffer,
-                               List<TextLine> sheetLines)
-    {
-        StopWatch watch = new StopWatch("Texts retrieveLines system#" + system.getId());
-        watch.start("Pickup system lines");
-
-        List<TextLine> systemLines = new ArrayList<TextLine>();
-
-        // We pick up the words that are contained by system area
-        // Beware: a text located between two systems must be deep copied to each system!
-        final Area area = system.getArea();
-        final Rectangle areaBounds = area.getBounds();
-
-        for (TextLine sheetLine : sheetLines) {
-            if (areaBounds.intersects(sheetLine.getBounds())) {
-                TextLine line = new TextLine();
-
-                for (TextWord sheetWord : sheetLine.getWords()) {
-                    final Rectangle wordBox = sheetWord.getBounds();
-
-                    if (area.contains(wordBox)) {
-                        TextWord word = sheetWord.copy();
-                        line.appendWord(word);
-                    }
-                }
-
-                if (!line.getWords().isEmpty()) {
-                    systemLines.add(line);
-                }
-            }
-        }
-
-        Collections.sort(systemLines, TextLine.byOrdinate(skew));
-
-        watch.start("recomposeLines");
-        systemLines = recomposeLines(systemLines);
-
-        // Retrieve candidate sections and map words to glyphs
-        watch.start("getSections");
-
-        // Brand new sections (not the usual horizontal or vertical sheet sections)
-        List<Section> allSections = getSections(buffer, systemLines);
-        watch.start("mapGlyphs");
-        mapGlyphs(systemLines, allSections, sheet.getStub().getLanguageParam().getActual());
-
-        // Allocate corresponding inters based on role (Sentences or LyricLines of LyricItems)
-        watch.start("createInters");
-        createInters();
-
-        watch.start("numberLyricLines()");
-        numberLyricLines();
-
-        if (constants.printWatch.isSet()) {
-            watch.print();
-        }
-
-        if (logger.isDebugEnabled()) {
-            dump("Retrieved lines", systemLines);
-        }
-    }
-
-    //------------------//
-    // retrieveSections //
-    //------------------//
-    /**
-     * Report the set of sections that relate to the provided collection of TextChar
-     * instances.
-     *
-     * @param chars       the OCR char descriptors
-     * @param allSections the candidate sections
-     * @return the corresponding set of sections
-     */
-    public SortedSet<Section> retrieveSections (List<TextChar> chars,
-                                                Collection<Section> allSections)
-    {
-        final SortedSet<Section> wordSections = new TreeSet<Section>(Section.byFullAbscissa);
-        final CompoundConstructor constructor = new CompoundConstructor()
-        {
-            @Override
-            public SectionCompound newInstance ()
-            {
-                return new SectionCompound(sheet.getInterline());
-            }
-        };
-
-        for (TextChar charDesc : chars) {
-            final Rectangle charBox = charDesc.getBounds();
-            final SortedSet<Section> charSections = new TreeSet<Section>(Section.byFullAbscissa);
-
-            for (Section section : allSections) {
-                // Do we contain a section not (yet) assigned?
-                if (!isProcessed(section) && charBox.contains(section.getBounds())) {
-                    charSections.add(section);
-                    setProcessed(section);
-                }
-            }
-
-            if (!charSections.isEmpty()) {
-                wordSections.addAll(charSections);
-
-                SectionCompound compound = CompoundFactory.buildCompound(charSections, constructor);
-                Glyph charGlyph = sheet.getGlyphIndex().registerOriginal(
-                        compound.toGlyph(null));
-                system.addFreeGlyph(charGlyph);
-            }
-        }
-
-        return wordSections;
-    }
-
-    //-----------//
-    // scanGlyph //
-    //-----------//
-    /**
-     * Launch the OCR on the provided glyph, to retrieve the TextLine instance(s)
-     * this glyph represents.
-     *
-     * @param glyph    the glyph to OCR
-     * @param language the probable language spec
-     * @param sheet    the containing sheet
-     * @return a list, not null but perhaps empty, of TextLine instances with absolute coordinates.
-     */
-    public static List<TextLine> scanGlyph (Glyph glyph,
-                                            String language,
-                                            Sheet sheet)
-    {
-        return getOcr().recognize(
-                sheet.getScale().getInterline(),
-                glyph.getBuffer().getBufferedImage(),
-                glyph.getBounds().getLocation(),
-                language,
-                OCR.LayoutMode.SINGLE_BLOCK,
-                sheet.getId() + "-g" + glyph.getId());
-    }
-
-    //------------//
-    // splitWords //
-    //------------//
-    /**
-     * Check each word in the provided collection and split it in place according to
-     * separating characters ('-' etc).
-     * <p>
-     * The line sequence of words may get modified, because of the addition of new (sub)words and
-     * the removal of words that got split.
-     * The line sequence of words remains sorted.
-     *
-     * @param words the collection of words to check and split
-     * @param line  the containing TextLine instance
-     */
-    public void splitWords (Collection<TextWord> words,
-                            TextLine line)
-    {
-        // To avoid concurrent modification errors
-        Collection<TextWord> toAdd = new ArrayList<TextWord>();
-        Collection<TextWord> toRemove = new ArrayList<TextWord>();
-
-        for (TextWord word : words) {
-            List<TextWord> subWords = null; // Results of split
-            final int maxCharGap = getMaxCharGap(word); // Max gap depends on word font size
-
-            //            final Glyph wordGlyph = word.getCompound();
-            //            if (wordGlyph != null) {
-            //                if (!wordGlyph.getTextValue().equals(word.getInternalValue())) {
-            //                    // A manual text modification has occurred
-            //                    // Check for a separator in the new manual value
-            //                    if (!word.getChars().isEmpty()) {
-            //                        logger.debug("Manual modif for {}", wordGlyph.idString());
-            //                        subWords = getSubWords(
-            //                                word,
-            //                                line,
-            //                                new WordScanner.ManualScanner(
-            //                                        wordGlyph.getTextValue(),
-            //                                        line.isLyrics(),
-            //                                        maxCharGap,
-            //                                        word.getChars()));
-            //
-            //                        // If no subdivision was made, allocate a new TextWord
-            //                        // just to match the new manual value
-            //                        if (subWords.isEmpty()) {
-            //                            TextWord newWord = new TextWord(
-            //                                    word.getBaseline(),
-            //                                    wordGlyph.getTextValue(),
-            //                                    word.getFontInfo(),
-            //                                    word.getConfidence(),
-            //                                    word.getChars(),
-            //                                    line);
-            //                            newWord.setCompound(wordGlyph);
-            //                            subWords.add(newWord);
-            //                            wordGlyph.setTextWord(wordGlyph.getOcrLanguage(), newWord);
-            //                        }
-            //                    }
-            //                }
-            //            } else {
-            subWords = getSubWords(
-                    word,
-                    line,
-                    new WordScanner.OcrScanner(
-                            word.getValue(),
-                            line.isLyrics(),
-                            maxCharGap,
-                            word.getChars()));
-
-            //            }
-            if ((subWords != null) && !subWords.isEmpty()) {
-                toRemove.add(word);
-                toAdd.addAll(subWords);
-            }
-        }
-
-        // Now perform modification on the line sequence of words, if so needed
-        if (!toRemove.isEmpty()) {
-            line.addWords(toAdd);
-            line.removeWords(toRemove);
-            checkRole(line);
-        }
-    }
-
-    //---------------------//
-    // switchLanguageTexts //
-    //---------------------//
-    /**
-     * Use a new language to update existing words when a better OCR result has been found.
-     */
-    public void switchLanguageTexts ()
-    {
-        //        final GlyphIndex nest = sheet.getGlyphIndex();
-        //        final LiveParam<String> textParam = sheet.getLanguageParam();
-        //        final String language = textParam.getTarget();
-        //
-        //        logger.debug("switchLanguageTexts lan:{}", language);
-        //
-        //        textParam.setActual(language);
-        //
-        //        for (TextLine oldLine : new ArrayList<TextLine>(system.getTextLines())) {
-        //            // Launch OCR on the whole line image
-        //            List<Glyph> glyphs = oldLine.getWordGlyphs();
-        //            Glyph compound = (glyphs.size() == 1) ? glyphs.get(0)
-        //                    : system.addFreeGlyph(nest.buildGlyph(glyphs, false));
-        //
-        //            List<TextLine> lines = scanGlyph(compound, language);
-        //
-        //            if ((lines == null) || (lines.size() != 1)) {
-        //                logger.debug("{} No valid replacement for {}", sheet.getLogPrefix(), oldLine);
-        //            } else {
-        //                TextLine newLine = lines.get(0);
-        //                recutStandardWords(newLine);
-        //
-        //                if (logger.isDebugEnabled()) {
-        //                    logger.debug("refreshing {} by {}", oldLine, newLine);
-        //                    oldLine.dump();
-        //                    newLine.dump();
-        //                }
-        //
-        //                List<TextWord> toRemove = new ArrayList<TextWord>();
-        //                List<TextWord> toAdd = new ArrayList<TextWord>();
-        //
-        //                for (TextWord oldWord : oldLine.getWords()) {
-        //                    TextWord newWord = findNewWord(oldWord, newLine);
-        //
-        //                    if (newWord != null) {
-        //                        if (newWord.getConfidence() >= oldWord.getConfidence()) {
-        //                            newWord.setCompound(oldWord.getCompound());
-        //                            newWord.getCompound().setTextWord(language, newWord);
-        //                            toRemove.add(oldWord);
-        //                            toAdd.add(newWord);
-        //                        }
-        //                    } else {
-        //                        logger.debug(
-        //                                "{} no word for {} in {}",
-        //                                sheet.getLogPrefix(),
-        //                                oldWord,
-        //                                newLine);
-        //                    }
-        //                }
-        //
-        //                // Update words in place
-        //                if (!toAdd.isEmpty()) {
-        //                    oldLine.addWords(toAdd);
-        //                    oldLine.removeWords(toRemove);
-        //                }
-        //            }
-        //        }
-    }
-
-    //-----------//
-    // checkRole //
-    //-----------//
-    /**
-     * Try to assign a role to the provided line, if none is already assigned.
-     *
-     * @param line the line to check for role
-     */
-    private void checkRole (TextLine line)
-    {
-        if (line.getRole() == null) {
-            TextRole role = TextRole.guessRole(line, system);
-
-            if (role != null) {
-                line.setRole(role);
-            }
-        }
-    }
-
     //--------------//
     // createInters //
     //--------------//
@@ -900,10 +551,6 @@ public class TextBuilder
                     sig.addVertex(wordInter);
                     sentence.addMember(wordInter);
                 }
-
-                if (sentence instanceof LyricLineInter) {
-                    staff.getPart().addLyric((LyricLineInter) sentence);
-                }
             }
         }
     }
@@ -922,6 +569,23 @@ public class TextBuilder
             for (TextWord word : line.getWords()) {
                 logger.info("      {}", word);
             }
+        }
+    }
+
+    //---------------//
+    // dumpTextLines //
+    //---------------//
+    /**
+     * Debug method to list current system text lines.
+     *
+     * @param title a title for the dump
+     */
+    private void dumpTextLines (String title)
+    {
+        logger.info("{} lines: {}", title, textLines.size());
+
+        for (TextLine line : textLines) {
+            logger.info("   {}", line);
         }
     }
 
@@ -1135,24 +799,62 @@ public class TextBuilder
         return processedSections.contains(section);
     }
 
+    //-----------------//
+    // isValidFontSize //
+    //-----------------//
+    /**
+     * Check whether all words in the provided line have a valid font size.
+     *
+     * @param line the OCR'ed line to check
+     * @return true if valid
+     */
+    private boolean isValidFontSize (TextLine line)
+    {
+        for (TextWord word : line.getWords()) {
+            FontInfo fontInfo = word.getFontInfo();
+
+            if (fontInfo.pointsize > params.maxFontSize) {
+                logger.debug(
+                        "Too big font {} vs {} on {}",
+                        fontInfo.pointsize,
+                        params.maxFontSize,
+                        line);
+
+                return false;
+            } else if (fontInfo.pointsize < params.minFontSize) {
+                logger.debug(
+                        "Too small font {} vs {} on {}",
+                        fontInfo.pointsize,
+                        params.minFontSize,
+                        line);
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     //-----------//
     // mapGlyphs //
     //-----------//
     /**
      * By searching through the provided sections, build one glyph for each word and
      * one sentence for each line.
-     * Build also one glyph per word char, to allow manual re-assignment.
+     * Build also one glyph per word char, to allow manual re-assignment. TODO: still useful?
      *
-     * @param lines       the lines (and contained words) to be mapped
-     * @param allSections the population of sections to browse
-     * @param language    the OCR language specification (not used actually)
+     * @param lines       the (relative) lines (and contained words) to be mapped
+     * @param allSections the population of (relative) sections to browse
+     * @param offset      offset to be applied on sections
      */
     private void mapGlyphs (List<TextLine> lines,
                             Collection<Section> allSections,
-                            String language)
+                            Point offset)
     {
         logger.debug("mapGlyphs");
 
+        final int dx = (offset != null) ? offset.x : 0;
+        final int dy = (offset != null) ? offset.y : 0;
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
         final int interline = sheet.getInterline();
         final CompoundConstructor constructor = new CompoundConstructor()
@@ -1180,7 +882,9 @@ public class TextBuilder
                     SectionCompound compound = CompoundFactory.buildCompound(
                             wordSections,
                             constructor);
-                    Glyph wordGlyph = glyphIndex.registerOriginal(compound.toGlyph(null));
+                    Glyph rel = compound.toGlyph(null);
+                    Glyph wordGlyph = glyphIndex.registerOriginal(
+                            new BasicGlyph(rel.getLeft() + dx, rel.getTop() + dy, rel.getRunTable()));
 
                     // Link TextWord -> Glyph
                     word.setGlyph(wordGlyph);
@@ -1239,6 +943,29 @@ public class TextBuilder
         }
 
         return line;
+    }
+
+    //------------//
+    // mergeLines //
+    //------------//
+    /**
+     * Merge a sequence of TextLine instances into a single instance.
+     *
+     * @param lines the lines to merge
+     * @return a single TextLine
+     */
+    private TextLine mergeLines (List<TextLine> lines)
+    {
+        List<TextWord> words = new ArrayList<TextWord>();
+
+        for (TextLine line : lines) {
+            line.setProcessed(true);
+            words.addAll(line.getWords());
+        }
+
+        Collections.sort(words, TextWord.byAbscissa);
+
+        return new TextLine(words);
     }
 
     //-----------------//
@@ -1497,6 +1224,139 @@ public class TextBuilder
         return newLines;
     }
 
+    //----------------//
+    // recomposeLines //
+    //----------------//
+    /**
+     * Check and modify the provided raw TextLine instances for correct composition.
+     * <ul>
+     * <li>Except for lyrics line, a too large inter-word gap triggers a line split</li>
+     * <li>A too large inter-char gap triggers a word split</li>
+     * <li>A too small inter-word gap triggers a word merge</li>
+     * <li>For lyrics, separate lines with similar ordinate trigger a line merge</li>
+     * <li>For lyrics, a separation character triggers a word split into syllables</li>
+     * </ul>
+     *
+     * @param rawLines the lines to process
+     * @return the sequence of re-composed lines
+     */
+    private List<TextLine> recomposeLines (Collection<TextLine> rawLines)
+    {
+        logger.debug("System#{} recomposeLines", system.getId());
+
+        // Separate lyrics and standard lines, based on their roles
+        List<TextLine> standards = new ArrayList<TextLine>();
+        List<TextLine> lyrics = new ArrayList<TextLine>();
+        separatePopulations(rawLines, standards, lyrics);
+
+        // Process lyrics
+        if (!lyrics.isEmpty()) {
+            if (!isManual) {
+                lyrics = purgeInvalidLines("lyrics", lyrics);
+            }
+
+            lyrics = mergeLyricLines(lyrics);
+
+            logger.debug("splitWords for lyrics");
+
+            for (TextLine line : lyrics) {
+                splitWords(line.getWords(), line);
+            }
+        }
+
+        // Process standards
+        if (!standards.isEmpty()) {
+            // Reject invalid standard lines
+            if (!isManual) {
+                standards = splitStandardLines(standards);
+            }
+
+            standards = purgeInvalidLines("standards", standards);
+
+            // Recut standard lines
+            standards = mergeStandardLines(standards);
+            standards = splitStandardLines(standards);
+
+            // Recut standard words
+            logger.debug("recutStandardWords");
+
+            for (TextLine line : standards) {
+                recutStandardWords(line);
+            }
+        }
+
+        // Gather and sort all lines (standard & lyrics)
+        List<TextLine> allLines = new ArrayList<TextLine>();
+        allLines.addAll(lyrics);
+        allLines.addAll(standards);
+        Collections.sort(allLines, TextLine.byOrdinate(skew));
+
+        return allLines;
+    }
+
+    //--------------------//
+    // recutStandardWords //
+    //--------------------//
+    /**
+     * Re-cut (merge &amp; split) words within a standard TextLine.
+     *
+     * @param line the line to re-cut words
+     */
+    private void recutStandardWords (TextLine line)
+    {
+        mergeStandardWords(line);
+        splitWords(line.getWords(), line);
+    }
+
+    //------------------//
+    // retrieveSections //
+    //------------------//
+    /**
+     * Report the set of sections that relate to the provided collection of TextChar
+     * instances.
+     *
+     * @param chars       the OCR char descriptors
+     * @param allSections the candidate sections
+     * @return the corresponding set of sections
+     */
+    private SortedSet<Section> retrieveSections (List<TextChar> chars,
+                                                 Collection<Section> allSections)
+    {
+        final SortedSet<Section> wordSections = new TreeSet<Section>(Section.byFullAbscissa);
+        final CompoundConstructor constructor = new CompoundConstructor()
+        {
+            @Override
+            public SectionCompound newInstance ()
+            {
+                return new SectionCompound(sheet.getInterline());
+            }
+        };
+
+        for (TextChar charDesc : chars) {
+            final Rectangle charBox = charDesc.getBounds();
+            final SortedSet<Section> charSections = new TreeSet<Section>(Section.byFullAbscissa);
+
+            for (Section section : allSections) {
+                // Do we contain a section not (yet) assigned?
+                if (!isProcessed(section) && charBox.contains(section.getBounds())) {
+                    charSections.add(section);
+                    setProcessed(section);
+                }
+            }
+
+            if (!charSections.isEmpty()) {
+                wordSections.addAll(charSections);
+//
+//                SectionCompound compound = CompoundFactory.buildCompound(charSections, constructor);
+//                Glyph charGlyph = sheet.getGlyphIndex()
+//                        .registerOriginal(compound.toGlyph(null));
+//                system.addFreeGlyph(charGlyph);
+            }
+        }
+
+        return wordSections;
+    }
+
     //---------------------//
     // separatePopulations //
     //---------------------//
@@ -1620,6 +1480,88 @@ public class TextBuilder
         return newStandards;
     }
 
+    //------------//
+    // splitWords //
+    //------------//
+    /**
+     * Check each word in the provided collection and split it in place according to
+     * separating characters ('-' etc).
+     * <p>
+     * The line sequence of words may get modified, because of the addition of new (sub)words and
+     * the removal of words that got split.
+     * The line sequence of words remains sorted.
+     *
+     * @param words the collection of words to check and split
+     * @param line  the containing TextLine instance
+     */
+    private void splitWords (Collection<TextWord> words,
+                             TextLine line)
+    {
+        // To avoid concurrent modification errors
+        Collection<TextWord> toAdd = new ArrayList<TextWord>();
+        Collection<TextWord> toRemove = new ArrayList<TextWord>();
+
+        for (TextWord word : words) {
+            List<TextWord> subWords = null; // Results of split
+            final int maxCharGap = getMaxCharGap(word); // Max gap depends on word font size
+
+            //            final Glyph wordGlyph = word.getCompound();
+            //            if (wordGlyph != null) {
+            //                if (!wordGlyph.getTextValue().equals(word.getInternalValue())) {
+            //                    // A manual text modification has occurred
+            //                    // Check for a separator in the new manual value
+            //                    if (!word.getChars().isEmpty()) {
+            //                        logger.debug("Manual modif for {}", wordGlyph.idString());
+            //                        subWords = getSubWords(
+            //                                word,
+            //                                line,
+            //                                new WordScanner.ManualScanner(
+            //                                        wordGlyph.getTextValue(),
+            //                                        line.isLyrics(),
+            //                                        maxCharGap,
+            //                                        word.getChars()));
+            //
+            //                        // If no subdivision was made, allocate a new TextWord
+            //                        // just to match the new manual value
+            //                        if (subWords.isEmpty()) {
+            //                            TextWord newWord = new TextWord(
+            //                                    word.getBaseline(),
+            //                                    wordGlyph.getTextValue(),
+            //                                    word.getFontInfo(),
+            //                                    word.getConfidence(),
+            //                                    word.getChars(),
+            //                                    line);
+            //                            newWord.setCompound(wordGlyph);
+            //                            subWords.add(newWord);
+            //                            wordGlyph.setTextWord(wordGlyph.getOcrLanguage(), newWord);
+            //                        }
+            //                    }
+            //                }
+            //            } else {
+            subWords = getSubWords(
+                    word,
+                    line,
+                    new WordScanner.OcrScanner(
+                            word.getValue(),
+                            line.isLyrics(),
+                            maxCharGap,
+                            word.getChars()));
+
+            //            }
+            if ((subWords != null) && !subWords.isEmpty()) {
+                toRemove.add(word);
+                toAdd.addAll(subWords);
+            }
+        }
+
+        // Now perform modification on the line sequence of words, if so needed
+        if (!toRemove.isEmpty()) {
+            line.addWords(toAdd);
+            line.removeWords(toRemove);
+            checkRole(line);
+        }
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -1672,7 +1614,7 @@ public class TextBuilder
                 "Maximum ratio between ocr and glyph diagonals");
 
         private final Scale.Fraction minFontSize = new Scale.Fraction(
-                1.5,
+                1.25,
                 "Minimum font size with respect to interline");
 
         private final Scale.Fraction maxFontSize = new Scale.Fraction(
@@ -1734,8 +1676,10 @@ public class TextBuilder
         final double maxDiagRatio;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Parameters (Scale scale)
+        public Parameters (Scale scale,
+                           boolean isManual)
         {
+            // TODO: check all these constant for specific manual work...
             minFontSize = scale.toPixels(constants.minFontSize);
             maxFontSize = scale.toPixels(constants.maxFontSize);
             maxLyricsDy = scale.toPixels(constants.maxLyricsDy);

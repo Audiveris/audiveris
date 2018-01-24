@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.lag;
 
-import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.math.Line;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.Run;
@@ -238,29 +237,6 @@ public class DynamicSection
         orientedPoint.y /= (2 * getWeight());
 
         return orientation.absolute(orientedPoint);
-    }
-
-    //---------------------//
-    // computeOrientedLine //
-    //---------------------//
-    protected Line computeOrientedLine ()
-    {
-        // Compute the section line
-        Line oLine = new BasicLine();
-
-        int y = getFirstPos();
-
-        for (Run run : runs) {
-            int stop = run.getStop();
-
-            for (int x = run.getStart(); x <= stop; x++) {
-                oLine.includePoint(x, y);
-            }
-
-            y++;
-        }
-
-        return oLine;
     }
 
     //-------------------//

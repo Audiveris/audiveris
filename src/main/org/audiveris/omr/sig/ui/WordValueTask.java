@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                     S e n t e n c e T a s k                                    //
+//                                    W o r d V a l u e T a s k                                   //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -21,68 +21,51 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.sig.inter.SentenceInter;
-import org.audiveris.omr.text.TextRole;
+import org.audiveris.omr.sig.inter.WordInter;
 
 /**
- * Class {@code SentenceTask}
+ * Class {@code WordValueTask} handle the text value update of a word.
  *
  * @author Hervé Bitteur
  */
-public class SentenceTask
+public class WordValueTask
         extends InterTask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Old sentence role. */
-    final TextRole oldRole;
+    /** Old word content. */
+    private final String oldValue;
 
-    /** New sentence role. */
-    final TextRole newRole;
+    /** New word content. */
+    private final String newValue;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code SentenceTask} object.
+     * Creates a new {@code WordTask} object.
      *
-     * @param sentence the sentence to modify
-     * @param newRole  the new role for the sentence
+     * @param word     the word to modify
+     * @param newValue new word value
      */
-    public SentenceTask (SentenceInter sentence,
-                         TextRole newRole)
+    public WordValueTask (WordInter word,
+                          String newValue)
     {
-        super(sentence.getSig(), sentence, sentence.getBounds(), null);
-        this.newRole = newRole;
+        super(word.getSig(), word, word.getBounds(), null);
+        this.newValue = newValue;
 
-        oldRole = sentence.getRole();
+        oldValue = word.getValue();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public SentenceInter getInter ()
+    public WordInter getInter ()
     {
-        return (SentenceInter) inter;
-    }
-
-    /**
-     * @return the newRole
-     */
-    public TextRole getNewRole ()
-    {
-        return newRole;
-    }
-
-    /**
-     * @return the oldRole
-     */
-    public TextRole getOldRole ()
-    {
-        return oldRole;
+        return (WordInter) inter;
     }
 
     @Override
     public void performDo ()
     {
-        getInter().setRole(newRole);
+        getInter().setValue(newValue);
 
         sheet.getInterIndex().publish(getInter());
     }
@@ -90,7 +73,7 @@ public class SentenceTask
     @Override
     public void performUndo ()
     {
-        getInter().setRole(oldRole);
+        getInter().setValue(oldValue);
 
         sheet.getInterIndex().publish(getInter());
     }
@@ -100,8 +83,8 @@ public class SentenceTask
     {
         StringBuilder sb = new StringBuilder(actionName());
         sb.append(" ").append(inter);
-        sb.append(" from ").append(oldRole);
-        sb.append(" to ").append(newRole);
+        sb.append(" from \"").append(oldValue).append("\"");
+        sb.append(" to \"").append(newValue).append("\"");
 
         return sb.toString();
     }
@@ -109,6 +92,6 @@ public class SentenceTask
     @Override
     protected String actionName ()
     {
-        return "role";
+        return "word";
     }
 }

@@ -378,7 +378,7 @@ public class InterBoard
                     // Change text value?
                     final String newValue = textField.getText().trim();
 
-                    if (!word.getValue().equals(newValue)) {
+                    if (!newValue.equals(word.getValue())) {
                         logger.debug("Word=\"{}\"", newValue);
                         sheet.getInterController().changeWord(word, newValue);
                     }

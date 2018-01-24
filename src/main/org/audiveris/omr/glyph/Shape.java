@@ -376,6 +376,7 @@ public enum Shape
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
     SEGMENT("Wedge or ending segment"),
+    LYRICS("Lyrics"),
 
     //
     // Stems
@@ -610,19 +611,6 @@ public enum Shape
     public boolean isTrainable ()
     {
         return ordinal() <= LAST_PHYSICAL_SHAPE.ordinal();
-    }
-
-    //-------------//
-    // isWellKnown //
-    //-------------//
-    /**
-     * Report whether this shape is well known, that is a non-garbage symbol.
-     *
-     * @return true if non-garbage, false otherwise
-     */
-    public boolean isWellKnown ()
-    {
-        return (this != NO_LEGAL_TIME) && (this != GLYPH_PART) && (this != NOISE);
     }
 
     //----------------//

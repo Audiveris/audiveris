@@ -280,7 +280,7 @@ public class EntityService<E extends Entity>
     /**
      * Interest in location => entity basket
      *
-     * @param locationEvents
+     * @param locationEvent
      */
     protected void handleLocationEvent (LocationEvent locationEvent)
     {

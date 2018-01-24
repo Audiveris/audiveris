@@ -65,12 +65,14 @@ import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 
@@ -495,6 +497,14 @@ public class SymbolFactory
         case SLUR:
             return new SlurInter(grade);
 
+        // Text
+        case LYRICS:
+            return new SentenceInter(grade);
+
+        case TEXT:
+            return new WordInter(grade);
+
+        // Others
         default:
 
             String msg = "No ghost instance for " + shape;

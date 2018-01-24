@@ -249,6 +249,44 @@ public class SystemManager
         }
     }
 
+    //------------------//
+    // getClosestSystem //
+    //------------------//
+    /**
+     * Report the system which is (vertically) closest to the provided point.
+     *
+     * @param point provided point
+     * @return closest system or null if external to sheet bounds
+     */
+    public SystemInfo getClosestSystem (Point2D point)
+    {
+        final List<SystemInfo> found = getSystemsOf(point);
+
+        if (found.isEmpty()) {
+            return null;
+        }
+
+        int bestIndex = 0;
+
+        if (found.size() > 1) {
+            int minDist = Integer.MAX_VALUE;
+
+            for (int i = 0; i < found.size(); i++) {
+                SystemInfo syst = found.get(i);
+                int vDist = Math.min(
+                        syst.getFirstStaff().distanceTo(point),
+                        syst.getLastStaff().distanceTo(point));
+
+                if (vDist < minDist) {
+                    minDist = vDist;
+                    bestIndex = i;
+                }
+            }
+        }
+
+        return found.get(bestIndex);
+    }
+
     //------------//
     // getSystems //
     //------------//

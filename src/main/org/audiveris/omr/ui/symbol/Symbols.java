@@ -169,6 +169,7 @@ public abstract class Symbols
         dec.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
         dec.put(SLUR, new SlurSymbol());
         dec.put(TEXT, new TextSymbol(TEXT, "txt"));
+        dec.put(LYRICS, new TextSymbol(LYRICS, "lyrics"));
         dec.put(WHOLE_REST, new RestSymbol(WHOLE_REST, true, 183));
     }
 

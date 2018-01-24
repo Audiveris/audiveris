@@ -28,12 +28,14 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.BeamHeadCleaner;
 import org.audiveris.omr.sig.CrossDetector;
 import org.audiveris.omr.sig.SigReducer;
-import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTask;
-import org.audiveris.omr.sig.ui.SentenceTask;
+import org.audiveris.omr.sig.ui.SentenceRoleTask;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractSystemStep;
@@ -59,24 +61,23 @@ public class LinksStep
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            LinksStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(LinksStep.class);
 
-    /** Inter classes that may impact texts. */
-    private static final Set<Class<? extends AbstractInter>> forTexts;
+    /** Classes that may impact texts. */
+    private static final Set<Class> forTexts;
 
     static {
-        forTexts = new HashSet<Class<? extends AbstractInter>>();
+        forTexts = new HashSet<Class>();
         forTexts.add(WordInter.class);
         forTexts.add(SentenceInter.class);
     }
 
-    /** All impacting Inter classes. */
-    private static final Set<Class<? extends AbstractInter>> impactingInterClasses;
+    /** All impacting classes. */
+    private static final Set<Class> impactingClasses;
 
     static {
-        impactingInterClasses = new HashSet<Class<? extends AbstractInter>>();
-        impactingInterClasses.addAll(forTexts);
+        impactingClasses = new HashSet<Class>();
+        impactingClasses.addAll(forTexts);
     }
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -127,37 +128,46 @@ public class LinksStep
     {
         logger.debug("LINKS impact {} {}", opKind, seq);
 
-        InterTask interTask = seq.getFirstInterTask();
+        for (UITask task : seq.getTasks()) {
+            if (task instanceof InterTask) {
+                InterTask interTask = (InterTask) task;
+                Inter inter = interTask.getInter();
+                SystemInfo system = inter.getSig().getSystem();
+                Class interClass = (Class) inter.getClass();
 
-        if (interTask != null) {
-            Inter inter = interTask.getInter();
-            SystemInfo system = inter.getSig().getSystem();
-            Class<? extends AbstractInter> interClass = (Class<? extends AbstractInter>) inter.getClass();
+                if (isImpactedBy(interClass, forTexts)) {
+                    if (inter instanceof LyricItemInter) {
+                        LyricItemInter item = (LyricItemInter) inter;
 
-            if (forTexts.contains(interClass)) {
-                if (inter instanceof SentenceInter) {
-                    SentenceInter sentence = (SentenceInter) inter;
-
-                    if (interTask instanceof SentenceTask) {
-                        SentenceTask task = (SentenceTask) interTask;
+                        if ((opKind == OpKind.DO) && task instanceof AdditionTask) {
+                            item.mapToChord();
+                        }
+                    } else if (inter instanceof SentenceInter) {
+                        SentenceInter sentence = (SentenceInter) inter;
                         SymbolsLinker linker = new SymbolsLinker(system);
-                        linker.unlinkOneSentence(
-                                sentence,
-                                (opKind == OpKind.DO) ? task.getOldRole() : task.getNewRole());
-                        linker.linkOneSentence(sentence);
+
+                        if ((opKind == OpKind.DO) && task instanceof AdditionTask) {
+                            linker.linkOneSentence(sentence);
+                        } else if (task instanceof SentenceRoleTask) {
+                            SentenceRoleTask roleTask = (SentenceRoleTask) interTask;
+                            linker.unlinkOneSentence(
+                                    sentence,
+                                    (opKind == OpKind.DO) ? roleTask.getOldRole() : roleTask.getNewRole());
+                            linker.linkOneSentence(sentence);
+                        }
                     }
                 }
             }
         }
     }
 
-    //-----------------------//
-    // impactingInterClasses //
-    //-----------------------//
+    //--------------//
+    // isImpactedBy //
+    //--------------//
     @Override
-    public Set<Class<? extends AbstractInter>> impactingInterClasses ()
+    public boolean isImpactedBy (Class classe)
     {
-        return impactingInterClasses;
+        return isImpactedBy(classe, impactingClasses);
     }
 
     //----------//

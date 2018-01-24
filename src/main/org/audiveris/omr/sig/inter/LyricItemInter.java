@@ -29,7 +29,6 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.text.TextWord;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
@@ -209,8 +208,13 @@ public class LyricItemInter
     //------------//
     public void mapToChord ()
     {
-        // We connect only syllables
+        // We map only syllables
         if (itemKind != ItemKind.Syllable) {
+            return;
+        }
+
+        // Already mapped?
+        if (sig.hasRelation(this, ChordSyllableRelation.class)) {
             return;
         }
 
@@ -303,7 +307,7 @@ public class LyricItemInter
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxItemDx = new Scale.Fraction(
-                4,
+                5,
                 "Maximum horizontal distance between a note and its lyric item");
     }
 }

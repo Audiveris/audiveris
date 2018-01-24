@@ -140,7 +140,7 @@ public class Part
     @XmlElement(name = "measure")
     private final List<Measure> measures = new ArrayList<Measure>();
 
-    /** Lyric lines in this part. */
+    /** Lyric lines in this part. To be kept sorted vertically. */
     @XmlList
     @XmlIDREF
     @XmlElement(name = "lyric-lines")
@@ -726,6 +726,20 @@ public class Part
         }
     }
 
+    //-------------//
+    // removeLyric //
+    //-------------//
+    public void removeLyric (LyricLineInter lyric)
+    {
+        if (lyrics != null) {
+            lyrics.remove(lyric);
+        }
+
+        if (lyrics.isEmpty()) {
+            lyrics = null;
+        }
+    }
+
     //------------//
     // removeSLur //
     //------------//
@@ -807,6 +821,26 @@ public class Part
     public void setSystem (SystemInfo system)
     {
         this.system = system;
+    }
+
+    //----------------//
+    // sortLyricLines //
+    //----------------//
+    /**
+     * Keep the lyrics sorted by vertical order in part.
+     */
+    public void sortLyricLines ()
+    {
+        if (lyrics != null) {
+            Collections.sort(lyrics, SentenceInter.byOrdinate);
+
+            // Assign sequential number to lyric line in its part
+            int lyricNumber = 0;
+
+            for (LyricLineInter line : lyrics) {
+                line.setNumber(++lyricNumber);
+            }
+        }
     }
 
     //-------------//

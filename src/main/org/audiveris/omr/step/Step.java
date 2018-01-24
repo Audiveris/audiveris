@@ -37,12 +37,9 @@ import org.audiveris.omr.sheet.stem.StemsStep;
 import org.audiveris.omr.sheet.symbol.LinksStep;
 import org.audiveris.omr.sheet.symbol.SymbolsStep;
 import org.audiveris.omr.sheet.ui.SheetTab;
-import org.audiveris.omr.sig.inter.AbstractInter;
+import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.text.TextsStep;
-
-import java.util.Collection;
-import org.audiveris.omr.sig.ui.UITask.OpKind;
 
 /**
  * Enum {@code Step} describes the steps of sheet processing pipeline.
@@ -130,6 +127,20 @@ public enum Step
     public void clearErrors (Sheet sheet)
     {
         helper.clearErrors(this, sheet);
+    }
+
+    //--------------//
+    // isImpactedBy //
+    //--------------//
+    /**
+     * Report whether this step is impact by an action on the provided class
+     *
+     * @param classe
+     * @return true if impacted
+     */
+    public boolean isImpactedBy (Class classe)
+    {
+        return helper.isImpactedBy(classe);
     }
 
     //------------//
@@ -256,18 +267,5 @@ public enum Step
                         OpKind opKind)
     {
         helper.impact(seq, opKind);
-    }
-
-    //-----------------------//
-    // impactingInterClasses //
-    //-----------------------//
-    /**
-     * Report the Inter classes that impact this step.
-     *
-     * @return the collection of Inter classes this step cares about
-     */
-    public Collection<Class<? extends AbstractInter>> impactingInterClasses ()
-    {
-        return helper.impactingInterClasses();
     }
 }

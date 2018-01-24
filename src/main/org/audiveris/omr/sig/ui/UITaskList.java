@@ -116,7 +116,7 @@ public class UITaskList
 
     public void performDo ()
     {
-        logger.info("  do {}", this);
+        logger.debug("  do {}", this);
 
         for (UITask task : list) {
             task.performDo();
@@ -125,7 +125,7 @@ public class UITaskList
 
     public void performUndo ()
     {
-        logger.info("undo {}", this);
+        logger.debug("undo {}", this);
 
         // Perform Undo in reverse list order
         for (ListIterator<UITask> it = list.listIterator(list.size()); it.hasPrevious();) {

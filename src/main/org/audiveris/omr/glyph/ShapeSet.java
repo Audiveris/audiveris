@@ -450,7 +450,7 @@ public class ShapeSet
     public static final ShapeSet Physicals = new ShapeSet(
             LEDGER,
             new Color(0x9999ff),
-            shapesOf(TEXT, CHARACTER, CLUTTER, SLUR, LEDGER, STEM, ENDING));
+            shapesOf(LYRICS, TEXT, CHARACTER, CLUTTER, SLUR, LEDGER, STEM, ENDING));
 
     // =========================================================================
     // Below are EnumSet instances, used programmatically.

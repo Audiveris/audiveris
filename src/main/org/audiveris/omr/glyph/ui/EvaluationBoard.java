@@ -428,6 +428,7 @@ public class EvaluationBoard
 
                     // Actually assign the shape
                     interController.addInter(glyph, shape);
+
                     ///sheet.getStub().getBook().getSampleRepository().addSample(shape, glyph, sheet);
                 }
             }

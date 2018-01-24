@@ -42,6 +42,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.glyph.Shape;
 
 /**
  * Class {@code SentenceInter} represents a full sentence of words.
@@ -101,15 +102,28 @@ public class SentenceInter
      * @param meanFont the font averaged on whole text line
      * @param role     text role for the line
      */
-    protected SentenceInter (Rectangle bounds,
-                             double grade,
-                             FontInfo meanFont,
-                             TextRole role)
+    public SentenceInter (Rectangle bounds,
+                          double grade,
+                          FontInfo meanFont,
+                          TextRole role)
     {
         super(null, bounds, null, grade);
 
         this.meanFont = meanFont;
         this.role = role;
+    }
+
+    /**
+     * Creates a new {@code SentenceInter} object, meant for user handling of glyph.
+     *
+     * @param grade the interpretation quality
+     */
+    public SentenceInter (double grade)
+    {
+        super(null, null, Shape.LYRICS, grade);
+
+        this.meanFont = null;
+        this.role = TextRole.Lyrics;
     }
 
     /**

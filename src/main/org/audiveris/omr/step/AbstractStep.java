@@ -82,9 +82,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Abstract class {@code AbstractStep} provides a convenient basis for any {@link Step}
@@ -224,12 +223,33 @@ public abstract class AbstractStep
     }
 
     /**
-     * Report the set of Inter classes that impact this step.
+     * Report whether the provided class impacts this step.
      *
-     * @return the set of impacting classes, perhaps empty but not null
+     * @param classe the class to check
+     * @return true if step is impacted
      */
-    public Set<Class<? extends AbstractInter>> impactingInterClasses ()
+    public boolean isImpactedBy (Class classe)
     {
-        return Collections.EMPTY_SET; // By default
+        return false; // By default
+    }
+
+    /**
+     * Report whether the collection of classes contains the provided class, or a super
+     * type of the provided class.
+     *
+     * @param classe  the class to check
+     * @param classes the collection of classes
+     * @return true if compatible class found
+     */
+    protected boolean isImpactedBy (Class classe,
+                                    Collection<Class> classes)
+    {
+        for (Class cl : classes) {
+            if (cl.isAssignableFrom(classe)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

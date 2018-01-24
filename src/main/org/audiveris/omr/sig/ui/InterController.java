@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import ij.process.ByteProcessor;
+
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -35,14 +37,16 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
+import org.audiveris.omr.sig.inter.LyricItemInter;
+import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
-import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
@@ -53,8 +57,11 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
 import org.audiveris.omr.step.Step;
+import org.audiveris.omr.text.GlyphScanner;
+import org.audiveris.omr.text.TextBuilder;
+import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
-import org.audiveris.omr.util.HorizontalSide;
+import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
@@ -63,13 +70,13 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
@@ -141,6 +148,12 @@ public class InterController
                           final Shape shape)
     {
         logger.debug("addInter {} as {}", aGlyph, shape);
+
+        if ((shape == Shape.TEXT) || (shape == Shape.LYRICS)) {
+            addText(aGlyph, shape);
+
+            return;
+        }
 
         final Glyph glyph = sheet.getGlyphIndex().registerOriginal(aGlyph);
 
@@ -250,6 +263,107 @@ public class InterController
     }
 
     //---------//
+    // addText //
+    //---------//
+    /**
+     * Special addition of glyph text
+     *
+     * @param glyph to be OCR'ed to text lines and words
+     * @param shape either TEXT or LYRICS
+     */
+    public void addText (final Glyph glyph,
+                         final Shape shape)
+    {
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+                    throws Exception
+            {
+                final Point centroid = glyph.getCentroid();
+                final SystemInfo system = sheet.getSystemManager().getClosestSystem(centroid);
+
+                if (system == null) {
+                    return null;
+                }
+
+                final SIGraph sig = system.getSig();
+
+                // Retrieve lines relative to glyph origin
+                ByteProcessor buffer = glyph.getBuffer();
+                List<TextLine> relativeLines = new GlyphScanner(sheet).scanBuffer(
+                        buffer,
+                        sheet.getStub().getLanguageParam().getActual(),
+                        glyph.getId());
+
+                // Retrieve absolute lines (and the underlying word glyphs)
+                TextRole expected = (shape == Shape.LYRICS) ? TextRole.Lyrics : null;
+                List<TextLine> lines = new TextBuilder(system, expected, true).retrieveGlyphLines(
+                        buffer,
+                        relativeLines,
+                        glyph.getTopLeft());
+
+                // Generate the sequence of word/line Inter additions
+                final UITaskList seq = new UITaskList();
+
+                for (TextLine line : lines) {
+                    logger.debug("line {}", line);
+
+                    TextRole role = line.getRole();
+                    SentenceInter sentence = null;
+                    Staff staff = null;
+
+                    for (TextWord textWord : line.getWords()) {
+                        logger.debug("word {}", textWord);
+
+                        WordInter word = (role == TextRole.Lyrics)
+                                ? new LyricItemInter(textWord) : new WordInter(
+                                        textWord);
+
+                        if (sentence != null) {
+                            seq.add(
+                                    new AdditionTask(
+                                            sig,
+                                            word,
+                                            textWord.getBounds(),
+                                            Arrays.asList(new Link(sentence, new Containment(), false))));
+                        } else {
+                            sentence = (role == TextRole.Lyrics) ? LyricLineInter.create(line)
+                                    : ((role == TextRole.ChordName)
+                                            ? ChordNameInter.create(line)
+                                            : SentenceInter.create(line));
+                            staff = sentence.assignStaff(system, line.getLocation());
+                            seq.add(
+                                    new AdditionTask(
+                                            sig,
+                                            word,
+                                            textWord.getBounds(),
+                                            Collections.EMPTY_SET));
+                            seq.add(
+                                    new AdditionTask(
+                                            sig,
+                                            sentence,
+                                            line.getBounds(),
+                                            Arrays.asList(new Link(word, new Containment(), true))));
+                        }
+
+                        word.setStaff(staff);
+                    }
+                }
+
+                history.add(seq);
+                seq.performDo();
+
+                sheet.getInterIndex().publish(null);
+
+                epilog(DO, seq);
+
+                return null;
+            }
+        }.execute();
+    }
+
+    //---------//
     // canRedo //
     //---------//
     /**
@@ -295,12 +409,14 @@ public class InterController
             protected Void doInBackground ()
                     throws Exception
             {
-                final UITaskList seq = new UITaskList(new SentenceTask(sentence, newRole));
+                final UITaskList seq = new UITaskList(new SentenceRoleTask(sentence, newRole));
                 history.add(seq);
 
                 seq.performDo();
 
-                epilog(seq, DO);
+                sheet.getInterIndex().publish(sentence);
+
+                epilog(DO, seq);
 
                 return null;
             }
@@ -327,12 +443,14 @@ public class InterController
             protected Void doInBackground ()
                     throws Exception
             {
-                final UITaskList seq = new UITaskList(new WordTask(word, newValue));
+                final UITaskList seq = new UITaskList(new WordValueTask(word, newValue));
                 history.add(seq);
 
                 seq.performDo();
 
-                epilog(seq, DO);
+                sheet.getInterIndex().publish(word);
+
+                epilog(DO, seq);
 
                 return null;
             }
@@ -413,7 +531,7 @@ public class InterController
 
                 sheet.getInterIndex().publish(source);
 
-                epilog(seq, DO);
+                epilog(DO, seq);
 
                 return null;
             }
@@ -437,7 +555,9 @@ public class InterController
                 UITaskList seq = history.toRedo();
                 seq.performDo();
 
-                epilog(seq, DO);
+                sheet.getInterIndex().publish(null);
+
+                epilog(DO, seq);
 
                 return null;
             }
@@ -454,27 +574,7 @@ public class InterController
      */
     public void removeInter (final Inter inter)
     {
-        if (inter.isRemoved()) {
-            return;
-        }
-
-        final Set<Inter> toRemove = new LinkedHashSet<Inter>();
-
-        new CtrlTask()
-        {
-            @Override
-            protected Void doInBackground ()
-                    throws Exception
-            {
-                if (inter.isVip()) {
-                    logger.info("VIP removeInter {}", inter);
-                }
-
-                syncRemoveInter(inter, toRemove);
-
-                return null;
-            }
-        }.execute();
+        removeInters(Arrays.asList(inter));
     }
 
     //--------------//
@@ -487,19 +587,13 @@ public class InterController
      */
     public void removeInters (final Collection<? extends Inter> inters)
     {
-        final Set<Inter> toRemove = new LinkedHashSet<Inter>();
-
         new CtrlTask()
         {
             @Override
             protected Void doInBackground ()
                     throws Exception
             {
-                for (Inter inter : inters) {
-                    if (!toRemove.contains(inter)) {
-                        syncRemoveInter(inter, toRemove);
-                    }
-                }
+                syncRemoveInters(inters);
 
                 return null;
             }
@@ -555,7 +649,9 @@ public class InterController
                 UITaskList seq = history.toUndo();
                 seq.performUndo();
 
-                epilog(seq, UNDO);
+                sheet.getInterIndex().publish(null);
+
+                epilog(UNDO, seq);
 
                 return null;
             }
@@ -592,7 +688,7 @@ public class InterController
 
                 sheet.getInterIndex().publish(source);
 
-                epilog(seq, DO);
+                epilog(DO, seq);
 
                 return null;
             }
@@ -676,10 +772,9 @@ public class InterController
 
         seq.performDo();
 
-        sheet.getGlyphIndex().publish(null);
         sheet.getInterIndex().publish(ghost);
 
-        epilog(seq, DO);
+        epilog(DO, seq);
     }
 
     //--------//
@@ -690,17 +785,20 @@ public class InterController
      * <p>
      * This depends on the impacted items (inters, relations) and on the current processing step.
      *
-     * @param seq    the sequence of user tasks
      * @param opKind how is seq used
+     * @param seq    sequence of user tasks
      */
-    private void epilog (UITaskList seq,
-                         OpKind opKind)
+    private void epilog (OpKind opKind,
+                         UITaskList seq)
     {
         sheet.getStub().setModified(true);
+
+        sheet.getGlyphIndex().publish(null);
 
         // Re-process impacted steps
         final Step latestStep = sheet.getStub().getLatestStep();
         final Step firstStep = firstImpactedStep(seq);
+        logger.debug("firstStep: {}", firstStep);
 
         if ((firstStep != null) && (firstStep.compareTo(latestStep) <= 0)) {
             final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
@@ -723,31 +821,35 @@ public class InterController
      */
     private Step firstImpactedStep (UITaskList seq)
     {
-        Inter inter = null;
-        final InterTask interTask = seq.getFirstInterTask();
+        Step firstStep = null;
 
-        if (interTask != null) {
-            inter = interTask.inter;
-        } else {
-            // seq contains only relation(s) and no inter
-            RelationTask relationTask = seq.getFirstRelationTask();
+        for (UITask task : seq.getTasks()) {
+            Inter inter = null;
 
-            if (relationTask != null) {
+            if (task instanceof InterTask) {
+                InterTask interTask = (InterTask) task;
+                inter = interTask.inter;
+            } else if (task instanceof RelationTask) {
+                RelationTask relationTask = (RelationTask) task;
                 inter = relationTask.getSource();
             }
-        }
 
-        if (inter != null) {
-            Class interClass = inter.getClass();
+            if (inter != null) {
+                final Class interClass = inter.getClass();
 
-            for (Step step : Step.values()) {
-                if (step.impactingInterClasses().contains(interClass)) {
-                    return step;
+                for (Step step : Step.values()) {
+                    if (step.isImpactedBy(interClass)) {
+                        if ((firstStep == null) || (firstStep.compareTo(step) > 0)) {
+                            firstStep = step;
+                        }
+
+                        break;
+                    }
                 }
             }
         }
 
-        return null;
+        return firstStep;
     }
 
     //-----------//
@@ -781,97 +883,72 @@ public class InterController
                                     SystemInfo system)
     {
         final List<Inter> intersected = system.getSig().intersectedInters(glyph.getBounds());
+        final List<Inter> competitors = new ArrayList<Inter>();
 
         for (Inter inter : intersected) {
             if ((inter != ghost) && (inter.getGlyph() == glyph)) {
-                syncRemoveInter(inter, null);
+                competitors.add(inter);
             }
         }
+
+        syncRemoveInters(competitors);
     }
 
-    //-----------------//
-    // syncRemoveInter //
-    //-----------------//
+    //------------------//
+    // syncRemoveInters //
+    //------------------//
     /**
-     * Remove the provided inter (with its relations)
+     * Remove the provided inters (with their relations)
      *
-     * @param inter    the inter to remove
-     * @param toRemove current set of inters to remove, or null
+     * @param inters the inters to remove
      */
-    private void syncRemoveInter (Inter inter,
-                                  Set<Inter> toRemove)
+    private void syncRemoveInters (Collection<? extends Inter> inters)
     {
-        if (inter.isRemoved()) {
-            return;
-        }
+        // Dry run
+        final Removal removal = new Removal();
 
-        if (inter.isVip()) {
-            logger.info("VIP removeInter {}", inter);
-        }
-
-        if (toRemove == null) {
-            toRemove = new LinkedHashSet<Inter>();
-        }
-
-        toRemove.add(inter);
-
-        final UITaskList seq = new UITaskList();
-        seq.add(new RemovalTask(inter));
-
-        if (inter instanceof InterEnsemble) {
-            // Remove all the ensemble members
-            final InterEnsemble ens = (InterEnsemble) inter;
-            final List<? extends Inter> members = ens.getMembers();
-
-            for (Inter member : members) {
-                if (!toRemove.contains(member)) {
-                    seq.add(new RemovalTask(member));
-                }
+        for (Inter inter : inters) {
+            if (inter.isRemoved()) {
+                continue;
             }
 
-            if (inter instanceof HeadChordInter) {
-                // Remove the chord stem as well
-                final HeadChordInter chord = (HeadChordInter) inter;
-                final StemInter stem = chord.getStem();
-
-                if ((stem != null) && !toRemove.contains(stem)) {
-                    seq.add(new RemovalTask(stem));
-                }
+            if (inter.isVip()) {
+                logger.info("VIP removeInter {}", inter);
             }
-        } else {
-            // Delete containing ensemble if this is the last member in ensemble
-            final SIGraph sig = inter.getSig();
 
-            for (Relation rel : sig.getRelations(inter, Containment.class)) {
-                final InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
-
-                if (!toRemove.contains(ens) && (ens.getMembers().size() <= 1)) {
-                    toRemove.add(ens);
-                    seq.add(new RemovalTask(ens));
-                }
-            }
+            removal.include(inter);
         }
 
-        // Slur extensions if any
-        if (inter instanceof SlurInter) {
-            final SlurInter slur = (SlurInter) inter;
-
-            for (HorizontalSide side : HorizontalSide.values()) {
-                final SlurInter ext = slur.getExtension(side);
-
-                if ((ext != null) && !ext.isRemoved()) {
-                    seq.add(new RemovalTask(ext));
-                }
-            }
-        }
-
+        // Now apply the removals
+        final UITaskList seq = removal.getTaskList();
         history.add(seq);
         seq.performDo();
 
-        epilog(seq, DO);
+        sheet.getInterIndex().publish(null);
+
+        epilog(DO, seq);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //----------//
+    // CtrlTask //
+    //----------//
+    /**
+     * Task class to run user-initiated processing asynchronously.
+     */
+    private abstract class CtrlTask
+            extends VoidTask
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        protected void finished ()
+        {
+            // Refresh user display
+            refreshUI();
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -893,22 +970,100 @@ public class InterController
                 "Vertical margin as ratio of inter-staff gutter");
     }
 
-    //----------//
-    // CtrlTask //
-    //----------//
+    //---------//
+    // Removal //
+    //---------//
     /**
-     * Task class to run user-initiated processing asynchronously.
+     * Removal scenario used for dry-run before actual operations.
      */
-    private abstract class CtrlTask
-            extends VoidTask
+    private static class Removal
     {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Non-ensemble inters to be removed. */
+        LinkedHashSet<Inter> inters = new LinkedHashSet<Inter>();
+
+        /** Ensemble inters to be removed. */
+        LinkedHashSet<InterEnsemble> ensembles = new LinkedHashSet<InterEnsemble>();
+
+        /** Ensemble inters to be watched for potential removal. */
+        LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<InterEnsemble>();
+
         //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Build the operational task list
+         *
+         * @return the task list
+         */
+        public UITaskList getTaskList ()
+        {
+            UITaskList seq = new UITaskList();
+
+            // Examine watched ensembles
+            for (InterEnsemble ens : watched) {
+                List<Inter> members = new ArrayList<Inter>(ens.getMembers());
+                members.removeAll(inters);
+
+                if (members.isEmpty()) {
+                    ensembles.add(ens);
+                }
+            }
+
+            // Ensembles to remove first
+            for (InterEnsemble ens : ensembles) {
+                seq.add(new RemovalTask(ens));
+            }
+
+            // Simple inters to remove second
+            for (Inter inter : inters) {
+                seq.add(new RemovalTask(inter));
+            }
+
+            return seq;
+        }
+
+        public void include (Inter inter)
+        {
+            if (inter instanceof InterEnsemble) {
+                // Include the ensemble and its members
+                final InterEnsemble ens = (InterEnsemble) inter;
+                ensembles.add(ens);
+                inters.addAll(ens.getMembers());
+
+                if (inter instanceof HeadChordInter) {
+                    // Remove the chord stem as well
+                    final HeadChordInter chord = (HeadChordInter) inter;
+                    final StemInter stem = chord.getStem();
+
+                    if (stem != null) {
+                        inters.add(stem);
+                    }
+                }
+            } else {
+                inters.add(inter);
+
+                // Watch the containing ensemble (if not already to be removed)
+                final SIGraph sig = inter.getSig();
+
+                for (Relation rel : sig.getRelations(inter, Containment.class)) {
+                    final InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
+
+                    if (!ensembles.contains(ens)) {
+                        watched.add(ens);
+                    }
+                }
+            }
+        }
 
         @Override
-        protected void finished ()
+        public String toString ()
         {
-            // Refresh user display
-            refreshUI();
+            StringBuilder sb = new StringBuilder("Removal{");
+            sb.append("ensembles:").append(ensembles);
+            sb.append(" inters:").append(inters);
+            sb.append("}");
+
+            return sb.toString();
         }
     }
 

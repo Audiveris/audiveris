@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.text.FontInfo;
@@ -62,7 +63,7 @@ public class WordInter
 
     /** Precise word starting point. */
     @XmlElement
-    protected final Point location;
+    protected Point location;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -83,14 +84,26 @@ public class WordInter
     }
 
     /**
+     * Creates a new {@code WordInter} object meant for manual assignment.
+     *
+     * @param grade inter grade
+     */
+    public WordInter (double grade)
+    {
+        super(null, null, Shape.TEXT, grade);
+
+        this.value = "";
+        this.fontInfo = null;
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
     protected WordInter ()
     {
         super(null, null, null, null);
-        this.value = null;
+
         this.fontInfo = null;
-        this.location = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -136,6 +149,18 @@ public class WordInter
     public String getValue ()
     {
         return value;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        // Location?
+        // FontInfo?
     }
 
     //----------//

@@ -50,9 +50,6 @@ public class RemovalTask
     {
         links = linksOf(inter);
         inter.remove(false);
-
-        sheet.getGlyphIndex().publish(null);
-        sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
     }
 
     @Override
@@ -64,9 +61,6 @@ public class RemovalTask
         for (Link link : links) {
             link.applyTo(inter);
         }
-
-        sheet.getGlyphIndex().publish(null);
-        sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
     }
 
     @Override

@@ -28,7 +28,9 @@ import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
+import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
+import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.WeakPropertyChangeListener;
@@ -40,6 +42,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
 import java.awt.image.BufferedImage;
@@ -125,9 +128,12 @@ public class PictureView
                                      MouseMovement movement)
         {
             if (movement == MouseMovement.RELEASING) {
-                if (pageMenu.updateMenu(getRubberRectangle())) {
+                SelectionService locService = sheet.getLocationService();
+                Rectangle rect = (Rectangle) locService.getSelection(LocationEvent.class);
+
+                if (pageMenu.updateMenu(rect)) {
                     JPopupMenu popup = pageMenu.getPopup();
-                    popup.show(this, getZoom().scaled(pt.x) + 20, getZoom().scaled(pt.y) + 30);
+                    popup.show(this, getZoom().scaled(pt.x), getZoom().scaled(pt.y));
                 }
             }
         }

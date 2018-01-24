@@ -52,6 +52,10 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -65,14 +69,13 @@ public class RhythmsStep
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            RhythmsStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(RhythmsStep.class);
 
-    /** Inter classes that impact just a measure stack. */
-    private static final Set<Class<? extends AbstractInter>> forStack;
+    /** Classes that impact just a measure stack. */
+    private static final Set<Class> forStack;
 
     static {
-        forStack = new HashSet<Class<? extends AbstractInter>>();
+        forStack = new HashSet<Class>();
         forStack.add(AugmentationDotInter.class);
         forStack.add(BeamHookInter.class);
         forStack.add(BeamInter.class);
@@ -85,24 +88,24 @@ public class RhythmsStep
         forStack.add(TupletInter.class);
     }
 
-    /** Inter classes that impact a whole page. */
-    private static final Set<Class<? extends AbstractInter>> forPage;
+    /** Classes that impact a whole page. */
+    private static final Set<Class> forPage;
 
     static {
-        forPage = new HashSet<Class<? extends AbstractInter>>();
+        forPage = new HashSet<Class>();
         forPage.add(SlurInter.class); // Because of possibility of ties
         forPage.add(TimeNumberInter.class);
         forPage.add(TimePairInter.class);
         forPage.add(TimeWholeInter.class);
     }
 
-    /** All impacting Inter classes. */
-    private static final Set<Class<? extends AbstractInter>> impactingInterClasses;
+    /** All impacting classes. */
+    private static final Set<Class> impactingClasses;
 
     static {
-        impactingInterClasses = new HashSet<Class<? extends AbstractInter>>();
-        impactingInterClasses.addAll(forStack);
-        impactingInterClasses.addAll(forPage);
+        impactingClasses = new HashSet<Class>();
+        impactingClasses.addAll(forStack);
+        impactingClasses.addAll(forPage);
     }
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -141,6 +144,9 @@ public class RhythmsStep
     {
         logger.debug("RHYTHMS impact {} {}", opKind, seq);
 
+        // First, determine what will be impacted
+        Map<Page, Impact> map = new LinkedHashMap<Page, Impact>();
+
         for (UITask task : seq.getTasks()) {
             if (task instanceof InterTask) {
                 InterTask interTask = (InterTask) task;
@@ -148,34 +154,81 @@ public class RhythmsStep
                 SystemInfo system = inter.getSig().getSystem();
                 Class<? extends AbstractInter> interClass = (Class<? extends AbstractInter>) inter.getClass();
 
-                if (forPage.contains(interClass)) {
+                if (isImpactedBy(interClass, forPage)) {
                     // Reprocess the whole page
                     Page page = inter.getSig().getSystem().getPage();
-                    new PageRhythm(page).process();
+                    Impact impact = map.get(page);
 
-                    break; // We stop at first inter with concrete processing
-                } else if (forStack.contains(interClass)) {
+                    if (impact == null) {
+                        map.put(page, impact = new Impact());
+                    }
+
+                    impact.onPage = true;
+                } else if (isImpactedBy(interClass, forStack)) {
                     // Or reprocess just the stack
                     Point center = inter.getCenter();
 
                     if (center != null) {
                         MeasureStack stack = system.getMeasureStackAt(center);
                         Page page = system.getPage();
-                        new PageRhythm(page).reprocessStack(stack);
+                        Impact impact = map.get(page);
 
-                        break; // We stop at first inter with concrete processing
+                        if (impact == null) {
+                            map.put(page, impact = new Impact());
+                        }
+
+                        impact.onStacks.add(stack);
                     }
+                }
+            }
+        }
+
+        // Second, handle each rhythm impact
+        for (Entry<Page, Impact> entry : map.entrySet()) {
+            Page page = entry.getKey();
+            Impact impact = entry.getValue();
+
+            if (impact.onPage) {
+                new PageRhythm(page).process();
+            } else {
+                for (MeasureStack stack : impact.onStacks) {
+                    new PageRhythm(page).reprocessStack(stack);
                 }
             }
         }
     }
 
-    //-----------------------//
-    // impactingInterClasses //
-    //-----------------------//
+    //--------------//
+    // isImpactedBy //
+    //--------------//
     @Override
-    public Set<Class<? extends AbstractInter>> impactingInterClasses ()
+    public boolean isImpactedBy (Class classe)
     {
-        return impactingInterClasses;
+        return isImpactedBy(classe, impactingClasses);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // Impact //
+    //--------//
+    private static class Impact
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        boolean onPage = false;
+
+        Set<MeasureStack> onStacks = new LinkedHashSet<MeasureStack>();
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("RhythmsImpact{");
+            sb.append("page:").append(onPage);
+            sb.append(" stacks:").append(onStacks);
+            sb.append("}");
+
+            return sb.toString();
+        }
     }
 }

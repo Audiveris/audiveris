@@ -64,18 +64,12 @@ public class AdditionTask
         for (Link link : links) {
             link.applyTo(inter);
         }
-
-        sheet.getGlyphIndex().publish(null);
-        sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
     }
 
     @Override
     public void performUndo ()
     {
         inter.remove();
-
-        sheet.getGlyphIndex().publish(null);
-        sheet.getInterIndex().publish(inter.isRemoved() ? null : inter);
     }
 
     @Override

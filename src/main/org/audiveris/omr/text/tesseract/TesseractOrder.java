@@ -67,7 +67,7 @@ public class TesseractOrder
     /** To specify UTF-8 encoding. */
     private static final String UTF8 = "UTF-8";
 
-    /** To avoid repetitive warnings if OCR binding failed */
+    /** To avoid repetitive warnings if OCR binding failed. */
     private static boolean userWarned;
 
     static {
@@ -373,6 +373,11 @@ public class TesseractOrder
                         BoundingBox(it, RIL_SYMBOL),
                         it.GetUTF8Text(RIL_SYMBOL).getString(UTF8));
             } while (it.Next(nextLevel));
+
+            // Print raw lines, right out of Tesseract OCR
+            for (TextLine textLine : lines) {
+                logger.debug("raw {}", textLine);
+            }
 
             return lines;
         } catch (Exception ex) {

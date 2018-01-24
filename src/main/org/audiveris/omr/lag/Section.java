@@ -513,4 +513,13 @@ public interface Section
      *         (vertically or horizontally, but not in diagonal)
      */
     public boolean touches (Section that);
+
+    /**
+     * Apply an absolute translation to the section
+     *
+     * @param dx abscissa shift, regardless of section orientation
+     * @param dy ordinate shift, regardless of section orientation
+     */
+    public void translateAbsolute (int dx,
+                                   int dy);
 }
