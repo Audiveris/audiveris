@@ -876,7 +876,10 @@ public class TextBuilder
 
             for (TextWord word : sortedWords) {
                 // Isolate proper word glyph from its enclosed sections
-                SortedSet<Section> wordSections = retrieveSections(word.getChars(), allSections);
+                SortedSet<Section> wordSections = retrieveSections(
+                        word.getChars(),
+                        allSections,
+                        offset);
 
                 if (!wordSections.isEmpty()) {
                     SectionCompound compound = CompoundFactory.buildCompound(
@@ -1317,10 +1320,12 @@ public class TextBuilder
      *
      * @param chars       the OCR char descriptors
      * @param allSections the candidate sections
+     * @param offset      offset to apply to char glyphs before being registered
      * @return the corresponding set of sections
      */
     private SortedSet<Section> retrieveSections (List<TextChar> chars,
-                                                 Collection<Section> allSections)
+                                                 Collection<Section> allSections,
+                                                 Point offset)
     {
         final SortedSet<Section> wordSections = new TreeSet<Section>(Section.byFullAbscissa);
         final CompoundConstructor constructor = new CompoundConstructor()
@@ -1331,6 +1336,9 @@ public class TextBuilder
                 return new SectionCompound(sheet.getInterline());
             }
         };
+
+        final int dx = (offset != null) ? offset.x : 0;
+        final int dy = (offset != null) ? offset.y : 0;
 
         for (TextChar charDesc : chars) {
             final Rectangle charBox = charDesc.getBounds();
@@ -1346,11 +1354,16 @@ public class TextBuilder
 
             if (!charSections.isEmpty()) {
                 wordSections.addAll(charSections);
-//
-//                SectionCompound compound = CompoundFactory.buildCompound(charSections, constructor);
-//                Glyph charGlyph = sheet.getGlyphIndex()
-//                        .registerOriginal(compound.toGlyph(null));
-//                system.addFreeGlyph(charGlyph);
+
+                // Register char underlying glyph
+                SectionCompound compound = CompoundFactory.buildCompound(charSections, constructor);
+                Glyph relGlyph = compound.toGlyph(null);
+                Glyph absGlyph = new BasicGlyph(
+                        relGlyph.getLeft() + dx,
+                        relGlyph.getTop() + dy,
+                        relGlyph.getRunTable());
+                Glyph charGlyph = sheet.getGlyphIndex().registerOriginal(absGlyph);
+                system.addFreeGlyph(charGlyph);
             }
         }
 
