@@ -252,10 +252,10 @@ public class CLI
         // Print syntax
         buf.append("\n");
         buf.append("\nSyntax:");
-        buf.append("\n   audiveris [OPTIONS] [--] [INPUT_FILES]\n");
+        buf.append("\n    audiveris [OPTIONS] [--] [INPUT_FILES]\n");
 
         buf.append("\n@file:");
-        buf.append("\n   Content to be extended in line");
+        buf.append("\n    Content of file to be extended in line");
         buf.append("\n");
 
         buf.append("\nOptions:\n");
@@ -265,15 +265,15 @@ public class CLI
         buf.append(writer.toString());
 
         buf.append("\nInput file extensions:");
-        buf.append("\n   .omr        : book file");
-        buf.append("\n   [any other] : image file");
+        buf.append("\n    .omr        : book file  (input/output)");
+        buf.append("\n    [any other] : image file (input)");
         buf.append("\n");
 
         // Print all steps
         buf.append("\nSheet steps are in order:");
 
         for (Step step : Step.values()) {
-            buf.append(String.format("%n   %-10s : %s", step.toString(), step.getDescription()));
+            buf.append(String.format("%n    %-10s : %s", step.toString(), step.getDescription()));
         }
 
         buf.append("\n");
@@ -495,7 +495,7 @@ public class CLI
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Should symbols annotations be produced?. */
-        @Option(name = "-annotate", usage = "Annotate book symbols")
+        @Option(name = "-annotate", hidden = true, usage = "Annotate book symbols")
         boolean annotate;
 
         /** Batch mode. */
