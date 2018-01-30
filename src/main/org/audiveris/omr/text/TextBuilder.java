@@ -244,8 +244,6 @@ public class TextBuilder
             }
         }
 
-        glyphLines = recomposeLines(glyphLines);
-
         List<Section> relativeSections = getSections(buffer, glyphLines);
         mapGlyphs(glyphLines, relativeSections, offset);
 
@@ -253,6 +251,8 @@ public class TextBuilder
         for (TextLine glyphLine : glyphLines) {
             glyphLine.translate(offset.x, offset.y);
         }
+
+        glyphLines = recomposeLines(glyphLines);
 
         return glyphLines;
     }
@@ -1269,12 +1269,12 @@ public class TextBuilder
 
         // Process standards
         if (!standards.isEmpty()) {
+            standards = splitStandardLines(standards);
+
             // Reject invalid standard lines
             if (!isManual) {
-                standards = splitStandardLines(standards);
+                standards = purgeInvalidLines("standards", standards);
             }
-
-            standards = purgeInvalidLines("standards", standards);
 
             // Recut standard lines
             standards = mergeStandardLines(standards);

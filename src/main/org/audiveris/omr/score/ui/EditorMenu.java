@@ -157,8 +157,7 @@ public class EditorMenu
             setVisible(stack != null);
 
             if (stack != null) {
-                String id = stack.getPageId() + (stack.isCautionary() ? "C" : "");
-                setText("Measure #" + id + " ...");
+                setText("Measure #" + stack.getPageId() + " ...");
             }
         }
 
