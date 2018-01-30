@@ -1087,9 +1087,23 @@ public class BasicSheet
         default:
         }
 
-        // Clear errors for this step
+        // Clear errors and history for this step
         if (OMR.gui != null) {
             getErrorsEditor().clearStep(step);
+
+            if (interController != null) {
+                SwingUtilities.invokeLater(
+                        new Runnable()
+                {
+                    // This part is run on swing thread
+                    @Override
+                    public void run ()
+                    {
+                        interController.clearHistory();
+                    }
+                });
+
+            }
         }
     }
 

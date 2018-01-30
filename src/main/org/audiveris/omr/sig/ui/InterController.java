@@ -457,6 +457,21 @@ public class InterController
         }.execute();
     }
 
+    //--------------//
+    // clearHistory //
+    //--------------//
+    /**
+     * Clear history of user actions.
+     */
+    public void clearHistory ()
+    {
+        history.clear();
+
+        if (editor != null) {
+            refreshUI();
+        }
+    }
+
     //-----------//
     // dropInter //
     //-----------//

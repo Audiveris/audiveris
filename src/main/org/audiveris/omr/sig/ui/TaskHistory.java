@@ -29,9 +29,9 @@ import java.util.List;
 
 /**
  * Class {@code TaskHistory} handles a history of UITaskList instances, with the
- ability to add, undo and redo.
+ * ability to add, undo and redo.
  * <p>
- Within an UITaskList, all tasks are handled as a whole, to cope with dependent tasks.
+ * Within an UITaskList, all tasks are handled as a whole, to cope with dependent tasks.
  *
  * @author Hervé Bitteur
  */
@@ -86,6 +86,15 @@ class TaskHistory
     public boolean canUndo ()
     {
         return cursor >= 0;
+    }
+
+    /**
+     * Clear history.
+     */
+    public void clear ()
+    {
+        sequences.clear();
+        cursor = -1;
     }
 
     /**

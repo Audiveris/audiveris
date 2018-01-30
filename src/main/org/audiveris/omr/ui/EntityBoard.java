@@ -306,51 +306,6 @@ public class EntityBoard<E extends Entity>
         }
     }
 
-    //--------------------//
-    // vipActionPerformed //
-    //--------------------//
-    /**
-     * Override-able action performed for 'vip'.
-     *
-     * @param e the event that triggered this action
-     */
-    protected void vipActionPerformed (ActionEvent e)
-    {
-        final E entity = getSelectedEntity();
-        entity.setVip(vip.getField().isSelected());
-
-        if (entity.isVip()) {
-            logger.info("{} flagged as VIP", entity);
-        } else {
-            logger.info("{} no longer VIP", entity);
-        }
-    }
-
-    //--------------//
-    // defineLayout //
-    //--------------//
-    /**
-     * Define the layout for common fields of all EntityBoard (sub)classes.
-     * Layout for others (count, vip, dump) is defined in super Board class.
-     */
-    private void defineLayout ()
-    {
-        CellConstraints cst = new CellConstraints();
-
-        // Layout
-        int r = 1; // --------------------------------
-
-        if (idSpinner != null) {
-            builder.addLabel("Id", cst.xy(1, r));
-            builder.add(idSpinner, cst.xy(3, r));
-        }
-
-        if (idLabel != null) {
-            builder.add(idLabel.getLabel(), cst.xy(1, r));
-            builder.add(idLabel.getField(), cst.xy(3, r));
-        }
-    }
-
     //-----------------------//
     // handleEntityListEvent //
     //-----------------------//
@@ -411,6 +366,51 @@ public class EntityBoard<E extends Entity>
             } else if (idLabel != null) {
                 idLabel.setText("");
             }
+        }
+    }
+
+    //--------------------//
+    // vipActionPerformed //
+    //--------------------//
+    /**
+     * Override-able action performed for 'vip'.
+     *
+     * @param e the event that triggered this action
+     */
+    protected void vipActionPerformed (ActionEvent e)
+    {
+        final E entity = getSelectedEntity();
+        entity.setVip(vip.getField().isSelected());
+
+        if (entity.isVip()) {
+            logger.info("{} flagged as VIP", entity);
+        } else {
+            logger.info("{} no longer VIP", entity);
+        }
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout for common fields of all EntityBoard (sub)classes.
+     * Layout for others (count, vip, dump) is defined in super Board class.
+     */
+    private void defineLayout ()
+    {
+        CellConstraints cst = new CellConstraints();
+
+        // Layout
+        int r = 1; // --------------------------------
+
+        if (idSpinner != null) {
+            builder.addLabel("Id", cst.xy(1, r));
+            builder.add(idSpinner, cst.xy(3, r));
+        }
+
+        if (idLabel != null) {
+            builder.add(idLabel.getLabel(), cst.xy(1, r));
+            builder.add(idLabel.getField(), cst.xy(3, r));
         }
     }
 
