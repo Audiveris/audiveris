@@ -2164,7 +2164,7 @@ public class KeyBuilder
                 "Horizontal margin before staff left (for plot display)");
 
         private final Scale.Fraction maxFirstPeakOffset = new Scale.Fraction(
-                2.0,
+                2.3,
                 "Maximum x offset of first peak (WRT browse start)");
 
         private final Scale.Fraction maxPeakCumul = new Scale.Fraction(
@@ -2263,7 +2263,7 @@ public class KeyBuilder
 
         // Beware: A too small value might miss the whole key signature
         private final Scale.Fraction maxFirstSpaceWidth = new Scale.Fraction(
-                1.8,
+                2.1,
                 "Maximum initial space before key signature");
 
         // Beware: A too small value might miss final key signature items
