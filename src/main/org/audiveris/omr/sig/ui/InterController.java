@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -168,8 +169,8 @@ public class InterController
                 // While interacting with user, make sure we have the related staff & system
                 SystemInfo system;
                 Staff staff = null;
-                Point center = glyph.getCenter();
-                List<Staff> staves = staffManager.getStavesOf(center);
+                final Point center = glyph.getCenter();
+                final List<Staff> staves = staffManager.getStavesOf(center);
 
                 if (staves.isEmpty()) {
                     throw new IllegalStateException("No staff for " + center);
@@ -189,6 +190,21 @@ public class InterController
                     links = ghost.searchLinks(system, false);
                 }
 
+                // Sort the 2 staves by increasing distance from glyph center
+                Collections.sort(
+                        staves,
+                        new Comparator<Staff>()
+                {
+                    @Override
+                    public int compare (Staff s1,
+                                        Staff s2)
+                    {
+                        return Double.compare(
+                                s1.distanceTo(center),
+                                s2.distanceTo(center));
+                    }
+                });
+
                 if ((staff == null) && constants.useStaffLink.isSet()) {
                     // Try to use link
                     SystemInfo prevSystem = null;
@@ -203,7 +219,7 @@ public class InterController
                                 if (p.partner.getStaff() != null) {
                                     staff = p.partner.getStaff();
 
-                                    // We stop on first link found. TODO: is this erroneous?
+                                    // We stop on first link found (we check closest staff first)
                                     break StaffLoop;
                                 }
                             }
@@ -215,22 +231,12 @@ public class InterController
 
                 if ((staff == null) && constants.useStaffProximity.isSet()) {
                     // Use proximity to staff (vertical margin defined as ratio of gutter)
-                    double bestDist = Double.MAX_VALUE;
-                    Staff bestStf = null;
-                    double gutter = 0;
-
-                    for (Staff stf : staves) {
-                        double dist = stf.distanceTo(center);
-                        gutter += dist;
-
-                        if (bestDist > dist) {
-                            bestDist = dist;
-                            bestStf = stf;
-                        }
-                    }
+                    final double bestDist = staves.get(0).distanceTo(center);
+                    final double otherDist = staves.get(1).distanceTo(center);
+                    final double gutter = bestDist + otherDist;
 
                     if (bestDist <= (gutter * constants.gutterRatio.getValue())) {
-                        staff = bestStf;
+                        staff = staves.get(0);
                     }
                 }
 
