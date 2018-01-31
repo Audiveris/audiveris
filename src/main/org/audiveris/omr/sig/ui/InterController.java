@@ -223,6 +223,8 @@ public class InterController
                                     break StaffLoop;
                                 }
                             }
+
+                            links = null;
                         }
 
                         prevSystem = system;
@@ -260,6 +262,11 @@ public class InterController
 
                 // If glyph used by another inter, delete this other inter
                 removeCompetitors(ghost, glyph, system);
+
+                // Make sure we have the correct links
+                if (links == null) {
+                    links = ghost.searchLinks(system, false);
+                }
 
                 addGhost(ghost, links);
 
