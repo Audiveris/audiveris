@@ -232,6 +232,7 @@ public class SegmentsBuilder
             Glyph glyph = segment.retrieveGlyph(sheet, params.maxRunDistance);
 
             if (glyph != null) {
+                inter.setGlyph(glyph);
                 inters.add(inter);
                 segments.add(inter);
             }

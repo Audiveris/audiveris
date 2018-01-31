@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.curve;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
@@ -42,6 +43,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -217,6 +219,11 @@ public class WedgesBuilder
         Point2D refPoint = (shape == Shape.CRESCENDO) ? l1.getP1() : l1.getP2();
         Staff staff = sheet.getStaffManager().getClosestStaff(refPoint);
         staff.getSystem().getSig().addVertex(inter);
+
+        // Build the underlying glyph as the compound of the two segments glyphs
+        inter.setGlyph(
+                sheet.getGlyphIndex().registerOriginal(
+                        GlyphFactory.buildGlyph(Arrays.asList(s1.getGlyph(), s2.getGlyph()))));
 
         return inter;
     }
