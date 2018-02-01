@@ -66,7 +66,11 @@ public enum TextRole
     /** Copyright notice. */
     Rights,
     /** Chord mark. */
-    ChordName;
+    ChordName,
+    /** Ending number, such as "1" or "1,2". */
+    EndingNumber,
+    /** Ending text, when different from number. */
+    EndingText;
 
     private static final Constants constants = new Constants();
 

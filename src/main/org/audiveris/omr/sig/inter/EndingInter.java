@@ -24,6 +24,9 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.relation.EndingSentenceRelation;
+import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.text.TextRole;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -33,6 +36,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code EndingInter} represents an ending.
+ * <p>
+ * MusicXML spec:
+ * The number attribute reflects the numeric values of what is under the ending line.
+ * Single endings such as "1" or comma-separated multiple endings such as "1,2" may be used.
+ * The ending element text is used when the text displayed in the ending is different than what
+ * appears in the number attribute.
  *
  * @author Hervé Bitteur
  */
@@ -123,6 +132,9 @@ public class EndingInter
         return new Rectangle(bounds = box);
     }
 
+    //------------//
+    // getLeftLeg //
+    //------------//
     /**
      * @return the leftLeg
      */
@@ -131,6 +143,9 @@ public class EndingInter
         return leftLeg;
     }
 
+    //---------//
+    // getLine //
+    //---------//
     /**
      * @return the line
      */
@@ -139,12 +154,52 @@ public class EndingInter
         return line;
     }
 
+    //-----------//
+    // getNumber //
+    //-----------//
+    public String getNumber ()
+    {
+        for (Relation r : sig.getRelations(this, EndingSentenceRelation.class)) {
+            SentenceInter sentence = (SentenceInter) sig.getOppositeInter(this, r);
+            TextRole role = sentence.getRole();
+            String value = sentence.getValue().trim();
+
+            if ((role == TextRole.EndingNumber) || value.matches("[1-9].*")) {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // getRightLeg //
+    //-------------//
     /**
      * @return the rightLeg
      */
     public Line2D getRightLeg ()
     {
         return rightLeg;
+    }
+
+    //----------//
+    // getValue //
+    //----------//
+    public String getValue ()
+    {
+        final String number = getNumber();
+
+        for (Relation r : sig.getRelations(this, EndingSentenceRelation.class)) {
+            SentenceInter sentence = (SentenceInter) sig.getOppositeInter(this, r);
+            String value = sentence.getValue().trim();
+
+            if (!value.equals(number)) {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

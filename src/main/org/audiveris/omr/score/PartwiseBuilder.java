@@ -72,7 +72,6 @@ import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
-import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
@@ -893,7 +892,6 @@ public class PartwiseBuilder
      * This can be a left, mid or right barline WRT the current measure.
      * <p>
      * Related entities: repeat, ending, fermata, segno, coda.
-     * (TODO: still to be implemented: ending)
      *
      * @param partBarline the PartBarline to process
      * @param location    barline location WRT current measure
@@ -912,6 +910,12 @@ public class PartwiseBuilder
             final EndingInter ending = (location == RightLeftMiddle.MIDDLE) ? null
                     : partBarline.getEnding(
                             (location == RightLeftMiddle.LEFT) ? LEFT : RIGHT);
+            final String endingValue = (ending != null) ? ending.getValue() : null;
+            String endingNumber = (ending != null) ? ending.getNumber() : null;
+
+            if (endingNumber == null) {
+                endingNumber = "0";
+            }
 
             if ((partBarline == current.measure.getLeftBarline())
                 || (location == RightLeftMiddle.MIDDLE)
@@ -952,16 +956,14 @@ public class PartwiseBuilder
 
                             pmEnding.setType(StartStopDiscontinue.START);
 
-                            //TODO: number/text?
                             SIGraph sig = ending.getSig();
 
-                            for (Relation r : sig.getRelations(
-                                    ending,
-                                    EndingSentenceRelation.class)) {
-                                SentenceInter sentence = (SentenceInter) sig.getOppositeInter(
-                                        ending,
-                                        r);
-                                pmEnding.setValue(sentence.getValue());
+                            // Number (mandatory)
+                            pmEnding.setNumber(endingNumber);
+
+                            // Value (optional)
+                            if (endingValue != null) {
+                                pmEnding.setValue(endingValue);
                             }
 
                             pmBarline.setEnding(pmEnding);
@@ -1018,7 +1020,10 @@ public class PartwiseBuilder
                             pmEnding.setType(
                                     (ending.getRightLeg() != null) ? StartStopDiscontinue.STOP
                                     : StartStopDiscontinue.DISCONTINUE);
-                            //TODO: number?
+
+                            // Number (mandatory)
+                            pmEnding.setNumber(endingNumber);
+
                             pmBarline.setEnding(pmEnding);
                         }
                     }

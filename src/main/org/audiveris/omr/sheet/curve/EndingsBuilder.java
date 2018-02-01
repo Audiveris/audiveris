@@ -23,6 +23,8 @@ package org.audiveris.omr.sheet.curve;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.glyph.dynamic.FilamentFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
@@ -119,6 +121,32 @@ public class EndingsBuilder
         for (SegmentInter segment : segments) {
             processSegment(segment);
         }
+    }
+
+    //------------//
+    // buildGlyph //
+    //------------//
+    /**
+     * Build the underlying glyph for the ending defined by segment and legs.
+     *
+     * @param segment  ending horizontal segment
+     * @param leftLeg  left vertical filament
+     * @param rightLeg (optional) right vertical filament, perhaps null
+     * @return the glyph built
+     */
+    private Glyph buildGlyph (SegmentInter segment,
+                              Filament leftLeg,
+                              Filament rightLeg)
+    {
+        final List<Glyph> parts = new ArrayList<Glyph>(3);
+        parts.add(segment.getGlyph());
+        parts.add(leftLeg.toGlyph(null));
+
+        if (rightLeg != null) {
+            parts.add(rightLeg.toGlyph(null));
+        }
+
+        return sheet.getGlyphIndex().registerOriginal(GlyphFactory.buildGlyph(parts));
     }
 
     //--------------//
@@ -342,8 +370,8 @@ public class EndingsBuilder
                     continue; // segment starts after end of first measure
                 }
             } else {
-                double leftDist = Math.abs(
-                        LineUtil.xAtY(leftBar.getMedian(), leftEnd.y) - leftEnd.x);
+                double leftDist = scale.pixelsToFrac(
+                        Math.abs(LineUtil.xAtY(leftBar.getMedian(), leftEnd.y) - leftEnd.x));
                 leftRel.setDistances(leftDist, 0);
             }
 
@@ -357,8 +385,8 @@ public class EndingsBuilder
                 continue;
             }
 
-            final double rightDist = Math.abs(
-                    LineUtil.xAtY(rightBar.getMedian(), rightEnd.y) - rightEnd.x);
+            final double rightDist = scale.pixelsToFrac(
+                    Math.abs(LineUtil.xAtY(rightBar.getMedian(), rightEnd.y) - rightEnd.x));
             final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
             rightRel.setDistances(rightDist, 0);
 
@@ -387,6 +415,10 @@ public class EndingsBuilder
                         rightLine,
                         segment.getBounds(),
                         impacts);
+
+                // Underlying glyph
+                endingInter.setGlyph(buildGlyph(segment, leftLeg, rightLeg));
+
                 sig.addVertex(endingInter);
 
                 if (leftBar != null) {
