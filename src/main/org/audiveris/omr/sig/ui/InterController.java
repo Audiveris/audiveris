@@ -96,7 +96,7 @@ import javax.swing.KeyStroke;
  * It is not always obvious to select the proper staff, various techniques are used, and if
  * all have failed, the user is prompted for staff indication.
  * <p>
- * Finally, a proper {@link UITask} is allocated, inserted in controller's history, and run.
+ * Finally, a proper {@link UITaskList} is allocated, inserted in controller's history, and run.
  * Undo and Redo actions operate on this history.
  * <p>
  * User actions are processed asynchronously in background.
@@ -368,6 +368,7 @@ public class InterController
                 seq.performDo();
 
                 sheet.getInterIndex().publish(null);
+                sheet.getGlyphIndex().publish(null);
 
                 epilog(DO, seq);
 
@@ -801,6 +802,7 @@ public class InterController
         seq.performDo();
 
         sheet.getInterIndex().publish(ghost);
+        sheet.getGlyphIndex().publish(null);
 
         epilog(DO, seq);
     }
@@ -820,8 +822,6 @@ public class InterController
                          UITaskList seq)
     {
         sheet.getStub().setModified(true);
-
-        sheet.getGlyphIndex().publish(null);
 
         // Re-process impacted steps
         final Step latestStep = sheet.getStub().getLatestStep();
