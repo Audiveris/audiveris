@@ -27,7 +27,9 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.TextWord;
 import static org.audiveris.omr.util.HorizontalSide.*;
 
@@ -185,6 +187,19 @@ public class LyricItemInter
     public SyllabicType getSyllabicType ()
     {
         return syllabicType;
+    }
+
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
+    {
+        for (Relation rel : sig.getRelations(this, ChordSyllableRelation.class)) {
+            return sig.getOppositeInter(this, rel).getVoice();
+        }
+
+        return null;
     }
 
     //-------------//
