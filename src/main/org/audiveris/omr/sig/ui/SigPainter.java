@@ -195,7 +195,7 @@ public class SigPainter
             setColor(beam);
             g.fill(beam.getArea());
         } catch (Exception ex) {
-            logger.warn("Error painting {} {}", beam, ex.toString());
+            logger.warn("Error painting {} {}", beam, ex.toString(), ex);
         }
     }
 

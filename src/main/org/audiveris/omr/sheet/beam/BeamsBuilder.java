@@ -25,6 +25,7 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
@@ -38,6 +39,9 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
+import static org.audiveris.omr.run.Orientation.VERTICAL;
+import org.audiveris.omr.run.RunTable;
+import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -54,6 +58,7 @@ import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
@@ -462,7 +467,7 @@ public class BeamsBuilder
                 hook.setVip(true);
             }
 
-            sig.addVertex(hook);
+            registerBeam(hook);
             rawSystemBeams.add(hook);
             assignedSpots.add(glyph);
 
@@ -642,7 +647,7 @@ public class BeamsBuilder
                             hook.setVip(true);
                         }
 
-                        sig.addVertex(hook);
+                        registerBeam(hook);
                     }
                 }
 
@@ -663,7 +668,7 @@ public class BeamsBuilder
                             beam.setVip(true);
                         }
 
-                        sig.addVertex(beam);
+                        registerBeam(beam);
 
                         // Exclusion between beam and hook, if any
                         if (hook != null) {
@@ -733,7 +738,7 @@ public class BeamsBuilder
                         beam.setVip(true);
                     }
 
-                    sig.addVertex(beam);
+                    registerBeam(beam);
                     beams.add(beam);
                 }
             }
@@ -955,7 +960,7 @@ public class BeamsBuilder
             return false;
         }
 
-        sig.addVertex(newBeam);
+        registerBeam(newBeam);
         rawSystemBeams.add(newBeam);
 
         if (beam.isVip() || other.isVip()) {
@@ -1047,7 +1052,7 @@ public class BeamsBuilder
                 newBeam.setVip(true);
             }
 
-            sig.addVertex(newBeam);
+            registerBeam(newBeam);
             rawSystemBeams.add(newBeam);
             beam.remove();
 
@@ -1352,8 +1357,8 @@ public class BeamsBuilder
     // mergeOf //
     //---------//
     /**
-     * (Try to) create a new FullAbstractBeamInter instance that
-     * represents a merge of the provided beams.
+     * (Try to) create a new BeamInter instance that represents a merge of the provided
+     * beams.
      *
      * @param one a beam
      * @param two another beam
@@ -1468,6 +1473,70 @@ public class BeamsBuilder
         }
 
         return false;
+    }
+
+    //--------------//
+    // registerBeam //
+    //--------------//
+    /**
+     * Add the provided beam to sig and link it with its underlying glyph.
+     *
+     * @param beam the provided beam
+     */
+    private void registerBeam (AbstractBeamInter beam)
+    {
+        sig.addVertex(beam);
+
+        Glyph glyph = retrieveGlyph(beam);
+        beam.setGlyph(glyph);
+
+        // Make this glyph survive the beam removal if any
+        system.addFreeGlyph(glyph);
+    }
+
+    //---------------//
+    // retrieveGlyph //
+    //---------------//
+    /**
+     * Given a beam (with its area), build the underlying glyph.
+     *
+     * @param beam the provided beam
+     * @return the glyph built
+     */
+    private Glyph retrieveGlyph (AbstractBeamInter beam)
+    {
+        final Rectangle box = beam.getBounds();
+        final ByteProcessor buf = new ByteProcessor(box.width, box.height);
+        ByteUtil.raz(buf);
+
+        final Point p = new Point(0, 0);
+
+        for (int dy = 0; dy < box.height; dy++) {
+            p.y = box.y + dy;
+
+            for (int dx = 0; dx < box.width; dx++) {
+                p.x = box.x + dx;
+
+                final int val = pixelFilter.get(p.x, p.y);
+
+                if ((val == 0) && beam.contains(p)) {
+                    buf.set(dx, dy, 0);
+                }
+            }
+        }
+
+        // Runs
+        RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
+
+        // Glyph
+        Glyph glyph = sheet.getGlyphIndex().registerOriginal(
+                new BasicGlyph(box.x, box.y, runTable));
+
+        if (glyph.getWeight() == 0) {
+            logger.warn("No pixels for {}", beam);
+        }
+
+        return glyph;
     }
 
     //------------//

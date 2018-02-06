@@ -42,6 +42,7 @@ import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
+import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BreathMarkInter;
 import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -272,6 +273,9 @@ public class SymbolFactory
         // Barlines ???
         //
         // Beams
+        case BEAM:
+            return new BeamInter(grade);
+
         case BEAM_HOOK:
             return new BeamHookInter(grade);
 

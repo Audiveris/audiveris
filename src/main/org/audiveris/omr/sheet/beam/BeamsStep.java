@@ -92,7 +92,7 @@ public class BeamsStep
                     .setBeamDistance(distances.getMeanValue(), distances.getStandardDeviation());
         }
 
-        // Dispose of BEAM_SPOT glyphs
+        // Dispose of BEAM_SPOT glyphs, a glyph may be split into several beams
         // (NOTA: the weak references may survive as long as a related SpotsController exists)
         for (SystemInfo system : sheet.getSystems()) {
             system.removeGroupedGlyphs(Group.BEAM_SPOT);

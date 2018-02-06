@@ -131,6 +131,8 @@ import java.util.Set;
  * when building stems. We could thus expect a better split between the vertical runs that belong to
  * the stem and those that belong to the head.
  * This would imply a specific version of filament factory.
+ * <p>
+ * TODO: This class is getting too big, consider separate Head-Stem and Beam-Step linking topics.
  *
  * @author Hervé Bitteur
  */
@@ -2059,84 +2061,3 @@ public class StemsBuilder
         }
     }
 }
-//
-//            //-------------//
-//            // lookupBeams //
-//            //-------------//
-//            /**
-//             * Look for beam interpretations in the lookup area.
-//             * We stop at (group of) first good beam interpretation, if any.
-//             *
-//             * @param beams      (output) list to be populated, ordered by distance from head
-//             * @param candidates (input) collection of candidate beams
-//             * @return index of first good beam in the beams list
-//             */
-//            private int lookupBeams (List<AbstractBeamInter> beams,
-//                                     List<Inter> candidates)
-//            {
-//                // Reject beam candidates which are not in corner direction
-//                // (this can happen because of beam bounding rectangle)
-//                for (Iterator<Inter> it = candidates.iterator(); it.hasNext();) {
-//                    AbstractBeamInter b = (AbstractBeamInter) it.next();
-//
-//                    if ((yDir * (getTargetPt(getLimit(b)).getY() - refPt.getY())) <= 0) {
-//                        it.remove();
-//                    }
-//                }
-//
-//                // Sort candidates by distance from head
-//                Collections.sort(
-//                        candidates,
-//                        new Comparator<Inter>()
-//                        {
-//                            @Override
-//                            public int compare (Inter i1,
-//                                                Inter i2)
-//                            {
-//                                AbstractBeamInter b1 = (AbstractBeamInter) i1;
-//                                AbstractBeamInter b2 = (AbstractBeamInter) i2;
-//
-//                                return Double.compare(
-//                                        yDir * (getTargetPt(getLimit(b1)).getY() - refPt.getY()),
-//                                        yDir * (getTargetPt(getLimit(b2)).getY() - refPt.getY()));
-//                            }
-//                        });
-//
-//                // Build the list of beams
-//                AbstractBeamInter goodBeam = null;
-//
-//                for (Inter inter : candidates) {
-//                    AbstractBeamInter beam = (AbstractBeamInter) inter;
-//
-//                    if (goodBeam == null) {
-//                        // Check if beam is far enough from head
-//                        final Point2D beamPt = getTargetPt(getLimit(beam));
-//                        final double distToBeam = yDir * (beamPt.getY() - refPt.getY());
-//
-//                        if (distToBeam < params.minHeadBeamDistance) {
-//                            continue;
-//                        }
-//
-//                        beams.add(beam);
-//
-//                        // Truncate at first good encountered beam, if any, taken with its group.
-//                        // Nota: We could shrink the lu area accordingly, however we impose area
-//                        // containment for stem sections, so let's stay with the system limit.
-//                        if (beam.isGood()) {
-//                            goodBeam = beam;
-//                        }
-//                    } else {
-//                        // We are within good beam group, check end of it
-//                        AbstractBeamInter lastBeam = beams.get(beams.size() - 1);
-//
-//                        if (areGroupCompatible(lastBeam, beam)) {
-//                            beams.add(beam);
-//                        } else {
-//                            break;
-//                        }
-//                    }
-//                }
-//
-//                return beams.indexOf(goodBeam);
-//            }
-//
