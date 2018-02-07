@@ -266,10 +266,14 @@ public class BeamsBuilder
     private void browseHooks (BeamInter beam,
                               VerticalSide side)
     {
+        if (beam.isVip()) {
+            logger.info("VIP browseHooks on {} of {}", side, beam);
+        }
+
         // Look for a parallel beam just above or below
         final Line2D median = beam.getMedian();
         final double height = beam.getHeight();
-        final double dy = (side == TOP) ? (-height) : height;
+        final double dy = 1.5 * ((side == TOP) ? (-height) : height);
 
         Area luArea = AreaUtil.horizontalParallelogram(
                 new Point2D.Double(median.getX1(), median.getY1() + dy),
