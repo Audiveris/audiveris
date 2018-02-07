@@ -719,10 +719,10 @@ public class Voice
 
         // Whole/Multi
         if (isWhole()) {
-            sb.append("|Ch#").append(String.format("%-4s", wholeRestChord.getId()));
+            sb.append("|Ch#").append(String.format("%-5s", wholeRestChord.getId()));
 
             for (int s = 1; s < measure.getStack().getSlots().size(); s++) {
-                sb.append("========");
+                sb.append("=========");
             }
 
             sb.append("|W");
@@ -735,7 +735,7 @@ public class Voice
                 if (info != null) {
                     // Active chord => busy
                     if (info.status == Status.BEGIN) {
-                        sb.append("|Ch#").append(String.format("%-4s", info.chord.getId()));
+                        sb.append("|Ch#").append(String.format("%-5s", info.chord.getId()));
 
                         Rational chordEnd = slot.getTimeOffset().plus(info.chord.getDuration());
 
@@ -743,10 +743,10 @@ public class Voice
                             voiceDur = chordEnd;
                         }
                     } else { // CONTINUE
-                        sb.append("========");
+                        sb.append("=========");
                     }
                 } else { // No active chord => free
-                    sb.append("|.......");
+                    sb.append("|........");
                 }
             }
 

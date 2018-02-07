@@ -1327,7 +1327,7 @@ public class MeasureStack
 
                 for (Slot slot : slots) {
                     if (slot.getTimeOffset() != null) {
-                        sb.append("|").append(String.format("%-7s", slot.getTimeOffset()));
+                        sb.append("|").append(String.format("%-8s", slot.getTimeOffset()));
                     }
                 }
 
