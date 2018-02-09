@@ -27,7 +27,6 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
-import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.Symbol;
@@ -36,6 +35,7 @@ import static org.audiveris.omr.image.Anchored.Anchor.*;
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.ShapeDescriptor;
+import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.image.TemplateFactory.Catalog;
 import org.audiveris.omr.math.GeoOrder;
@@ -271,20 +271,6 @@ public class NoteHeadsBuilder
         logger.debug("    range {}", rangePerf);
     }
 
-    //------------//
-    // dist2grade //
-    //------------//
-    /**
-     * Convenient method (used in debug)
-     *
-     * @param distance matching distance
-     * @return resulting grade
-     */
-    public static double dist2grade (double distance)
-    {
-        return Grades.intrinsicRatio * (1 - (distance / constants.maxMatchingDistance.getValue()));
-    }
-
     //------------------//
     // aggregateMatches //
     //------------------//
@@ -380,7 +366,7 @@ public class NoteHeadsBuilder
                                    Staff staff,
                                    double pitch)
     {
-        final double distImpact = 1 - (loc.d / params.maxMatchingDistance);
+        final double distImpact = Template.impactOf(loc.d);
         final GradeImpacts impacts = new HeadInter.Impacts(distImpact);
         final double grade = impacts.getGrade();
 
@@ -831,16 +817,6 @@ public class NoteHeadsBuilder
                 false,
                 "Should we allow staff attachments for created areas?");
 
-        private final Constant.Double maxMatchingDistance = new Constant.Double(
-                "distance",
-                1.75, // 1.5,
-                "Maximum matching distance");
-
-        private final Constant.Double reallyBadDistance = new Constant.Double(
-                "distance",
-                3.0,
-                "Really bad matching distance");
-
         private final Scale.Fraction maxTemplateDx = new Scale.Fraction(
                 0.375,
                 "Maximum dx between similar template instances");
@@ -927,14 +903,14 @@ public class NoteHeadsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final double maxMatchingDistance;
+        final double maxDistanceLow;
+
+        final double maxDistanceHigh;
 
         final double reallyBadDistance;
 
         final int maxTemplateDx;
 
-        //
-        //        final int maxClosedDy;
         final int maxOpenDy;
 
         final int minBeamWidth;
@@ -947,10 +923,11 @@ public class NoteHeadsBuilder
          */
         public Parameters (Scale scale)
         {
-            maxMatchingDistance = constants.maxMatchingDistance.getValue();
-            reallyBadDistance = constants.reallyBadDistance.getValue();
+            maxDistanceLow = Template.maxDistanceLow();
+            maxDistanceHigh = Template.maxDistanceHigh();
+            reallyBadDistance = Template.reallyBadDistance();
+
             maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
-            //            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
             maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
             minBeamWidth = scale.toPixels(constants.minBeamWidth);
         }
@@ -1347,20 +1324,20 @@ public class NoteHeadsBuilder
                         : ShapeSet.VoidTemplateNotes;
                 ShapeLoop:
                 for (Shape shape : shapeSet) {
-                    PixelDistance bestDist = null;
+                    PixelDistance bestLoc = null;
 
                     for (int yOffset : yOffsets) {
                         final int y = y0 + yOffset;
-                        PixelDistance dist = eval(shape, x0, y, MIDDLE_LEFT);
+                        PixelDistance loc = eval(shape, x0, y, MIDDLE_LEFT);
 
-                        if ((dist != null) && (dist.d <= params.maxMatchingDistance)) {
-                            if ((bestDist == null) || (bestDist.d > dist.d)) {
-                                bestDist = dist;
+                        if ((loc != null) && (loc.d <= params.maxDistanceLow)) {
+                            if ((bestLoc == null) || (bestLoc.d > loc.d)) {
+                                bestLoc = loc;
                             }
                         } else if (y == y0) {
                             // This is the very first (best guess) location tried.
                             // If eval is really bad, stop immediately
-                            if ((dist == null) || (dist.d >= params.reallyBadDistance)) {
+                            if ((loc == null) || (loc.d >= params.reallyBadDistance)) {
                                 rangePerf.abandons++;
 
                                 continue ShapeLoop;
@@ -1368,9 +1345,9 @@ public class NoteHeadsBuilder
                         }
                     }
 
-                    if (bestDist != null) {
+                    if (bestLoc != null) {
                         HeadInter inter = createInter(
-                                bestDist,
+                                bestLoc,
                                 MIDDLE_LEFT,
                                 shape,
                                 line.getStaff(),
@@ -1438,7 +1415,7 @@ public class NoteHeadsBuilder
                                 final int x = x0 + xOffset;
                                 PixelDistance loc = eval(shape, x, y, anchor);
 
-                                if ((loc != null) && (loc.d <= params.maxMatchingDistance)) {
+                                if ((loc != null) && (loc.d <= params.maxDistanceLow)) {
                                     if ((bestLoc == null) || (bestLoc.d > loc.d)) {
                                         bestLoc = loc;
                                     }

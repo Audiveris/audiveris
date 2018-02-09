@@ -25,6 +25,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored;
@@ -35,7 +36,6 @@ import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.note.NoteHeadsBuilder;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.selection.AnchoredTemplateEvent;
@@ -299,7 +299,7 @@ public class TemplateBoard
                 final Anchor anchor = anchoredTemplate.anchor;
                 final Template template = anchoredTemplate.template;
                 double dist = template.evaluate(p.x, p.y, anchor, table);
-                double grade = NoteHeadsBuilder.dist2grade(dist);
+                double grade = Grades.intrinsicRatio * Template.impactOf(dist);
                 evalField.setText(String.format("%.3f", grade));
             } else {
                 evalField.setText("");

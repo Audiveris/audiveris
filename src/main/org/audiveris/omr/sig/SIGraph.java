@@ -1234,7 +1234,7 @@ public class SIGraph
             throw new IllegalStateException("Do not use removeVertex() directly");
         }
 
-        // Remove from inter index
+        // Remove from inter index. TODO: is this a good idea?
         system.getSheet().getInterIndex().remove(inter);
 
         if (inter.isVip()) {

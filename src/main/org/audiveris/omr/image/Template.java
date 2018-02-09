@@ -30,15 +30,24 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
+import org.audiveris.omr.ui.symbol.Alignment;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.TemplateSymbol;
+import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.ByteUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -138,12 +147,110 @@ public class Template
     //-----------//
     @Override
     public final void addAnchor (Anchor anchor,
-                                 double xRatio,
-                                 double yRatio)
+                                 int dx,
+                                 int dy)
     {
-        offsets.put(
-                anchor,
-                new Point((int) Math.rint(xRatio * width), (int) Math.rint(yRatio * height)));
+        offsets.put(anchor, new Point(dx, dy));
+    }
+
+    //---------------------//
+    // buildDecoratedImage //
+    //---------------------//
+    /**
+     * For easy visual checking, build a magnified template image with decorations.
+     *
+     * @param src source image
+     * @return decorated magnified image
+     */
+    public BufferedImage buildDecoratedImage (BufferedImage src)
+    {
+        final int r = 50; // Magnifying ratio (rather arbitrary)
+
+        TextFont textFont = new TextFont("SansSerif", Font.PLAIN, (int) Math.rint(r / 3.0));
+        BufferedImage img = new BufferedImage(width * r, height * r, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = img.createGraphics();
+
+        // Fill background
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, width * r, height * r);
+
+        // Draw template symbol
+        AffineTransform at = AffineTransform.getScaleInstance(r, r);
+        g.drawImage(src, at, null);
+
+        // Draw distances
+        for (PixelDistance pix : keyPoints) {
+            int d = (int) Math.rint(pix.d);
+
+            if (d != 0) {
+                g.drawRect(pix.x * r, pix.y * r, r, r);
+
+                String str = Integer.toString(d);
+                TextLayout layout = textFont.layout(str);
+                Point location = new Point((pix.x * r) + (r / 2), (pix.y * r) + (r / 2));
+                OmrFont.paint(g, layout, location, Alignment.AREA_CENTER);
+            }
+        }
+
+        // Anchor locations
+        g.setColor(Color.GREEN);
+
+        for (Entry<Anchor, Point> entry : offsets.entrySet()) {
+            final Point pt = entry.getValue();
+            g.drawRoundRect(pt.x * r, pt.y * r, r, r, r / 2, r / 2);
+
+            final Anchor anchor = entry.getKey();
+            final String str = anchor.abbreviation().toLowerCase();
+            final TextLayout layout = textFont.layout(str);
+
+            if ((anchor == Anchor.LEFT_STEM) || (anchor == Anchor.RIGHT_STEM)) {
+                Point location = new Point((pt.x * r) + (r / 2), (pt.y * r) + 2);
+                OmrFont.paint(g, layout, location, Alignment.TOP_CENTER);
+            } else {
+                Point location = new Point((pt.x * r) + (r / 2), (pt.y * r) + (r - 1));
+                OmrFont.paint(g, layout, location, Alignment.BASELINE_CENTER);
+            }
+        }
+
+        g.dispose();
+
+        // Put everything within a frame with x and y values
+        BufferedImage frm = new BufferedImage(
+                (width + 2) * r,
+                (height + 2) * r,
+                BufferedImage.TYPE_INT_RGB);
+        g = frm.createGraphics();
+
+        // Fill frame background
+        g.setColor(Color.GRAY);
+        g.fillRect(0, 0, frm.getWidth(), frm.getHeight());
+
+        g.drawImage(img, null, r, r);
+
+        // Draw coordinate values
+        g.setColor(Color.BLACK);
+
+        for (int x = 0; x < width; x++) {
+            String str = Integer.toString(x);
+            TextLayout layout = textFont.layout(str);
+            Point north = new Point(((x + 1) * r) + (r / 2), (r / 2));
+            OmrFont.paint(g, layout, north, Alignment.AREA_CENTER);
+
+            Point south = new Point(((x + 1) * r) + (r / 2), frm.getHeight() - (r / 2));
+            OmrFont.paint(g, layout, south, Alignment.AREA_CENTER);
+        }
+
+        for (int y = 0; y < height; y++) {
+            String str = Integer.toString(y);
+            TextLayout layout = textFont.layout(str);
+            Point west = new Point((r / 2), ((y + 1) * r) + (r / 2));
+            OmrFont.paint(g, layout, west, Alignment.AREA_CENTER);
+
+            Point east = new Point(frm.getWidth() - (r / 2), ((y + 1) * r) + (r / 2));
+            OmrFont.paint(g, layout, east, Alignment.AREA_CENTER);
+        }
+
+        return frm;
     }
 
     //------//
@@ -200,7 +307,7 @@ public class Template
      * @param y         location ordinate
      * @param anchor    the anchor kind to use for (x,y), null for upper left
      * @param distances the distance table to search
-     * @return the quadratic average distance computed on all key positions
+     * @return the weighted average distance computed on all key positions
      */
     public double evaluate (int x,
                             int y,
@@ -215,8 +322,9 @@ public class Template
         final int imgHeight = distances.getHeight();
         final double foreWeight = constants.foreWeight.getValue();
         final double backWeight = constants.backWeight.getValue();
+        final double holeWeight = constants.holeWeight.getValue();
         double weights = 0; // Sum of weights
-        double total = 0; // Sum of weighted squared distances
+        double total = 0; // Sum of weighted distances
 
         for (PixelDistance pix : keyPoints) {
             int nx = ul.x + pix.x;
@@ -228,18 +336,25 @@ public class Template
 
                 // Ignore neutralized locations in distance table
                 if (actualDist != ChamferDistance.VALUE_UNKNOWN) {
-                    // pix.d == 0 for expected foreground
-                    // pix.d > 0 for expected background (expected distance to nearest foreground)
-                    double weight = (pix.d > 0) ? backWeight : foreWeight;
-                    double dist = actualDist - pix.d;
-                    double weightedDistSquared = weight * (dist * dist);
-                    total += weightedDistSquared;
+                    // pix.d < 0 for expected hole, expected negative distance to nearest foreground
+                    // pix.d == 0 for expected foreground, 0 distance
+                    // pix.d > 0 for expected background, expected distance to nearest foreground
+                    double weight = (pix.d == 0) ? foreWeight : ((pix.d > 0) ? backWeight : holeWeight);
+                    double expected = (pix.d == 0) ? 0 : 1;
+                    double actual = (actualDist == 0) ? 0 : 1;
+                    double dist = Math.abs(actual - expected);
+
+                    total += (weight * dist);
                     weights += weight;
                 }
             }
         }
 
-        return Math.sqrt(total / weights) / distances.getNormalizer();
+        if (weights == 0) {
+            return Double.MAX_VALUE; // Safer
+        }
+
+        return total / weights;
     }
 
     //-----------//
@@ -289,7 +404,7 @@ public class Template
         final List<Point> fores = new ArrayList<Point>();
 
         for (PixelDistance pix : keyPoints) {
-            if (pix.d > 0) {
+            if (pix.d != 0) {
                 continue;
             }
 
@@ -475,6 +590,61 @@ public class Template
     }
 
     //----------//
+    // impactOf //
+    //----------//
+    /**
+     * Convert a matching distance to an impact value.
+     * <p>
+     * TODO: Should we boost value for whole heads here (no support from stem is expected)?
+     *
+     * @param distance matching distance
+     * @return resulting impact
+     */
+    public static double impactOf (double distance)
+    {
+        return 1 - (distance / maxDistanceHigh());
+    }
+
+    //-----------------//
+    // maxDistanceHigh //
+    //-----------------//
+    /**
+     * Report the high maximum distance, used to compute grades.
+     *
+     * @return high maximum
+     */
+    public static double maxDistanceHigh ()
+    {
+        return constants.maxDistanceHigh.getValue();
+    }
+
+    /**
+     * Report the low maximum distance, used to keep candidates.
+     *
+     * @return low maximum
+     */
+    //----------------//
+    // maxDistanceLow //
+    //----------------//
+    public static double maxDistanceLow ()
+    {
+        return constants.maxDistanceLow.getValue();
+    }
+
+    /**
+     * Report the really bad distance, used to stop any matching test.
+     *
+     * @return really bad distance
+     */
+    //-------------------//
+    // reallyBadDistance //
+    //-------------------//
+    public static double reallyBadDistance ()
+    {
+        return constants.reallyBadDistance.getValue();
+    }
+
+    //----------//
     // toString //
     //----------//
     @Override
@@ -538,15 +708,34 @@ public class Template
                 "Global ratio applied to small (cue/grace) templates");
 
         private final Constant.Ratio foreWeight = new Constant.Ratio(
-                2.0,
+                1.0,
                 "Weight assigned to template foreground pixels");
 
         private final Constant.Ratio backWeight = new Constant.Ratio(
                 1.0,
-                "Weight assigned to template background pixels");
+                "Weight assigned to template exterior background pixels");
+
+        private final Constant.Ratio holeWeight = new Constant.Ratio(
+                1.0,
+                "Weight assigned to template interior background pixels");
 
         private final Scale.Fraction dilation = new Scale.Fraction(
                 0.15,
                 "Dilation applied on a note head to be erased");
+
+        private final Constant.Double maxDistanceHigh = new Constant.Double(
+                "distance",
+                0.5,
+                "Maximum matching distance");
+
+        private final Constant.Double maxDistanceLow = new Constant.Double(
+                "distance",
+                0.40,
+                "Good matching distance");
+
+        private final Constant.Double reallyBadDistance = new Constant.Double(
+                "distance",
+                1.0,
+                "Really bad matching distance");
     }
 }

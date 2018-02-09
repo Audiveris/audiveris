@@ -359,9 +359,12 @@ public interface Inter
      * <li>For an alteration: 1 head
      * <li>For an arpeggiato: 1 headChord
      * <li>For an articulation: 1 headChord
+     * <li>For an augmentation dot: 1 note (TBD)
      * <li>For a dynamic: 1 chord
+     * <li>For a slur: 1 or 2 heads
      * <li>For a tuplet: 3 or 6 chords (approximately)
      * </ul>
+     * Manual inters survive but are displayed in red, to show they are not yet in normal status.
      *
      * @param system containing system
      * @param doit   if true, relations are actually added to the sig

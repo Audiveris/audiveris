@@ -95,23 +95,6 @@ public class InterService
         }
     }
 
-    //---------------------//
-    // handleLocationEvent //
-    //---------------------//
-    /**
-     * Interest in location => list
-     *
-     * @param locationEvent
-     */
-    @Override
-    protected void handleLocationEvent (LocationEvent locationEvent)
-    {
-        // Search only when in MODE_INTER or MODE_GLYPH
-        if (ViewParameters.getInstance().getSelectionMode() != ViewParameters.SelectionMode.MODE_SECTION) {
-            super.handleLocationEvent(locationEvent);
-        }
-    }
-
     //-----------------------//
     // handleEntityListEvent //
     //-----------------------//
@@ -129,14 +112,34 @@ public class InterService
             final Inter inter = listEvent.getEntity();
 
             if (inter != null) {
-                // Publish underlying glyph, if any
-                final Glyph glyph = inter.getGlyph();
                 final SIGraph sig = inter.getSig();
-                sig.getSystem().getSheet().getGlyphIndex().publish(glyph);
+
+                if (sig != null) {
+                    // Publish underlying glyph, perhaps null
+                    final Glyph glyph = inter.getGlyph();
+                    sig.getSystem().getSheet().getGlyphIndex().publish(glyph);
+                }
             }
         }
 
         // Publish selected inter last, so that display of its bounds remains visible
         super.handleEntityListEvent(listEvent);
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Interest in location => list
+     *
+     * @param locationEvent
+     */
+    @Override
+    protected void handleLocationEvent (LocationEvent locationEvent)
+    {
+        // Search only when in MODE_INTER or MODE_GLYPH
+        if (ViewParameters.getInstance().getSelectionMode() != ViewParameters.SelectionMode.MODE_SECTION) {
+            super.handleLocationEvent(locationEvent);
+        }
     }
 }

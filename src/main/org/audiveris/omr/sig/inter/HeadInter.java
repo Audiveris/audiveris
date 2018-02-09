@@ -731,12 +731,12 @@ public class HeadInter
         double bestGrade = 0;
 
         for (Corner corner : Corner.values) {
-            Point refPt = PointUtil.rounded(
-                    getStemReferencePoint(corner.stemAnchor(), interline));
+            Point refPt = PointUtil.rounded(getStemReferencePoint(corner.stemAnchor(), interline));
             int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
             int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
             Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
             List<Inter> stems = SIGraph.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+            int xDir = (corner.hSide == RIGHT) ? 1 : (-1);
 
             for (Inter inter : stems) {
                 StemInter stem = (StemInter) inter;
@@ -744,7 +744,7 @@ public class HeadInter
                 Point2D start = stemGlyph.getStartPoint(VERTICAL);
                 Point2D stop = stemGlyph.getStopPoint(VERTICAL);
                 double crossX = LineUtil.xAtY(start, stop, refPt.getY());
-                final double xGap = refPt.getX() - crossX;
+                final double xGap = xDir * (crossX - refPt.getX());
                 final double yGap;
 
                 if (refPt.getY() < start.getY()) {

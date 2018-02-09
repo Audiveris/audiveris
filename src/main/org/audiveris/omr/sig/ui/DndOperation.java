@@ -152,7 +152,6 @@ public class DndOperation
 
         sheet.getInterController().dropInter(ghost, center);
 
-        sheet.getInterIndex().publish(ghost);
         logger.debug("Dropped {} at {}", this, center);
     }
 

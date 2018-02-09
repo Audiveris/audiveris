@@ -158,15 +158,6 @@ public class BasicLag
         return orientation.isVertical();
     }
 
-    //--------//
-    // remove //
-    //--------//
-    @Override
-    public void remove (Section section)
-    {
-        super.remove(section); // Removal from index
-    }
-
     //----------------//
     // removeSections //
     //----------------//
