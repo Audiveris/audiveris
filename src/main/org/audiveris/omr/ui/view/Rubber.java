@@ -716,7 +716,7 @@ public class Rubber
     private int unscaled (int val)
     {
         if (zoom != null) {
-            return zoom.unscaled(val);
+            return zoom.truncUnscaled(val);
         } else {
             return val;
         }

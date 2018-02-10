@@ -403,7 +403,7 @@ public class Zoom
      */
     public int truncScaled (double val)
     {
-        return (int) (val * ratio);
+        return (int) Math.floor(val * ratio);
     }
 
     //---------------//
@@ -418,7 +418,7 @@ public class Zoom
      */
     public int truncUnscaled (double val)
     {
-        return (int) (val / ratio);
+        return (int) Math.floor(val / ratio);
     }
 
     //---------//

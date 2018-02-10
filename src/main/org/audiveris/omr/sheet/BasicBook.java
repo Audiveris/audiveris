@@ -541,7 +541,7 @@ public class BasicBook
         BasicBook book = null;
 
         try {
-            logger.info("Loading book {} ...", bookPath);
+            logger.info("Loading book {}", bookPath);
             watch.start("book");
 
             // Open book file

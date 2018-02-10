@@ -80,6 +80,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -1366,9 +1367,18 @@ public class NoteHeadsBuilder
             // Check conflict with seed-based instances
             inters = filterSeedConflicts(inters, competitors);
 
-            for (HeadInter inter : inters) {
-                inter.retrieveGlyph(image, sheet.getInterline(), sheet.getGlyphIndex());
-                sig.addVertex(inter);
+            for (Iterator<HeadInter> it = inters.iterator(); it.hasNext();) {
+                HeadInter inter = it.next();
+                Glyph glyph = inter.retrieveGlyph(
+                        image,
+                        sheet.getInterline(),
+                        sheet.getGlyphIndex());
+
+                if (glyph != null) {
+                    sig.addVertex(inter);
+                } else {
+                    it.remove();
+                }
             }
 
             return inters;
@@ -1440,12 +1450,15 @@ public class NoteHeadsBuilder
                                     pitch);
 
                             if (inter != null) {
-                                inter.retrieveGlyph(
+                                Glyph glyph = inter.retrieveGlyph(
                                         image,
                                         sheet.getInterline(),
                                         sheet.getGlyphIndex());
-                                sig.addVertex(inter);
-                                inters.add(inter);
+
+                                if (glyph != null) {
+                                    sig.addVertex(inter);
+                                    inters.add(inter);
+                                }
                             }
                         }
                     }

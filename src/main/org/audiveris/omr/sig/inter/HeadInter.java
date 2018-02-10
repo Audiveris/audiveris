@@ -540,10 +540,11 @@ public class HeadInter
      * @param image      the image to read pixels from
      * @param interline  scaling info
      * @param glyphIndex the index to hold the created glyph
+     * @return the underlying glyph or null if failed
      */
-    public void retrieveGlyph (ByteProcessor image,
-                               int interline,
-                               GlyphIndex glyphIndex)
+    public Glyph retrieveGlyph (ByteProcessor image,
+                                int interline,
+                                GlyphIndex glyphIndex)
     {
         final Template tpl = getDescriptor(interline).getTemplate();
         final Rectangle interBox = getBounds();
@@ -551,6 +552,13 @@ public class HeadInter
 
         // Foreground points (coordinates WRT descBox)
         final List<Point> fores = tpl.getForegroundPixels(descBox, image);
+
+        if (fores.isEmpty()) {
+            logger.info("No foreground pixels for {}", this);
+
+            return null;
+        }
+
         final Rectangle foreBox = PointUtil.boundsOf(fores);
 
         final ByteProcessor buf = new ByteProcessor(foreBox.width, foreBox.height);
@@ -569,6 +577,8 @@ public class HeadInter
 
         // Use glyph bounds as inter bounds
         bounds = glyph.getBounds();
+
+        return glyph;
     }
 
     //-------------//
@@ -731,7 +741,8 @@ public class HeadInter
         double bestGrade = 0;
 
         for (Corner corner : Corner.values) {
-            Point refPt = PointUtil.rounded(getStemReferencePoint(corner.stemAnchor(), interline));
+            Point refPt = PointUtil.rounded(
+                    getStemReferencePoint(corner.stemAnchor(), interline));
             int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
             int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
             Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
