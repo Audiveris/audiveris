@@ -4,18 +4,12 @@
  */
 package org.audiveris.omr.sig;
 
-import org.audiveris.omr.sig.GradeUtil;
-
-import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  *
- * @author herve
+ * @author Hervé Bitteur
  */
 public class GradesTest
 {
@@ -29,26 +23,6 @@ public class GradesTest
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Before
-    public void setUp ()
-    {
-    }
-
-    @BeforeClass
-    public static void setUpClass ()
-    {
-    }
-
-    @After
-    public void tearDown ()
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass ()
-    {
-    }
-
     //    /**
     //     * Test of contextual method, of class GradeUtil.
     //     */

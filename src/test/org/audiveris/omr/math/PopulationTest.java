@@ -23,9 +23,9 @@ package org.audiveris.omr.math;
 
 import static junit.framework.Assert.*;
 
-//import org.testng.annotations.*;
-import org.audiveris.omr.math.Population;
 import org.audiveris.omr.util.BaseTestCase;
+
+import org.junit.Test;
 
 /**
  * Class <code>PopulationTest</code> performs unit tests on Population class.
@@ -40,7 +40,7 @@ public class PopulationTest
     //-----------//
     // testEmpty //
     //-----------//
-    //@Test
+    @Test
     public void testEmpty ()
     {
         Population p = new Population();
@@ -83,7 +83,7 @@ public class PopulationTest
     //-------------//
     // testExclude //
     //-------------//
-    //@Test
+    @Test
     public void testExclude ()
     {
         Population p = new Population();
@@ -114,7 +114,7 @@ public class PopulationTest
     //-------------//
     // testInclude //
     //-------------//
-    //@Test
+    @Test
     public void testInclude ()
     {
         Population p = new Population();
@@ -142,7 +142,7 @@ public class PopulationTest
     //---------------//
     // testSingleton //
     //---------------//
-    //@Test
+    @Test
     public void testSingleton ()
     {
         Population p = new Population();

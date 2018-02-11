@@ -91,15 +91,16 @@ public class BaseTestCase
     {
         System.out.println(o);
     }
-
-    public void testDummy ()
-    {
-        // Nothing
-    }
-
+//
+//    public void testDummy ()
+//    {
+//        // Nothing
+//    }
+//
     //---------//
     // runTest //
     //---------//
+
     @Override
     protected void runTest ()
             throws Throwable

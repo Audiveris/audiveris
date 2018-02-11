@@ -4,18 +4,13 @@
  */
 package org.audiveris.omr.math;
 
-import org.audiveris.omr.math.NaturalSpline;
 import org.audiveris.omr.util.BaseTestCase;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  *
- * @author Etiolles
+ * @author Hervé Bitteur
  */
 public class NaturalSplineTest
         extends BaseTestCase
@@ -30,28 +25,6 @@ public class NaturalSplineTest
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Before
-    public void setUp ()
-    {
-    }
-
-    @BeforeClass
-    public static void setUpClass ()
-            throws Exception
-    {
-    }
-
-    @After
-    public void tearDown ()
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass ()
-            throws Exception
-    {
-    }
-
     /**
      * Test of interpolate method, of class NaturalSpline.
      */

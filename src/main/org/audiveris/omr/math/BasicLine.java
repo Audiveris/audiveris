@@ -348,7 +348,7 @@ public class BasicLine
     public void includePoint (double x,
                               double y)
     {
-        logger.debug("includePoint x={} y={}", x, y);
+        logger.trace("includePoint x={} y={}", x, y);
 
         n += 1;
         sx += x;
@@ -595,7 +595,7 @@ public class BasicLine
         // Make a choice between horizontal vs vertical
         double hDen = (n * sx2) - (sx * sx);
         double vDen = (n * sy2) - (sy * sy);
-        logger.debug("hDen={} vDen={}", hDen, vDen);
+        logger.trace("hDen={} vDen={}", hDen, vDen);
 
         if (abs(hDen) >= abs(vDen)) {
             // Use a rather horizontal orientation, y = mx +p

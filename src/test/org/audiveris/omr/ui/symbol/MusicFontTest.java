@@ -64,13 +64,16 @@ public class MusicFontTest
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Printout of each MusicFont character
+     * Printout of each MusicFont character.
      */
     @Test
     public void textPrintout ()
             throws Exception
     {
-        File file = new File("data/temp/" + MusicFont.FONT_NAME + ".pdf");
+        File dir = new File("data/temp");
+        dir.mkdirs();
+
+        File file = new File(dir, MusicFont.FONT_NAME + ".pdf");
 
         try (FileOutputStream fos = new FileOutputStream(file)) {
             Rectangle rect = new Rectangle(pageWidth, pageHeight);
