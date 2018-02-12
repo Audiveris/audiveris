@@ -767,20 +767,20 @@ public class Picture
     //-------//
     // store //
     //-------//
-    public void store (Path sheetPath,
-                       Path oldSheetPath)
+    public void store (Path sheetFolder,
+                       Path oldSheetFolder)
     {
         // Each handled table
         for (Entry<TableKey, RunTableHolder> entry : tables.entrySet()) {
             final TableKey key = entry.getKey();
             final RunTableHolder holder = entry.getValue();
-            final Path tablepath = sheetPath.resolve(key + ".xml");
+            final Path tablepath = sheetFolder.resolve(key + ".xml");
 
             if (!holder.hasData()) {
-                if (oldSheetPath != null) {
+                if (oldSheetFolder != null) {
                     try {
                         // Copy from old book file to new
-                        Path oldTablePath = oldSheetPath.resolve(key + ".xml");
+                        Path oldTablePath = oldSheetFolder.resolve(key + ".xml");
                         Files.copy(oldTablePath, tablepath);
                         logger.info("Copied {}", tablepath);
                     } catch (IOException ex) {

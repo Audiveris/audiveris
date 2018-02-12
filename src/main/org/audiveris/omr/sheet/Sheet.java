@@ -392,9 +392,9 @@ public interface Sheet
     /**
      * Store sheet internals into book file system.
      *
-     * @param sheetPath    path of sheet in new) book file
-     * @param oldSheetPath path of sheet in old book file, if any
+     * @param sheetFolder    path of sheet folder in (new) book file
+     * @param oldSheetFolder path of sheet folder in old book file, if any
      */
-    void store (Path sheetPath,
-                Path oldSheetPath);
+    void store (Path sheetFolder,
+                Path oldSheetFolder);
 }

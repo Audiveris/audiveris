@@ -1396,21 +1396,23 @@ public class BasicBook
                 root = createBookFile(bookPath);
                 diskWritten = true;
 
-                if (modified) {
-                    storeBookInfo(root); // Book info (book.xml)
-                }
+                storeBookInfo(root); // Book info (book.xml)
 
                 // Contained sheets
                 final Path oldRoot = openBookFile(this.bookPath);
 
                 for (SheetStub stub : stubs) {
-                    final Path oldSheetPath = oldRoot.resolve(INTERNALS_RADIX + stub.getNumber());
-                    final Path sheetPath = root.resolve(INTERNALS_RADIX + stub.getNumber());
+                    final Path oldSheetFolder = oldRoot.resolve(INTERNALS_RADIX + stub.getNumber());
+                    final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
 
+                    // By default, copy existing sheet files
+                    if (Files.exists(oldSheetFolder)) {
+                        FileUtil.copyTree(oldSheetFolder, sheetFolder);
+                    }
+
+                    // Update modified sheet files
                     if (stub.isModified()) {
-                        stub.getSheet().store(sheetPath, oldSheetPath);
-                    } else if (Files.exists(oldSheetPath)) {
-                        FileUtil.copyTree(oldSheetPath, sheetPath);
+                        stub.getSheet().store(sheetFolder, oldSheetFolder);
                     }
                 }
 
