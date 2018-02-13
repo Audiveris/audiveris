@@ -98,9 +98,9 @@ public abstract class Board
 
     public static final Desc FOCUS = new Desc("Focus", 600);
 
-    public static final Desc EVAL = new Desc("Eval", 700);
+    public static final Desc SHAPE = new Desc("Shape", 700);
 
-    public static final Desc SHAPE = new Desc("Shape", 800);
+    public static final Desc EVAL = new Desc("Eval", 800);
 
     public static final Desc CHECK = new Desc("Check", 900);
 
@@ -303,6 +303,19 @@ public abstract class Board
     public boolean isSelected ()
     {
         return selected;
+    }
+
+    //-------------//
+    // resizeBoard //
+    //-------------//
+    /**
+     * Resize board component, to adapt to its new composition.
+     */
+    public void resizeBoard ()
+    {
+        component.invalidate();
+        component.validate();
+        component.repaint();
     }
 
     //-----------//

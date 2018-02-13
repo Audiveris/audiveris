@@ -583,8 +583,6 @@ public class MainGui
         content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
         content.add(appPane, BorderLayout.CENTER);
 
-        // Suppress all internal borders, recursively
-        ///UIUtilities.suppressBorders(frame.getContentPane());
         // Display the boards pane?
         if (GuiActions.getInstance().isBoardsWindowDisplayed()) {
             appPane.add(boardsScrollPane, BorderLayout.EAST);

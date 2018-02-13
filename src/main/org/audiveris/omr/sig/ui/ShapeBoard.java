@@ -21,6 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -49,6 +53,7 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -60,15 +65,21 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 
 /**
  * Class {@code ShapeBoard} hosts a palette of shapes for insertion and assignment of
  * inter.
+ * <p>
+ * Shapes are gathered and presented in separate sets that are mutually exclusive.
+ * <p>
+ * A special set of shapes, always visible, is dedicated to the latest shapes used to ease the
+ * repetition of user actions.
  * <ul>
  * <li>Direct insertion is performed by drag and drop to the target score view or sheet view</li>
  * <li>Assignment of existing glyph is performed by a double-click</li>
@@ -86,31 +97,35 @@ public class ShapeBoard
     private static final Logger logger = LoggerFactory.getLogger(ShapeBoard.class);
 
     /** To force the width of the various panels. */
-    private static final int BOARD_WIDTH = 280;
+    private static final int BOARD_WIDTH = 317;
 
-    /** To force the height of the various shape panels (just a dirty hack). */
+    /**
+     * To force the height of the various shape panels.
+     * This is just a dirty hack, to force Swing FlowLayout to wrap its flow.
+     * A better solution might be to use JGoodies Layout, when we have some time to migrate...
+     */
     private static final Map<ShapeSet, Integer> heights = new HashMap<ShapeSet, Integer>();
 
     static {
         heights.put(ShapeSet.Accidentals, 40);
-        heights.put(ShapeSet.Articulations, 60);
-        heights.put(ShapeSet.Attributes, 80);
-        heights.put(ShapeSet.Barlines, 130);
+        heights.put(ShapeSet.Articulations, 40);
+        heights.put(ShapeSet.Attributes, 60);
+        heights.put(ShapeSet.Barlines, 140);
         heights.put(ShapeSet.Beams, 60);
         heights.put(ShapeSet.Clefs, 140);
         heights.put(ShapeSet.Digits, 40);
-        heights.put(ShapeSet.Dynamics, 220);
-        heights.put(ShapeSet.Flags, 130);
-        heights.put(ShapeSet.Keys, 220);
+        heights.put(ShapeSet.Dynamics, 70);
+        heights.put(ShapeSet.Flags, 140);
+        heights.put(ShapeSet.Keys, 180);
         heights.put(ShapeSet.Holds, 40);
-        heights.put(ShapeSet.Markers, 80);
-        heights.put(ShapeSet.HeadsAndDot, 80);
-        heights.put(ShapeSet.Ornaments, 80);
-        heights.put(ShapeSet.Physicals, 150);
+        heights.put(ShapeSet.Markers, 40);
+        heights.put(ShapeSet.HeadsAndDot, 60);
+        heights.put(ShapeSet.Ornaments, 70);
+        heights.put(ShapeSet.Physicals, 70);
         heights.put(ShapeSet.Pluckings, 40);
         heights.put(ShapeSet.Rests, 120);
         heights.put(ShapeSet.Romans, 60);
-        heights.put(ShapeSet.Times, 130);
+        heights.put(ShapeSet.Times, 120);
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -122,62 +137,48 @@ public class ShapeBoard
     private DndOperation dndOperation;
 
     /**
-     * Call-back when a range is selected: the panel of ranges is replaced by
-     * the panel of shapes that compose the selected range.
+     * Called-back when a set is selected: the panel of shape sets is "replaced" by
+     * the panel of shapes that compose the selected set.
      */
-    private ActionListener rangeListener = new ActionListener()
+    private final ActionListener setListener = new ActionListener()
     {
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            // Remove panel of ranges
-            getBody().remove(rangesPanel);
+            // Hide panel of sets
+            setsPanel.setVisible(false);
 
-            // Replace by proper panel of range shapes
-            String rangeName = ((JButton) e.getSource()).getName();
-            ShapeSet range = ShapeSet.getShapeSet(rangeName);
-            shapesPanel = shapesPanels.get(range);
+            // Show specific panel of shapes
+            String setName = ((JButton) e.getSource()).getName();
+            ShapeSet set = ShapeSet.getShapeSet(setName);
+            shapesPanel = shapesPanels.get(set);
+            shapesPanel.setVisible(true);
 
-            if (shapesPanel == null) {
-                // Lazily populate the map of shapesPanel instances
-                shapesPanels.put(range, shapesPanel = defineShapesPanel(range));
-            }
-
-            getBody().add(shapesPanel);
-
-            // Perhaps this is too much ... TODO
-            JFrame frame = OMR.gui.getFrame();
-            frame.invalidate();
-            frame.validate();
-            frame.repaint();
+            resizeBoard();
         }
     };
 
     /**
-     * Call-back when a panel of shapes is closed: the panel is replaced by the
-     * panel of ranges to allow the selection of another range.
+     * Called-back when a panel of shapes is closed: the panel is replaced by the
+     * panel of sets to allow the selection of another set.
      */
-    private ActionListener closeListener = new ActionListener()
+    private final ActionListener closeListener = new ActionListener()
     {
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            // Remove current panel of shapes
-            getBody().remove(shapesPanel);
+            // Hide current panel of shapes
+            shapesPanel.setVisible(false);
 
-            // Replace by panel of ranges
-            getBody().add(rangesPanel);
+            // Show panel of sets
+            setsPanel.setVisible(true);
 
-            // Perhaps this is too much ... TODO
-            JFrame frame = OMR.gui.getFrame();
-            frame.invalidate();
-            frame.validate();
-            frame.repaint();
+            resizeBoard();
         }
     };
 
     /**
-     * Call-back when a shape button is (double-) clicked.
+     * Called-back when a shape button is (double-) clicked.
      */
     private final MouseListener mouseListener = new MouseAdapter()
     {
@@ -193,30 +194,36 @@ public class ShapeBoard
 
                     // Actually assign the shape
                     sheet.getInterController().addInter(glyph, button.shape);
+
+                    // Update history
+                    shapeHistory.add(button.shape);
                 }
             }
         }
     };
 
-    /** Panel of all ranges. */
-    private final Panel rangesPanel;
+    /** Panel of all shape sets. */
+    private final Panel setsPanel;
 
     /** Map of shape panels. */
     private final Map<ShapeSet, Panel> shapesPanels = new HashMap<ShapeSet, Panel>();
 
-    /** Current panel of shape.s */
+    /** History of recently used shapes. */
+    private final ShapeHistory shapeHistory;
+
+    /** Current panel of shapes. */
     private Panel shapesPanel;
 
     /** GlassPane. */
     private final GhostGlassPane glassPane = OMR.gui.getGlassPane();
 
-    // Update image and forward mouse location
+    /** Update image and forward mouse location. */
     private final MyMotionAdapter motionAdapter = new MyMotionAdapter();
 
-    // When symbol is dropped
+    /** When symbol is dropped. */
     private final GhostDropListener<Shape> dropListener = new MyDropListener();
 
-    // When mouse pressed (start) and released (stop)
+    /** When mouse is pressed (start) and released (stop). */
     private final MyDropAdapter dropAdapter = new MyDropAdapter();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -233,8 +240,10 @@ public class ShapeBoard
         this.sheet = sheet;
 
         dropAdapter.addDropListener(dropListener);
+        shapeHistory = new ShapeHistory();
+        setsPanel = buildSetsPanel();
 
-        getBody().add(rangesPanel = defineRangesPanel());
+        defineLayout();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -252,77 +261,111 @@ public class ShapeBoard
         // Empty
     }
 
-    //-------------------//
-    // defineRangesPanel //
-    //-------------------//
+    //------------//
+    // addButtons //
+    //------------//
+    private void addButtons (Panel panel,
+                             List<Shape> shapes)
+    {
+        for (Shape shape : shapes) {
+            ShapeButton button = new ShapeButton(shape);
+            button.addMouseListener(mouseListener); // For double-click
+            button.addMouseListener(dropAdapter); // For DnD transfer and double-click
+            button.addMouseMotionListener(motionAdapter); // For dragging
+
+            panel.add(button);
+        }
+    }
+
+    //----------------//
+    // buildSetsPanel //
+    //----------------//
     /**
-     * Define the global panel of ranges.
+     * Build the global panel of sets.
      *
-     * @return the global panel of ranges
+     * @return the global panel of sets
      */
-    private Panel defineRangesPanel ()
+    private Panel buildSetsPanel ()
     {
         Panel panel = new Panel();
         panel.setNoInsets();
-        panel.setPreferredSize(new Dimension(BOARD_WIDTH, 180));
+        panel.setPreferredSize(new Dimension(BOARD_WIDTH, 160));
 
         FlowLayout layout = new FlowLayout();
         layout.setAlignment(FlowLayout.LEADING);
         panel.setLayout(layout);
+        panel.setBackground(Color.LIGHT_GRAY);
 
-        for (ShapeSet range : ShapeSet.getShapeSets()) {
-            Shape rep = range.getRep();
+        for (ShapeSet set : ShapeSet.getShapeSets()) {
+            Shape rep = set.getRep();
 
             if (rep != null) {
                 JButton button = new JButton();
                 button.setIcon(rep.getDecoratedSymbol());
-                button.setName(range.getName());
-                button.addActionListener(rangeListener);
-                button.setToolTipText(range.getName());
+                button.setName(set.getName());
+                button.addActionListener(setListener);
+                button.setToolTipText(set.getName());
                 button.setBorderPainted(false);
                 panel.add(button);
+
+                // Create the related shapesPanel
+                shapesPanels.put(set, buildShapesPanel(set));
             }
         }
 
         return panel;
     }
 
-    //-------------------//
-    // defineShapesPanel //
-    //-------------------//
+    //------------------//
+    // buildShapesPanel //
+    //------------------//
     /**
-     * Define the panel of shapes for a given range.
+     * Build the panel of shapes for a given set.
      *
-     * @param range the given range of shapes
-     * @return the panel of shapes for the provided range
+     * @param set the given set of shapes
+     * @return the panel of shapes for the provided set
      */
-    private Panel defineShapesPanel (ShapeSet range)
+    private Panel buildShapesPanel (ShapeSet set)
     {
         Panel panel = new Panel();
         panel.setNoInsets();
-        panel.setPreferredSize(new Dimension(BOARD_WIDTH, getRangeHeight(range)));
+        panel.setPreferredSize(new Dimension(BOARD_WIDTH, getSetHeight(set)));
 
         FlowLayout layout = new FlowLayout();
         layout.setAlignment(FlowLayout.LEADING);
         panel.setLayout(layout);
 
-        // Button to close this shapes panel and return to ranges panel
-        JButton close = new JButton(range.getName());
+        // Button to close this shapes panel and return to sets panel
+        JButton close = new JButton(set.getName());
         close.addActionListener(closeListener);
-        close.setToolTipText("Back to ranges");
+        close.setToolTipText("Back to shape sets");
         close.setBorderPainted(false);
         panel.add(close);
 
         // One button per shape
-        for (Shape shape : range.getSortedShapes()) {
-            ShapeButton button = new ShapeButton(shape);
-            button.addMouseListener(dropAdapter); // For DnD transfer
-            button.addMouseListener(mouseListener); // For double-click
-            button.addMouseMotionListener(motionAdapter); // For dragging
-            panel.add(button);
-        }
+        addButtons(panel, set.getSortedShapes());
 
         return panel;
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    private void defineLayout ()
+    {
+        CellConstraints cst = new CellConstraints();
+        FormLayout layout = new FormLayout(
+                "190dlu",
+                "pref," + Panel.getFieldInterline() + ",pref");
+        PanelBuilder builder = new PanelBuilder(layout, getBody());
+
+        builder.add(shapeHistory.panel, cst.xy(1, 1));
+        builder.add(setsPanel, cst.xy(1, 3));
+
+        for (Panel shapesPanel : shapesPanels.values()) {
+            builder.add(shapesPanel, cst.xy(1, 3)); // All overlap setsPanel
+            shapesPanel.setVisible(false);
+        }
     }
 
     //--------------//
@@ -342,6 +385,9 @@ public class ShapeBoard
         return symbol.getIconImage();
     }
 
+    //----------------------//
+    // getNonDraggableImage //
+    //----------------------//
     private BufferedImage getNonDraggableImage (Zoom zoom)
     {
         int zoomedInterline = (int) Math.rint(zoom.getRatio() * sheet.getScale().getInterline());
@@ -349,21 +395,21 @@ public class ShapeBoard
         return MusicFont.buildImage(Shape.NON_DRAGGABLE, zoomedInterline, true); // Decorated
     }
 
-    //----------------//
-    // getRangeHeight //
-    //----------------//
+    //--------------//
+    // getSetHeight //
+    //--------------//
     /**
-     * Safe method to report the preferred panel height for the provided range.
+     * Safe method to report the preferred panel height for the provided set.
      *
-     * @param range provided range
+     * @param set provided set
      * @return preferred height (or a default value)
      */
-    private int getRangeHeight (ShapeSet range)
+    private int getSetHeight (ShapeSet set)
     {
-        Integer height = heights.get(range);
+        Integer height = heights.get(set);
 
         if (height == null) {
-            logger.error("No panel height for range {}", range.getName());
+            logger.error("No panel height for set {}", set.getName());
             height = 100;
         }
 
@@ -407,6 +453,11 @@ public class ShapeBoard
         private final Constant.Boolean publishLocationWhileDragging = new Constant.Boolean(
                 false,
                 "Should we publish the current location while dragging a shape?");
+
+        private final Constant.Integer maxHistoryLength = new Constant.Integer(
+                "shapes",
+                8,
+                "Maximum number of shapes kept in history");
     }
 
     //---------------//
@@ -503,6 +554,9 @@ public class ShapeBoard
 
                     if (dndOperation != null) {
                         dndOperation.drop(localPt);
+
+                        // Update history
+                        shapeHistory.add(dndOperation.getGhost().getShape());
                     }
                 }
             }
@@ -532,11 +586,6 @@ public class ShapeBoard
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        public final void reset ()
-        {
-            prevComponent = new WeakReference<Component>(null);
-        }
-
         /**
          * In this specific implementation, we update the size of the
          * shape image according to the interline scale and to the
@@ -593,6 +642,54 @@ public class ShapeBoard
             }
 
             glass.setPoint(screenPoint); // This triggers a repaint of glassPane
+        }
+
+        public final void reset ()
+        {
+            prevComponent = new WeakReference<Component>(null);
+        }
+    }
+
+    //--------------//
+    // ShapeHistory //
+    //--------------//
+    private class ShapeHistory
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final List<Shape> shapes = new ArrayList<Shape>();
+
+        private final Panel panel = new Panel();
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ShapeHistory ()
+        {
+            panel.setNoInsets();
+
+            FlowLayout layout = new FlowLayout();
+            layout.setAlignment(FlowLayout.LEADING);
+            panel.setLayout(layout);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public void add (Shape shape)
+        {
+            // Remove duplicate if any
+            shapes.remove(shape);
+
+            // Insert at beginning of the list
+            shapes.add(0, shape);
+
+            // Check for maximum length
+            while (shapes.size() > constants.maxHistoryLength.getValue()) {
+                shapes.remove(shapes.size() - 1);
+            }
+
+            // Regenerate the buttons
+            panel.removeAll();
+            addButtons(panel, shapes);
+
+            resizeBoard();
         }
     }
 }

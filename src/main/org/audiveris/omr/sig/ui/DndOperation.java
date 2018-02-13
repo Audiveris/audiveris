@@ -166,6 +166,14 @@ public class DndOperation
         updateImage(sheet.getScale().getInterline());
     }
 
+    //----------//
+    // getGhost //
+    //----------//
+    public Inter getGhost ()
+    {
+        return ghost;
+    }
+
     //--------------//
     // getReference //
     //--------------//
