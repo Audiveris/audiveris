@@ -270,11 +270,11 @@ public class ShapeSet
 
     /** Core shapes for barlines. */
     public static final EnumSet<Shape> CoreBarlines = EnumSet.copyOf(
-            Arrays.asList(
-                    Shape.THICK_BARLINE,
-                    Shape.THICK_CONNECTOR,
-                    Shape.THIN_BARLINE,
-                    Shape.THIN_CONNECTOR));
+            Arrays.asList(THICK_BARLINE, THICK_CONNECTOR, THIN_BARLINE, THIN_CONNECTOR));
+
+    /** Beams. */
+    public static final EnumSet<Shape> Beams = EnumSet.copyOf(
+            Arrays.asList(BEAM, BEAM_SMALL, BEAM_HOOK, BEAM_HOOK_SMALL));
 
     //----------------------------------------------------------------------------------------------
     // Below are predefined instances of ShapeSet, meant mainly for UI packaging.
@@ -298,36 +298,28 @@ public class ShapeSet
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
             new Color(0x000000),
-            shapesOf(
-                    OTTAVA_ALTA,
-                    OTTAVA_BASSA,
-                    PEDAL_MARK,
-                    PEDAL_UP_MARK,
-                    TUPLET_THREE,
-                    TUPLET_SIX,
-                    ARPEGGIATO));
+            shapesOf(OTTAVA_ALTA, OTTAVA_BASSA, PEDAL_MARK, PEDAL_UP_MARK, ARPEGGIATO));
 
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,
             new Color(0x0000ff),
             shapesOf(
-                    CoreBarlines,
-                    shapesOf(
-                            DOUBLE_BARLINE,
-                            FINAL_BARLINE,
-                            REVERSE_FINAL_BARLINE,
-                            LEFT_REPEAT_SIGN,
-                            RIGHT_REPEAT_SIGN,
-                            BACK_TO_BACK_REPEAT_SIGN,
-                            BRACE,
-                            BRACKET,
-                            BRACKET_CONNECTOR,
-                            REPEAT_DOT)));
+                    THICK_BARLINE,
+                    THIN_BARLINE,
+                    DOUBLE_BARLINE,
+                    FINAL_BARLINE,
+                    REVERSE_FINAL_BARLINE,
+                    LEFT_REPEAT_SIGN,
+                    RIGHT_REPEAT_SIGN,
+                    BACK_TO_BACK_REPEAT_SIGN,
+                    BRACE,
+                    BRACKET,
+                    REPEAT_DOT));
 
-    public static final ShapeSet Beams = new ShapeSet(
+    public static final ShapeSet BeamsAndTuplets = new ShapeSet(
             BEAM,
             new Color(0x33ffff),
-            shapesOf(BEAM, BEAM_SMALL, BEAM_HOOK));
+            shapesOf(BEAM /* ,BEAM_SMALL */, BEAM_HOOK, TUPLET_THREE, TUPLET_SIX));
 
     public static final ShapeSet Clefs = new ShapeSet(
             G_CLEF,
@@ -463,7 +455,7 @@ public class ShapeSet
 
     /** Symbols that can be attached to a stem. */
     public static final EnumSet<Shape> StemSymbols = EnumSet.copyOf(
-            shapesOf(StemHeads, Flags.getShapes(), Beams.getShapes()));
+            shapesOf(StemHeads, Flags.getShapes(), Beams));
 
     /** Pedals */
     public static final EnumSet<Shape> Pedals = EnumSet.of(PEDAL_MARK, PEDAL_UP_MARK);
@@ -792,31 +784,6 @@ public class ShapeSet
      * @param col1 a first collection of shapes
      * @param col2 a second collection of shapes
      * @param col3 a third collection of shapes
-     * @return a single collection
-     */
-    public static Collection<Shape> shapesOf (Collection<Shape> col1,
-                                              Collection<Shape> col2,
-                                              Collection<Shape> col3)
-    {
-        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
-                : EnumSet.noneOf(Shape.class);
-
-        shapes.addAll(col1);
-        shapes.addAll(col2);
-        shapes.addAll(col3);
-
-        return shapes;
-    }
-
-    //----------//
-    // shapesOf //
-    //----------//
-    /**
-     * Convenient way to build a collection of shapes.
-     *
-     * @param col1 a first collection of shapes
-     * @param col2 a second collection of shapes
-     * @param col3 a third collection of shapes
      * @param col4 a fourth collection of shapes
      * @return a single collection
      */
@@ -832,6 +799,31 @@ public class ShapeSet
         shapes.addAll(col2);
         shapes.addAll(col3);
         shapes.addAll(col4);
+
+        return shapes;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    /**
+     * Convenient way to build a collection of shapes.
+     *
+     * @param col1 a first collection of shapes
+     * @param col2 a second collection of shapes
+     * @param col3 a third collection of shapes
+     * @return a single collection
+     */
+    public static Collection<Shape> shapesOf (Collection<Shape> col1,
+                                              Collection<Shape> col2,
+                                              Collection<Shape> col3)
+    {
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
+
+        shapes.addAll(col1);
+        shapes.addAll(col2);
+        shapes.addAll(col3);
 
         return shapes;
     }

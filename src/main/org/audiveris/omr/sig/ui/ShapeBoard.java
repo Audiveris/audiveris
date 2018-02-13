@@ -111,7 +111,7 @@ public class ShapeBoard
         heights.put(ShapeSet.Articulations, 40);
         heights.put(ShapeSet.Attributes, 60);
         heights.put(ShapeSet.Barlines, 140);
-        heights.put(ShapeSet.Beams, 60);
+        heights.put(ShapeSet.BeamsAndTuplets, 60);
         heights.put(ShapeSet.Clefs, 140);
         heights.put(ShapeSet.Digits, 40);
         heights.put(ShapeSet.Dynamics, 70);

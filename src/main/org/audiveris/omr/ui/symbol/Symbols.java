@@ -150,6 +150,8 @@ public abstract class Symbols
      */
     private static void assignDecoratedSymbols ()
     {
+        dec.put(ACCENT, new ArticulationSymbol(ACCENT, true, 62));
+        dec.put(AUGMENTATION_DOT, new AugmentationSymbol(AUGMENTATION_DOT, true, 46));
         dec.put(BEAM, new BeamSymbol(1, BEAM));
         //TODO: add BEAM_SMALL?
         dec.put(BEAM_HOOK, new BeamHookSymbol());
@@ -167,7 +169,12 @@ public abstract class Symbols
         dec.put(LEDGER, new LedgerSymbol(true));
         dec.put(LONG_REST, new LongRestSymbol(true));
         dec.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
+        dec.put(REPEAT_DOT, new RepeatDotSymbol(REPEAT_DOT, true, 46));
         dec.put(SLUR, new SlurSymbol());
+        dec.put(STACCATISSIMO, new ArticulationSymbol(STACCATISSIMO, true, 174));
+        dec.put(STACCATO, new ArticulationSymbol(STACCATO, true, 46));
+        dec.put(STRONG_ACCENT, new ArticulationSymbol(STRONG_ACCENT, true, 94));
+        dec.put(TENUTO, new ArticulationSymbol(TENUTO, true, 45));
         dec.put(TEXT, new TextSymbol(TEXT, "txt"));
         dec.put(LYRICS, new TextSymbol(LYRICS, "lyrics"));
         dec.put(WHOLE_REST, new RestSymbol(WHOLE_REST, true, 183));
@@ -199,13 +206,12 @@ public abstract class Symbols
         map(HALF_REST, 238);
         map(REPEAT_DOT_PAIR, 123);
         map(FERMATA_DOT, 46);
-
-        // Other instances, in any order
         map(DOT_set, 46);
         map(AUGMENTATION_DOT, 46);
         map(STACCATO, 46);
         map(REPEAT_DOT, 46);
 
+        // Other instances, in any order
         map(ACCENT, 62);
         map(ARPEGGIATO, 103);
         sym.put(ARPEGGIATO, new ArpeggiatosSymbol(2, false));
