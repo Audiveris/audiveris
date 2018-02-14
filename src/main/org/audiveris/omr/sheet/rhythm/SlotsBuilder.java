@@ -192,7 +192,7 @@ public class SlotsBuilder
 
                 default:
 
-                    // Use time offsett difference when known
+                    // Use time offset difference when known
                     if ((c1.getTimeOffset() != null) && (c2.getTimeOffset() != null)) {
                         return c1.getTimeOffset().compareTo(c2.getTimeOffset());
                     } else {
@@ -376,7 +376,7 @@ public class SlotsBuilder
                 stack.getWholeRestChords());
         Collections.sort(actives, Inters.byAbscissa);
 
-        // Create voices for whole chords
+        // Create voices for whole rest chords
         handleWholeVoices(actives);
 
         // List of chords assignable, but not yet assigned to a slot
@@ -583,7 +583,7 @@ public class SlotsBuilder
         }
 
         for (AbstractChordInter chord : actives) {
-            // Skip the "whole" chords, since they don't expire before measure end
+            // Skip the "whole" rest chords, since they don't expire before measure end
             if (!chord.isWholeRest()) {
                 Rational endTime = chord.getEndTime();
 
@@ -1195,7 +1195,7 @@ public class SlotsBuilder
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxSlotDx = new Scale.Fraction(
-                1,
+                1.05,
                 "Maximum horizontal delta between a slot and a chord");
 
         private final Scale.Fraction minInterSlotDx = new Scale.Fraction(
