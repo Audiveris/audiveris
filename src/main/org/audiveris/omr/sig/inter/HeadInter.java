@@ -29,6 +29,7 @@ import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
 import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
@@ -184,6 +185,33 @@ public class HeadInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        if (ShapeSet.StemHeads.contains(shape)) {
+            setAbnormal(true); // No stem linked yet
+        }
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        if (ShapeSet.StemHeads.contains(shape)) {
+            // Check if a stem is connected
+            setAbnormal(!sig.hasRelation(this, HeadStemRelation.class));
+        }
+
+        return isAbnormal();
     }
 
     //-----------//
@@ -595,21 +623,23 @@ public class HeadInter
     public Collection<Link> searchLinks (SystemInfo system,
                                          boolean doit)
     {
-        // Not very optimized!
-        List<Inter> systemStems = system.getSig().inters(StemInter.class);
-        Collections.sort(systemStems, Inters.byAbscissa);
+        if (ShapeSet.StemHeads.contains(shape)) {
+            // Not very optimized!
+            List<Inter> systemStems = system.getSig().inters(StemInter.class);
+            Collections.sort(systemStems, Inters.byAbscissa);
 
-        Link link = lookupLink(systemStems);
+            Link link = lookupLink(systemStems);
 
-        if (link == null) {
-            return Collections.emptyList();
+            if (link != null) {
+                if (doit) {
+                    link.applyTo(this);
+                }
+
+                return Collections.singleton(link);
+            }
         }
 
-        if (doit) {
-            link.applyTo(this);
-        }
-
-        return Collections.singleton(link);
+        return Collections.emptyList();
     }
 
     //--------//

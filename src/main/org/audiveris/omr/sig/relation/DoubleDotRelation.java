@@ -29,6 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.sig.inter.AugmentationDotInter;
+import org.audiveris.omr.sig.inter.Inter;
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 /**
  * Class {@code DoubleDotRelation} represents the relation between a second
@@ -66,6 +69,26 @@ public class DoubleDotRelation
     public static Scale.Fraction getYGapMaximum ()
     {
         return constants.yGapMax;
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final AugmentationDotInter secondDot = (AugmentationDotInter) e.getEdgeSource();
+        secondDot.checkAbnormal();
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final AugmentationDotInter secondDot = (AugmentationDotInter) e.getEdgeSource();
+        secondDot.checkAbnormal();
     }
 
     //---------------//

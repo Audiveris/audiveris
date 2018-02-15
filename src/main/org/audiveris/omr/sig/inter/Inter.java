@@ -79,6 +79,13 @@ public interface Inter
     void added ();
 
     /**
+     * Run checks to detect if this inter is abnormal.
+     *
+     * @return the resulting status
+     */
+    boolean checkAbnormal ();
+
+    /**
      * Decrease the inter grade.
      *
      * @param ratio ratio applied
@@ -271,6 +278,14 @@ public interface Inter
     void invalidateCache ();
 
     /**
+     * Report whether this instance is in abnormal state (such as lacking a mandatory
+     * relation).
+     *
+     * @return true if abnormal
+     */
+    boolean isAbnormal ();
+
+    /**
      * Report whether the interpretation has a good contextual grade.
      *
      * @return true if contextual grade is good
@@ -356,12 +371,13 @@ public interface Inter
      * <ul>
      * <li>For a flag: 1 stem
      * <li>For a head: 1 stem
+     * <li>For a stem: 1 head
      * <li>For an alteration: 1 head
      * <li>For an arpeggiato: 1 headChord
      * <li>For an articulation: 1 headChord
-     * <li>For an augmentation dot: 1 note (TBD)
-     * <li>For a dynamic: 1 chord
-     * <li>For a slur: 1 or 2 heads
+     * <li>For an augmentation dot: 1 note or another dot
+     * <li>For a dynamic: 1 chord (really?)
+     * <li>For a slur: 1 or 2 heads (or connection across system/page break)
      * <li>For a tuplet: 3 or 6 chords (approximately)
      * </ul>
      * Manual inters survive but are displayed in red, to show they are not yet in normal status.
@@ -372,6 +388,13 @@ public interface Inter
      */
     Collection<Link> searchLinks (SystemInfo system,
                                   boolean doit);
+
+    /**
+     * Set this inter as an abnormal one.
+     *
+     * @param abnormal new value
+     */
+    void setAbnormal (boolean abnormal);
 
     /**
      * Assign the bounding box for this interpretation.

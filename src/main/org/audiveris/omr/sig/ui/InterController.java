@@ -162,113 +162,116 @@ public class InterController
         {
             @Override
             protected Void doInBackground ()
-                    throws Exception
             {
-                StaffManager staffManager = sheet.getStaffManager();
+                try {
+                    StaffManager staffManager = sheet.getStaffManager();
 
-                // While interacting with user, make sure we have the related staff & system
-                SystemInfo system;
-                Staff staff = null;
-                final Point center = glyph.getCenter();
-                final List<Staff> staves = staffManager.getStavesOf(center);
+                    // While interacting with user, make sure we have the related staff & system
+                    SystemInfo system;
+                    Staff staff = null;
+                    final Point center = glyph.getCenter();
+                    final List<Staff> staves = staffManager.getStavesOf(center);
 
-                if (staves.isEmpty()) {
-                    throw new IllegalStateException("No staff for " + center);
-                }
-
-                Inter ghost = SymbolFactory.createGhost(shape, 1);
-                ghost.setManual(true);
-                ghost.setBounds(glyph.getBounds());
-                ghost.setGlyph(glyph);
-
-                Collection<Link> links = null;
-
-                if (staves.size() == 1) {
-                    // Staff is uniquely defined
-                    staff = staves.get(0);
-                    system = staff.getSystem();
-                    links = ghost.searchLinks(system, false);
-                }
-
-                // Sort the 2 staves by increasing distance from glyph center
-                Collections.sort(
-                        staves,
-                        new Comparator<Staff>()
-                {
-                    @Override
-                    public int compare (Staff s1,
-                                        Staff s2)
-                    {
-                        return Double.compare(
-                                s1.distanceTo(center),
-                                s2.distanceTo(center));
+                    if (staves.isEmpty()) {
+                        throw new IllegalStateException("No staff for " + center);
                     }
-                });
 
-                if ((staff == null) && constants.useStaffLink.isSet()) {
-                    // Try to use link
-                    SystemInfo prevSystem = null;
-                    StaffLoop:
-                    for (Staff stf : staves) {
-                        system = stf.getSystem();
+                    Inter ghost = SymbolFactory.createGhost(shape, 1);
+                    ghost.setManual(true);
+                    ghost.setBounds(glyph.getBounds());
+                    ghost.setGlyph(glyph);
 
-                        if (system != prevSystem) {
-                            links = ghost.searchLinks(system, false);
+                    Collection<Link> links = null;
 
-                            for (Link p : links) {
-                                if (p.partner.getStaff() != null) {
-                                    staff = p.partner.getStaff();
+                    if (staves.size() == 1) {
+                        // Staff is uniquely defined
+                        staff = staves.get(0);
+                        system = staff.getSystem();
+                        links = ghost.searchLinks(system, false);
+                    }
 
-                                    // We stop on first link found (we check closest staff first)
-                                    break StaffLoop;
+                    // Sort the 2 staves by increasing distance from glyph center
+                    Collections.sort(
+                            staves,
+                            new Comparator<Staff>()
+                    {
+                        @Override
+                        public int compare (Staff s1,
+                                            Staff s2)
+                        {
+                            return Double.compare(
+                                    s1.distanceTo(center),
+                                    s2.distanceTo(center));
+                        }
+                    });
+
+                    if ((staff == null) && constants.useStaffLink.isSet()) {
+                        // Try to use link
+                        SystemInfo prevSystem = null;
+                        StaffLoop:
+                        for (Staff stf : staves) {
+                            system = stf.getSystem();
+
+                            if (system != prevSystem) {
+                                links = ghost.searchLinks(system, false);
+
+                                for (Link p : links) {
+                                    if (p.partner.getStaff() != null) {
+                                        staff = p.partner.getStaff();
+
+                                        // We stop on first link found (we check closest staff first)
+                                        break StaffLoop;
+                                    }
                                 }
+
+                                links = null;
                             }
 
-                            links = null;
+                            prevSystem = system;
                         }
-
-                        prevSystem = system;
                     }
-                }
 
-                if ((staff == null) && constants.useStaffProximity.isSet()) {
-                    // Use proximity to staff (vertical margin defined as ratio of gutter)
-                    final double bestDist = staves.get(0).distanceTo(center);
-                    final double otherDist = staves.get(1).distanceTo(center);
-                    final double gutter = bestDist + otherDist;
+                    if ((staff == null) && constants.useStaffProximity.isSet()) {
+                        // Use proximity to staff (vertical margin defined as ratio of gutter)
+                        final double bestDist = staves.get(0).distanceTo(center);
+                        final double otherDist = staves.get(1).distanceTo(center);
+                        final double gutter = bestDist + otherDist;
 
-                    if (bestDist <= (gutter * constants.gutterRatio.getValue())) {
-                        staff = staves.get(0);
+                        if (bestDist <= (gutter * constants.gutterRatio.getValue())) {
+                            staff = staves.get(0);
+                        }
                     }
-                }
 
-                if (staff == null) {
-                    // Finally, prompt user...
-                    int option = StaffSelection.getInstance().prompt();
+                    if (staff == null) {
+                        // Finally, prompt user...
+                        int option = StaffSelection.getInstance().prompt();
 
-                    if (option >= 0) {
-                        staff = staves.get(option);
+                        if (option >= 0) {
+                            staff = staves.get(option);
+                        }
                     }
+
+                    if (staff == null) {
+                        logger.info("No staff, abandonned.");
+
+                        return null;
+                    }
+
+                    ghost.setStaff(staff);
+                    system = staff.getSystem();
+
+                    // If glyph used by another inter, delete this other inter
+                    removeCompetitors(ghost, glyph, system);
+
+                    // Make sure we have the correct links
+                    if (links == null) {
+                        links = ghost.searchLinks(system, false);
+                    }
+
+                    addGhost(ghost, links);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in addInter {}", ex.toString(), ex);
                 }
-
-                if (staff == null) {
-                    logger.info("No staff, abandonned.");
-
-                    return null;
-                }
-
-                ghost.setStaff(staff);
-                system = staff.getSystem();
-
-                // If glyph used by another inter, delete this other inter
-                removeCompetitors(ghost, glyph, system);
-
-                // Make sure we have the correct links
-                if (links == null) {
-                    links = ghost.searchLinks(system, false);
-                }
-
-                addGhost(ghost, links);
 
                 return null;
             }
@@ -291,86 +294,92 @@ public class InterController
         {
             @Override
             protected Void doInBackground ()
-                    throws Exception
             {
-                final Point centroid = glyph.getCentroid();
-                final SystemInfo system = sheet.getSystemManager().getClosestSystem(centroid);
+                try {
+                    final Point centroid = glyph.getCentroid();
+                    final SystemInfo system = sheet.getSystemManager().getClosestSystem(
+                            centroid);
 
-                if (system == null) {
-                    return null;
-                }
-
-                final SIGraph sig = system.getSig();
-
-                // Retrieve lines relative to glyph origin
-                ByteProcessor buffer = glyph.getBuffer();
-                List<TextLine> relativeLines = new GlyphScanner(sheet).scanBuffer(
-                        buffer,
-                        sheet.getStub().getLanguageParam().getActual(),
-                        glyph.getId());
-
-                // Retrieve absolute lines (and the underlying word glyphs)
-                TextRole expected = (shape == Shape.LYRICS) ? TextRole.Lyrics : null;
-                List<TextLine> lines = new TextBuilder(system, expected, true).retrieveGlyphLines(
-                        buffer,
-                        relativeLines,
-                        glyph.getTopLeft());
-
-                // Generate the sequence of word/line Inter additions
-                final UITaskList seq = new UITaskList();
-
-                for (TextLine line : lines) {
-                    logger.debug("line {}", line);
-
-                    TextRole role = line.getRole();
-                    SentenceInter sentence = null;
-                    Staff staff = null;
-
-                    for (TextWord textWord : line.getWords()) {
-                        logger.debug("word {}", textWord);
-
-                        WordInter word = (role == TextRole.Lyrics)
-                                ? new LyricItemInter(textWord) : new WordInter(
-                                        textWord);
-
-                        if (sentence != null) {
-                            seq.add(
-                                    new AdditionTask(
-                                            sig,
-                                            word,
-                                            textWord.getBounds(),
-                                            Arrays.asList(new Link(sentence, new Containment(), false))));
-                        } else {
-                            sentence = (role == TextRole.Lyrics) ? LyricLineInter.create(line)
-                                    : ((role == TextRole.ChordName)
-                                            ? ChordNameInter.create(line)
-                                            : SentenceInter.create(line));
-                            staff = sentence.assignStaff(system, line.getLocation());
-                            seq.add(
-                                    new AdditionTask(
-                                            sig,
-                                            word,
-                                            textWord.getBounds(),
-                                            Collections.EMPTY_SET));
-                            seq.add(
-                                    new AdditionTask(
-                                            sig,
-                                            sentence,
-                                            line.getBounds(),
-                                            Arrays.asList(new Link(word, new Containment(), true))));
-                        }
-
-                        word.setStaff(staff);
+                    if (system == null) {
+                        return null;
                     }
+
+                    final SIGraph sig = system.getSig();
+
+                    // Retrieve lines relative to glyph origin
+                    ByteProcessor buffer = glyph.getBuffer();
+                    List<TextLine> relativeLines = new GlyphScanner(sheet).scanBuffer(
+                            buffer,
+                            sheet.getStub().getLanguageParam().getActual(),
+                            glyph.getId());
+
+                    // Retrieve absolute lines (and the underlying word glyphs)
+                    TextRole expected = (shape == Shape.LYRICS) ? TextRole.Lyrics : null;
+                    List<TextLine> lines = new TextBuilder(system, expected, true).retrieveGlyphLines(
+                            buffer,
+                            relativeLines,
+                            glyph.getTopLeft());
+
+                    // Generate the sequence of word/line Inter additions
+                    final UITaskList seq = new UITaskList();
+
+                    for (TextLine line : lines) {
+                        logger.debug("line {}", line);
+
+                        TextRole role = line.getRole();
+                        SentenceInter sentence = null;
+                        Staff staff = null;
+
+                        for (TextWord textWord : line.getWords()) {
+                            logger.debug("word {}", textWord);
+
+                            WordInter word = (role == TextRole.Lyrics)
+                                    ? new LyricItemInter(textWord)
+                                    : new WordInter(textWord);
+
+                            if (sentence != null) {
+                                seq.add(
+                                        new AdditionTask(
+                                                sig,
+                                                word,
+                                                textWord.getBounds(),
+                                                Arrays.asList(
+                                                        new Link(sentence, new Containment(), false))));
+                            } else {
+                                sentence = (role == TextRole.Lyrics)
+                                        ? LyricLineInter.create(line)
+                                        : ((role == TextRole.ChordName)
+                                                ? ChordNameInter.create(line)
+                                                : SentenceInter.create(line));
+                                staff = sentence.assignStaff(system, line.getLocation());
+                                seq.add(
+                                        new AdditionTask(
+                                                sig,
+                                                word,
+                                                textWord.getBounds(),
+                                                Collections.EMPTY_SET));
+                                seq.add(
+                                        new AdditionTask(
+                                                sig,
+                                                sentence,
+                                                line.getBounds(),
+                                                Arrays.asList(new Link(word, new Containment(), true))));
+                            }
+
+                            word.setStaff(staff);
+                        }
+                    }
+
+                    history.add(seq);
+                    seq.performDo();
+
+                    sheet.getInterIndex().publish(null);
+                    sheet.getGlyphIndex().publish(null);
+
+                    epilog(DO, seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in addText {}", ex.toString(), ex);
                 }
-
-                history.add(seq);
-                seq.performDo();
-
-                sheet.getInterIndex().publish(null);
-                sheet.getGlyphIndex().publish(null);
-
-                epilog(DO, seq);
 
                 return null;
             }
@@ -421,16 +430,20 @@ public class InterController
         {
             @Override
             protected Void doInBackground ()
-                    throws Exception
             {
-                final UITaskList seq = new UITaskList(new SentenceRoleTask(sentence, newRole));
-                history.add(seq);
+                try {
+                    final UITaskList seq = new UITaskList(
+                            new SentenceRoleTask(sentence, newRole));
+                    history.add(seq);
 
-                seq.performDo();
+                    seq.performDo();
 
-                sheet.getInterIndex().publish(sentence);
+                    sheet.getInterIndex().publish(sentence);
 
-                epilog(DO, seq);
+                    epilog(DO, seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in changeSentence {}", ex.toString(), ex);
+                }
 
                 return null;
             }
@@ -455,16 +468,19 @@ public class InterController
         {
             @Override
             protected Void doInBackground ()
-                    throws Exception
             {
-                final UITaskList seq = new UITaskList(new WordValueTask(word, newValue));
-                history.add(seq);
+                try {
+                    final UITaskList seq = new UITaskList(new WordValueTask(word, newValue));
+                    history.add(seq);
 
-                seq.performDo();
+                    seq.performDo();
 
-                sheet.getInterIndex().publish(word);
+                    sheet.getInterIndex().publish(word);
 
-                epilog(DO, seq);
+                    epilog(DO, seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in changeWord {}", ex.toString(), ex);
+                }
 
                 return null;
             }
@@ -504,14 +520,17 @@ public class InterController
         {
             @Override
             protected Void doInBackground ()
-                    throws Exception
             {
-                SystemInfo system = ghost.getStaff().getSystem();
+                try {
+                    SystemInfo system = ghost.getStaff().getSystem();
 
-                // Edges? this depends on ghost class...
-                Collection<Link> links = ghost.searchLinks(system, false);
+                    // Edges? this depends on ghost class...
+                    Collection<Link> links = ghost.searchLinks(system, false);
 
-                addGhost(ghost, links);
+                    addGhost(ghost, links);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in dropInter {}", ex.toString(), ex);
+                }
 
                 return null;
             }
@@ -549,18 +568,21 @@ public class InterController
         {
             @Override
             protected Void doInBackground ()
-                    throws Exception
             {
-                logger.debug("link on {} between {} and {}", relation, source, target);
+                try {
+                    logger.debug("link on {} between {} and {}", relation, source, target);
 
-                UITaskList seq = new UITaskList();
-                seq.add(new LinkTask(sig, source, target, relation));
-                history.add(seq);
-                seq.performDo();
+                    UITaskList seq = new UITaskList();
+                    seq.add(new LinkTask(sig, source, target, relation));
+                    history.add(seq);
+                    seq.performDo();
 
-                sheet.getInterIndex().publish(source);
+                    sheet.getInterIndex().publish(source);
 
-                epilog(DO, seq);
+                    epilog(DO, seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in link {}", ex.toString(), ex);
+                }
 
                 return null;
             }
@@ -579,14 +601,17 @@ public class InterController
         {
             @Override
             protected Void doInBackground ()
-                    throws Exception
             {
-                UITaskList seq = history.toRedo();
-                seq.performDo();
+                try {
+                    UITaskList seq = history.toRedo();
+                    seq.performDo();
 
-                sheet.getInterIndex().publish(null);
+                    sheet.getInterIndex().publish(null);
 
-                epilog(DO, seq);
+                    epilog(DO, seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in redo {}", ex.toString(), ex);
+                }
 
                 return null;
             }
@@ -620,9 +645,12 @@ public class InterController
         {
             @Override
             protected Void doInBackground ()
-                    throws Exception
             {
-                syncRemoveInters(inters);
+                try {
+                    syncRemoveInters(inters);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in removeInters {}", ex.toString(), ex);
+                }
 
                 return null;
             }
@@ -673,14 +701,17 @@ public class InterController
         {
             @Override
             protected Void doInBackground ()
-                    throws Exception
             {
-                UITaskList seq = history.toUndo();
-                seq.performUndo();
+                try {
+                    UITaskList seq = history.toUndo();
+                    seq.performUndo();
 
-                sheet.getInterIndex().publish(null);
+                    sheet.getInterIndex().publish(null);
 
-                epilog(UNDO, seq);
+                    epilog(UNDO, seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in undo {}", ex.toString(), ex);
+                }
 
                 return null;
             }
@@ -703,21 +734,24 @@ public class InterController
         {
             @Override
             protected Void doInBackground ()
-                    throws Exception
             {
-                logger.debug("unlink on {}", relation);
+                try {
+                    logger.debug("unlink on {}", relation);
 
-                UITaskList seq = new UITaskList();
-                seq.add(new UnlinkTask(sig, relation));
+                    UITaskList seq = new UITaskList();
+                    seq.add(new UnlinkTask(sig, relation));
 
-                Inter source = sig.getEdgeSource(relation);
-                history.add(seq);
+                    Inter source = sig.getEdgeSource(relation);
+                    history.add(seq);
 
-                seq.performDo();
+                    seq.performDo();
 
-                sheet.getInterIndex().publish(source);
+                    sheet.getInterIndex().publish(source);
 
-                epilog(DO, seq);
+                    epilog(DO, seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in unlink {}", ex.toString(), ex);
+                }
 
                 return null;
             }
@@ -794,6 +828,7 @@ public class InterController
                 // Head without stem
                 HeadChordInter headChord = new HeadChordInter(-1);
                 seq.add(new AdditionTask(sig, headChord, ghostBounds, Collections.EMPTY_SET));
+                seq.add(new LinkTask(sig, headChord, ghost, new Containment()));
             }
         }
 

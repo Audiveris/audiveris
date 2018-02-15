@@ -23,6 +23,10 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sig.inter.ArpeggiatoInter;
+import org.audiveris.omr.sig.inter.Inter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -59,6 +63,26 @@ public class ChordArpeggiatoRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final ArpeggiatoInter arpeggiato = (ArpeggiatoInter) e.getEdgeTarget();
+        arpeggiato.checkAbnormal();
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final ArpeggiatoInter arpeggiato = (ArpeggiatoInter) e.getEdgeTarget();
+        arpeggiato.checkAbnormal();
+    }
+
     @Override
     protected double getSourceCoeff ()
     {

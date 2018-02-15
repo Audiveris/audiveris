@@ -45,7 +45,6 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
-import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.Jaxb;
@@ -54,7 +53,6 @@ import org.audiveris.omr.util.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
@@ -286,6 +284,8 @@ public class SlurInter
         if (getPart() != null) {
             getPart().addSlur(this);
         }
+
+        setAbnormal(true); // No head linked yet
     }
 
     //-----------//
@@ -344,6 +344,28 @@ public class SlurInter
         logger.debug("{} --- {} deltaPitch:{} res:{}", prevSlur, this, deltaPitch, res);
 
         return res;
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        boolean abnormal = false;
+
+        // Check if slur is connected (or extended) on both ends
+        for (HorizontalSide side : HorizontalSide.values()) {
+            if ((this.getHead(side) == null) && (this.getExtension(side) == null)) {
+                abnormal = true;
+
+                break;
+            }
+        }
+
+        setAbnormal(abnormal);
+
+        return isAbnormal();
     }
 
     //----------//
@@ -417,22 +439,6 @@ public class SlurInter
                 slur.remove();
             }
         }
-    }
-
-    //----------//
-    // getColor //
-    //----------//
-    @Override
-    public Color getColor ()
-    {
-        // Check if slur is connected (or extened) on both ends
-        for (HorizontalSide side : HorizontalSide.values()) {
-            if ((this.getHead(side) == null) && (this.getExtension(side) == null)) {
-                return Colors.INTER_INVALID;
-            }
-        }
-
-        return super.getColor();
     }
 
     //----------//
@@ -738,6 +744,8 @@ public class SlurInter
         } else {
             rightExtension = other;
         }
+
+        checkAbnormal();
     }
 
     //----------//

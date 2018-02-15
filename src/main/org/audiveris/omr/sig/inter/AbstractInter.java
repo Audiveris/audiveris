@@ -36,6 +36,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
@@ -70,7 +71,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.ui.Colors;
 
 /**
  * Class {@code AbstractInter} is the abstract implementation basis for {@link Inter}
@@ -115,6 +115,11 @@ public abstract class AbstractInter
     @XmlIDREF
     @XmlAttribute(name = "mirror")
     protected AbstractInter mirror;
+
+    /** Is it abnormal?. */
+    @XmlAttribute(name = "abnormal")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean abnormal;
 
     /** Is it frozen?. */
     @XmlAttribute(name = "frozen")
@@ -246,6 +251,17 @@ public abstract class AbstractInter
         if (isVip()) {
             logger.info("VIP added {}", this);
         }
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        boolean abnormal = false;
+
+        return abnormal;
     }
 
     //----------//
@@ -470,11 +486,15 @@ public abstract class AbstractInter
     @Override
     public Color getColor ()
     {
+        if (abnormal) {
+            return Colors.INTER_ABNORMAL;
+        }
+
         if (shape != null) {
             return shape.getColor();
-        } else {
-            return Colors.SHAPE_UNKNOWN;
         }
+
+        return Colors.SHAPE_UNKNOWN;
     }
 
     //--------------------//
@@ -717,6 +737,15 @@ public abstract class AbstractInter
         // No-op by default
     }
 
+    //------------//
+    // isAbnormal //
+    //------------//
+    @Override
+    public boolean isAbnormal ()
+    {
+        return abnormal;
+    }
+
     //--------------------//
     // isContextuallyGood //
     //--------------------//
@@ -751,9 +780,7 @@ public abstract class AbstractInter
     //----------//
     // isManual //
     //----------//
-    /**
-     * @return the manual
-     */
+    @Override
     public boolean isManual ()
     {
         return manual;
@@ -951,6 +978,21 @@ public abstract class AbstractInter
         return Collections.emptySet(); // By default
     }
 
+    //-------------//
+    // setAbnormal //
+    //-------------//
+    @Override
+    public void setAbnormal (boolean abnormal)
+    {
+        if (this.abnormal != abnormal) {
+            this.abnormal = abnormal;
+
+            if (sig != null) {
+                sig.getSystem().getSheet().getStub().setModified(true);
+            }
+        }
+    }
+
     //-----------//
     // setBounds //
     //-----------//
@@ -1007,9 +1049,7 @@ public abstract class AbstractInter
     //-----------//
     // setManual //
     //-----------//
-    /**
-     * @param manual the manual to set
-     */
+    @Override
     public void setManual (boolean manual)
     {
         this.manual = manual;

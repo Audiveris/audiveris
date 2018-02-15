@@ -133,6 +133,29 @@ public class AlterInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No head linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if a head is connected
+        setAbnormal(!sig.hasRelation(this, AlterHeadRelation.class));
+
+        return isAbnormal();
+    }
+
     //--------//
     // create //
     //--------//

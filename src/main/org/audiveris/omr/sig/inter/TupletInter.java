@@ -71,9 +71,6 @@ public class TupletInter
     // Factor lazily computed
     private DurationFactor durationFactor;
 
-    /** Sequence of embraced chords. Lazily computed. */
-    private List<AbstractChordInter> chords;
-
     /** Base duration. Lazily computed. */
     private Rational baseDuration;
 
@@ -127,6 +124,33 @@ public class TupletInter
         if (stack != null) {
             stack.addInter(this);
         }
+
+        setAbnormal(true); // No chord linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // TODO: this is a bit simplistic...
+        switch (shape) {
+        case TUPLET_THREE:
+            setAbnormal(getChords().size() < 3);
+
+            break;
+
+        case TUPLET_SIX:
+            setAbnormal(getChords().size() < 6);
+
+            break;
+
+        default:
+            throw new IllegalArgumentException("Illegal tuplet shape " + shape);
+        }
+
+        return isAbnormal();
     }
 
     //--------//
@@ -195,18 +219,15 @@ public class TupletInter
      */
     public List<AbstractChordInter> getChords ()
     {
-        if (chords == null) {
-            List<AbstractChordInter> list = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> list = new ArrayList<AbstractChordInter>();
 
-            for (Relation tcRel : sig.getRelations(this, ChordTupletRelation.class)) {
-                list.add((AbstractChordInter) sig.getOppositeInter(this, tcRel));
-            }
-
-            Collections.sort(list, Inters.byAbscissa);
-            chords = Collections.unmodifiableList(list);
+        for (Relation tcRel : sig.getRelations(this, ChordTupletRelation.class)) {
+            list.add((AbstractChordInter) sig.getOppositeInter(this, tcRel));
         }
 
-        return chords;
+        Collections.sort(list, Inters.byAbscissa);
+
+        return Collections.unmodifiableList(list);
     }
 
     //-------------------//

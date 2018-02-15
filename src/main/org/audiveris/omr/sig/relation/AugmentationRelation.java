@@ -24,6 +24,10 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sig.inter.AugmentationDotInter;
+import org.audiveris.omr.sig.inter.Inter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +56,16 @@ public class AugmentationRelation
     };
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final AugmentationDotInter dot = (AugmentationDotInter) e.getEdgeSource();
+        dot.checkAbnormal();
+    }
+
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
@@ -66,6 +80,16 @@ public class AugmentationRelation
     public static Scale.Fraction getYGapMaximum ()
     {
         return constants.yGapMax;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final AugmentationDotInter dot = (AugmentationDotInter) e.getEdgeSource();
+        dot.checkAbnormal();
     }
 
     //---------------//

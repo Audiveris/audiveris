@@ -151,32 +151,28 @@ public abstract class Symbols
     private static void assignDecoratedSymbols ()
     {
         dec.put(ACCENT, new ArticulationSymbol(ACCENT, true, 62));
-        dec.put(AUGMENTATION_DOT, new AugmentationSymbol(AUGMENTATION_DOT, true, 46));
+        dec.put(AUGMENTATION_DOT, new AugmentationSymbol(true));
         dec.put(BEAM, new BeamSymbol(1, BEAM));
-        //TODO: add BEAM_SMALL?
         dec.put(BEAM_HOOK, new BeamHookSymbol());
         //TODO: add BEAM_HOOK_SMALL?
-        dec.put(BRACE, new BraceSymbol(false));
-        dec.put(BRACKET, new BracketSymbol(false));
+        //TODO: add BEAM_SMALL?
         dec.put(BREVE_REST, new RestSymbol(BREVE_REST, true, 227));
         dec.put(CHARACTER, new TextSymbol(CHARACTER, "x"));
         dec.put(CLUTTER, new TextSymbol(CLUTTER, "?"));
-        dec.put(STEM, new StemSymbol());
-        dec.put(CRESCENDO, new CrescendoSymbol(false, CRESCENDO));
-        dec.put(DIMINUENDO, new DecrescendoSymbol(false, DIMINUENDO));
         dec.put(ENDING, new EndingSymbol());
         dec.put(HALF_REST, new RestSymbol(HALF_REST, true, 238));
         dec.put(LEDGER, new LedgerSymbol(true));
+        dec.put(LYRICS, new TextSymbol(LYRICS, "lyrics"));
         dec.put(LONG_REST, new LongRestSymbol(true));
         dec.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
         dec.put(REPEAT_DOT, new RepeatDotSymbol(REPEAT_DOT, true, 46));
         dec.put(SLUR, new SlurSymbol());
         dec.put(STACCATISSIMO, new ArticulationSymbol(STACCATISSIMO, true, 174));
         dec.put(STACCATO, new ArticulationSymbol(STACCATO, true, 46));
+        dec.put(STEM, new StemSymbol());
         dec.put(STRONG_ACCENT, new ArticulationSymbol(STRONG_ACCENT, true, 94));
         dec.put(TENUTO, new ArticulationSymbol(TENUTO, true, 45));
         dec.put(TEXT, new TextSymbol(TEXT, "txt"));
-        dec.put(LYRICS, new TextSymbol(LYRICS, "lyrics"));
         dec.put(WHOLE_REST, new RestSymbol(WHOLE_REST, true, 183));
     }
 
@@ -190,59 +186,49 @@ public abstract class Symbols
     private static void assignSymbols ()
     {
         // Instances to be defined first, because others depend on them
-        map(DYNAMICS_F, 102);
-        map(DYNAMICS_FF, 196);
-        //        map(DYNAMICS_FFF, 236);
-        //        map(DYNAMICS_FZ, 90);
-        map(DYNAMICS_SF, 83);
+        //------------------------------
+        map(DOT_set, 46);
         map(NOTEHEAD_BLACK, 207);
-        small(NOTEHEAD_BLACK_SMALL, 207);
-        map(TIME_ZERO, 48);
-        map(EIGHTH_REST, 228);
+        map(REPEAT_DOT_PAIR, 123);
         map(RIGHT_REPEAT_SIGN, 125);
         map(THICK_BARLINE, 91);
         map(THIN_BARLINE, 108);
-        map(WHOLE_REST, 238);
-        map(HALF_REST, 238);
-        map(REPEAT_DOT_PAIR, 123);
-        map(FERMATA_DOT, 46);
-        map(DOT_set, 46);
-        map(AUGMENTATION_DOT, 46);
-        map(STACCATO, 46);
-        map(REPEAT_DOT, 46);
+        map(TIME_ZERO, 48);
 
-        // Other instances, in any order
-        map(ACCENT, 62);
-        map(ARPEGGIATO, 103);
+        // Other instances, alphabetical shape order for easier browsing
+        //----------------
+        sym.put(ACCENT, new ArticulationSymbol(ACCENT, false, 62));
         sym.put(ARPEGGIATO, new ArpeggiatosSymbol(2, false));
+        map(AUGMENTATION_DOT, 46);
+
         sym.put(BACK_TO_BACK_REPEAT_SIGN, new BackToBackSymbol(false));
+        sym.put(BRACE, new BraceSymbol(false));
+        sym.put(BRACKET, new BracketSymbol(false));
         map(BREATH_MARK, 44);
         map(BREVE, 87);
         sym.put(BREVE_REST, new RestSymbol(BREVE_REST, false, 227));
+
         map(CAESURA, 34);
-        map(CODA, 222);
-
-        flagsDown(1, FLAG_1);
-        flagsUp(1, FLAG_1_UP);
-        flagsDown(2, FLAG_2);
-        flagsUp(2, FLAG_2_UP);
-        flagsDown(3, FLAG_3);
-        flagsUp(3, FLAG_3_UP);
-        flagsDown(4, FLAG_4);
-        flagsUp(4, FLAG_4_UP);
-        flagsDown(5, FLAG_5);
-        flagsUp(5, FLAG_5_UP);
-
-        small(SMALL_FLAG, 106);
-        sym.put(SMALL_FLAG_SLASH, new SlashedFlagSymbol(false));
-
-        //        STEM?
         map(COMMON_TIME, 99);
         sym.put(CUSTOM_TIME, new CustomNumDenSymbol());
         map(CUT_TIME, 67);
         map(C_CLEF, 66);
+        map(CODA, 222);
+        sym.put(CRESCENDO, new CrescendoSymbol(false, CRESCENDO));
+
         map(DAL_SEGNO, 100);
         map(DA_CAPO, 68);
+        sym.put(DIGIT_0, new TextSymbol(DIGIT_0, "0"));
+        sym.put(DIGIT_1, new TextSymbol(DIGIT_1, "1"));
+        sym.put(DIGIT_2, new TextSymbol(DIGIT_2, "2"));
+        sym.put(DIGIT_3, new TextSymbol(DIGIT_3, "3"));
+        sym.put(DIGIT_4, new TextSymbol(DIGIT_4, "4"));
+        //        sym.put(DIGIT_5, new TextSymbol(DIGIT_5, "5"));
+        //        sym.put(DIGIT_6, new TextSymbol(DIGIT_6, "6"));
+        //        sym.put(DIGIT_7, new TextSymbol(DIGIT_7, "7"));
+        //        sym.put(DIGIT_8, new TextSymbol(DIGIT_8, "8"));
+        //        sym.put(DIGIT_9, new TextSymbol(DIGIT_9, "9"));
+        sym.put(DIMINUENDO, new DecrescendoSymbol(false, DIMINUENDO));
         sym.put(DOUBLE_BARLINE, new DoubleBarlineSymbol(false));
         sym.put(DOUBLE_FLAT, new FlatSymbol(DOUBLE_FLAT, 186));
         map(DOUBLE_SHARP, 220);
@@ -251,6 +237,10 @@ public abstract class Symbols
         //        map(DYNAMICS_CHAR_S, 115);
         //        map(DYNAMICS_CHAR_Z, 122);
         //        slanted(DYNAMICS_FFFF, 236, 102);
+        map(DYNAMICS_F, 102);
+        map(DYNAMICS_FF, 196);
+        //        map(DYNAMICS_FFF, 236);
+        //        map(DYNAMICS_FZ, 90);
         //        slanted(DYNAMICS_FFFFF, 236, 196);
         //        slanted(DYNAMICS_FFFFFF, 236, 236);
         slanted(DYNAMICS_FP, 102, 112);
@@ -264,32 +254,46 @@ public abstract class Symbols
         //        slanted(DYNAMICS_PPPPPP, 184, 184);
         //        slanted(DYNAMICS_RF, 243, 102);
         //        slanted(DYNAMICS_RFZ, 243, 102, 122);
+        map(DYNAMICS_SF, 83);
         //        slanted(DYNAMICS_SFFZ, 83, 90);
         //        slanted(DYNAMICS_SFP, 83, 112);
-        //        slanted(DYNAMICS_SFPP, 83, 185);
         slanted(DYNAMICS_SFZ, 83, 122);
-
+        //        slanted(DYNAMICS_SFPP, 83, 185);
+        map(EIGHTH_REST, 228);
         //        map(ENDING_HORIZONTAL);
         //        map(ENDING_VERTICAL);
         map(FERMATA, 85);
         sym.put(FERMATA_ARC, new FermataArcSymbol(FERMATA_ARC, false, 85));
-        map(FERMATA_BELOW, 117);
         sym.put(FERMATA_ARC_BELOW, new FermataArcSymbol(FERMATA_ARC_BELOW, false, 117));
+        map(FERMATA_BELOW, 117);
+        map(FERMATA_DOT, 46);
         map(FINAL_BARLINE, 211);
+        flagsDown(1, FLAG_1);
+        flagsUp(1, FLAG_1_UP);
+        flagsDown(2, FLAG_2);
+        flagsUp(2, FLAG_2_UP);
+        flagsDown(3, FLAG_3);
+        flagsUp(3, FLAG_3_UP);
+        flagsDown(4, FLAG_4);
+        flagsUp(4, FLAG_4_UP);
+        flagsDown(5, FLAG_5);
+        flagsUp(5, FLAG_5_UP);
         sym.put(FLAT, new FlatSymbol(FLAT, 98));
         map(F_CLEF, 63);
         small(F_CLEF_SMALL, 63);
         ottava(true, F_CLEF_8VA, 63);
         ottava(false, F_CLEF_8VB, 63);
+
         map(GRACE_NOTE, 59);
         map(GRACE_NOTE_SLASH, 201);
         map(G_CLEF, 38);
         small(G_CLEF_SMALL, 38);
         ottava(true, G_CLEF_8VA, 38);
         ottava(false, G_CLEF_8VB, 38);
-        sym.put(HW_REST_set, new RestSymbol(HW_REST_set, false, 238));
+
         sym.put(HALF_REST, new RestSymbol(HALF_REST, false, 238));
-        map(MORDENT_INVERTED, 77);
+        sym.put(HW_REST_set, new RestSymbol(HW_REST_set, false, 238));
+
         flatKey(-1, KEY_FLAT_1);
         flatKey(-2, KEY_FLAT_2);
         flatKey(-3, KEY_FLAT_3);
@@ -304,13 +308,21 @@ public abstract class Symbols
         sharpKey(5, KEY_SHARP_5);
         sharpKey(6, KEY_SHARP_6);
         sharpKey(7, KEY_SHARP_7);
+
         sym.put(LEDGER, new LedgerSymbol(false));
         map(LEFT_REPEAT_SIGN, 93);
         sym.put(LONG_REST, new LongRestSymbol(false));
+
         map(MORDENT, 109);
+        map(MORDENT_INVERTED, 77);
+
         map(NATURAL, 110);
         sym.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
+        small(NOTEHEAD_BLACK_SMALL, 207);
+        map(NOTEHEAD_VOID, 250);
+        small(NOTEHEAD_VOID_SMALL, 250);
         //        map(NO_LEGAL_TIME);
+
         //        sym.put(
         //            OLD_QUARTER_REST,
         //            new TransformedSymbol(
@@ -318,25 +330,49 @@ public abstract class Symbols
         //                OLD_QUARTER_REST,
         //                EIGHTH_REST,
         //                ShapeSymbol.horizontalFlip));
+        map(ONE_16TH_REST, 197);
+        map(ONE_64TH_REST, 244);
+        map(ONE_32ND_REST, 168);
         map(ONE_128TH_REST, 229);
         map(OTTAVA_ALTA, 195);
         map(OTTAVA_BASSA, 215);
-        //        map(PART_DEFINING_BARLINE);
+
         map(PEDAL_MARK, 161);
         map(PEDAL_UP_MARK, 42);
         map(PERCUSSION_CLEF, 47);
+        sym.put(PLUCK_P, new TextSymbol(PLUCK_P, "p"));
+        sym.put(PLUCK_I, new TextSymbol(PLUCK_I, "i"));
+        sym.put(PLUCK_M, new TextSymbol(PLUCK_M, "m"));
+        sym.put(PLUCK_A, new TextSymbol(PLUCK_A, "a"));
+
         map(QUARTER_REST, 206);
+
+        map(REPEAT_DOT, 46);
         map(REVERSE_FINAL_BARLINE, 210);
+        sym.put(ROMAN_I, new TextSymbol(ROMAN_I, "I"));
+        sym.put(ROMAN_II, new TextSymbol(ROMAN_II, "II"));
+        sym.put(ROMAN_III, new TextSymbol(ROMAN_III, "III"));
+        sym.put(ROMAN_IV, new TextSymbol(ROMAN_IV, "IV"));
+        sym.put(ROMAN_V, new TextSymbol(ROMAN_V, "V"));
+        sym.put(ROMAN_VI, new TextSymbol(ROMAN_VI, "VI"));
+        sym.put(ROMAN_VII, new TextSymbol(ROMAN_VII, "VII"));
+        sym.put(ROMAN_VIII, new TextSymbol(ROMAN_VIII, "VIII"));
+        sym.put(ROMAN_IX, new TextSymbol(ROMAN_IX, "IX"));
+        sym.put(ROMAN_X, new TextSymbol(ROMAN_X, "X"));
+        sym.put(ROMAN_XI, new TextSymbol(ROMAN_XI, "XI"));
+        sym.put(ROMAN_XII, new TextSymbol(ROMAN_XII, "XII"));
+
         map(SEGNO, 37);
         map(SHARP, 35);
-        map(ONE_16TH_REST, 197);
-        map(ONE_64TH_REST, 244);
-        //  SLUR?
-        map(STACCATISSIMO, 174);
-        map(STRONG_ACCENT, 94);
-        //  STRUCTURE (for training?)
-        map(TENUTO, 45);
-        map(ONE_32ND_REST, 168);
+        // SLUR?
+        small(SMALL_FLAG, 106);
+        sym.put(SMALL_FLAG_SLASH, new SlashedFlagSymbol(false));
+        // STEM?
+        sym.put(STACCATISSIMO, new ArticulationSymbol(STACCATISSIMO, false, 174));
+        sym.put(STACCATO, new ArticulationSymbol(STACCATO, false, 46));
+        sym.put(STRONG_ACCENT, new ArticulationSymbol(STRONG_ACCENT, false, 94));
+
+        sym.put(TENUTO, new ArticulationSymbol(TENUTO, false, 45));
         map(TIME_EIGHT, 56);
         map(TIME_FIVE, 53);
         map(TIME_FOUR, 52);
@@ -358,7 +394,6 @@ public abstract class Symbols
         map(TR, 96);
         map(TUPLET_SIX, 164);
         map(TUPLET_THREE, 163);
-
         map(TURN, 84);
         sym.put(
                 TURN_INVERTED,
@@ -368,43 +403,9 @@ public abstract class Symbols
                 TURN_UP,
                 new TransformedSymbol(false, TURN_UP, TURN, ShapeSymbol.quadrantRotateOne));
 
-        map(NOTEHEAD_VOID, 250);
-        small(NOTEHEAD_VOID_SMALL, 250);
         map(WHOLE_NOTE, 119);
         small(WHOLE_NOTE_SMALL, 119);
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, false, 183));
-
-        // Digits
-        sym.put(DIGIT_0, new TextSymbol(DIGIT_0, "0"));
-        sym.put(DIGIT_1, new TextSymbol(DIGIT_1, "1"));
-        sym.put(DIGIT_2, new TextSymbol(DIGIT_2, "2"));
-        sym.put(DIGIT_3, new TextSymbol(DIGIT_3, "3"));
-        sym.put(DIGIT_4, new TextSymbol(DIGIT_4, "4"));
-        //        sym.put(DIGIT_5, new TextSymbol(DIGIT_5, "5"));
-        //        sym.put(DIGIT_6, new TextSymbol(DIGIT_6, "6"));
-        //        sym.put(DIGIT_7, new TextSymbol(DIGIT_7, "7"));
-        //        sym.put(DIGIT_8, new TextSymbol(DIGIT_8, "8"));
-        //        sym.put(DIGIT_9, new TextSymbol(DIGIT_9, "9"));
-        //
-        // Romans
-        sym.put(ROMAN_I, new TextSymbol(ROMAN_I, "I"));
-        sym.put(ROMAN_II, new TextSymbol(ROMAN_II, "II"));
-        sym.put(ROMAN_III, new TextSymbol(ROMAN_III, "III"));
-        sym.put(ROMAN_IV, new TextSymbol(ROMAN_IV, "IV"));
-        sym.put(ROMAN_V, new TextSymbol(ROMAN_V, "V"));
-        sym.put(ROMAN_VI, new TextSymbol(ROMAN_VI, "VI"));
-        sym.put(ROMAN_VII, new TextSymbol(ROMAN_VII, "VII"));
-        sym.put(ROMAN_VIII, new TextSymbol(ROMAN_VIII, "VIII"));
-        sym.put(ROMAN_IX, new TextSymbol(ROMAN_IX, "IX"));
-        sym.put(ROMAN_X, new TextSymbol(ROMAN_X, "X"));
-        sym.put(ROMAN_XI, new TextSymbol(ROMAN_XI, "XI"));
-        sym.put(ROMAN_XII, new TextSymbol(ROMAN_XII, "XII"));
-
-        // Plucking
-        sym.put(PLUCK_P, new TextSymbol(PLUCK_P, "p"));
-        sym.put(PLUCK_I, new TextSymbol(PLUCK_I, "i"));
-        sym.put(PLUCK_M, new TextSymbol(PLUCK_M, "m"));
-        sym.put(PLUCK_A, new TextSymbol(PLUCK_A, "a"));
     }
 
     //- Convenient methods -----------------------------------------------------
@@ -433,16 +434,6 @@ public abstract class Symbols
                                  Shape shape)
     {
         sym.put(shape, new KeyFlatSymbol(key, false, shape));
-    }
-
-    //-------//
-    // heads //
-    //-------//
-    private static void heads (int count,
-                               Shape shape,
-                               int... codes)
-    {
-        sym.put(shape, new HeadsSymbol(count, false, shape, codes));
     }
 
     //-----//
@@ -501,3 +492,14 @@ public abstract class Symbols
         sym.put(shape, new ResizedSymbol(shape, 0.67d, codes));
     }
 }
+//
+//    //-------//
+//    // heads //
+//    //-------//
+//    private static void heads (int count,
+//                               Shape shape,
+//                               int... codes)
+//    {
+//        sym.put(shape, new HeadsSymbol(count, false, shape, codes));
+//    }
+//

@@ -82,7 +82,7 @@ import javax.swing.JButton;
  * repetition of user actions.
  * <ul>
  * <li>Direct insertion is performed by drag and drop to the target score view or sheet view</li>
- * <li>Assignment of existing glyph is performed by a double-click</li>
+ * <li>Assignment from an existing glyph is performed by a double-click</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -541,18 +541,18 @@ public class ShapeBoard
         {
             Shape shape = e.getAction();
 
-            if (shape != Shape.NON_DRAGGABLE) {
-                ScreenPoint screenPoint = e.getDropLocation();
+            if (dndOperation != null) {
+                if (shape != Shape.NON_DRAGGABLE) {
+                    ScreenPoint screenPoint = e.getDropLocation();
 
-                // The (zoomed) sheet view
-                ScrollView scrollView = sheet.getStub().getAssembly().getSelectedView();
+                    // The (zoomed) sheet view
+                    ScrollView scrollView = sheet.getStub().getAssembly().getSelectedView();
 
-                if (screenPoint.isInComponent(scrollView.getComponent().getViewport())) {
-                    RubberPanel view = scrollView.getView();
-                    Point localPt = screenPoint.getLocalPoint(view);
-                    view.getZoom().unscale(localPt);
+                    if (screenPoint.isInComponent(scrollView.getComponent().getViewport())) {
+                        RubberPanel view = scrollView.getView();
+                        Point localPt = screenPoint.getLocalPoint(view);
+                        view.getZoom().unscale(localPt);
 
-                    if (dndOperation != null) {
                         dndOperation.drop(localPt);
 
                         // Update history

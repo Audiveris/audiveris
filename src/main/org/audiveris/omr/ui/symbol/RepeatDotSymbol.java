@@ -39,8 +39,12 @@ import java.awt.geom.Rectangle2D;
 public class RepeatDotSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** Global decorated height WRT dot height. */
+    private static final double yRatio = 3.5;
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code RepeatDotSymbol} (with decoration?) standard size
      *
@@ -87,19 +91,26 @@ public class RepeatDotSymbol
     @Override
     protected Params getParams (MusicFont font)
     {
+        // offset: if decorated, offset of symbol center vs decorated image center
+        // layout: dot layout
+        // rect:   global image (= other dot + dot if decorated, dot if not)
         Params p = new Params();
 
         // Dot layout
         p.layout = font.layout(getString());
 
+        Rectangle2D rs = p.layout.getBounds(); // Symbol bounds
+
         if (decorated) {
-            // Use a rectangle 3 times as high as dot
-            Rectangle2D dRect = p.layout.getBounds();
+            // Use a rectangle yTimes times as high as dot
             p.rect = new Rectangle(
-                    (int) Math.ceil(dRect.getWidth()),
-                    (int) Math.ceil(3 * dRect.getHeight()));
+                    (int) Math.ceil(rs.getWidth()),
+                    (int) Math.ceil(yRatio * rs.getHeight()));
+
+            // Define specific offset
+            p.offset = new Point(0, (int) Math.rint(rs.getHeight() * ((yRatio - 1) / 2)));
         } else {
-            p.rect = p.layout.getBounds().getBounds();
+            p.rect = rs.getBounds();
         }
 
         return p;
@@ -110,25 +121,26 @@ public class RepeatDotSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params params,
+                          Params p,
                           Point location,
                           Alignment alignment)
     {
         if (decorated) {
-            // Draw a dot(using composite) on the top
+            // Draw a dot (using composite) on the top
+            Point loc = alignment.translatedPoint(TOP_CENTER, p.rect, location);
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
-
-            Point loc = alignment.translatedPoint(TOP_CENTER, params.rect, location);
-            MusicFont.paint(g, params.layout, loc, TOP_CENTER);
+            MusicFont.paint(g, p.layout, loc, TOP_CENTER);
             g.setComposite(oldComposite);
 
             // Dot below
-            loc.y += ((5 * params.rect.height) / 6);
-            MusicFont.paint(g, params.layout, loc, AREA_CENTER);
+            loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            loc.y += p.offset.y;
+            MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         } else {
             // Dot alone
-            MusicFont.paint(g, params.layout, location, TOP_LEFT);
+            Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         }
     }
 }

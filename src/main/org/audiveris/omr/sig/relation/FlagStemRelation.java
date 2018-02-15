@@ -25,8 +25,11 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.Inter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +55,16 @@ public class FlagStemRelation
     private static final Logger logger = LoggerFactory.getLogger(FlagStemRelation.class);
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final FlagInter flag = (FlagInter) e.getEdgeSource();
+        flag.checkAbnormal();
+    }
+
     //----------------//
     // getStemPortion //
     //----------------//
@@ -91,6 +104,16 @@ public class FlagStemRelation
     public static Scale.Fraction getYGapMaximum ()
     {
         return constants.yGapMax;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final FlagInter flag = (FlagInter) e.getEdgeSource();
+        flag.checkAbnormal();
     }
 
     //----------------//

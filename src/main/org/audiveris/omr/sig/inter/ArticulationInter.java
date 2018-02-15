@@ -91,6 +91,29 @@ public class ArticulationInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No chord linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if a chord is connected
+        setAbnormal(!sig.hasRelation(this, ChordArticulationRelation.class));
+
+        return isAbnormal();
+    }
+
     //--------//
     // create //
     //--------//

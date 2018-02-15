@@ -21,13 +21,18 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import javax.xml.bind.annotation.XmlRootElement;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sig.inter.ArticulationInter;
+import org.audiveris.omr.sig.inter.Inter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code ChordArticulationRelation} is a connection between a head-based chord
@@ -43,7 +48,8 @@ public class ChordArticulationRelation
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(ChordArticulationRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ChordArticulationRelation.class);
 
     private static final double[] WEIGHTS = new double[]{
         constants.xWeight.getValue(),
@@ -51,6 +57,16 @@ public class ChordArticulationRelation
     };
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
+        articulation.checkAbnormal();
+    }
+
     //------------------//
     // getXInGapMaximum //
     //------------------//
@@ -73,6 +89,16 @@ public class ChordArticulationRelation
     public static Scale.Fraction getYGapMaximum ()
     {
         return constants.yGapMax;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
+        articulation.checkAbnormal();
     }
 
     //--------------//

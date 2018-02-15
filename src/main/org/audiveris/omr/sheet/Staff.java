@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Population;
@@ -336,15 +337,17 @@ public class Staff
     // addLedger //
     //-----------//
     /**
-     * Add a ledger glyph to the collection, computing line index from
-     * glyph pitch position.
+     * Add a ledger glyph to the collection, computing line index from pitch position.
      *
      * @param ledger the ledger glyph to add
      */
     public void addLedger (LedgerInter ledger)
     {
         Objects.requireNonNull(ledger, "Cannot add a null ledger");
-        addLedger(ledger, getLedgerLineIndex(pitchPositionOf(ledger.getGlyph().getCentroid())));
+
+        Glyph glyph = ledger.getGlyph();
+        Point center = (glyph != null) ? glyph.getCentroid() : ledger.getCenter();
+        addLedger(ledger, getLedgerLineIndex(pitchPositionOf(center)));
     }
 
     //---------//

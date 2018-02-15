@@ -22,7 +22,6 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.ui.symbol.Alignment.*;
 import static org.audiveris.omr.ui.symbol.ShapeSymbol.decoComposite;
 
@@ -32,8 +31,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
-
-import static org.audiveris.omr.ui.symbol.Alignment.MIDDLE_LEFT;
 
 /**
  * Class {@code AugmentationSymbol} implements a decorated augmentation symbol.
@@ -45,38 +42,33 @@ public class AugmentationSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    // The head part
+    /** The head part. */
     private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
+
+    /** Offset ratio of dot center WRT decorated rectangle width. */
+    private static final double dxRatio = +0.25;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a {@code AugmentationSymbol} (with decoration?) standard size
      *
-     * @param shape     the precise shape
      * @param decorated true for a decorated image
-     * @param codes     precise code for augmentation part
      */
-    public AugmentationSymbol (Shape shape,
-                               boolean decorated,
-                               int... codes)
+    public AugmentationSymbol (boolean decorated)
     {
-        this(false, shape, decorated, codes);
+        this(false, decorated);
     }
 
     /**
      * Create a {@code AugmentationSymbol} (with decoration?)
      *
      * @param isIcon    true for an icon
-     * @param shape     the precise shape
      * @param decorated true for a decorated image
-     * @param codes     precise code for augmentation part
      */
     protected AugmentationSymbol (boolean isIcon,
-                                  Shape shape,
-                                  boolean decorated,
-                                  int... codes)
+                                  boolean decorated)
     {
-        super(isIcon, shape, decorated, codes);
+        super(isIcon, Shape.AUGMENTATION_DOT, decorated, 46);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -86,7 +78,7 @@ public class AugmentationSymbol
     @Override
     protected ShapeSymbol createIcon ()
     {
-        return new AugmentationSymbol(true, shape, decorated, codes);
+        return new AugmentationSymbol(true, decorated);
     }
 
     //-----------//
@@ -97,8 +89,10 @@ public class AugmentationSymbol
     {
         MyParams p = new MyParams();
 
-        // Augmentation layout
+        // Augmentation symbol layout
         p.layout = font.layout(getString());
+
+        Rectangle2D rs = p.layout.getBounds(); // Symbol bounds
 
         if (decorated) {
             // Head layout
@@ -109,8 +103,11 @@ public class AugmentationSymbol
             p.rect = new Rectangle(
                     (int) Math.ceil(2 * hRect.getWidth()),
                     (int) Math.ceil(hRect.getHeight()));
+
+            // Define specific offset
+            p.offset = new Point((int) Math.rint(dxRatio * p.rect.width), 0);
         } else {
-            p.rect = p.layout.getBounds().getBounds();
+            p.rect = rs.getBounds();
         }
 
         return p;
@@ -129,10 +126,9 @@ public class AugmentationSymbol
 
         if (decorated) {
             // Draw a note head (using composite) on the left side
+            Point loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
-
-            Point loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
             MusicFont.paint(g, p.headLayout, loc, MIDDLE_LEFT);
             g.setComposite(oldComposite);
 
@@ -141,7 +137,8 @@ public class AugmentationSymbol
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         } else {
             // Augmentation alone
-            MusicFont.paint(g, p.layout, location, TOP_LEFT);
+            Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         }
     }
 
@@ -154,8 +151,9 @@ public class AugmentationSymbol
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        // layout for augmentation
-        // rect for global image
+        // offset: if decorated, offset of symbol center vs decorated image center
+        // layout: dot layout
+        // rect:   global image (= head + dot if decorated, dot if not)
         //
         // Layout for head
         TextLayout headLayout;

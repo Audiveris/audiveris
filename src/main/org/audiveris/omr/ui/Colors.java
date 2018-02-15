@@ -135,8 +135,8 @@ public class Colors
     /** Sentence gaps among words */
     public static final Color SENTENCE_GAPS = new Color(100, 100, 255, 50);
 
-    /** Inter not fully valid. */
-    public static final Color INTER_INVALID = Color.RED;
+    /** Inter in abnormal state. */
+    public static final Color INTER_ABNORMAL = Color.RED;
 
     /** Unknown shape */
     public static final Color SHAPE_UNKNOWN = Color.LIGHT_GRAY;

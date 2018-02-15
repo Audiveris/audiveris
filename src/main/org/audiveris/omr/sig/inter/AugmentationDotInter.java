@@ -109,6 +109,20 @@ public class AugmentationDotInter
         if (stack != null) {
             stack.addInter(this);
         }
+
+        setAbnormal(true); // No note or other dot linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if dot is connected to a note or a (first) dot
+        setAbnormal(!sig.hasRelation(this, AugmentationRelation.class, DoubleDotRelation.class));
+
+        return isAbnormal();
     }
 
     //------------------//

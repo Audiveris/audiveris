@@ -91,6 +91,29 @@ public class ArpeggiatoInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No chord linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if a chord is connected
+        setAbnormal(!sig.hasRelation(this, ChordArpeggiatoRelation.class));
+
+        return isAbnormal();
+    }
+
     //--------//
     // create //
     //--------//

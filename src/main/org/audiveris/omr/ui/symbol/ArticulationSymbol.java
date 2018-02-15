@@ -42,8 +42,14 @@ public class ArticulationSymbol
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    // The head part
+    /** The head part. */
     private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
+
+    /** Ratio of head height for the decorated rectangle height. */
+    private static final double yRatio = 2.5;
+
+    /** Offset ratio of articulation center WRT decorated rectangle height. */
+    private static final double dyRatio = -0.25;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -94,20 +100,25 @@ public class ArticulationSymbol
     {
         MyParams p = new MyParams();
 
-        // Articulation layout
+        // Articulation symbol layout
         p.layout = font.layout(getString());
+
+        Rectangle2D rs = p.layout.getBounds(); // Symbol bounds
 
         if (decorated) {
             // Head layout
             p.headLayout = font.layout(head.getString());
 
-            // Use a rectangle twice as high as note head
-            Rectangle2D hRect = p.headLayout.getBounds();
+            // Use a rectangle 'yRatio' times as high as note head
+            Rectangle2D rh = p.headLayout.getBounds(); // Head bounds
             p.rect = new Rectangle(
-                    (int) Math.ceil(hRect.getWidth()),
-                    (int) Math.ceil(2.5 * hRect.getHeight()));
+                    (int) Math.ceil(Math.max(rh.getWidth(), rs.getWidth())),
+                    (int) Math.ceil(yRatio * rh.getHeight()));
+
+            // Define specific offset
+            p.offset = new Point(0, (int) Math.rint(dyRatio * p.rect.height));
         } else {
-            p.rect = p.layout.getBounds().getBounds();
+            p.rect = rs.getBounds();
         }
 
         return p;
@@ -126,19 +137,20 @@ public class ArticulationSymbol
 
         if (decorated) {
             // Draw a note head (using composite) on the bottom
+            Point loc = alignment.translatedPoint(BOTTOM_CENTER, p.rect, location);
             Composite oldComposite = g.getComposite();
             g.setComposite(decoComposite);
-
-            Point loc = alignment.translatedPoint(BOTTOM_CENTER, p.rect, location);
             MusicFont.paint(g, p.headLayout, loc, BOTTOM_CENTER);
             g.setComposite(oldComposite);
 
-            // Articulation above
-            loc.y -= ((3 * p.rect.height) / 4);
+            // Articulation above head
+            loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            loc.translate(p.offset.x, p.offset.y);
             MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         } else {
             // Articulation alone
-            MusicFont.paint(g, p.layout, location, TOP_LEFT);
+            Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            MusicFont.paint(g, p.layout, loc, AREA_CENTER);
         }
     }
 
@@ -151,8 +163,9 @@ public class ArticulationSymbol
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        // layout for articulation
-        // rect for global image
+        // offset: if decorated, offset of symbol center vs decorated image center
+        // layout: articulation layout
+        // rect:   global image (= head + artic if decorated, artic if not)
         //
         // Layout for head
         TextLayout headLayout;

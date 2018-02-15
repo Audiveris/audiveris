@@ -24,6 +24,10 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.TupletInter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -65,6 +69,26 @@ public class ChordTupletRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final TupletInter tuplet = (TupletInter) e.getEdgeTarget();
+        tuplet.checkAbnormal();
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final TupletInter tuplet = (TupletInter) e.getEdgeTarget();
+        tuplet.checkAbnormal();
+    }
+
     //----------------//
     // getTargetCoeff //
     //----------------//

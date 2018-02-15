@@ -92,6 +92,20 @@ public class FlagInter
         if (stack != null) {
             stack.addInter(this);
         }
+
+        setAbnormal(true); // No stem linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if flag is connected to a stem
+        setAbnormal(!sig.hasRelation(this, FlagStemRelation.class));
+
+        return isAbnormal();
     }
 
     //---------//

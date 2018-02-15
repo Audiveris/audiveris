@@ -77,6 +77,26 @@ public class KeyAlterInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        // Skip AlterInder
+        ((AbstractInter) this).added();
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Skip AlterInder
+        return isAbnormal();
+    }
+
     //--------//
     // create //
     //--------//

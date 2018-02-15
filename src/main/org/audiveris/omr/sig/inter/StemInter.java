@@ -142,6 +142,29 @@ public class StemInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No head linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if a head is connected
+        setAbnormal(!sig.hasRelation(this, HeadStemRelation.class));
+
+        return isAbnormal();
+    }
+
     //---------------------//
     // computeAnchoredLine //
     //---------------------//

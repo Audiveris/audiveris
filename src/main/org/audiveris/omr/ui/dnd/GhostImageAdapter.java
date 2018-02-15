@@ -24,7 +24,7 @@ package org.audiveris.omr.ui.dnd;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code GhostImageAdapter}is a {@link GhostDropAdapter} with a provided image.
+ * Class {@code GhostImageAdapter} is a {@link GhostDropAdapter} with a provided image.
  *
  * @param <A> The precise type of action carried by the drop
  *

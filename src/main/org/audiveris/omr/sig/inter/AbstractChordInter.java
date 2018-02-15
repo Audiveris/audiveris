@@ -280,11 +280,13 @@ public abstract class AbstractChordInter
                             for (Relation dn : sig.getRelations(note, AugmentationRelation.class)) {
                                 Inter dot = sig.getOppositeInter(note, dn);
 
-                                if (measure != null) {
-                                    measure.removeInter(dot);
-                                }
+                                if (!dot.isManual()) {
+                                    if (measure != null) {
+                                        measure.removeInter(dot);
+                                    }
 
-                                dot.remove();
+                                    dot.remove();
+                                }
                             }
                         }
                     }
@@ -901,7 +903,7 @@ public abstract class AbstractChordInter
             }
         }
 
-        if (sig != null && !isRemoved()) {
+        if ((sig != null) && !isRemoved()) {
             Point center = getCenter();
 
             if (center != null) {

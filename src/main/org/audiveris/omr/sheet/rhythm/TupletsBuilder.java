@@ -107,7 +107,7 @@ public class TupletsBuilder
                 for (Link link : links) {
                     link.applyTo(tuplet);
                 }
-            } else {
+            } else if (!tuplet.isManual()) {
                 toDelete.add(tuplet);
             }
         }
@@ -468,6 +468,8 @@ public class TupletsBuilder
         protected Set<AbstractChordInter> getBeamSiblings (AbstractChordInter chord)
         {
             final Set<AbstractChordInter> set = new LinkedHashSet<AbstractChordInter>();
+            set.add(chord);
+
             StemInter stem = chord.getStem();
 
             if (stem != null) {

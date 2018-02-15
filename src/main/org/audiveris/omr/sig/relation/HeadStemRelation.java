@@ -82,11 +82,15 @@ public class HeadStemRelation
     @Override
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
+        final Inter head = e.getEdgeSource();
+        final Inter stem = e.getEdgeTarget();
+
         if (headSide == null) {
-            final Inter head = e.getEdgeSource();
-            final Inter stem = e.getEdgeTarget();
             headSide = (stem.getCenter().x < head.getCenter().x) ? LEFT : RIGHT;
         }
+
+        head.checkAbnormal();
+        stem.checkAbnormal();
     }
 
     //------------------//
@@ -138,6 +142,19 @@ public class HeadStemRelation
         } else {
             return (anchor < (stemLine.getY1() + margin)) ? STEM_TOP : STEM_MIDDLE;
         }
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final Inter head = e.getEdgeSource();
+        final Inter stem = e.getEdgeTarget();
+
+        head.checkAbnormal();
+        stem.checkAbnormal();
     }
 
     /**

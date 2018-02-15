@@ -44,11 +44,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code SlurHeadRelation} represents a link between a slur and one of the two
  * embraced note heads.
- * <p>
- * Distance from slur end to embraced note head is quite complex. For the time being, we simply
- * record the detected relation without further evaluation detail.
- * <p>
- * TODO: Actually, perhaps we should deal with embraced chord instead of embraced head?
  *
  * @author Hervé Bitteur
  */
@@ -126,6 +121,8 @@ public class SlurHeadRelation
                 slur.setTie(true);
             }
         }
+
+        slur.checkAbnormal();
     }
 
     //--------------//
@@ -148,6 +145,16 @@ public class SlurHeadRelation
     public HorizontalSide getSide ()
     {
         return side;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final SlurInter slur = (SlurInter) e.getEdgeSource();
+        slur.checkAbnormal();
     }
 
     //--------------//
