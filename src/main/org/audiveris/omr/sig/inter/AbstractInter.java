@@ -158,7 +158,7 @@ public abstract class AbstractInter
     protected GradeImpacts impacts;
 
     /** Already removed from SIG?. */
-    private boolean removed;
+    protected boolean removed;
 
     /** Potential attachments, lazily allocated. */
     private AttachmentHolder attachments;

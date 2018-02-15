@@ -83,8 +83,7 @@ public class KeyAlterInter
     @Override
     public void added ()
     {
-        // Skip AlterInder
-        ((AbstractInter) this).added();
+        removed = false; // Skip AlterInder
     }
 
     //---------------//
