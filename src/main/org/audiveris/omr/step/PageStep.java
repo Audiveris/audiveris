@@ -26,6 +26,7 @@ import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageReduction;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
@@ -46,6 +47,8 @@ import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.StackTask;
+import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.text.TextRole;
@@ -98,6 +101,8 @@ public class PageStep
         forVoices.add(TimePairInter.class);
         forVoices.add(TimeWholeInter.class);
         forVoices.add(TupletInter.class);
+
+        forVoices.add(MeasureStack.class);
     }
 
     /** Classes that may impact lyrics. */
@@ -182,39 +187,53 @@ public class PageStep
         // First, determine what will be impacted
         Map<Page, Impact> map = new LinkedHashMap<Page, Impact>();
 
-        InterTask interTask = seq.getFirstInterTask();
+        for (UITask task : seq.getTasks()) {
+            if (task instanceof InterTask) {
+                InterTask interTask = (InterTask) task;
+                Inter inter = interTask.getInter();
+                Page page = inter.getSig().getSystem().getPage();
+                Impact impact = map.get(page);
 
-        if (interTask != null) {
-            Inter inter = interTask.getInter();
-            Page page = inter.getSig().getSystem().getPage();
-            Impact impact = map.get(page);
+                if (impact == null) {
+                    map.put(page, impact = new Impact());
+                }
 
-            if (impact == null) {
-                map.put(page, impact = new Impact());
-            }
+                Class classe = inter.getClass();
 
-            Class interClass = (Class) inter.getClass();
+                if (isImpactedBy(classe, forParts)) {
+                    if (inter instanceof SentenceInter) {
+                        SentenceInter sentence = (SentenceInter) inter;
 
-            if (isImpactedBy(interClass, forParts)) {
-                if (inter instanceof SentenceInter) {
-                    SentenceInter sentence = (SentenceInter) inter;
-
-                    if (sentence.getRole() == TextRole.PartName) {
-                        impact.onParts = true;
+                        if (sentence.getRole() == TextRole.PartName) {
+                            impact.onParts = true;
+                        }
                     }
                 }
-            }
 
-            if (isImpactedBy(interClass, forSlurs)) {
-                impact.onSlurs = true;
-            }
+                if (isImpactedBy(classe, forSlurs)) {
+                    impact.onSlurs = true;
+                }
 
-            if (isImpactedBy(interClass, forLyrics)) {
-                impact.onLyrics = true;
-            }
+                if (isImpactedBy(classe, forLyrics)) {
+                    impact.onLyrics = true;
+                }
 
-            if (isImpactedBy(interClass, forVoices)) {
-                impact.onVoices = true;
+                if (isImpactedBy(classe, forVoices)) {
+                    impact.onVoices = true;
+                }
+            } else if (task instanceof StackTask) {
+                MeasureStack stack = ((StackTask) task).getStack();
+                Class classe = stack.getClass();
+                Page page = stack.getSystem().getPage();
+                Impact impact = map.get(page);
+
+                if (impact == null) {
+                    map.put(page, impact = new Impact());
+                }
+
+                if (isImpactedBy(classe, forVoices)) {
+                    impact.onVoices = true;
+                }
             }
         }
 

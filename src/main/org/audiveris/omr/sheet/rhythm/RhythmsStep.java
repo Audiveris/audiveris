@@ -24,7 +24,6 @@ package org.audiveris.omr.sheet.rhythm;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
@@ -41,6 +40,7 @@ import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.StackTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
@@ -86,6 +86,8 @@ public class RhythmsStep
         forStack.add(RestInter.class);
         forStack.add(StemInter.class);
         forStack.add(TupletInter.class);
+
+        forStack.add(MeasureStack.class);
     }
 
     /** Classes that impact a whole page. */
@@ -152,9 +154,9 @@ public class RhythmsStep
                 InterTask interTask = (InterTask) task;
                 Inter inter = interTask.getInter();
                 SystemInfo system = inter.getSig().getSystem();
-                Class<? extends AbstractInter> interClass = (Class<? extends AbstractInter>) inter.getClass();
+                Class classe = inter.getClass();
 
-                if (isImpactedBy(interClass, forPage)) {
+                if (isImpactedBy(classe, forPage)) {
                     // Reprocess the whole page
                     Page page = inter.getSig().getSystem().getPage();
                     Impact impact = map.get(page);
@@ -164,8 +166,8 @@ public class RhythmsStep
                     }
 
                     impact.onPage = true;
-                } else if (isImpactedBy(interClass, forStack)) {
-                    // Or reprocess just the stack
+                } else if (isImpactedBy(classe, forStack)) {
+                    // Reprocess just the stack
                     Point center = inter.getCenter();
 
                     if (center != null) {
@@ -179,6 +181,20 @@ public class RhythmsStep
 
                         impact.onStacks.add(stack);
                     }
+                }
+            } else if (task instanceof StackTask) {
+                // Reprocess the stack
+                MeasureStack stack = ((StackTask) task).getStack();
+                Class classe = stack.getClass();
+                Page page = stack.getSystem().getPage();
+                Impact impact = map.get(page);
+
+                if (impact == null) {
+                    map.put(page, impact = new Impact());
+                }
+
+                if (isImpactedBy(classe, forStack)) {
+                    impact.onStacks.add(stack);
                 }
             }
         }

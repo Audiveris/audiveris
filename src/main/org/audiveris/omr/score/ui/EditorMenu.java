@@ -36,6 +36,7 @@ import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.ui.ExtractionMenu;
 import org.audiveris.omr.sig.ui.GlyphListMenu;
 import org.audiveris.omr.sig.ui.InterListMenu;
+import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 
 import org.slf4j.Logger;
@@ -135,11 +136,14 @@ public class EditorMenu
         /** Selected measure. */
         private MeasureStack stack;
 
+        private RhythmAction rhythmAction = new RhythmAction();
+
         //~ Constructors ---------------------------------------------------------------------------
         public MeasureMenu ()
         {
             super("Measure");
             add(new JMenuItem(new DumpAction()));
+            add(new JMenuItem(rhythmAction));
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -159,11 +163,13 @@ public class EditorMenu
             if (stack != null) {
                 setText("Measure #" + stack.getPageId() + " ...");
             }
+
+            rhythmAction.update();
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
         /**
-         * Dump the current measure
+         * Dump the current measure.
          */
         private class DumpAction
                 extends AbstractAction
@@ -181,6 +187,38 @@ public class EditorMenu
             public void actionPerformed (ActionEvent e)
             {
                 stack.printVoices("\n");
+            }
+        }
+
+        /**
+         * Reprocess rhythm of the current measure.
+         */
+        private class RhythmAction
+                extends AbstractAction
+        {
+            //~ Constructors -----------------------------------------------------------------------
+
+            public RhythmAction ()
+            {
+                putValue(NAME, "Reprocess rhythm");
+                putValue(SHORT_DESCRIPTION, "Reprocess rhythm on the selected measure");
+            }
+
+            //~ Methods ----------------------------------------------------------------------------
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                sheet.getInterController().reprocessRhythm(stack);
+            }
+
+            private void update ()
+            {
+                if (stack == null) {
+                    setEnabled(false);
+                } else {
+                    // Action enabled only if step >= RHYTHM
+                    setEnabled(sheet.getStub().getLatestStep().compareTo(Step.RHYTHMS) >= 0);
+                }
             }
         }
     }

@@ -34,6 +34,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sig.SIGraph;
@@ -650,6 +651,44 @@ public class InterController
                     syncRemoveInters(inters);
                 } catch (Throwable ex) {
                     logger.warn("Exception in removeInters {}", ex.toString(), ex);
+                }
+
+                return null;
+            }
+        }.execute();
+    }
+
+    //-----------------//
+    // reprocessRhythm //
+    //-----------------//
+    /**
+     * Reprocess the rhythm on the provided measure stack.
+     *
+     * @param stack measure stack to reprocess
+     */
+    public void reprocessRhythm (final MeasureStack stack)
+    {
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+            {
+                try {
+                    sheet.getStub().setModified(true);
+
+                    // Re-process impacted steps
+                    final UITaskList seq = new UITaskList(new StackTask(stack));
+                    final Step latestStep = sheet.getStub().getLatestStep();
+                    final Step firstStep = Step.RHYTHMS;
+
+                    final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
+
+                    for (Step step : steps) {
+                        logger.debug("Impact {}", step);
+                        step.impact(seq, OpKind.DO);
+                    }
+                } catch (Throwable ex) {
+                    logger.warn("Exception in reprocessRhythm {}", ex.toString(), ex);
                 }
 
                 return null;

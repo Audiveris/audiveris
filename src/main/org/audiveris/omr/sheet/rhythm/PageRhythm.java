@@ -138,6 +138,8 @@ public class PageRhythm
      */
     public void reprocessStack (MeasureStack stack)
     {
+        logger.debug("PageRhythm.reprocessStack {}", stack);
+
         Rational expectedDuration = stack.getExpectedDuration();
         new StackTuner(stack, false).process(expectedDuration);
     }
@@ -323,17 +325,17 @@ public class PageRhythm
             avgGuess = new Rational(quarters, 4);
         }
 
-//        Rational topGuess = histo.getMaxBucket();
-//        logger.info(
-//                "{} Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
-//                range,
-//                avgGuess,
-//                topGuess,
-//                String.format("%.2f", val),
-//                stackNb,
-//                voiceNb,
-//                histo);
-//
+        //        Rational topGuess = histo.getMaxBucket();
+        //        logger.info(
+        //                "{} Durations avgGuess:{} topGuess:{} avgValue:{} stacks:{} voices:{} {}",
+        //                range,
+        //                avgGuess,
+        //                topGuess,
+        //                String.format("%.2f", val),
+        //                stackNb,
+        //                voiceNb,
+        //                histo);
+        //
         return avgGuess;
     }
 

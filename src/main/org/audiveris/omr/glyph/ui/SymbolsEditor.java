@@ -66,9 +66,7 @@ import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
-
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
-
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.Navigable;
@@ -80,10 +78,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
-
 import java.awt.Stroke;
 import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
@@ -378,16 +374,17 @@ public class SymbolsEditor
                     highLight(getSlotAt(pt));
                 }
             }
-//
-//            // Regardless of the selection mode (section or glyph)
-//            // we let the user play with the current glyph if so desired.
-//            List<Glyph> glyphs = glyphIndex.getSelectedGlyphList();
-//
-//            if (movement == MouseMovement.RELEASING) {
-//                if ((glyphs != null) && !glyphs.isEmpty()) {
-//                    showPagePopup(pt, getRubberRectangle());
-//                }
-//            }
+
+            //
+            //            // Regardless of the selection mode (section or glyph)
+            //            // we let the user play with the current glyph if so desired.
+            //            List<Glyph> glyphs = glyphIndex.getSelectedGlyphList();
+            //
+            //            if (movement == MouseMovement.RELEASING) {
+            //                if ((glyphs != null) && !glyphs.isEmpty()) {
+            //                    showPagePopup(pt, getRubberRectangle());
+            //                }
+            //            }
         }
 
         //-----------------//
@@ -409,9 +406,9 @@ public class SymbolsEditor
                 }
             }
 
-//            if (movement == MouseMovement.RELEASING) {
-            showPagePopup(pt, getRubberRectangle());
-//            }
+            if (movement == MouseMovement.RELEASING) {
+                showPagePopup(pt, getRubberRectangle());
+            }
         }
 
         //-----------//
@@ -797,7 +794,6 @@ public class SymbolsEditor
                             logger.debug("src:{} tgt:{} suggestions:{}", source, target, sugs);
 
                             if (!sugs.isEmpty()) {
-
                                 if (doit) {
                                     try {
                                         Class<? extends Relation> relClass = sugs.iterator().next();

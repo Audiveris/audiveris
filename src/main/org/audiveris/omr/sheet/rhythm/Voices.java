@@ -142,6 +142,8 @@ public abstract class Voices
      */
     public static void refinePage (Page page)
     {
+        logger.debug("PageStep.refinePage");
+
         final SystemInfo firstSystem = page.getFirstSystem();
         final SlurAdapter systemSlurAdapter = new SlurAdapter()
         {
