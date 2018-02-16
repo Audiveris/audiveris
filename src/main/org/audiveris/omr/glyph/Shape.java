@@ -349,10 +349,10 @@ public enum Shape
     // Bars --------------------------------------------------------------------
     //
     THIN_BARLINE("Thin bar line"),
-    THIN_CONNECTOR("Connector between thin barlines"),
+    THIN_CONNECTOR("Connector between thin barlines", new Color(0x0000ff)),
     THICK_BARLINE("Thick bar line"),
-    THICK_CONNECTOR("Connector between thick barlines"),
-    BRACKET_CONNECTOR("Connector between bracket items"),
+    THICK_CONNECTOR("Connector between thick barlines", new Color(0x0000ff)),
+    BRACKET_CONNECTOR("Connector between bracket items", new Color(0x0000ff)),
     DOUBLE_BARLINE("Double thin bar line"),
     FINAL_BARLINE("Thin / Thick bar line"),
     REVERSE_FINAL_BARLINE("Thick / Thin bar line"),
