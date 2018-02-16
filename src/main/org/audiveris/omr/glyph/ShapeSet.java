@@ -292,7 +292,7 @@ public class ShapeSet
 
     public static final ShapeSet Articulations = new ShapeSet(
             ACCENT,
-            new Color(0xff6699),
+            new Color(0x0066ff),
             shapesOf(ACCENT, TENUTO, STACCATO, STACCATISSIMO, STRONG_ACCENT));
 
     public static final ShapeSet Attributes = new ShapeSet(
@@ -318,17 +318,17 @@ public class ShapeSet
 
     public static final ShapeSet BeamsAndTuplets = new ShapeSet(
             BEAM,
-            new Color(0x33ffff),
+            new Color(0x008844),
             shapesOf(BEAM /* ,BEAM_SMALL */, BEAM_HOOK, TUPLET_THREE, TUPLET_SIX));
 
     public static final ShapeSet Clefs = new ShapeSet(
             G_CLEF,
-            new Color(0xff99ff),
+            new Color(0x9933ff),
             shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
 
     public static final ShapeSet Dynamics = new ShapeSet(
             DYNAMICS_F,
-            new Color(0x009999),
+            new Color(0x9933ff),
             shapesOf(
                     DYNAMICS_P,
                     DYNAMICS_PP,
@@ -344,7 +344,7 @@ public class ShapeSet
 
     public static final ShapeSet Flags = new ShapeSet(
             FLAG_1,
-            new Color(0x99cc00),
+            new Color(0x008844),
             shapesOf(new ArrayList<Shape>(FlagsDown), SmallFlags, FlagsUp));
 
     public static final ShapeSet Holds = new ShapeSet(
@@ -353,13 +353,13 @@ public class ShapeSet
             shapesOf(BREATH_MARK, CAESURA, FERMATA, FERMATA_BELOW));
 
     public static final ShapeSet Keys = new ShapeSet(
-            KEY_SHARP_3,
+            KEY_SHARP_3, // is this correct, not "KEY_FLAT_7" ?
             new Color(0x00ffff),
             shapesOf(new ArrayList<Shape>(FlatKeys), SharpKeys));
 
     public static final ShapeSet HeadsAndDot = new ShapeSet(
             NOTEHEAD_BLACK,
-            new Color(0xffcc00),
+            new Color(0x008844),
             shapesOf(Heads, shapesOf(AUGMENTATION_DOT)));
 
     public static final ShapeSet Markers = new ShapeSet(
@@ -383,7 +383,7 @@ public class ShapeSet
 
     public static final ShapeSet Rests = new ShapeSet(
             QUARTER_REST,
-            new Color(0x99ff66),
+            new Color(0x008844),
             shapesOf(
                     LONG_REST,
                     BREVE_REST,
@@ -441,7 +441,7 @@ public class ShapeSet
 
     public static final ShapeSet Physicals = new ShapeSet(
             LEDGER,
-            new Color(0x9999ff),
+            new Color(0x7700FF),
             shapesOf(LYRICS, TEXT, CHARACTER, CLUTTER, SLUR, LEDGER, STEM, ENDING));
 
     // =========================================================================

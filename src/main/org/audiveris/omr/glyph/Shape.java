@@ -117,9 +117,9 @@ public enum Shape
     //
     // Accidentals -------------------------------------------------------------
     //
-    FLAT("Minus one half step", new Color(0x00aaaa)),
-    NATURAL("Natural value", new Color(0x0066ff)),
-    SHARP("Plus one half step", new Color(0x3399ff)),
+    FLAT("Minus one half step"),
+    NATURAL("Natural value"),
+    SHARP("Plus one half step"),
     DOUBLE_SHARP("Double Sharp"),
     DOUBLE_FLAT("Double Flat"),
     //
@@ -239,10 +239,10 @@ public enum Shape
     //
     // Tuplets -----------------------------------------------------------------
     //
-    TUPLET_THREE("3", new Color(0xcc00cc)),
-    TUPLET_SIX("6", new Color(0xcc00cc)),
-    PEDAL_MARK("Pedal down", new Color(0x009999)),
-    PEDAL_UP_MARK("Pedal downup", new Color(0x009999)),
+    TUPLET_THREE("3"),
+    TUPLET_SIX("6"),
+    PEDAL_MARK("Pedal down"),
+    PEDAL_UP_MARK("Pedal downup"),
     //
     // Small digits ------------------------------------------------------------
     //
@@ -291,14 +291,14 @@ public enum Shape
      * End of physical shapes, beginning of logical shapes.
      * =============================================================================================
      */
-    TEXT("Sequence of letters & spaces", new Color(0x9999ff)),
+    TEXT("Sequence of letters & spaces", new Color(0xDE0000)),
     CHARACTER("Any letter"),
 
     //
     // Shapes from shape sets --------------------------------------------------
     //
     REPEAT_DOT("Repeat dot", DOT_set, new Color(0x0000ff)),
-    AUGMENTATION_DOT("Augmentation Dot", DOT_set),
+    AUGMENTATION_DOT("Augmentation Dot", DOT_set, new Color(0x008844)),  // change to dark green
     FERMATA_DOT("Fermata Dot", DOT_set),
     STACCATO("Staccato dot", DOT_set),
     //
@@ -308,10 +308,10 @@ public enum Shape
     //
     // Noteheads ---------------------------------------------------------------
     //
-    NOTEHEAD_BLACK("Filled node head for quarters and less", new Color(0xffcc00)),
-    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue", new Color(0xff4400)),
-    NOTEHEAD_VOID("Hollow node head for halves", new Color(0xff9966)),
-    NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue", new Color(0xff4400)),
+    NOTEHEAD_BLACK("Filled node head for quarters and less"),
+    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
+    NOTEHEAD_VOID("Hollow node head for halves"),
+    NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue"),
 
     //
     // StemLessHeads -----------------------------------------------------------
@@ -376,12 +376,12 @@ public enum Shape
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
     SEGMENT("Wedge or ending segment"),
-    LYRICS("Lyrics"),
+    LYRICS("Lyrics", new Color(0x668F00)),
 
     //
     // Stems
     //
-    STEM("Stem", new Color(0xccff66)),
+    STEM("Stem", new Color(0x806040)),
     //
     // Ornaments ---------------------------------------------------------------
     //
