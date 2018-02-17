@@ -67,16 +67,28 @@ public class WordInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code WordInter} object.
+     * Creates a new {@code WordInter} object, with TEXT shape.
      *
      * @param textWord the OCR'ed text word
      */
     public WordInter (TextWord textWord)
     {
+        this(textWord, Shape.TEXT);
+    }
+
+    /**
+     * Creates a new {@code WordInter} object, with provided shape.
+     *
+     * @param textWord the OCR'ed text word
+     * @param shape    specific shape (TEXT or LYRICS)
+     */
+    public WordInter (TextWord textWord,
+                      Shape shape)
+    {
         super(
                 textWord.getGlyph(),
                 textWord.getBounds(),
-                Shape.TEXT,
+                shape,
                 textWord.getConfidence() * Grades.intrinsicRatio);
         value = textWord.getValue();
         fontInfo = textWord.getFontInfo();

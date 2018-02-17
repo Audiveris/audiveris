@@ -31,6 +31,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.TextWord;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.glyph.Shape;
 
 /**
  * Class {@code LyricItemInter} is specific subclass of Text, meant for one
@@ -116,7 +118,7 @@ public class LyricItemInter
      */
     public LyricItemInter (TextWord textWord)
     {
-        super(textWord);
+        super(textWord, Shape.LYRICS);
 
         if (value.equals(ELISION_STRING)) {
             itemKind = ItemKind.Elision;
