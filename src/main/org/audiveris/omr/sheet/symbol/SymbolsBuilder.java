@@ -202,13 +202,13 @@ public class SymbolsBuilder
                 2,
                 Grades.symbolMinGrade,
                 EnumSet.of(Classifier.Condition.CHECKED));
-        Evaluation[] evals2 = classifier2.evaluate(
-                glyph,
-                system,
-                2,
-                Grades.symbolMinGrade, // Not OK for deep classifier!
-                EnumSet.of(Classifier.Condition.CHECKED));
-
+//        Evaluation[] evals2 = classifier2.evaluate(
+//                glyph,
+//                system,
+//                2,
+//                Grades.symbolMinGrade, // Not OK for deep classifier!
+//                EnumSet.of(Classifier.Condition.CHECKED));
+//
         if (evals.length > 0) {
             //            // Create one interpretation for each acceptable evaluation
             //            for (Evaluation eval : evals) {
