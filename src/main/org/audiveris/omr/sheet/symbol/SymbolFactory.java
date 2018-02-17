@@ -608,7 +608,9 @@ public class SymbolFactory
             return;
         }
 
-        sig.addVertex(inter);
+        if (inter.getSig() == null) {
+            sig.addVertex(inter);
+        }
     }
 
     //-------------//
