@@ -86,7 +86,7 @@ public enum Shape
     //
     // Sets --------------------------------------------------------------------
     //
-    DOT_set("Dot set"), 	// , new Color(0xcccccc)
+    DOT_set("Dot set"),
     HW_REST_set("Half & Whole Rest set"),
 
     //
@@ -140,7 +140,7 @@ public enum Shape
     TIME_SIXTEEN("Time number 16"),
 
     // Whole time sigs
-    COMMON_TIME("Alpha = 4/4"),		// , new Color(0xcc6600)
+    COMMON_TIME("Alpha = 4/4"),
     CUT_TIME("Semi-Alpha = 2/2"),
 
     // Predefined time combos
@@ -285,7 +285,7 @@ public enum Shape
     //
     // Miscellaneous -----------------------------------------------------------
     //
-    CLUTTER("Pure clutter", new Color(0x999900)),
+    CLUTTER("Pure clutter", Colors.SHAPE_UNKNOWN),
 
     /**
      * =================================================================================
@@ -298,7 +298,7 @@ public enum Shape
     //
     // Shapes from shape sets --------------------------------------------------
     //
-    REPEAT_DOT("Repeat dot", DOT_set, new Color(0x0000ff)),
+    REPEAT_DOT("Repeat dot", DOT_set),
     AUGMENTATION_DOT("Augmentation Dot", DOT_set),  // change to dark green
     FERMATA_DOT("Fermata Dot", DOT_set),
     STACCATO("Staccato dot", DOT_set),
@@ -327,7 +327,7 @@ public enum Shape
     BEAM_SMALL("Small beam for cue notes"),
     BEAM_HOOK("Hook of a beam attached on one stem"),
     BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
-    SLUR("Slur tying notes", new Color(0x806040)),
+    SLUR("Slur tying notes"),
     //
     // Key signatures ----------------------------------------------------------
     //
@@ -350,17 +350,17 @@ public enum Shape
     // Bars --------------------------------------------------------------------
     //
     THIN_BARLINE("Thin bar line"),
-    THIN_CONNECTOR("Connector between thin barlines", new Color(0x0000ff)),
+    THIN_CONNECTOR("Connector between thin barlines", Colors.SCORE_FRAME),
     THICK_BARLINE("Thick bar line"),
-    THICK_CONNECTOR("Connector between thick barlines", new Color(0x0000ff)),
-    BRACKET_CONNECTOR("Connector between bracket items", new Color(0x0000ff)),
+    THICK_CONNECTOR("Connector between thick barlines", Colors.SCORE_FRAME),
+    BRACKET_CONNECTOR("Connector between bracket items", Colors.SCORE_FRAME),
     DOUBLE_BARLINE("Double thin bar line"),
     FINAL_BARLINE("Thin / Thick bar line"),
     REVERSE_FINAL_BARLINE("Thick / Thin bar line"),
     LEFT_REPEAT_SIGN("Thick / Thin bar line + Repeat dots"),
     RIGHT_REPEAT_SIGN("Repeat dots + Thin / Thick bar line"),
     BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin + REPEAT_DOTS"),
-    ENDING("Alternate ending", new Color(0x993300)),
+    ENDING("Alternate ending"),
     //
     // Wedges ------------------------------------------------------------------
     //
@@ -372,8 +372,8 @@ public enum Shape
     BRACE("Brace"),
     BRACKET("Bracket"),
     REPEAT_DOT_PAIR("Pair of repeat dots"),
-    NOISE("Too small stuff", new Color(0xcccccc)),
-    LEDGER("Ledger", new Color(0xaaaaaa)),
+    NOISE("Too small stuff", Colors.SHAPE_UNKNOWN),
+    LEDGER("Ledger"),
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
     SEGMENT("Wedge or ending segment"),
@@ -382,7 +382,7 @@ public enum Shape
     //
     // Stems
     //
-    STEM("Stem", new Color(0x806040)),
+    STEM("Stem"),
     //
     // Ornaments ---------------------------------------------------------------
     //

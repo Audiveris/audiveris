@@ -288,22 +288,22 @@ public class ShapeSet
     //----------------------------------------------------------------------------------------------
     public static final ShapeSet Accidentals = new ShapeSet(
             SHARP,
-            Colors.SCORE_NOTE_MODIFIERS,
+            Colors.SCORE_MODIFIERS,
             shapesOf(FLAT, NATURAL, SHARP, DOUBLE_SHARP, DOUBLE_FLAT));
 
     public static final ShapeSet Articulations = new ShapeSet(
             ACCENT,
-            Colors.SCORE_NOTE_MODIFIERS,
+            Colors.SCORE_MODIFIERS,
             shapesOf(ACCENT, TENUTO, STACCATO, STACCATISSIMO, STRONG_ACCENT));
 
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
-            Colors.SCORE_NOTE_MODIFIERS,
+            Colors.SCORE_MODIFIERS,
             shapesOf(OTTAVA_ALTA, OTTAVA_BASSA, PEDAL_MARK, PEDAL_UP_MARK, ARPEGGIATO));
 
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,
-            Colors.SCORE_FRAME,  //new Color(0x0000ff),
+            Colors.SCORE_FRAME,
             shapesOf(
                     THICK_BARLINE,
                     THIN_BARLINE,
@@ -329,7 +329,7 @@ public class ShapeSet
 
     public static final ShapeSet Dynamics = new ShapeSet(
             DYNAMICS_F,
-            Colors.SCORE_NOTE_MODIFIERS,
+            Colors.SCORE_MODIFIERS,
             shapesOf(
                     DYNAMICS_P,
                     DYNAMICS_PP,
@@ -350,12 +350,12 @@ public class ShapeSet
 
     public static final ShapeSet Holds = new ShapeSet(
             FERMATA,
-            Colors.SCORE_NOTE_MODIFIERS,
+            Colors.SCORE_MODIFIERS,
             shapesOf(BREATH_MARK, CAESURA, FERMATA, FERMATA_BELOW));
 
     public static final ShapeSet Keys = new ShapeSet(
-            KEY_SHARP_3,								
-            Colors.SCORE_NOTE_MODIFIERS,
+            KEY_SHARP_3,
+            Colors.SCORE_MODIFIERS,
             shapesOf(new ArrayList<Shape>(FlatKeys), SharpKeys));
 
     public static final ShapeSet HeadsAndDot = new ShapeSet(
@@ -370,7 +370,7 @@ public class ShapeSet
 
     public static final ShapeSet Ornaments = new ShapeSet(
             MORDENT,
-            Colors.SCORE_NOTE_MODIFIERS,
+            Colors.SCORE_MODIFIERS,
             shapesOf(
                     GRACE_NOTE_SLASH,
                     GRACE_NOTE,
@@ -404,7 +404,7 @@ public class ShapeSet
 
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,
-            Colors.SCORE_NOTE_MODIFIERS,
+            Colors.SCORE_MODIFIERS,
             shapesOf(
                     DIGIT_0,
                     DIGIT_1,
@@ -420,12 +420,12 @@ public class ShapeSet
 
     public static final ShapeSet Pluckings = new ShapeSet(
             PLUCK_P,
-            Colors.SCORE_NOTE_MODIFIERS,
+            Colors.SCORE_MODIFIERS,
             shapesOf(PLUCK_P, PLUCK_I, PLUCK_M, PLUCK_A));
 
     public static final ShapeSet Romans = new ShapeSet(
             ROMAN_V,
-            Colors.SCORE_NOTE_MODIFIERS,
+            Colors.SCORE_MODIFIERS,
             shapesOf(
                     ROMAN_I,
                     ROMAN_II,

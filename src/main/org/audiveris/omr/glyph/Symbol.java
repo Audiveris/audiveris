@@ -25,7 +25,6 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.util.EnumSet;
 
@@ -42,38 +41,37 @@ public interface Symbol
     /**
      * This enumeration is used to group glyph instances by their intended use.
      * A single glyph instance can be assigned several groups.
-     * TODO: perhaps with should be moved from Symbol to Glyph only (not dynamic ones)?
+     * TODO: perhaps this should be moved from Symbol to Glyph only (not dynamic ones)?
      */
     enum Group
     {
         //~ Enumeration constant initializers ------------------------------------------------------
 
-        STAFF_LINE("Staff Line", new Color(0xffffcc)),
-        BEAM_SPOT("Beam-oriented spot", new Color(0xaaaaaa)),
-        HEAD_SPOT("Head-oriented spot", new Color(0xbbbbbb)),
-        VERTICAL_SEED("Vertical seed", new Color(0xccffcc)),
-        LEDGER("Ledger", new Color(0xaaaaaa)),
-        LEDGER_CANDIDATE("Ledger candidate", new Color(0xaaffaa)),
-        WEAK_PART("Optional part", new Color(0xffaaaa)),
-        SYMBOL("Fixed symbol", new Color(0xaaaaff)),
-        TIME_PART("Part of time sig", new Color(0xffaaff)),
-        ALTER_PART("Part of alteration", new Color(0xffaacc)),
-        CLEF_PART("Part of clef", new Color(0xffaacc)),
-        DROP("DnD glyph", new Color(0xffbbbb));
-        //~ Instance fields ------------------------------------------------------------------------
+        /** Only the first 4 ones are needed. */
+        BEAM_SPOT("Beam-oriented spot"),
+        HEAD_SPOT("Head-oriented spot"),
+        VERTICAL_SEED("Vertical seed"),
+        SYMBOL("Fixed symbol"),
+        /**
+         * The remaining ones below are not needed. But may still exist in .omr files...
+         */
+        STAFF_LINE("Staff Line"),
+        LEDGER("Ledger"),
+        LEDGER_CANDIDATE("Ledger candidate"),
+        WEAK_PART("Optional part"),
+        TIME_PART("Part of time sig"),
+        ALTER_PART("Part of alteration"),
+        CLEF_PART("Part of clef"),
+        DROP("DnD glyph");
 
+        //~ Instance fields ------------------------------------------------------------------------
         /** Role of the group. */
         public final String description;
 
-        /** Related color. */
-        public final Color color;
-
         //~ Constructors ---------------------------------------------------------------------------
-        Group (String description,
-               Color color)
+        Group (String description)
         {
             this.description = description;
-            this.color = color;
         }
     }
 
