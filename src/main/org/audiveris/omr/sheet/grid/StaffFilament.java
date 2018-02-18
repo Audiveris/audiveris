@@ -313,7 +313,7 @@ public class StaffFilament
      */
     public StaffLine toStaffLine (GlyphIndex glyphIndex)
     {
-        Glyph glyph = toGlyph(Group.STAFF_LINE); // Assigning STAFF_LINE is useless in fact
+        Glyph glyph = toGlyph(null);
 
         if (glyphIndex != null) {
             glyph = glyphIndex.registerOriginal(glyph);

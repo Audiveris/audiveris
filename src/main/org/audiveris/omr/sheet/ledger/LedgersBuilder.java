@@ -31,7 +31,6 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
-import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.glyph.dynamic.Filament;
 import org.audiveris.omr.glyph.dynamic.StickFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
@@ -39,7 +38,9 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
+
 import static org.audiveris.omr.run.Orientation.*;
+
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
@@ -61,7 +62,9 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.util.BasicNamedDouble;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.NamedDouble;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
@@ -324,11 +327,6 @@ public class LedgersBuilder
         // Purge candidates that overlap good beams
         purgeBeamOverlaps(filaments);
 
-        // This is only meant to show filaments in a specific color
-        for (Filament fil : filaments) {
-            fil.addGroup(Group.LEDGER_CANDIDATE);
-        }
-
         return filaments;
     }
 
@@ -545,7 +543,7 @@ public class LedgersBuilder
                 }
 
                 if (grade >= suite.getMinThreshold()) {
-                    Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(Group.LEDGER));
+                    Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(null));
                     LedgerInter ledger = new LedgerInter(glyph, impacts);
                     ledger.setIndex(index);
                     sig.addVertex(ledger);
@@ -560,7 +558,6 @@ public class LedgersBuilder
 
             // Populate staff with ledgers kept
             for (LedgerInter ledger : ledgers) {
-                ledger.getGlyph().addGroup(Group.LEDGER); // Useful???
                 staff.addLedger(ledger, index);
                 ledger.setStaff(staff);
 

@@ -36,9 +36,10 @@ import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.math.IntegerFunction;
+
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.score.TimeRational;
@@ -49,7 +50,9 @@ import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+
 import static org.audiveris.omr.sheet.header.TimeBuilder.TimeKind.*;
+
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
@@ -913,7 +916,6 @@ public abstract class TimeBuilder
             for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
                 final Glyph part = li.next();
                 Glyph glyph = glyphIndex.registerOriginal(part);
-                glyph.addGroup(Group.TIME_PART); // For debug?
                 system.addFreeGlyph(glyph);
                 li.set(glyph);
             }

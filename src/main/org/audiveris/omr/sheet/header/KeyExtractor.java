@@ -35,7 +35,6 @@ import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.IntegerFunction;
 
@@ -153,7 +152,7 @@ public class KeyExtractor
         RunTable runTable = new RunTableFactory(VERTICAL).createTable(sliceBuf);
         List<Glyph> parts = GlyphFactory.buildGlyphs(runTable, sliceRect.getLocation());
         purgeParts(parts, (sliceRect.x + sliceRect.width) - 1);
-        system.registerGlyphs(parts, Group.ALTER_PART);
+        system.registerGlyphs(parts, null);
 
         SingleAdapter adapter = new SingleAdapter(slice, peaks, parts, targetShapes, minGrade);
         new GlyphCluster(adapter, null).decompose();
@@ -353,7 +352,7 @@ public class KeyExtractor
                 new Point(range.getStart(), roi.y));
 
         purgeParts(parts, range.getStop());
-        system.registerGlyphs(parts, Group.ALTER_PART);
+        system.registerGlyphs(parts, null);
 
         // Formalize parts relationships in a global graph
         SimpleGraph<Glyph, GlyphLink> graph = Glyphs.buildLinks(parts, params.maxPartGap);

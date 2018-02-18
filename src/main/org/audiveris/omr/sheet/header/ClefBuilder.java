@@ -36,9 +36,10 @@ import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.Shape.*;
-import org.audiveris.omr.glyph.Symbol.Group;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -57,7 +58,9 @@ import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.ui.symbol.Symbol;
 import org.audiveris.omr.ui.symbol.Symbols;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -356,7 +359,7 @@ public class ClefBuilder
         // Keep only interesting parts
         purgeParts(parts, isFirstPass);
 
-        system.registerGlyphs(parts, Group.CLEF_PART);
+        system.registerGlyphs(parts, null);
         logger.debug("{} parts: {}", this, parts.size());
 
         return parts;
