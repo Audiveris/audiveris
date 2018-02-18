@@ -24,6 +24,7 @@ package org.audiveris.omr.glyph;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
+import org.audiveris.omr.ui.Colors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +86,7 @@ public enum Shape
     //
     // Sets --------------------------------------------------------------------
     //
-    DOT_set("Dot set", new Color(0xcccccc)),
+    DOT_set("Dot set"), 	// , new Color(0xcccccc)
     HW_REST_set("Half & Whole Rest set"),
 
     //
@@ -139,7 +140,7 @@ public enum Shape
     TIME_SIXTEEN("Time number 16"),
 
     // Whole time sigs
-    COMMON_TIME("Alpha = 4/4", new Color(0xcc6600)),
+    COMMON_TIME("Alpha = 4/4"),		// , new Color(0xcc6600)
     CUT_TIME("Semi-Alpha = 2/2"),
 
     // Predefined time combos
@@ -152,8 +153,8 @@ public enum Shape
     TIME_SIX_EIGHT("Rational 6/8"),
 
     // Octave shifts
-    OTTAVA_ALTA("8 va", new Color(0xcc66ff)),
-    OTTAVA_BASSA("8 vb", new Color(0xcc66ff)),
+    OTTAVA_ALTA("8 va"),
+    OTTAVA_BASSA("8 vb"),
 
     //
     // Rests -------------------------------------------------------------------
@@ -291,14 +292,14 @@ public enum Shape
      * End of physical shapes, beginning of logical shapes.
      * =============================================================================================
      */
-    TEXT("Sequence of letters & spaces", new Color(0xDE0000)),
+    TEXT("Sequence of letters & spaces"),
     CHARACTER("Any letter"),
 
     //
     // Shapes from shape sets --------------------------------------------------
     //
     REPEAT_DOT("Repeat dot", DOT_set, new Color(0x0000ff)),
-    AUGMENTATION_DOT("Augmentation Dot", DOT_set, new Color(0x008844)),  // change to dark green
+    AUGMENTATION_DOT("Augmentation Dot", DOT_set),  // change to dark green
     FERMATA_DOT("Fermata Dot", DOT_set),
     STACCATO("Staccato dot", DOT_set),
     //
@@ -376,7 +377,7 @@ public enum Shape
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
     SEGMENT("Wedge or ending segment"),
-    LYRICS("Lyrics", new Color(0x668F00)),
+    LYRICS("Lyrics", Colors.SCORE_LYRICS),
 
     //
     // Stems

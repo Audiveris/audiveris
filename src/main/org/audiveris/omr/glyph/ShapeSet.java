@@ -23,6 +23,7 @@ package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.ui.Colors;
 import static org.audiveris.omr.glyph.Shape.*;
 
 import org.slf4j.Logger;
@@ -287,22 +288,22 @@ public class ShapeSet
     //----------------------------------------------------------------------------------------------
     public static final ShapeSet Accidentals = new ShapeSet(
             SHARP,
-            new Color(0x9933ff),
+            Colors.SCORE_NOTE_MODIFIERS,
             shapesOf(FLAT, NATURAL, SHARP, DOUBLE_SHARP, DOUBLE_FLAT));
 
     public static final ShapeSet Articulations = new ShapeSet(
             ACCENT,
-            new Color(0x0066ff),
+            Colors.SCORE_NOTE_MODIFIERS,
             shapesOf(ACCENT, TENUTO, STACCATO, STACCATISSIMO, STRONG_ACCENT));
 
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
-            new Color(0x000000),
+            Colors.SCORE_NOTE_MODIFIERS,
             shapesOf(OTTAVA_ALTA, OTTAVA_BASSA, PEDAL_MARK, PEDAL_UP_MARK, ARPEGGIATO));
 
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,
-            new Color(0x0000ff),
+            Colors.SCORE_FRAME,  //new Color(0x0000ff),
             shapesOf(
                     THICK_BARLINE,
                     THIN_BARLINE,
@@ -318,17 +319,17 @@ public class ShapeSet
 
     public static final ShapeSet BeamsAndTuplets = new ShapeSet(
             BEAM,
-            new Color(0x008844),
+            Colors.SCORE_NOTES,
             shapesOf(BEAM /* ,BEAM_SMALL */, BEAM_HOOK, TUPLET_THREE, TUPLET_SIX));
 
     public static final ShapeSet Clefs = new ShapeSet(
             G_CLEF,
-            new Color(0x9933ff),
+            Colors.SCORE_FRAME,
             shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
 
     public static final ShapeSet Dynamics = new ShapeSet(
             DYNAMICS_F,
-            new Color(0x9933ff),
+            Colors.SCORE_NOTE_MODIFIERS,
             shapesOf(
                     DYNAMICS_P,
                     DYNAMICS_PP,
@@ -344,32 +345,32 @@ public class ShapeSet
 
     public static final ShapeSet Flags = new ShapeSet(
             FLAG_1,
-            new Color(0x008844),
+            Colors.SCORE_NOTES,
             shapesOf(new ArrayList<Shape>(FlagsDown), SmallFlags, FlagsUp));
 
     public static final ShapeSet Holds = new ShapeSet(
             FERMATA,
-            new Color(0x3d9868),
+            Colors.SCORE_NOTE_MODIFIERS,
             shapesOf(BREATH_MARK, CAESURA, FERMATA, FERMATA_BELOW));
 
     public static final ShapeSet Keys = new ShapeSet(
-            KEY_SHARP_3, // is this correct, not "KEY_FLAT_7" ?
-            new Color(0x00ffff),
+            KEY_SHARP_3,								
+            Colors.SCORE_NOTE_MODIFIERS,
             shapesOf(new ArrayList<Shape>(FlatKeys), SharpKeys));
 
     public static final ShapeSet HeadsAndDot = new ShapeSet(
             NOTEHEAD_BLACK,
-            new Color(0x008844),
+            Colors.SCORE_NOTES,
             shapesOf(Heads, shapesOf(AUGMENTATION_DOT)));
 
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
-            new Color(0xff8844),
+            Colors.SCORE_FRAME,
             shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA));
 
     public static final ShapeSet Ornaments = new ShapeSet(
             MORDENT,
-            new Color(0xcc3300),
+            Colors.SCORE_NOTE_MODIFIERS,
             shapesOf(
                     GRACE_NOTE_SLASH,
                     GRACE_NOTE,
@@ -383,7 +384,7 @@ public class ShapeSet
 
     public static final ShapeSet Rests = new ShapeSet(
             QUARTER_REST,
-            new Color(0x008844),
+            Colors.SCORE_NOTES,
             shapesOf(
                     LONG_REST,
                     BREVE_REST,
@@ -398,12 +399,12 @@ public class ShapeSet
 
     public static final ShapeSet Times = new ShapeSet(
             TIME_FOUR_FOUR,
-            new Color(0xcc3300),
+            Colors.SCORE_FRAME,
             shapesOf(PartialTimes, WholeTimes)); //, shapesOf(TIME_ZERO, TIME_ONE, CUSTOM_TIME)));
 
     public static final ShapeSet Digits = new ShapeSet(
             DIGIT_1,
-            new Color(0xcc3388),
+            Colors.SCORE_NOTE_MODIFIERS,
             shapesOf(
                     DIGIT_0,
                     DIGIT_1,
@@ -419,12 +420,12 @@ public class ShapeSet
 
     public static final ShapeSet Pluckings = new ShapeSet(
             PLUCK_P,
-            new Color(0xcc3388),
+            Colors.SCORE_NOTE_MODIFIERS,
             shapesOf(PLUCK_P, PLUCK_I, PLUCK_M, PLUCK_A));
 
     public static final ShapeSet Romans = new ShapeSet(
             ROMAN_V,
-            new Color(0xcc3388),
+            Colors.SCORE_NOTE_MODIFIERS,
             shapesOf(
                     ROMAN_I,
                     ROMAN_II,
@@ -441,7 +442,7 @@ public class ShapeSet
 
     public static final ShapeSet Physicals = new ShapeSet(
             LEDGER,
-            new Color(0x7700FF),
+            Colors.SCORE_PHYSICALS,
             shapesOf(LYRICS, TEXT, CHARACTER, CLUTTER, SLUR, LEDGER, STEM, ENDING));
 
     // =========================================================================

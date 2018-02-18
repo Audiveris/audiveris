@@ -185,9 +185,29 @@ public class Colors
 
     /** System kind of bracket */
     public static final Color SYSTEM_BRACKET = new Color(255, 255, 0, alpha);
-
+    
     /** Warping points */
     public static final Color WARP_POINT = Color.RED;
+
+    // Colors for physical score view
+    /** frame: brackets, stems, clefs, daCapo-etc */
+    public static final Color SCORE_FRAME = Color.BLUE;
+    
+    /** frame: heads, beams, flags, rests and aug.dots */
+    public static final Color SCORE_NOTES = new Color(0x008844);
+    
+    /** frame: accidentals, articulations and pedals */
+    public static final Color SCORE_NOTE_MODIFIERS = new Color(0x992299);
+    
+    /** frame: stems, ledgers, normal text */
+    public static final Color SCORE_PHYSICALS = new Color(0x806040);
+    
+    /** frame: brackets and stems */
+    public static final Color SCORE_LYRICS = Color.BLUE;
+    
+   
+    
+    
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
