@@ -759,10 +759,12 @@ public class BookActions
                         allSuffixes.split("\\s")));
 
         if (path != null) {
-            if (Files.exists(path)) {
-                return new LoadImageTask(path);
+            if (!Files.exists(path)) {
+                logger.warn("{} not found.", path);
+            } else if (Files.isDirectory(path)) {
+                logger.warn("{} is a directory.", path);
             } else {
-                logger.warn("File not found {}", path);
+                return new LoadImageTask(path);
             }
         }
 
@@ -1616,27 +1618,23 @@ public class BookActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
-            if (Files.exists(path)) {
-                try {
-                    // Actually open the image file
-                    Book book = OMR.engine.loadInput(path);
-                    LogUtil.start(book);
-                    book.createStubs(null);
-                    book.createStubsTabs(null); // Tabs are now accessible
+            try {
+                // Actually open the image file
+                Book book = OMR.engine.loadInput(path);
+                LogUtil.start(book);
+                book.createStubs(null);
+                book.createStubsTabs(null); // Tabs are now accessible
 
-                    // Focus on first valid stub in book, if any
-                    SheetStub firstValid = book.getFirstValidStub();
+                // Focus on first valid stub in book, if any
+                SheetStub firstValid = book.getFirstValidStub();
 
-                    if (firstValid != null) {
-                        StubsController.invokeSelect(firstValid);
-                    }
-                } catch (Exception ex) {
-                    logger.warn("Error opening path " + path + " " + ex, ex);
-                } finally {
-                    LogUtil.stopBook();
+                if (firstValid != null) {
+                    StubsController.invokeSelect(firstValid);
                 }
-            } else {
-                logger.warn("Path {} does not exist", path);
+            } catch (Exception ex) {
+                logger.warn("Error opening path " + path + " " + ex, ex);
+            } finally {
+                LogUtil.stopBook();
             }
 
             return null;
