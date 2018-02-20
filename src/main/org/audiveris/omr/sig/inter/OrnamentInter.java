@@ -23,13 +23,21 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -81,6 +89,88 @@ public class OrnamentInter
         visitor.visit(this);
     }
 
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add a valid OrnamentInter.
+     * <p>
+     * TODO: this is to be refined for GRACE ornaments which are located on left side of chord.
+     *
+     * @param glyph            underlying glyph
+     * @param shape            detected shape
+     * @param grade            assigned grade
+     * @param system           containing system
+     * @param systemHeadChords system head chords, ordered by abscissa
+     * @return the created articulation or null
+     */
+    public static OrnamentInter createValidAdded (Glyph glyph,
+                                                  Shape shape,
+                                                  double grade,
+                                                  SystemInfo system,
+                                                  List<Inter> systemHeadChords)
+    {
+        Scale scale = system.getSheet().getScale();
+        SIGraph sig = system.getSig();
+        final int maxDx = scale.toPixels(ChordOrnamentRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(ChordOrnamentRelation.getYGapMaximum());
+        final Rectangle glyphBox = glyph.getBounds();
+        final Point glyphCenter = glyph.getCenter();
+        final Rectangle luBox = new Rectangle(glyphCenter);
+        luBox.grow(maxDx, maxDy);
+
+        final List<Inter> chords = SIGraph.intersectedInters(
+                systemHeadChords,
+                GeoOrder.BY_ABSCISSA,
+                luBox);
+
+        if (chords.isEmpty()) {
+            return null;
+        }
+
+        ChordOrnamentRelation bestRel = null;
+        Inter bestChord = null;
+        double bestYGap = Double.MAX_VALUE;
+
+        for (Inter chord : chords) {
+            Rectangle chordBox = chord.getBounds();
+
+            // The ornament cannot intersect the chord
+            if (chordBox.intersects(glyphBox)) {
+                continue;
+            }
+
+            Point center = chord.getCenter();
+
+            // Select proper chord reference point (top or bottom)
+            int yRef = (glyphCenter.y > center.y) ? (chordBox.y
+                                                     + chordBox.height) : chordBox.y;
+            double xGap = Math.abs(center.x - glyphCenter.x);
+            double yGap = Math.abs(yRef - glyphCenter.y);
+            ChordOrnamentRelation rel = new ChordOrnamentRelation();
+            rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+
+            if (rel.getGrade() >= rel.getMinGrade()) {
+                if ((bestRel == null) || (bestYGap > yGap)) {
+                    bestRel = rel;
+                    bestChord = chord;
+                    bestYGap = yGap;
+                }
+            }
+        }
+
+        if (bestRel != null) {
+            OrnamentInter ornament = new OrnamentInter(glyph, shape, grade);
+            sig.addVertex(ornament);
+            sig.addEdge(bestChord, ornament, bestRel);
+            logger.debug("Created {}", ornament);
+
+            return ornament;
+        }
+
+        return null;
+    }
+
     //----------//
     // getStaff //
     //----------//
@@ -111,87 +201,6 @@ public class OrnamentInter
         return null;
     }
 
-    //
-    //    //--------//
-    //    // create //
-    //    //--------//
-    //    /**
-    //     * (Try to) create an OrnamentInter.
-    //     *
-    //     * @param glyph            underlying glyph
-    //     * @param shape            detected shape
-    //     * @param grade            assigned grade
-    //     * @param system           containing system
-    //     * @param systemHeadChords system head chords, ordered by abscissa
-    //     * @return the created articulation or null
-    //     */
-    //    public static OrnamentInter create (Glyph glyph,
-    //                                        Shape shape,
-    //                                        double grade,
-    //                                        SystemInfo system,
-    //                                        List<Inter> systemHeadChords)
-    //    {
-    //        Scale scale = system.getSheet().getScale();
-    //        SIGraph sig = system.getSig();
-    //        final int maxDx = scale.toPixels(ChordOrnamentRelation.getXOutGapMaximum());
-    //        final int maxDy = scale.toPixels(ChordOrnamentRelation.getYGapMaximum());
-    //        final Rectangle glyphBox = glyph.getBounds();
-    //        final Point glyphCenter = glyph.getCenter();
-    //        final Rectangle luBox = new Rectangle(glyphCenter);
-    //        luBox.grow(maxDx, maxDy);
-    //
-    //        final List<Inter> chords = SIGraph.intersectedInters(
-    //                systemHeadChords,
-    //                GeoOrder.BY_ABSCISSA,
-    //                luBox);
-    //
-    //        if (chords.isEmpty()) {
-    //            return null;
-    //        }
-    //
-    //        ChordOrnamentRelation bestRel = null;
-    //        Inter bestChord = null;
-    //        double bestYGap = Double.MAX_VALUE;
-    //
-    //        for (Inter chord : chords) {
-    //            Rectangle chordBox = chord.getBounds();
-    //
-    //            // The ornament cannot intersect the chord
-    //            if (chordBox.intersects(glyphBox)) {
-    //                continue;
-    //            }
-    //
-    //            Point center = chord.getCenter();
-    //
-    //            // Select proper chord reference point (top or bottom)
-    //            int yRef = (glyphCenter.y > center.y) ? (chordBox.y + chordBox.height)
-    //                    : chordBox.y;
-    //            double xGap = Math.abs(center.x - glyphCenter.x);
-    //            double yGap = Math.abs(yRef - glyphCenter.y);
-    //            ChordOrnamentRelation rel = new ChordOrnamentRelation();
-    //            rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-    //
-    //            if (rel.getGrade() >= rel.getMinGrade()) {
-    //                if ((bestRel == null) || (bestYGap > yGap)) {
-    //                    bestRel = rel;
-    //                    bestChord = chord;
-    //                    bestYGap = yGap;
-    //                }
-    //            }
-    //        }
-    //
-    //        if (bestRel != null) {
-    //            OrnamentInter ornament = new OrnamentInter(glyph, shape, grade);
-    //            sig.addVertex(ornament);
-    //            sig.addEdge(bestChord, ornament, bestRel);
-    //            logger.debug("Created {}", ornament);
-    //
-    //            return ornament;
-    //        }
-    //
-    //        return null;
-    //    }
-    //
     //-----------//
     // internals //
     //-----------//

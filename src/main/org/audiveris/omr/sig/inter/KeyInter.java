@@ -24,13 +24,9 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
-
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.Step.*;
-
 import org.audiveris.omr.sig.inter.ClefInter.ClefKind;
-
 import static org.audiveris.omr.sig.inter.ClefInter.ClefKind.*;
-
 import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
@@ -161,15 +157,18 @@ public class KeyInter
         EnsembleHelper.addMember(this, member);
     }
 
+    //-------------//
+    // createAdded //
+    //-------------//
     /**
-     * Creates a new KeyInter object.
+     * Create and add a new KeyInter object.
      *
      * @param staff  the containing staff
      * @param alters sequence of alteration inters
      * @return the created KeyInter
      */
-    public static KeyInter create (Staff staff,
-                                   List<KeyAlterInter> alters)
+    public static KeyInter createAdded (Staff staff,
+                                        List<KeyAlterInter> alters)
     {
         SIGraph sig = staff.getSystem().getSig();
         double grade = 0;

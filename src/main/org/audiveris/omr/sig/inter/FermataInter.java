@@ -110,9 +110,9 @@ public class FermataInter
         visitor.visit(this);
     }
 
-    //--------//
-    // create //
-    //--------//
+    //-------------//
+    // createAdded //
+    //-------------//
     /**
      * (Try to) create a fermata inter.
      *
@@ -121,9 +121,9 @@ public class FermataInter
      * @param system the related system
      * @return the created instance or null
      */
-    public static FermataInter create (FermataArcInter arc,
-                                       FermataDotInter dot,
-                                       SystemInfo system)
+    public static FermataInter createAdded (FermataArcInter arc,
+                                            FermataDotInter dot,
+                                            SystemInfo system)
     {
         // Look for proper staff
         final Point center = arc.getGlyph().getCenter();

@@ -95,9 +95,9 @@ public class RestInter
         visitor.visit(this);
     }
 
-    //--------//
-    // create //
-    //--------//
+    //-------------//
+    // createValid //
+    //-------------//
     /**
      * (Try to) create a Rest inter.
      * <p>
@@ -115,11 +115,11 @@ public class RestInter
      * @param systemHeadChords abscissa-ordered list of head-chords in this system
      * @return the created instance or null if failed
      */
-    public static RestInter create (Glyph glyph,
-                                    Shape shape,
-                                    double grade,
-                                    SystemInfo system,
-                                    List<Inter> systemHeadChords)
+    public static RestInter createValid (Glyph glyph,
+                                         Shape shape,
+                                         double grade,
+                                         SystemInfo system,
+                                         List<Inter> systemHeadChords)
     {
         // Determine pitch according to glyph centroid
         final Point centroid = glyph.getCentroid();

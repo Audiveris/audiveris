@@ -303,9 +303,9 @@ public class ChordNameInter
         return sentence;
     }
 
-    //--------//
-    // create //
-    //--------//
+    //-------------//
+    // createValid //
+    //-------------//
     /**
      * Convenient method to try to build a ChordNameInter instance from a
      * provided piece of text.
@@ -313,7 +313,7 @@ public class ChordNameInter
      * @param textWord text the precise text of the chord symbol
      * @return a populated ChordNameInter instance if successful, null otherwise
      */
-    public static ChordNameInter create (TextWord textWord)
+    public static ChordNameInter createValid (TextWord textWord)
     {
         for (Pattern pattern : getPatterns()) {
             Matcher matcher = pattern.matcher(textWord.getValue());

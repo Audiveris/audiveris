@@ -31,7 +31,6 @@ import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Link;
@@ -89,11 +88,11 @@ public abstract class AbstractFlagInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // create //
-    //--------//
+    //------------------//
+    // createValidAdded //
+    //------------------//
     /**
-     * (Try to) create a Flag inter (either standard FlagInter or SmallFlagInter).
+     * (Try to) create and add a Flag inter (either standard FlagInter or SmallFlagInter).
      * <p>
      * At this time note heads have already been validated (with their attached stem).
      * So, a flag is created only if it can be related to stems with consistent size head(s),
@@ -106,14 +105,13 @@ public abstract class AbstractFlagInter
      * @param systemStems ordered collection of stems in system
      * @return the created instance or null
      */
-    public static AbstractFlagInter create (Glyph glyph,
-                                            Shape shape,
-                                            double grade,
-                                            SystemInfo system,
-                                            List<Inter> systemStems)
+    public static AbstractFlagInter createValidAdded (Glyph glyph,
+                                                      Shape shape,
+                                                      double grade,
+                                                      SystemInfo system,
+                                                      List<Inter> systemStems)
     {
-        AbstractFlagInter flag = (AbstractFlagInter) SymbolFactory.createGhost(shape, grade);
-        flag.setGlyph(glyph);
+        AbstractFlagInter flag = new FlagInter(glyph, shape, grade);
 
         Link link = flag.lookupLink(systemStems);
 

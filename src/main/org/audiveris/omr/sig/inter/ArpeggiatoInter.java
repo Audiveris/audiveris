@@ -29,7 +29,6 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.Link;
@@ -114,11 +113,11 @@ public class ArpeggiatoInter
         return isAbnormal();
     }
 
-    //--------//
-    // create //
-    //--------//
+    //------------------//
+    // createValidAdded //
+    //------------------//
     /**
-     * (Try to) create an arpeggiato inter.
+     * (Try to) create and add an arpeggiato inter.
      *
      * @param glyph            the arpeggiato glyph
      * @param grade            the interpretation quality
@@ -126,15 +125,12 @@ public class ArpeggiatoInter
      * @param systemHeadChords abscissa-ordered list of head-chords in this system
      * @return the created arpeggiato or null
      */
-    public static ArpeggiatoInter create (Glyph glyph,
-                                          double grade,
-                                          SystemInfo system,
-                                          List<Inter> systemHeadChords)
+    public static ArpeggiatoInter createValidAdded (Glyph glyph,
+                                                    double grade,
+                                                    SystemInfo system,
+                                                    List<Inter> systemHeadChords)
     {
-        ArpeggiatoInter arpeggiato = (ArpeggiatoInter) SymbolFactory.createGhost(
-                Shape.ARPEGGIATO,
-                grade);
-        arpeggiato.setGlyph(glyph);
+        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
 
         Link link = arpeggiato.lookupLink(systemHeadChords, system);
 

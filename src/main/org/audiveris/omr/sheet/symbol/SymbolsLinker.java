@@ -328,7 +328,7 @@ public class SymbolsLinker
                     continue;
                 }
 
-                FermataInter fermata = FermataInter.create(arc, dot, system);
+                FermataInter fermata = FermataInter.createAdded(arc, dot, system);
                 sig.addVertex(fermata);
 
                 if (fermata.isVip()) {

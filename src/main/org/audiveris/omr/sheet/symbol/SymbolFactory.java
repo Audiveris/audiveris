@@ -26,7 +26,6 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
-import org.audiveris.omr.glyph.ShapeSet;
 import static org.audiveris.omr.glyph.ShapeSet.*;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -158,17 +157,15 @@ public class SymbolFactory
         systemHeadChords = sig.inters(AbstractChordInter.class);
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
-        dotFactory = new DotFactory(this);
+        dotFactory = new DotFactory(this, system);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // process //
-    //---------//
+    //--------//
+    // create //
+    //--------//
     /**
-     * Create the proper inter instance(s) for the provided evaluated glyph.
-     * <p>
-     * TODO: method to be completed so that all possible inter classes are really handled!!!!
+     * Create and add to SIG the proper inter instance(s) for provided evaluated glyph.
      *
      * @param eval         evaluation result
      * @param glyph        evaluated glyph
@@ -178,351 +175,32 @@ public class SymbolFactory
                         Glyph glyph,
                         Staff closestStaff)
     {
-        final Shape shape = eval.shape;
-        final double grade = Grades.intrinsicRatio * eval.grade;
+        final Inter inter = doCreate(eval, glyph, closestStaff);
 
-        if (glyph.isVip()) {
-            logger.info("VIP glyph#{} symbol created as {}", glyph.getId(), eval.shape);
-        }
-
-        if (shape == Shape.CLUTTER) {
-            return;
-        }
-
-        if (Clefs.contains(shape)) {
-            addSymbol(ClefInter.create(glyph, shape, grade, closestStaff)); // Staff is OK
-        } else if (Rests.contains(shape)) {
-            addSymbol(RestInter.create(glyph, shape, grade, system, systemHeadChords));
-        } else if (Accidentals.contains(shape)) {
-            AlterInter alterInter = AlterInter.create(glyph, shape, grade, closestStaff); // Staff is very questionable!
-            addSymbol(alterInter);
-            alterInter.detectHeadRelation(systemHeads);
-        } else if (Flags.contains(shape)) {
-            AbstractFlagInter.create(glyph, shape, grade, system, systemStems); // Glyph is checked
-        } else if (PartialTimes.contains(shape)) {
-            addSymbol(TimeNumberInter.create(glyph, shape, grade, closestStaff)); // Staff is OK
-        } else if (WholeTimes.contains(shape)) {
-            TimeWholeInter time = new TimeWholeInter(glyph, shape, grade);
-            time.setStaff(closestStaff); // Staff is OK
-            addSymbol(time);
-        } else if (Dynamics.contains(shape)) {
-            addSymbol(new DynamicsInter(glyph, shape, grade));
-        } else if (Tuplets.contains(shape)) {
-            addSymbol(TupletInter.create(glyph, shape, grade, system, systemHeadChords));
-        } else if (FermataArcs.contains(shape)) {
-            addSymbol(FermataArcInter.create(glyph, shape, grade, system));
-        } else if (shape == Shape.DOT_set) {
-            dotFactory.instantDotChecks(eval, glyph);
-        } else if (Articulations.contains(shape)) {
-            addSymbol(ArticulationInter.create(glyph, shape, grade, system, systemHeadChords));
-        } else if (Pedals.contains(shape)) {
-            addSymbol(new PedalInter(glyph, shape, grade));
-        } else if (Markers.contains(shape)) {
-            MarkerInter marker = new MarkerInter(glyph, shape, grade);
-            marker.setStaff(closestStaff); // Staff is OK
-            addSymbol(marker);
-            marker.linkWithBarline();
-        } else if (shape == Shape.CAESURA) {
-            addSymbol(CaesuraInter.create(glyph, grade, system));
-        } else if (shape == Shape.BREATH_MARK) {
-            addSymbol(BreathMarkInter.create(glyph, grade, system));
-        } else if (shape == Shape.ARPEGGIATO) {
-            addSymbol(ArpeggiatoInter.create(glyph, grade, system, systemHeadChords));
-        } else if (ShapeSet.supportFingerings() && Digits.contains(shape)) {
-            addSymbol(new FingeringInter(glyph, shape, grade));
-        } else if (ShapeSet.supportFrets() && Romans.contains(shape)) {
-            addSymbol(new FretInter(glyph, shape, grade));
-        } else if (ShapeSet.supportPluckings() && Pluckings.contains(shape)) {
-            addSymbol(new PluckingInter(glyph, shape, grade));
-        } else {
-            logger.debug("SymbolFactory no support yet for {} {}", shape, glyph);
+        // Add to SIG if not already done
+        if ((inter != null) && (inter.getSig() == null)) {
+            sig.addVertex(inter);
         }
     }
 
+    //--------------//
+    // createManual //
+    //--------------//
     /**
-     * Create a not-yet-settled inter instance to handle the provided shape.
+     * Create a manual inter instance to handle the provided shape.
      *
      * @param shape provided shape
-     * @param grade quality grade
-     * @return the created ghost inter or null
+     * @return the created manual inter or null
      */
-    public static Inter createGhost (Shape shape,
-                                     double grade)
+    public static Inter createManual (Shape shape)
     {
-        switch (shape) {
-        //
-        // Key signatures
-        case KEY_FLAT_1:
-        case KEY_FLAT_2:
-        case KEY_FLAT_3:
-        case KEY_FLAT_4:
-        case KEY_FLAT_5:
-        case KEY_FLAT_6:
-        case KEY_FLAT_7:
-        case KEY_SHARP_1:
-        case KEY_SHARP_2:
-        case KEY_SHARP_3:
-        case KEY_SHARP_4:
-        case KEY_SHARP_5:
-        case KEY_SHARP_6:
-        case KEY_SHARP_7:
-            return new KeyInter(grade, shape);
+        Inter ghost = doCreateManual(shape);
 
-        // Brace, bracket ???
-        //
-        // Barlines ???
-        //
-        // Beams
-        case BEAM:
-            return new BeamInter(grade);
-
-        case BEAM_HOOK:
-            return new BeamHookInter(grade);
-
-        //
-        // Repeats
-        case REPEAT_DOT:
-            return new RepeatDotInter(null, grade, null, null); // No visit
-
-        // Markers
-        case CODA:
-        case SEGNO:
-        case DAL_SEGNO:
-        case DA_CAPO:
-            return new MarkerInter(null, shape, grade); // No visit
-
-        // Clefs
-        case G_CLEF:
-        case G_CLEF_SMALL:
-        case G_CLEF_8VA:
-        case G_CLEF_8VB:
-        case F_CLEF:
-        case F_CLEF_SMALL:
-        case F_CLEF_8VA:
-        case F_CLEF_8VB:
-        case C_CLEF:
-        case PERCUSSION_CLEF:
-            return new ClefInter(shape, grade);
-
-        // Time sig
-        case TIME_ZERO:
-        case TIME_ONE:
-        case TIME_TWO:
-        case TIME_THREE:
-        case TIME_FOUR:
-        case TIME_FIVE:
-        case TIME_SIX:
-        case TIME_SEVEN:
-        case TIME_EIGHT:
-        case TIME_NINE:
-        case TIME_TWELVE:
-        case TIME_SIXTEEN:
-            return new TimeNumberInter(null, shape, grade, null); // No visit
-
-        case COMMON_TIME:
-        case CUT_TIME:
-        case TIME_FOUR_FOUR:
-        case TIME_TWO_TWO:
-        case TIME_TWO_FOUR:
-        case TIME_THREE_FOUR:
-        case TIME_FIVE_FOUR:
-        case TIME_THREE_EIGHT:
-        case TIME_SIX_EIGHT:
-            return new TimeWholeInter(null, shape, grade);
-
-        // Noteheads
-        case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_SMALL:
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_SMALL:
-        case BREVE:
-        case WHOLE_NOTE:
-        case WHOLE_NOTE_SMALL:
-            return new HeadInter(null, null, null, shape, grade, null, null);
-
-        case AUGMENTATION_DOT:
-            return new AugmentationDotInter(null, grade); // No visit
-
-        // Ledger
-        case LEDGER:
-            return new LedgerInter(null, grade);
-
-        // Stem
-        case STEM:
-            return new StemInter(null, grade);
-
-        // Flags
-        case FLAG_1:
-        case FLAG_2:
-        case FLAG_3:
-        case FLAG_4:
-        case FLAG_5:
-        case FLAG_1_UP:
-        case FLAG_2_UP:
-        case FLAG_3_UP:
-        case FLAG_4_UP:
-        case FLAG_5_UP:
-            return new FlagInter(null, shape, grade);
-
-        case SMALL_FLAG:
-        case SMALL_FLAG_SLASH:
-            return new SmallFlagInter(null, shape, grade);
-
-        // Accidentals
-        case FLAT:
-        case NATURAL:
-        case SHARP:
-        case DOUBLE_SHARP:
-        case DOUBLE_FLAT:
-            return new AlterInter(null, shape, grade, null, null, null); // No visit
-
-        // Articulations
-        case ACCENT:
-        case TENUTO:
-        case STACCATO:
-        case STACCATISSIMO:
-        case STRONG_ACCENT:
-            return new ArticulationInter(null, shape, grade); // No visit
-
-        // Holds
-        case FERMATA:
-        case FERMATA_BELOW:
-            return new FermataInter(shape, grade); // No visit
-
-        case FERMATA_DOT:
-            return new FermataDotInter(null, grade); // No visit
-
-        case CAESURA:
-            return new CaesuraInter(null, grade); // No visit
-
-        case BREATH_MARK:
-            return new BreathMarkInter(null, grade); // No visit
-
-        // Rests
-        case LONG_REST:
-        case BREVE_REST:
-        case WHOLE_REST:
-        case HALF_REST:
-        case QUARTER_REST:
-        case EIGHTH_REST:
-        case ONE_16TH_REST:
-        case ONE_32ND_REST:
-        case ONE_64TH_REST:
-        case ONE_128TH_REST:
-            return new RestInter(null, shape, grade, null, null); // No visit
-
-        // Ottava ???
-        //
-        // Dynamics
-        case DYNAMICS_P:
-        case DYNAMICS_PP:
-        case DYNAMICS_MP:
-        case DYNAMICS_F:
-        case DYNAMICS_FF:
-        case DYNAMICS_MF:
-        case DYNAMICS_FP:
-        case DYNAMICS_SF:
-        case DYNAMICS_SFZ:
-        case CRESCENDO:
-        case DIMINUENDO:
-            return new DynamicsInter(null, shape, grade); // No visit
-
-        // Ornaments
-        case GRACE_NOTE_SLASH:
-        case GRACE_NOTE:
-        case TR:
-        case TURN:
-        case TURN_INVERTED:
-        case TURN_UP:
-        case TURN_SLASH:
-        case MORDENT:
-        case MORDENT_INVERTED:
-            return new OrnamentInter(null, shape, grade); // No visit
-
-        // Plucked techniques
-        case ARPEGGIATO:
-            return new ArpeggiatoInter(null, grade);
-
-        // Keyboards
-        case PEDAL_MARK:
-        case PEDAL_UP_MARK:
-            return new PedalInter(null, shape, grade); // No visit
-
-        // Tuplets
-        case TUPLET_THREE:
-        case TUPLET_SIX:
-            return new TupletInter(null, shape, grade); // No visit
-
-        // Fingering
-        case DIGIT_0:
-        case DIGIT_1:
-        case DIGIT_2:
-        case DIGIT_3:
-        case DIGIT_4:
-
-            if (ShapeSet.supportFingerings()) {
-                return new FingeringInter(null, shape, grade); // No visit
-            } else {
-                return null;
-            }
-
-        case PLUCK_P:
-        case PLUCK_I:
-        case PLUCK_M:
-        case PLUCK_A:
-
-            if (ShapeSet.supportPluckings()) {
-                return new PluckingInter(null, shape, grade); // No visit
-            } else {
-                return null;
-            }
-
-        // Romans
-        case ROMAN_I:
-        case ROMAN_II:
-        case ROMAN_III:
-        case ROMAN_IV:
-        case ROMAN_V:
-        case ROMAN_VI:
-        case ROMAN_VII:
-        case ROMAN_VIII:
-        case ROMAN_IX:
-        case ROMAN_X:
-        case ROMAN_XI:
-        case ROMAN_XII:
-
-            if (ShapeSet.supportFrets()) {
-                return new FretInter(null, shape, grade); // No visit
-            } else {
-                return null;
-            }
-
-        // Curves
-        case SLUR:
-            return new SlurInter(grade);
-
-        // Text
-        case LYRICS:
-            return new SentenceInter(grade);
-
-        case TEXT:
-            return new WordInter(grade);
-
-        // Others
-        default:
-
-            String msg = "No ghost instance for " + shape;
-            logger.error(msg);
-            throw new IllegalArgumentException(msg);
+        if (ghost != null) {
+            ghost.setManual(true);
         }
-    }
 
-    //-----------//
-    // getSystem //
-    //-----------//
-    public SystemInfo getSystem ()
-    {
-        return system;
+        return ghost;
     }
 
     //---------------//
@@ -594,22 +272,543 @@ public class SymbolFactory
         return systemNotes;
     }
 
-    //-----------//
-    // addSymbol //
-    //-----------//
+    //----------//
+    // doCreate //
+    //----------//
     /**
-     * Add the provided inter to the SIG, and make sure its glyph if any is registered.
+     * Create proper inter instance(s) for provided evaluated glyph.
+     * <p>
+     * This method addresses only the symbols handled via a classifier.
+     * In current OMR design, this does not address: <ul>
+     * <li>Brace
+     * <li>Bracket
+     * <li>Barline
+     * <li>Beam, Beam_hook
+     * <li>Head
+     * <li>Fermata, Fermata_below (not yet directly handled by OMR engine)
+     * <li>Ledger
+     * <li>Stem
+     * <li>Curve
+     * <li>Text, Lyrics
+     * </ul>
      *
-     * @param inter the created inter to add to SIG (perhaps null)
+     * @param eval         evaluation result
+     * @param glyph        evaluated glyph
+     * @param closestStaff only the closest staff, ordinate-wise
      */
-    private void addSymbol (Inter inter)
+    private Inter doCreate (Evaluation eval,
+                            Glyph glyph,
+                            Staff closestStaff)
     {
-        if (inter == null) {
-            return;
+        final Shape shape = eval.shape;
+        final double grade = Grades.intrinsicRatio * eval.grade;
+
+        if (glyph.isVip()) {
+            logger.info("VIP glyph#{} symbol created as {}", glyph.getId(), eval.shape);
         }
 
-        if (inter.getSig() == null) {
-            sig.addVertex(inter);
+        switch (shape) {
+        case CLUTTER:
+            return null;
+
+        // Ottava (TODO: not yet handled ???)
+        //
+        case OTTAVA_ALTA:
+        case OTTAVA_BASSA:
+            return null;
+
+        // All dots:
+        // - REPEAT_DOT
+        // - FERMATA_DOT
+        // - STACCATO_DOT
+        // - AUGMENTATION_DOT
+        case DOT_set:
+            dotFactory.instantDotChecks(eval, glyph);
+
+            return null;
+
+        // Clefs
+        case G_CLEF:
+        case G_CLEF_SMALL:
+        case G_CLEF_8VA:
+        case G_CLEF_8VB:
+        case F_CLEF:
+        case F_CLEF_SMALL:
+        case F_CLEF_8VA:
+        case F_CLEF_8VB:
+        case C_CLEF:
+        case PERCUSSION_CLEF:
+            return ClefInter.create(glyph, shape, grade, closestStaff); // Staff is OK
+
+        // Key signatures
+        case KEY_FLAT_1:
+        case KEY_FLAT_2:
+        case KEY_FLAT_3:
+        case KEY_FLAT_4:
+        case KEY_FLAT_5:
+        case KEY_FLAT_6:
+        case KEY_FLAT_7:
+        case KEY_SHARP_1:
+        case KEY_SHARP_2:
+        case KEY_SHARP_3:
+        case KEY_SHARP_4:
+        case KEY_SHARP_5:
+        case KEY_SHARP_6:
+        case KEY_SHARP_7:
+            return new KeyInter(grade, shape);
+
+        // Time sig
+        case TIME_ZERO:
+        case TIME_ONE:
+        case TIME_TWO:
+        case TIME_THREE:
+        case TIME_FOUR:
+        case TIME_FIVE:
+        case TIME_SIX:
+        case TIME_SEVEN:
+        case TIME_EIGHT:
+        case TIME_NINE:
+        case TIME_TWELVE:
+        case TIME_SIXTEEN:
+            return TimeNumberInter.create(glyph, shape, grade, closestStaff); // Staff is OK
+
+        case COMMON_TIME:
+        case CUT_TIME:
+        case TIME_FOUR_FOUR:
+        case TIME_TWO_TWO:
+        case TIME_TWO_FOUR:
+        case TIME_THREE_FOUR:
+        case TIME_FIVE_FOUR:
+        case TIME_THREE_EIGHT:
+        case TIME_SIX_EIGHT:
+            return TimeWholeInter.create(glyph, shape, grade, closestStaff); // Staff is OK
+
+        // Flags
+        case FLAG_1:
+        case FLAG_2:
+        case FLAG_3:
+        case FLAG_4:
+        case FLAG_5:
+        case FLAG_1_UP:
+        case FLAG_2_UP:
+        case FLAG_3_UP:
+        case FLAG_4_UP:
+        case FLAG_5_UP:
+            return AbstractFlagInter.createValidAdded(glyph, shape, grade, system, systemStems); // Glyph is checked
+
+        case SMALL_FLAG:
+        case SMALL_FLAG_SLASH:
+            return new SmallFlagInter(null, shape, grade);
+
+        // Rests
+        case LONG_REST:
+        case BREVE_REST:
+        case WHOLE_REST:
+        case HALF_REST:
+        case QUARTER_REST:
+        case EIGHTH_REST:
+        case ONE_16TH_REST:
+        case ONE_32ND_REST:
+        case ONE_64TH_REST:
+        case ONE_128TH_REST:
+            return RestInter.createValid(glyph, shape, grade, system, systemHeadChords);
+
+        // Tuplets
+        case TUPLET_THREE:
+        case TUPLET_SIX:
+            return TupletInter.createValid(glyph, shape, grade, system, systemHeadChords);
+
+        // Accidentals
+        case FLAT:
+        case NATURAL:
+        case SHARP:
+        case DOUBLE_SHARP:
+        case DOUBLE_FLAT: {
+            AlterInter alter = AlterInter.create(glyph, shape, grade, closestStaff); // Staff is very questionable!
+
+            sig.addVertex(alter);
+            alter.setLinks(systemHeads);
+
+            return alter;
+        }
+
+        // Articulations
+        case ACCENT:
+        case TENUTO:
+        case STACCATO:
+        case STACCATISSIMO:
+        case STRONG_ACCENT:
+            return ArticulationInter.createValidAdded(
+                    glyph,
+                    shape,
+                    grade,
+                    system,
+                    systemHeadChords);
+
+        // Markers
+        case CODA:
+        case SEGNO:
+        case DAL_SEGNO:
+        case DA_CAPO: {
+            MarkerInter marker = MarkerInter.create(glyph, shape, grade, closestStaff); // OK
+
+            sig.addVertex(marker);
+            marker.linkWithBarline();
+
+            return marker;
+        }
+
+        // Holds
+        case FERMATA_ARC:
+        case FERMATA_ARC_BELOW:
+            return FermataArcInter.create(glyph, shape, grade, system);
+
+        case CAESURA:
+            return CaesuraInter.create(glyph, grade, system);
+
+        case BREATH_MARK:
+            return BreathMarkInter.create(glyph, grade, system);
+
+        // Dynamics
+        case DYNAMICS_P:
+        case DYNAMICS_PP:
+        case DYNAMICS_MP:
+        case DYNAMICS_F:
+        case DYNAMICS_FF:
+        case DYNAMICS_MF:
+        case DYNAMICS_FP:
+        case DYNAMICS_SF:
+        case DYNAMICS_SFZ:
+        case CRESCENDO:
+        case DIMINUENDO:
+            return new DynamicsInter(glyph, shape, grade);
+
+        // Ornaments (TODO: Really handle GRACE_NOTE and GRACE_NOTE_SLASH)
+        case GRACE_NOTE_SLASH:
+        case GRACE_NOTE:
+        case TR:
+        case TURN:
+        case TURN_INVERTED:
+        case TURN_UP:
+        case TURN_SLASH:
+        case MORDENT:
+        case MORDENT_INVERTED:
+            return OrnamentInter.createValidAdded(glyph, shape, grade, system, systemHeadChords);
+
+        // Plucked techniques
+        case ARPEGGIATO:
+            return ArpeggiatoInter.createValidAdded(glyph, grade, system, systemHeadChords);
+
+        // Keyboards
+        case PEDAL_MARK:
+        case PEDAL_UP_MARK:
+            return new PedalInter(glyph, shape, grade);
+
+        // Fingering
+        case DIGIT_0:
+        case DIGIT_1:
+        case DIGIT_2:
+        case DIGIT_3:
+        case DIGIT_4:
+            return supportFingerings() ? new FingeringInter(glyph, shape, grade) : null;
+
+        // Plucking
+        case PLUCK_P:
+        case PLUCK_I:
+        case PLUCK_M:
+        case PLUCK_A:
+            return supportPluckings() ? new PluckingInter(glyph, shape, grade) : null;
+
+        // Romans
+        case ROMAN_I:
+        case ROMAN_II:
+        case ROMAN_III:
+        case ROMAN_IV:
+        case ROMAN_V:
+        case ROMAN_VI:
+        case ROMAN_VII:
+        case ROMAN_VIII:
+        case ROMAN_IX:
+        case ROMAN_X:
+        case ROMAN_XI:
+        case ROMAN_XII:
+            return supportFrets() ? new FretInter(glyph, shape, grade) : null;
+
+        // Others
+        default:
+            logger.info("No support yet for {}", shape);
+
+            return null;
+        }
+    }
+
+    //----------------//
+    // doCreateManual //
+    //----------------//
+    /**
+     * Create a not-yet-settled inter instance to handle the provided shape.
+     * <p>
+     * This method is meant to address all shapes for which a manual inter can be created.
+     *
+     * @param shape provided shape
+     * @return the created ghost inter or null
+     */
+    private static Inter doCreateManual (Shape shape)
+    {
+        final double GRADE = 1.0; // Grade value for any manual shape
+
+        switch (shape) {
+        //
+        // Ottava TODO ???
+        case OTTAVA_ALTA:
+        case OTTAVA_BASSA:
+            return null;
+
+        // Brace, bracket TODO ???
+        // Barlines TODO ???
+        //
+        // Beams
+        case BEAM:
+            return new BeamInter(GRADE);
+
+        case BEAM_HOOK:
+            return new BeamHookInter(GRADE);
+
+        // Ledger
+        case LEDGER:
+            return new LedgerInter(null, GRADE);
+
+        // Stem
+        case STEM:
+            return new StemInter(null, GRADE);
+
+        // Repeats
+        case REPEAT_DOT:
+            return new RepeatDotInter(null, GRADE, null, null); // No visit
+
+        // Curves
+        case SLUR:
+            return new SlurInter(GRADE);
+
+        // Text
+        case LYRICS:
+            return new SentenceInter(GRADE);
+
+        case TEXT:
+            return new WordInter(GRADE);
+
+        // Clefs
+        case G_CLEF:
+        case G_CLEF_SMALL:
+        case G_CLEF_8VA:
+        case G_CLEF_8VB:
+        case F_CLEF:
+        case F_CLEF_SMALL:
+        case F_CLEF_8VA:
+        case F_CLEF_8VB:
+        case C_CLEF:
+        case PERCUSSION_CLEF:
+            return new ClefInter(shape, GRADE);
+
+        // Key signatures
+        case KEY_FLAT_1:
+        case KEY_FLAT_2:
+        case KEY_FLAT_3:
+        case KEY_FLAT_4:
+        case KEY_FLAT_5:
+        case KEY_FLAT_6:
+        case KEY_FLAT_7:
+        case KEY_SHARP_1:
+        case KEY_SHARP_2:
+        case KEY_SHARP_3:
+        case KEY_SHARP_4:
+        case KEY_SHARP_5:
+        case KEY_SHARP_6:
+        case KEY_SHARP_7:
+            return new KeyInter(GRADE, shape);
+
+        // Time sig
+        case TIME_ZERO:
+        case TIME_ONE:
+        case TIME_TWO:
+        case TIME_THREE:
+        case TIME_FOUR:
+        case TIME_FIVE:
+        case TIME_SIX:
+        case TIME_SEVEN:
+        case TIME_EIGHT:
+        case TIME_NINE:
+        case TIME_TWELVE:
+        case TIME_SIXTEEN:
+            return new TimeNumberInter(null, shape, GRADE, null); // No visit
+
+        case COMMON_TIME:
+        case CUT_TIME:
+        case TIME_FOUR_FOUR:
+        case TIME_TWO_TWO:
+        case TIME_TWO_FOUR:
+        case TIME_THREE_FOUR:
+        case TIME_FIVE_FOUR:
+        case TIME_THREE_EIGHT:
+        case TIME_SIX_EIGHT:
+            return new TimeWholeInter(null, shape, GRADE);
+
+        // Noteheads
+        case NOTEHEAD_BLACK:
+        case NOTEHEAD_BLACK_SMALL:
+        case NOTEHEAD_VOID:
+        case NOTEHEAD_VOID_SMALL:
+        case BREVE:
+        case WHOLE_NOTE:
+        case WHOLE_NOTE_SMALL:
+            return new HeadInter(null, null, null, shape, GRADE, null, null);
+
+        case AUGMENTATION_DOT:
+            return new AugmentationDotInter(null, GRADE); // No visit
+
+        // Flags
+        case FLAG_1:
+        case FLAG_2:
+        case FLAG_3:
+        case FLAG_4:
+        case FLAG_5:
+        case FLAG_1_UP:
+        case FLAG_2_UP:
+        case FLAG_3_UP:
+        case FLAG_4_UP:
+        case FLAG_5_UP:
+            return new FlagInter(null, shape, GRADE);
+
+        case SMALL_FLAG:
+        case SMALL_FLAG_SLASH:
+            return new SmallFlagInter(null, shape, GRADE);
+
+        // Rests
+        case LONG_REST:
+        case BREVE_REST:
+        case WHOLE_REST:
+        case HALF_REST:
+        case QUARTER_REST:
+        case EIGHTH_REST:
+        case ONE_16TH_REST:
+        case ONE_32ND_REST:
+        case ONE_64TH_REST:
+        case ONE_128TH_REST:
+            return new RestInter(null, shape, GRADE, null, null); // No visit
+
+        // Tuplets
+        case TUPLET_THREE:
+        case TUPLET_SIX:
+            return new TupletInter(null, shape, GRADE); // No visit
+
+        // Accidentals
+        case FLAT:
+        case NATURAL:
+        case SHARP:
+        case DOUBLE_SHARP:
+        case DOUBLE_FLAT:
+            return new AlterInter(null, shape, GRADE, null, null, null); // No visit
+
+        // Articulations
+        case ACCENT:
+        case TENUTO:
+        case STACCATO:
+        case STACCATISSIMO:
+        case STRONG_ACCENT:
+            return new ArticulationInter(null, shape, GRADE); // No visit
+
+        // Markers
+        case CODA:
+        case SEGNO:
+        case DAL_SEGNO:
+        case DA_CAPO:
+            return new MarkerInter(null, shape, GRADE); // No visit
+
+        // Holds
+        case FERMATA:
+        case FERMATA_BELOW:
+            return new FermataInter(shape, GRADE); // No visit
+
+        case FERMATA_DOT:
+            return new FermataDotInter(null, GRADE); // No visit
+
+        case CAESURA:
+            return new CaesuraInter(null, GRADE); // No visit
+
+        case BREATH_MARK:
+            return new BreathMarkInter(null, GRADE); // No visit
+
+        // Dynamics
+        case DYNAMICS_P:
+        case DYNAMICS_PP:
+        case DYNAMICS_MP:
+        case DYNAMICS_F:
+        case DYNAMICS_FF:
+        case DYNAMICS_MF:
+        case DYNAMICS_FP:
+        case DYNAMICS_SF:
+        case DYNAMICS_SFZ:
+        case CRESCENDO:
+        case DIMINUENDO:
+            return new DynamicsInter(null, shape, GRADE); // No visit
+
+        // Ornaments
+        case GRACE_NOTE_SLASH:
+        case GRACE_NOTE:
+        case TR:
+        case TURN:
+        case TURN_INVERTED:
+        case TURN_UP:
+        case TURN_SLASH:
+        case MORDENT:
+        case MORDENT_INVERTED:
+            return new OrnamentInter(null, shape, GRADE); // No visit
+
+        // Plucked techniques
+        case ARPEGGIATO:
+            return new ArpeggiatoInter(null, GRADE);
+
+        // Keyboards
+        case PEDAL_MARK:
+        case PEDAL_UP_MARK:
+            return new PedalInter(null, shape, GRADE); // No visit
+
+        // Fingering
+        case DIGIT_0:
+        case DIGIT_1:
+        case DIGIT_2:
+        case DIGIT_3:
+        case DIGIT_4:
+            return supportFingerings() ? new FingeringInter(null, shape, GRADE) : null; // No visit
+
+        // Plucking
+        case PLUCK_P:
+        case PLUCK_I:
+        case PLUCK_M:
+        case PLUCK_A:
+            return supportPluckings() ? new PluckingInter(null, shape, GRADE) : null; // No visit
+
+        // Romans
+        case ROMAN_I:
+        case ROMAN_II:
+        case ROMAN_III:
+        case ROMAN_IV:
+        case ROMAN_V:
+        case ROMAN_VI:
+        case ROMAN_VII:
+        case ROMAN_VIII:
+        case ROMAN_IX:
+        case ROMAN_X:
+        case ROMAN_XI:
+        case ROMAN_XII:
+            return supportFrets() ? new FretInter(null, shape, GRADE) : null; // No visit
+
+        // Others
+        default:
+
+            String msg = "No ghost instance for " + shape;
+            logger.error(msg);
+            throw new IllegalArgumentException(msg);
         }
     }
 

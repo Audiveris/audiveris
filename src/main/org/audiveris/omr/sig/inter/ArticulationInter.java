@@ -28,7 +28,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.Link;
@@ -114,9 +113,9 @@ public class ArticulationInter
         return isAbnormal();
     }
 
-    //--------//
-    // create //
-    //--------//
+    //------------------//
+    // createValidAdded //
+    //------------------//
     /**
      * (Try to) create an ArticulationInter.
      *
@@ -127,18 +126,17 @@ public class ArticulationInter
      * @param systemHeadChords system head chords, ordered by abscissa
      * @return the created articulation or null
      */
-    public static ArticulationInter create (Glyph glyph,
-                                            Shape shape,
-                                            double grade,
-                                            SystemInfo system,
-                                            List<Inter> systemHeadChords)
+    public static ArticulationInter createValidAdded (Glyph glyph,
+                                                      Shape shape,
+                                                      double grade,
+                                                      SystemInfo system,
+                                                      List<Inter> systemHeadChords)
     {
         if (glyph.isVip()) {
             logger.info("VIP ArticulationInter create {} as {}", glyph, shape);
         }
 
-        ArticulationInter artic = (ArticulationInter) SymbolFactory.createGhost(shape, grade);
-        artic.setGlyph(glyph);
+        ArticulationInter artic = new ArticulationInter(glyph, shape, grade);
 
         Link link = artic.lookupLink(systemHeadChords);
 

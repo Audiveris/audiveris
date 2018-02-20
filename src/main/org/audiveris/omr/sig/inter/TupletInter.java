@@ -153,9 +153,9 @@ public class TupletInter
         return isAbnormal();
     }
 
-    //--------//
-    // create //
-    //--------//
+    //-------------//
+    // createValid //
+    //-------------//
     /**
      * (Try to) create a tuplet inter, checking that there is at least one (head) chord
      * nearby.
@@ -167,11 +167,11 @@ public class TupletInter
      * @param systemChords abscissa-ordered list of chords in this system
      * @return the create TupletInter or null
      */
-    public static TupletInter create (Glyph glyph,
-                                      Shape shape,
-                                      double grade,
-                                      SystemInfo system,
-                                      List<Inter> systemChords)
+    public static TupletInter createValid (Glyph glyph,
+                                           Shape shape,
+                                           double grade,
+                                           SystemInfo system,
+                                           List<Inter> systemChords)
     {
         Rectangle luBox = glyph.getBounds();
         Scale scale = system.getSheet().getScale();

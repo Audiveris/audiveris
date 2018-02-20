@@ -29,7 +29,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.grid.LineInfo;
-import org.audiveris.omr.sheet.symbol.SymbolFactory;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -95,27 +94,6 @@ public class DndOperation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Allocate a DndOperation instance, based on the selected shape.
-     *
-     * @param sheet related sheet
-     * @param shape user selected shape
-     * @param zoom  display zoom
-     * @return the dnd operation
-     */
-    public static DndOperation create (Sheet sheet,
-                                       Zoom zoom,
-                                       Shape shape)
-    {
-        final Inter ghost = SymbolFactory.createGhost(shape, 1.0);
-        ghost.setManual(true);
-
-        return new DndOperation(sheet, zoom, ghost);
-    }
-
     //------//
     // drop //
     //------//

@@ -112,11 +112,13 @@ public class DotFactory
      * Creates a new DotFactory object.
      *
      * @param symbolFactory the mother factory
+     * @param system        underlying system
      */
-    public DotFactory (SymbolFactory symbolFactory)
+    public DotFactory (SymbolFactory symbolFactory,
+                       SystemInfo system)
     {
         this.symbolFactory = symbolFactory;
-        system = symbolFactory.getSystem();
+        this.system = system;
         sig = system.getSig();
         scale = system.getSheet().getScale();
     }
@@ -465,7 +467,7 @@ public class DotFactory
      */
     private void instantCheckStaccato (Dot dot)
     {
-        ArticulationInter.create(
+        ArticulationInter.createValidAdded(
                 dot.glyph,
                 Shape.STACCATO,
                 Grades.intrinsicRatio * dot.eval.grade,

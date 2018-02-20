@@ -1378,7 +1378,7 @@ public abstract class TimeBuilder
                         TimeNumberInter den = (TimeNumberInter) sig.getOppositeInter(
                                 nInter,
                                 rel);
-                        TimePairInter pair = TimePairInter.create(num, den);
+                        TimePairInter pair = TimePairInter.createAdded(num, den);
                         TimeValue time = pair.getValue();
                         AbstractTimeInter[] vector = values.get(time);
 

@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
 
 import java.awt.Point;
@@ -72,6 +73,29 @@ public class MarkerInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a MarkerInter.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff related staff
+     * @return the created instance
+     */
+    public static MarkerInter create (Glyph glyph,
+                                      Shape shape,
+                                      double grade,
+                                      Staff staff)
+    {
+        MarkerInter marker = new MarkerInter(glyph, shape, grade);
+        marker.setStaff(staff);
+
+        return marker;
     }
 
     //-----------------//

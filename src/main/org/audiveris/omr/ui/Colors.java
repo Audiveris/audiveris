@@ -28,7 +28,7 @@ import java.awt.Color;
  * Audiveris displays, in order to ensure consistency and compatibility.
  *
  * @author Hervé Bitteur
- * . */
+ */
 public class Colors
 {
     //~ Static fields/initializers -----------------------------------------------------------------

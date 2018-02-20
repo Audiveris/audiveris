@@ -75,6 +75,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 /**
  * Class {@code AbstractInter} is the abstract implementation basis for {@link Inter}
  * interface.
+ * <p>
+ * As a general policy, subclasses can provide convenient creation static methods, which should
+ * be consistently named as follows: <ul>
+ * <li>{@code create} for just inter creation.
+ * <li>{@code createValid} for inter creation and validation (if failed, inter is not created).
+ * <li>{@code createAdded} for inter creation and addition to SIG.
+ * <li>{@code createValidAdded} for inter creation, validation and addition to SIG.
+ * </ul>
  *
  * @author Hervé Bitteur
  */

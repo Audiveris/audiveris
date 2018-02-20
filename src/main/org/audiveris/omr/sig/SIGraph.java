@@ -143,13 +143,16 @@ public class SIGraph
         }
 
         // Update sig
-        boolean res = super.addVertex(inter);
-        inter.setSig(this);
+        boolean added = super.addVertex(inter);
 
-        // Additional actions
-        inter.added();
+        if (added) {
+            inter.setSig(this);
 
-        return res;
+            // Additional actions
+            inter.added();
+        }
+
+        return added;
     }
 
     //-------------------//

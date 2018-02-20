@@ -1623,7 +1623,7 @@ public class KeyBuilder
                 }
             }
 
-            keyInter = KeyInter.create(staff, alters);
+            keyInter = KeyInter.createAdded(staff, alters);
 
             // Postpone staff header assignment until key is finalized...
         }

@@ -83,6 +83,29 @@ public class TimeWholeInter
         visitor.visit(this);
     }
 
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a TimeWholeInter.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff related staff
+     * @return the created instance or null if failed
+     */
+    public static TimeWholeInter create (Glyph glyph,
+                                         Shape shape,
+                                         double grade,
+                                         Staff staff)
+    {
+        TimeWholeInter time = new TimeWholeInter(glyph, shape, grade);
+        time.setStaff(staff);
+
+        return time;
+    }
+
     //-----------------//
     // getSymbolBounds //
     //-----------------//

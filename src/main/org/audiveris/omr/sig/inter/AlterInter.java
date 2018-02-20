@@ -160,13 +160,13 @@ public class AlterInter
     // create //
     //--------//
     /**
-     * Create an Alter inter, with a grade value,determining pitch WRT provided staff.
+     * Create an Alter inter, with a grade value, determining pitch WRT provided staff.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
      * @param grade evaluation value
      * @param staff closest staff (questionable)
-     * @return the created instance or null if failed
+     * @return the created instance
      */
     public static AlterInter create (Glyph glyph,
                                      Shape shape,
@@ -188,7 +188,7 @@ public class AlterInter
      * @param shape   precise shape
      * @param impacts assignment details
      * @param staff   related staff
-     * @return the created instance or null if failed
+     * @return the created instance
      */
     public static AlterInter create (Glyph glyph,
                                      Shape shape,
@@ -198,24 +198,6 @@ public class AlterInter
         Pitches pitches = computePitch(glyph, shape, staff);
 
         return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
-    }
-
-    //--------------------//
-    // detectHeadRelation //
-    //--------------------//
-    /**
-     * Try to detect a relation between this Alter instance and a head nearby (perhaps
-     * with its mirror).
-     *
-     * @param systemHeads ordered collection of notes in system
-     */
-    public void detectHeadRelation (List<Inter> systemHeads)
-    {
-        Collection<Link> links = lookupLinks(systemHeads);
-
-        for (Link link : links) {
-            link.applyTo(this);
-        }
     }
 
     //------------//
@@ -318,6 +300,23 @@ public class AlterInter
         }
 
         return links;
+    }
+
+    //----------//
+    // setLinks //
+    //----------//
+    /**
+     * Try to detect relation with heads nearby (perhaps with their mirror).
+     *
+     * @param systemHeads ordered collection of notes in system
+     */
+    public void setLinks (List<Inter> systemHeads)
+    {
+        Collection<Link> links = lookupLinks(systemHeads);
+
+        for (Link link : links) {
+            link.applyTo(this);
+        }
     }
 
     //--------------//

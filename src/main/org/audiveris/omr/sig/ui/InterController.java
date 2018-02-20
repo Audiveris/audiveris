@@ -177,8 +177,7 @@ public class InterController
                         throw new IllegalStateException("No staff for " + center);
                     }
 
-                    Inter ghost = SymbolFactory.createGhost(shape, 1);
-                    ghost.setManual(true);
+                    Inter ghost = SymbolFactory.createManual(shape);
                     ghost.setBounds(glyph.getBounds());
                     ghost.setGlyph(glyph);
 

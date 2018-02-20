@@ -84,18 +84,18 @@ public class TimePairInter
         visitor.visit(this);
     }
 
-    //--------//
-    // create //
-    //--------//
+    //-------------//
+    // createAdded //
+    //-------------//
     /**
-     * Create a {@code TimePairInter} object from its two halves.
+     * Create and add a {@code TimePairInter} object from its two halves.
      *
      * @param num numerator: non-null, registered in sig
      * @param den denominator: non-null, registered in sig
      * @return the created instance, already added to sig
      */
-    public static TimePairInter create (TimeNumberInter num,
-                                        TimeNumberInter den)
+    public static TimePairInter createAdded (TimeNumberInter num,
+                                             TimeNumberInter den)
     {
         double grade = 0.5 * (num.getGrade() + den.getGrade());
         TimePairInter pair = new TimePairInter(null, grade);
