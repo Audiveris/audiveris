@@ -686,7 +686,7 @@ public class LedgersBuilder
                 "Minimum length for a section to be considered as core");
 
         private final Scale.Fraction maxThicknessHigh2 = new Scale.Fraction(
-                0.3,
+                0.4,
                 "High Maximum thickness of an interesting stick (WRT interline)");
 
         private final Scale.Fraction ledgerMarginY = new Scale.Fraction(
