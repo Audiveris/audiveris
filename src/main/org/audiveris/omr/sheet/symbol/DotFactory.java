@@ -430,7 +430,7 @@ public class DotFactory
             double xGap = Math.abs(barX - dotPt.x);
             double yGap = Math.abs(barY - dotPt.y);
             RepeatDotBarRelation rel = new RepeatDotBarRelation();
-            rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+            rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestXGap > xGap)) {
@@ -535,7 +535,7 @@ public class DotFactory
                             : (halfBox.y + (halfBox.height * 0.75));
                     double yGap = Math.abs(dotCenter.y - yTarget);
                     DotFermataRelation rel = new DotFermataRelation();
-                    rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                    rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                     if (rel.getGrade() >= rel.getMinGrade()) {
                         if (dotInter == null) {
@@ -591,7 +591,7 @@ public class DotFactory
             if (xGap > 0) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 AugmentationRelation rel = new AugmentationRelation();
-                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if (augInter == null) {
@@ -673,7 +673,7 @@ public class DotFactory
             if (xGap > 0) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 DoubleDotRelation rel = new DoubleDotRelation();
-                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if ((bestRel == null) || (bestYGap > yGap)) {

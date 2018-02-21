@@ -227,7 +227,7 @@ public abstract class AbstractBeamInter
         final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY())
                 : Math.max(0, start.getY() - crossPt.getY());
 
-        bRel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+        bRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
         if (bRel.getGrade() >= bRel.getMinGrade()) {
             logger.debug("{} {} {}", this, stem, bRel);

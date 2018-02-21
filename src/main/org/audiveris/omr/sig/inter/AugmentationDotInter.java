@@ -406,7 +406,7 @@ public class AugmentationDotInter
 
             if (xGap > 0) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
-                aRel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                aRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                 if (bestNoteGrade < aRel.getGrade()) {
                     bestNoteGrade = aRel.getGrade();
@@ -442,7 +442,7 @@ public class AugmentationDotInter
             if (xGap > 0) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 DoubleDotRelation rel = new DoubleDotRelation();
-                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if ((bestDotRel == null) || (bestYGap > yGap)) {

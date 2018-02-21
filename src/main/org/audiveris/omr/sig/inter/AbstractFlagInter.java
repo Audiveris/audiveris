@@ -300,7 +300,7 @@ public abstract class AbstractFlagInter
             }
 
             FlagStemRelation fRel = new FlagStemRelation();
-            fRel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+            fRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
             if (fRel.getGrade() >= fRel.getMinGrade()) {
                 fRel.setExtensionPoint(

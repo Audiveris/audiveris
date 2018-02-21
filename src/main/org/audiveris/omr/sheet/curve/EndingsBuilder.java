@@ -372,7 +372,7 @@ public class EndingsBuilder
             } else {
                 double leftDist = scale.pixelsToFrac(
                         Math.abs(LineUtil.xAtY(leftBar.getMedian(), leftEnd.y) - leftEnd.x));
-                leftRel.setDistances(leftDist, 0);
+                leftRel.setGaps(leftDist, 0);
             }
 
             // Right leg (optional)
@@ -388,7 +388,7 @@ public class EndingsBuilder
             final double rightDist = scale.pixelsToFrac(
                     Math.abs(LineUtil.xAtY(rightBar.getMedian(), rightEnd.y) - rightEnd.x));
             final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
-            rightRel.setDistances(rightDist, 0);
+            rightRel.setGaps(rightDist, 0);
 
             // Create ending inter
             GradeImpacts segImp = segment.getImpacts();

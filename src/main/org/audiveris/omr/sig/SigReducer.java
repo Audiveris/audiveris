@@ -240,6 +240,7 @@ public class SigReducer
 
         // All stems of the sig
         List<Inter> stems = sig.inters(Shape.STEM);
+        Collections.sort(stems, Inters.byReverseGrade);
 
         // Heads organized by shape (black, void, and small versions)
         Map<Shape, Set<Inter>> heads = new HashMap<Shape, Set<Inter>>();
@@ -254,7 +255,7 @@ public class SigReducer
 
             // Consider only good stems
             if (!stem.isGood()) {
-                continue;
+                break; // Since stems collection is ordered by decreasing grade
             }
 
             heads.clear();
