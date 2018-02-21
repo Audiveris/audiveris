@@ -326,6 +326,10 @@ public class StemsBuilder
             checkHeadStems(head);
         }
 
+        // Discard heads with no stem link
+        watch.start("checkNeededStems");
+        checkNeededStems(systemHeads);
+
         if (constants.printWatch.isSet()) {
             watch.print();
         }
@@ -453,6 +457,25 @@ public class StemsBuilder
             }
 
             checker.check(ensemble);
+        }
+    }
+
+    //------------------//
+    // checkNeededStems //
+    //------------------//
+    /**
+     * For heads that need a stem, check there is at least one.
+     *
+     * @param systemHeads heads to check
+     */
+    private void checkNeededStems (List<Inter> systemHeads)
+    {
+        for (Inter head : systemHeads) {
+            if (ShapeSet.StemHeads.contains(head.getShape())) {
+                if (!sig.hasRelation(head, HeadStemRelation.class)) {
+                    head.remove();
+                }
+            }
         }
     }
 
@@ -933,7 +956,7 @@ public class StemsBuilder
                     final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY())
                             : Math.max(0, start.getY() - crossPt.getY());
 
-                    bRel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                    bRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                     if (bRel.getGrade() >= bRel.getMinGrade()) {
                         sig.addEdge(beam, stem, bRel);
@@ -1004,7 +1027,7 @@ public class StemsBuilder
                         }
                     }
 
-                    hRel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                    hRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
 
                     if (hRel.getGrade() >= hRel.getMinGrade()) {
                         hRel.setExtensionPoint(
@@ -1968,7 +1991,7 @@ public class StemsBuilder
             HeadStemRelation worstRel = null;
 
             for (HeadStemRelation rel : rels) {
-                double yGap = rel.getYDistance();
+                double yGap = rel.getDy();
 
                 if (worstGap < yGap) {
                     worstGap = yGap;
@@ -2042,7 +2065,7 @@ public class StemsBuilder
                         glyph.getStopPoint(VERTICAL));
                 StemPortion portion = rel.getStemPortion(head, stemLine, scale);
                 HorizontalSide side = rel.getHeadSide();
-                double yGap = rel.getYDistance();
+                double yGap = rel.getDy();
 
                 if (yGap <= constants.yGapTiny.getValue()) {
                     if (portion == STEM_TOP) {
