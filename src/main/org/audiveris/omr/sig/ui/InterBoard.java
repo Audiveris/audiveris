@@ -173,7 +173,7 @@ public class InterBoard
     /**
      * Interest in InterList for shape, icon, text, role, etc... fields
      *
-     * @param interListEvent
+     * @param interListEvent the inter list event
      */
     @Override
     protected void handleEntityListEvent (EntityListEvent<Inter> interListEvent)

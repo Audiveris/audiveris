@@ -213,7 +213,7 @@ public class SampleBoard
     /**
      * Interest in InterList
      *
-     * @param interListEvent
+     * @param sampleListEvent sample event list
      */
     @Override
     protected void handleEntityListEvent (EntityListEvent<Sample> sampleListEvent)

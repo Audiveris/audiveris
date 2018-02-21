@@ -62,9 +62,9 @@ public class SectionService
     // handleLocationEvent //
     //---------------------//
     /**
-     * Interest in location => list
+     * Interest in location &rArr; list
      *
-     * @param locationEvent
+     * @param locationEvent the location event
      */
     @Override
     protected void handleLocationEvent (LocationEvent locationEvent)

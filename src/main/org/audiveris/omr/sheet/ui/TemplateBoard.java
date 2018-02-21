@@ -195,7 +195,7 @@ public class TemplateBoard
     /**
      * Display rectangle attributes
      *
-     * @param locEvent
+     * @param locEvent the location event
      */
     protected void handleLocationEvent (LocationEvent locEvent)
     {

@@ -74,7 +74,7 @@ public class DistanceBoard
     /**
      * Display rectangle attributes
      *
-     * @param locEvent
+     * @param locEvent the location event
      */
     @Override
     protected void handleLocationEvent (LocationEvent locEvent)

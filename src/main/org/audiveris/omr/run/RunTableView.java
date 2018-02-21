@@ -89,9 +89,9 @@ public class RunTableView
     // handleLocationEvent //
     //---------------------//
     /**
-     * Interest in Location => Run
+     * Interest in Location &rArr; Run
      *
-     * @param locationEvent
+     * @param locationEvent the location event
      */
     @Override
     protected void handleLocationEvent (LocationEvent locationEvent)

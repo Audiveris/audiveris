@@ -98,9 +98,9 @@ public class GlyphService
     // handleLocationEvent //
     //---------------------//
     /**
-     * Interest in location => list (basket?)
+     * Interest in location &rArr; list (basket?)
      *
-     * @param locationEvent
+     * @param locationEvent the location event
      */
     @Override
     protected void handleLocationEvent (LocationEvent locationEvent)

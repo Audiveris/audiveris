@@ -236,9 +236,9 @@ public class EntityService<E extends Entity>
     // handleEntityListEvent //
     //-----------------------//
     /**
-     * Interest in EntityList => location contour of "selected" entity
+     * Interest in EntityList &rArr; location contour of "selected" entity
      *
-     * @param EntityListEvent
+     * @param listEvent the list event
      */
     protected void handleEntityListEvent (EntityListEvent<E> listEvent)
     {
@@ -264,9 +264,9 @@ public class EntityService<E extends Entity>
     // handleIdEvent //
     //---------------//
     /**
-     * Interest in Id => entity
+     * Interest in Id &rArr; entity
      *
-     * @param idEvent
+     * @param idEvent the id event
      */
     protected void handleEvent (IdEvent idEvent)
     {
@@ -278,9 +278,9 @@ public class EntityService<E extends Entity>
     // handleLocationEvent //
     //---------------------//
     /**
-     * Interest in location => entity basket
+     * Interest in location &rArr; entity basket
      *
-     * @param locationEvent
+     * @param locationEvent the location event
      */
     protected void handleLocationEvent (LocationEvent locationEvent)
     {

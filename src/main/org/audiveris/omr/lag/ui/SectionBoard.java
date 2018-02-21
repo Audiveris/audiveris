@@ -141,7 +141,7 @@ public class SectionBoard
     /**
      * Interest in EntityListEvent for x, y, width, height fields.
      *
-     * @param listEvent
+     * @param listEvent the list event
      */
     @Override
     protected void handleEntityListEvent (EntityListEvent<Section> listEvent)

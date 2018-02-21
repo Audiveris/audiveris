@@ -135,7 +135,7 @@ public enum Step
     /**
      * Report whether this step is impact by an action on the provided class
      *
-     * @param classe
+     * @param classe the class to examine
      * @return true if impacted
      */
     public boolean isImpactedBy (Class classe)

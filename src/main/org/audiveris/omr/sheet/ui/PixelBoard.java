@@ -136,7 +136,7 @@ public class PixelBoard
     /**
      * Display rectangle attributes
      *
-     * @param locEvent
+     * @param locEvent the location event
      */
     protected void handleLocationEvent (LocationEvent locEvent)
     {
@@ -161,7 +161,7 @@ public class PixelBoard
     /**
      * Display pixel gray level
      *
-     * @param pixelEvent
+     * @param pixelEvent the pixel event
      */
     protected void handlePixelEvent (PixelEvent pixelEvent)
     {

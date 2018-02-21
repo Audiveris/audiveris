@@ -134,9 +134,9 @@ public class RunService
     // handleLocationEvent //
     //---------------------//
     /**
-     * Interest in location => Run
+     * Interest in location &rArr; Run
      *
-     * @param locationEvent
+     * @param locationEvent the location event
      */
     protected void handleLocationEvent (LocationEvent locationEvent)
     {
