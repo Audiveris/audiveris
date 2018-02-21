@@ -116,7 +116,7 @@ public class Colors
     public static final Color SCORE_MODIFIERS = new Color(0x992299);
 
     /** frame: stems, ledgers, normal text. */
-    public static final Color SCORE_PHYSICALS = new Color(0x806040);
+    public static final Color SCORE_PHYSICALS = new Color(0x992600);
 
     /** frame: lyric text. */
     public static final Color SCORE_LYRICS = Color.BLUE;
