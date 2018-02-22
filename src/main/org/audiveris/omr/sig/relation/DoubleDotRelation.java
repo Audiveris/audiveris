@@ -24,14 +24,15 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sig.inter.AugmentationDotInter;
+import org.audiveris.omr.sig.inter.Inter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.sig.inter.AugmentationDotInter;
-import org.audiveris.omr.sig.inter.Inter;
-import org.jgrapht.event.GraphEdgeChangeEvent;
 
 /**
  * Class {@code DoubleDotRelation} represents the relation between a second
@@ -79,6 +80,24 @@ public class DoubleDotRelation
     {
         final AugmentationDotInter secondDot = (AugmentationDotInter) e.getEdgeSource();
         secondDot.checkAbnormal();
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
     }
 
     //---------//

@@ -42,6 +42,24 @@ public class MarkerBarRelation
 
     //~ Methods ------------------------------------------------------------------------------------
     //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //----------------//
     // getSourceCoeff //
     //----------------//
     @Override

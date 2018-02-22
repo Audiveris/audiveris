@@ -59,6 +59,24 @@ public class ChordOrnamentRelation
     }
 
     //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //----------------//
     // getTargetCoeff //
     //----------------//
     @Override

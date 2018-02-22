@@ -71,6 +71,20 @@ public interface Relation
     boolean isManual ();
 
     /**
+     * Tell if, seen from a given target, there can be at most one source.
+     *
+     * @return true if source number is limited to 1, false by default
+     */
+    boolean isSingleSource ();
+
+    /**
+     * Tell if, seen from a given source, there can be at most one target.
+     *
+     * @return true if target number is limited to 1, false by default
+     */
+    boolean isSingleTarget ();
+
+    /**
      * Notifies that this relation has been removed from the sig.
      *
      * @param e the relation event.

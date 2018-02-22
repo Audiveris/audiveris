@@ -79,6 +79,15 @@ public class ChordTupletRelation
         tuplet.checkAbnormal();
     }
 
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
     //---------//
     // removed //
     //---------//

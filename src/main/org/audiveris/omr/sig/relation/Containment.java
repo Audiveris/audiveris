@@ -42,6 +42,9 @@ public class Containment
 {
     //~ Methods ------------------------------------------------------------------------------------
 
+    //-------//
+    // added //
+    //-------//
     @Override
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
@@ -49,6 +52,18 @@ public class Containment
         ensemble.invalidateCache();
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //---------//
+    // removed //
+    //---------//
     @Override
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {

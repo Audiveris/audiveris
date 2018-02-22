@@ -559,21 +559,21 @@ public class InterController
      * @param target   the target inter
      * @param relation the relation to add
      */
-    public void link (final SIGraph sig,
+    public void link (SIGraph sig,
                       final Inter source,
-                      final Inter target,
-                      final Relation relation)
+                      Inter target,
+                      Relation relation)
     {
+        final UITaskList seq = new UITaskList();
+        seq.add(new LinkTask(sig, source, target, relation));
         new CtrlTask()
         {
             @Override
             protected Void doInBackground ()
             {
                 try {
-                    logger.debug("link on {} between {} and {}", relation, source, target);
+                    logger.debug("link {}", seq);
 
-                    UITaskList seq = new UITaskList();
-                    seq.add(new LinkTask(sig, source, target, relation));
                     history.add(seq);
                     seq.performDo();
 
@@ -582,6 +582,35 @@ public class InterController
                     epilog(DO, seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in link {}", ex.toString(), ex);
+                }
+
+                return null;
+            }
+        }.execute();
+    }
+
+    //---------//
+    // process //
+    //---------//
+    public void process (final UITaskList seq)
+    {
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+            {
+                try {
+                    logger.info("process {}", seq);
+
+                    ///Inter source = sig.getEdgeSource(relation);
+                    history.add(seq);
+
+                    seq.performDo();
+
+                    ///sheet.getInterIndex().publish(source);
+                    epilog(DO, seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in process {}", ex.toString(), ex);
                 }
 
                 return null;

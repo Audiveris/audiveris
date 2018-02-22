@@ -308,6 +308,7 @@ public class SymbolsEditor
         view.repaint();
     }
 
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -334,7 +335,7 @@ public class SymbolsEditor
         private Slot highlightedSlot;
 
         /** Current vector. */
-        private Vector vector;
+        private RelationVector vector;
 
         //~ Constructors ---------------------------------------------------------------------------
         private MyView (GlyphIndex glyphIndex)
@@ -695,7 +696,7 @@ public class SymbolsEditor
          * @param p1 starting point
          * @return the created vector, if any Inter was found at p1 location
          */
-        private Vector tryVector (Point p1)
+        private RelationVector tryVector (Point p1)
         {
             // Look for required sinter
             List<Inter> starts = sheet.getInterIndex().getContainingEntities(p1);
@@ -704,118 +705,8 @@ public class SymbolsEditor
                 Collections.sort(starts, Inters.membersFirst);
             }
 
-            return (!starts.isEmpty()) ? new Vector(p1, starts) : null;
+            return (!starts.isEmpty()) ? new RelationVector(p1, starts) : null;
         }
 
-        //~ Inner Classes --------------------------------------------------------------------------
-        //--------//
-        // Vector //
-        //--------//
-        /**
-         * Class {@code Vector} represents a dynamic vector from starting inter(s) to
-         * potential stopping inter(s), in order to finally set a relation between them.
-         */
-        private class Vector
-        {
-            //~ Instance fields --------------------------------------------------------------------
-
-            /** Line from starting point to current stopping point. */
-            private final Line2D line;
-
-            /** Starting inters, needed to initially create a vector. */
-            private final List<Inter> starts;
-
-            //~ Constructors -----------------------------------------------------------------------
-            /**
-             * Create a useful vector.
-             *
-             * @param p1     starting point
-             * @param starts starting inters (cannot be null or empty)
-             */
-            public Vector (Point p1,
-                           List<Inter> starts)
-            {
-                line = new Line2D.Double(p1, p1);
-                this.starts = starts;
-
-                logger.debug("Created {}", this);
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            @Override
-            public String toString ()
-            {
-                StringBuilder sb = new StringBuilder("Vector{");
-                sb.append("[").append(line.getX1()).append(",").append(line.getY1()).append("]");
-                sb.append(" starts:").append(starts);
-                sb.append("}");
-
-                return sb.toString();
-            }
-
-            /**
-             * Modify vector stopping point.
-             *
-             * @param pt new stopping point
-             */
-            private void extendTo (Point pt)
-            {
-                line.setLine(line.getP1(), pt);
-            }
-
-            /**
-             * Process the vector into a relation.
-             *
-             * @param doit true to actually set the relation, false for just a dry run
-             */
-            private void process (boolean doit)
-            {
-                final Point p2 = PointUtil.rounded(line.getP2());
-                final List<Inter> stops = sheet.getInterIndex().getContainingEntities(p2);
-
-                if (!stops.isEmpty()) {
-                    stops.removeAll(starts); // No looping vector!
-                }
-
-                if (stops.isEmpty()) {
-                    return;
-                }
-
-                Collections.sort(stops, Inters.membersFirst);
-                logger.debug("process starts:{} stops{}", starts, stops);
-
-                for (Inter start : starts) {
-                    for (Inter stop : stops) {
-                        for (boolean reverse : new boolean[]{false, true}) {
-                            final Inter source = reverse ? stop : start;
-                            final Inter target = reverse ? start : stop;
-                            final Set<Class<? extends Relation>> sugs;
-                            sugs = Relations.suggestedRelationsBetween(source, target);
-                            logger.debug("src:{} tgt:{} suggestions:{}", source, target, sugs);
-
-                            if (!sugs.isEmpty()) {
-                                if (doit) {
-                                    try {
-                                        Class<? extends Relation> relClass = sugs.iterator().next();
-                                        SIGraph sig = source.getSig();
-                                        Sheet sheet = sig.getSystem().getSheet();
-                                        InterController interController = sheet.getInterController();
-                                        Relation relation = relClass.newInstance();
-                                        relation.setManual(true);
-                                        interController.link(sig, source, target, relation);
-
-                                        return; // Normal exit
-                                    } catch (Exception ex) {
-                                        logger.warn("Linking error " + ex, ex);
-                                    }
-                                } else {
-                                    //TODO: Draw a dummy relation, perhaps using some special color?
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 }

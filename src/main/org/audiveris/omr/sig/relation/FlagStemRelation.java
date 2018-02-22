@@ -106,6 +106,15 @@ public class FlagStemRelation
         return constants.yGapMax;
     }
 
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
     //---------//
     // removed //
     //---------//

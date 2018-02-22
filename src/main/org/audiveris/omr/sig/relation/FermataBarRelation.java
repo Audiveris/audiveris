@@ -42,6 +42,15 @@ public class FermataBarRelation
 
     //~ Methods ------------------------------------------------------------------------------------
     //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //----------------//
     // getSourceCoeff //
     //----------------//
     @Override

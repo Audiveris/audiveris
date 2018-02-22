@@ -50,6 +50,24 @@ public class ClefKeyRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
     //------------------------//
     // maxContributionForClef //
     //------------------------//

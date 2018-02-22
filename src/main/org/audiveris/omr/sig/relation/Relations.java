@@ -30,6 +30,7 @@ import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.ChordNameInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
@@ -60,7 +61,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.audiveris.omr.sig.inter.ChordNameInter;
 
 /**
  * Class {@code Relations} gathers utilities for Relation classes and instances.
@@ -217,13 +217,14 @@ public abstract class Relations
         Set<Class<? extends Relation>> suggestions = new LinkedHashSet<Class<? extends Relation>>(
                 definedRelationsBetween(source.getClass(), target.getClass()));
 
-        // Skip existing relation, if any, between source & target
-        Relation edge = sig.getEdge(source, target);
-
-        if (edge != null) {
-            suggestions.remove(edge.getClass());
-        }
-
+        // Let's not remove existing relation, to allow cleaning of relations
+        //        // NO (Skip existing relation, if any, between source & target) NO
+        //        Relation edge = sig.getEdge(source, target);
+        //
+        //        if (edge != null) {
+        //            suggestions.remove(edge.getClass());
+        //        }
+        //
         // Return what we got
         if (suggestions.isEmpty()) {
             return Collections.emptySet();

@@ -1879,8 +1879,18 @@ public class SigReducer
         {
             logger.debug("S#{} prolog", system.getId());
 
+            // Perform descent from best beams and stems
+            descendStems();
+
             ///analyzeHeadStems(); // Check there is at most one stem on each side of any head
             analyzeChords(); // Heads & beams compatibility
+        }
+
+        private void descendStems ()
+        {
+            // Use good beams with their side stems
+            // Use good stems
+            // Descend through their needed heads
         }
     }
 

@@ -98,6 +98,15 @@ public class ChordWedgeRelation
         return side;
     }
 
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
     //----------//
     // toString //
     //----------//

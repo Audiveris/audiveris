@@ -68,6 +68,15 @@ public class RepeatDotBarRelation
         return constants.yGapMax;
     }
 
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
     //---------------//
     // getOutWeights //
     //---------------//
