@@ -677,6 +677,34 @@ public class Measure
         return found;
     }
 
+    //--------------------//
+    // getHeadChordsBelow //
+    //--------------------//
+    /**
+     * Report the collection of head-chords whose head is located in the staff below the
+     * provided point.
+     *
+     * @param point the provided point
+     * @return the (perhaps empty) collection of head chords
+     */
+    public Collection<HeadChordInter> getHeadChordsBelow (Point point)
+    {
+        Staff desiredStaff = stack.getSystem().getStaffAtOrBelow(point);
+        Collection<HeadChordInter> found = new ArrayList<HeadChordInter>();
+
+        for (HeadChordInter chord : getHeadChords()) {
+            if (chord.getTopStaff() == desiredStaff) {
+                Point head = chord.getHeadLocation();
+
+                if ((head != null) && (head.y > point.y)) {
+                    found.add(chord);
+                }
+            }
+        }
+
+        return found;
+    }
+
     //--------//
     // getKey //
     //--------//

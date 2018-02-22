@@ -22,6 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
@@ -31,7 +32,6 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.TextWord;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.glyph.Shape;
 
 /**
  * Class {@code LyricItemInter} is specific subclass of Text, meant for one
@@ -238,11 +237,24 @@ public class LyricItemInter
         // Left is too far on left, middle is too far on right, we use width/4 (???)
         int centerX = getLocation().x + (getBounds().width / 4);
         SystemInfo system = getSig().getSystem();
-        Staff staffAbove = system.getStaffAtOrAbove(location);
-        setStaff(staffAbove);
+        boolean lookAbove = true;
+        Staff relatedStaff = system.getStaffAtOrAbove(location);
 
-        Part part = staffAbove.getPart();
-        int maxDx = part.getSystem().getSheet().getScale().toPixels(constants.maxItemDx);
+        if (relatedStaff == null) {
+            relatedStaff = system.getStaffAtOrBelow(location);
+            lookAbove = false;
+        }
+
+        setStaff(relatedStaff);
+
+        Part part = relatedStaff.getPart();
+        int maxDx = part.getSystem().getSheet().getScale()
+                .toPixels(constants.maxItemDx);
+
+        // A word can start in a measure and finish in the next measure
+        // Look for best aligned head-chord in proper staff
+        int bestDx = Integer.MAX_VALUE;
+        AbstractChordInter bestChord = null;
 
         for (Measure measure : part.getMeasures()) {
             // Select only possible measures
@@ -254,29 +266,39 @@ public class LyricItemInter
                 continue;
             }
 
-            // Look for best aligned head-chord in proper staff
-            int bestDx = Integer.MAX_VALUE;
-            AbstractChordInter bestChord = null;
+            if (lookAbove) {
+                for (AbstractChordInter chord : measure.getHeadChordsAbove(getLocation())) {
+                    if (chord instanceof HeadChordInter
+                        && (chord.getBottomStaff() == relatedStaff)) {
+                        int dx = Math.abs(chord.getHeadLocation().x - centerX);
 
-            for (AbstractChordInter chord : measure.getHeadChordsAbove(getLocation())) {
-                if (chord instanceof HeadChordInter && (chord.getBottomStaff() == staffAbove)) {
-                    int dx = Math.abs(chord.getHeadLocation().x - centerX);
+                        if (bestDx > dx) {
+                            bestDx = dx;
+                            bestChord = chord;
+                        }
+                    }
+                }
+            } else {
+                for (AbstractChordInter chord : measure.getHeadChordsBelow(getLocation())) {
+                    if (chord instanceof HeadChordInter && (chord.getTopStaff() == relatedStaff)) {
+                        int dx = Math.abs(chord.getHeadLocation().x - centerX);
 
-                    if (bestDx > dx) {
-                        bestDx = dx;
-                        bestChord = chord;
+                        if (bestDx > dx) {
+                            bestDx = dx;
+                            bestChord = chord;
+                        }
                     }
                 }
             }
-
-            if (bestDx <= maxDx) {
-                sig.addEdge(bestChord, this, new ChordSyllableRelation());
-
-                return;
-            }
         }
 
-        logger.info("No head-chord above {}", this);
+        if (bestDx <= maxDx) {
+            sig.addEdge(bestChord, this, new ChordSyllableRelation());
+
+            return;
+        }
+
+        logger.info("No head-chord for {}", this);
     }
 
     //-------------//
