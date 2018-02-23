@@ -172,7 +172,7 @@ public abstract class Symbols
         dec.put(STEM, new StemSymbol());
         dec.put(STRONG_ACCENT, new ArticulationSymbol(STRONG_ACCENT, true, 94));
         dec.put(TENUTO, new ArticulationSymbol(TENUTO, true, 45));
-        dec.put(TEXT, new TextSymbol(TEXT, "txt"));
+        dec.put(TEXT, new TextSymbol(TEXT, "text"));
         dec.put(WHOLE_REST, new RestSymbol(WHOLE_REST, true, 183));
     }
 

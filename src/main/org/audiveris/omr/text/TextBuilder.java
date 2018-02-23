@@ -85,9 +85,14 @@ import java.util.regex.PatternSyntaxException;
  * Class {@code TextBuilder} works at system level, to provide features to check, build
  * and reorganize text items, including interacting with the OCR engine.
  * <p>
- * When created with the 'isManual' flag set to true, a TextBuilder instance assumes that the user
- * explicitly asked for glyph OCR and thus knows that the glyph is a block of text.
- * In this case, many of the checks performed by TextBuilder are relaxed, if not bypassed.
+ * This builder can operate in 3 different modes: <ol>
+ * <li><b>Free mode</b>: Engine mode, text role can be any role, determined by heuristics.
+ * manualLyrics == null;
+ * <li><b>Manual as lyrics</b>: Manual mode, for which text role is imposed as lyrics.
+ * manualLyrics == true;
+ * <li><b>Manual as non-lyrics</b>: Manual mode, for which text role is imposed as non lyrics.
+ * manualLyrics == false;
+ * </ol>
  *
  * @author Hervé Bitteur
  */
@@ -132,11 +137,8 @@ public class TextBuilder
     /** Processed sections. true/false */
     private final Set<Section> processedSections = new LinkedHashSet<Section>();
 
-    /** User-selected text role for the buffer to process. */
-    private final TextRole expectedTextRole;
-
-    /** True for manual processing on certified text buffer. */
-    private final boolean isManual;
+    /** Manual mode. */
+    private final Boolean manualLyrics;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -150,29 +152,25 @@ public class TextBuilder
 
         sheet = system.getSheet();
         skew = sheet.getSkew();
-        expectedTextRole = null;
-        isManual = false;
-        params = new Parameters(sheet.getScale(), isManual);
+        manualLyrics = null;
+        params = new Parameters(sheet.getScale(), false);
     }
 
     /**
-     * Creates a new TextBuilder object.
+     * Creates a new TextBuilder object in manual mode.
      *
-     * @param system           the related system
-     * @param expectedTextRole the expected role for retrieved sentences
-     * @param isManual         true for manual assignment (on a glyph assumed to be text)
+     * @param system       the related system
+     * @param manualLyrics true for lyrics, false for any role but lyrics
      */
     public TextBuilder (SystemInfo system,
-                        TextRole expectedTextRole,
-                        boolean isManual)
+                        boolean manualLyrics)
     {
         this.system = system;
-        this.expectedTextRole = expectedTextRole;
-        this.isManual = isManual;
+        this.manualLyrics = manualLyrics;
 
         sheet = system.getSheet();
         skew = sheet.getSkew();
-        params = new Parameters(sheet.getScale(), isManual);
+        params = new Parameters(sheet.getScale(), true);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -237,10 +235,10 @@ public class TextBuilder
                                               List<TextLine> glyphLines,
                                               Point offset)
     {
-        // Pre-assign text role?
-        if (expectedTextRole != null) {
+        // Pre-assign text roleas lyrics?
+        if (isManual() && manualLyrics) {
             for (TextLine line : glyphLines) {
-                line.setRole(expectedTextRole);
+                line.setRole(TextRole.Lyrics);
             }
         }
 
@@ -338,8 +336,8 @@ public class TextBuilder
     private void checkRole (TextLine line)
     {
         if (line.getRole() == null) {
-            TextRole role = (expectedTextRole != null) ? expectedTextRole
-                    : TextRole.guessRole(line, system);
+            TextRole role = (isManual() && manualLyrics) ? TextRole.Lyrics
+                    : TextRole.guessRole(line, system, manualLyrics == null);
 
             if (role != null) {
                 line.setRole(role);
@@ -789,6 +787,11 @@ public class TextBuilder
         int pointSize = line.getMeanFont().pointsize;
 
         return (int) Math.rint(params.maxWordDxFontRatio * pointSize);
+    }
+
+    private boolean isManual ()
+    {
+        return manualLyrics != null;
     }
 
     //-------------//
@@ -1254,7 +1257,7 @@ public class TextBuilder
 
         // Process lyrics
         if (!lyrics.isEmpty()) {
-            if (!isManual) {
+            if (isManual()) {
                 lyrics = purgeInvalidLines("lyrics", lyrics);
             }
 
@@ -1272,7 +1275,7 @@ public class TextBuilder
             standards = splitStandardLines(standards);
 
             // Reject invalid standard lines
-            if (!isManual) {
+            if (isManual()) {
                 standards = purgeInvalidLines("standards", standards);
             }
 

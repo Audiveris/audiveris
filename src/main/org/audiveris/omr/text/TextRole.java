@@ -99,12 +99,14 @@ public enum TextRole
      * For the time being, this is a simple algorithm based on sentence location within the sheet,
      * augmented by valid chord name, etc.
      *
-     * @param line   the sentence
-     * @param system the containing system
+     * @param line          the sentence
+     * @param system        the containing system
+     * @param lyricsAllowed false for manual mode, forbidding lyrics
      * @return the role information inferred for the provided sentence glyph
      */
     public static TextRole guessRole (TextLine line,
-                                      SystemInfo system)
+                                      SystemInfo system,
+                                      boolean lyricsAllowed)
     {
         if (line == null) {
             return null;
@@ -236,7 +238,9 @@ public enum TextRole
 
             if (leftOfStaves) {
                 return PartName;
-            } else if ((partPosition == StaffPosition.BELOW_STAVES) && !isMainlyItalic) {
+            } else if (lyricsAllowed
+                       && (partPosition == StaffPosition.BELOW_STAVES)
+                       && !isMainlyItalic) {
                 return Lyrics;
             } else if (!tinySentence) {
                 return Direction;
@@ -257,7 +261,9 @@ public enum TextRole
             }
 
             if (part.getStaves().size() == 1) {
-                if ((partPosition == StaffPosition.BELOW_STAVES) && !isMainlyItalic) {
+                if (lyricsAllowed
+                    && (partPosition == StaffPosition.BELOW_STAVES)
+                    && !isMainlyItalic) {
                     return Lyrics;
                 }
             }

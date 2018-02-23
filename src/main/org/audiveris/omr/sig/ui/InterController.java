@@ -314,8 +314,8 @@ public class InterController
                             glyph.getId());
 
                     // Retrieve absolute lines (and the underlying word glyphs)
-                    TextRole expected = (shape == Shape.LYRICS) ? TextRole.Lyrics : null;
-                    List<TextLine> lines = new TextBuilder(system, expected, true).retrieveGlyphLines(
+                    boolean lyrics = shape == Shape.LYRICS;
+                    List<TextLine> lines = new TextBuilder(system, lyrics).retrieveGlyphLines(
                             buffer,
                             relativeLines,
                             glyph.getTopLeft());
@@ -333,8 +333,7 @@ public class InterController
                         for (TextWord textWord : line.getWords()) {
                             logger.debug("word {}", textWord);
 
-                            WordInter word = (role == TextRole.Lyrics)
-                                    ? new LyricItemInter(textWord)
+                            WordInter word = lyrics ? new LyricItemInter(textWord)
                                     : new WordInter(textWord);
 
                             if (sentence != null) {
@@ -346,8 +345,7 @@ public class InterController
                                                 Arrays.asList(
                                                         new Link(sentence, new Containment(), false))));
                             } else {
-                                sentence = (role == TextRole.Lyrics)
-                                        ? LyricLineInter.create(line)
+                                sentence = lyrics ? LyricLineInter.create(line)
                                         : ((role == TextRole.ChordName)
                                                 ? ChordNameInter.create(line)
                                                 : SentenceInter.create(line));
