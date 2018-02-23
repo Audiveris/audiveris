@@ -145,6 +145,15 @@ public class HeadStemRelation
     }
 
     //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
     // isSingleTarget //
     //----------------//
     @Override

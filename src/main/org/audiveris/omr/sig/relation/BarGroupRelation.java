@@ -55,6 +55,24 @@ public class BarGroupRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
+    }
+
     //-----------//
     // internals //
     //-----------//

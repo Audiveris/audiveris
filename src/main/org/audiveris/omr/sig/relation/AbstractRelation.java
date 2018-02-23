@@ -104,24 +104,6 @@ public abstract class AbstractRelation
         return manual;
     }
 
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return false;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return false;
-    }
-
     //---------//
     // removed //
     //---------//

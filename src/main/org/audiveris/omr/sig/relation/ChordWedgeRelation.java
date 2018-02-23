@@ -99,6 +99,15 @@ public class ChordWedgeRelation
     }
 
     //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
     // isSingleTarget //
     //----------------//
     @Override

@@ -80,6 +80,15 @@ public class ChordTupletRelation
     }
 
     //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
     // isSingleTarget //
     //----------------//
     @Override

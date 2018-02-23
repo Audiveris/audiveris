@@ -69,6 +69,15 @@ public class RepeatDotBarRelation
     }
 
     //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
     // isSingleTarget //
     //----------------//
     @Override

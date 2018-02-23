@@ -34,4 +34,23 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class NoExclusion
         extends AbstractSupport
 {
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
+    }
 }

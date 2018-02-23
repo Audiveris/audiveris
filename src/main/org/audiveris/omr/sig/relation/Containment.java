@@ -61,6 +61,15 @@ public class Containment
         return true;
     }
 
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
+    }
+
     //---------//
     // removed //
     //---------//

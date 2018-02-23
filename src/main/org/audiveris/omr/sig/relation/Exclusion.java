@@ -68,6 +68,27 @@ public class Exclusion
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
     @Override
     protected String internals ()
     {
