@@ -322,15 +322,15 @@ public class AugmentationDotInter
      * If the collection of (dot-related) heads contains mirrored heads, keep only the
      * head with longer duration
      *
-     * @param heads the heads looked up near a candidate augmentation dot
+     * @param notes the notes (head/rest) looked up near a candidate augmentation dot
      */
-    private static void filterMirrorHeads (List<Inter> heads)
+    private static void filterMirrorHeads (List<Inter> notes)
     {
-        if (heads.size() < 2) {
+        if (notes.size() < 2) {
             return;
         }
 
-        Collections.sort(heads, Inters.byId);
+        Collections.sort(notes, Inters.byId);
 
         boolean modified;
 
@@ -338,35 +338,37 @@ public class AugmentationDotInter
             modified = false;
 
             InterLoop:
-            for (Inter inter : heads) {
-                HeadInter head = (HeadInter) inter;
-                Inter mirrorInter = head.getMirror();
+            for (Inter inter : notes) {
+                if (inter instanceof HeadInter) {
+                    HeadInter head = (HeadInter) inter;
+                    Inter mirrorInter = head.getMirror();
 
-                if ((mirrorInter != null) && heads.contains(mirrorInter)) {
-                    HeadInter mirrorHead = (HeadInter) mirrorInter;
-                    Rational hDur = head.getChord().getDurationSansDotOrTuplet();
-                    Rational mDur = mirrorHead.getChord().getDurationSansDotOrTuplet();
+                    if ((mirrorInter != null) && notes.contains(mirrorInter)) {
+                        HeadInter mirrorHead = (HeadInter) mirrorInter;
+                        Rational hDur = head.getChord().getDurationSansDotOrTuplet();
+                        Rational mDur = mirrorHead.getChord().getDurationSansDotOrTuplet();
 
-                    switch (mDur.compareTo(hDur)) {
-                    case -1:
-                        heads.remove(mirrorHead);
-                        modified = true;
+                        switch (mDur.compareTo(hDur)) {
+                        case -1:
+                            notes.remove(mirrorHead);
+                            modified = true;
 
-                        break InterLoop;
+                            break InterLoop;
 
-                    case +1:
-                        heads.remove(head);
-                        modified = true;
+                        case +1:
+                            notes.remove(head);
+                            modified = true;
 
-                        break InterLoop;
+                            break InterLoop;
 
-                    case 0:
-                        // Same duration (but we don't have flags yet!) TODO: review this
-                        // Keep the one with lower ID
-                        heads.remove(mirrorHead);
-                        modified = true;
+                        case 0:
+                            // Same duration (but we don't have flags yet!) TODO: review this
+                            // Keep the one with lower ID
+                            notes.remove(mirrorHead);
+                            modified = true;
 
-                        break InterLoop;
+                            break InterLoop;
+                        }
                     }
                 }
             }
