@@ -68,7 +68,7 @@ public abstract class InterTask
     {
         super(sig);
         this.inter = inter;
-        this.initialBounds = new Rectangle(initialBounds); // Safer to use a copy...
+        this.initialBounds = (initialBounds != null) ? new Rectangle(initialBounds) : null;
         this.links = links;
     }
 

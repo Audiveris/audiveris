@@ -67,8 +67,10 @@ public class LinkTask
     {
         sig.removeEdge(getRelation());
 
-        // Source inter may have been removed when publication is seen on UI, so don't publish!
-        ///sheet.getInterIndex().publish(source);
+//        // Source inter may have been removed when publication is seen on UI...
+//        if (!source.isRemoved()) {
+//            sheet.getInterIndex().publish(source);
+//        }
     }
 
     @Override

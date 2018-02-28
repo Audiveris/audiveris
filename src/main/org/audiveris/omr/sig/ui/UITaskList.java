@@ -67,6 +67,9 @@ public class UITaskList
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----//
+    // add //
+    //-----//
     /**
      * Add a task to the task sequence
      *
@@ -77,43 +80,17 @@ public class UITaskList
         list.add(task);
     }
 
-    public InterTask getFirstInterTask ()
-    {
-        for (UITask task : getTasks()) {
-            if (task instanceof InterTask) {
-                return (InterTask) task;
-            }
-        }
-
-        return null;
-    }
-
-    public RelationTask getFirstRelationTask ()
-    {
-        for (UITask task : getTasks()) {
-            if (task instanceof RelationTask) {
-                return (RelationTask) task;
-            }
-        }
-
-        return null;
-    }
-
-    public UITask getFirstTask ()
-    {
-        return list.get(0);
-    }
-
-    public UITask getLastTask ()
-    {
-        return list.get(list.size() - 1);
-    }
-
+    //----------//
+    // getTasks //
+    //----------//
     public List<UITask> getTasks ()
     {
         return list;
     }
 
+    //-----------//
+    // performDo //
+    //-----------//
     public void performDo ()
     {
         logger.debug("  do {}", this);
@@ -123,6 +100,9 @@ public class UITaskList
         }
     }
 
+    //-------------//
+    // performUndo //
+    //-------------//
     public void performUndo ()
     {
         logger.debug("undo {}", this);
@@ -134,9 +114,20 @@ public class UITaskList
         }
     }
 
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
-        return list.toString();
+        StringBuilder sb = new StringBuilder("seq[");
+
+        for (UITask task : list) {
+            sb.append("\n   ").append(task);
+        }
+
+        sb.append("]");
+
+        return sb.toString();
     }
 }

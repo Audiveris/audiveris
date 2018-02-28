@@ -28,9 +28,6 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.Relations;
-import org.audiveris.omr.sig.ui.LinkTask;
-import org.audiveris.omr.sig.ui.UITaskList;
-import org.audiveris.omr.sig.ui.UnlinkTask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -81,6 +77,9 @@ public class RelationVector
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // extendTo //
+    //----------//
     /**
      * Modify vector stopping point.
      *
@@ -91,6 +90,9 @@ public class RelationVector
         line.setLine(line.getP1(), pt);
     }
 
+    //---------//
+    // process //
+    //---------//
     /**
      * Process the vector into a relation.
      *
@@ -115,16 +117,39 @@ public class RelationVector
         for (Inter start : starts) {
             for (Inter stop : stops) {
                 for (boolean reverse : new boolean[]{false, true}) {
-                    boolean linked = processLink(start, stop, reverse);
+                    final Inter source = reverse ? stop : start;
+                    final Inter target = reverse ? start : stop;
+                    final Set<Class<? extends Relation>> suggestions;
+                    suggestions = Relations.suggestedRelationsBetween(source, target);
 
-                    if (linked) {
+                    if (suggestions.isEmpty()) {
+                        continue;
+                    }
+
+                    logger.debug("src:{} tgt:{} suggestions:{}", source, target, suggestions);
+
+                    try {
+                        SIGraph sig = source.getSig();
+                        Class<? extends Relation> relClass = suggestions.iterator().next();
+
+                        // Allocate relation to be added
+                        Relation relation = relClass.newInstance();
+                        relation.setManual(true);
+
+                        sheet.getInterController().link(sig, source, target, relation);
+
                         return;
+                    } catch (Exception ex) {
+                        logger.warn("Error linking {}", ex.toString(), ex);
                     }
                 }
             }
         }
     }
 
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
@@ -134,61 +159,5 @@ public class RelationVector
         sb.append("}");
 
         return sb.toString();
-    }
-
-    private boolean processLink (Inter start,
-                                 Inter stop,
-                                 boolean reverse)
-    {
-        final SIGraph sig = stop.getSig();
-        final Inter source = reverse ? stop : start;
-        final Inter target = reverse ? start : stop;
-        final Set<Class<? extends Relation>> sugs;
-        sugs = Relations.suggestedRelationsBetween(source, target);
-        logger.debug("src:{} tgt:{} suggestions:{}", source, target, sugs);
-
-        if (sugs.isEmpty()) {
-            return false;
-        }
-
-        try {
-            final UITaskList seq = new UITaskList();
-            Class<? extends Relation> sugClass = sugs.iterator().next();
-
-            // Allocate relation to be added
-            Relation relation = sugClass.newInstance();
-            relation.setManual(true);
-
-            // Remove conflicting relations if any
-            Set<Relation> toRemove = new LinkedHashSet<Relation>();
-
-            if (relation.isSingleSource()) {
-                for (Relation rel : sig.getRelations(target, sugClass)) {
-                    toRemove.add(rel);
-                }
-            }
-
-            if (relation.isSingleTarget()) {
-                for (Relation rel : sig.getRelations(source, sugClass)) {
-                    toRemove.add(rel);
-                }
-            }
-
-            for (Relation rel : toRemove) {
-                seq.add(new UnlinkTask(sig, rel));
-            }
-
-            // Finally, add relation
-            seq.add(new LinkTask(sig, source, target, relation));
-
-            // Process the sequence of tasks
-            sheet.getInterController().process(seq);
-
-            return true; // Normal exit
-        } catch (Exception ex) {
-            logger.warn("Error linking {}", ex.toString(), ex);
-        }
-
-        return false;
     }
 }

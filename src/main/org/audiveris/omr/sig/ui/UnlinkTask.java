@@ -54,7 +54,10 @@ public class UnlinkTask
     {
         sig.removeEdge(getRelation());
 
-        sheet.getInterIndex().publish(source);
+//        // Source inter may have been removed when publication is seen on UI...
+//        if (!source.isRemoved()) {
+//            sheet.getInterIndex().publish(source);
+//        }
     }
 
     @Override

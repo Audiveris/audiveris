@@ -175,6 +175,9 @@ public class HeadStemRelation
         stem.checkAbnormal();
     }
 
+    //-------------//
+    // setHeadSide //
+    //-------------//
     /**
      * @param headSide the headSide to set
      */

@@ -31,7 +31,6 @@ import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Lags;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.lag.ui.SectionBoard;
-import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.score.ui.EditorMenu;
 import org.audiveris.omr.sheet.Part;
@@ -50,12 +49,10 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.sig.relation.Relations;
 import org.audiveris.omr.sig.relation.Support;
 import org.audiveris.omr.sig.ui.InterBoard;
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.sig.ui.InterService;
-import org.audiveris.omr.sig.ui.RelationClassAction;
 import org.audiveris.omr.sig.ui.ShapeBoard;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.BoardsPane;
@@ -81,7 +78,6 @@ import java.awt.Rectangle;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
 import java.awt.Stroke;
-import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -307,7 +303,6 @@ public class SymbolsEditor
     {
         view.repaint();
     }
-
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
@@ -631,18 +626,6 @@ public class SymbolsEditor
                                     }
                                 }
                             }
-
-                            // Suggested support?
-                            InterController interController = sheet.getInterController();
-                            RelationClassAction rca = interController.getRelationClassAction();
-
-                            if (rca != null) {
-                                painter.drawSupport(
-                                        rca.getSource(),
-                                        rca.getTarget(),
-                                        rca.getRelationClass(),
-                                        true);
-                            }
                         }
                     }
                 }
@@ -707,6 +690,5 @@ public class SymbolsEditor
 
             return (!starts.isEmpty()) ? new RelationVector(p1, starts) : null;
         }
-
     }
 }

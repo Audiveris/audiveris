@@ -32,7 +32,6 @@ import org.audiveris.omr.glyph.ui.NestView;
 import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.symbol.SymbolFactory;
@@ -63,6 +62,7 @@ import org.audiveris.omr.text.TextBuilder;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.text.TextWord;
+import org.audiveris.omr.ui.util.UIThread;
 import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
@@ -79,6 +79,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.InputMap;
@@ -122,9 +123,6 @@ public class InterController
     /** User pane. Lazily assigned */
     private SymbolsEditor editor;
 
-    /** User relation suggestion, if any. TODO: use a set for multiple items? */
-    private RelationClassAction relationClassAction;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code IntersController} object.
@@ -146,6 +144,7 @@ public class InterController
      * @param aGlyph the glyph to interpret
      * @param shape  the shape to be assigned
      */
+    @UIThread
     public void addInter (Glyph aGlyph,
                           final Shape shape)
     {
@@ -165,218 +164,32 @@ public class InterController
             protected Void doInBackground ()
             {
                 try {
-                    StaffManager staffManager = sheet.getStaffManager();
-
-                    // While interacting with user, make sure we have the related staff & system
-                    SystemInfo system;
-                    Staff staff = null;
-                    final Point center = glyph.getCenter();
-                    final List<Staff> staves = staffManager.getStavesOf(center);
-
-                    if (staves.isEmpty()) {
-                        throw new IllegalStateException("No staff for " + center);
-                    }
-
+                    Collection<Link> links = new ArrayList<Link>();
                     Inter ghost = SymbolFactory.createManual(shape);
                     ghost.setBounds(glyph.getBounds());
                     ghost.setGlyph(glyph);
 
-                    Collection<Link> links = null;
+                    // While interacting with user, make sure we have the target staff
+                    Staff staff = determineStaff(glyph, ghost, links);
 
-                    if (staves.size() == 1) {
-                        // Staff is uniquely defined
-                        staff = staves.get(0);
-                        system = staff.getSystem();
-                        links = ghost.searchLinks(system, false);
-                    }
+                    if (staff != null) {
+                        SystemInfo system = staff.getSystem();
+                        ghost.setStaff(staff);
 
-                    // Sort the 2 staves by increasing distance from glyph center
-                    Collections.sort(
-                            staves,
-                            new Comparator<Staff>()
-                    {
-                        @Override
-                        public int compare (Staff s1,
-                                            Staff s2)
-                        {
-                            return Double.compare(
-                                    s1.distanceTo(center),
-                                    s2.distanceTo(center));
+                        // If glyph used by another inter, delete this other inter
+                        removeCompetitors(ghost, glyph, system, seq);
+
+                        // Make sure we have the correct links
+                        if (links.isEmpty()) {
+                            links.addAll(ghost.searchLinks(system, false));
                         }
-                    });
 
-                    if ((staff == null) && constants.useStaffLink.isSet()) {
-                        // Try to use link
-                        SystemInfo prevSystem = null;
-                        StaffLoop:
-                        for (Staff stf : staves) {
-                            system = stf.getSystem();
-
-                            if (system != prevSystem) {
-                                links = ghost.searchLinks(system, false);
-
-                                for (Link p : links) {
-                                    if (p.partner.getStaff() != null) {
-                                        staff = p.partner.getStaff();
-
-                                        // We stop on first link found (we check closest staff first)
-                                        break StaffLoop;
-                                    }
-                                }
-
-                                links = null;
-                            }
-
-                            prevSystem = system;
-                        }
-                    }
-
-                    if ((staff == null) && constants.useStaffProximity.isSet()) {
-                        // Use proximity to staff (vertical margin defined as ratio of gutter)
-                        final double bestDist = staves.get(0).distanceTo(center);
-                        final double otherDist = staves.get(1).distanceTo(center);
-                        final double gutter = bestDist + otherDist;
-
-                        if (bestDist <= (gutter * constants.gutterRatio.getValue())) {
-                            staff = staves.get(0);
-                        }
-                    }
-
-                    if (staff == null) {
-                        // Finally, prompt user...
-                        int option = StaffSelection.getInstance().prompt();
-
-                        if (option >= 0) {
-                            staff = staves.get(option);
-                        }
-                    }
-
-                    if (staff == null) {
+                        addGhost(seq, ghost, links);
+                    } else {
                         logger.info("No staff, abandonned.");
-
-                        return null;
                     }
-
-                    ghost.setStaff(staff);
-                    system = staff.getSystem();
-
-                    // If glyph used by another inter, delete this other inter
-                    removeCompetitors(ghost, glyph, system);
-
-                    // Make sure we have the correct links
-                    if (links == null) {
-                        links = ghost.searchLinks(system, false);
-                    }
-
-                    addGhost(ghost, links);
                 } catch (Throwable ex) {
                     logger.warn("Exception in addInter {}", ex.toString(), ex);
-                }
-
-                return null;
-            }
-        }.execute();
-    }
-
-    //---------//
-    // addText //
-    //---------//
-    /**
-     * Special addition of glyph text
-     *
-     * @param glyph to be OCR'ed to text lines and words
-     * @param shape either TEXT or LYRICS
-     */
-    public void addText (final Glyph glyph,
-                         final Shape shape)
-    {
-        new CtrlTask()
-        {
-            @Override
-            protected Void doInBackground ()
-            {
-                try {
-                    final Point centroid = glyph.getCentroid();
-                    final SystemInfo system = sheet.getSystemManager().getClosestSystem(
-                            centroid);
-
-                    if (system == null) {
-                        return null;
-                    }
-
-                    final SIGraph sig = system.getSig();
-
-                    // Retrieve lines relative to glyph origin
-                    ByteProcessor buffer = glyph.getBuffer();
-                    List<TextLine> relativeLines = new GlyphScanner(sheet).scanBuffer(
-                            buffer,
-                            sheet.getStub().getLanguageParam().getActual(),
-                            glyph.getId());
-
-                    // Retrieve absolute lines (and the underlying word glyphs)
-                    boolean lyrics = shape == Shape.LYRICS;
-                    List<TextLine> lines = new TextBuilder(system, lyrics).retrieveGlyphLines(
-                            buffer,
-                            relativeLines,
-                            glyph.getTopLeft());
-
-                    // Generate the sequence of word/line Inter additions
-                    final UITaskList seq = new UITaskList();
-
-                    for (TextLine line : lines) {
-                        logger.debug("line {}", line);
-
-                        TextRole role = line.getRole();
-                        SentenceInter sentence = null;
-                        Staff staff = null;
-
-                        for (TextWord textWord : line.getWords()) {
-                            logger.debug("word {}", textWord);
-
-                            WordInter word = lyrics ? new LyricItemInter(textWord)
-                                    : new WordInter(textWord);
-
-                            if (sentence != null) {
-                                seq.add(
-                                        new AdditionTask(
-                                                sig,
-                                                word,
-                                                textWord.getBounds(),
-                                                Arrays.asList(
-                                                        new Link(sentence, new Containment(), false))));
-                            } else {
-                                sentence = lyrics ? LyricLineInter.create(line)
-                                        : ((role == TextRole.ChordName)
-                                                ? ChordNameInter.create(line)
-                                                : SentenceInter.create(line));
-                                staff = sentence.assignStaff(system, line.getLocation());
-                                seq.add(
-                                        new AdditionTask(
-                                                sig,
-                                                word,
-                                                textWord.getBounds(),
-                                                Collections.EMPTY_SET));
-                                seq.add(
-                                        new AdditionTask(
-                                                sig,
-                                                sentence,
-                                                line.getBounds(),
-                                                Arrays.asList(new Link(word, new Containment(), true))));
-                            }
-
-                            word.setStaff(staff);
-                        }
-                    }
-
-                    history.add(seq);
-                    seq.performDo();
-
-                    sheet.getInterIndex().publish(null);
-                    sheet.getGlyphIndex().publish(null);
-
-                    epilog(DO, seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in addText {}", ex.toString(), ex);
                 }
 
                 return null;
@@ -392,6 +205,7 @@ public class InterController
      *
      * @return true if so
      */
+    @UIThread
     public boolean canRedo ()
     {
         return history.canRedo();
@@ -405,6 +219,7 @@ public class InterController
      *
      * @return true if so
      */
+    @UIThread
     public boolean canUndo ()
     {
         return history.canUndo();
@@ -419,6 +234,7 @@ public class InterController
      * @param sentence the sentence to modify
      * @param newRole  the new role for the sentence
      */
+    @UIThread
     public void changeSentence (final SentenceInter sentence,
                                 final TextRole newRole)
     {
@@ -430,14 +246,9 @@ public class InterController
             protected Void doInBackground ()
             {
                 try {
-                    final UITaskList seq = new UITaskList(
-                            new SentenceRoleTask(sentence, newRole));
-                    history.add(seq);
-
+                    seq.add(new SentenceRoleTask(sentence, newRole));
                     seq.performDo();
-
                     sheet.getInterIndex().publish(sentence);
-
                     epilog(DO, seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in changeSentence {}", ex.toString(), ex);
@@ -457,6 +268,7 @@ public class InterController
      * @param word     the word to modify
      * @param newValue the new word content
      */
+    @UIThread
     public void changeWord (final WordInter word,
                             final String newValue)
     {
@@ -468,13 +280,9 @@ public class InterController
             protected Void doInBackground ()
             {
                 try {
-                    final UITaskList seq = new UITaskList(new WordValueTask(word, newValue));
-                    history.add(seq);
-
+                    seq.add(new WordValueTask(word, newValue));
                     seq.performDo();
-
                     sheet.getInterIndex().publish(word);
-
                     epilog(DO, seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in changeWord {}", ex.toString(), ex);
@@ -491,6 +299,7 @@ public class InterController
     /**
      * Clear history of user actions.
      */
+    @UIThread
     public void clearHistory ()
     {
         history.clear();
@@ -509,6 +318,7 @@ public class InterController
      * @param ghost  the populated inter (staff &amp; bounds are already set)
      * @param center the target location for inter center (could be useful)
      */
+    @UIThread
     public void dropInter (final Inter ghost,
                            Point center)
     {
@@ -525,7 +335,7 @@ public class InterController
                     // Edges? this depends on ghost class...
                     Collection<Link> links = ghost.searchLinks(system, false);
 
-                    addGhost(ghost, links);
+                    addGhost(seq, ghost, links);
                 } catch (Throwable ex) {
                     logger.warn("Exception in dropInter {}", ex.toString(), ex);
                 }
@@ -533,17 +343,6 @@ public class InterController
                 return null;
             }
         }.execute();
-    }
-
-    //------------------------//
-    // getRelationClassAction //
-    //------------------------//
-    /**
-     * @return the relationClassAction
-     */
-    public RelationClassAction getRelationClassAction ()
-    {
-        return relationClassAction;
     }
 
     //------//
@@ -557,40 +356,11 @@ public class InterController
      * @param target   the target inter
      * @param relation the relation to add
      */
-    public void link (SIGraph sig,
+    @UIThread
+    public void link (final SIGraph sig,
                       final Inter source,
-                      Inter target,
-                      Relation relation)
-    {
-        final UITaskList seq = new UITaskList();
-        seq.add(new LinkTask(sig, source, target, relation));
-        new CtrlTask()
-        {
-            @Override
-            protected Void doInBackground ()
-            {
-                try {
-                    logger.debug("link {}", seq);
-
-                    history.add(seq);
-                    seq.performDo();
-
-                    sheet.getInterIndex().publish(source);
-
-                    epilog(DO, seq);
-                } catch (Throwable ex) {
-                    logger.warn("Exception in link {}", ex.toString(), ex);
-                }
-
-                return null;
-            }
-        }.execute();
-    }
-
-    //---------//
-    // process //
-    //---------//
-    public void process (final UITaskList seq)
+                      final Inter target,
+                      final Relation relation)
     {
         new CtrlTask()
         {
@@ -598,14 +368,59 @@ public class InterController
             protected Void doInBackground ()
             {
                 try {
-                    logger.info("process {}", seq);
+                    if (relation instanceof HeadStemRelation) {
+                        HeadInter head = (HeadInter) source;
+                        StemInter stem = (StemInter) target;
+                        HeadChordInter headChord = (HeadChordInter) head.getChord();
 
-                    ///Inter source = sig.getEdgeSource(relation);
-                    history.add(seq);
+                        if (headChord != null) {
+                            List<HeadChordInter> stemChords = stem.getChords();
 
+                            if (!stemChords.isEmpty() && !stemChords.contains(headChord)) {
+                                // Unlink head from headChord
+                                seq.add(
+                                        new UnlinkTask(
+                                                sig,
+                                                sig.getRelation(headChord, head, Containment.class)));
+
+                                if (headChord.getNotes().size() <= 1) {
+                                    // Remove headChord getting empty
+                                    seq.add(new RemovalTask(headChord));
+                                }
+
+                                // Link head to stem chord
+                                seq.add(
+                                        new LinkTask(
+                                                sig,
+                                                stemChords.get(0),
+                                                head,
+                                                new Containment()));
+                            }
+                        }
+                    }
+
+                    // Remove conflicting relations if any
+                    Set<Relation> toRemove = new LinkedHashSet<Relation>();
+
+                    if (relation.isSingleSource()) {
+                        for (Relation rel : sig.getRelations(target, relation.getClass())) {
+                            toRemove.add(rel);
+                        }
+                    }
+
+                    if (relation.isSingleTarget()) {
+                        for (Relation rel : sig.getRelations(source, relation.getClass())) {
+                            toRemove.add(rel);
+                        }
+                    }
+
+                    for (Relation rel : toRemove) {
+                        seq.add(new UnlinkTask(sig, rel));
+                    }
+
+                    // Finally, add relation
+                    seq.add(new LinkTask(sig, source, target, relation));
                     seq.performDo();
-
-                    ///sheet.getInterIndex().publish(source);
                     epilog(DO, seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in process {}", ex.toString(), ex);
@@ -622,6 +437,7 @@ public class InterController
     /**
      * Redo last user (undone) action sequence.
      */
+    @UIThread
     public void redo ()
     {
         new CtrlTask()
@@ -630,7 +446,7 @@ public class InterController
             protected Void doInBackground ()
             {
                 try {
-                    UITaskList seq = history.toRedo();
+                    seq = history.toRedo();
                     seq.performDo();
 
                     sheet.getInterIndex().publish(null);
@@ -653,6 +469,7 @@ public class InterController
      *
      * @param inter the inter to remove
      */
+    @UIThread
     public void removeInter (final Inter inter)
     {
         removeInters(Arrays.asList(inter));
@@ -666,6 +483,7 @@ public class InterController
      *
      * @param inters the inters to remove
      */
+    @UIThread
     public void removeInters (final Collection<? extends Inter> inters)
     {
         new CtrlTask()
@@ -674,7 +492,11 @@ public class InterController
             protected Void doInBackground ()
             {
                 try {
-                    syncRemoveInters(inters);
+                    populateRemovals(inters, seq);
+
+                    seq.performDo();
+                    sheet.getInterIndex().publish(null);
+                    epilog(DO, seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in removeInters {}", ex.toString(), ex);
                 }
@@ -692,6 +514,7 @@ public class InterController
      *
      * @param stack measure stack to reprocess
      */
+    @UIThread
     public void reprocessRhythm (final MeasureStack stack)
     {
         new CtrlTask()
@@ -722,17 +545,6 @@ public class InterController
         }.execute();
     }
 
-    //------------------------//
-    // setRelationClassAction //
-    //------------------------//
-    /**
-     * @param relationClassAction the relationClassAction to set
-     */
-    public void setRelationClassAction (RelationClassAction relationClassAction)
-    {
-        this.relationClassAction = relationClassAction;
-    }
-
     //------------------//
     // setSymbolsEditor //
     //------------------//
@@ -760,6 +572,7 @@ public class InterController
     /**
      * Undo last user action.
      */
+    @UIThread
     public void undo ()
     {
         new CtrlTask()
@@ -792,6 +605,7 @@ public class InterController
      * @param sig      the containing SIG
      * @param relation the relation to remove
      */
+    @UIThread
     public void unlink (final SIGraph sig,
                         final Relation relation)
     {
@@ -803,11 +617,9 @@ public class InterController
                 try {
                     logger.debug("unlink on {}", relation);
 
-                    UITaskList seq = new UITaskList();
                     seq.add(new UnlinkTask(sig, relation));
 
                     Inter source = sig.getEdgeSource(relation);
-                    history.add(seq);
 
                     seq.performDo();
 
@@ -829,10 +641,12 @@ public class InterController
     /**
      * Perform ghost addition.
      *
+     * @param seq   (output) the UITaskList to populate
      * @param ghost the ghost inter to add/drop
      * @param links its links
      */
-    private void addGhost (Inter ghost,
+    private void addGhost (UITaskList seq,
+                           Inter ghost,
                            Collection<Link> links)
     {
         final Rectangle ghostBounds = ghost.getBounds();
@@ -840,7 +654,7 @@ public class InterController
         final SIGraph sig = staff.getSystem().getSig();
 
         // Inter addition
-        final UITaskList seq = new UITaskList(new AdditionTask(sig, ghost, ghostBounds, links));
+        seq.add(new AdditionTask(sig, ghost, ghostBounds, links));
 
         // Related additions if any
         if (ghost instanceof RestInter) {
@@ -897,14 +711,211 @@ public class InterController
             }
         }
 
-        history.add(seq);
-
         seq.performDo();
 
         sheet.getInterIndex().publish(ghost);
         sheet.getGlyphIndex().publish(null);
 
         epilog(DO, seq);
+    }
+
+    //---------//
+    // addText //
+    //---------//
+    /**
+     * Special addition of glyph text
+     *
+     * @param glyph to be OCR'ed to text lines and words
+     * @param shape either TEXT or LYRICS
+     */
+    @UIThread
+    private void addText (final Glyph glyph,
+                          final Shape shape)
+    {
+        new CtrlTask()
+        {
+            @Override
+            protected Void doInBackground ()
+            {
+                try {
+                    final Point centroid = glyph.getCentroid();
+                    final SystemInfo system = sheet.getSystemManager().getClosestSystem(
+                            centroid);
+
+                    if (system == null) {
+                        return null;
+                    }
+
+                    final SIGraph sig = system.getSig();
+
+                    // Retrieve lines relative to glyph origin
+                    ByteProcessor buffer = glyph.getBuffer();
+                    List<TextLine> relativeLines = new GlyphScanner(sheet).scanBuffer(
+                            buffer,
+                            sheet.getStub().getLanguageParam().getActual(),
+                            glyph.getId());
+
+                    // Retrieve absolute lines (and the underlying word glyphs)
+                    boolean lyrics = shape == Shape.LYRICS;
+                    List<TextLine> lines = new TextBuilder(system, lyrics).retrieveGlyphLines(
+                            buffer,
+                            relativeLines,
+                            glyph.getTopLeft());
+
+                    // Generate the sequence of word/line Inter additions
+                    for (TextLine line : lines) {
+                        logger.debug("line {}", line);
+
+                        TextRole role = line.getRole();
+                        SentenceInter sentence = null;
+                        Staff staff = null;
+
+                        for (TextWord textWord : line.getWords()) {
+                            logger.debug("word {}", textWord);
+
+                            WordInter word = lyrics ? new LyricItemInter(textWord)
+                                    : new WordInter(textWord);
+
+                            if (sentence != null) {
+                                seq.add(
+                                        new AdditionTask(
+                                                sig,
+                                                word,
+                                                textWord.getBounds(),
+                                                Arrays.asList(
+                                                        new Link(sentence, new Containment(), false))));
+                            } else {
+                                sentence = lyrics ? LyricLineInter.create(line)
+                                        : ((role == TextRole.ChordName)
+                                                ? ChordNameInter.create(line)
+                                                : SentenceInter.create(line));
+                                staff = sentence.assignStaff(system, line.getLocation());
+                                seq.add(
+                                        new AdditionTask(
+                                                sig,
+                                                word,
+                                                textWord.getBounds(),
+                                                Collections.EMPTY_SET));
+                                seq.add(
+                                        new AdditionTask(
+                                                sig,
+                                                sentence,
+                                                line.getBounds(),
+                                                Arrays.asList(new Link(word, new Containment(), true))));
+                            }
+
+                            word.setStaff(staff);
+                        }
+                    }
+
+                    seq.performDo();
+
+                    sheet.getInterIndex().publish(null);
+                    sheet.getGlyphIndex().publish(null);
+
+                    epilog(DO, seq);
+                } catch (Throwable ex) {
+                    logger.warn("Exception in addText {}", ex.toString(), ex);
+                }
+
+                return null;
+            }
+        }.execute();
+    }
+
+    //----------------//
+    // determineStaff //
+    //----------------//
+    /**
+     * Determine the target staff for the provided glyph.
+     *
+     * @param glyph provided glyph
+     * @param ghost glyph-based ghost
+     * @param links (output) to be populated by links
+     * @return the staff found or null
+     */
+    private Staff determineStaff (Glyph glyph,
+                                  Inter ghost,
+                                  Collection<Link> links)
+    {
+        Staff staff = null;
+        SystemInfo system;
+        final Point center = glyph.getCenter();
+        final List<Staff> staves = sheet.getStaffManager().getStavesOf(center);
+
+        if (staves.isEmpty()) {
+            throw new IllegalStateException("No staff for " + center);
+        }
+
+        if (staves.size() == 1) {
+            // Staff is uniquely defined
+            staff = staves.get(0);
+            system = staff.getSystem();
+            links.addAll(ghost.searchLinks(system, false));
+
+            return staff;
+        }
+
+        // Sort the 2 staves by increasing distance from glyph center
+        Collections.sort(
+                staves,
+                new Comparator<Staff>()
+        {
+            @Override
+            public int compare (Staff s1,
+                                Staff s2)
+            {
+                return Double.compare(s1.distanceTo(center), s2.distanceTo(center));
+            }
+        });
+
+        if ((staff == null) && constants.useStaffLink.isSet()) {
+            // Try to use link
+            SystemInfo prevSystem = null;
+            StaffLoop:
+            for (Staff stf : staves) {
+                system = stf.getSystem();
+
+                if (system != prevSystem) {
+                    links.addAll(ghost.searchLinks(system, false));
+
+                    for (Link p : links) {
+                        if (p.partner.getStaff() != null) {
+                            staff = p.partner.getStaff();
+
+                            // We stop on first link found (we check closest staff first)
+                            break StaffLoop;
+                        }
+                    }
+
+                    links.clear();
+                }
+
+                prevSystem = system;
+            }
+        }
+
+        if ((staff == null) && constants.useStaffProximity.isSet()) {
+            // Use proximity to staff (vertical margin defined as ratio of gutter)
+            final double bestDist = staves.get(0).distanceTo(center);
+            final double otherDist = staves.get(1).distanceTo(center);
+            final double gutter = bestDist + otherDist;
+
+            if (bestDist <= (gutter * constants.gutterRatio.getValue())) {
+                staff = staves.get(0);
+            }
+        }
+
+        if (staff == null) {
+            // Finally, prompt user...
+            int option = StaffSelection.getInstance().prompt();
+
+            if (option >= 0) {
+                staff = staves.get(option);
+            }
+        }
+
+        return staff;
     }
 
     //--------//
@@ -980,12 +991,44 @@ public class InterController
         return firstStep;
     }
 
+    //------------------//
+    // populateRemovals //
+    //------------------//
+    /**
+     * Prepare removal of the provided inters (with their relations)
+     *
+     * @param inters the inters to remove
+     * @param seq    the task sequence to append to
+     */
+    private void populateRemovals (Collection<? extends Inter> inters,
+                                   UITaskList seq)
+    {
+        // Dry run
+        final Removal removal = new Removal();
+
+        for (Inter inter : inters) {
+            if (inter.isRemoved()) {
+                continue;
+            }
+
+            if (inter.isVip()) {
+                logger.info("VIP removeInter {}", inter);
+            }
+
+            removal.include(inter);
+        }
+
+        // Now set the removal tasks
+        removal.populateTaskList(seq);
+    }
+
     //-----------//
     // refreshUI //
     //-----------//
     /**
      * Refresh UI after any user action sequence.
      */
+    @UIThread
     private void refreshUI ()
     {
         // Update editor display
@@ -1008,7 +1051,8 @@ public class InterController
      */
     private void removeCompetitors (Inter ghost,
                                     Glyph glyph,
-                                    SystemInfo system)
+                                    SystemInfo system,
+                                    UITaskList seq)
     {
         final List<Inter> intersected = system.getSig().intersectedInters(glyph.getBounds());
         final List<Inter> competitors = new ArrayList<Inter>();
@@ -1019,42 +1063,7 @@ public class InterController
             }
         }
 
-        syncRemoveInters(competitors);
-    }
-
-    //------------------//
-    // syncRemoveInters //
-    //------------------//
-    /**
-     * Remove the provided inters (with their relations)
-     *
-     * @param inters the inters to remove
-     */
-    private void syncRemoveInters (Collection<? extends Inter> inters)
-    {
-        // Dry run
-        final Removal removal = new Removal();
-
-        for (Inter inter : inters) {
-            if (inter.isRemoved()) {
-                continue;
-            }
-
-            if (inter.isVip()) {
-                logger.info("VIP removeInter {}", inter);
-            }
-
-            removal.include(inter);
-        }
-
-        // Now apply the removals
-        final UITaskList seq = removal.getTaskList();
-        history.add(seq);
-        seq.performDo();
-
-        sheet.getInterIndex().publish(null);
-
-        epilog(DO, seq);
+        populateRemovals(competitors, seq);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1067,11 +1076,17 @@ public class InterController
     private abstract class CtrlTask
             extends VoidTask
     {
-        //~ Methods --------------------------------------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
+        protected UITaskList seq = new UITaskList();
+
+        //~ Methods --------------------------------------------------------------------------------
         @Override
+        @UIThread
         protected void finished ()
         {
+            history.add(seq);
+
             // Refresh user display
             refreshUI();
         }
@@ -1118,38 +1133,6 @@ public class InterController
         LinkedHashSet<InterEnsemble> watched = new LinkedHashSet<InterEnsemble>();
 
         //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Build the operational task list
-         *
-         * @return the task list
-         */
-        public UITaskList getTaskList ()
-        {
-            UITaskList seq = new UITaskList();
-
-            // Examine watched ensembles
-            for (InterEnsemble ens : watched) {
-                List<Inter> members = new ArrayList<Inter>(ens.getMembers());
-                members.removeAll(inters);
-
-                if (members.isEmpty()) {
-                    ensembles.add(ens);
-                }
-            }
-
-            // Ensembles to remove first
-            for (InterEnsemble ens : ensembles) {
-                seq.add(new RemovalTask(ens));
-            }
-
-            // Simple inters to remove second
-            for (Inter inter : inters) {
-                seq.add(new RemovalTask(inter));
-            }
-
-            return seq;
-        }
-
         public void include (Inter inter)
         {
             if (inter instanceof InterEnsemble) {
@@ -1180,6 +1163,34 @@ public class InterController
                         watched.add(ens);
                     }
                 }
+            }
+        }
+
+        /**
+         * Populate the operational task list
+         *
+         * @param seq the task list to populate
+         */
+        public void populateTaskList (UITaskList seq)
+        {
+            // Examine watched ensembles
+            for (InterEnsemble ens : watched) {
+                List<Inter> members = new ArrayList<Inter>(ens.getMembers());
+                members.removeAll(inters);
+
+                if (members.isEmpty()) {
+                    ensembles.add(ens);
+                }
+            }
+
+            // Ensembles to remove first
+            for (InterEnsemble ens : ensembles) {
+                seq.add(new RemovalTask(ens));
+            }
+
+            // Simple inters to remove second
+            for (Inter inter : inters) {
+                seq.add(new RemovalTask(inter));
             }
         }
 
