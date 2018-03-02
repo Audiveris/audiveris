@@ -153,7 +153,7 @@ public class SlurHeadRelation
     @Override
     public boolean isSingleSource ()
     {
-        return true;
+        return false;
     }
 
     //----------------//
@@ -162,7 +162,7 @@ public class SlurHeadRelation
     @Override
     public boolean isSingleTarget ()
     {
-        return true;
+        return false;
     }
 
     //---------//
