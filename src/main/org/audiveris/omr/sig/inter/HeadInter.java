@@ -299,7 +299,9 @@ public class HeadInter
 
                     if (note == this) {
                         started = true;
-                    } else if (started && (note.getStep() == getStep())) {
+                    } else if (started && (note.getStep() == getStep())
+                           && (note.getOctave() == getOctave())
+                           && (note.getStaff() == getStaff())) {
                         AlterInter accid = note.getAccidental();
 
                         if (accid != null) {
