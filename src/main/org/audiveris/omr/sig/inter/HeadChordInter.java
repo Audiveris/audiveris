@@ -25,8 +25,10 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
+import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.Entities;
+import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +46,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class {@code HeadChordInter} is a AbstractChordInter composed of heads and possibly
  * a stem.
  * <p>
- * Heads are linked via {@link Containment} relation and stem vis {@link ChordStemRelation}.
+ * Heads are linked via {@link Containment} relation and stem via {@link ChordStemRelation}.
  *
  * @author Hervé Bitteur
  */
@@ -257,6 +259,44 @@ public class HeadChordInter
     public Rectangle getHeadsBounds ()
     {
         return Entities.getBounds(getMembers());
+    }
+
+    //----------------//
+    // getHeadsBounds //
+    //----------------//
+    /**
+     * Report the bounding box of the heads located on desired side of the stem if any.
+     *
+     * @param stemSide desired side of the stem
+     * @return the side heads bounding box, or null if none
+     */
+    public Rectangle getHeadsBounds (HorizontalSide stemSide)
+    {
+        final StemInter stem = getStem();
+
+        if (stem == null) {
+            return null;
+        }
+
+        final HorizontalSide headSide = stemSide.opposite();
+        Rectangle rect = null;
+
+        for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
+            HeadStemRelation hsRel = (HeadStemRelation) rel;
+
+            // Check side
+            if (hsRel.getHeadSide() == headSide) {
+                final Rectangle headBox = sig.getEdgeSource(rel).getBounds();
+
+                if (rect == null) {
+                    rect = headBox;
+                } else {
+                    rect.add(headBox);
+                }
+            }
+        }
+
+        return rect;
     }
 
     //----------------//

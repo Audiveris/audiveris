@@ -24,11 +24,9 @@ package org.audiveris.omr.sig;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-
 import static org.audiveris.omr.glyph.ShapeSet.Accidentals;
 import static org.audiveris.omr.glyph.ShapeSet.CoreBarlines;
 import static org.audiveris.omr.glyph.ShapeSet.Flags;
-
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
@@ -47,12 +45,15 @@ import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.DeletedInterException;
+import org.audiveris.omr.sig.inter.EnsembleHelper;
+import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.inter.StemInter;
@@ -72,17 +73,13 @@ import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
-
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_MIDDLE;
 import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
-
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 
@@ -557,27 +554,91 @@ public class SigReducer
         return modifs;
     }
 
-    //----------------//
-    // checkAugmented //
-    //----------------//
+    //--------------------//
+    // checkAugmentedDots //
+    //--------------------//
     /**
-     * Perform checks on augmented entities.
-     * <p>
-     * An entity (note, rest or augmentation dot) can have at most one augmentation dot.
-     * <p>
-     * NOTA: This is OK for rests but not always for heads.
-     * TODO: We could address head-chords rather than individual heads and handle the chord
-     * augmentation dots as a whole (in parallel with chord heads) and link each chord head with its
-     * 'facing' dot.
+     * Perform checks on augmented dots (double dots).
      *
      * @return the count of modifications done
      */
-    private int checkAugmented ()
+    private int checkAugmentedDots ()
     {
-        logger.debug("S#{} checkAugmented", system.getId());
+        logger.debug("S#{} checkAugmentedDots", system.getId());
 
         int modifs = 0;
-        List<Inter> entities = sig.inters(AbstractNoteInter.class);
+        List<Inter> entities = sig.inters(AugmentationDotInter.class);
+
+        for (Inter entity : entities) {
+            Set<Relation> rels = sig.getRelations(entity, DoubleDotRelation.class);
+
+            if (rels.size() > 1) {
+                modifs += reduceAugmentations(rels);
+
+                if (entity.isVip()) {
+                    logger.info("VIP reduced augmentations for {}", entity);
+                }
+            }
+        }
+
+        return modifs;
+    }
+
+    //---------------------//
+    // checkAugmentedHeads //
+    //---------------------//
+    /**
+     * Perform checks on augmented heads.
+     * <p>
+     * Here we work headChord by headChord.
+     *
+     * @return the count of modifications done
+     */
+    private int checkAugmentedHeads ()
+    {
+        logger.debug("S#{} checkAugmentedHeads", system.getId());
+
+        int modifs = 0;
+        final List<Inter> headChords = sig.inters(HeadChordInter.class);
+
+        for (Inter hc : headChords) {
+            final HeadChordInter chord = (HeadChordInter) hc;
+
+            // Heads, ordered top down
+            final List<? extends Inter> heads = EnsembleHelper.getMembers(
+                    chord,
+                    Inters.byCenterOrdinate);
+
+            for (Inter entity : heads) {
+                final Set<Relation> rels = sig.getRelations(entity, AugmentationRelation.class);
+
+                if (rels.size() > 1) {
+                    modifs += reduceHeadAugmentations((HeadInter) entity, rels);
+
+                    if (entity.isVip()) {
+                        logger.info("VIP reduced augmentations for {}", entity);
+                    }
+                }
+            }
+        }
+
+        return modifs;
+    }
+
+    //---------------------//
+    // checkAugmentedRests //
+    //---------------------//
+    /**
+     * Perform checks on augmented rests.
+     *
+     * @return the count of modifications done
+     */
+    private int checkAugmentedRests ()
+    {
+        logger.debug("S#{} checkAugmentedRests", system.getId());
+
+        int modifs = 0;
+        List<Inter> entities = sig.inters(RestInter.class);
 
         for (Inter entity : entities) {
             Set<Relation> rels = sig.getRelations(entity, AugmentationRelation.class);
@@ -728,12 +789,12 @@ public class SigReducer
             }
 
             sig.removeEdge(rel);
-//
-//            // Should we insert an exclusion between head inter and stem inter?
-//            if (rel.getGrade() >= Grades.goodRelationGrade) {
-//                sig.insertExclusion(head, stem, Exclusion.Cause.INCOMPATIBLE);
-//            }
-//
+            //
+            //            // Should we insert an exclusion between head inter and stem inter?
+            //            if (rel.getGrade() >= Grades.goodRelationGrade) {
+            //                sig.insertExclusion(head, stem, Exclusion.Cause.INCOMPATIBLE);
+            //            }
+            //
             modifs++;
         }
 
@@ -1018,43 +1079,6 @@ public class SigReducer
     }
 
     //------------//
-    // compatible //
-    //------------//
-    /**
-     * Check whether the two provided Inter instance can overlap.
-     *
-     * @param inters array of exactly 2 instances
-     * @return true if overlap is accepted, false otherwise
-     */
-    private static boolean compatible (Inter[] inters)
-    {
-        for (int i = 0; i <= 1; i++) {
-            Inter inter = inters[i];
-            Inter other = inters[1 - i];
-
-            if (inter instanceof AbstractBeamInter) {
-                if (other instanceof AbstractBeamInter) {
-                    return true;
-                }
-
-                if (beamCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            } else if (inter instanceof SlurInter) {
-                if (slurCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            } else if (inter instanceof StemInter) {
-                if (stemCompShapes.contains(other.getShape())) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    //------------//
     // checkStems //
     //------------//
     /**
@@ -1240,6 +1264,43 @@ public class SigReducer
                 }
             }
         }
+    }
+
+    //------------//
+    // compatible //
+    //------------//
+    /**
+     * Check whether the two provided Inter instance can overlap.
+     *
+     * @param inters array of exactly 2 instances
+     * @return true if overlap is accepted, false otherwise
+     */
+    private static boolean compatible (Inter[] inters)
+    {
+        for (int i = 0; i <= 1; i++) {
+            Inter inter = inters[i];
+            Inter other = inters[1 - i];
+
+            if (inter instanceof AbstractBeamInter) {
+                if (other instanceof AbstractBeamInter) {
+                    return true;
+                }
+
+                if (beamCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            } else if (inter instanceof SlurInter) {
+                if (slurCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            } else if (inter instanceof StemInter) {
+                if (stemCompShapes.contains(other.getShape())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     //-----------------------//
@@ -1643,18 +1704,15 @@ public class SigReducer
     // reduceAugmentations //
     //---------------------//
     /**
-     * Reduce the number of augmentation relations to one.
+     * Reduce the number of augmentation relations to one, by keeping the best relation.
      *
      * @param rels the augmentation links for the same entity
      * @return the number of relation deleted
      */
     private int reduceAugmentations (Set<Relation> rels)
     {
-        logger.debug("S#{} reduceAugmentations", system.getId());
-
         int modifs = 0;
 
-        // Simply select the relation with best grade
         double bestGrade = 0;
         AbstractConnection bestLink = null;
 
@@ -1670,6 +1728,87 @@ public class SigReducer
 
         for (Relation rel : rels) {
             if (rel != bestLink) {
+                sig.removeEdge(rel);
+                modifs++;
+            }
+        }
+
+        return modifs;
+    }
+
+    //-------------------------//
+    // reduceHeadAugmentations //
+    //-------------------------//
+    /**
+     * Reduce the number of augmentation relations to one, by keeping the augmentation
+     * dot located higher in sheet.
+     *
+     * @param head the related head
+     * @param rels the augmentation links for the same head
+     * @return the number of relation deleted
+     */
+    private int reduceHeadAugmentations (HeadInter head,
+                                         Set<Relation> rels)
+    {
+        if (head.isVip()) {
+            logger.info(" VIP S#{} reduceHeadAugmentations for {}", system.getId(), head);
+        }
+
+        // Sort related dots by ordinate
+        final List<Inter> dots = new ArrayList<Inter>();
+
+        for (Relation rel : rels) {
+            dots.add(sig.getEdgeSource(rel));
+        }
+
+        Collections.sort(dots, Inters.byCenterOrdinate);
+
+        // Select the "best" dot
+        AugmentationDotInter selected = null;
+
+        {
+            // Try dot above
+            final AugmentationDotInter dotAbove = (AugmentationDotInter) dots.get(0);
+            final List<AbstractNoteInter> notes = dotAbove.getAugmentedNotes();
+            boolean taken = false;
+
+            for (AbstractNoteInter note : notes) {
+                if (note instanceof HeadInter && ((note.getIntegerPitch() % 2) == 1)) {
+                    taken = true;
+
+                    break;
+                }
+            }
+
+            if (!taken) {
+                selected = dotAbove;
+            }
+        }
+
+        if (selected == null) {
+            // Try dot below
+            final AugmentationDotInter dotBelow = (AugmentationDotInter) dots.get(
+                    dots.size() - 1);
+            final List<AbstractNoteInter> notes = dotBelow.getAugmentedNotes();
+            boolean taken = false;
+
+            for (AbstractNoteInter note : notes) {
+                if (note instanceof HeadInter && ((note.getIntegerPitch() % 2) == 1)) {
+                    taken = true;
+
+                    break;
+                }
+            }
+
+            if (!taken) {
+                selected = dotBelow;
+            }
+        }
+
+        int modifs = 0;
+
+        for (Relation rel : rels) {
+            if (sig.getEdgeSource(rel) != selected) {
                 sig.removeEdge(rel);
                 modifs++;
             }
@@ -1921,7 +2060,9 @@ public class SigReducer
             deleted.addAll(contextualizeAndPurge());
 
             modifs += checkAugmentationDots();
-            modifs += checkAugmented();
+            modifs += checkAugmentedHeads();
+            modifs += checkAugmentedRests();
+            modifs += checkAugmentedDots();
             deleted.addAll(contextualizeAndPurge());
 
             modifs += checkIsolatedAlters();

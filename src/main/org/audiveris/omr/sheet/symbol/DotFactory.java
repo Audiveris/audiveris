@@ -50,12 +50,12 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
-import org.audiveris.omr.sig.relation.DoubleDotRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,7 @@ import java.util.Set;
  * Class {@code DotFactory} is a companion of {@link SymbolFactory}, dedicated to the
  * interpretation of dot-shaped symbols.
  * <p>
- * Some processing can be done instantly while the symbol is being built, other dot processing
+ * Some dot processing can be done instantly while the symbol is being built, other dot processing
  * may require symbols nearby and thus can take place only when all other symbols have been built.
  * Hence implementing methods are named "instant*()" or "late*()" respectively.
  * <p>
@@ -104,7 +104,7 @@ public class DotFactory
 
     private final Scale scale;
 
-    /** Dot candidates. */
+    /** Dot candidates. Sorted bottom up */
     private final List<Dot> dots = new ArrayList<Dot>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -149,8 +149,7 @@ public class DotFactory
         instantCheckRepeat(dot); // Repeat dot (relation between the two repeat dots is postponed)
         instantCheckStaccato(dot); // Staccato dot
 
-        // We cannot run augmentation repeat check since rest inters may not have been created yet
-        // and, in any case, no rest inter will be validated before RHYTHMS step.
+        // We cannot run augmentation check since rest inters may not have been created yet
     }
 
     //---------------//
@@ -162,7 +161,7 @@ public class DotFactory
      */
     public void lateDotChecks ()
     {
-        // Sort dots by abscissa
+        // Sort dots by reverse ordinate
         Collections.sort(dots);
 
         // Run all late checks
@@ -317,6 +316,7 @@ public class DotFactory
     // filterMirrorHeads //
     //-------------------//
     /**
+     * NO LONGER USED.
      * If the collection of (dot-related) heads contains mirrored heads, keep only the
      * head with longer duration
      *
@@ -483,18 +483,48 @@ public class DotFactory
      */
     private void lateAugmentationChecks ()
     {
-        // Phase #1: Tests for first augmentation dots
+        // Phase #1: Tests for note augmentation dots
         for (Dot dot : dots) {
-            lateFirstAugmentationCheck(dot);
+            lateNoteAugmentationCheck(dot);
         }
 
         // Collect all (first) augmentation dots found so far in this system
         List<Inter> systemFirsts = sig.inters(Shape.AUGMENTATION_DOT);
         Collections.sort(systemFirsts, Inters.byAbscissa);
 
-        // Phase #2: Tests for second augmentation dots (double dots)
+        // Phase #2: Tests for dot augmentation dots (double dots)
         for (Dot dot : dots) {
-            lateSecondAugmentationCheck(dot, systemFirsts);
+            lateDotAugmentationCheck(dot, systemFirsts);
+        }
+    }
+
+    //--------------------------//
+    // lateDotAugmentationCheck //
+    //--------------------------//
+    /**
+     * Try to interpret the glyph as a second augmentation dot, composing a double dot.
+     * <p>
+     * Candidates are dots left over (too far from note/rest) as well as some dots already
+     * recognized as (single) dots.
+     *
+     * @param dot          a candidate for augmentation dot
+     * @param systemFirsts all (first) augmentation dots recognized during phase #1
+     */
+    private void lateDotAugmentationCheck (Dot dot,
+                                           List<Inter> systemFirsts)
+    {
+        if (dot.glyph.isVip()) {
+            logger.info("VIP lateDotAugmentationCheck for {}", dot);
+        }
+
+        double grade = Grades.intrinsicRatio * dot.eval.grade;
+        AugmentationDotInter second = new AugmentationDotInter(dot.glyph, grade);
+        Link bestDotLink = Link.bestOf(second.lookupDotLinks(systemFirsts, system));
+
+        if (bestDotLink != null) {
+            sig.addVertex(second);
+            sig.removeAllEdges(sig.getRelations(second, AugmentationRelation.class));
+            bestDotLink.applyTo(second);
         }
     }
 
@@ -553,9 +583,9 @@ public class DotFactory
         }
     }
 
-    //----------------------------//
-    // lateFirstAugmentationCheck //
-    //----------------------------//
+    //---------------------------//
+    // lateNoteAugmentationCheck //
+    //---------------------------//
     /**
      * Try to interpret the glyph as an augmentation dot.
      * <p>
@@ -565,45 +595,28 @@ public class DotFactory
      *
      * @param dot a candidate for augmentation dot
      */
-    private void lateFirstAugmentationCheck (Dot dot)
+    private void lateNoteAugmentationCheck (Dot dot)
     {
-        // Look for entities (heads and rests) reachable from this glyph
-        final Point dotCenter = dot.glyph.getCenter();
-        final List<Inter> notes = AugmentationDotInter.getCandidateNotes(
-                dotCenter,
-                symbolFactory.getSystemNotes(),
+        double grade = Grades.intrinsicRatio * dot.eval.grade;
+        AugmentationDotInter aug = new AugmentationDotInter(dot.glyph, grade);
+
+        List<Link> links = new ArrayList<Link>();
+        Link headLink = aug.lookupHeadLink(
+                symbolFactory.getSystemHeadChords(),
                 system);
 
-        if (notes.isEmpty()) {
-            return;
+        if (headLink != null) {
+            links.add(headLink);
         }
 
-        // Heads have already been reduced, but not the rests (created as symbols)
-        // So we have to set a relation with all acceptable entities
-        // This will be later solved by the sig reducer.
-        AugmentationDotInter augInter = null;
+        links.addAll(aug.lookupRestLinks(symbolFactory.getSystemRests(), system));
 
-        for (Inter note : notes) {
-            // Select proper note reference point (center right)
-            Point refPt = note.getCenterRight();
-            double xGap = dotCenter.x - refPt.x;
+        if (!links.isEmpty()) {
+            sig.addVertex(aug);
+            aug.setStaff(links.get(0).partner.getStaff());
 
-            if (xGap > 0) {
-                double yGap = Math.abs(refPt.y - dotCenter.y);
-                AugmentationRelation rel = new AugmentationRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-
-                if (rel.getGrade() >= rel.getMinGrade()) {
-                    if (augInter == null) {
-                        double grade = Grades.intrinsicRatio * dot.eval.grade;
-                        augInter = new AugmentationDotInter(dot.glyph, grade);
-                        sig.addVertex(augInter);
-                        augInter.setStaff(note.getStaff());
-                        logger.debug("Created {}", augInter);
-                    }
-
-                    sig.addEdge(augInter, note, rel);
-                }
+            for (Link link : links) {
+                link.applyTo(aug);
             }
         }
     }
@@ -621,87 +634,6 @@ public class DotFactory
 
         // Assign repeats per stack
         assignStackRepeats();
-    }
-
-    //-----------------------------//
-    // lateSecondAugmentationCheck //
-    //-----------------------------//
-    /**
-     * Try to interpret the glyph as a second augmentation dot, composing a double dot.
-     * <p>
-     * Candidates are dots left over (too far from note/rest) as well as some dots already
-     * recognized as (single) dots.
-     *
-     * @param dot          a candidate for augmentation dot
-     * @param systemFirsts all (first) augmentation dots recognized during phase #1
-     */
-    private void lateSecondAugmentationCheck (Dot dot,
-                                              List<Inter> systemFirsts)
-    {
-        if (dot.glyph.isVip()) {
-            logger.info("VIP lateSecondAugmentationCheck for {}", dot);
-        }
-
-        // Augmentation dots reachable from this glyph
-        final Point dotCenter = dot.glyph.getCenter();
-        final List<Inter> firsts = AugmentationDotInter.getCandidateDots(
-                dotCenter,
-                systemFirsts,
-                system);
-
-        // Remove the augmentation dot, if any, that corresponds to the glyph at hand
-        AugmentationDotInter second = null;
-
-        for (Inter first : firsts) {
-            if (first.getGlyph() == dot.glyph) {
-                second = (AugmentationDotInter) first;
-                firsts.remove(first);
-
-                break;
-            }
-        }
-
-        DoubleDotRelation bestRel = null;
-        Inter bestFirst = null;
-        double bestYGap = Double.MAX_VALUE;
-
-        for (Inter first : firsts) {
-            // Select proper entity reference point (center right)
-            Point refPt = first.getCenterRight();
-            double xGap = dotCenter.x - refPt.x;
-
-            if (xGap > 0) {
-                double yGap = Math.abs(refPt.y - dotCenter.y);
-                DoubleDotRelation rel = new DoubleDotRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-
-                if (rel.getGrade() >= rel.getMinGrade()) {
-                    if ((bestRel == null) || (bestYGap > yGap)) {
-                        bestRel = rel;
-                        bestFirst = first;
-                        bestYGap = yGap;
-                    }
-                }
-            }
-        }
-
-        if (bestRel != null) {
-            if (second == null) {
-                double grade = Grades.intrinsicRatio * dot.eval.grade;
-                second = new AugmentationDotInter(dot.glyph, grade);
-                sig.addVertex(second);
-                logger.debug("Created {}", second);
-            } else {
-                // Here, we have a second dot with two relations:
-                // - First dot is linked to some note/rest entities
-                // - Second dot is linked to some note/rest entities and also to first dot
-                // Since yGap between dots is very strict, just make second dot focus on double dots
-                sig.removeAllEdges(sig.getRelations(second, AugmentationRelation.class));
-            }
-
-            sig.addEdge(second, bestFirst, bestRel);
-            logger.debug("DoubleDot relation {} over {}", second, bestFirst);
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -732,7 +664,7 @@ public class DotFactory
         @Override
         public int compareTo (Dot that)
         {
-            return Glyphs.byAbscissa.compare(glyph, that.glyph);
+            return Glyphs.byReverseBottom.compare(glyph, that.glyph);
         }
 
         @Override

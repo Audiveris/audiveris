@@ -24,7 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
-import org.audiveris.omr.math.Rational;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -33,14 +33,17 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
+import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -125,73 +128,29 @@ public class AugmentationDotInter
         return isAbnormal();
     }
 
-    //------------------//
-    // getCandidateDots //
-    //------------------//
-    /**
-     * Report which first augmentation dots could be concerned by a second augmentation
-     * dot located at provided dot center.
-     *
-     * @param dotCenter    provided dot center
-     * @param systemFirsts all (first) augmentation dots, sorted by abscissa
-     * @param system       containing system
-     * @return the list of candidate dots in the augmentation dot neighborhood.
-     */
-    public static List<Inter> getCandidateDots (Point dotCenter,
-                                                List<Inter> systemFirsts,
-                                                SystemInfo system)
-    {
-        final Scale scale = system.getSheet().getScale();
-
-        // Look for augmentation dots reachable from this dot
-        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
-        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum());
-        final Rectangle luBox = new Rectangle(dotCenter);
-        luBox.grow(0, maxDy);
-        luBox.x -= maxDx;
-        luBox.width += maxDx;
-
-        // Relevant dots?
-        final List<Inter> dots = dotStack.filter(
-                SIGraph.intersectedInters(systemFirsts, GeoOrder.BY_ABSCISSA, luBox));
-
-        return dots;
-    }
-
     //-------------------//
-    // getCandidateNotes //
+    // getAugmentedNotes //
     //-------------------//
     /**
-     * Report which notes (heads and rests) could be concerned by an augmentation dot
-     * located at provided dot center.
+     * Report the notes (head/rest) that are currently linked to this augmentation dot.
      *
-     * @param dotCenter   provided dot center
-     * @param systemNotes system notes, sorted by abscissa
-     * @param system      containing system
-     * @return the list of candidate notes in the augmentation dot neighborhood.
+     * @return the linked notes
      */
-    public static List<Inter> getCandidateNotes (Point dotCenter,
-                                                 List<Inter> systemNotes,
-                                                 SystemInfo system)
+    public List<AbstractNoteInter> getAugmentedNotes ()
     {
-        final Scale scale = system.getSheet().getScale();
+        List<AbstractNoteInter> notes = null;
 
-        // Look for entities (heads and rests) reachable from this dot
-        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
-        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
-        final Rectangle luBox = new Rectangle(dotCenter);
-        luBox.grow(0, maxDy);
-        luBox.x -= maxDx;
-        luBox.width += maxDx;
+        for (Relation rel : sig.getRelations(this, AugmentationRelation.class)) {
+            if (notes == null) {
+                notes = new ArrayList<AbstractNoteInter>();
+            }
 
-        // Relevant heads/rests?
-        final List<Inter> notes = dotStack.filter(
-                SIGraph.intersectedInters(systemNotes, GeoOrder.BY_ABSCISSA, luBox));
+            notes.add((AbstractNoteInter) sig.getEdgeTarget(rel));
+        }
 
-        // Beware of mirrored heads: link only to the head with longer duration
-        filterMirrorHeads(notes);
+        if (notes == null) {
+            return Collections.EMPTY_LIST;
+        }
 
         return notes;
     }
@@ -260,6 +219,190 @@ public class AugmentationDotInter
         return null;
     }
 
+    //----------------//
+    // lookupDotLinks //
+    //----------------//
+    /**
+     * Look up for all possible links with (first) dots.
+     *
+     * @param systemDots collection of augmentation dots in system, ordered bottom up
+     * @param system     containing system
+     * @return list of possible links, perhaps empty
+     */
+    public List<Link> lookupDotLinks (List<Inter> systemDots,
+                                      SystemInfo system)
+    {
+        // Need getCenter()
+        final List<Link> links = new ArrayList<Link>();
+        final Scale scale = system.getSheet().getScale();
+        final Point dotCenter = getCenter();
+
+        // Look for augmentation dots reachable from this dot
+        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
+        final Rectangle luBox = getDotsLuBox(dotCenter, system);
+
+        // Relevant dots?
+        final List<Inter> firsts = dotStack.filter(
+                SIGraph.intersectedInters(systemDots, GeoOrder.NONE, luBox));
+
+        // Remove the augmentation dot, if any, that corresponds to the glyph at hand
+        for (Inter first : firsts) {
+            if (first.getCenter().equals(dotCenter)) {
+                firsts.remove(first);
+
+                break;
+            }
+        }
+
+        for (Inter first : firsts) {
+            Point refPt = first.getCenterRight();
+            double xGap = dotCenter.x - refPt.x;
+
+            if (xGap > 0) {
+                double yGap = Math.abs(refPt.y - dotCenter.y);
+                DoubleDotRelation rel = new DoubleDotRelation();
+                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+
+                if (rel.getGrade() >= rel.getMinGrade()) {
+                    links.add(new Link(first, rel, true));
+                }
+            }
+        }
+
+        return links;
+    }
+
+    //----------------//
+    // lookupHeadLink //
+    //----------------//
+    /**
+     * Look up for a possible link with a head.
+     * <p>
+     * Assumption: System dots are already in place or they are processed bottom up.
+     *
+     * @param systemHeadChords system head chords, sorted by abscissa
+     * @param system           containing system
+     * @return a link or null
+     */
+    public Link lookupHeadLink (List<Inter> systemHeadChords,
+                                SystemInfo system)
+    {
+        // Need sig and getCenter()
+        final List<Link> links = new ArrayList<Link>();
+        final Scale scale = system.getSheet().getScale();
+        final Point dotCenter = getCenter();
+
+        // Look for heads reachable from this dot. Heads are processed via their chord.
+        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
+        final Rectangle luBox = getNotesLuBox(dotCenter, system);
+
+        final List<Inter> chords = dotStack.filter(
+                SIGraph.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA, luBox));
+
+        for (Inter ic : chords) {
+            HeadChordInter chord = (HeadChordInter) ic;
+
+            // Heads are processed bottom up within their chord
+            for (Inter ih : chord.getNotes()) {
+                HeadInter head = (HeadInter) ih;
+
+                // Check head is within reach and not yet augmented
+                if (GeoUtil.yEmbraces(luBox, head.getCenter().y)
+                    && (head.getFirstAugmentationDot() == null)) {
+                    Point refPt = head.getCenterRight();
+                    double xGap = dotCenter.x - refPt.x;
+
+                    // When this method is called, there is at most one stem per head
+                    for (Relation rel : system.getSig().getRelations(head, HeadStemRelation.class)) {
+                        HeadStemRelation hsRel = (HeadStemRelation) rel;
+
+                        if (hsRel.getHeadSide() == RIGHT) {
+                            // If containing chord has heads on right side, reduce xGap accordingly
+                            Rectangle rightBox = chord.getHeadsBounds(RIGHT);
+
+                            if (rightBox != null) {
+                                if (xGap > 0) {
+                                    xGap = Math.max(1, xGap - rightBox.width);
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+
+                    if (xGap > 0) {
+                        double yGap = Math.abs(refPt.y - dotCenter.y);
+                        AugmentationRelation rel = new AugmentationRelation();
+                        rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+
+                        if (rel.getGrade() >= rel.getMinGrade()) {
+                            links.add(new Link(head, rel, true));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Now choose best among links
+        // First priority is given to head between lines (thus facing the dot)
+        // Second priority is given to head on lower line
+        // Third priority is given to head on upper line
+        for (Link link : links) {
+            HeadInter head = (HeadInter) link.partner;
+
+            if ((head.getIntegerPitch() % 2) == 1) {
+                return link;
+            }
+        }
+
+        return (!links.isEmpty()) ? links.get(0) : null;
+    }
+
+    //-----------------//
+    // lookupRestLinks //
+    //-----------------//
+    /**
+     * Look up for all possible links with rests
+     *
+     * @param systemRests system rests, sorted by abscissa
+     * @param system      containing system
+     * @return list of possible links, perhaps empty
+     */
+    public List<Link> lookupRestLinks (List<Inter> systemRests,
+                                       SystemInfo system)
+    {
+        // Need getCenter()
+        final List<Link> links = new ArrayList<Link>();
+        final Scale scale = system.getSheet().getScale();
+        final Point dotCenter = getCenter();
+
+        // Look for rests reachable from this dot
+        final Rectangle luBox = getNotesLuBox(dotCenter, system);
+        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
+
+        // Relevant rests?
+        final List<Inter> rests = dotStack.filter(
+                SIGraph.intersectedInters(systemRests, GeoOrder.BY_ABSCISSA, luBox));
+
+        for (Inter inter : rests) {
+            RestInter rest = (RestInter) inter;
+            Point refPt = rest.getCenterRight();
+            double xGap = dotCenter.x - refPt.x;
+
+            if (xGap > 0) {
+                double yGap = Math.abs(refPt.y - dotCenter.y);
+                AugmentationRelation rel = new AugmentationRelation();
+                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+
+                if (rel.getGrade() >= rel.getMinGrade()) {
+                    links.add(new Link(rest, rel, true));
+                }
+            }
+        }
+
+        return links;
+    }
+
     //--------//
     // remove //
     //--------//
@@ -296,13 +439,16 @@ public class AugmentationDotInter
                                          boolean doit)
     {
         // Not very optimized!
-        List<Inter> systemNotes = system.getSig().inters(AbstractNoteInter.class);
-        Collections.sort(systemNotes, Inters.byAbscissa);
+        List<Inter> systemRests = system.getSig().inters(RestInter.class);
+        Collections.sort(systemRests, Inters.byAbscissa);
+
+        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
 
         List<Inter> systemDots = system.getSig().inters(AugmentationDotInter.class);
         Collections.sort(systemDots, Inters.byAbscissa);
 
-        Link link = lookupLink(systemNotes, systemDots, system);
+        Link link = lookupLink(systemRests, systemHeadChords, systemDots, system);
 
         if (link == null) {
             return Collections.emptyList();
@@ -315,64 +461,66 @@ public class AugmentationDotInter
         return Collections.singleton(link);
     }
 
-    //-------------------//
-    // filterMirrorHeads //
-    //-------------------//
+    //--------------//
+    // getDotsLuBox //
+    //--------------//
     /**
-     * If the collection of (dot-related) heads contains mirrored heads, keep only the
-     * head with longer duration
+     * Report dots lookup box based on provided dot center
      *
-     * @param notes the notes (head/rest) looked up near a candidate augmentation dot
+     * @param dotCenter center of dot candidate
+     * @param system    containing system
+     * @return proper lookup box
      */
-    private static void filterMirrorHeads (List<Inter> notes)
+    private static Rectangle getDotsLuBox (Point dotCenter,
+                                           SystemInfo system)
     {
-        if (notes.size() < 2) {
-            return;
-        }
+        final Scale scale = system.getSheet().getScale();
+        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum());
 
-        Collections.sort(notes, Inters.byId);
+        return getLuBox(dotCenter, maxDx, maxDy);
+    }
 
-        boolean modified;
+    //----------//
+    // getLuBox //
+    //----------//
+    /**
+     * Report proper lookup box based on provided dot center
+     *
+     * @param dotCenter center of dot candidate
+     * @param system    containing system
+     * @return proper lookup box
+     */
+    private static Rectangle getLuBox (Point dotCenter,
+                                       int maxDx,
+                                       int maxDy)
+    {
+        final Rectangle luBox = new Rectangle(dotCenter);
+        luBox.grow(0, maxDy);
+        luBox.x -= maxDx;
+        luBox.width += maxDx;
 
-        do {
-            modified = false;
+        return luBox;
+    }
 
-            InterLoop:
-            for (Inter inter : notes) {
-                if (inter instanceof HeadInter) {
-                    HeadInter head = (HeadInter) inter;
-                    Inter mirrorInter = head.getMirror();
+    //---------------//
+    // getNotesLuBox //
+    //---------------//
+    /**
+     * Report notes lookup box based on provided dot center
+     *
+     * @param dotCenter center of dot candidate
+     * @param system    containing system
+     * @return proper lookup box
+     */
+    private static Rectangle getNotesLuBox (Point dotCenter,
+                                            SystemInfo system)
+    {
+        final Scale scale = system.getSheet().getScale();
+        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
+        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
 
-                    if ((mirrorInter != null) && notes.contains(mirrorInter)) {
-                        HeadInter mirrorHead = (HeadInter) mirrorInter;
-                        Rational hDur = head.getChord().getDurationSansDotOrTuplet();
-                        Rational mDur = mirrorHead.getChord().getDurationSansDotOrTuplet();
-
-                        switch (mDur.compareTo(hDur)) {
-                        case -1:
-                            notes.remove(mirrorHead);
-                            modified = true;
-
-                            break InterLoop;
-
-                        case +1:
-                            notes.remove(head);
-                            modified = true;
-
-                            break InterLoop;
-
-                        case 0:
-                            // Same duration (but we don't have flags yet!) TODO: review this
-                            // Keep the one with lower ID
-                            notes.remove(mirrorHead);
-                            modified = true;
-
-                            break InterLoop;
-                        }
-                    }
-                }
-            }
-        } while (modified);
+        return getLuBox(dotCenter, maxDx, maxDy);
     }
 
     //------------//
@@ -382,96 +530,27 @@ public class AugmentationDotInter
      * Try to detect a link between this augmentation dot and either a note
      * (head or rest) or another dot on left side.
      *
-     * @param systemNotes ordered collection of notes (head/rest) in system
-     * @param systemDots  ordered collection of augmentation dots in system
-     * @param system      containing system
-     * @return the link found or null
+     * @param systemRests      ordered collection of rests in system
+     * @param systemHeadChords ordered collection of head chords in system
+     * @param systemDots       ordered collection of augmentation dots in system
+     * @param system           containing system
+     * @return the best link found or null
      */
-    private Link lookupLink (List<Inter> systemNotes,
+    private Link lookupLink (List<Inter> systemRests,
+                             List<Inter> systemHeadChords,
                              List<Inter> systemDots,
                              SystemInfo system)
     {
-        final Scale scale = system.getSheet().getScale();
-        final Point dotCenter = getCenter();
+        List<Link> links = new ArrayList<Link>();
+        Link headLink = lookupHeadLink(systemHeadChords, system);
 
-        // Look up for notes
-        final List<Inter> notes = getCandidateNotes(dotCenter, systemNotes, system);
-
-        final AugmentationRelation aRel = new AugmentationRelation();
-        Inter bestNote = null;
-        double bestNoteGrade = -1;
-
-        for (Inter note : notes) {
-            // Select proper note reference point (center right)
-            Point refPt = note.getCenterRight();
-            double xGap = dotCenter.x - refPt.x;
-
-            if (xGap > 0) {
-                double yGap = Math.abs(refPt.y - dotCenter.y);
-                aRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-
-                if (bestNoteGrade < aRel.getGrade()) {
-                    bestNoteGrade = aRel.getGrade();
-                    bestNote = note;
-                }
-            }
+        if (headLink != null) {
+            links.add(headLink);
         }
 
-        // Look up for dots
-        final List<Inter> firsts = AugmentationDotInter.getCandidateDots(
-                dotCenter,
-                systemDots,
-                system);
+        links.addAll(lookupRestLinks(systemRests, system));
+        links.addAll(lookupDotLinks(systemDots, system));
 
-        // Remove the augmentation dot, if any, that corresponds to the glyph at hand
-        for (Inter first : firsts) {
-            if (first.getCenter().equals(dotCenter)) {
-                firsts.remove(first);
-
-                break;
-            }
-        }
-
-        DoubleDotRelation bestDotRel = null;
-        Inter bestDot = null;
-        double bestYGap = Double.MAX_VALUE;
-
-        for (Inter first : firsts) {
-            // Select proper entity reference point (center right)
-            Point refPt = first.getCenterRight();
-            double xGap = dotCenter.x - refPt.x;
-
-            if (xGap > 0) {
-                double yGap = Math.abs(refPt.y - dotCenter.y);
-                DoubleDotRelation rel = new DoubleDotRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-
-                if (rel.getGrade() >= rel.getMinGrade()) {
-                    if ((bestDotRel == null) || (bestYGap > yGap)) {
-                        bestDotRel = rel;
-                        bestDot = first;
-                        bestYGap = yGap;
-                    }
-                }
-            }
-        }
-
-        if ((bestNote == null) && (bestDot == null)) {
-            return null;
-        }
-
-        if (bestDot == null) {
-            return new Link(bestNote, new AugmentationRelation(), true);
-        }
-
-        if (bestNote == null) {
-            return new Link(bestDot, new DoubleDotRelation(), true);
-        }
-
-        if (bestNoteGrade >= bestDotRel.getGrade()) {
-            return new Link(bestNote, new AugmentationRelation(), true);
-        } else {
-            return new Link(bestDot, new DoubleDotRelation(), true);
-        }
+        return Link.bestOf(links);
     }
 }

@@ -24,6 +24,9 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Seen from an Inter instance, class {@code Link} describes a potential relation with
  * another Inter instance (the partner).
@@ -34,6 +37,7 @@ import org.audiveris.omr.sig.inter.Inter;
  * @author Hervé Bitteur
  */
 public class Link
+        implements Comparable<Link>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -76,6 +80,27 @@ public class Link
         final Inter target = outgoing ? partner : inter;
 
         sig.addEdge(source, target, relation);
+    }
+
+    //--------//
+    // bestOf //
+    //--------//
+    public static Link bestOf (List<Link> links)
+    {
+        if (links.size() > 1) {
+            Collections.sort(links);
+        }
+
+        return links.isEmpty() ? null : links.get(0);
+    }
+
+    @Override
+    public int compareTo (Link that)
+    {
+        AbstractSupport s1 = (AbstractSupport) this.relation;
+        AbstractSupport s2 = (AbstractSupport) that.relation;
+
+        return Double.compare(s1.getGrade(), s2.getGrade());
     }
 
     @Override
