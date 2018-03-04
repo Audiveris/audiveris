@@ -789,6 +789,14 @@ public class TextBuilder
         return (int) Math.rint(params.maxWordDxFontRatio * pointSize);
     }
 
+    //----------//
+    // isManual //
+    //----------//
+    /**
+     * Report whether TextBuilder is working in manual mode.
+     *
+     * @return true if manual mode
+     */
     private boolean isManual ()
     {
         return manualLyrics != null;
@@ -1257,7 +1265,7 @@ public class TextBuilder
 
         // Process lyrics
         if (!lyrics.isEmpty()) {
-            if (isManual()) {
+            if (!isManual()) {
                 lyrics = purgeInvalidLines("lyrics", lyrics);
             }
 
@@ -1275,7 +1283,7 @@ public class TextBuilder
             standards = splitStandardLines(standards);
 
             // Reject invalid standard lines
-            if (isManual()) {
+            if (!isManual()) {
                 standards = purgeInvalidLines("standards", standards);
             }
 
