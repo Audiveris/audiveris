@@ -157,7 +157,7 @@ public class AugmentationRelation
                 "Supporting coeff for (source) dot");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                1.0,
+                1.3,
                 "Maximum horizontal gap between dot center & note/rest reference point");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
