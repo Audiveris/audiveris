@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.rhythm;
 import net.jcip.annotations.NotThreadSafe;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.sheet.Part;
@@ -526,6 +527,8 @@ public class MeasuresBuilder
                     double y2 = staff.getLastLine().yAt(x);
                     Line2D median = new Line2D.Double(x, y1, x, y2);
                     BarlineInter barline = new BarlineInter(null, shape, null, median, width);
+                    system.getSig().addVertex(barline);
+                    barline.setGrade(Grades.intrinsicRatio);
                     barline.freeze();
 
                     List<Group> staffGroups = staffMap.get(staff);
