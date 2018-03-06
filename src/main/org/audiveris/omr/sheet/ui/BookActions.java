@@ -997,9 +997,6 @@ public class BookActions
         Sheet sheet = stub.getSheet();
         InterController controller = sheet.getInterController();
         controller.redo();
-
-        setUndoable(controller.canUndo());
-        setRedoable(controller.canRedo());
     }
 
     //-----------//
@@ -1321,8 +1318,6 @@ public class BookActions
         Sheet sheet = stub.getSheet();
         InterController controller = sheet.getInterController();
         controller.undo();
-        setUndoable(controller.canUndo());
-        setRedoable(controller.canRedo());
     }
 
     //--------------------//

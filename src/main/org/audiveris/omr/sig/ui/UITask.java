@@ -39,7 +39,8 @@ public abstract class UITask
         //~ Enumeration constant initializers ------------------------------------------------------
 
         DO,
-        UNDO;
+        UNDO,
+        REDO;
     }
 
     //~ Instance fields ----------------------------------------------------------------------------

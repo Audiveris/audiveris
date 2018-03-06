@@ -291,7 +291,7 @@ public abstract class StubDependent
             }
 
             // Update undoable/redoable
-            if (stub != null && stub.hasSheet()) {
+            if ((stub != null) && stub.hasSheet()) {
                 InterController ctrl = stub.getSheet().getInterController();
                 setUndoable(ctrl.canUndo());
                 setRedoable(ctrl.canRedo());
@@ -299,7 +299,6 @@ public abstract class StubDependent
                 setUndoable(false);
                 setRedoable(false);
             }
-
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }

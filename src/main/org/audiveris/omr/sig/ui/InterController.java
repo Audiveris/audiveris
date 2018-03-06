@@ -158,7 +158,7 @@ public class InterController
 
         final Glyph glyph = sheet.getGlyphIndex().registerOriginal(aGlyph);
 
-        new CtrlTask()
+        new CtrlTask(DO)
         {
             @Override
             protected Void doInBackground ()
@@ -185,6 +185,7 @@ public class InterController
                         }
 
                         addGhost(seq, ghost, links);
+                        epilog(seq);
                     } else {
                         logger.info("No staff, abandonned.");
                     }
@@ -240,7 +241,7 @@ public class InterController
     {
         logger.debug("changeSentence {} for {}", sentence, newRole);
 
-        new CtrlTask()
+        new CtrlTask(DO)
         {
             @Override
             protected Void doInBackground ()
@@ -249,7 +250,7 @@ public class InterController
                     seq.add(new SentenceRoleTask(sentence, newRole));
                     seq.performDo();
                     sheet.getInterIndex().publish(sentence);
-                    epilog(DO, seq);
+                    epilog(seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in changeSentence {}", ex.toString(), ex);
                 }
@@ -274,7 +275,7 @@ public class InterController
     {
         logger.debug("changeWord {} for {}", word, newValue);
 
-        new CtrlTask()
+        new CtrlTask(DO)
         {
             @Override
             protected Void doInBackground ()
@@ -283,7 +284,7 @@ public class InterController
                     seq.add(new WordValueTask(word, newValue));
                     seq.performDo();
                     sheet.getInterIndex().publish(word);
-                    epilog(DO, seq);
+                    epilog(seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in changeWord {}", ex.toString(), ex);
                 }
@@ -324,7 +325,7 @@ public class InterController
     {
         logger.debug("dropInter {} at {}", ghost, center);
 
-        new CtrlTask()
+        new CtrlTask(DO)
         {
             @Override
             protected Void doInBackground ()
@@ -336,6 +337,7 @@ public class InterController
                     Collection<Link> links = ghost.searchLinks(system, false);
 
                     addGhost(seq, ghost, links);
+                    epilog(seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in dropInter {}", ex.toString(), ex);
                 }
@@ -362,7 +364,7 @@ public class InterController
                       final Inter target,
                       final Relation relation)
     {
-        new CtrlTask()
+        new CtrlTask(DO)
         {
             @Override
             protected Void doInBackground ()
@@ -421,7 +423,7 @@ public class InterController
                     // Finally, add relation
                     seq.add(new LinkTask(sig, source, target, relation));
                     seq.performDo();
-                    epilog(DO, seq);
+                    epilog(seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in process {}", ex.toString(), ex);
                 }
@@ -440,7 +442,7 @@ public class InterController
     @UIThread
     public void redo ()
     {
-        new CtrlTask()
+        new CtrlTask(REDO)
         {
             @Override
             protected Void doInBackground ()
@@ -451,7 +453,7 @@ public class InterController
 
                     sheet.getInterIndex().publish(null);
 
-                    epilog(DO, seq);
+                    epilog(seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in redo {}", ex.toString(), ex);
                 }
@@ -486,7 +488,7 @@ public class InterController
     @UIThread
     public void removeInters (final Collection<? extends Inter> inters)
     {
-        new CtrlTask()
+        new CtrlTask(DO)
         {
             @Override
             protected Void doInBackground ()
@@ -496,7 +498,7 @@ public class InterController
 
                     seq.performDo();
                     sheet.getInterIndex().publish(null);
-                    epilog(DO, seq);
+                    epilog(seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in removeInters {}", ex.toString(), ex);
                 }
@@ -517,7 +519,7 @@ public class InterController
     @UIThread
     public void reprocessRhythm (final MeasureStack stack)
     {
-        new CtrlTask()
+        new CtrlTask(DO)
         {
             @Override
             protected Void doInBackground ()
@@ -525,8 +527,10 @@ public class InterController
                 try {
                     sheet.getStub().setModified(true);
 
+                    seq = null; // So that history is not modified
+
                     // Re-process impacted steps
-                    final UITaskList seq = new UITaskList(new StackTask(stack));
+                    final UITaskList tempSeq = new UITaskList(new StackTask(stack));
                     final Step latestStep = sheet.getStub().getLatestStep();
                     final Step firstStep = Step.RHYTHMS;
 
@@ -534,7 +538,7 @@ public class InterController
 
                     for (Step step : steps) {
                         logger.debug("Impact {}", step);
-                        step.impact(seq, OpKind.DO);
+                        step.impact(tempSeq, OpKind.DO);
                     }
                 } catch (Throwable ex) {
                     logger.warn("Exception in reprocessRhythm {}", ex.toString(), ex);
@@ -575,7 +579,7 @@ public class InterController
     @UIThread
     public void undo ()
     {
-        new CtrlTask()
+        new CtrlTask(UNDO)
         {
             @Override
             protected Void doInBackground ()
@@ -586,7 +590,7 @@ public class InterController
 
                     sheet.getInterIndex().publish(null);
 
-                    epilog(UNDO, seq);
+                    epilog(seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in undo {}", ex.toString(), ex);
                 }
@@ -609,7 +613,7 @@ public class InterController
     public void unlink (final SIGraph sig,
                         final Relation relation)
     {
-        new CtrlTask()
+        new CtrlTask(DO)
         {
             @Override
             protected Void doInBackground ()
@@ -625,7 +629,7 @@ public class InterController
 
                     sheet.getInterIndex().publish(source);
 
-                    epilog(DO, seq);
+                    epilog(seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in unlink {}", ex.toString(), ex);
                 }
@@ -715,8 +719,6 @@ public class InterController
 
         sheet.getInterIndex().publish(ghost);
         sheet.getGlyphIndex().publish(null);
-
-        epilog(DO, seq);
     }
 
     //---------//
@@ -732,7 +734,7 @@ public class InterController
     private void addText (final Glyph glyph,
                           final Shape shape)
     {
-        new CtrlTask()
+        new CtrlTask(DO)
         {
             @Override
             protected Void doInBackground ()
@@ -813,7 +815,7 @@ public class InterController
                     sheet.getInterIndex().publish(null);
                     sheet.getGlyphIndex().publish(null);
 
-                    epilog(DO, seq);
+                    epilog(seq);
                 } catch (Throwable ex) {
                     logger.warn("Exception in addText {}", ex.toString(), ex);
                 }
@@ -916,37 +918,6 @@ public class InterController
         }
 
         return staff;
-    }
-
-    //--------//
-    // epilog //
-    //--------//
-    /**
-     * Epilog for any user action sequence.
-     * <p>
-     * This depends on the impacted items (inters, relations) and on the current processing step.
-     *
-     * @param opKind how is seq used
-     * @param seq    sequence of user tasks
-     */
-    private void epilog (OpKind opKind,
-                         UITaskList seq)
-    {
-        sheet.getStub().setModified(true);
-
-        // Re-process impacted steps
-        final Step latestStep = sheet.getStub().getLatestStep();
-        final Step firstStep = firstImpactedStep(seq);
-        logger.debug("firstStep: {}", firstStep);
-
-        if ((firstStep != null) && (firstStep.compareTo(latestStep) <= 0)) {
-            final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
-
-            for (Step step : steps) {
-                logger.debug("Impact {}", step);
-                step.impact(seq, opKind);
-            }
-        }
     }
 
     //-------------------//
@@ -1080,12 +1051,51 @@ public class InterController
 
         protected UITaskList seq = new UITaskList();
 
+        protected final OpKind opKind;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public CtrlTask (OpKind opKind)
+        {
+            this.opKind = opKind;
+        }
+
         //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Background epilog for any user action sequence.
+         *
+         * @param seq sequence of user tasks
+         */
+        protected void epilog (UITaskList seq)
+        {
+            if (opKind == OpKind.DO) {
+                sheet.getStub().setModified(true);
+            }
+
+            // Re-process impacted steps
+            final Step latestStep = sheet.getStub().getLatestStep();
+            final Step firstStep = firstImpactedStep(seq);
+            logger.debug("firstStep: {}", firstStep);
+
+            if ((firstStep != null) && (firstStep.compareTo(latestStep) <= 0)) {
+                final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
+
+                for (Step step : steps) {
+                    logger.debug("Impact {}", step);
+                    step.impact(seq, opKind);
+                }
+            }
+        }
+
         @Override
         @UIThread
         protected void finished ()
         {
-            history.add(seq);
+            // This method runs on EDT
+
+            // Append to history?
+            if (opKind == DO && seq != null) {
+                history.add(seq);
+            }
 
             // Refresh user display
             refreshUI();
