@@ -212,6 +212,10 @@ public abstract class PointUtil
     //----------//
     public static String toString (Point p)
     {
+        if (p == null) {
+            return "nullPoint";
+        }
+
         StringBuilder sb = new StringBuilder("[");
         sb.append(p.x).append(",").append(p.y).append("]");
 

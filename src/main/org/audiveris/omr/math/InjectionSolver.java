@@ -37,18 +37,25 @@ public class InjectionSolver
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
+    /** Size of domain. */
     private final int domainSize;
 
+    /** Size of range. */
     private final int rangeSize;
 
+    /** Distance function between a domain item and a range item. */
     private final Distance distance;
 
+    /** Array parallel to range, to indicate which range items are free. */
     private final boolean[] free;
 
+    /** Minimum cost found so far. */
     private int bestCost = Integer.MAX_VALUE;
 
+    /** Best configuration found so far. Parallel to domain, it maps domain on range */
     private final int[] bestConfig;
 
+    /** Configuration being worked upon. */
     private final int[] config;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -57,7 +64,7 @@ public class InjectionSolver
      *
      * @param domainSize size of the domain collection
      * @param rangeSize  size of the range collection
-     * @param distance the distance
+     * @param distance   the distance
      */
     public InjectionSolver (int domainSize,
                             int rangeSize,
@@ -71,10 +78,6 @@ public class InjectionSolver
         free = new boolean[rangeSize];
         bestConfig = new int[domainSize];
         config = new int[domainSize];
-
-        //        System.out.println(
-        //            "InjectionSolver domainSize=" + domainSize + " rangeSize=" +
-        //            rangeSize);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -101,14 +104,14 @@ public class InjectionSolver
     private void dump ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("bestCost=").append(bestCost);
-        sb.append(" [");
+        sb.append("bestConfig=[");
 
         for (int i = 0; i < bestConfig.length; i++) {
             sb.append(" ").append(bestConfig[i]);
         }
 
         sb.append("]");
+        sb.append(" cost=").append(bestCost);
 
         System.out.println(sb.toString());
     }
@@ -116,8 +119,14 @@ public class InjectionSolver
     //---------//
     // inspect //
     //---------//
-    private void inspect (int id,
-                          int cost)
+    /**
+     * For a provided domain item, find the range item that leads to optimal config.
+     *
+     * @param id   index of provided domain item
+     * @param cost current config cost
+     */
+    private void inspect (final int id,
+                          final int cost)
     {
         //        System.out.println("inspect id=" + id + " cost=" + cost);
         for (int ir = 0; ir < rangeSize; ir++) {

@@ -1153,6 +1153,10 @@ public class SigReducer
             }
 
             if (headsBox == null) {
+                if (stem.isVip()) {
+                    logger.info("VIP no headsBox for {}", stem);
+                }
+
                 stem.remove();
                 modifs++;
             } else {
@@ -1161,6 +1165,10 @@ public class SigReducer
                 final int extension = Math.max(above, below);
 
                 if (extension < minStemExtension) {
+                    if (stem.isVip()) {
+                        logger.info("VIP too small tail for {}", stem);
+                    }
+
                     stem.remove();
                     modifs++;
                 }

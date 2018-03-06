@@ -253,7 +253,7 @@ public class Voice
                 } else if (delta.compareTo(Rational.ZERO) > 0) {
                     // Flag the voice as too long
                     String prefix = stack.getSystem().getLogPrefix();
-                    logger.info("{}{} Voice #{} too long {}", prefix, stack, getId(), delta);
+                    logger.info("{}{} Voice #{} too long {}", prefix, measure, getId(), delta);
                     excess = delta; // For voice
 
                     if ((stack.getExcess() == null) || (delta.compareTo(stack.getExcess()) > 0)) {

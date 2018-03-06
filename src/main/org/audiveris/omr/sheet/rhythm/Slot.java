@@ -30,9 +30,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Voice.SlotVoice;
-
 import static org.audiveris.omr.sheet.rhythm.Voice.Status.BEGIN;
-
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -46,7 +44,9 @@ import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -181,65 +181,26 @@ public class Slot
     //-------------//
     /**
      * Compute the various voices in this slot.
+     * <p>
+     * Voices are handled part by part.
      *
      * @param freeEndings the chords that end right at this slot, with their voice available.
      */
     public void buildVoices (List<AbstractChordInter> freeEndings)
     {
-        logger.debug("incomings={}", incomings);
-
         // Sort incoming chords vertically
         Collections.sort(incomings, Inters.byOrdinate);
 
-        List<AbstractChordInter> rookies = new ArrayList<AbstractChordInter>();
+        logger.debug("incomings={}", incomings);
 
-        // Some chords already have their voice assigned
-        for (AbstractChordInter ch : incomings) {
-            if (ch.getVoice() != null) {
-                // This pseudo-reassign is needed to populate the voice slotTable
-                ch.setVoice(ch.getVoice());
-            } else {
-                rookies.add(ch);
-            }
+        // Dispatch incomings and freeEndings per part
+        Map<Part, List<AbstractChordInter>> partIncomings = buildPartMap(incomings);
+        Map<Part, List<AbstractChordInter>> partFreeEndings = buildPartMap(freeEndings);
+
+        for (Measure measure : stack.getMeasures()) {
+            Part part = measure.getPart();
+            buildMeasureVoices(measure, partIncomings.get(part), partFreeEndings.get(part));
         }
-
-        // Nothing left to assign?
-        if (rookies.isEmpty()) {
-            return;
-        }
-
-        // Try to map some free ending voices to some rookies
-        if (!freeEndings.isEmpty()) {
-            final Scale scale = stack.getSystem().getSheet().getScale();
-            final InjectionSolver solver = new InjectionSolver(
-                    rookies.size(),
-                    freeEndings.size() + rookies.size(),
-                    new MyDistance(rookies, freeEndings, scale));
-            final int[] links = solver.solve();
-
-            for (int i = 0; i < links.length; i++) {
-                int index = links[i];
-
-                // Map new chord to a free ending chord?
-                if (index < freeEndings.size()) {
-                    Voice voice = freeEndings.get(index).getVoice();
-                    logger.debug("Slot#{} Reusing voice#{}", getId(), voice.getId());
-
-                    AbstractChordInter ch = rookies.get(i);
-
-                    try {
-                        ch.setVoice(voice);
-                    } catch (Exception ex) {
-                        logger.warn("{} failed to set voice of chord", ch);
-
-                        return;
-                    }
-                }
-            }
-        }
-
-        // Assign remaining non-mapped chords, using first voice available
-        assignVoices();
     }
 
     //-----------//
@@ -605,6 +566,7 @@ public class Slot
         }
 
         sb.append("]");
+
         return sb.toString();
     }
 
@@ -621,27 +583,24 @@ public class Slot
         stack = (MeasureStack) parent;
     }
 
-    //--------------//
-    // assignVoices //
-    //--------------//
+    //---------------------//
+    // assignMeasureVoices //
+    //---------------------//
     /**
-     * Assign available voices to the chords that have no voice assigned yet.
+     * Assign available voices to the chords in this measure with no voice assigned yet.
      * <p>
-     * A voice cannot migrate from one part to another, but may migrate from one staff to another
-     * under some conditions.
+     * A voice may migrate from one staff to another under some conditions.
      */
-    private void assignVoices ()
+    private void assignMeasureVoices (Measure measure,
+                                      List<AbstractChordInter> measureIncomings)
     {
         // Assign remaining non-mapped chords, using first voice available in part and
         // with staff continuity whenever possible
-        for (AbstractChordInter chord : incomings) {
+        for (AbstractChordInter chord : measureIncomings) {
             // Process only the chords that have no voice assigned yet
             if (chord.getVoice() != null) {
                 continue;
             }
-
-            final Part part = chord.getPart();
-            final Measure measure = stack.getMeasureAt(part);
 
             // Try to reuse an existing voice in same part (and within same staff if possible)
             for (Voice voice : measure.getVoices()) {
@@ -651,19 +610,10 @@ public class Slot
                     AbstractChordInter latestVoiceChord = voice.getChordBefore(this);
 
                     if (latestVoiceChord != null) {
-                        if ((incomings.size() > 1)
+                        if ((measureIncomings.size() > 1)
                             && (latestVoiceChord.getTopStaff() != chord.getTopStaff())) {
                             continue;
                         }
-
-                        // // Check there is no time hole with latest voice chord
-                        // // Otherwise there is a rhythm error
-                        // // (missing rest/dot on this voice / missing tuplet on other voice)
-                        // Rational delta = timeOffset.minus(latestVoiceChord.getEndTime());
-                        //
-                        // if (delta.compareTo(Rational.ZERO) > 0) {
-                        //     logger.debug("{} {} {} time hole: {}", measure, this, voice, delta);
-                        // }
                     }
 
                     chord.setVoice(voice);
@@ -680,6 +630,104 @@ public class Slot
                 measure.addVoice(new Voice(chord, chord.getMeasure()));
             }
         }
+    }
+
+    //--------------------//
+    // buildMeasureVoices //
+    //--------------------//
+    /**
+     * Compute the various voices in this slot for a given measure.
+     *
+     * @param measure         the measure being processed
+     * @param partIncomings   the chords incoming into this slot and part
+     * @param partFreeEndings the chords that end right at this slot, with their voice available.
+     */
+    private void buildMeasureVoices (Measure measure,
+                                     List<AbstractChordInter> partIncomings,
+                                     List<AbstractChordInter> partFreeEndings)
+    {
+        logger.debug("measure={} partIncomings={}", measure, partIncomings);
+
+        if (partIncomings == null) {
+            return;
+        }
+
+        List<AbstractChordInter> partRookies = new ArrayList<AbstractChordInter>();
+
+        // Some chords already have their voice assigned
+        for (AbstractChordInter ch : partIncomings) {
+            if (ch.getVoice() != null) {
+                // This pseudo-reassign is needed to populate the voice slotTable
+                ch.setVoice(ch.getVoice());
+            } else {
+                partRookies.add(ch);
+            }
+        }
+
+        // Nothing left to assign?
+        if (partRookies.isEmpty()) {
+            return;
+        }
+
+        // Try to map some free ending voices to some rookies
+        if ((partFreeEndings != null) && !partFreeEndings.isEmpty()) {
+            final Scale scale = stack.getSystem().getSheet().getScale();
+            final InjectionSolver solver = new InjectionSolver(
+                    partRookies.size(),
+                    partFreeEndings.size() + partRookies.size(),
+                    new MyDistance(partRookies, partFreeEndings, scale));
+            final int[] links = solver.solve();
+
+            for (int i = 0; i < links.length; i++) {
+                int index = links[i];
+
+                // Map new chord to a free ending chord?
+                if (index < partFreeEndings.size()) {
+                    Voice voice = partFreeEndings.get(index).getVoice();
+                    logger.debug("Slot#{} Reusing voice#{}", getId(), voice.getId());
+
+                    AbstractChordInter ch = partRookies.get(i);
+
+                    try {
+                        ch.setVoice(voice);
+                    } catch (Exception ex) {
+                        logger.warn("{} failed to set voice of chord", ch);
+
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Assign remaining non-mapped chords, using first voice available
+        assignMeasureVoices(measure, partIncomings);
+    }
+
+    //--------------//
+    // buildPartMap //
+    //--------------//
+    /**
+     * Dispatch the provided stack chords per part.
+     *
+     * @param stackChords provided collection of stack chords
+     * @return the populated map
+     */
+    private Map<Part, List<AbstractChordInter>> buildPartMap (List<AbstractChordInter> stackChords)
+    {
+        Map<Part, List<AbstractChordInter>> map = new LinkedHashMap<Part, List<AbstractChordInter>>();
+
+        for (AbstractChordInter ch : stackChords) {
+            Part part = ch.getPart();
+            List<AbstractChordInter> partChords = map.get(part);
+
+            if (partChords == null) {
+                map.put(part, partChords = new ArrayList<AbstractChordInter>());
+            }
+
+            partChords.add(ch);
+        }
+
+        return map;
     }
 
     //----------------//

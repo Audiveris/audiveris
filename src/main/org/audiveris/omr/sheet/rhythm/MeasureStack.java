@@ -1335,7 +1335,7 @@ public class MeasureStack
             }
 
             for (Measure measure : measures) {
-                sb.append("\n--");
+                sb.append("\n-- P").append(measure.getPart().getId());
 
                 for (Voice voice : measure.getVoices()) {
                     sb.append("\n").append(voice.toStrip());
