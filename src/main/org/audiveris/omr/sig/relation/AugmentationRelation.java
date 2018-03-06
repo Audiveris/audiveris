@@ -74,6 +74,14 @@ public class AugmentationRelation
         return constants.xOutGapMax;
     }
 
+    //-------------------//
+    // getXOutGapMinimum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMinimum ()
+    {
+        return constants.xOutGapMin;
+    }
+
     //----------------//
     // getYGapMaximum //
     //----------------//
@@ -159,6 +167,10 @@ public class AugmentationRelation
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 1.3,
                 "Maximum horizontal gap between dot center & note/rest reference point");
+
+        private final Scale.Fraction xOutGapMin = new Scale.Fraction(
+                0.25,
+                "Minimum horizontal gap between dot center & note/rest reference point");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,

@@ -597,6 +597,10 @@ public class DotFactory
      */
     private void lateNoteAugmentationCheck (Dot dot)
     {
+        if (dot.glyph.isVip()) {
+            logger.info("VIP lateNoteAugmentationCheck for {}", dot);
+        }
+
         double grade = Grades.intrinsicRatio * dot.eval.grade;
         AugmentationDotInter aug = new AugmentationDotInter(dot.glyph, grade);
 

@@ -254,11 +254,13 @@ public class AugmentationDotInter
             }
         }
 
+        final int minDx = scale.toPixels(DoubleDotRelation.getXOutGapMinimum());
+
         for (Inter first : firsts) {
             Point refPt = first.getCenterRight();
             double xGap = dotCenter.x - refPt.x;
 
-            if (xGap > 0) {
+            if (xGap >= minDx) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 DoubleDotRelation rel = new DoubleDotRelation();
                 rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
@@ -298,6 +300,7 @@ public class AugmentationDotInter
 
         final List<Inter> chords = dotStack.filter(
                 SIGraph.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA, luBox));
+        final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum());
 
         for (Inter ic : chords) {
             HeadChordInter chord = (HeadChordInter) ic;
@@ -311,6 +314,11 @@ public class AugmentationDotInter
                     && (head.getFirstAugmentationDot() == null)) {
                     Point refPt = head.getCenterRight();
                     double xGap = dotCenter.x - refPt.x;
+
+                    // Make sure dot is not too close to head
+                    if (xGap < minDx) {
+                        continue;
+                    }
 
                     // When this method is called, there is at most one stem per head
                     for (Relation rel : system.getSig().getRelations(head, HeadStemRelation.class)) {
@@ -383,13 +391,14 @@ public class AugmentationDotInter
         // Relevant rests?
         final List<Inter> rests = dotStack.filter(
                 SIGraph.intersectedInters(systemRests, GeoOrder.BY_ABSCISSA, luBox));
+        final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum());
 
         for (Inter inter : rests) {
             RestInter rest = (RestInter) inter;
             Point refPt = rest.getCenterRight();
             double xGap = dotCenter.x - refPt.x;
 
-            if (xGap > 0) {
+            if (xGap >= minDx) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 AugmentationRelation rel = new AugmentationRelation();
                 rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
@@ -488,19 +497,15 @@ public class AugmentationDotInter
      * Report proper lookup box based on provided dot center
      *
      * @param dotCenter center of dot candidate
-     * @param system    containing system
+     * @param maxDx     maximum dx between entity left side and dot center
+     * @param maxDy     maximum dy between entity center and dot center
      * @return proper lookup box
      */
     private static Rectangle getLuBox (Point dotCenter,
                                        int maxDx,
                                        int maxDy)
     {
-        final Rectangle luBox = new Rectangle(dotCenter);
-        luBox.grow(0, maxDy);
-        luBox.x -= maxDx;
-        luBox.width += maxDx;
-
-        return luBox;
+        return new Rectangle(dotCenter.x - maxDx, dotCenter.y - maxDy, maxDx, 2 * maxDy);
     }
 
     //---------------//

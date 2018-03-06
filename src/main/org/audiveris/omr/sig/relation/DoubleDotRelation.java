@@ -64,6 +64,14 @@ public class DoubleDotRelation
         return constants.xOutGapMax;
     }
 
+    //-------------------//
+    // getXOutGapMinimum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMinimum ()
+    {
+        return constants.xOutGapMin;
+    }
+
     //----------------//
     // getYGapMaximum //
     //----------------//
@@ -159,6 +167,10 @@ public class DoubleDotRelation
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 1.25,
                 "Maximum horizontal gap between dots centers");
+
+        private final Scale.Fraction xOutGapMin = new Scale.Fraction(
+                0.2,
+                "Minimum horizontal gap between dot centers");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.25,
