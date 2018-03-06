@@ -300,8 +300,8 @@ public class HeadInter
                     if (note == this) {
                         started = true;
                     } else if (started && (note.getStep() == getStep())
-                           && (note.getOctave() == getOctave())
-                           && (note.getStaff() == getStaff())) {
+                               && (note.getOctave() == getOctave())
+                               && (note.getStaff() == getStaff())) {
                         AlterInter accid = note.getAccidental();
 
                         if (accid != null) {
@@ -455,7 +455,8 @@ public class HeadInter
                                           int interline)
     {
         ShapeDescriptor desc = getDescriptor(interline);
-        Point ref = getBounds().getLocation();
+        Rectangle templateBox = desc.getBounds(this.getBounds());
+        Point ref = templateBox.getLocation();
         Point offset = desc.getOffset(anchor);
         ref.translate(offset.x, offset.y);
 
