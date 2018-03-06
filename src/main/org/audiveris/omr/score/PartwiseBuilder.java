@@ -1385,6 +1385,46 @@ public class PartwiseBuilder
         }
     }
 
+    //----------------//
+    // processKeyVoid //
+    //----------------//
+    /**
+     * Process a lack of key signature at system start.
+     */
+    private void processKeyVoid ()
+    {
+        try {
+            logger.debug("processKeyVoid");
+
+            final Key key = factory.createKey();
+            key.setFifths(new BigInteger("0"));
+
+            // Is this new?
+            final int staffCount = current.measure.getPart().getStaves().size();
+            boolean isNew = false;
+
+            for (int index = 0; index < staffCount; index++) {
+                Key currentKey = current.keys.get(index);
+
+                if ((currentKey != null) && !areEqual(currentKey, key)) {
+                    isNew = true;
+
+                    break;
+                }
+            }
+
+            if (isNew) {
+                getAttributes().getKey().add(key);
+
+                for (int index = 0; index < staffCount; index++) {
+                    current.keys.put(index, key);
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in processKeyVoid", ex);
+        }
+    }
+
     //-------------//
     // processKeys //
     //-------------//
@@ -1396,20 +1436,23 @@ public class PartwiseBuilder
     private void processKeys ()
     {
         // Something to process?
-        if (!current.measure.hasKeys()) {
-            return;
-        }
+        if (current.measure.hasKeys()) {
+            // Check if all keys are the same across all staves in measure
+            if (current.measure.hasSameKeys()) {
+                processKey(current.measure.getKey(0), true); // global: true
+            } else {
+                // Work staff by staff
+                final int staffCount = current.measure.getPart().getStaves().size();
 
-        // Check if all keys are the same across all staves in measure
-        if (current.measure.hasSameKeys()) {
-            processKey(current.measure.getKey(0), true);
+                for (int index = 0; index < staffCount; index++) {
+                    KeyInter key = current.measure.getKey(index);
+                    processKey(key, false); // global: false
+                }
+            }
         } else {
-            // Work staff by staff
-            final int staffCount = current.measure.getPart().getStaves().size();
-
-            for (int index = 0; index < staffCount; index++) {
-                KeyInter key = current.measure.getKey(index);
-                processKey(key, false);
+            // No key signature in measure: this is meaningful only at beginning of staff
+            if (isFirst.measure) {
+                processKeyVoid();
             }
         }
     }
