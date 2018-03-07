@@ -1099,8 +1099,8 @@ public class SIGraph
                               Inter two)
     {
         Set<Relation> rels = new LinkedHashSet<Relation>();
-        rels.addAll(getAllEdges(one, two));
-        rels.addAll(getAllEdges(two, one));
+        addAllEdges(rels, one, two);
+        addAllEdges(rels, two, one);
 
         for (Relation rel : rels) {
             if (rel instanceof Support) {
@@ -1109,6 +1109,15 @@ public class SIGraph
         }
 
         return true;
+    }
+
+    private void addAllEdges(Set<Relation> rels, Inter one, Inter two) {
+        final Set<Relation> allEdges = getAllEdges(one, two);
+        if (allEdges != null) {
+            rels.addAll(allEdges);
+        } else {
+            logger.error("allEdges is null");
+        }
     }
 
     //---------//

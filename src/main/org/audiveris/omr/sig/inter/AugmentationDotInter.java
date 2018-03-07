@@ -298,6 +298,11 @@ public class AugmentationDotInter
         final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
         final Rectangle luBox = getNotesLuBox(dotCenter, system);
 
+        if (dotStack == null) {
+            logger.error("dotStack is null");
+            return null;
+        }
+
         final List<Inter> chords = dotStack.filter(
                 SIGraph.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA, luBox));
         final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum());
@@ -387,6 +392,11 @@ public class AugmentationDotInter
         // Look for rests reachable from this dot
         final Rectangle luBox = getNotesLuBox(dotCenter, system);
         final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
+
+        if (dotStack == null) {
+            logger.error("dotStack is null");
+            return links;
+        }
 
         // Relevant rests?
         final List<Inter> rests = dotStack.filter(
