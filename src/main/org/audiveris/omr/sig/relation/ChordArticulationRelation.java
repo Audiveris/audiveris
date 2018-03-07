@@ -84,6 +84,14 @@ public class ChordArticulationRelation
     }
 
     //----------------//
+    // getYGapMinimum //
+    //----------------//
+    public static Scale.Fraction getYGapMinimum ()
+    {
+        return constants.yGapMin;
+    }
+
+    //----------------//
     // getYGapMaximum //
     //----------------//
     public static Scale.Fraction getYGapMaximum ()
@@ -187,6 +195,10 @@ public class ChordArticulationRelation
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum vertical gap between articulation center & chord");
+
+        private final Scale.Fraction yGapMin = new Scale.Fraction(
+                0.1,
+                "Minimum vertical gap between articulation center & chord");
 
         private final Constant.Ratio xWeight = new Constant.Ratio(
                 3,

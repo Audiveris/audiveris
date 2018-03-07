@@ -232,6 +232,7 @@ public class ArticulationInter
         final Scale scale = system.getSheet().getScale();
         final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum());
         final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum());
+        final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum());
         final Rectangle articBox = getBounds();
         final Point arcticCenter = getCenter();
         final Rectangle luBox = new Rectangle(arcticCenter);
@@ -261,18 +262,24 @@ public class ArticulationInter
             Point center = chord.getCenter();
 
             // Select proper chord reference point (top or bottom)
-            int yRef = (arcticCenter.y > center.y)
-                    ? (chordBox.y + chordBox.height) : chordBox.y;
-            double xGap = Math.abs(center.x - arcticCenter.x);
-            double yGap = Math.abs(yRef - arcticCenter.y);
+            int yRef = (arcticCenter.y > center.y) ? (chordBox.y + chordBox.height) : chordBox.y;
+            double absXGap = Math.abs(center.x - arcticCenter.x);
+            double yGap = (arcticCenter.y > center.y) ? (arcticCenter.y - yRef)
+                    : (yRef - arcticCenter.y);
+
+            if (yGap < minDy) {
+                continue;
+            }
+
+            double absYGap = Math.abs(yGap);
             ChordArticulationRelation rel = new ChordArticulationRelation();
-            rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+            rel.setGaps(scale.pixelsToFrac(absXGap), scale.pixelsToFrac(absYGap));
 
             if (rel.getGrade() >= rel.getMinGrade()) {
-                if ((bestRel == null) || (bestYGap > yGap)) {
+                if ((bestRel == null) || (bestYGap > absYGap)) {
                     bestRel = rel;
                     bestChord = chord;
-                    bestYGap = yGap;
+                    bestYGap = absYGap;
                 }
             }
         }
