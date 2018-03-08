@@ -86,6 +86,8 @@ import java.util.Set;
 /**
  * Class {@code SigPainter} paints all the {@link Inter} instances of a SIG.
  * <p>
+ * Its life cycle ends with the painting of a sheet.
+ * <p>
  * Remarks on no-op visit() for:<ul>
  * <li>AbstractChordInter: Notes and stem are painted on their own
  * <li>KeyInter: Each key item is painted on its own
@@ -114,6 +116,12 @@ public class SigPainter
     /** Music font for small staves, if any. */
     private final MusicFont musicFontSmall;
 
+    /** Music font for void heads in large staves. */
+    private final MusicFont musicVoidFontLarge;
+
+    /** Music font for void heads in small staves, if any. */
+    private final MusicFont musicVoidFontSmall;
+
     /** Global stroke for staff lines. */
     private final Stroke lineStroke;
 
@@ -138,12 +146,19 @@ public class SigPainter
 
         // Determine proper music fonts
         if (scale == null) {
-            musicFontLarge = musicFontSmall = null;
+            musicFontLarge = musicFontSmall = musicVoidFontLarge = musicVoidFontSmall = null;
         } else {
-            musicFontLarge = MusicFont.getFont(scale.getInterline());
+            // Standard size
+            final int large = scale.getInterline();
+            musicFontLarge = MusicFont.getFont(large);
+            musicVoidFontLarge = MusicFont.getFont(large + MusicFont.getAdditionalVoidExtent());
 
-            Integer small = scale.getSmallInterline();
+            // Smaller size
+            final Integer small = scale.getSmallInterline();
             musicFontSmall = (small != null) ? MusicFont.getFont(small) : null;
+            musicVoidFontSmall = (small != null)
+                    ? MusicFont.getFont(small + MusicFont.getAdditionalVoidExtent())
+                    : null;
         }
 
         // Determine lines parameters
@@ -426,8 +441,7 @@ public class SigPainter
             final MusicFont font;
 
             if (inter.getShape() == Shape.NOTEHEAD_VOID) {
-                font = MusicFont.getFont(
-                        inter.getStaff().getSpecificInterline() + MusicFont.NOTEHEAD_VOID_EXTENT);
+                font = getMusicVoidFont(inter.getStaff());
             } else {
                 font = getMusicFont(inter.getStaff());
             }
@@ -573,7 +587,7 @@ public class SigPainter
     // getMusicFont //
     //--------------//
     /**
-     * Select proper size of music font, according to related staff size.
+     * Select proper size of music font, according to provided staff size.
      *
      * @param small true for small staff
      * @return selected music font
@@ -587,7 +601,7 @@ public class SigPainter
     // getMusicFont //
     //--------------//
     /**
-     * Select proper size of music font, according to related staff size.
+     * Select proper size of music font, according to provided staff.
      *
      * @param staff related staff
      * @return selected music font
@@ -595,6 +609,34 @@ public class SigPainter
     protected MusicFont getMusicFont (Staff staff)
     {
         return getMusicFont((staff != null) ? staff.isSmall() : false);
+    }
+
+    //------------------//
+    // getMusicVoidFont //
+    //------------------//
+    /**
+     * Select proper size of music font for void heads, according to provided staff.
+     *
+     * @param small true for small staff
+     * @return selected music font
+     */
+    protected MusicFont getMusicVoidFont (boolean small)
+    {
+        return small ? musicVoidFontSmall : musicVoidFontLarge;
+    }
+
+    //------------------//
+    // getMusicVoidFont //
+    //------------------//
+    /**
+     * Select proper size of music font for void heads, according to provided staff size.
+     *
+     * @param staff related staff
+     * @return selected music font
+     */
+    protected MusicFont getMusicVoidFont (Staff staff)
+    {
+        return getMusicVoidFont((staff != null) ? staff.isSmall() : false);
     }
 
     //-------//

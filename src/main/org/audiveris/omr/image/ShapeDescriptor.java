@@ -524,7 +524,7 @@ public class ShapeDescriptor
     {
         // Void head templates are generally too small, so we cheat on font size
         if (shape == Shape.NOTEHEAD_VOID) {
-            interline += MusicFont.NOTEHEAD_VOID_EXTENT;
+            interline += MusicFont.getAdditionalVoidExtent();
         }
 
         MusicFont font = MusicFont.getFont(interline);

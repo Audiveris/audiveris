@@ -22,6 +22,8 @@
 package org.audiveris.omr.ui.symbol;
 
 import org.audiveris.omr.OMR;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 
 import org.slf4j.Logger;
@@ -65,6 +67,8 @@ public class MusicFont
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(MusicFont.class);
 
     /**
@@ -72,12 +76,6 @@ public class MusicFont
      * Possibilities: MusicalSymbols, Symbola, Bravura
      */
     public static final String FONT_NAME = "MusicalSymbols";
-
-    /** Interline extension for better results with MusicalSymbols font. */
-    private static final int GLOBAL_INTERLINE_EXTENT = 1;
-
-    /** Interline extension, meant for NOTEHEAD_VOID often too small. */
-    public static final int NOTEHEAD_VOID_EXTENT = 1;
 
     /**
      * Offset for code range.
@@ -182,6 +180,20 @@ public class MusicFont
         return true;
     }
 
+    //-------------------------//
+    // getAdditionalVoidExtent //
+    //-------------------------//
+    /**
+     * Report the <b>additional<b> size extent (on top of global extent for any shape)
+     * to be used for NOTEVOID_HEAD symbols.
+     *
+     * @return the additional font size extent for NOTEVOID_HEAD shape
+     */
+    public static int getAdditionalVoidExtent ()
+    {
+        return constants.additionalVoidExtent.getValue();
+    }
+
     //---------//
     // getFont //
     //---------//
@@ -193,7 +205,7 @@ public class MusicFont
      */
     public static MusicFont getFont (int interline)
     {
-        interline += GLOBAL_INTERLINE_EXTENT;
+        interline += constants.globalExtent.getValue();
 
         MusicFont font = sizeMap.get(interline);
 
@@ -320,5 +332,25 @@ public class MusicFont
     protected int getFontInterline ()
     {
         return fontInterline;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Integer globalExtent = new Constant.Integer(
+                "Pixels",
+                1,
+                "Global interline extension for better results with MusicalSymbols font");
+
+        private final Constant.Integer additionalVoidExtent = new Constant.Integer(
+                "Pixels",
+                1,
+                "Additional interline extension, meant for NOTEHEAD_VOID symbols often too small");
     }
 }
