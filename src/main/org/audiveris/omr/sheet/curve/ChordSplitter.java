@@ -368,8 +368,12 @@ public class ChordSplitter
                             head,
                             rootStem,
                             HeadStemRelation.class);
-                    sig.removeEdge(relation);
-                    sig.addEdge(head, stem, relation);
+                    if (relation != null) {
+                        sig.removeEdge(relation);
+                        sig.addEdge(head, stem, relation);
+                    } else {
+                        logger.error("relation is null");
+                    }
                 }
             }
 
