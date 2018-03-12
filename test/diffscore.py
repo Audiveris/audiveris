@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-import sys
 import tempfile
 import logging
 import subprocess
@@ -66,7 +65,6 @@ def processCases(args):
     for case in os.listdir(args.cases):
         logging.info('Processing case ' + case)
         casedir = os.path.join(args.cases, case)
-        casefiles = os.listdir(casedir)
         source = find_file(casedir, 'source*')
         target = find_file(casedir, 'target*')
         with tempfile.TemporaryDirectory() as tmpdir:
