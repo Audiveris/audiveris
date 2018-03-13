@@ -207,48 +207,66 @@ public class SymbolsEditor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------//
-    // getMeasureAt //
-    //--------------//
+    //--------------------//
+    // getStrictMeasureAt //
+    //--------------------//
     /**
-     * Retrieve the measure closest to the provided point.
+     * Retrieve the measure that contains the provided point.
      * <p>
-     * This search is meant for user interface, so we can pick up the part which is vertically
-     * closest to point ordinate (then choose measure).
+     * This search is meant for user interface, we impose point to be vertically within part staves.
      *
      * @param point the provided point
      * @return the related measure, or null
      */
-    public Measure getMeasureAt (Point point)
+    public Measure getStrictMeasureAt (Point point)
     {
-        final Staff staff = sheet.getStaffManager().getClosestStaff(point);
+        // Containing staves: 0 (totally out), 1 (on a staff) or 2 (between staves)
+        final List<Staff> staves = sheet.getStaffManager().getStavesOf(point);
 
-        if (staff != null) {
-            final Part part = staff.getPart();
+        if (staves.isEmpty()) {
+            return null;
+        }
 
-            if (part != null) {
-                return part.getMeasureAt(point);
+        final Part part = staves.get(0).getPart();
+
+        if (staves.size() == 2) {
+            // Check the 2 staves belong to the same part
+            if (part != staves.get(1).getPart()) {
+                return null;
             }
+        }
+
+        if (part != null) {
+            // Make sure point is vertically within part staves
+            if (point.y < part.getFirstStaff().getFirstLine().yAt(point.x)) {
+                return null;
+            }
+
+            if (point.y > part.getLastStaff().getLastLine().yAt(point.x)) {
+                return null;
+            }
+
+            return part.getMeasureAt(point);
         }
 
         return null;
     }
 
-    //-----------//
-    // getSlotAt //
-    //-----------//
+    //-----------------//
+    // getStrictSlotAt //
+    //-----------------//
     /**
      * Retrieve the measure slot closest to the provided point.
      * <p>
-     * This search is meant for user interface, so we can pick up the part which is vertically
-     * closest to point ordinate (then choose measure and finally slot using closest abscissa).
+     * This search is meant for user interface, we impose point to be vertically within part staves
+     * (then choose measure and finally slot using closest abscissa).
      *
      * @param point the provided point
      * @return the related slot, or null
      */
-    public Slot getSlotAt (Point point)
+    public Slot getStrictSlotAt (Point point)
     {
-        final Measure measure = getMeasureAt(point);
+        final Measure measure = getStrictMeasureAt(point);
 
         if (measure != null) {
             return measure.getStack().getClosestSlot(point);
@@ -367,7 +385,7 @@ public class SymbolsEditor
 
                 // Update highlighted slot if possible
                 if (movement != MouseMovement.RELEASING) {
-                    highLight(getSlotAt(pt));
+                    highLight(getStrictSlotAt(pt));
                 }
             }
 
@@ -398,7 +416,7 @@ public class SymbolsEditor
 
                 // Update highlighted slot if possible
                 if (movement != MouseMovement.RELEASING) {
-                    highLight(getSlotAt(pt));
+                    highLight(getStrictSlotAt(pt));
                 }
             }
 

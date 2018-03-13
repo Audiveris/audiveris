@@ -199,36 +199,6 @@ public class StaffManager
         return new Area(path);
     }
 
-    //------------//
-    // getStaffAt //
-    //------------//
-    /**
-     * Report the staff, among the sequence provided, whose area contains the provided
-     * point.
-     * Unfortunately, a point located in the gutter between two staves, is contained by both staves.
-     *
-     * @param point     the provided point
-     * @param theStaves the staves sequence to search
-     * @return the containing staff, or null if none found
-     */
-    @Deprecated
-    public static Staff getStaffAt (Point2D point,
-                                    List<Staff> theStaves)
-    {
-        final double x = point.getX();
-        final double y = point.getY();
-
-        for (Staff staff : theStaves) {
-            // If the point is ON the area boundary, it is NOT contained.
-            // So we use a rectangle of 1x1 pixels
-            if (staff.getArea().intersects(x, y, 1, 1)) {
-                return staff;
-            }
-        }
-
-        return null;
-    }
-
     //-------------//
     // getStavesOf //
     //-------------//
@@ -462,6 +432,32 @@ public class StaffManager
     public List<Staff> getStavesOf (Point2D point)
     {
         return getStavesOf(point, staves);
+    }
+
+    //------------------//
+    // getStrictStaffAt //
+    //------------------//
+    /**
+     * Report the staff which strictly contains the provided point.
+     *
+     * @param point the provided point
+     * @return the containing staff, or null if none containing found
+     */
+    public Staff getStrictStaffAt (Point2D point)
+    {
+        for (Staff staff : getStavesOf(point)) {
+            if (point.getY() < staff.getFirstLine().yAt(point.getX())) {
+                return null;
+            }
+
+            if (point.getY() > staff.getLastLine().yAt(point.getX())) {
+                return null;
+            }
+
+            return staff;
+        }
+
+        return null;
     }
 
     //--------------//

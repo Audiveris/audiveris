@@ -173,6 +173,7 @@ public class Measure
     private Part part;
 
     /** The containing measure stack. */
+    @Navigable(false)
     private MeasureStack stack;
 
     //~ Constructors -------------------------------------------------------------------------------

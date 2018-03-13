@@ -104,7 +104,7 @@ public class EditorMenu
         List<SystemInfo> systems = sheet.getSystems();
 
         if (systems != null) {
-            return sheet.getSymbolsEditor().getMeasureAt(point);
+            return sheet.getSymbolsEditor().getStrictMeasureAt(point);
         }
 
         return null;
@@ -118,7 +118,7 @@ public class EditorMenu
         List<SystemInfo> systems = sheet.getSystems();
 
         if (systems != null) {
-            return sheet.getSymbolsEditor().getSlotAt(point);
+            return sheet.getSymbolsEditor().getStrictSlotAt(point);
         }
 
         return null;
@@ -138,12 +138,15 @@ public class EditorMenu
 
         private RhythmAction rhythmAction = new RhythmAction();
 
+        private MergeAction mergeAction = new MergeAction();
+
         //~ Constructors ---------------------------------------------------------------------------
         public MeasureMenu ()
         {
             super("Measure");
             add(new JMenuItem(new DumpAction()));
             add(new JMenuItem(rhythmAction));
+            ///add(new JMenuItem(mergeAction));
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -165,6 +168,7 @@ public class EditorMenu
             }
 
             rhythmAction.update();
+            mergeAction.update();
         }
 
         //~ Inner Classes --------------------------------------------------------------------------
@@ -187,6 +191,35 @@ public class EditorMenu
             public void actionPerformed (ActionEvent e)
             {
                 stack.printVoices("\n");
+            }
+        }
+
+        /**
+         * Merge current measure with the following one in current system.
+         */
+        private class MergeAction
+                extends AbstractAction
+        {
+            //~ Constructors -----------------------------------------------------------------------
+
+            public MergeAction ()
+            {
+                putValue(NAME, "Merge on right");
+                putValue(SHORT_DESCRIPTION, "Merge this measure with measure on right");
+            }
+
+            //~ Methods ----------------------------------------------------------------------------
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                logger.info("MergeAction not yet implemented");
+            }
+
+            private void update ()
+            {
+                setEnabled(
+                        (stack == null)
+                        && (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) >= 0));
             }
         }
 
@@ -216,7 +249,7 @@ public class EditorMenu
                 if (stack == null) {
                     setEnabled(false);
                 } else {
-                    // Action enabled only if step >= RHYTHM
+                    // Action enabled only if step >= RHYTHMS
                     setEnabled(sheet.getStub().getLatestStep().compareTo(Step.RHYTHMS) >= 0);
                 }
             }
@@ -249,7 +282,7 @@ public class EditorMenu
             List<SystemInfo> systems = sheet.getSystems();
 
             if (systems != null) {
-                slot = sheet.getSymbolsEditor().getSlotAt(GeoUtil.centerOf(rect));
+                slot = sheet.getSymbolsEditor().getStrictSlotAt(GeoUtil.centerOf(rect));
             } else {
                 slot = null;
             }
@@ -333,7 +366,7 @@ public class EditorMenu
         public void updateUserLocation (Rectangle rect)
         {
             StaffManager staffManager = sheet.getStaffManager();
-            staff = staffManager.getClosestStaff(GeoUtil.centerOf(rect));
+            staff = staffManager.getStrictStaffAt(GeoUtil.centerOf(rect));
             setVisible(staff != null);
 
             if (staff != null) {
