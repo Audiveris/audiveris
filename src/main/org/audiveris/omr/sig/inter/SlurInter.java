@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
@@ -597,7 +598,8 @@ public class SlurInter
     // isSpaceClear //
     //--------------//
     /**
-     * Check if the space between leftHead and rightHead is clear of other heads.
+     * Check if the space between leftHead and rightHead is clear of other heads or too
+     * many measures.
      * <p>
      * This is meant to allow a tie.
      *
@@ -611,6 +613,16 @@ public class SlurInter
                                  List<Inter> systemHeadChords)
     {
         if ((leftHead == null) || (rightHead == null)) {
+            return false;
+        }
+
+        // Check number of measures limits crossed?
+        final Part prt = leftHead.getPart();
+        final MeasureStack leftStack = prt.getMeasureAt(leftHead.getCenter()).getStack();
+        final MeasureStack rightStack = prt.getMeasureAt(rightHead.getCenter()).getStack();
+        final int maxDeltaId = constants.maxTieDeltaMeasureID.getValue();
+
+        if ((rightStack.getIdValue() - leftStack.getIdValue()) > maxDeltaId) {
             return false;
         }
 
@@ -905,5 +917,10 @@ public class SlurInter
         private final Scale.Fraction maxDeltaY = new Scale.Fraction(
                 4,
                 "Maximum vertical difference in interlines between connecting slurs");
+
+        private final Constant.Integer maxTieDeltaMeasureID = new Constant.Integer(
+                "none",
+                1,
+                "Maximum delta in measure ID when setting a tie");
     }
 }

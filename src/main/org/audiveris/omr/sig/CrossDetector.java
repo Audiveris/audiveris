@@ -176,7 +176,11 @@ public class CrossDetector
                     // Have a more precise look
                     try {
                         if (above.overlaps(below) && below.overlaps(above)) {
-                            resolveConflict(above, below);
+                            Inter removedInter = resolveConflict(above, below);
+
+                            if (removedInter == above) {
+                                continue NextLeft;
+                            }
                         }
                     } catch (DeletedInterException diex) {
                         if (diex.inter == above) {
@@ -218,11 +222,12 @@ public class CrossDetector
      * We simply delete the weaker if there is any significant difference in grade.
      * Otherwise we deleted the inter farther from its own staff or partnering chord
      *
-     * @param above an inter (in system above)
-     * @param below an inter (in system below)
+     * @param above  an inter (in system above)
+     * @param below  an inter (in system below)
+     * @param return the discarded inter
      */
-    private void resolveConflict (Inter above,
-                                  Inter below)
+    private Inter resolveConflict (Inter above,
+                                   Inter below)
     {
         if (above.isVip() && below.isVip()) {
             logger.info("VIP resolveConflict? {} vs {}", above, below);
@@ -238,6 +243,8 @@ public class CrossDetector
             }
 
             weaker.remove();
+
+            return weaker;
         } else {
             final double aDist = Math.min(staffDistance(above), partnerDistance(above));
             final double bDist = Math.min(staffDistance(below), partnerDistance(below));
@@ -248,6 +255,8 @@ public class CrossDetector
             }
 
             farther.remove();
+
+            return farther;
         }
     }
 

@@ -236,9 +236,13 @@ public class AugmentationDotInter
         final List<Link> links = new ArrayList<Link>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
+        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
+
+        if (dotStack == null) {
+            return links;
+        }
 
         // Look for augmentation dots reachable from this dot
-        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
         final Rectangle luBox = getDotsLuBox(dotCenter, system);
 
         // Relevant dots?
@@ -293,9 +297,13 @@ public class AugmentationDotInter
         final List<Link> links = new ArrayList<Link>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
+        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
+
+        if (dotStack == null) {
+            return null;
+        }
 
         // Look for heads reachable from this dot. Heads are processed via their chord.
-        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
         final Rectangle luBox = getNotesLuBox(dotCenter, system);
 
         final List<Inter> chords = dotStack.filter(
@@ -383,10 +391,14 @@ public class AugmentationDotInter
         final List<Link> links = new ArrayList<Link>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
+        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
+
+        if (dotStack == null) {
+            return links;
+        }
 
         // Look for rests reachable from this dot
         final Rectangle luBox = getNotesLuBox(dotCenter, system);
-        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
 
         // Relevant rests?
         final List<Inter> rests = dotStack.filter(

@@ -806,60 +806,59 @@ public class SlursBuilder
                     continue;
                 }
 
-                for (HorizontalSide slurSide : HorizontalSide.values()) {
-                    // Count ties for this chord on relevant *slur* side (LEFT)
-                    final Set<SlurInter> ties = new LinkedHashSet<SlurInter>();
+                // Count ties for this chord on relevant *slur* side (LEFT)
+                final HorizontalSide slurSide = HorizontalSide.LEFT;
+                final Set<SlurInter> ties = new LinkedHashSet<SlurInter>();
 
-                    for (Inter nInter : chord.getNotes()) {
-                        for (Relation rel : sig.getRelations(nInter, SlurHeadRelation.class)) {
-                            final SlurHeadRelation shRel = (SlurHeadRelation) rel;
+                for (Inter nInter : chord.getNotes()) {
+                    for (Relation rel : sig.getRelations(nInter, SlurHeadRelation.class)) {
+                        final SlurHeadRelation shRel = (SlurHeadRelation) rel;
 
-                            if (shRel.getSide() == slurSide) {
-                                SlurInter slur = (SlurInter) sig.getOppositeInter(nInter, rel);
+                        if (shRel.getSide() == slurSide) {
+                            SlurInter slur = (SlurInter) sig.getOppositeInter(nInter, rel);
 
-                                if (slur.isTie()) {
-                                    ties.add(slur);
+                            if (slur.isTie()) {
+                                ties.add(slur);
+                            }
+                        }
+                    }
+                }
+
+                if (ties.size() > 1) {
+                    HorizontalSide oppSide = slurSide.opposite();
+                    Map<HeadChordInter, List<SlurInter>> origins;
+                    origins = new LinkedHashMap<HeadChordInter, List<SlurInter>>();
+
+                    // Check whether the ties are linked to different chords
+                    for (SlurInter tie : ties) {
+                        for (Relation rel : sig.getRelations(tie, SlurHeadRelation.class)) {
+                            if (((SlurHeadRelation) rel).getSide() == oppSide) {
+                                Inter head = sig.getOppositeInter(tie, rel);
+                                HeadChordInter ch = (HeadChordInter) head.getEnsemble();
+
+                                if (ch != null) {
+                                    List<SlurInter> list = origins.get(ch);
+
+                                    if (list == null) {
+                                        origins.put(ch, list = new ArrayList<SlurInter>());
+                                    }
+
+                                    list.add(tie);
                                 }
                             }
                         }
                     }
 
-                    if (ties.size() > 1) {
-                        HorizontalSide oppSide = slurSide.opposite();
-                        Map<HeadChordInter, List<SlurInter>> origins;
-                        origins = new LinkedHashMap<HeadChordInter, List<SlurInter>>();
+                    logger.debug("origins: {}", origins);
 
-                        // Check whether the ties are linked to different chords
-                        for (SlurInter tie : ties) {
-                            for (Relation rel : sig.getRelations(tie, SlurHeadRelation.class)) {
-                                if (((SlurHeadRelation) rel).getSide() == oppSide) {
-                                    Inter head = sig.getOppositeInter(tie, rel);
-                                    HeadChordInter ch = (HeadChordInter) head.getEnsemble();
+                    if (origins.keySet().size() > 1) {
+                        // This may result from a mirrored head
+                        HeadInter mirror = (HeadInter) chord.getLeadingNote().getMirror();
 
-                                    if (ch != null) {
-                                        List<SlurInter> list = origins.get(ch);
-
-                                        if (list == null) {
-                                            origins.put(ch, list = new ArrayList<SlurInter>());
-                                        }
-
-                                        list.add(tie);
-                                    }
-                                }
-                            }
-                        }
-
-                        logger.debug("origins: {}", origins);
-
-                        if (origins.keySet().size() > 1) {
-                            // This may result from a mirrored head
-                            HeadInter mirror = (HeadInter) chord.getLeadingNote().getMirror();
-
-                            if (mirror != null) {
-                                // TODO: what to do???
-                            } else {
-                                new ChordSplitter(chord, slurSide, origins).split();
-                            }
+                        if (mirror != null) {
+                            // TODO: what to do???
+                        } else {
+                            new ChordSplitter(chord, slurSide, origins).split();
                         }
                     }
                 }
