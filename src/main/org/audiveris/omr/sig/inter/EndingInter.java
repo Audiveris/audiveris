@@ -132,6 +132,37 @@ public class EndingInter
         return new Rectangle(bounds = box);
     }
 
+    //-------------------//
+    // getExportedNumber //
+    //-------------------//
+    /**
+     * Filter the ending number string to comply with MusicXML constraint that it must
+     * be formatted as "1" or "1,2".
+     *
+     * @return the formatted number string, if any
+     */
+    public String getExportedNumber ()
+    {
+        String raw = getNumber();
+
+        if (raw == null) {
+            return null;
+        }
+
+        String[] nums = raw.split("[^0-9]"); // Any non-digit character is a separator
+        StringBuilder sb = new StringBuilder();
+
+        for (String num : nums) {
+            if (sb.length() > 0) {
+                sb.append(",");
+            }
+
+            sb.append(num);
+        }
+
+        return sb.toString();
+    }
+
     //------------//
     // getLeftLeg //
     //------------//

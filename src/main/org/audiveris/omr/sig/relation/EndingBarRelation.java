@@ -156,7 +156,7 @@ public class EndingBarRelation
     @Override
     public boolean isSingleSource ()
     {
-        return true;
+        return false;
     }
 
     //----------------//
@@ -165,7 +165,7 @@ public class EndingBarRelation
     @Override
     public boolean isSingleTarget ()
     {
-        return true;
+        return false;
     }
 
     //--------------//

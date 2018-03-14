@@ -911,7 +911,7 @@ public class PartwiseBuilder
                     : partBarline.getEnding(
                             (location == RightLeftMiddle.LEFT) ? LEFT : RIGHT);
             final String endingValue = (ending != null) ? ending.getValue() : null;
-            String endingNumber = (ending != null) ? ending.getNumber() : null;
+            String endingNumber = (ending != null) ? ending.getExportedNumber() : null;
 
             if (endingNumber == null) {
                 endingNumber = "99"; // Dummy integer value to mean: unknown

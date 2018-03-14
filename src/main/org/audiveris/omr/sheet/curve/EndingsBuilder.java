@@ -33,9 +33,11 @@ import org.audiveris.omr.lag.Sections;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.StaffBarline;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -358,7 +360,7 @@ public class EndingsBuilder
             }
 
             // Left bar (or header)
-            final BarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
+            BarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
             final EndingBarRelation leftRel = new EndingBarRelation(LEFT, 0.5);
 
             if (leftBar == null) {
@@ -368,6 +370,14 @@ public class EndingsBuilder
 
                 if (leftEnd.x >= firstMeasure.getAbscissa(RIGHT, staff)) {
                     continue; // segment starts after end of first measure
+                }
+
+                PartBarline partLine = staff.getPart().getLeftBarline();
+
+                if (partLine != null) {
+                    StaffBarline staffLine = partLine.getBarline(staff.getPart(), staff);
+                    leftBar = staffLine.getBars().get(staffLine.getBars().size() - 1);
+                    leftRel.setGaps(0, 0);
                 }
             } else {
                 double leftDist = scale.pixelsToFrac(
