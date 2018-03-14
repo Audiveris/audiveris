@@ -363,7 +363,10 @@ public abstract class Voices
                                     final Voice leftVoice = left.getVoice();
                                     logger.debug("{} ties {} over to {}", slur, voice, leftVoice);
 
-                                    return leftVoice.getId();
+                                    // Can be null if rhythm could not process the whole measure
+                                    if (leftVoice != null) {
+                                        return leftVoice.getId();
+                                    }
                                 }
                             }
                         }
