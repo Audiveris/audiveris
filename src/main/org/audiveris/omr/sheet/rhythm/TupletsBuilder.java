@@ -76,6 +76,61 @@ public class TupletsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------------//
+    // getEmbracedChords //
+    //-------------------//
+    /**
+     * Report the proper collection of chords that are embraced by the tuplet.
+     *
+     * @param tuplet     underlying tuplet sign
+     * @param candidates the chords candidates, ordered by euclidian distance to sign
+     * @return the set of embraced chords, ordered from left to right, or null if retrieval failed
+     */
+    public static SortedSet<AbstractChordInter> getEmbracedChords (TupletInter tuplet,
+                                                                   List<AbstractChordInter> candidates)
+    {
+        logger.trace("{} getEmbracedChords", tuplet);
+
+        // We consider each candidate in turn, with its duration
+        // in order to determine the duration base of the tuplet
+        TupletCollector collector = new TupletCollector(
+                tuplet,
+                new TreeSet<AbstractChordInter>(Inters.byFullAbscissa));
+
+        final Staff targetStaff = getTargetStaff(candidates);
+
+        for (AbstractChordInter chord : candidates) {
+            // We assume that chords with 2 staves have their tuplet sign above...
+            Staff staff = chord.getTopStaff();
+
+            // Check that all chords are on the same staff
+            if (staff != targetStaff) {
+                continue;
+            }
+
+            collector.include(chord);
+
+            // Check we have collected the exact amount of time
+            // TODO: Test is questionable for non-reliable candidates
+            if (collector.isNotOk()) {
+                logger.debug("{} {}", tuplet, collector.getStatusMessage());
+
+                return null;
+            } else if (collector.isOk()) {
+                if (logger.isDebugEnabled()) {
+                    collector.dump();
+                }
+
+                return collector.getChords(); // Normal exit
+            }
+        }
+
+        // Candidates are exhausted, we lack chords
+        logger.info("{} {}", tuplet, collector.getStatusMessage());
+
+        return null;
+    }
+
     //------------------//
     // linkStackTuplets //
     //------------------//
@@ -172,61 +227,6 @@ public class TupletsBuilder
 
             return 0;
         }
-    }
-
-    //-------------------//
-    // getEmbracedChords //
-    //-------------------//
-    /**
-     * Report the proper collection of chords that are embraced by the tuplet.
-     *
-     * @param tuplet     underlying tuplet sign
-     * @param candidates the chords candidates, ordered by euclidian distance to sign
-     * @return the set of embraced chords, ordered from left to right, or null if retrieval failed
-     */
-    private static SortedSet<AbstractChordInter> getEmbracedChords (TupletInter tuplet,
-                                                                    List<AbstractChordInter> candidates)
-    {
-        logger.trace("{} getEmbracedChords", tuplet);
-
-        // We consider each candidate in turn, with its duration
-        // in order to determine the duration base of the tuplet
-        TupletCollector collector = new TupletCollector(
-                tuplet,
-                new TreeSet<AbstractChordInter>(Inters.byFullAbscissa));
-
-        final Staff targetStaff = getTargetStaff(candidates);
-
-        for (AbstractChordInter chord : candidates) {
-            // We assume that chords with 2 staves have their tuplet sign above...
-            Staff staff = chord.getTopStaff();
-
-            // Check that all chords are on the same staff
-            if (staff != targetStaff) {
-                continue;
-            }
-
-            collector.include(chord);
-
-            // Check we have collected the exact amount of time
-            // TODO: Test is questionable for non-reliable candidates
-            if (collector.isNotOk()) {
-                logger.debug("{} {}", tuplet, collector.getStatusMessage());
-
-                return null;
-            } else if (collector.isOk()) {
-                if (logger.isDebugEnabled()) {
-                    collector.dump();
-                }
-
-                return collector.getChords(); // Normal exit
-            }
-        }
-
-        // Candidates are exhausted, we lack chords
-        logger.info("{} {}", tuplet, collector.getStatusMessage());
-
-        return null;
     }
 
     //----------------//

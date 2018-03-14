@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -134,21 +135,10 @@ public class TupletInter
     @Override
     public boolean checkAbnormal ()
     {
-        // TODO: this is a bit simplistic...
-        switch (shape) {
-        case TUPLET_THREE:
-            setAbnormal(getChords().size() < 3);
-
-            break;
-
-        case TUPLET_SIX:
-            setAbnormal(getChords().size() < 6);
-
-            break;
-
-        default:
-            throw new IllegalArgumentException("Illegal tuplet shape " + shape);
-        }
+        SortedSet<AbstractChordInter> embraced = TupletsBuilder.getEmbracedChords(
+                this,
+                getChords());
+        setAbnormal(embraced == null);
 
         return isAbnormal();
     }
