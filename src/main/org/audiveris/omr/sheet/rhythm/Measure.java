@@ -1312,10 +1312,9 @@ public class Measure
     // removeInter //
     //-------------//
     /**
-     * This method is meant for (adjustable) FRAT data only.
+     * Remove the provided inter from measure internals.
      *
-     *
-     * @param inter an instance of flag, rest chord, augDot or tuplet
+     * @param inter the inter to remove
      */
     public void removeInter (Inter inter)
     {
@@ -1377,6 +1376,14 @@ public class Measure
 
                 if (timeSigs.isEmpty()) {
                     timeSigs = null;
+                }
+            }
+        } else if (inter instanceof ClefInter) {
+            if (clefs != null) {
+                clefs.remove((ClefInter) inter);
+
+                if (clefs.isEmpty()) {
+                    clefs = null;
                 }
             }
         } else {
