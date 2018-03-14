@@ -914,7 +914,7 @@ public class PartwiseBuilder
             String endingNumber = (ending != null) ? ending.getNumber() : null;
 
             if (endingNumber == null) {
-                endingNumber = "0";
+                endingNumber = "99"; // Dummy integer value to mean: unknown
             }
 
             if ((partBarline == current.measure.getLeftBarline())
@@ -955,8 +955,6 @@ public class PartwiseBuilder
                             pmEnding.setEndLength(toTenths(leg.getY2() - pt.getY()));
 
                             pmEnding.setType(StartStopDiscontinue.START);
-
-                            SIGraph sig = ending.getSig();
 
                             // Number (mandatory)
                             pmEnding.setNumber(endingNumber);
@@ -1017,9 +1015,14 @@ public class PartwiseBuilder
                             Staff staff = current.measure.getPart().getFirstStaff();
                             pmEnding.setDefaultY(yOf(pt, staff));
 
-                            pmEnding.setType(
-                                    (ending.getRightLeg() != null) ? StartStopDiscontinue.STOP
-                                    : StartStopDiscontinue.DISCONTINUE);
+                            Line2D leg = ending.getRightLeg();
+
+                            if (leg != null) {
+                                pmEnding.setEndLength(toTenths(leg.getY2() - pt.getY()));
+                                pmEnding.setType(StartStopDiscontinue.STOP);
+                            } else {
+                                pmEnding.setType(StartStopDiscontinue.DISCONTINUE);
+                            }
 
                             // Number (mandatory)
                             pmEnding.setNumber(endingNumber);
