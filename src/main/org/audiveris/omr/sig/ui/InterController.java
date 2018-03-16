@@ -49,8 +49,8 @@ import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.relation.BasicContainment;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
-import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -383,7 +383,10 @@ public class InterController
                                 seq.add(
                                         new UnlinkTask(
                                                 sig,
-                                                sig.getRelation(headChord, head, Containment.class)));
+                                                sig.getRelation(
+                                                        headChord,
+                                                        head,
+                                                        BasicContainment.class)));
 
                                 if (headChord.getNotes().size() <= 1) {
                                     // Remove headChord getting empty
@@ -396,7 +399,7 @@ public class InterController
                                                 sig,
                                                 stemChords.get(0),
                                                 head,
-                                                new Containment()));
+                                                new BasicContainment()));
                             }
                         }
                     }
@@ -670,7 +673,7 @@ public class InterController
                             sig,
                             restChord,
                             ghostBounds,
-                            Arrays.asList(new Link(ghost, new Containment(), true))));
+                            Arrays.asList(new Link(ghost, new BasicContainment(), true))));
         } else if (ghost instanceof HeadInter) {
             // If we link head to a stem, create/update the related head chord
             boolean stemFound = false;
@@ -700,7 +703,7 @@ public class InterController
                     }
 
                     // Declare head part of head-chord
-                    seq.add(new LinkTask(sig, headChord, ghost, new Containment()));
+                    seq.add(new LinkTask(sig, headChord, ghost, new BasicContainment()));
                     stemFound = true;
 
                     break;
@@ -711,7 +714,7 @@ public class InterController
                 // Head without stem
                 HeadChordInter headChord = new HeadChordInter(-1);
                 seq.add(new AdditionTask(sig, headChord, ghostBounds, Collections.EMPTY_SET));
-                seq.add(new LinkTask(sig, headChord, ghost, new Containment()));
+                seq.add(new LinkTask(sig, headChord, ghost, new BasicContainment()));
             }
         }
 
@@ -785,7 +788,7 @@ public class InterController
                                                 word,
                                                 textWord.getBounds(),
                                                 Arrays.asList(
-                                                        new Link(sentence, new Containment(), false))));
+                                                        new Link(sentence, new BasicContainment(), false))));
                             } else {
                                 sentence = lyrics ? LyricLineInter.create(line)
                                         : ((role == TextRole.ChordName)
@@ -803,7 +806,8 @@ public class InterController
                                                 sig,
                                                 sentence,
                                                 line.getBounds(),
-                                                Arrays.asList(new Link(word, new Containment(), true))));
+                                                Arrays.asList(
+                                                        new Link(word, new BasicContainment(), true))));
                             }
 
                             word.setStaff(staff);
@@ -1093,7 +1097,7 @@ public class InterController
             // This method runs on EDT
 
             // Append to history?
-            if (opKind == DO && seq != null) {
+            if ((opKind == DO) && (seq != null)) {
                 history.add(seq);
             }
 
@@ -1166,7 +1170,7 @@ public class InterController
                 // Watch the containing ensemble (if not already to be removed)
                 final SIGraph sig = inter.getSig();
 
-                for (Relation rel : sig.getRelations(inter, Containment.class)) {
+                for (Relation rel : sig.getRelations(inter, BasicContainment.class)) {
                     final InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(inter, rel);
 
                     if (!ensembles.contains(ens)) {

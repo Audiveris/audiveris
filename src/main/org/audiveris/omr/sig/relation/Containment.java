@@ -21,62 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
-
-import org.jgrapht.event.GraphEdgeChangeEvent;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-
 /**
- * Class {@code Containment} represents an ensemble - member relation.
+ * Interface {@code Containment} defines ensemble - member relation.
  *
  * @author Hervé Bitteur
  */
-@XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name = "containment")
-public class Containment
-        extends AbstractRelation
+public interface Containment
 {
-    //~ Methods ------------------------------------------------------------------------------------
-
-    //-------//
-    // added //
-    //-------//
-    @Override
-    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
-    {
-        InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
-        ensemble.invalidateCache();
-    }
-
-    //----------------//
-    // isSingleSource //
-    //----------------//
-    @Override
-    public boolean isSingleSource ()
-    {
-        return true;
-    }
-
-    //----------------//
-    // isSingleTarget //
-    //----------------//
-    @Override
-    public boolean isSingleTarget ()
-    {
-        return false;
-    }
-
-    //---------//
-    // removed //
-    //---------//
-    @Override
-    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
-    {
-        InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
-        ensemble.invalidateCache();
-    }
 }
