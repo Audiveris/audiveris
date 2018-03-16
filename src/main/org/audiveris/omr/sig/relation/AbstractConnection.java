@@ -95,25 +95,27 @@ public abstract class AbstractConnection
     /**
      * Set the gaps for this connection.
      *
-     * @param dx the horizontal distance (positive for gap and negative for overlap)
-     * @param dy the vertical distance (absolute)
+     * @param dx     the horizontal distance (positive for gap and negative for overlap)
+     * @param dy     the vertical distance (absolute)
+     * @param manual true if computed for manual assignment
      */
     public void setGaps (double dx,
-                         double dy)
+                         double dy,
+                         boolean manual)
     {
         this.dx = dx;
         this.dy = dy;
 
         // Infer impact data
-        double yMax = getYGapMax().getValue();
+        double yMax = getYGapMax(manual).getValue();
         double yImpact = (yMax - dy) / yMax;
 
         if (dx >= 0) {
-            double xMax = getXOutGapMax().getValue();
+            double xMax = getXOutGapMax(manual).getValue();
             double xImpact = (xMax - dx) / xMax;
             setImpacts(new OutImpacts(xImpact, yImpact, getOutWeights()));
         } else {
-            double xMax = getXInGapMax().getValue();
+            double xMax = getXInGapMax(manual).getValue();
             double xImpact = (xMax + dx) / xMax;
             setImpacts(new InImpacts(xImpact, yImpact, getInWeights()));
         }
@@ -142,9 +144,9 @@ public abstract class AbstractConnection
         return OutImpacts.WEIGHTS;
     }
 
-    protected abstract Scale.Fraction getXOutGapMax ();
+    protected abstract Scale.Fraction getXOutGapMax (boolean manual);
 
-    protected abstract Scale.Fraction getYGapMax ();
+    protected abstract Scale.Fraction getYGapMax (boolean manual);
 
     /**
      * Report maximum acceptable overlap.
@@ -152,7 +154,7 @@ public abstract class AbstractConnection
      *
      * @return the maximum overlap acceptable
      */
-    protected Scale.Fraction getXInGapMax ()
+    protected Scale.Fraction getXInGapMax (boolean manual)
     {
         throw new UnsupportedOperationException();
     }

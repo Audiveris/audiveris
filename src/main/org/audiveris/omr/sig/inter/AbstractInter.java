@@ -137,7 +137,7 @@ public abstract class AbstractInter
     /** Is it manual?. */
     @XmlAttribute(name = "manual")
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
-    private boolean manual;
+    protected boolean manual;
 
     /** The contextual grade of this interpretation, if any. */
     @XmlAttribute(name = "ctx-grade")

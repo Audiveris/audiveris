@@ -45,17 +45,17 @@ public class ChordOrnamentRelation
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
     {
-        return constants.xGapMax;
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum ()
+    public static Scale.Fraction getYGapMaximum (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     //----------------//
@@ -89,18 +89,18 @@ public class ChordOrnamentRelation
     // getXOutGapMax //
     //---------------//
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return getXOutGapMaximum();
+        return getXOutGapMaximum(manual);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
-        return getYGapMaximum();
+        return getYGapMaximum(manual);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -120,8 +120,16 @@ public class ChordOrnamentRelation
                 0.75,
                 "Maximum horizontal gap between ornament center & chord");
 
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+                1.2,
+                "Maximum manual horizontal gap between ornament center & chord");
+
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum vertical gap between ornament center & chord");
+
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                3.0,
+                "Maximum manual vertical gap between ornament center & chord");
     }
 }

@@ -96,25 +96,25 @@ public class HeadStemRelation
     //------------------//
     // getXInGapMaximum //
     //------------------//
-    public static Scale.Fraction getXInGapMaximum ()
+    public static Scale.Fraction getXInGapMaximum (boolean manual)
     {
-        return constants.xInGapMax;
+        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
     }
 
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
     {
-        return constants.xOutGapMax;
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum ()
+    public static Scale.Fraction getYGapMaximum (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     /**
@@ -208,27 +208,27 @@ public class HeadStemRelation
     // getXInGapMax //
     //--------------//
     @Override
-    protected Scale.Fraction getXInGapMax ()
+    protected Scale.Fraction getXInGapMax (boolean manual)
     {
-        return getXInGapMaximum();
+        return getXInGapMaximum(manual);
     }
 
     //---------------//
     // getXOutGapMax //
     //---------------//
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return getXOutGapMaximum();
+        return getXOutGapMaximum(manual);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
-        return getYGapMaximum();
+        return getYGapMaximum(manual);
     }
 
     @Override
@@ -257,17 +257,29 @@ public class HeadStemRelation
                 1,
                 "Value for (target) stem coeff in support formula");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.8,
-                "Maximum vertical gap between stem & head");
-
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.3,
                 "Maximum horizontal overlap between stem & head");
 
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
+                0.45,
+                "Maximum manual horizontal overlap between stem & head");
+
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.25,
                 "Maximum horizontal gap between stem & head");
+
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                0.35,
+                "Maximum manualhorizontal gap between stem & head");
+
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                0.8,
+                "Maximum vertical gap between stem & head");
+
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                1.2,
+                "Maximum manual vertical gap between stem & head");
 
         private final Constant.Ratio anchorHeightRatio = new Constant.Ratio(
                 0.25,

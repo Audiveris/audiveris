@@ -258,7 +258,7 @@ public class AugmentationDotInter
             }
         }
 
-        final int minDx = scale.toPixels(DoubleDotRelation.getXOutGapMinimum());
+        final int minDx = scale.toPixels(DoubleDotRelation.getXOutGapMinimum(manual));
 
         for (Inter first : firsts) {
             Point refPt = first.getCenterRight();
@@ -267,7 +267,7 @@ public class AugmentationDotInter
             if (xGap >= minDx) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 DoubleDotRelation rel = new DoubleDotRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     links.add(new Link(first, rel, true));
@@ -308,7 +308,7 @@ public class AugmentationDotInter
 
         final List<Inter> chords = dotStack.filter(
                 SIGraph.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA, luBox));
-        final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum());
+        final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(manual));
 
         for (Inter ic : chords) {
             HeadChordInter chord = (HeadChordInter) ic;
@@ -349,7 +349,7 @@ public class AugmentationDotInter
                     if (xGap > 0) {
                         double yGap = Math.abs(refPt.y - dotCenter.y);
                         AugmentationRelation rel = new AugmentationRelation();
-                        rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                        rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                         if (rel.getGrade() >= rel.getMinGrade()) {
                             links.add(new Link(head, rel, true));
@@ -403,7 +403,7 @@ public class AugmentationDotInter
         // Relevant rests?
         final List<Inter> rests = dotStack.filter(
                 SIGraph.intersectedInters(systemRests, GeoOrder.BY_ABSCISSA, luBox));
-        final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum());
+        final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(manual));
 
         for (Inter inter : rests) {
             RestInter rest = (RestInter) inter;
@@ -413,7 +413,7 @@ public class AugmentationDotInter
             if (xGap >= minDx) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 AugmentationRelation rel = new AugmentationRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     links.add(new Link(rest, rel, true));
@@ -492,12 +492,12 @@ public class AugmentationDotInter
      * @param system    containing system
      * @return proper lookup box
      */
-    private static Rectangle getDotsLuBox (Point dotCenter,
-                                           SystemInfo system)
+    private Rectangle getDotsLuBox (Point dotCenter,
+                                    SystemInfo system)
     {
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum());
+        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum(manual));
+        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum(manual));
 
         return getLuBox(dotCenter, maxDx, maxDy);
     }
@@ -530,12 +530,12 @@ public class AugmentationDotInter
      * @param system    containing system
      * @return proper lookup box
      */
-    private static Rectangle getNotesLuBox (Point dotCenter,
-                                            SystemInfo system)
+    private Rectangle getNotesLuBox (Point dotCenter,
+                                     SystemInfo system)
     {
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
+        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum(manual));
+        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum(manual));
 
         return getLuBox(dotCenter, maxDx, maxDy);
     }

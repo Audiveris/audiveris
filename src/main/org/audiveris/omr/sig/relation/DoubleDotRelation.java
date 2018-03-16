@@ -59,25 +59,25 @@ public class DoubleDotRelation
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
     {
-        return constants.xOutGapMax;
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
     }
 
     //-------------------//
     // getXOutGapMinimum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMinimum ()
+    public static Scale.Fraction getXOutGapMinimum (boolean manual)
     {
-        return constants.xOutGapMin;
+        return manual ? constants.xOutGapMinManual : constants.xOutGapMin;
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum ()
+    public static Scale.Fraction getYGapMaximum (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     //-------//
@@ -140,15 +140,15 @@ public class DoubleDotRelation
     }
 
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return getXOutGapMaximum();
+        return getXOutGapMaximum(manual);
     }
 
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
-        return getYGapMaximum();
+        return getYGapMaximum(manual);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -168,13 +168,25 @@ public class DoubleDotRelation
                 1.25,
                 "Maximum horizontal gap between dots centers");
 
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                2.0,
+                "Maximum manual horizontal gap between dots centers");
+
         private final Scale.Fraction xOutGapMin = new Scale.Fraction(
                 0.2,
                 "Minimum horizontal gap between dot centers");
 
+        private final Scale.Fraction xOutGapMinManual = new Scale.Fraction(
+                0.1,
+                "Minimum manual horizontal gap between dot centers");
+
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.25,
                 "Maximum vertical gap between dots centers");
+
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                0.4,
+                "Maximum manual vertical gap between dots centers");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 1,

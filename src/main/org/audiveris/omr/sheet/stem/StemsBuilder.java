@@ -956,7 +956,7 @@ public class StemsBuilder
                     final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY())
                             : Math.max(0, start.getY() - crossPt.getY());
 
-                    bRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                    bRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
 
                     if (bRel.getGrade() >= bRel.getMinGrade()) {
                         sig.addEdge(beam, stem, bRel);
@@ -1027,7 +1027,7 @@ public class StemsBuilder
                         }
                     }
 
-                    hRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                    hRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
 
                     if (hRel.getGrade() >= hRel.getMinGrade()) {
                         hRel.setExtensionPoint(
@@ -1887,11 +1887,11 @@ public class StemsBuilder
                            Scale scale)
         {
             slopeMargin = constants.slopeMargin.getValue();
-            maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
-            maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum());
-            maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum());
+            maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(false));
+            maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum(false));
+            maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(false));
             vicinityMargin = scale.toPixels(constants.vicinityMargin);
-            maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum());
+            maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum(false));
             maxYGap = scale.toPixels(VerticalsBuilder.getMaxYGap());
             minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
             minStemExtension = scale.toPixels(constants.minStemExtension);

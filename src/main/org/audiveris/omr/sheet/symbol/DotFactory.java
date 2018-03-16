@@ -389,15 +389,15 @@ public class DotFactory
         final Point center = dot.glyph.getCenter();
         final double pp = system.estimatedPitch(center);
         double pitchDif = Math.abs(Math.abs(pp) - 1);
-        double maxDif = RepeatDotBarRelation.getYGapMaximum().getValue();
+        double maxDif = RepeatDotBarRelation.getYGapMaximum(false).getValue();
 
         // Rough sanity check
         if (pitchDif > (2 * maxDif)) {
             return;
         }
 
-        final int maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum());
+        final int maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum(false));
+        final int maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum(false));
         final Point dotPt = dot.glyph.getCenter();
         final Rectangle luBox = new Rectangle(dotPt);
         luBox.grow(maxDx, maxDy);
@@ -430,7 +430,7 @@ public class DotFactory
             double xGap = Math.abs(barX - dotPt.x);
             double yGap = Math.abs(barY - dotPt.y);
             RepeatDotBarRelation rel = new RepeatDotBarRelation();
-            rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+            rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestXGap > xGap)) {
@@ -565,7 +565,7 @@ public class DotFactory
                             : (halfBox.y + (halfBox.height * 0.75));
                     double yGap = Math.abs(dotCenter.y - yTarget);
                     DotFermataRelation rel = new DotFermataRelation();
-                    rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                    rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
 
                     if (rel.getGrade() >= rel.getMinGrade()) {
                         if (dotInter == null) {

@@ -377,12 +377,12 @@ public class EndingsBuilder
                 if (partLine != null) {
                     StaffBarline staffLine = partLine.getBarline(staff.getPart(), staff);
                     leftBar = staffLine.getBars().get(staffLine.getBars().size() - 1);
-                    leftRel.setGaps(0, 0);
+                    leftRel.setGaps(0, 0, false);
                 }
             } else {
                 double leftDist = scale.pixelsToFrac(
                         Math.abs(LineUtil.xAtY(leftBar.getMedian(), leftEnd.y) - leftEnd.x));
-                leftRel.setGaps(leftDist, 0);
+                leftRel.setGaps(leftDist, 0, false);
             }
 
             // Right leg (optional)
@@ -398,7 +398,7 @@ public class EndingsBuilder
             final double rightDist = scale.pixelsToFrac(
                     Math.abs(LineUtil.xAtY(rightBar.getMedian(), rightEnd.y) - rightEnd.x));
             final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
-            rightRel.setGaps(rightDist, 0);
+            rightRel.setGaps(rightDist, 0, false);
 
             // Create ending inter
             GradeImpacts segImp = segment.getImpacts();
@@ -540,7 +540,7 @@ public class EndingsBuilder
             legYMargin = scale.toPixels(constants.legYMargin);
             maxLegXGap = scale.toPixels(constants.maxLegXGap);
             maxLegYGap = scale.toPixels(constants.maxLegYGap);
-            maxBarShift = scale.toPixels(EndingBarRelation.getXGapMax());
+            maxBarShift = scale.toPixels(EndingBarRelation.getXGapMaximum(false));
             maxSlope = constants.maxSlope.getValue();
 
             if (logger.isDebugEnabled()) {

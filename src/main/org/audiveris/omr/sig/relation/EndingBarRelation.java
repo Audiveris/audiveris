@@ -84,12 +84,12 @@ public class EndingBarRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------//
-    // getXGapMax //
-    //------------//
-    public static Scale.Fraction getXGapMax ()
+    //----------------//
+    // getXGapMaximum //
+    //----------------//
+    public static Scale.Fraction getXGapMaximum (boolean manual)
     {
-        return constants.xGapMax;
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
     }
 
     //-------//
@@ -127,27 +127,27 @@ public class EndingBarRelation
     // getXInGapMax //
     //--------------//
     @Override
-    public Scale.Fraction getXInGapMax ()
+    public Scale.Fraction getXInGapMax (boolean manual)
     {
-        return constants.xGapMax;
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
     }
 
     //---------------//
     // getXOutGapMax //
     //---------------//
     @Override
-    public Scale.Fraction getXOutGapMax ()
+    public Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return constants.xGapMax;
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    public Scale.Fraction getYGapMax ()
+    public Scale.Fraction getYGapMax (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     //----------------//
@@ -236,9 +236,17 @@ public class EndingBarRelation
                 2.0,
                 "Maximum horizontal gap between ending and barline");
 
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+                3.0,
+                "Maximum manual horizontal gap between ending and barline");
+
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 10.0,
                 "Maximum vertical gap between bottom of ending leg and top of barline");
+
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                15.0,
+                "Maximum manual vertical gap between bottom of ending leg and top of barline");
 
         private final Constant.Ratio xWeight = new Constant.Ratio(
                 1,

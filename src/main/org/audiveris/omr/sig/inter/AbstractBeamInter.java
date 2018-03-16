@@ -235,7 +235,7 @@ public abstract class AbstractBeamInter
         double toRight = beamLimit.getX2() - crossPt.getX();
         final double xGap;
 
-        final int maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum());
+        final int maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
 
         if (this instanceof BeamInter && (Math.min(toLeft, toRight) > maxBeamInDx)) {
             // It's a beam center connection
@@ -253,7 +253,7 @@ public abstract class AbstractBeamInter
         final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY())
                 : Math.max(0, start.getY() - crossPt.getY());
 
-        bRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+        bRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
         if (bRel.getGrade() >= bRel.getMinGrade()) {
             logger.debug("{} {} {}", this, stem, bRel);
@@ -573,9 +573,9 @@ public abstract class AbstractBeamInter
         final Line2D top = getBorder(VerticalSide.TOP);
         final Line2D bottom = getBorder(VerticalSide.BOTTOM);
         final Scale scale = system.getSheet().getScale();
-        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum());
-        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum());
-        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum());
+        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
+        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
+        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
 
         final Map<HorizontalSide, Link> sideLinks = new EnumMap<HorizontalSide, Link>(
                 HorizontalSide.class);

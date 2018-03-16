@@ -404,8 +404,8 @@ public class AlterInter
         // Look for notes nearby on the right side of accidental
         final SystemInfo system = systemHeads.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int xGapMax = scale.toPixels(AlterHeadRelation.getXOutGapMaximum());
-        final int yGapMax = scale.toPixels(AlterHeadRelation.getYGapMaximum());
+        final int xGapMax = scale.toPixels(AlterHeadRelation.getXOutGapMaximum(manual));
+        final int yGapMax = scale.toPixels(AlterHeadRelation.getYGapMaximum(manual));
 
         // Accid ref point is on accid right side and precise y depends on accid shape
         Rectangle accidBox = getBounds();
@@ -433,7 +433,7 @@ public class AlterInter
                 double xGap = notePt.x - accidPt.x;
                 double yGap = Math.abs(notePt.y - accidPt.y);
                 AlterHeadRelation rel = new AlterHeadRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if ((bestRel == null) || (bestYGap > yGap)) {

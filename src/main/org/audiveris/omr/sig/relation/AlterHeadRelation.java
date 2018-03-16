@@ -74,25 +74,25 @@ public class AlterHeadRelation
     //------------------//
     // getXInGapMaximum //
     //------------------//
-    public static Scale.Fraction getXInGapMaximum ()
+    public static Scale.Fraction getXInGapMaximum (boolean manual)
     {
-        return constants.xInGapMax;
+        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
     }
 
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
     {
-        return constants.xOutGapMax;
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum ()
+    public static Scale.Fraction getYGapMaximum (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     //----------------//
@@ -156,21 +156,21 @@ public class AlterHeadRelation
     }
 
     @Override
-    protected Scale.Fraction getXInGapMax ()
+    protected Scale.Fraction getXInGapMax (boolean manual)
     {
-        return getXInGapMaximum();
+        return getXInGapMaximum(manual);
     }
 
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return getXOutGapMaximum();
+        return getXOutGapMaximum(manual);
     }
 
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
-        return getYGapMaximum();
+        return getYGapMaximum(manual);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -190,13 +190,25 @@ public class AlterHeadRelation
                 0.45,
                 "Maximum vertical gap between accid & note head");
 
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                0.6,
+                "Maximum vertical gap between manual accid & note head");
+
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.2,
                 "Maximum horizontal overlap between accid & note head");
 
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
+                0.3,
+                "Maximum horizontal overlap between manual accid & note head");
+
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum horizontal gap between accid & note head");
+
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                3.0,
+                "Maximum horizontal gap between manual accid & note head");
 
         private final Constant.Ratio xInWeight = new Constant.Ratio(
                 1,

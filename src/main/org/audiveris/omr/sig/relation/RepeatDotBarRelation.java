@@ -55,17 +55,17 @@ public class RepeatDotBarRelation
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
     {
-        return constants.xOutGapMax;
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum ()
+    public static Scale.Fraction getYGapMaximum (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     //----------------//
@@ -111,18 +111,18 @@ public class RepeatDotBarRelation
     // getXOutGapMax //
     //---------------//
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return getXOutGapMaximum();
+        return getXOutGapMaximum(manual);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
-        return getYGapMaximum();
+        return getYGapMaximum(manual);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -142,9 +142,17 @@ public class RepeatDotBarRelation
                 1.5,
                 "Maximum horizontal gap between dot center & barline reference point");
 
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                2.2,
+                "Maximum manual horizontal gap between dot center & barline reference point");
+
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between dot center & barline reference point");
+
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                0.75,
+                "Maximum manual vertical gap between dot center & barline reference point");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 3,

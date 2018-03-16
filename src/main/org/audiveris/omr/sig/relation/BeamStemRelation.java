@@ -80,25 +80,25 @@ public class BeamStemRelation
     //------------------//
     // getXInGapMaximum //
     //------------------//
-    public static Scale.Fraction getXInGapMaximum ()
+    public static Scale.Fraction getXInGapMaximum (boolean manual)
     {
-        return constants.xInGapMax;
+        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
     }
 
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
     {
-        return constants.xOutGapMax;
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum ()
+    public static Scale.Fraction getYGapMaximum (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     //-------//
@@ -124,7 +124,7 @@ public class BeamStemRelation
             } else {
                 int xStem = stem.getCenter().x;
                 Scale scale = stem.getSig().getSystem().getSheet().getScale();
-                int maxDx = scale.toPixels(getXInGapMaximum());
+                int maxDx = scale.toPixels(getXInGapMaximum(false));
                 double left = beam.getMedian().getX1();
                 double right = beam.getMedian().getX2();
 
@@ -227,27 +227,27 @@ public class BeamStemRelation
     // getXInGapMax //
     //--------------//
     @Override
-    protected Scale.Fraction getXInGapMax ()
+    protected Scale.Fraction getXInGapMax (boolean manual)
     {
-        throw new UnsupportedOperationException("Not supported.");
+        return getXInGapMaximum(manual);
     }
 
     //---------------//
     // getXOutGapMax //
     //---------------//
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return getXOutGapMaximum();
+        return getXOutGapMaximum(manual);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
-        return getYGapMaximum();
+        return getYGapMaximum(manual);
     }
 
     //-----------//
@@ -283,12 +283,24 @@ public class BeamStemRelation
                 0.8,
                 "Maximum vertical gap between stem & beam");
 
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                1.2,
+                "Maximum manual vertical gap between stem & beam");
+
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.5,
                 "Maximum horizontal overlap between stem & beam");
 
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
+                0.75,
+                "Maximum manual horizontal overlap between stem & beam");
+
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.1,
                 "Maximum horizontal gap between stem & beam");
+
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                0.2,
+                "Maximum manual horizontal gap between stem & beam");
     }
 }

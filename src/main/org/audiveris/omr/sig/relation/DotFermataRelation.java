@@ -116,13 +116,13 @@ public class DotFermataRelation
     }
 
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
         return constants.xOutGapMax;
     }
 
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
         return constants.yGapMax;
     }

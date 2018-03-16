@@ -245,7 +245,7 @@ public abstract class AbstractFlagInter
 
         final SystemInfo system = systemStems.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum());
+        final int maxStemFlagGapY = scale.toPixels(FlagStemRelation.getYGapMaximum(manual));
 
         // Look for stems nearby, using the lowest (for up) or highest (for down) third of height
         final boolean isFlagUp = FlagsUp.contains(shape);
@@ -300,7 +300,7 @@ public abstract class AbstractFlagInter
             }
 
             FlagStemRelation fRel = new FlagStemRelation();
-            fRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+            fRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
             if (fRel.getGrade() >= fRel.getMinGrade()) {
                 fRel.setExtensionPoint(

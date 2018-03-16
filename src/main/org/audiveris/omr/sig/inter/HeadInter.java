@@ -766,9 +766,9 @@ public class HeadInter
         final SystemInfo system = systemStems.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
         final int interline = scale.getInterline();
-        final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum());
-        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
-        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum());
+        final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(manual));
+        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(manual));
+        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(manual));
 
         Link bestLink = null;
         double bestGrade = 0;
@@ -800,7 +800,7 @@ public class HeadInter
                 }
 
                 HeadStemRelation rel = new HeadStemRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if ((bestLink == null) || (rel.getGrade() > bestGrade)) {

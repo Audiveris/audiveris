@@ -1091,7 +1091,7 @@ public class NoteHeadsBuilder
 
             {
                 // Horizontal slice to detect stem seeds
-                final double maxGap = scale.toPixelsDouble(HeadStemRelation.getYGapMaximum());
+                final double maxGap = scale.toPixelsDouble(HeadStemRelation.getYGapMaximum(false));
                 final double ratio = constants.pitchMargin.getValue();
                 final double above = ((interline * (dir - ratio)) / 2) - maxGap;
                 final double below = ((interline * (dir + ratio)) / 2) + maxGap;

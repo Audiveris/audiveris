@@ -46,7 +46,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code ArticulationInter} represents an articulation sign
- * (tenuto, accent, staccato, staccatissimo, marcato).
+ * (TENUTO, ACCENT, STACCATO, STACCATISSIMO, MARCATO).
  *
  * @author Hervé Bitteur
  */
@@ -63,7 +63,7 @@ public class ArticulationInter
      * Creates a new ArticulationInter object.
      *
      * @param glyph underlying glyph
-     * @param shape precise shape (tenuto, accent, staccato, staccatissimo, marcato)
+     * @param shape precise shape (TENUTO, ACCENT, STACCATO, STACCATISSIMO, MARCATO)
      * @param grade evaluation value
      */
     public ArticulationInter (Glyph glyph,
@@ -137,7 +137,6 @@ public class ArticulationInter
         }
 
         ArticulationInter artic = new ArticulationInter(glyph, shape, grade);
-
         Link link = artic.lookupLink(systemHeadChords);
 
         if (link != null) {
@@ -230,9 +229,10 @@ public class ArticulationInter
 
         final SystemInfo system = systemHeadChords.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int maxDx = scale.toPixels(ChordArticulationRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum());
-        final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum());
+        final int maxDx = scale.toPixels(
+                ChordArticulationRelation.getXOutGapMaximum(manual));
+        final int maxDy = scale.toPixels(ChordArticulationRelation.getYGapMaximum(manual));
+        final int minDy = scale.toPixels(ChordArticulationRelation.getYGapMinimum(manual));
         final Rectangle articBox = getBounds();
         final Point arcticCenter = getCenter();
         final Rectangle luBox = new Rectangle(arcticCenter);
@@ -273,7 +273,7 @@ public class ArticulationInter
 
             double absYGap = Math.abs(yGap);
             ChordArticulationRelation rel = new ChordArticulationRelation();
-            rel.setGaps(scale.pixelsToFrac(absXGap), scale.pixelsToFrac(absYGap));
+            rel.setGaps(scale.pixelsToFrac(absXGap), scale.pixelsToFrac(absYGap), manual);
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestYGap > absYGap)) {
