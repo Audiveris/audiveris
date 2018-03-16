@@ -21,14 +21,17 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -43,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -328,6 +332,52 @@ public class DynamicsInter
         return Collections.singleton(link);
     }
 
+    //------------------------//
+    // swallowShorterDynamics //
+    //------------------------//
+    /**
+     * For a complex dynamics, try to swallow shorter ones.
+     * <p>
+     * We check a complex dynamics for overlap with shorter dynamics.
+     * If shorter box is (nearly) included in complex box, we have a fit.
+     * Then we assign complex the max grade of complex and shorter, and remove shorter
+     *
+     * @param dynamics candidate dynamics to be searched
+     */
+    public void swallowShorterDynamics (List<Inter> dynamics)
+    {
+        final Rectangle cplBox = getBounds();
+        final int cplLength = getSymbolString().length();
+
+        // Look for relevant candidate for the complex at hand
+        for (Inter inter : SIGraph.intersectedInters(dynamics, GeoOrder.NONE, cplBox)) {
+            DynamicsInter shorter = (DynamicsInter) inter;
+
+            if ((shorter == this) || (shorter.getSymbolString().length() >= cplLength)) {
+                continue;
+            }
+
+            // Measure area of intersection over area of shorter box
+            Rectangle shortBox = shorter.getBounds();
+            double shortArea = shortBox.width * shortBox.height;
+            int intArea = GeoUtil.xOverlap(shortBox, cplBox) * GeoUtil.yOverlap(
+                    shortBox,
+                    cplBox);
+            double ios = intArea / shortArea;
+            logger.debug("ios:{} {} intersects {}", ios, shorter, this);
+
+            if (ios >= constants.iosMinRatio.getValue()) {
+                setGrade(Math.max(getGrade(), shorter.getGrade()));
+
+                if (shorter.isVip()) {
+                    logger.info("VIP simple {} discarded for complex {}", shorter, this);
+                }
+
+                shorter.remove();
+            }
+        }
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -353,5 +403,9 @@ public class DynamicsInter
         private final Scale.Fraction maxXGap = new Scale.Fraction(
                 1.0,
                 "Maximum horizontal gap between dynamics and related chord/staff");
+
+        private final Constant.Ratio iosMinRatio = new Constant.Ratio(
+                0.8,
+                "Minimum area ratio of intersection over shorter dynamics");
     }
 }

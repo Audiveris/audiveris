@@ -237,6 +237,9 @@ public class SymbolFactory
         // Conflicting dot interpretations
         dotFactory.lateDotChecks();
 
+        // Complex dynamics
+        handleComplexDynamics();
+
         // Column consistency of Time Signatures in a system
         handleTimes();
     }
@@ -809,6 +812,48 @@ public class SymbolFactory
             String msg = "No ghost instance for " + shape;
             logger.error(msg);
             throw new IllegalArgumentException(msg);
+        }
+    }
+
+    //-----------------------//
+    // handleComplexDynamics //
+    //-----------------------//
+    /**
+     * Handle competition between complex and shorter dynamics.
+     */
+    private void handleComplexDynamics ()
+    {
+        // All dynamics in system
+        final List<Inter> dynamics = sig.inters(DynamicsInter.class);
+
+        // Complex dynamics in system, sorted by decreasing length
+        final List<DynamicsInter> complexes = new ArrayList<DynamicsInter>();
+
+        for (Inter inter : dynamics) {
+            DynamicsInter dyn = (DynamicsInter) inter;
+
+            if (dyn.getSymbolString().length() > 1) {
+                complexes.add(dyn);
+            }
+        }
+
+        Collections.sort(
+                complexes,
+                new Comparator<DynamicsInter>()
+        {
+            @Override
+            public int compare (DynamicsInter d1,
+                                DynamicsInter d2)
+            {
+                // Sort by decreasing length
+                return Integer.compare(
+                        d2.getSymbolString().length(),
+                        d1.getSymbolString().length());
+            }
+        });
+
+        for (DynamicsInter complex : complexes) {
+            complex.swallowShorterDynamics(dynamics);
         }
     }
 
