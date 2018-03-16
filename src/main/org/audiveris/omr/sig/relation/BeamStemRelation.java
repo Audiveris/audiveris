@@ -115,11 +115,10 @@ public class BeamStemRelation
     @Override
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
+        final AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
         final StemInter stem = (StemInter) e.getEdgeTarget();
 
         if (beamPortion == null) {
-            final AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
-
             if (beam instanceof BeamHookInter) {
                 beamPortion = (beam.getCenter().x < stem.getCenter().x) ? RIGHT : LEFT;
             } else {
@@ -149,10 +148,11 @@ public class BeamStemRelation
 
             if (stack != null) {
                 Measure measure = stack.getMeasureAt(staff1);
-                AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
                 BeamGroup.includeBeam(beam, measure);
             }
         }
+
+        beam.checkAbnormal();
     }
 
     //----------------//

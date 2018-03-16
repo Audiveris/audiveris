@@ -35,6 +35,7 @@ import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import java.awt.Point;
@@ -103,6 +104,18 @@ public class BeamHookInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if hook is connected to a stem
+        setAbnormal(!sig.hasRelation(this, BeamStemRelation.class));
+
+        return isAbnormal();
     }
 
     //--------//

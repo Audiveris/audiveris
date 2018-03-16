@@ -165,7 +165,33 @@ public abstract class AbstractBeamInter
     {
         super.added();
 
-        // Update group?
+        setAbnormal(true); // No stem linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if beam is connected to stems on both ends
+        boolean left = false;
+        boolean right = false;
+
+        for (Relation rel : sig.getRelations(this, BeamStemRelation.class)) {
+            BeamStemRelation bsRel = (BeamStemRelation) rel;
+            BeamPortion portion = bsRel.getBeamPortion();
+
+            if (portion == BeamPortion.LEFT) {
+                left = true;
+            } else if (portion == BeamPortion.RIGHT) {
+                right = true;
+            }
+        }
+
+        setAbnormal(!left || !right);
+
+        return isAbnormal();
     }
 
     //-----------//
@@ -597,7 +623,9 @@ public abstract class AbstractBeamInter
                 }
             }
 
-            sideLinks.put(hSide, bestLink);
+            if (bestLink != null) {
+                sideLinks.put(hSide, bestLink);
+            }
         }
 
         return sideLinks.values();
