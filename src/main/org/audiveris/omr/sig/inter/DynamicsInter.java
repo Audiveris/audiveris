@@ -347,13 +347,17 @@ public class DynamicsInter
     public void swallowShorterDynamics (List<Inter> dynamics)
     {
         final Rectangle cplBox = getBounds();
-        final int cplLength = getSymbolString().length();
+        final String cplString = getSymbolString();
+        final int cplLength = cplString.length();
 
         // Look for relevant candidate for the complex at hand
         for (Inter inter : SIGraph.intersectedInters(dynamics, GeoOrder.NONE, cplBox)) {
-            DynamicsInter shorter = (DynamicsInter) inter;
+            final DynamicsInter shorter = (DynamicsInter) inter;
+            final String shortString = shorter.getSymbolString();
 
-            if ((shorter == this) || (shorter.getSymbolString().length() >= cplLength)) {
+            if ((shorter == this)
+                || (shortString.length() >= cplLength)
+                || !cplString.contains(shortString)) {
                 continue;
             }
 
