@@ -728,7 +728,8 @@ public class SigReducer
      * side, located one or two step(s) further.
      * <p>
      * If the side is wrong and there is no head on the other side, simply remove this head-stem
-     * relation and insert exclusion instead.
+     * relation.
+     * TODO: If head and stem really overlap, insert exclusion between them.
      *
      * @param head the head inter (black or void)
      * @return the number of modifications done
@@ -789,12 +790,16 @@ public class SigReducer
             }
 
             sig.removeEdge(rel);
-            //
-            //            // Should we insert an exclusion between head inter and stem inter?
-            //            if (rel.getGrade() >= Grades.goodRelationGrade) {
-            //                sig.insertExclusion(head, stem, Exclusion.Cause.INCOMPATIBLE);
-            //            }
-            //
+
+            // Should we insert an exclusion between head inter and stem inter?
+            if (rel.isInvading()) {
+                if (stem.isVip() || head.isVip()) {
+                    logger.info("VIP invasion between {} & {}", head, stem);
+                }
+
+                sig.insertExclusion(head, stem, Exclusion.Cause.OVERLAP);
+            }
+
             modifs++;
         }
 
@@ -1635,6 +1640,14 @@ public class SigReducer
                         logger.info("VIP pruned {} from {}", head, stem);
                     }
 
+                    if (link.isInvading()) {
+                        if (stem.isVip() || head.isVip()) {
+                            logger.info("VIP invasion between {} & {}", head, stem);
+                        }
+
+                        sig.insertExclusion(head, stem, Exclusion.Cause.OVERLAP);
+                    }
+
                     continue StemGeometryScan;
                 }
             }
@@ -1877,27 +1890,38 @@ public class SigReducer
 
         final StemPortion forbidden = (stemDir > 0) ? STEM_BOTTOM : STEM_TOP;
         final List<Relation> toRemove = new ArrayList<Relation>();
+        final List<Inter> toExclude = new ArrayList<Inter>();
 
         for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
-            // Check stem portion
             HeadStemRelation hsRel = (HeadStemRelation) rel;
-            Inter head = sig.getOppositeInter(stem, rel);
+
+            // Check stem portion
+            Inter head = sig.getEdgeSource(hsRel);
             StemPortion portion = hsRel.getStemPortion(head, stemLine, scale);
 
             if (portion == forbidden) {
                 if (stem.isVip()) {
-                    logger.info(
-                            "VIP cutting relation between {} and {}",
-                            stem,
-                            sig.getEdgeSource(rel));
+                    logger.info("VIP cutting relation between {} and {}", stem, head);
                 }
 
-                toRemove.add(rel);
+                toRemove.add(hsRel);
+
+                if (hsRel.isInvading()) {
+                    if (stem.isVip() || head.isVip()) {
+                        logger.info("VIP invasion between {} & {}", head, stem);
+                    }
+
+                    toExclude.add(head);
+                }
             }
         }
 
         if (!toRemove.isEmpty()) {
             sig.removeAllEdges(toRemove);
+
+            for (Inter head : toExclude) {
+                sig.insertExclusion(head, stem, Exclusion.Cause.OVERLAP);
+            }
         }
 
         return toRemove.isEmpty();

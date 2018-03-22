@@ -144,6 +144,21 @@ public class HeadStemRelation
         }
     }
 
+    //------------//
+    // isInvading //
+    //------------//
+    /**
+     * Report whether this relation (assumed to be false) is invading because head and
+     * stem instances are too close to co-exist separately.
+     *
+     * @return true if invading
+     */
+    public boolean isInvading ()
+    {
+        return (dy <= constants.maxInvadingDy.getValue())
+               && (dx <= constants.maxInvadingDx.getValue());
+    }
+
     //----------------//
     // isSingleSource //
     //----------------//
@@ -284,5 +299,13 @@ public class HeadStemRelation
         private final Constant.Ratio anchorHeightRatio = new Constant.Ratio(
                 0.25,
                 "Vertical margin for stem anchor portion (as ratio of head height)");
+
+        private final Scale.Fraction maxInvadingDx = new Scale.Fraction(
+                0.05,
+                "Maximum invading horizontal gap between stem & head");
+
+        private final Scale.Fraction maxInvadingDy = new Scale.Fraction(
+                0.0,
+                "Maximum invading vertical gap between stem & head");
     }
 }

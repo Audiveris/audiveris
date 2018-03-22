@@ -1974,7 +1974,9 @@ public class StemsBuilder
                 if (!isCanonicalShare()) {
                     if (!discardLargeGap()) {
                         ///discardWeakerStem(); // Weaker stem may not be the good criteria!!!
-                        logger.debug("{} could not decide on stems {}", head, stems);
+                        if (head.isVip()) {
+                            logger.info("VIP {} could not decide on stems {}", head, stems);
+                        }
                     }
                 }
             }
@@ -2020,22 +2022,36 @@ public class StemsBuilder
         {
             double worstGrade = Double.MAX_VALUE;
             HeadStemRelation worstRel = null;
+            StemInter worstStem = null;
 
             for (HeadStemRelation rel : rels) {
-                double grade = sig.getEdgeTarget(rel).getGrade();
+                StemInter stem = (StemInter) sig.getEdgeTarget(rel);
+                double grade = stem.getGrade();
 
                 if (grade < worstGrade) {
                     worstGrade = grade;
+                    worstStem = stem;
                     worstRel = rel;
                 }
             }
 
-            if (head.isVip()) {
-                logger.info("VIP {} discarding weaker {}", head, sig.getEdgeTarget(worstRel));
-            }
+            if (worstRel != null) {
+                if (head.isVip()) {
+                    logger.info("VIP {} discarding weaker {}", head, sig.getEdgeTarget(worstRel));
+                }
 
-            rels.remove(worstRel);
-            sig.removeEdge(worstRel);
+                rels.remove(worstRel);
+                sig.removeEdge(worstRel);
+
+                // If this false relation is really invading, use exclusion
+                if (worstRel.isInvading()) {
+                    if (worstStem.isVip() || head.isVip()) {
+                        logger.info("VIP invasion between {} & {}", head, worstStem);
+                    }
+
+                    sig.insertExclusion(head, worstStem, Cause.OVERLAP);
+                }
+            }
         }
 
         /**
@@ -2058,7 +2074,6 @@ public class StemsBuilder
                 StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
 
                 // For this test, we cannot trust stem extensions and must stay with physical stem
-                //Line2D stemLine = sig.getStemLine(stem);
                 Glyph glyph = stem.getGlyph();
                 Line2D stemLine = new Line2D.Double(
                         glyph.getStartPoint(VERTICAL),
