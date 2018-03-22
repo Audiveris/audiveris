@@ -357,6 +357,61 @@ public class Template
         return total / weights;
     }
 
+    //--------------//
+    // evaluateHole //
+    //--------------//
+    /**
+     * Evaluate hole of this template at location (x,y) in provided distances table.
+     *
+     * @param x         location abscissa
+     * @param y         location ordinate
+     * @param anchor    the anchor kind to use for (x,y), null for upper left
+     * @param distances the distance table to search
+     * @return the ratio of actual white pixels over expected ones
+     */
+    public double evaluateHole (int x,
+                                int y,
+                                Anchor anchor,
+                                DistanceTable distances)
+    {
+        final Point ul = upperLeft(x, y, anchor);
+
+        // Loop through template key positions and read related distance.
+        // Compute the mean value on all distances read
+        final int imgWidth = distances.getWidth();
+        final int imgHeight = distances.getHeight();
+        int expectedHoles = 0; // Expected number of white pixels in hole
+        int actualHoles = 0; // Actual number of white pixels in hole
+
+        for (PixelDistance pix : keyPoints) {
+            int nx = ul.x + pix.x;
+            int ny = ul.y + pix.y;
+
+            // Ignore tested point if located out of image
+            if ((nx >= 0) && (nx < imgWidth) && (ny >= 0) && (ny < imgHeight)) {
+                int actualDist = distances.getValue(nx, ny);
+
+                // Ignore neutralized locations in distance table
+                if (actualDist != ChamferDistance.VALUE_UNKNOWN) {
+                    // pix.d < 0 for expected hole, expected negative distance to nearest foreground
+                    if (pix.d < 0) {
+                        expectedHoles++;
+
+                        if (actualDist != 0) {
+                            actualHoles++;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (expectedHoles == 0) {
+            return 0;
+        } else {
+            return (double) actualHoles / expectedHoles;
+        }
+    }
+
     //-----------//
     // getBounds //
     //-----------//

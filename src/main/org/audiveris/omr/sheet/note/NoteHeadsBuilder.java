@@ -703,19 +703,45 @@ public class NoteHeadsBuilder
     //-----------------//
     private int purgeDuplicates (List<Inter> inters)
     {
-        List<Inter> toRemove = new ArrayList<Inter>();
+        List<Inter> removed = new ArrayList<Inter>();
 
+        LeftLoop:
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
             Inter left = inters.get(i);
+
+            if (left.isRemoved()) {
+                continue;
+            }
+
             Rectangle leftBox = left.getBounds();
             int xMax = (leftBox.x + leftBox.width) - 1;
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
+                if (right.isRemoved()) {
+                    continue;
+                }
+
                 Rectangle rightBox = right.getBounds();
 
                 if (leftBox.intersects(rightBox)) {
                     if (left.isSameAs(right)) {
-                        toRemove.add(right);
+                        if (left.getGrade() < right.getGrade()) {
+                            if (left.isVip()) {
+                                logger.info("VIP purging {} at {}", left, left.getBounds());
+                            }
+
+                            left.remove();
+                            removed.add(left);
+
+                            continue LeftLoop;
+                        } else {
+                            if (right.isVip()) {
+                                logger.info("VIP purging {} at {}", right, right.getBounds());
+                            }
+
+                            right.remove();
+                            removed.add(right);
+                        }
                     }
                 } else if (rightBox.x > xMax) {
                     break;
@@ -723,19 +749,9 @@ public class NoteHeadsBuilder
             }
         }
 
-        if (!toRemove.isEmpty()) {
-            inters.removeAll(toRemove);
+        inters.removeAll(removed);
 
-            for (Inter inter : toRemove) {
-                if (inter.isVip()) {
-                    logger.info("VIP purging {} at {}", inter, inter.getBounds());
-                }
-
-                inter.remove();
-            }
-        }
-
-        return toRemove.size();
+        return removed.size();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -841,6 +857,10 @@ public class NoteHeadsBuilder
         private final Scale.Fraction minBeamWidth = new Scale.Fraction(
                 2.5,
                 "Minimum good beam width to exclude heads");
+
+        private final Constant.Ratio minHoleWhiteRatio = new Constant.Ratio(
+                0.2,
+                "Minimum ratio of hole white pixel to reassign Black to Void");
     }
 
     //-----------//
@@ -1203,6 +1223,32 @@ public class NoteHeadsBuilder
             return new PixelDistance(x, y, dist);
         }
 
+        //-----------------//
+        // evalBlackAsVoid //
+        //-----------------//
+        /**
+         * Evaluate the provided location (of a black candidate) for white pixels
+         * expected in the hole part of a void candidate.
+         *
+         * @param x      pivot abscissa
+         * @param y      pivot ordinate
+         * @param anchor precise anchor
+         * @return either NOTEHEAD_VOID (positive test) or null (negative test)
+         */
+        private Shape evalBlackAsVoid (int x,
+                                       int y,
+                                       Anchor anchor)
+        {
+            final ShapeDescriptor desc = catalog.getDescriptor(Shape.NOTEHEAD_VOID);
+            final double holeWhiteRatio = desc.evaluateHole(x, y, anchor, distances);
+
+            if (holeWhiteRatio >= constants.minHoleWhiteRatio.getValue()) {
+                return Shape.NOTEHEAD_VOID;
+            } else {
+                return null;
+            }
+        }
+
         //----------------------//
         // getRelevantAbscissae //
         //----------------------//
@@ -1347,6 +1393,15 @@ public class NoteHeadsBuilder
                     }
 
                     if (bestLoc != null) {
+                        // Special case: NOTEHEAD_VOID mistaken for NOTEHEAD_BLACK
+                        if (shape == Shape.NOTEHEAD_BLACK) {
+                            Shape newShape = evalBlackAsVoid(bestLoc.x, bestLoc.y, MIDDLE_LEFT);
+
+                            if (newShape != null) {
+                                shape = newShape;
+                            }
+                        }
+
                         HeadInter inter = createInter(
                                 bestLoc,
                                 MIDDLE_LEFT,
@@ -1442,6 +1497,15 @@ public class NoteHeadsBuilder
                         }
 
                         if (bestLoc != null) {
+                            // Special case: NOTEHEAD_VOID mistaken for NOTEHEAD_BLACK
+                            if (shape == Shape.NOTEHEAD_BLACK) {
+                                Shape newShape = evalBlackAsVoid(bestLoc.x, bestLoc.y, anchor);
+
+                                if (newShape != null) {
+                                    shape = newShape;
+                                }
+                            }
+
                             HeadInter inter = createInter(
                                     bestLoc,
                                     anchor,

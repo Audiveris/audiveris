@@ -167,6 +167,26 @@ public class ShapeDescriptor
         return template.evaluate(x, y, anchor, distances);
     }
 
+    //--------------//
+    // evaluateHole //
+    //--------------//
+    /**
+     * Evaluate the ratio of actual white pixels in expected hole.
+     *
+     * @param x         location abscissa
+     * @param y         location ordinate
+     * @param anchor    location WRT template
+     * @param distances table of distances
+     * @return the best distance found
+     */
+    public double evaluateHole (int x,
+                                int y,
+                                Anchor anchor,
+                                DistanceTable distances)
+    {
+        return template.evaluateHole(x, y, anchor, distances);
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -411,7 +431,7 @@ public class ShapeDescriptor
         // Define common basic anchors
         template.addAnchor(Anchor.CENTER, center.x, center.y);
         template.addAnchor(Anchor.MIDDLE_LEFT, sym.x, center.y);
-        template.addAnchor(Anchor.MIDDLE_RIGHT, sym.x + sym.width - 1, center.y);
+        template.addAnchor(Anchor.MIDDLE_RIGHT, (sym.x + sym.width) - 1, center.y);
 
         // WHOLE_NOTE & WHOLE_NOTE_SMALL are not concerned further
         if (ShapeSet.StemLessHeads.contains(template.getShape())) {
