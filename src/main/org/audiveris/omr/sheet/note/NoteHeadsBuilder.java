@@ -31,7 +31,9 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.Symbol;
 import org.audiveris.omr.image.Anchored.Anchor;
+
 import static org.audiveris.omr.image.Anchored.Anchor.*;
+
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.ShapeDescriptor;
@@ -61,7 +63,9 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.util.Dumping;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.StopWatch;
@@ -156,7 +160,7 @@ public class NoteHeadsBuilder
     /** Minimum width of templates. */
     private int minTemplateWidth = 0; // TODO
 
-    /** The <b>properly scaled</b> templates to use. */
+    /** The <b>properly scaled</b> templates to use, based on <b>current</b> staff. */
     private Catalog catalog;
 
     /** The competing interpretations for the system. */
@@ -221,13 +225,14 @@ public class NoteHeadsBuilder
         systemSeeds = system.getGroupedGlyphs(Symbol.Group.VERTICAL_SEED); // Vertical seeds
         Collections.sort(systemSeeds, Glyphs.byOrdinate);
         Collections.sort(systemSpots, Glyphs.byOrdinate);
-
         image = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
 
         for (Staff staff : system.getStaves()) {
             logger.debug("Staff #{}", staff.getId());
 
-            catalog = TemplateFactory.getInstance().getCatalog(staff.getSpecificInterline());
+            // Determine the proper catalog, based on staff size
+            final int pointSize = staff.getHeadPointSize();
+            catalog = TemplateFactory.getInstance().getCatalog(pointSize);
 
             List<Inter> ch = new ArrayList<Inter>(); // Created Heads for this staff
 
@@ -851,7 +856,7 @@ public class NoteHeadsBuilder
                 "Vertical margin for intercepting stem seed around a target pitch");
 
         private final Constant.Ratio wholeBoost = new Constant.Ratio(
-                0.35,
+                0.4,
                 "How much do we boost whole notes (always isolated)");
 
         private final Scale.Fraction minBeamWidth = new Scale.Fraction(
@@ -1424,10 +1429,7 @@ public class NoteHeadsBuilder
 
             for (Iterator<HeadInter> it = inters.iterator(); it.hasNext();) {
                 HeadInter inter = it.next();
-                Glyph glyph = inter.retrieveGlyph(
-                        image,
-                        sheet.getInterline(),
-                        sheet.getGlyphIndex());
+                Glyph glyph = inter.retrieveGlyph(image);
 
                 if (glyph != null) {
                     sig.addVertex(inter);
@@ -1514,10 +1516,7 @@ public class NoteHeadsBuilder
                                     pitch);
 
                             if (inter != null) {
-                                Glyph glyph = inter.retrieveGlyph(
-                                        image,
-                                        sheet.getInterline(),
-                                        sheet.getGlyphIndex());
+                                Glyph glyph = inter.retrieveGlyph(image);
 
                                 if (glyph != null) {
                                     sig.addVertex(inter);

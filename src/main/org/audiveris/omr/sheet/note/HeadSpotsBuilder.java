@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                 N o t e S p o t s B u i l d e r                                //
+//                                 H e a d S p o t s B u i l d e r                                //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -38,11 +38,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class {@code NoteSpotsBuilder} builds spot glyphs meant to guide note retrieval.
+ * Class {@code HeadSpotsBuilder} builds spot glyphs meant to guide head retrieval.
  *
  * @author Hervé Bitteur
  */
-public class NoteSpotsBuilder
+public class HeadSpotsBuilder
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -54,11 +54,11 @@ public class NoteSpotsBuilder
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code NoteSpotsBuilder} object.
+     * Creates a new {@code HeadSpotsBuilder} object.
      *
      * @param sheet the related sheet
      */
-    public NoteSpotsBuilder (Sheet sheet)
+    public HeadSpotsBuilder (Sheet sheet)
     {
         this.sheet = sheet;
     }
@@ -74,8 +74,8 @@ public class NoteSpotsBuilder
      */
     public Map<SystemInfo, List<Glyph>> getSpots ()
     {
-        RunTable noteRuns = sheet.getPicture().getTable(Picture.TableKey.HEAD_SPOTS);
-        List<Glyph> spots = GlyphFactory.buildGlyphs(noteRuns, new Point(0, 0), Group.HEAD_SPOT);
+        RunTable headRuns = sheet.getPicture().getTable(Picture.TableKey.HEAD_SPOTS);
+        List<Glyph> spots = GlyphFactory.buildGlyphs(headRuns, new Point(0, 0), Group.HEAD_SPOT);
 
         // Dispose the runTable
         sheet.getPicture().removeTable(Picture.TableKey.HEAD_SPOTS);

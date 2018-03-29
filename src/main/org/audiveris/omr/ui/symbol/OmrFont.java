@@ -56,34 +56,28 @@ public abstract class OmrFont
 
     private static final Logger logger = LoggerFactory.getLogger(OmrFont.class);
 
-    /** Default interline value, consistent with base font: {@value}. */
-    public static final int DEFAULT_INTERLINE = 16;
-
-    /** Default staff height value, consistent with base font: {@value}. */
-    public static final int DEFAULT_STAFF_HEIGHT = 67;
-
     /** Needed for font size computation. */
     protected static final FontRenderContext frc = new FontRenderContext(null, true, true);
 
     /** Default color for images. */
     public static final Color defaultImageColor = Color.BLACK;
 
-    /** Cache for fonts. */
+    /** Cache for fonts. No style, no size. */
     private static final Map<String, Font> fontCache = new HashMap<String, Font>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new OmrFont object.
      *
-     * @param name  the font name
-     * @param style generally PLAIN
-     * @param size  the point size of the font
+     * @param name      the font name
+     * @param style     generally PLAIN
+     * @param pointSize the point size of the font
      */
     protected OmrFont (String name,
                        int style,
-                       int size)
+                       int pointSize)
     {
-        super(createFont(name, style, size));
+        super(createFont(name, style, pointSize));
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -172,7 +166,7 @@ public abstract class OmrFont
     //------------//
     private static Font createFont (String fontName,
                                     int style,
-                                    int size)
+                                    int pointSize)
     {
         Font font;
 
@@ -182,7 +176,7 @@ public abstract class OmrFont
         if (font != null) {
             logger.debug("Using cached font {}", fontName);
 
-            return font.deriveFont(style, size);
+            return font.deriveFont(style, pointSize);
         }
 
         // Lookup our own fonts (defined in "res" folder)
@@ -200,7 +194,7 @@ public abstract class OmrFont
                 ge.registerFont(font);
                 logger.debug("Created custom font {}", fontName);
 
-                return font.deriveFont(style, size);
+                return font.deriveFont(style, pointSize);
             } finally {
                 if (input != null) {
                     input.close();
@@ -211,7 +205,7 @@ public abstract class OmrFont
         }
 
         // Finally, try a platform font
-        font = new Font(fontName, style, size);
+        font = new Font(fontName, style, pointSize);
         fontCache.put(fontName, font);
         logger.debug("Using platform font {}", font.getFamily());
 

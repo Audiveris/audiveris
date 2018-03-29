@@ -161,7 +161,7 @@ public class NumDenSymbol
         //~ Constructors ---------------------------------------------------------------------------
         public MyParams (MusicFont font)
         {
-            dy = (int) Math.rint(2 * font.getFontInterline());
+            dy = (int) Math.rint(2 * font.getStaffInterline());
             numLayout = font.layout(numCodes);
             denLayout = font.layout(denCodes);
         }

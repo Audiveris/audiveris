@@ -270,7 +270,7 @@ public abstract class Voices
      * <p>
      * When this method is called, initial IDs have been assigned according to voice creation
      * (whole voices first, then slot voices, with each voice remaining in its part).
-     * See {@link Slot#buildVoices(java.util.List)} and {@link Slot#assignVoices()} methods.
+     * See {@link Slot#buildVoices(java.util.List)} method.
      * <p>
      * Here we simply rename the IDs from top to bottom (roughly), within each part.
      *

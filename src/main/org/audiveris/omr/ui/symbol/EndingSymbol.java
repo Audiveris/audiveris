@@ -73,7 +73,7 @@ public class EndingSymbol
     protected Params getParams (MusicFont font)
     {
         Params p = new Params();
-        int il = font.getFontInterline();
+        int il = font.getStaffInterline();
         p.rect = new Rectangle(4 * il, il);
 
         return p;

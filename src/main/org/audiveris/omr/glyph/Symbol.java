@@ -49,6 +49,8 @@ public interface Symbol
 
         /** Only the first 4 ones are needed. */
         BEAM_SPOT("Beam-oriented spot"),
+        BLACK_HEAD_SPOT("BlackHead-oriented spot"),
+        BLACK_STACK_SPOT("Stack of blackHead-oriented spot"),
         HEAD_SPOT("Head-oriented spot"),
         VERTICAL_SEED("Vertical seed"),
         SYMBOL("Fixed symbol"),

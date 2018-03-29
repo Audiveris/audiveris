@@ -74,7 +74,7 @@ public class SlurSymbol
     protected Params getParams (MusicFont font)
     {
         Params p = new Params();
-        int il = font.getFontInterline();
+        int il = font.getStaffInterline();
         p.rect = new Rectangle(2 * il, (4 * il) / 3);
 
         return p;

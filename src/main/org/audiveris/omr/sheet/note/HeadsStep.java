@@ -80,7 +80,7 @@ public class HeadsStep
         DistanceTable distances = new DistancesBuilder(sheet).buildDistances();
 
         // Retrieve spots for (black) notes
-        Map<SystemInfo, List<Glyph>> sheetSpots = new NoteSpotsBuilder(sheet).getSpots();
+        Map<SystemInfo, List<Glyph>> sheetSpots = new HeadSpotsBuilder(sheet).getSpots();
 
         return new Context(distances, sheetSpots);
     }

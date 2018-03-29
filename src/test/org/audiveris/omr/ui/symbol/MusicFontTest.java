@@ -86,7 +86,7 @@ public class MusicFontTest
 
             PdfContentByte cb = writer.getDirectContent();
             Graphics2D g = cb.createGraphics(pageWidth, pageHeight);
-            MusicFont musicFont = new MusicFont(64, 0);
+            MusicFont musicFont = MusicFont.getPointFont(64, 0);
             Font stringFont = g.getFont().deriveFont(24f);
             Font infoFont = stringFont.deriveFont(15f);
             String frm = "x:%4.1f y:%4.1f w:%4.1f h:%4.1f";

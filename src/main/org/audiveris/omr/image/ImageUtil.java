@@ -31,6 +31,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
+import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -213,9 +214,11 @@ public abstract class ImageUtil
                                    String name)
     {
         try {
-            ImageIO.write(image, "png", WellKnowns.TEMP_FOLDER.resolve(name + ".png").toFile());
+            final File file = WellKnowns.TEMP_FOLDER.resolve(name + ".png").toFile();
+            ImageIO.write(image, "png", file);
+            logger.info("Saved {}", file);
         } catch (IOException ex) {
-            logger.warn("Error storing " + name, ex);
+            logger.warn("Error saving " + name, ex);
         }
     }
 

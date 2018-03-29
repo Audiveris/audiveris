@@ -27,14 +27,12 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
 import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
-import org.audiveris.omr.image.TemplateFactory.Catalog;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
@@ -42,6 +40,7 @@ import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -299,7 +298,8 @@ public class HeadInter
 
                     if (note == this) {
                         started = true;
-                    } else if (started && (note.getStep() == getStep())
+                    } else if (started
+                               && (note.getStep() == getStep())
                                && (note.getOctave() == getOctave())
                                && (note.getStaff() == getStaff())) {
                         AlterInter accid = note.getAccidental();
@@ -371,25 +371,11 @@ public class HeadInter
     //---------------//
     // getDescriptor //
     //---------------//
-    public ShapeDescriptor getDescriptor (int interline)
-    {
-        if (descriptor == null) {
-            final Catalog catalog = TemplateFactory.getInstance().getCatalog(interline);
-            descriptor = catalog.getDescriptor(shape);
-        }
-
-        return descriptor;
-    }
-
-    //---------------//
-    // getDescriptor //
-    //---------------//
     public ShapeDescriptor getDescriptor ()
     {
         if (descriptor == null) {
-            final int interline = sig.getSystem().getSheet().getInterline();
-
-            return getDescriptor(interline);
+            final int pointSize = staff.getHeadPointSize();
+            descriptor = TemplateFactory.getInstance().getCatalog(pointSize).getDescriptor(shape);
         }
 
         return descriptor;
@@ -454,7 +440,7 @@ public class HeadInter
     public Point2D getStemReferencePoint (Anchor anchor,
                                           int interline)
     {
-        ShapeDescriptor desc = getDescriptor(interline);
+        ShapeDescriptor desc = getDescriptor();
         Rectangle templateBox = desc.getBounds(this.getBounds());
         Point ref = templateBox.getLocation();
         Point offset = desc.getOffset(anchor);
@@ -568,18 +554,17 @@ public class HeadInter
     /**
      * Use descriptor to build an underlying glyph.
      *
-     * @param image      the image to read pixels from
-     * @param interline  scaling info
-     * @param glyphIndex the index to hold the created glyph
+     * @param image the image to read pixels from
      * @return the underlying glyph or null if failed
      */
-    public Glyph retrieveGlyph (ByteProcessor image,
-                                int interline,
-                                GlyphIndex glyphIndex)
+    public Glyph retrieveGlyph (ByteProcessor image)
     {
-        final Template tpl = getDescriptor(interline).getTemplate();
+        getDescriptor();
+
+        final Sheet sheet = staff.getSystem().getSheet();
+        final Template tpl = descriptor.getTemplate();
         final Rectangle interBox = getBounds();
-        final Rectangle descBox = getDescriptor().getBounds(interBox);
+        final Rectangle descBox = descriptor.getBounds(interBox);
 
         // Foreground points (coordinates WRT descBox)
         final List<Point> fores = tpl.getForegroundPixels(descBox, image);
@@ -603,7 +588,7 @@ public class HeadInter
         RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
 
         // Glyph
-        glyph = glyphIndex.registerOriginal(
+        glyph = sheet.getGlyphIndex().registerOriginal(
                 new BasicGlyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable));
 
         // Use glyph bounds as inter bounds

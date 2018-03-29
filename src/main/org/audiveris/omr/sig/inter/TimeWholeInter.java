@@ -129,7 +129,7 @@ public class TimeWholeInter
         Point center = getCenter(); // Use area center
         TimeRational nd = getTimeRational();
         NumDenSymbol symbol = new NumDenSymbol(shape, nd.num, nd.den);
-        MusicFont musicFont = MusicFont.getFont(interline);
+        MusicFont musicFont = MusicFont.getBaseFont(interline);
         Dimension dim = symbol.getDimension(musicFont);
 
         return new Rectangle(

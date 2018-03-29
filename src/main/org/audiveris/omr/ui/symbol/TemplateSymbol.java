@@ -86,7 +86,7 @@ public class TemplateSymbol
     protected MyParams getParams (MusicFont font)
     {
         final MyParams p = new MyParams();
-        final int interline = font.getFontInterline();
+        final int interline = font.getStaffInterline();
 
         final TextLayout fullLayout = layout(font);
         final Rectangle2D fullRect2d = fullLayout.getBounds();

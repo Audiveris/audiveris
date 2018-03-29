@@ -242,20 +242,6 @@ public class BasicSymbol
         return new String(codes, 0, codes.length);
     }
 
-    //-----------------//
-    // getSymbolHeight //
-    //-----------------//
-    /**
-     * Report the symbol height (which is by default the image height)
-     * for a standard interline.
-     *
-     * @return the symbol height
-     */
-    public int getSymbolHeight ()
-    {
-        return getHeight();
-    }
-
     //-----------//
     // paintIcon //
     //-----------//

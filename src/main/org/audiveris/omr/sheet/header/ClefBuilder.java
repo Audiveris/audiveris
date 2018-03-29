@@ -449,7 +449,7 @@ public class ClefBuilder
             // so use glyph centroid for a better positioning
             // For inter bounds, use font-based symbol bounds rather than glyph bounds
             //TODO: we could also check histogram right after clef end, looking for a low point?
-            Rectangle clefBox = inter.getSymbolBounds(scale.getInterline());
+            Rectangle clefBox = inter.getSymbolBounds(staff.getSpecificInterline());
             Symbol symbol = Symbols.getSymbol(inter.getShape());
             Point symbolCentroid = symbol.getCentroid(clefBox);
             Point glyphCentroid = inter.getGlyph().getCentroid();

@@ -31,7 +31,6 @@ import org.audiveris.omr.math.TableUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.ui.symbol.Alignment;
-import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.TemplateSymbol;
 import org.audiveris.omr.ui.symbol.TextFont;
@@ -89,7 +88,7 @@ public class Template
     private final Shape shape;
 
     /** Scaling factor. */
-    private final int interline;
+    private final int pointSize;
 
     /** Underlying symbol. */
     private final TemplateSymbol symbol;
@@ -117,28 +116,29 @@ public class Template
     /**
      * Creates a new Template object with a provided set of points.
      *
-     * @param shape     the template specified shape
-     * @param interline scaling factor
-     * @param symbol    underlying symbol
-     * @param width     template width
-     * @param height    template height
-     * @param keyPoints the set of defining points
+     * @param shape        the template specified shape
+     * @param pointSize    scaling factor
+     * @param symbol       underlying symbol
+     * @param width        template width
+     * @param height       template height
+     * @param keyPoints    the set of defining points
+     * @param symbolBounds symbol bounds
      */
     public Template (Shape shape,
-                     int interline,
+                     int pointSize,
                      TemplateSymbol symbol,
                      int width,
                      int height,
-                     List<PixelDistance> keyPoints)
+                     List<PixelDistance> keyPoints,
+                     Rectangle symbolBounds)
     {
         this.shape = shape;
-        this.interline = interline;
+        this.pointSize = pointSize;
         this.symbol = symbol;
         this.keyPoints = new ArrayList<PixelDistance>(keyPoints);
         this.width = width;
         this.height = height;
-
-        symbolBounds = new Rectangle(symbol.getSymbolBounds(MusicFont.getFont(interline)));
+        this.symbolBounds = symbolBounds;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -501,7 +501,7 @@ public class Template
             return fores;
         }
 
-        int dilation = InterlineScale.toPixels(interline, constants.dilation);
+        int dilation = InterlineScale.toPixels(pointSize / 4, constants.dilation);
 
         // Populate an enlarged buffer with these foreground pixels
         final Rectangle bufBox = new Rectangle(box);
@@ -543,11 +543,11 @@ public class Template
     }
 
     //--------------//
-    // getInterline //
+    // getPointSize //
     //--------------//
-    public int getInterline ()
+    public int getPointSize ()
     {
-        return interline;
+        return pointSize;
     }
 
     //--------------//

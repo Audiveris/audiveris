@@ -135,8 +135,8 @@ public class Debug
     {
         TemplateFactory factory = TemplateFactory.getInstance();
 
-        for (int i = 10; i < 40; i++) {
-            logger.info("Catalog for interline {}", i);
+        for (int i = 40; i < 160; i++) {
+            logger.info("Catalog for point size {}", i);
             factory.getCatalog(i);
         }
 

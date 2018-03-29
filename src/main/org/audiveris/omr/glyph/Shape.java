@@ -22,9 +22,9 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
-import org.audiveris.omr.ui.Colors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,6 +123,7 @@ public enum Shape
     SHARP("Plus one half step"),
     DOUBLE_SHARP("Double Sharp"),
     DOUBLE_FLAT("Double Flat"),
+
     //
     // Time --------------------------------------------------------------------
     //
@@ -142,7 +143,6 @@ public enum Shape
     // Whole time sigs
     COMMON_TIME("Alpha = 4/4"),
     CUT_TIME("Semi-Alpha = 2/2"),
-
     // Predefined time combos
     TIME_FOUR_FOUR("Rational 4/4"),
     TIME_TWO_TWO("Rational 2/2"),
@@ -155,7 +155,6 @@ public enum Shape
     // Octave shifts
     OTTAVA_ALTA("8 va"),
     OTTAVA_BASSA("8 vb"),
-
     //
     // Rests -------------------------------------------------------------------
     //
@@ -244,6 +243,7 @@ public enum Shape
     TUPLET_SIX("6"),
     PEDAL_MARK("Pedal down"),
     PEDAL_UP_MARK("Pedal downup"),
+
     //
     // Small digits ------------------------------------------------------------
     //
@@ -286,7 +286,6 @@ public enum Shape
     // Miscellaneous -----------------------------------------------------------
     //
     CLUTTER("Pure clutter", Colors.SHAPE_UNKNOWN),
-
     /**
      * =================================================================================
      * End of physical shapes, beginning of logical shapes.
@@ -299,9 +298,10 @@ public enum Shape
     // Shapes from shape sets --------------------------------------------------
     //
     REPEAT_DOT("Repeat dot", DOT_set),
-    AUGMENTATION_DOT("Augmentation Dot", DOT_set),  // change to dark green
+    AUGMENTATION_DOT("Augmentation Dot", DOT_set),
     FERMATA_DOT("Fermata Dot", DOT_set),
     STACCATO("Staccato dot", DOT_set),
+
     //
     WHOLE_REST("Rest for whole measure", HW_REST_set),
     HALF_REST("Rest for a 1/2", HW_REST_set),
@@ -328,6 +328,7 @@ public enum Shape
     BEAM_HOOK("Hook of a beam attached on one stem"),
     BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
     SLUR("Slur tying notes"),
+
     //
     // Key signatures ----------------------------------------------------------
     //
@@ -517,6 +518,19 @@ public enum Shape
     public boolean isWholeRest ()
     {
         return (this == WHOLE_REST) || (this == BREVE_REST) || (this == LONG_REST);
+    }
+
+    //--------//
+    // isHead //
+    //--------//
+    /**
+     * Check whether the shape is a head.
+     *
+     * @return true if head
+     */
+    public boolean isHead ()
+    {
+        return ShapeSet.Heads.contains(this);
     }
 
     //--------//

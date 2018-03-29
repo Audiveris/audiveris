@@ -825,7 +825,7 @@ public abstract class TimeBuilder
 
             // Expend header info
             if (bestTimeInter != null) {
-                Rectangle timeBox = bestTimeInter.getSymbolBounds(scale.getInterline());
+                Rectangle timeBox = bestTimeInter.getSymbolBounds(staff.getSpecificInterline());
                 int end = timeBox.x + timeBox.width;
                 staff.setTimeStop(end);
 
@@ -1056,7 +1056,7 @@ public abstract class TimeBuilder
                 for (Entry<Shape, Inter> entry : adapter.bestMap.entrySet()) {
                     Inter inter = entry.getValue();
 
-                    Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
+                    Rectangle timeBox = inter.getSymbolBounds(staff.getSpecificInterline());
                     inter.setBounds(timeBox);
                     inter.setStaff(staff);
                     sig.addVertex(inter);
@@ -1101,7 +1101,7 @@ public abstract class TimeBuilder
             if (!wholeAdapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : wholeAdapter.bestMap.entrySet()) {
                     Inter inter = entry.getValue();
-                    Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
+                    Rectangle timeBox = inter.getSymbolBounds(staff.getSpecificInterline());
                     inter.setBounds(timeBox);
                     inter.setStaff(staff);
                     sig.addVertex(inter);

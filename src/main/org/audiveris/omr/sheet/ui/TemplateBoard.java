@@ -58,6 +58,8 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerListModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.ui.symbol.MusicFont;
 
 /**
  * Class {@code TemplateBoard} allows to select a template (shape, anchor) and present
@@ -178,8 +180,9 @@ public class TemplateBoard
         AnchoredTemplate at = null;
 
         if (areCompatible(shape, anchor)) {
+            Scale scale = sheet.getScale();
             Template template = TemplateFactory.getInstance()
-                    .getCatalog(sheet.getScale().getInterline())
+                    .getCatalog(MusicFont.getHeadPointSize(scale, scale.getInterline()))
                     .getTemplate(shape);
             at = new AnchoredTemplate(anchor, template);
         }

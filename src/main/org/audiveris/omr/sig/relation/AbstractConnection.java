@@ -152,6 +152,7 @@ public abstract class AbstractConnection
      * Report maximum acceptable overlap.
      * This method is disabled by default, to be overridden if overlap is possible
      *
+     * @param manual true for user-driven action
      * @return the maximum overlap acceptable
      */
     protected Scale.Fraction getXInGapMax (boolean manual)

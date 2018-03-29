@@ -41,6 +41,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
 import org.audiveris.omr.util.HorizontalSide;
@@ -849,6 +850,19 @@ public class Staff
     public LineInfo getFirstLine ()
     {
         return lines.get(0);
+    }
+
+    //------------------//
+    // getHeadPointSize //
+    //------------------//
+    /**
+     * Report the proper point size for heads in this staff
+     *
+     * @return proper head point size
+     */
+    public int getHeadPointSize ()
+    {
+        return MusicFont.getHeadPointSize(system.getSheet().getScale(), specificInterline);
     }
 
     //-----------//

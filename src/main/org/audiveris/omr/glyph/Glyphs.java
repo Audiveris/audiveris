@@ -159,6 +159,21 @@ public abstract class Glyphs
         }
     };
 
+    /** To compare glyphs according to their (increasing) width. */
+    public static final Comparator<Glyph> byWidth = new Comparator<Glyph>()
+    {
+        @Override
+        public int compare (Glyph g1,
+                            Glyph g2)
+        {
+            if (g1 == g2) {
+                return 0;
+            }
+
+            return Integer.compare(g1.getWidth(), g2.getWidth());
+        }
+    };
+
     /** To compare glyphs according to their decreasing weight. */
     public static final Comparator<Glyph> byReverseWeight = new Comparator<Glyph>()
     {

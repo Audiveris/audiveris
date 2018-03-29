@@ -199,7 +199,7 @@ public class StemsBuilder
         skew = sheet.getSkew();
 
         ShapeSymbol symbol = Shape.NOTEHEAD_BLACK.getSymbol();
-        headSymbolDim = symbol.getDimension(MusicFont.getFont(scale.getInterline()));
+        headSymbolDim = symbol.getDimension(MusicFont.getHeadFont(scale, scale.getInterline()));
 
         stemConstructor = new CompoundConstructor()
         {

@@ -685,8 +685,6 @@ public abstract class AbstractInter
      * {@inheritDoc}
      * <p>
      * This implementation uses the area center of inter and of symbol.
-     * TODO: A better implementation could use centroids instead, but would require the handling of
-     * symbol centroid.
      *
      * @param interline scaling factor
      * @return the symbol bounds
@@ -696,7 +694,7 @@ public abstract class AbstractInter
     {
         Point center = getCenter(); // Use area center
 
-        MusicFont musicFont = MusicFont.getFont(interline);
+        MusicFont musicFont = MusicFont.getBaseFont(interline);
         TextLayout layout = musicFont.layout(getShape());
         Rectangle2D bounds = layout.getBounds();
 

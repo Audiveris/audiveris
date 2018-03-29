@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.ui;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -117,8 +118,10 @@ public class DndOperation
         ghost.setStaff(staff);
 
         // Bounds
-        final int interline = staff.getSpecificInterline();
-        final MusicFont font = MusicFont.getFont(interline);
+        final int staffInterline = staff.getSpecificInterline();
+        final MusicFont font = (ShapeSet.Heads.contains(ghost.getShape()))
+                ? MusicFont.getHeadFont(sheet.getScale(), staffInterline)
+                : MusicFont.getBaseFont(staffInterline);
         final ShapeSymbol symbol = Symbols.getSymbol(ghost.getShape());
         final Dimension dim = symbol.getDimension(font);
         final Rectangle bounds = new Rectangle(

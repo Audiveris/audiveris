@@ -101,7 +101,7 @@ public class ChamferMatchingTest
     {
         System.out.println("match");
 
-        Template template = TemplateFactory.getInstance().getCatalog(14)
+        Template template = TemplateFactory.getInstance().getCatalog(56)
                 .getTemplate(Shape.NOTEHEAD_BLACK);
         template.dump();
 

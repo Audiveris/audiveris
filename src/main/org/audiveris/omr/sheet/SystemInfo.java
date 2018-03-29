@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -1175,7 +1176,7 @@ public class SystemInfo
     // removeGroupedGlyphs //
     //---------------------//
     /**
-     * Remove all free glyphs that are assigned the provided group.
+     * Remove all free glyphs that are <b>only</b> assigned the provided group.
      *
      * @param group the group of glyphs to remove
      */
@@ -1183,7 +1184,10 @@ public class SystemInfo
     {
         if (freeGlyphs != null) {
             for (Iterator<BasicGlyph> it = freeGlyphs.iterator(); it.hasNext();) {
-                if (it.next().hasGroup(group)) {
+                final Glyph glyph = it.next();
+                final EnumSet<Group> glyphGroups = glyph.getGroups();
+
+                if ((glyphGroups.size() == 1) && glyphGroups.contains(group)) {
                     it.remove();
                 }
             }

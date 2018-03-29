@@ -109,7 +109,7 @@ public class SpotsBuilder
         final StopWatch watch = new StopWatch("buildSheetSpots");
 
         try {
-            watch.start("gaussianBuffer");
+            watch.start("getBuffer");
 
             // We need a copy of image that we can overwrite.
             ByteProcessor buffer = getBuffer();
@@ -177,13 +177,15 @@ public class SpotsBuilder
         new MorphoProcessor(se).close(buffer);
 
         // For visual check
+        watch.start("visualCheck");
+
         if (cueId == null) {
             BufferedImage img = null;
 
             // Store buffer on disk?
             if (constants.keepBeamSpots.isSet()) {
                 img = buffer.getBufferedImage();
-                ImageUtil.saveOnDisk(img, sheet.getId() + ".spot");
+                ImageUtil.saveOnDisk(img, sheet.getId() + ".spots");
             }
 
             // Display the gray-level view of all spots
@@ -202,7 +204,7 @@ public class SpotsBuilder
             saveHeadRuns((ByteProcessor) buffer.duplicate());
         } else if (constants.keepCueSpots.isSet()) {
             BufferedImage img = buffer.getBufferedImage();
-            ImageUtil.saveOnDisk(img, sheet.getId() + "." + cueId + ".spot");
+            ImageUtil.saveOnDisk(img, sheet.getId() + "." + cueId + ".spots");
         }
 
         // Binarize the spots via a global filter (no illumination problem)
@@ -219,6 +221,10 @@ public class SpotsBuilder
         watch.start("buildGlyphs");
 
         List<Glyph> glyphs = GlyphFactory.buildGlyphs(spotTable, offset);
+
+        // Head sizing
+        watch.start("computeHeadSizing");
+        new BlackHeadSizer(sheet).process(glyphs);
 
         if (constants.printWatch.isSet()) {
             watch.print();
@@ -352,7 +358,7 @@ public class SpotsBuilder
     private void saveHeadRuns (ByteProcessor buffer)
     {
         // Binarize the spots with threshold for heads
-        buffer.threshold(constants.noteBinarizationThreshold.getValue());
+        buffer.threshold(constants.headBinarizationThreshold.getValue());
 
         // Runs
         RunTableFactory runFactory = new RunTableFactory(SPOT_ORIENTATION);
@@ -361,7 +367,7 @@ public class SpotsBuilder
         // For visual check
         if (constants.keepHeadSpots.isSet()) {
             BufferedImage img = runs.getBufferedImage();
-            ImageUtil.saveOnDisk(img, sheet.getId() + ".headspot");
+            ImageUtil.saveOnDisk(img, sheet.getId() + ".headspots");
         }
 
         // Save it for future HEADS step
@@ -410,10 +416,10 @@ public class SpotsBuilder
                 140,
                 "Global binarization threshold for beams");
 
-        private final Constant.Integer noteBinarizationThreshold = new Constant.Integer(
+        private final Constant.Integer headBinarizationThreshold = new Constant.Integer(
                 "pixel",
                 170,
-                "Global binarization threshold for notes");
+                "Global binarization threshold for heads");
 
         private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 2.0,

@@ -39,17 +39,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Scale} encapsulates what drives the scale of a sheet, namely the main
- * lengths of foreground and background vertical runs (which are staff line thickness
- * and white interval between staff lines respectively), and the sum of these two
- * lengths which represents the main interline value.
+ * Class {@code Scale} encapsulates what drives the scale of a sheet, starting by the
+ * distance between two staff lines (center to center).
  * <p>
  * Primary informations: This data is always detected, otherwise the current page is detected as not
  * being a music page.<ul>
- * <li><b>Staff line thickness</b> (fore): min, main, max.</li>
  * <li><b>Staff interline</b>: min, main, max. (Vertical distance measured from line center to line
  * center)</li>
+ * <li><b>Staff line thickness</b> (fore): min, main, max.</li>
  * </ul>
+ * <p>
  * Secondary informations: This data is always made available, either based on detected value or
  * derived from other information.<ul>
  * <li><b>Beam thickness</b>: main. A second peak in the histogram of vertical foreground runs
@@ -57,12 +56,16 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Otherwise it is computed as a ratio of main background length between staff lines.</li>
  * <li><b>Stem thickness</b>: main, max. These values are computed during STEM_SEEDS step.</li>
  * </ul>
+ * <p>
  * Optional informations: This data may exist or not, according to the sheet at hand.<ul>
- * <li><b>Small staff interline</b>: min, main, max.
- * If a second peak is detected in the histogram of background runs, it signals the presence of
+ * <li><b>Black head</b>: Typical width and height measured for black heads.</li>
+ * <li><b>Music font</b>: Precise point size determined for music font rendering of heads.</li>
+ * <li><b>Small staff scale</b>:
+ * If a second peak is detected in the histogram of staff interlines, it signals the presence of
  * staves with a different interline value.
- * In that case, "small interline" will point to the smaller and "interline" to the larger.</li>
+ * For small staves, a specific small Scale structure is then included.</li>
  * </ul>
+ * <p>
  * This class also provides methods for converting values based on what the interline and the line
  * thickness are actually worth.
  * There are two different measurements, pixels and fractions:
@@ -88,54 +91,72 @@ public class Scale
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Scale.class);
+    private static final Logger logger = LoggerFactory.getLogger(Scale.class);
+
+    //~ Enumerations -------------------------------------------------------------------------------
+    public enum Size
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        /** Standard staff. */
+        LARGE,
+        /** Small staff. */
+        SMALL;
+    }
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Interline scale. */
+    @XmlElement(name = "interline")
+    private final InterlineScale interlineScale;
+
     /** Line thickness scale. */
     @XmlElement(name = "line")
-    private final LineScale lineScale;
-
-    /** Large interline scale. */
-    @XmlElement(name = "interline")
-    private InterlineScale interlineScale;
-
-    /** Small interline scale, if any. */
-    @XmlElement(name = "small-interline")
-    private InterlineScale smallInterlineScale;
+    private LineScale lineScale;
 
     /** Beam scale. */
     @XmlElement(name = "beam")
-    private final BeamScale beamScale;
+    private BeamScale beamScale;
 
     /** Stem scale. */
     @XmlElement(name = "stem")
     private StemScale stemScale;
 
+    /** Black head scale. */
+    @XmlElement(name = "black-head")
+    private BlackHeadScale blackHeadScale;
+
+    /** Music font scale. */
+    @XmlElement(name = "music-font")
+    private MusicFontScale musicFontScale;
+
+    /** Scale for small staves, if any. */
+    @XmlElement(name = "small-staff")
+    private Scale smallScale;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a scale entity, meant for a whole sheet.
      *
-     * @param lineScale           scale of line thickness
-     * @param interlineScale      scale of (large) interline
-     * @param smallInterlineScale scale of small interline, perhaps null
-     * @param beamScale           scale of beam
+     * @param interlineScale scale of (large) interline
+     * @param lineScale      scale of line thickness
+     * @param beamScale      scale of beam
+     * @param smallScale     scale for small staves, perhaps null
      */
-    public Scale (LineScale lineScale,
-                  InterlineScale interlineScale,
-                  InterlineScale smallInterlineScale,
-                  BeamScale beamScale)
+    public Scale (InterlineScale interlineScale,
+                  LineScale lineScale,
+                  BeamScale beamScale,
+                  Scale smallScale)
     {
-        this.lineScale = lineScale;
         this.interlineScale = interlineScale;
-        this.smallInterlineScale = smallInterlineScale;
+        this.lineScale = lineScale;
         this.beamScale = beamScale;
+        this.smallScale = smallScale;
     }
 
     /** No-arg constructor, needed by JAXB. */
     private Scale ()
     {
-        this(null, null, null, null);
+        this.interlineScale = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -180,6 +201,19 @@ public class Scale
         return beamScale.getMain();
     }
 
+    //-------------------//
+    // getBlackHeadScale //
+    //-------------------//
+    /**
+     * Report the black head scale
+     *
+     * @return black head scale
+     */
+    public BlackHeadScale getBlackHeadScale ()
+    {
+        return blackHeadScale;
+    }
+
     //---------//
     // getFore //
     //---------//
@@ -212,20 +246,24 @@ public class Scale
     /**
      * Report the main interline value within the small or large family
      *
-     * @param small true for small family, false for large family
+     * @param size LARGE or SMALL
      * @return the smaller interline value
      */
-    public int getInterline (boolean small)
+    public int getInterline (Size size)
     {
-        if (!small) {
+        switch (size) {
+        default:
+        case LARGE:
             return interlineScale.main;
-        }
 
-        if (smallInterlineScale != null) {
-            return smallInterlineScale.main;
-        }
+        case SMALL:
 
-        throw new IllegalArgumentException("No small interline value");
+            if (smallScale != null) {
+                return smallScale.getInterline();
+            } else {
+                throw new IllegalArgumentException("No SMALL interline value");
+            }
+        }
     }
 
     //-------------------//
@@ -247,12 +285,24 @@ public class Scale
     /**
      * Report the large or small scale, according to boolean value.
      *
-     * @param small true for getting small scale, false for getting large scale
+     * @param size LARGE or SMALL
      * @return the desired interlineScale, perhaps null if no small exists
      */
-    public InterlineScale getInterlineScale (boolean small)
+    public InterlineScale getInterlineScale (Size size)
     {
-        return small ? smallInterlineScale : interlineScale;
+        switch (size) {
+        default:
+        case LARGE:
+            return interlineScale;
+
+        case SMALL:
+
+            if (smallScale != null) {
+                return smallScale.interlineScale;
+            } else {
+                return null;
+            }
+        }
     }
 
     //-------------------//
@@ -270,8 +320,8 @@ public class Scale
             return interlineScale;
         }
 
-        if ((smallInterlineScale != null) && (smallInterlineScale.main == interline)) {
-            return smallInterlineScale;
+        if ((smallScale != null) && (smallScale.getInterline() == interline)) {
+            return smallScale.interlineScale;
         }
 
         throw new IllegalArgumentException("No interline scale for provided value " + interline);
@@ -326,8 +376,8 @@ public class Scale
      */
     public Integer getMaxSmallInterline ()
     {
-        if (smallInterlineScale != null) {
-            return smallInterlineScale.max;
+        if (smallScale != null) {
+            return smallScale.interlineScale.max;
         } else {
             return null;
         }
@@ -382,11 +432,24 @@ public class Scale
      */
     public Integer getMinSmallInterline ()
     {
-        if (smallInterlineScale != null) {
-            return smallInterlineScale.min;
+        if (smallScale != null) {
+            return smallScale.interlineScale.min;
         } else {
             return null;
         }
+    }
+
+    //-------------------//
+    // getMusicFontScale //
+    //-------------------//
+    /**
+     * Report the music font scale information.
+     *
+     * @return the music font scale information
+     */
+    public MusicFontScale getMusicFontScale ()
+    {
+        return musicFontScale;
     }
 
     //-------------------//
@@ -399,11 +462,11 @@ public class Scale
      */
     public Integer getSmallInterline ()
     {
-        if (smallInterlineScale == null) {
+        if (smallScale != null) {
+            return smallScale.interlineScale.main;
+        } else {
             return null;
         }
-
-        return smallInterlineScale.main;
     }
 
     //------------------------//
@@ -416,7 +479,22 @@ public class Scale
      */
     public InterlineScale getSmallInterlineScale ()
     {
-        return smallInterlineScale;
+        if (smallScale != null) {
+            return smallScale.interlineScale;
+        } else {
+            return null;
+        }
+    }
+
+    //---------------//
+    // getSmallScale //
+    //---------------//
+    /**
+     * @return the smallScale
+     */
+    public Scale getSmallScale ()
+    {
+        return smallScale;
     }
 
     //------------------//
@@ -505,6 +583,40 @@ public class Scale
                                  double standardDeviation)
     {
         beamScale.setDistance(meanValue, standardDeviation);
+    }
+
+    //-------------------//
+    // setBlackHeadScale //
+    //-------------------//
+    /**
+     * Remember black head scale.
+     *
+     * @param blackHeadScale the blackHeadScale to set
+     */
+    public void setBlackHeadScale (BlackHeadScale blackHeadScale)
+    {
+        this.blackHeadScale = blackHeadScale;
+    }
+
+    //-------------------//
+    // setMusicFontScale //
+    //-------------------//
+    /**
+     * Remember music font scale.
+     *
+     * @param musicFontScale the musicFontScale to set
+     */
+    public void setMusicFontScale (MusicFontScale musicFontScale)
+    {
+        this.musicFontScale = musicFontScale;
+    }
+
+    /**
+     * @param smallScale the smallScale to set
+     */
+    public void setSmallScale (Scale smallScale)
+    {
+        this.smallScale = smallScale;
     }
 
     //--------------//
@@ -603,15 +715,10 @@ public class Scale
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{");
+        StringBuilder sb = new StringBuilder("Scale{");
 
         sb.append("line").append(lineScale);
         sb.append(" interline").append(interlineScale);
-
-        if (smallInterlineScale != null) {
-            sb.append(" smallInterline").append(smallInterlineScale);
-        }
 
         if (beamScale != null) {
             sb.append(" ").append(beamScale);
@@ -619,6 +726,18 @@ public class Scale
 
         if (stemScale != null) {
             sb.append(" ").append(stemScale);
+        }
+
+        if (blackHeadScale != null) {
+            sb.append(" ").append(blackHeadScale);
+        }
+
+        if (musicFontScale != null) {
+            sb.append(" ").append(musicFontScale);
+        }
+
+        if (smallScale != null) {
+            sb.append(" small").append(smallScale);
         }
 
         sb.append("}");
@@ -647,6 +766,7 @@ public class Scale
     /**
      * A subclass of Constant.Double, meant to store a fraction of interline-based area.
      */
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class AreaFraction
             extends Constant.Double
     {
@@ -681,6 +801,7 @@ public class Scale
      * the same group is also measured and recorded in this BeamScale as mean value and standard
      * deviation.
      */
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class BeamScale
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -800,6 +921,112 @@ public class Scale
         }
     }
 
+    //----------------//
+    // BlackHeadScale //
+    //----------------//
+    /**
+     * Class {@code BlackHeadScale} keeps scaling information about single black heads
+     * in a sheet.
+     */
+    @XmlAccessorType(XmlAccessType.NONE)
+    public static class BlackHeadScale
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        @XmlAttribute(name = "mean-width")
+        @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
+        final double widthMean;
+
+        @XmlAttribute(name = "sigma-width")
+        @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
+        final double widthStd;
+
+        @XmlAttribute(name = "mean-height")
+        @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
+        final double heightMean;
+
+        @XmlAttribute(name = "sigma-height")
+        @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
+        final double heightStd;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new {@code BlackHeadScale} object.
+         *
+         * @param widthMean  width mean value
+         * @param widthStd   width standard deviation
+         * @param heightMean height mean value
+         * @param heightStd  height standard deviation
+         */
+        public BlackHeadScale (double widthMean,
+                               double widthStd,
+                               double heightMean,
+                               double heightStd)
+        {
+            this.widthMean = widthMean;
+            this.widthStd = widthStd;
+            this.heightMean = heightMean;
+            this.heightStd = heightStd;
+        }
+
+        /**
+         * No-arg constructor needed for JAXB.
+         */
+        private BlackHeadScale ()
+        {
+            this.widthMean = 0;
+            this.widthStd = 0;
+            this.heightMean = 0;
+            this.heightStd = 0;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * @return the heightMean
+         */
+        public double getHeightMean ()
+        {
+            return heightMean;
+        }
+
+        /**
+         * @return the heightStd
+         */
+        public double getHeightStd ()
+        {
+            return heightStd;
+        }
+
+        /**
+         * @return the widthMean
+         */
+        public double getWidthMean ()
+        {
+            return widthMean;
+        }
+
+        /**
+         * @return the widthStd
+         */
+        public double getWidthStd ()
+        {
+            return widthStd;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("blackHead(");
+            String frm = "%s:%.1f~%.1f";
+            sb.append(String.format(frm, "width", widthMean, widthStd));
+            sb.append(" ");
+            sb.append(String.format(frm, "height", heightMean, heightStd));
+            sb.append(')');
+
+            return sb.toString();
+        }
+    }
+
     //----------//
     // Fraction //
     //----------//
@@ -808,6 +1035,7 @@ public class Scale
      * distances on a music sheet are expressed as fraction of staff interline (as
      * opposed to {@link Scale.LineFraction} which stores a fraction of line thickness).
      */
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class Fraction
             extends Constant.Double
     {
@@ -864,6 +1092,7 @@ public class Scale
     /**
      * Range of values for staff line vertical distance (center to center).
      */
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class InterlineScale
             extends Range
     {
@@ -888,6 +1117,18 @@ public class Scale
         }
 
         //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Compute the interline fraction that corresponds to the given number of pixels.
+         *
+         * @param pixels the equivalent in number of pixels
+         * @return the interline fraction
+         * @see #toPixels
+         */
+        public double pixelsToFrac (double pixels)
+        {
+            return pixels / main;
+        }
+
         public static int toPixels (int interline,
                                     Fraction frac)
         {
@@ -908,6 +1149,12 @@ public class Scale
             return (int) Math.rint(interline * interline * areaFrac.getValue());
         }
 
+        public static double toPixelsDouble (int interline,
+                                             Fraction frac)
+        {
+            return interline * frac.getWrappedValue().doubleValue();
+        }
+
         /**
          * Compute the squared-normalized number of pixels.
          *
@@ -917,24 +1164,6 @@ public class Scale
         public int toPixels (AreaFraction areaFrac)
         {
             return toPixels(main, areaFrac);
-        }
-
-        public static double toPixelsDouble (int interline,
-                                             Fraction frac)
-        {
-            return interline * frac.getWrappedValue().doubleValue();
-        }
-
-        /**
-         * Compute the interline fraction that corresponds to the given number of pixels.
-         *
-         * @param pixels the equivalent in number of pixels
-         * @return the interline fraction
-         * @see #toPixels
-         */
-        public double pixelsToFrac (double pixels)
-        {
-            return pixels / main;
         }
 
         /**
@@ -970,6 +1199,7 @@ public class Scale
      * A subclass of Constant.Double, meant to store a fraction of line thickness (as
      * opposed to {@link Scale.Fraction} which stores a fraction of interline).
      */
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class LineFraction
             extends Constant.Double
     {
@@ -1019,6 +1249,7 @@ public class Scale
     /**
      * Range of values for staff line thickness.
      */
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class LineScale
             extends Range
     {
@@ -1069,6 +1300,77 @@ public class Scale
         }
     }
 
+    //----------------//
+    // MusicFontScale //
+    //----------------//
+    /**
+     * Class {@code MusicFontScale} keeps scaling information about music font in sheet.
+     * <p>
+     * It can optionally handle a small font size for small staves in sheet.
+     */
+    @XmlAccessorType(XmlAccessType.NONE)
+    public static class MusicFontScale
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Font name. */
+        @XmlAttribute(name = "name")
+        final String name;
+
+        /** Font size, specified in typographic point value. */
+        @XmlAttribute(name = "point-size")
+        final int pointSize;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new {@code MusicFontScale} object.
+         *
+         * @param name      name of font, not null
+         * @param pointSize point size for standard large staff, not null
+         */
+        public MusicFontScale (String name,
+                               int pointSize)
+        {
+            this.name = name;
+            this.pointSize = pointSize;
+        }
+
+        /** Meant for JAXB. */
+        private MusicFontScale ()
+        {
+            this.name = null;
+            this.pointSize = 0;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * @return the name
+         */
+        public String getName ()
+        {
+            return name;
+        }
+
+        /**
+         * @return the pointSize
+         */
+        public int getPointSize ()
+        {
+            return pointSize;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("MusicFont{");
+            sb.append("name:").append(name);
+            sb.append(" pointSize:").append(pointSize);
+            sb.append('}');
+
+            return sb.toString();
+        }
+    }
+
     //-----------//
     // StemScale //
     //-----------//
@@ -1080,6 +1382,7 @@ public class Scale
      * TODO: It could also handle stem length, which can be interesting for stem candidates (at
      * least their tail for those free of beam and flag).
      */
+    @XmlAccessorType(XmlAccessType.NONE)
     public static class StemScale
     {
         //~ Instance fields ------------------------------------------------------------------------

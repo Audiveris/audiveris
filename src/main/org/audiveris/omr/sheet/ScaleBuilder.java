@@ -167,11 +167,11 @@ public class ScaleBuilder
         checkResolution();
 
         // Here, we keep going on with scale data
-        return new Scale(
-                new LineScale(blackPeak),
-                computeInterline(),
-                computeSmallInterline(),
-                computeBeam());
+        InterlineScale smallInterlineScale = computeSmallInterline();
+        Scale smallScale = (smallInterlineScale == null) ? null
+                : new Scale(smallInterlineScale, null, null, null);
+
+        return new Scale(computeInterline(), new LineScale(blackPeak), computeBeam(), smallScale);
     }
 
     //-----------------//

@@ -290,7 +290,7 @@ public class ShapeBoard
     {
         Panel panel = new Panel();
         panel.setNoInsets();
-        panel.setPreferredSize(new Dimension(BOARD_WIDTH, 185));
+        panel.setPreferredSize(new Dimension(BOARD_WIDTH, 160));
 
         FlowLayout layout = new FlowLayout();
         layout.setAlignment(FlowLayout.LEADING);

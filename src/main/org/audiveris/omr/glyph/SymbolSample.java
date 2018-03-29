@@ -75,7 +75,8 @@ public class SymbolSample
                                        int interline)
     {
         // Build the corresponding runTable
-        BufferedImage image = symbol.buildImage(MusicFont.getFont(interline));
+        MusicFont musicFont = MusicFont.getBaseFont(interline);
+        BufferedImage image = symbol.buildImage(musicFont);
         ByteProcessor buffer = createBuffer(image);
         RunTableFactory factory = new RunTableFactory(Orientation.VERTICAL);
         RunTable runTable = factory.createTable(buffer);

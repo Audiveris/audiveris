@@ -94,7 +94,7 @@ public class ShapeDescriptor
     //~ Instance fields ----------------------------------------------------------------------------
     private final Shape shape;
 
-    private final int interline;
+    private final int pointSize;
 
     private final Template template;
 
@@ -109,15 +109,15 @@ public class ShapeDescriptor
      * Creates a new ShapeDescriptor object.
      *
      * @param shape     the described shape
-     * @param interline global scale value
+     * @param pointSize precise scaling value
      */
     public ShapeDescriptor (Shape shape,
-                            int interline)
+                            int pointSize)
     {
         this.shape = shape;
-        this.interline = interline;
+        this.pointSize = pointSize;
 
-        template = createTemplate(shape, interline);
+        template = createTemplate(shape, pointSize);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -288,7 +288,7 @@ public class ShapeDescriptor
         StringBuilder sb = new StringBuilder();
         sb.append(shape);
         sb.append("-");
-        sb.append(interline);
+        sb.append(pointSize);
         sb.append("(").append(width).append("x").append(height).append(")");
 
         return sb.toString();
@@ -536,18 +536,13 @@ public class ShapeDescriptor
      * Build a template for desired shape and size, based on MusicFont.
      *
      * @param shape     shape of the template
-     * @param interline scaling for font
+     * @param pointSize precise scaling for font
      * @return the brand new template
      */
     private Template createTemplate (Shape shape,
-                                     int interline)
+                                     int pointSize)
     {
-        // Void head templates are generally too small, so we cheat on font size
-        if (shape == Shape.NOTEHEAD_VOID) {
-            interline += MusicFont.getAdditionalVoidExtent();
-        }
-
-        MusicFont font = MusicFont.getFont(interline);
+        MusicFont font = MusicFont.getPointFont(pointSize, 0);
 
         // Get symbol image painted on template rectangle
         final TemplateSymbol symbol = new TemplateSymbol(shape, getCode(shape));
@@ -561,7 +556,8 @@ public class ShapeDescriptor
         final DistanceTable distances = computeDistances(img, shape);
 
         // Add holes if any
-        addHoles(img, symbol.getSymbolBounds(font));
+        final Rectangle symbolBounds = symbol.getSymbolBounds(font);
+        addHoles(img, symbolBounds);
 
         // Flag non-relevant pixels
         flagIrrelevantPixels(img, distances);
@@ -570,7 +566,14 @@ public class ShapeDescriptor
         final List<PixelDistance> keyPoints = getKeyPoints(img, distances);
 
         // Generate the template instance
-        Template template = new Template(shape, interline, symbol, width, height, keyPoints);
+        Template template = new Template(
+                shape,
+                pointSize,
+                symbol,
+                width,
+                height,
+                keyPoints,
+                symbolBounds);
 
         // Add specific anchor points, if any
         addAnchors(template, img);
@@ -578,7 +581,7 @@ public class ShapeDescriptor
         // Store a copy on disk for visual check?
         if (constants.keepTemplates.isSet()) {
             BufferedImage output = template.buildDecoratedImage(img);
-            ImageUtil.saveOnDisk(output, shape + ".tpl" + interline);
+            ImageUtil.saveOnDisk(output, shape + ".tpl" + pointSize);
         }
 
         return template;

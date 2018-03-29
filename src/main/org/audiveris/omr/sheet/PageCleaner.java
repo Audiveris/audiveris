@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet;
 
 import ij.process.ByteProcessor;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.math.GeoUtil;
@@ -100,8 +101,14 @@ public abstract class PageCleaner
     /** Related sheet. */
     protected final Sheet sheet;
 
-    /** Slightly thicker font for music symbols. */
+    /** Slightly thicker fonts for music symbols. */
     protected final MusicFont musicFont;
+
+    protected final MusicFont headMusicFont;
+
+    protected final MusicFont smallMusicFont;
+
+    protected final MusicFont smallHeadMusicFont;
 
     /** Stroke for margin around areas. */
     private final Stroke marginStroke;
@@ -127,9 +134,22 @@ public abstract class PageCleaner
 
         Scale scale = sheet.getScale();
 
-        // Use a music font slightly larger
-        int symbolSize = scale.toPixels(constants.symbolSize);
-        musicFont = MusicFont.getFont(symbolSize);
+        // Use music fonts slightly larger (TODO: perhaps only for heads?)
+        final int interline = scale.getInterline();
+        int pointSize = MusicFont.getPointSize(interline);
+        musicFont = MusicFont.getPointFont(dilated(pointSize), interline);
+
+        int headPointSize = MusicFont.getHeadPointSize(scale, interline);
+        headMusicFont = MusicFont.getPointFont(dilated(headPointSize), interline);
+
+        final Integer smallInterline = scale.getSmallInterline();
+
+        if (smallInterline != null) {
+            smallMusicFont = MusicFont.getBaseFont(smallInterline);
+            smallHeadMusicFont = MusicFont.getHeadFont(scale, smallInterline);
+        } else {
+            smallMusicFont = smallHeadMusicFont = null;
+        }
 
         // Thickness of margins applied (around areas & lines)
         final float marginThickness = (float) scale.toPixelsDouble(constants.lineMargin);
@@ -212,9 +232,14 @@ public abstract class PageCleaner
     }
 
     @Override
-    public void visit (HeadInter inter)
+    public void visit (HeadInter head)
     {
-        visit((Inter) inter);
+        ShapeSymbol symbol = Symbols.getSymbol(head.getShape());
+        Glyph glyph = head.getGlyph();
+        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(
+                head.getBounds());
+        MusicFont font = head.getStaff().isSmall() ? smallHeadMusicFont : headMusicFont;
+        symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
     }
 
     /**
@@ -227,9 +252,11 @@ public abstract class PageCleaner
     {
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
         Glyph glyph = inter.getGlyph();
-        Point center = (glyph != null) ? glyph.getCentroid()
-                : GeoUtil.centerOf(inter.getBounds());
-        symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+        Point center = (glyph != null) ? glyph.getCenter() : GeoUtil.centerOf(
+                inter.getBounds());
+        boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
+        MusicFont font = isSmall ? smallMusicFont : musicFont;
+        symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
     }
 
     @Override
@@ -407,6 +434,11 @@ public abstract class PageCleaner
         g.setColor(oldColor);
     }
 
+    private int dilated (int pointSize)
+    {
+        return (int) Math.rint(pointSize * constants.dilationRatio.getValue());
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -415,6 +447,10 @@ public abstract class PageCleaner
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Ratio dilationRatio = new Constant.Ratio(
+                1.1,
+                "Size augmentation to use with eraser music font");
 
         private final Scale.Fraction symbolSize = new Scale.Fraction(
                 1.1,

@@ -116,11 +116,11 @@ public class SigPainter
     /** Music font for small staves, if any. */
     private final MusicFont musicFontSmall;
 
-    /** Music font for void heads in large staves. */
-    private final MusicFont musicVoidFontLarge;
+    /** Music font for heads in large staves. */
+    private final MusicFont musicHeadFontLarge;
 
-    /** Music font for void heads in small staves, if any. */
-    private final MusicFont musicVoidFontSmall;
+    /** Music font for heads in small staves, if any. */
+    private final MusicFont musicHeadFontSmall;
 
     /** Global stroke for staff lines. */
     private final Stroke lineStroke;
@@ -146,19 +146,18 @@ public class SigPainter
 
         // Determine proper music fonts
         if (scale == null) {
-            musicFontLarge = musicFontSmall = musicVoidFontLarge = musicVoidFontSmall = null;
+            musicFontLarge = musicFontSmall = null;
+            musicHeadFontLarge = musicHeadFontSmall = null;
         } else {
             // Standard size
             final int large = scale.getInterline();
-            musicFontLarge = MusicFont.getFont(large);
-            musicVoidFontLarge = MusicFont.getFont(large + MusicFont.getAdditionalVoidExtent());
+            musicFontLarge = MusicFont.getBaseFont(large);
+            musicHeadFontLarge = MusicFont.getHeadFont(scale, large);
 
             // Smaller size
             final Integer small = scale.getSmallInterline();
-            musicFontSmall = (small != null) ? MusicFont.getFont(small) : null;
-            musicVoidFontSmall = (small != null)
-                    ? MusicFont.getFont(small + MusicFont.getAdditionalVoidExtent())
-                    : null;
+            musicFontSmall = (small != null) ? MusicFont.getBaseFont(small) : null;
+            musicHeadFontSmall = (small != null) ? MusicFont.getHeadFont(scale, small) : null;
         }
 
         // Determine lines parameters
@@ -430,20 +429,28 @@ public class SigPainter
     @Override
     public void visit (Inter inter)
     {
-        if (inter.getShape() == null) {
+        final Shape shape = inter.getShape();
+
+        if (shape == null) {
             return;
         }
 
-        final ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
+        final ShapeSymbol symbol = Symbols.getSymbol(shape);
         setColor(inter);
 
         if (symbol != null) {
+            final Staff staff = inter.getStaff();
             final MusicFont font;
 
-            if (inter.getShape() == Shape.NOTEHEAD_VOID) {
-                font = getMusicVoidFont(inter.getStaff());
+            if (shape.isHead()) {
+                //                if (shape == Shape.NOTEHEAD_VOID) {
+                //                    font = getMusicVoidFont(staff);
+                //                } else {
+                font = getMusicHeadFont(staff);
+
+                //                }
             } else {
-                font = getMusicFont(inter.getStaff());
+                font = getMusicFont(staff);
             }
 
             final Point center = GeoUtil.centerOf(inter.getBounds());
@@ -612,33 +619,50 @@ public class SigPainter
     }
 
     //------------------//
-    // getMusicVoidFont //
+    // getMusicHeadFont //
     //------------------//
-    /**
-     * Select proper size of music font for void heads, according to provided staff.
-     *
-     * @param small true for small staff
-     * @return selected music font
-     */
-    protected MusicFont getMusicVoidFont (boolean small)
+    protected MusicFont getMusicHeadFont (Staff staff)
     {
-        return small ? musicVoidFontSmall : musicVoidFontLarge;
+        return getMusicHeadFont((staff != null) ? staff.isSmall() : false);
     }
 
     //------------------//
-    // getMusicVoidFont //
+    // getMusicHeadFont //
     //------------------//
-    /**
-     * Select proper size of music font for void heads, according to provided staff size.
-     *
-     * @param staff related staff
-     * @return selected music font
-     */
-    protected MusicFont getMusicVoidFont (Staff staff)
+    protected MusicFont getMusicHeadFont (boolean small)
     {
-        return getMusicVoidFont((staff != null) ? staff.isSmall() : false);
+        return small ? musicHeadFontSmall : musicHeadFontLarge;
     }
 
+    //
+    //    //------------------//
+    //    // getMusicVoidFont //
+    //    //------------------//
+    //    /**
+    //     * Select proper size of music font for void heads, according to provided staff.
+    //     *
+    //     * @param small true for small staff
+    //     * @return selected music font
+    //     */
+    //    protected MusicFont getMusicVoidFont (boolean small)
+    //    {
+    //        return small ? musicVoidFontSmall : musicVoidFontLarge;
+    //    }
+    //
+    //    //------------------//
+    //    // getMusicVoidFont //
+    //    //------------------//
+    //    /**
+    //     * Select proper size of music font for void heads, according to provided staff size.
+    //     *
+    //     * @param staff related staff
+    //     * @return selected music font
+    //     */
+    //    protected MusicFont getMusicVoidFont (Staff staff)
+    //    {
+    //        return getMusicVoidFont((staff != null) ? staff.isSmall() : false);
+    //    }
+    //
     //-------//
     // paint //
     //-------//
