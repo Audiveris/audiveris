@@ -782,10 +782,10 @@ public class BasicStub
      * Step duration is guarded by a timeout, so that processing cannot get blocked infinitely.
      *
      * @param step the step to perform
-     * @throws StepException
+     * @throws Exception
      */
     private void doOneStep (final Step step)
-            throws StepException
+            throws Exception
     {
         final int timeout = Main.getSheetStepTimeOut();
         Future<Void> future = null;
@@ -837,20 +837,6 @@ public class BasicStub
             }
 
             throw new ProcessingCancellationException(tex);
-        } catch (Exception ex) {
-            logger.warn("Error in {} {}", step, ex.toString(), ex);
-
-            Throwable cause = ex.getCause();
-
-            if (cause != null) {
-                logger.info("Cause {}", cause.toString());
-
-                if (cause instanceof StepException) {
-                    throw (StepException) cause;
-                }
-            }
-
-            throw new StepException(ex);
         } finally {
             setCurrentStep(null);
             StepMonitoring.notifyStep(this, step); // Stop monitoring
