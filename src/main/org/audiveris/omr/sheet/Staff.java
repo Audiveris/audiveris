@@ -79,7 +79,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -377,6 +376,9 @@ public class Staff
             // Specific interline for this staff
             Scale scale = system.getSheet().getScale();
             specificInterline = isSmall() ? scale.getSmallInterline() : scale.getInterline();
+
+            // Populate sideBars
+            retrieveSideBars();
 
             // Populate ledgerMap from ledgersValue if any
             ledgerMap.clear();
@@ -1754,25 +1756,6 @@ public class Staff
         return commonBottom > commonTop;
     }
 
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     * <p>
-     * NOTA: We cannot use it to rebuild ledgerMap, because IDREF's have not been processed yet,
-     * hence this will be done in {@link #afterReload()} instead.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        if (barlines != null) {
-            retrieveSideBars();
-        }
-    }
-
     //---------------//
     // beforeMarshal //
     //---------------//
@@ -1810,6 +1793,8 @@ public class Staff
                 }
             }
         }
+
+        logger.debug("Staff#{} sideBars:{}", id, sideBars);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
