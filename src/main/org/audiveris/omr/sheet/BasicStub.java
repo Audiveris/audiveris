@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -569,6 +570,13 @@ public class BasicStub
             throw pce;
         } catch (StepException ignored) {
             logger.info("StepException detected in " + neededSteps);
+        } catch (ExecutionException ex) {
+            // A StepException may have been wrapped into an ExecutionException
+            if (ex.getCause() instanceof StepException) {
+                logger.info("StepException cause detected in " + neededSteps);
+            } else {
+                logger.warn("Error in performing {} {}", neededSteps, ex.toString(), ex);
+            }
         } catch (Exception ex) {
             logger.warn("Error in performing {} {}", neededSteps, ex.toString(), ex);
         } finally {
@@ -587,15 +595,6 @@ public class BasicStub
         }
 
         return ok;
-    }
-
-    //------------//
-    // transcribe //
-    //------------//
-    @Override
-    public boolean transcribe ()
-    {
-        return reachStep(Step.last(), false);
     }
 
     //-------//
@@ -755,6 +754,15 @@ public class BasicStub
     public String toString ()
     {
         return "Stub#" + number;
+    }
+
+    //------------//
+    // transcribe //
+    //------------//
+    @Override
+    public boolean transcribe ()
+    {
+        return reachStep(Step.last(), false);
     }
 
     //----------------//
