@@ -542,7 +542,8 @@ public class ShapeDescriptor
     private Template createTemplate (Shape shape,
                                      int pointSize)
     {
-        MusicFont font = MusicFont.getPointFont(pointSize, 0);
+        int interline = (pointSize + 2) / 4; // Approximate value
+        MusicFont font = MusicFont.getPointFont(pointSize, interline);
 
         // Get symbol image painted on template rectangle
         final TemplateSymbol symbol = new TemplateSymbol(shape, getCode(shape));
