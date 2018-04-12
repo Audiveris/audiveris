@@ -55,15 +55,19 @@ Once in this "audiveris" project directory, you can:
 
 * Build the software via the command:
 
-    `./gradlew build`
+    `./gradlew build` (Linux & Mac)
+
+    `gradlew.bat build` (Windows)
 
 * Run the software, as GUI tool, via the command:
 
-    `./gradlew run`
+    `./gradlew run` (Linux & Mac)
+
+    `gradlew.bat run` (Windows)
 
 ## Further Information
 
-Users and Developers are encouraged to read our [wiki][5].
+Users and Developers are encouraged to read our [Wiki][5].
 
 [1]: http://www.oracle.com/technetwork/java/javase/downloads/index.html
 [2]: https://github.com/tesseract-ocr/tesseract
