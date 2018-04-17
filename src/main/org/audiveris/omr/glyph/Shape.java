@@ -222,7 +222,7 @@ public enum Shape
     DYNAMICS_FF("Fortissimo"),
     DYNAMICS_MF("Mezzo forte"),
     DYNAMICS_FP("FortePiano"),
-    DYNAMICS_SF,
+    DYNAMICS_SF("Subito forte"),
     DYNAMICS_SFZ("Sforzando"),
 
     //

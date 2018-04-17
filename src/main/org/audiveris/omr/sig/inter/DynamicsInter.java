@@ -85,6 +85,7 @@ public class DynamicsInter
         sigs.put(Shape.DYNAMICS_F, "f");
         sigs.put(Shape.DYNAMICS_FF, "ff");
         sigs.put(Shape.DYNAMICS_FP, "fp"); // Forte then piano
+        sigs.put(Shape.DYNAMICS_SF, "sf"); // Subito forte: suddenly strong
         sigs.put(Shape.DYNAMICS_SFZ, "sfz"); // Sforzando: sudden accent
 
         //        sigs.put(Shape.DYNAMICS_FFF, "fff");
