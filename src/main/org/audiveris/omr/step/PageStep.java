@@ -29,6 +29,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
+import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.FlagInter;
@@ -41,6 +42,7 @@ import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
@@ -88,6 +90,7 @@ public class PageStep
     static {
         forVoices = new HashSet<Class>();
         forVoices.add(AugmentationDotInter.class);
+        forVoices.add(BarlineInter.class);
         forVoices.add(BeamHookInter.class);
         forVoices.add(BeamInter.class);
         forVoices.add(FlagInter.class);
@@ -97,6 +100,7 @@ public class PageStep
         forVoices.add(RestInter.class);
         forVoices.add(SlurInter.class);
         forVoices.add(StemInter.class);
+        forVoices.add(StaffBarlineInter.class);
         forVoices.add(TimeNumberInter.class);
         forVoices.add(TimePairInter.class);
         forVoices.add(TimeWholeInter.class);
@@ -130,6 +134,15 @@ public class PageStep
         forParts.add(SentenceInter.class);
     }
 
+    /** Classes that may impact measures. */
+    private static final Set<Class> forMeasures;
+
+    static {
+        forMeasures = new HashSet<Class>();
+        forMeasures.add(BarlineInter.class);
+        forMeasures.add(StaffBarlineInter.class);
+    }
+
     /** All impacting classes. */
     private static final Set<Class> impactingClasses;
 
@@ -139,6 +152,7 @@ public class PageStep
         impactingClasses.addAll(forLyrics);
         impactingClasses.addAll(forSlurs);
         impactingClasses.addAll(forParts);
+        impactingClasses.addAll(forMeasures);
     }
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -221,6 +235,11 @@ public class PageStep
                 if (isImpactedBy(classe, forVoices)) {
                     impact.onVoices = true;
                 }
+
+                if (isImpactedBy(classe, forMeasures)
+                    && seq.isOptionSet(UITaskList.Option.UPDATE_MEASURES)) {
+                    impact.onMeasures = true;
+                }
             } else if (task instanceof StackTask) {
                 MeasureStack stack = ((StackTask) task).getStack();
                 Class classe = stack.getClass();
@@ -246,6 +265,10 @@ public class PageStep
 
             if (impact.onParts) {
                 new PageReduction(page).reduce();
+            }
+
+            if (impact.onMeasures) {
+                new MeasureFixer().process(page);
             }
 
             if (impact.onSlurs) {
@@ -305,6 +328,8 @@ public class PageStep
 
         boolean onVoices = false;
 
+        boolean onMeasures = false;
+
         //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
@@ -314,6 +339,7 @@ public class PageStep
             sb.append(" slurs:").append(onSlurs);
             sb.append(" lyrics:").append(onLyrics);
             sb.append(" voices:").append(onVoices);
+            sb.append(" measures:").append(onMeasures);
             sb.append("}");
 
             return sb.toString();

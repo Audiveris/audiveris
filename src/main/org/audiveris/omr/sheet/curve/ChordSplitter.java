@@ -158,7 +158,7 @@ public class ChordSplitter
         }
 
         // Detect all partitions of consistent heads in this chord
-        getAllPartitions();
+        allPartitions = getAllPartitions();
         logger.debug("allPartitions: {}", allPartitions);
 
         if (rootStem != null) {
@@ -199,13 +199,13 @@ public class ChordSplitter
     //------------------//
     // getAllPartitions //
     //------------------//
-    private void getAllPartitions ()
+    private List<Partition> getAllPartitions ()
     {
         // Collection of tied heads
         final List<HeadInter> tiedHeads = new ArrayList<HeadInter>();
 
         // Detect the partitions of consistent heads in this chord
-        allPartitions = new ArrayList<Partition>();
+        List<Partition> partitions = new ArrayList<Partition>();
 
         for (List<SlurInter> slurList : origins.values()) {
             Partition partition = new Partition();
@@ -225,12 +225,14 @@ public class ChordSplitter
                 }
             }
 
-            allPartitions.add(partition);
+            partitions.add(partition);
         }
 
-        Collections.sort(allPartitions); // Sort list of partitions
+        Collections.sort(partitions); // Sort list of partitions
 
         injectStandardHeads(tiedHeads); // Inject each head left over
+
+        return partitions;
     }
 
     //-------------//

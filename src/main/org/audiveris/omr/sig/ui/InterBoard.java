@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -342,7 +343,7 @@ public class InterBoard
             final Inter inter = InterBoard.this.getSelectedEntity();
             logger.debug("Deleting {}", inter);
 
-            sheet.getInterController().removeInter(inter);
+            sheet.getInterController().removeInters(Arrays.asList(inter));
         }
     }
 

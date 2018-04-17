@@ -301,7 +301,7 @@ public class ClefInter
     @Override
     public void remove (boolean extensive)
     {
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
         if (stack != null) {
             stack.removeInter(this);

@@ -21,8 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -42,11 +45,13 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code PartBarline} represents a logical barline for a part, that is composed
- * of several {@link StaffBarline} instances when the part comprises several staves.
+ * Class {@code PartBarline} represents a logical barline for a part, that is made of
+ * one {@code StaffBarlineInter} for each staff in the part.
  * <p>
  * In the case of "back to back" repeat configuration, we use two instances of this class, one
  * for the backward repeat and one for the forward repeat.
@@ -59,7 +64,8 @@ public class PartBarline
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(PartBarline.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            PartBarline.class);
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**
@@ -84,11 +90,21 @@ public class PartBarline
     }
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** * Underlying {@link StaffBarline} instances, one per staff in the part. */
+    /** <b>OLD</b> underlying {@link StaffBarlineInter} instances. */
+    @Deprecated
     @XmlElement(name = "staff-barline")
-    private final List<StaffBarline> staffBarlines = new ArrayList<StaffBarline>();
+    private List<OldStaffBarline> oldStaffBarlines;
+
+    /** Underlying {@link StaffBarlineInter} instances, one per staff in the part. */
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "staff-barlines")
+    private final List<StaffBarlineInter> staffBarlines = new ArrayList<StaffBarlineInter>();
 
     //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code PartBarline} object.
+     */
     public PartBarline ()
     {
     }
@@ -97,26 +113,19 @@ public class PartBarline
     //-----------------//
     // addStaffBarline //
     //-----------------//
-    public void addStaffBarline (StaffBarline staffBarline)
+    public void addStaffBarline (StaffBarlineInter staffBarline)
     {
         Objects.requireNonNull(staffBarline, "Trying to add a null StaffBarline");
 
         staffBarlines.add(staffBarline);
     }
 
-    //------------//
-    // getBarline //
-    //------------//
-    public StaffBarline getBarline (Part part,
-                                    Staff staff)
+    //----------//
+    // contains //
+    //----------//
+    public boolean contains (StaffBarlineInter staffBarline)
     {
-        int index = part.getStaves().indexOf(staff);
-
-        if (index != -1) {
-            return staffBarlines.get(index);
-        }
-
-        return null;
+        return staffBarlines.contains(staffBarline);
     }
 
     //-----------//
@@ -130,7 +139,7 @@ public class PartBarline
      */
     public EndingInter getEnding (HorizontalSide side)
     {
-        final StaffBarline sb = staffBarlines.get(0);
+        final StaffBarlineInter sb = staffBarlines.get(0);
 
         return sb.getEnding(side);
     }
@@ -147,7 +156,7 @@ public class PartBarline
     {
         Set<FermataInter> fermatas = new LinkedHashSet<FermataInter>();
 
-        for (StaffBarline sb : staffBarlines) {
+        for (StaffBarlineInter sb : staffBarlines) {
             fermatas.addAll(sb.getFermatas());
         }
 
@@ -174,7 +183,7 @@ public class PartBarline
     public int getLeftX (Part part,
                          Staff staff)
     {
-        StaffBarline bar = getBarline(part, staff);
+        StaffBarlineInter bar = getStaffBarline(part, staff);
 
         if (bar != null) {
             return bar.getLeftX();
@@ -196,13 +205,36 @@ public class PartBarline
     public int getRightX (Part part,
                           Staff staff)
     {
-        StaffBarline bar = getBarline(part, staff);
+        StaffBarlineInter bar = getStaffBarline(part, staff);
 
         if (bar != null) {
             return bar.getRightX();
         } else {
             throw new IllegalStateException("Part Barline with no proper StaffBarline");
         }
+    }
+
+    //-----------------//
+    // getStaffBarline //
+    //-----------------//
+    public StaffBarlineInter getStaffBarline (Part part,
+                                              Staff staff)
+    {
+        int index = part.getStaves().indexOf(staff);
+
+        if (index != -1 && index < staffBarlines.size()) {
+            return staffBarlines.get(index);
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // getStaffBarlines //
+    //------------------//
+    public List<StaffBarlineInter> getStaffBarlines ()
+    {
+        return Collections.unmodifiableList(staffBarlines);
     }
 
     //----------//
@@ -222,7 +254,7 @@ public class PartBarline
     //--------------//
     public boolean isLeftRepeat ()
     {
-        for (StaffBarline sb : staffBarlines) {
+        for (StaffBarlineInter sb : staffBarlines) {
             if (sb.isLeftRepeat()) {
                 return true;
             }
@@ -236,7 +268,7 @@ public class PartBarline
     //---------------//
     public boolean isRightRepeat ()
     {
-        for (StaffBarline sb : staffBarlines) {
+        for (StaffBarlineInter sb : staffBarlines) {
             if (sb.isRightRepeat()) {
                 return true;
             }
@@ -252,8 +284,8 @@ public class PartBarline
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{PartBarline");
-        StaffBarline first = staffBarlines.get(0);
-        StaffBarline last = staffBarlines.get(staffBarlines.size() - 1);
+        StaffBarlineInter first = staffBarlines.get(0);
+        StaffBarlineInter last = staffBarlines.get(staffBarlines.size() - 1);
 
         Style style = first.getStyle();
         sb.append(" ").append(style);
@@ -264,5 +296,50 @@ public class PartBarline
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-----------------//
+    // upgradeOldStuff //
+    //-----------------//
+    /**
+     * Temporary method to upgrade from oldStaffBarlines to staffBarlines.
+     *
+     * @return true if really upgraded
+     */
+    public boolean upgradeOldStuff ()
+    {
+        if (oldStaffBarlines != null) {
+            if (!oldStaffBarlines.isEmpty()) {
+                for (OldStaffBarline oldSb : oldStaffBarlines) {
+                    final StaffBarlineInter sb = new StaffBarlineInter();
+                    SIGraph sig = null;
+                    double grade = 0;
+                    int count = 0;
+
+                    for (BarlineInter b : oldSb.bars) {
+                        if (sig == null) {
+                            sig = b.getSig();
+                            sig.addVertex(sb);
+                        }
+
+                        sb.addMember(b);
+                        grade += b.getGrade();
+                        count++;
+                    }
+
+                    if (count > 0) {
+                        sb.setGrade(grade / count);
+                    }
+
+                    staffBarlines.add(sb);
+                }
+            }
+
+            oldStaffBarlines = null;
+
+            return true;
+        }
+
+        return false;
     }
 }

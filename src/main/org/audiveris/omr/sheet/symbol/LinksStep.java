@@ -139,20 +139,21 @@ public class LinksStep
                     if (inter instanceof LyricItemInter) {
                         LyricItemInter item = (LyricItemInter) inter;
 
-                        if ((opKind == OpKind.DO) && task instanceof AdditionTask) {
+                        if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
                             item.mapToChord();
                         }
                     } else if (inter instanceof SentenceInter) {
                         SentenceInter sentence = (SentenceInter) inter;
                         SymbolsLinker linker = new SymbolsLinker(system);
 
-                        if ((opKind == OpKind.DO) && task instanceof AdditionTask) {
+                        if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
                             linker.linkOneSentence(sentence);
                         } else if (task instanceof SentenceRoleTask) {
                             SentenceRoleTask roleTask = (SentenceRoleTask) interTask;
                             linker.unlinkOneSentence(
                                     sentence,
-                                    (opKind == OpKind.DO) ? roleTask.getOldRole() : roleTask.getNewRole());
+                                    (opKind == OpKind.UNDO) ? roleTask.getNewRole()
+                                            : roleTask.getOldRole());
                             linker.linkOneSentence(sentence);
                         }
                     }

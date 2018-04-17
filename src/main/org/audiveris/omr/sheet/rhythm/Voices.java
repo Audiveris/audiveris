@@ -298,7 +298,7 @@ public abstract class Voices
      */
     public static void refineSystem (SystemInfo system)
     {
-        final MeasureStack firstStack = system.getFirstMeasureStack();
+        final MeasureStack firstStack = system.getFirstStack();
         final SlurAdapter measureSlurAdapter = new SlurAdapter()
         {
             @Override
@@ -309,7 +309,7 @@ public abstract class Voices
         };
 
         for (Part part : system.getParts()) {
-            for (MeasureStack stack : system.getMeasureStacks()) {
+            for (MeasureStack stack : system.getStacks()) {
                 if (stack != firstStack) {
                     // Check tied voices from same part in previous measure
                     final Measure measure = stack.getMeasureAt(part);

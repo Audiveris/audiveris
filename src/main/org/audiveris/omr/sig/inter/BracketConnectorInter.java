@@ -60,7 +60,7 @@ public class BracketConnectorInter
      */
     private BracketConnectorInter ()
     {
-        super(null, null, null, null, 0);
+        super(null, null, null, null, null);
         this.connection = null;
     }
 

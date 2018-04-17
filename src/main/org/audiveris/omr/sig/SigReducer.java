@@ -920,7 +920,7 @@ public class SigReducer
 
             if ((measure != null)
                 && (measure == part.getLastMeasure())
-                && (measure.getBarline(HorizontalSide.RIGHT) == null)) {
+                && (measure.getPartBarlineOn(HorizontalSide.RIGHT) == null)) {
                 // Empty measure?
                 // Measure width?
                 continue;
@@ -1237,13 +1237,13 @@ public class SigReducer
         Collections.sort(systemNotes, Inters.byAbscissa);
 
         for (Staff staff : system.getStaves()) {
-            List<Inter> staffTimes = SIGraph.inters(staff, systemTimes);
+            List<Inter> staffTimes = Inters.inters(staff, systemTimes);
 
             if (staffTimes.isEmpty()) {
                 continue;
             }
 
-            List<Inter> notes = SIGraph.inters(staff, systemNotes);
+            List<Inter> notes = Inters.inters(staff, systemNotes);
 
             for (Inter inter : staffTimes) {
                 AbstractTimeInter timeSig = (AbstractTimeInter) inter;
@@ -1580,7 +1580,7 @@ public class SigReducer
         final int ledgerPitch = Staff.getLedgerPitchPosition(index);
         final int nextPitch = ledgerPitch + Integer.signum(index);
 
-        final List<Inter> heads = SIGraph.intersectedInters(
+        final List<Inter> heads = Inters.intersectedInters(
                 allHeads,
                 GeoOrder.BY_ABSCISSA,
                 ledgerBox);

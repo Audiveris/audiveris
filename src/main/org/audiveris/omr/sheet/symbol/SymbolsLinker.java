@@ -139,7 +139,7 @@ public class SymbolsLinker
 
             case Direction: {
                 // Map direction with proper chord
-                MeasureStack stack = system.getMeasureStackAt(location);
+                MeasureStack stack = system.getStackAt(location);
 
                 if (stack == null) {
                     logger.info(
@@ -176,7 +176,7 @@ public class SymbolsLinker
 
             case ChordName: {
                 // Map chordName with proper chord
-                MeasureStack stack = system.getMeasureStackAt(location);
+                MeasureStack stack = system.getStackAt(location);
 
                 if (stack == null) {
                     logger.info("No stack at {}", sentence);
@@ -340,7 +340,7 @@ public class SymbolsLinker
                     // Look for a chord (head or rest) related to this fermata
                     final Point center = fermata.getCenter();
                     final Rectangle bounds = arc.getBounds();
-                    final MeasureStack stack = system.getMeasureStackAt(center);
+                    final MeasureStack stack = system.getStackAt(center);
                     final Collection<AbstractChordInter> chords = (fermata.getShape() == Shape.FERMATA_BELOW)
                             ? stack.getStandardChordsAbove(
                                     center,
@@ -417,7 +417,7 @@ public class SymbolsLinker
 
                 final Point location = pedal.getCenter();
                 final Rectangle bounds = pedal.getBounds();
-                final MeasureStack stack = system.getMeasureStackAt(location);
+                final MeasureStack stack = system.getStackAt(location);
                 final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, bounds);
 
                 if (chordAbove != null) {
@@ -474,7 +474,7 @@ public class SymbolsLinker
                             : new Point2D.Double(
                                     topLine.getX2() - xMargin,
                                     topLine.getY2());
-                    final MeasureStack stack = system.getMeasureStackAt(location);
+                    final MeasureStack stack = system.getStackAt(location);
                     final AbstractChordInter chordAbove = stack.getStandardChordAbove(
                             location,
                             null);

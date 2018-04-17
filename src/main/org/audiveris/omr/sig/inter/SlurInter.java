@@ -42,7 +42,6 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
@@ -134,9 +133,9 @@ public class SlurInter
                 // Check we are in last measure
                 Point2D end = slur.getCurve().getP2();
                 SystemInfo system = slur.getSig().getSystem();
-                MeasureStack stack = system.getMeasureStackAt(end);
+                MeasureStack stack = system.getStackAt(end);
 
-                if (stack == system.getLastMeasureStack()) {
+                if (stack == system.getLastStack()) {
                     // Check slur ends in last measure half
                     Staff staff = system.getClosestStaff(end);
                     Measure measure = stack.getMeasureAt(staff);
@@ -162,9 +161,9 @@ public class SlurInter
                 // Check we are in first measure
                 Point2D end = slur.getCurve().getP1();
                 SystemInfo system = slur.getSig().getSystem();
-                MeasureStack stack = system.getMeasureStackAt(end);
+                MeasureStack stack = system.getStackAt(end);
 
-                if (stack == system.getFirstMeasureStack()) {
+                if (stack == system.getFirstStack()) {
                     // Check slur ends in first measure half (excluding header area)
                     Staff staff = system.getClosestStaff(end);
                     Measure measure = stack.getMeasureAt(staff);
@@ -638,7 +637,7 @@ public class SlurInter
         box.add(leftChord.getTailLocation());
         box.add(rightChord.getTailLocation());
 
-        List<Inter> found = SIGraph.intersectedInters(systemHeadChords, null, box);
+        List<Inter> found = Inters.intersectedInters(systemHeadChords, null, box);
 
         // Exclude left & right chords
         found.remove(leftChord);
@@ -850,7 +849,7 @@ public class SlurInter
 
         for (HorizontalSide side : HorizontalSide.values()) {
             Rectangle box = sideAreas.get(side).getBounds();
-            chords.put(side, SIGraph.intersectedInters(systemChords, GeoOrder.NONE, box));
+            chords.put(side, Inters.intersectedInters(systemChords, GeoOrder.NONE, box));
         }
 
         // Select the best link pair, if any

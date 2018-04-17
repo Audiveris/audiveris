@@ -161,7 +161,7 @@ public class Page
         for (SystemInfo system : systems) {
             count += system.getFirstPart().getMeasures().size();
 
-            if (system.getLastMeasureStack().isCautionary()) {
+            if (system.getLastStack().isCautionary()) {
                 count--;
             }
         }
@@ -541,7 +541,7 @@ public class Page
         int systemOffset = 0;
 
         for (SystemInfo system : systems) {
-            List<MeasureStack> stacks = system.getMeasureStacks();
+            List<MeasureStack> stacks = system.getStacks();
 
             for (int im = 0; im < stacks.size(); im++) {
                 int mid = systemOffset + im + 1;
@@ -549,7 +549,7 @@ public class Page
                 stack.setIdValue(mid);
             }
 
-            systemOffset += system.getMeasureStacks().size();
+            systemOffset += stacks.size();
         }
 
         // Very temporary raw values
@@ -699,7 +699,7 @@ public class Page
 
             // Collect duration values for each standard chord in this page
             for (SystemInfo system : getSystems()) {
-                for (MeasureStack stack : system.getMeasureStacks()) {
+                for (MeasureStack stack : system.getStacks()) {
                     for (AbstractChordInter chord : stack.getStandardChords()) {
                         try {
                             final Rational duration = chord.isWholeRest()

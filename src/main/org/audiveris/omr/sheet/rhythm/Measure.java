@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.DurationFactor;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.SIGraph;
@@ -43,7 +44,9 @@ import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -55,9 +58,11 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -409,6 +414,28 @@ public class Measure
         tuplets = null;
     }
 
+    //----------//
+    // contains //
+    //----------//
+    public boolean contains (PartBarline partBarline)
+    {
+        return getContainedPartBarlines().contains(partBarline);
+    }
+
+    //----------//
+    // contains //
+    //----------//
+    public boolean contains (StaffBarlineInter staffBarline)
+    {
+        for (PartBarline partBarline : getContainedPartBarlines()) {
+            if (partBarline.contains(staffBarline)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //--------//
     // filter //
     //--------//
@@ -457,7 +484,10 @@ public class Measure
     // getAbscissa //
     //-------------//
     /**
-     * Report abscissa of desired measure side at ordinate of provided staff
+     * Report abscissa of desired measure side at ordinate of provided staff.
+     * <p>
+     * We consistently use the abscissa center of the right-most barline in
+     * {@link StaffBarlineInter}.
      *
      * @param side  desired horizontal side
      * @param staff staff for ordinate
@@ -472,7 +502,7 @@ public class Measure
         case LEFT:
 
             // measure (left) bar?
-            PartBarline leftBar = getBarline(LEFT);
+            PartBarline leftBar = getPartBarlineOn(LEFT);
 
             if (leftBar != null) {
                 return leftBar.getRightX(part, staff);
@@ -500,51 +530,6 @@ public class Measure
     public Set<AugmentationDotInter> getAugmentationDots ()
     {
         return (augDots != null) ? Collections.unmodifiableSet(augDots) : Collections.EMPTY_SET;
-    }
-
-    //------------//
-    // getBarline //
-    //------------//
-    /**
-     * Report the barline, if any, on desired side of the measure.
-     *
-     * @param side desired side
-     * @return the barline found, or null
-     */
-    public PartBarline getBarline (HorizontalSide side)
-    {
-        switch (side) {
-        case LEFT:
-
-            // Measure specific left bar?
-            if (leftBarline != null) {
-                return leftBarline;
-            }
-
-            // Previous measure in part?
-            Measure prevMeasure = getSibling(LEFT);
-
-            if (prevMeasure != null) {
-                return prevMeasure.getRightBarline();
-            }
-
-            // Part starting bar?
-            if (part.getLeftBarline() != null) {
-                return part.getLeftBarline();
-            }
-
-            return null; // No barline found on LEFT
-
-        default:
-        case RIGHT:
-
-            // Measure (right) bar?
-            if (rightBarline != null) {
-                return rightBarline;
-            }
-
-            return null; // No barline found on RIGHT
-        }
     }
 
     //---------------//
@@ -608,6 +593,35 @@ public class Measure
     public List<ClefInter> getClefs ()
     {
         return (clefs != null) ? Collections.unmodifiableList(clefs) : Collections.EMPTY_LIST;
+    }
+
+    //--------------------------//
+    // getContainedPartBarlines //
+    //--------------------------//
+    /**
+     * Report the PartBarlines this measure <b>strictly contains</b>
+     * (as opposed to {@link #getPartBarlineOn(HorizontalSide)})
+     *
+     * @return the list of contained PartBarlines, perhaps empty but not null
+     * @see #getPartBarlineOn(HorizontalSide)
+     */
+    public List<PartBarline> getContainedPartBarlines ()
+    {
+        List<PartBarline> list = new ArrayList<PartBarline>();
+
+        if (leftBarline != null) {
+            list.add(leftBarline);
+        }
+
+        if (midBarline != null) {
+            list.add(midBarline);
+        }
+
+        if (rightBarline != null) {
+            list.add(rightBarline);
+        }
+
+        return list;
     }
 
     //---------------------//
@@ -769,9 +783,9 @@ public class Measure
     }
 
     //----------------//
-    // getLeftBarline //
+    // getLeftPartBarline //
     //----------------//
-    public PartBarline getLeftBarline ()
+    public PartBarline getLeftPartBarline ()
     {
         return leftBarline;
     }
@@ -806,15 +820,15 @@ public class Measure
         return null; // No clef previously defined in this measure and staff
     }
 
-    //---------------//
-    // getMidBarline //
-    //---------------//
+    //-------------------//
+    // getMidPartBarline //
+    //-------------------//
     /**
      * Report the mid barline, if any.
      *
      * @return the mid barline or null
      */
-    public PartBarline getMidBarline ()
+    public PartBarline getMidPartBarline ()
     {
         return midBarline;
     }
@@ -825,6 +839,50 @@ public class Measure
     public Part getPart ()
     {
         return part;
+    }
+
+    //------------------//
+    // getPartBarlineOn //
+    //------------------//
+    /**
+     * Report the PartBarline, if any, located on desired side of the measure
+     * (<b>regardless</b> whether it strictly belongs to the measure or not,
+     * as opposed to {@link #getContainedPartBarlines()}).
+     *
+     * @param side desired side
+     * @return the PartBarline found, or null
+     * @see #getContainedPartBarlines()
+     */
+    public PartBarline getPartBarlineOn (HorizontalSide side)
+    {
+        switch (side) {
+        case LEFT:
+
+            // Measure specific left bar?
+            if (leftBarline != null) {
+                return leftBarline;
+            }
+
+            // Previous measure in part?
+            Measure prevMeasure = getSibling(LEFT);
+
+            if (prevMeasure != null) {
+                return prevMeasure.getRightPartBarline();
+            }
+
+            // Part starting bar?
+            if (part.getLeftPartBarline() != null) {
+                return part.getLeftPartBarline();
+            }
+
+            return null; // No barline found on LEFT
+
+        default:
+        case RIGHT:
+
+            // Measure (right) bar?
+            return rightBarline;
+        }
     }
 
     //--------------------//
@@ -881,15 +939,15 @@ public class Measure
         return (restChords != null) ? Collections.unmodifiableSet(restChords) : Collections.EMPTY_SET;
     }
 
-    //-----------------//
-    // getRightBarline //
-    //-----------------//
+    //---------------------//
+    // getRightPartBarline //
+    //---------------------//
     /**
-     * Report the ending barline.
+     * Report the ending PartBarline.
      *
-     * @return the ending barline
+     * @return the ending PartBarline
      */
-    public PartBarline getRightBarline ()
+    public PartBarline getRightPartBarline ()
     {
         return rightBarline;
     }
@@ -940,7 +998,7 @@ public class Measure
 
             // Measure specific left bar?
             if (leftBarline != null) {
-                return leftBarline.getBarline(part, staff).getRightBar().getCenter();
+                return leftBarline.getStaffBarline(part, staff).getReferenceCenter();
             }
 
             // Previous measure in part?
@@ -951,8 +1009,8 @@ public class Measure
             }
 
             // Part starting bar?
-            if (part.getLeftBarline() != null) {
-                return part.getLeftBarline().getBarline(part, staff).getRightBar().getCenter();
+            if (part.getLeftPartBarline() != null) {
+                return part.getLeftPartBarline().getStaffBarline(part, staff).getReferenceCenter();
             }
             // No bar, use start of staff
              {
@@ -968,7 +1026,7 @@ public class Measure
 
             // Measure (right) bar?
             if (rightBarline != null) {
-                return rightBarline.getBarline(part, staff).getRightBar().getCenter();
+                return rightBarline.getStaffBarline(part, staff).getReferenceCenter();
             }
             // No bar, use end of staff
              {
@@ -1259,6 +1317,17 @@ public class Measure
      */
     public void mergeWithRight (Measure right)
     {
+        // Barlines
+        if (midBarline == null) {
+            midBarline = rightBarline;
+        }
+
+        setRightPartBarline(right.rightBarline);
+
+        // Beam groups
+        beamGroups.addAll(right.beamGroups);
+
+        // Clefs
         if ((right.clefs != null) && !right.clefs.isEmpty()) {
             if (clefs == null) {
                 clefs = new ArrayList<ClefInter>();
@@ -1269,6 +1338,7 @@ public class Measure
             Collections.sort(clefs, Inters.byFullCenterAbscissa);
         }
 
+        // Keys
         if (right.hasKeys()) {
             if (hasKeys()) {
                 logger.warn("Attempt to merge keySigs from 2 measures {} and {}", this, right);
@@ -1277,6 +1347,7 @@ public class Measure
             }
         }
 
+        // Times
         if (right.timeSigs != null) {
             if (timeSigs == null) {
                 timeSigs = new LinkedHashSet<AbstractTimeInter>();
@@ -1285,19 +1356,45 @@ public class Measure
             timeSigs.addAll(right.timeSigs);
         }
 
-        if (!right.getRestChords().isEmpty()) {
-            needRestChords().addAll(right.getRestChords());
-        }
-
+        // Head chords
         if (!right.getHeadChords().isEmpty()) {
             needHeadChords().addAll(right.getHeadChords());
         }
 
-        voices.addAll(right.voices); // (left) voices are empty
-        beamGroups.addAll(right.beamGroups);
+        // Rest chords
+        if (!right.getRestChords().isEmpty()) {
+            needRestChords().addAll(right.getRestChords());
+        }
 
-        midBarline = rightBarline;
-        setRightBarline(right.rightBarline);
+        // Flags
+        if (!right.getFlags().isEmpty()) {
+            if (flags == null) {
+                flags = new LinkedHashSet<FlagInter>();
+            }
+
+            flags.addAll(right.getFlags());
+        }
+
+        // Tuplets
+        if (!right.getTuplets().isEmpty()) {
+            if (tuplets == null) {
+                tuplets = new LinkedHashSet<TupletInter>();
+            }
+
+            tuplets.addAll(right.getTuplets());
+        }
+
+        // Augmentation dots
+        if (!right.getAugmentationDots().isEmpty()) {
+            if (augDots == null) {
+                augDots = new LinkedHashSet<AugmentationDotInter>();
+            }
+
+            augDots.addAll(right.getAugmentationDots());
+        }
+
+        // Voices
+        voices.addAll(right.voices);
     }
 
     //-----------------//
@@ -1443,23 +1540,31 @@ public class Measure
         dummy = true;
     }
 
-    //----------------//
-    // setLeftBarline //
-    //----------------//
-    public void setLeftBarline (PartBarline leftBarline)
+    //--------------------//
+    // setLeftPartBarline //
+    //--------------------//
+    public void setLeftPartBarline (PartBarline leftBarline)
     {
         this.leftBarline = leftBarline;
     }
 
-    //------------//
-    // setBarline //
-    //------------//
+    //-------------------//
+    // setMidPartBarline //
+    //-------------------//
+    public void setMidPartBarline (PartBarline midBarline)
+    {
+        this.midBarline = midBarline;
+    }
+
+    //---------------------//
+    // setRightPartBarline //
+    //---------------------//
     /**
-     * Assign the (right) barline that ends this measure
+     * Assign the (right) PartBarline that ends this measure
      *
-     * @param rightBarline the right barline
+     * @param rightBarline the right PartBarline
      */
-    public void setRightBarline (PartBarline rightBarline)
+    public void setRightPartBarline (PartBarline rightBarline)
     {
         this.rightBarline = rightBarline;
     }
@@ -1481,6 +1586,141 @@ public class Measure
     public void sortVoices ()
     {
         Collections.sort(voices, Voices.byOrdinate);
+    }
+
+    //---------//
+    // splitAt //
+    //---------//
+    /**
+     * Split this measure at provided abscissae.
+     *
+     * @param xRefs split abscissa for each staff
+     * @return the populated left new measure, the old (right) measure being half-purged
+     */
+    public Measure splitAt (Map<Staff, Integer> xRefs)
+    {
+        final Measure leftMeasure = new Measure(part);
+
+        // Beam groups
+        for (Iterator<BeamGroup> it = beamGroups.iterator(); it.hasNext();) {
+            BeamGroup beamGroup = it.next();
+            AbstractChordInter chord = beamGroup.getFirstChord();
+
+            if (chord.getCenter().x <= xRefs.get(chord.getTopStaff())) {
+                leftMeasure.addBeamGroup(beamGroup);
+                it.remove();
+            }
+        }
+
+        // Clefs
+        if ((clefs != null) && !clefs.isEmpty()) {
+            for (Iterator<ClefInter> it = clefs.iterator(); it.hasNext();) {
+                ClefInter clef = it.next();
+
+                if (clef.getCenter().x <= xRefs.get(clef.getStaff())) {
+                    leftMeasure.addInter(clef);
+                    it.remove();
+                }
+            }
+
+            if (clefs.isEmpty()) {
+                clefs = null;
+            }
+        }
+
+        // Keys
+        if (hasKeys()) {
+            leftMeasure.keys = keys;
+            keys = null;
+        }
+
+        // Times
+        if (timeSigs != null) {
+            leftMeasure.timeSigs = timeSigs;
+            timeSigs = null;
+        }
+
+        // Head chords
+        if ((headChords != null) && !headChords.isEmpty()) {
+            for (Iterator<HeadChordInter> it = headChords.iterator(); it.hasNext();) {
+                HeadChordInter chord = it.next();
+
+                if (chord.getCenter().x <= xRefs.get(chord.getTopStaff())) {
+                    leftMeasure.addInter(chord);
+                    it.remove();
+                }
+            }
+
+            if (headChords.isEmpty()) {
+                headChords = null;
+            }
+        }
+
+        // Rest chords
+        if ((restChords != null) && !restChords.isEmpty()) {
+            for (Iterator<RestChordInter> it = restChords.iterator(); it.hasNext();) {
+                RestChordInter chord = it.next();
+
+                if (chord.getCenter().x <= xRefs.get(chord.getTopStaff())) {
+                    leftMeasure.addInter(chord);
+                    it.remove();
+                }
+            }
+
+            if (restChords.isEmpty()) {
+                restChords = null;
+            }
+        }
+
+        // Flags
+        if ((flags != null) && !flags.isEmpty()) {
+            for (Iterator<FlagInter> it = flags.iterator(); it.hasNext();) {
+                FlagInter flag = it.next();
+
+                if (flag.getCenter().x <= xRefs.get(flag.getStaff())) {
+                    leftMeasure.addInter(flag);
+                    it.remove();
+                }
+            }
+
+            if (flags.isEmpty()) {
+                flags = null;
+            }
+        }
+
+        // Tuplets
+        if ((tuplets != null) && !tuplets.isEmpty()) {
+            for (Iterator<TupletInter> it = tuplets.iterator(); it.hasNext();) {
+                TupletInter tuplet = it.next();
+
+                if (tuplet.getCenter().x <= xRefs.get(tuplet.getStaff())) {
+                    leftMeasure.addInter(tuplet);
+                    it.remove();
+                }
+            }
+
+            if (tuplets.isEmpty()) {
+                tuplets = null;
+            }
+        }
+
+        // Augmentation dots
+        if ((augDots != null) && !augDots.isEmpty()) {
+            for (Iterator<AugmentationDotInter> it = augDots.iterator(); it.hasNext();) {
+                AugmentationDotInter aug = it.next();
+
+                if (aug.getCenter().x <= xRefs.get(aug.getStaff())) {
+                    leftMeasure.addInter(aug);
+                    it.remove();
+                }
+            }
+
+            if (augDots.isEmpty()) {
+                augDots = null;
+            }
+        }
+
+        return leftMeasure;
     }
 
     //-------------//

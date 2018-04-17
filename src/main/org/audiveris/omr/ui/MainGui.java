@@ -178,6 +178,17 @@ public class MainGui
         return answer == JOptionPane.YES_OPTION;
     }
 
+    //---------------------//
+    // displayConfirmation //
+    //---------------------//
+    @Override
+    public int displayConfirmation (String message,
+                                    String title,
+                                    int optionType)
+    {
+        return JOptionPane.showConfirmDialog(frame, message, title + " - " + appName, optionType);
+    }
+
     //--------------//
     // displayError //
     //--------------//

@@ -27,6 +27,7 @@ import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
@@ -56,8 +57,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -287,7 +290,7 @@ public class MeasureStack
             this.system = system;
 
             // Fill measures
-            final int im = system.getMeasureStacks().indexOf(this);
+            final int im = system.getStacks().indexOf(this);
 
             for (Part part : system.getParts()) {
                 Measure measure = part.getMeasures().get(im);
@@ -395,7 +398,7 @@ public class MeasureStack
     //----------//
     public boolean contains (Point2D point)
     {
-        return system.getMeasureStackAt(point) == this;
+        return system.getStackAt(point) == this;
     }
 
     //--------//
@@ -662,7 +665,7 @@ public class MeasureStack
         SystemInfo nextSystem = system.getFollowingInPage();
 
         if (nextSystem != null) {
-            return nextSystem.getFirstMeasureStack();
+            return nextSystem.getFirstStack();
         } else {
             return null;
         }
@@ -771,10 +774,11 @@ public class MeasureStack
      */
     public MeasureStack getNextSibling ()
     {
-        int index = system.getMeasureStacks().indexOf(this);
+        final List<MeasureStack> stacks = system.getStacks();
+        final int index = stacks.indexOf(this);
 
-        if (index < (system.getMeasureStacks().size() - 1)) {
-            return system.getMeasureStacks().get(index + 1);
+        if (index < (stacks.size() - 1)) {
+            return stacks.get(index + 1);
         }
 
         return null;
@@ -798,7 +802,7 @@ public class MeasureStack
         // No id defined yet
         StringBuilder sb = new StringBuilder();
         sb.append("S").append(system.getId());
-        sb.append("M").append(1 + system.getMeasureStacks().indexOf(this));
+        sb.append("M").append(1 + system.getStacks().indexOf(this));
 
         return sb.toString();
     }
@@ -824,7 +828,7 @@ public class MeasureStack
         SystemInfo precedingSystem = system.getPrecedingInPage();
 
         if (precedingSystem != null) {
-            return precedingSystem.getLastMeasureStack();
+            return precedingSystem.getLastStack();
         } else {
             return null;
         }
@@ -840,10 +844,11 @@ public class MeasureStack
      */
     public MeasureStack getPreviousSibling ()
     {
-        int index = system.getMeasureStacks().indexOf(this);
+        final List<MeasureStack> stacks = system.getStacks();
+        final int index = stacks.indexOf(this);
 
         if (index > 0) {
-            return system.getMeasureStacks().get(index - 1);
+            return stacks.get(index - 1);
         }
 
         return null;
@@ -1278,8 +1283,8 @@ public class MeasureStack
     public void mergeWithRight (MeasureStack rightStack)
     {
         // Merge the measures, part by part
-        for (int iLine = 0; iLine < rightStack.getMeasures().size(); iLine++) {
-            measures.get(iLine).mergeWithRight(rightStack.measures.get(iLine));
+        for (int ip = 0; ip < rightStack.measures.size(); ip++) {
+            measures.get(ip).mergeWithRight(rightStack.measures.get(ip));
         }
 
         // Merge the stacks data
@@ -1594,6 +1599,54 @@ public class MeasureStack
         //                //                }
         //            }
         //        }
+    }
+
+    //----------------//
+    // splitAtBarline //
+    //----------------//
+    /**
+     * Split this stack at the provided system-level barlines.
+     * <p>
+     * We create a new stack on left side of old stack which will become the right stack.
+     * We update old (right) stack on its left side.
+     *
+     * @param systemBarline column of PartBarline, one per system part
+     * @return the newly created stack on the left
+     */
+    public MeasureStack splitAtBarline (List<PartBarline> systemBarline)
+    {
+        final int index = system.getStacks().indexOf(this);
+        final MeasureStack leftStack = new MeasureStack(system);
+        leftStack.left = this.left;
+        leftStack.right = 0;
+        this.left = Integer.MAX_VALUE;
+
+        for (Part part : system.getParts()) {
+            final int ip = part.getId();
+            final PartBarline partBarline = systemBarline.get(ip - 1);
+            Map<Staff, Integer> xRefs = new HashMap<Staff, Integer>();
+
+            for (Staff staff : part.getStaves()) {
+                final int xRef = partBarline.getRightX(part, staff);
+                xRefs.put(staff, xRef);
+                leftStack.right = Math.max(leftStack.right, xRef);
+                this.left = Math.min(this.left, xRef);
+            }
+
+            final Measure measure = getMeasureAt(part);
+            final Measure leftMeasure = measure.splitAt(xRefs);
+            leftMeasure.setStack(leftStack);
+            leftMeasure.setRightPartBarline(partBarline);
+            leftStack.measures.add(leftMeasure);
+
+            // Insert leftMeasure into part, just before the old (right) measure
+            part.addMeasure(index, leftMeasure);
+        }
+
+        // Insert leftStack into system, just before this old (right) stack
+        system.addStack(index, leftStack);
+
+        return leftStack;
     }
 
     //----------//

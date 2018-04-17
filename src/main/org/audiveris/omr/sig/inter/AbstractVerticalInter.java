@@ -52,8 +52,8 @@ public abstract class AbstractVerticalInter
 
     /** Line width. */
     @XmlAttribute
-    @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
-    protected final double width;
+    @XmlJavaTypeAdapter(Jaxb.Double1Adapter.class)
+    protected final Double width;
 
     /** Median line. */
     @XmlElement
@@ -73,9 +73,33 @@ public abstract class AbstractVerticalInter
                                   Shape shape,
                                   GradeImpacts impacts,
                                   Line2D median,
-                                  double width)
+                                  Double width)
     {
         super(glyph, null, shape, impacts);
+        this.median = median;
+        this.width = width;
+
+        if (median != null) {
+            computeArea();
+        }
+    }
+
+    /**
+     * Creates a new {@code AbstractVerticalInter} object.
+     *
+     * @param glyph  the underlying glyph
+     * @param shape  the assigned shape
+     * @param grade  the assignment quality
+     * @param median the median line
+     * @param width  the line width
+     */
+    public AbstractVerticalInter (Glyph glyph,
+                                  Shape shape,
+                                  double grade,
+                                  Line2D median,
+                                  Double width)
+    {
+        super(glyph, null, shape, grade);
         this.median = median;
         this.width = width;
 

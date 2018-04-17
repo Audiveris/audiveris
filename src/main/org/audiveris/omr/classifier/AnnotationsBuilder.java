@@ -577,7 +577,7 @@ public class AnnotationsBuilder
             final Staff staff = ledger.getStaff();
             final Integer index = staff.getLedgerIndex(ledger);
             final int ledgerPitch = Staff.getLedgerPitchPosition(index);
-            final List<Inter> heads = SIGraph.intersectedInters(
+            final List<Inter> heads = Inters.intersectedInters(
                     allHeads,
                     GeoOrder.BY_ABSCISSA,
                     ledgerBox);

@@ -24,10 +24,8 @@ package org.audiveris.omr.ui.view;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.Colors;
-
 import static org.audiveris.omr.ui.selection.MouseMovement.*;
 import static org.audiveris.omr.ui.util.UIPredicates.*;
-
 import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
@@ -343,31 +341,35 @@ public class Rubber
             return;
         }
 
-        if (isRezoomWanted(e)) {
-            updateSize(e);
-            mouseMonitor.rectangleZoomed(rect, RELEASING);
-        } else if (isDragWanted(e)) {
-            Rectangle vr = component.getVisibleRect();
-            rawRect.setBounds(vr.x + (vr.width / 2), vr.y + (vr.height / 2), 0, 0);
-            normalize();
-        } else if (isAdditionWanted(e)) {
-            if (isContextWanted(e)) {
-                mouseMonitor.contextAdded(getCenter(), RELEASING);
-            } else {
-                mouseMonitor.pointAdded(getCenter(), RELEASING);
-            }
-        } else if (rect != null) {
-            if (isContextWanted(e)) {
-                mouseMonitor.contextSelected(getCenter(), RELEASING);
-            } else if ((rect.width != 0) && (rect.height != 0)) {
+        try {
+            if (isRezoomWanted(e)) {
                 updateSize(e);
-                mouseMonitor.rectangleSelected(rect, RELEASING);
-            } else {
-                mouseMonitor.pointSelected(getCenter(), RELEASING);
+                mouseMonitor.rectangleZoomed(rect, RELEASING);
+            } else if (isDragWanted(e)) {
+                Rectangle vr = component.getVisibleRect();
+                rawRect.setBounds(vr.x + (vr.width / 2), vr.y + (vr.height / 2), 0, 0);
+                normalize();
+            } else if (isAdditionWanted(e)) {
+                if (isContextWanted(e)) {
+                    mouseMonitor.contextAdded(getCenter(), RELEASING);
+                } else {
+                    mouseMonitor.pointAdded(getCenter(), RELEASING);
+                }
+            } else if (rect != null) {
+                if (isContextWanted(e)) {
+                    mouseMonitor.contextSelected(getCenter(), RELEASING);
+                } else if ((rect.width != 0) && (rect.height != 0)) {
+                    updateSize(e);
+                    mouseMonitor.rectangleSelected(rect, RELEASING);
+                } else {
+                    mouseMonitor.pointSelected(getCenter(), RELEASING);
+                }
             }
-        }
 
-        e.getComponent().setCursor(Cursor.getDefaultCursor());
+            e.getComponent().setCursor(Cursor.getDefaultCursor());
+        } catch (Exception ex) {
+            logger.warn("Error in mouseReleased " + ex, ex);
+        }
     }
 
     //-----------------//

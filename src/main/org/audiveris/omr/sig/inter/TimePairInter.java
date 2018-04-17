@@ -138,7 +138,7 @@ public class TimePairInter
             bounds = Entities.getBounds(getMembers());
         }
 
-        return bounds;
+        return new Rectangle(bounds);
     }
 
     //--------//

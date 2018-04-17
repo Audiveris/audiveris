@@ -24,6 +24,8 @@ package org.audiveris.omr.score.ui;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.TribesMenu;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
@@ -34,8 +36,10 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.ui.ExtractionMenu;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.GlyphListMenu;
 import org.audiveris.omr.sig.ui.InterListMenu;
+import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 
@@ -45,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -136,9 +141,9 @@ public class EditorMenu
         /** Selected measure. */
         private MeasureStack stack;
 
-        private RhythmAction rhythmAction = new RhythmAction();
+        private final RhythmAction rhythmAction = new RhythmAction();
 
-        private MergeAction mergeAction = new MergeAction();
+        private final MergeAction mergeAction = new MergeAction();
 
         //~ Constructors ---------------------------------------------------------------------------
         public MeasureMenu ()
@@ -146,7 +151,7 @@ public class EditorMenu
             super("Measure");
             add(new JMenuItem(new DumpAction()));
             add(new JMenuItem(rhythmAction));
-            ///add(new JMenuItem(mergeAction));
+            add(new JMenuItem(mergeAction));
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -205,20 +210,36 @@ public class EditorMenu
             public MergeAction ()
             {
                 putValue(NAME, "Merge on right");
-                putValue(SHORT_DESCRIPTION, "Merge this measure with measure on right");
+                putValue(SHORT_DESCRIPTION, "Merge this measure stack with next one on right");
             }
 
             //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                logger.info("MergeAction not yet implemented");
+                logger.info("MergeAction for {}", stack);
+
+                final SystemInfo system = stack.getSystem();
+                final List<Part> parts = system.getParts();
+                final List<Measure> measures = stack.getMeasures();
+
+                // All the StaffBarline pieces
+                List<Inter> toRemove = new ArrayList<Inter>();
+
+                for (int ip = 0; ip < parts.size(); ip++) {
+                    Measure measure = measures.get(ip);
+                    PartBarline pb = measure.getRightPartBarline();
+                    toRemove.addAll(pb.getStaffBarlines());
+                }
+
+                sheet.getInterController()
+                        .removeInters(toRemove, Option.VALIDATED, Option.UPDATE_MEASURES);
             }
 
             private void update ()
             {
                 setEnabled(
-                        (stack == null)
+                        (stack != null) && (stack != stack.getSystem().getLastStack())
                         && (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) >= 0));
             }
         }

@@ -31,9 +31,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.Symbol;
 import org.audiveris.omr.image.Anchored.Anchor;
-
 import static org.audiveris.omr.image.Anchored.Anchor.*;
-
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.ShapeDescriptor;
@@ -63,9 +61,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.util.Dumping;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.StopWatch;
@@ -424,7 +420,7 @@ public class NoteHeadsBuilder
      */
     private List<Inter> getCompetitorsSlice (Area area)
     {
-        List<Inter> rawComps = SIGraph.intersectedInters(
+        List<Inter> rawComps = Inters.intersectedInters(
                 systemCompetitors,
                 GeoOrder.BY_ORDINATE,
                 area);

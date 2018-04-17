@@ -25,6 +25,7 @@ import org.audiveris.omr.score.Page;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
+import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.FlagInter;
@@ -34,12 +35,15 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.RemovalTask;
 import org.audiveris.omr.sig.ui.StackTask;
 import org.audiveris.omr.sig.ui.UITask;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
@@ -77,6 +81,7 @@ public class RhythmsStep
     static {
         forStack = new HashSet<Class>();
         forStack.add(AugmentationDotInter.class);
+        forStack.add(BarlineInter.class);
         forStack.add(BeamHookInter.class);
         forStack.add(BeamInter.class);
         forStack.add(FlagInter.class);
@@ -84,6 +89,7 @@ public class RhythmsStep
         forStack.add(HeadInter.class);
         forStack.add(RestChordInter.class);
         forStack.add(RestInter.class);
+        forStack.add(StaffBarlineInter.class);
         forStack.add(StemInter.class);
         forStack.add(TupletInter.class);
 
@@ -154,11 +160,11 @@ public class RhythmsStep
                 InterTask interTask = (InterTask) task;
                 Inter inter = interTask.getInter();
                 SystemInfo system = inter.getSig().getSystem();
+                Page page = system.getPage();
                 Class classe = inter.getClass();
 
                 if (isImpactedBy(classe, forPage)) {
                     // Reprocess the whole page
-                    Page page = inter.getSig().getSystem().getPage();
                     Impact impact = map.get(page);
 
                     if (impact == null) {
@@ -171,8 +177,7 @@ public class RhythmsStep
                     Point center = inter.getCenter();
 
                     if (center != null) {
-                        MeasureStack stack = system.getMeasureStackAt(center);
-                        Page page = system.getPage();
+                        MeasureStack stack = system.getStackAt(center);
                         Impact impact = map.get(page);
 
                         if (impact == null) {
@@ -180,6 +185,14 @@ public class RhythmsStep
                         }
 
                         impact.onStacks.add(stack);
+
+                        if (inter instanceof BarlineInter || inter instanceof StaffBarlineInter) {
+                            if ((task instanceof RemovalTask && (opKind == OpKind.UNDO))
+                                || (task instanceof AdditionTask && (opKind != OpKind.UNDO))) {
+                                // Add next stack as well
+                                impact.onStacks.add(stack.getNextSibling());
+                            }
+                        }
                     }
                 }
             } else if (task instanceof StackTask) {

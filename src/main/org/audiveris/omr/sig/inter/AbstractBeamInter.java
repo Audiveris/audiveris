@@ -34,7 +34,6 @@ import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Link;
@@ -279,7 +278,7 @@ public abstract class AbstractBeamInter
     //    {
     //        // Check if this beam should belong to an existing group
     //        Point center = getCenter();
-    //        MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+    //        MeasureStack stack = sig.getSystem().getStackAt(center);
     //        stack.getMeasureAt(part)
     //        for (BeamGroup grp : measure.getBeamGroups()) {
     //            for (AbstractBeamInter beam : grp.getBeams()) {
@@ -573,9 +572,12 @@ public abstract class AbstractBeamInter
         final Line2D top = getBorder(VerticalSide.TOP);
         final Line2D bottom = getBorder(VerticalSide.BOTTOM);
         final Scale scale = system.getSheet().getScale();
-        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
-        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
-        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
+        final int xOut = scale.toPixels(
+                BeamStemRelation.getXOutGapMaximum(manual));
+        final int xIn = scale.toPixels(
+                BeamStemRelation.getXInGapMaximum(manual));
+        final int yGap = scale.toPixels(
+                BeamStemRelation.getYGapMaximum(manual));
 
         final Map<HorizontalSide, Link> sideLinks = new EnumMap<HorizontalSide, Link>(
                 HorizontalSide.class);
@@ -604,7 +606,7 @@ public abstract class AbstractBeamInter
                 luBox.add(iBottom.x + xOut, iBottom.y + yGap);
             }
 
-            List<Inter> stems = SIGraph.intersectedInters(systemStems, GeoOrder.NONE, luBox);
+            List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luBox);
 
             for (Inter inter : stems) {
                 StemInter stem = (StemInter) inter;

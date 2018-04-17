@@ -129,6 +129,8 @@ public interface InterVisitor
 
     void visit (SmallFlagInter inter);
 
+    void visit (StaffBarlineInter inter);
+
     void visit (StemInter inter);
 
     void visit (TimeNumberInter inter);

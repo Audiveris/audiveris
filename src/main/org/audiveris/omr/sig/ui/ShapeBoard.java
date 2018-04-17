@@ -194,7 +194,7 @@ public class ShapeBoard
                     ShapeButton button = (ShapeButton) e.getSource();
 
                     // Actually assign the shape
-                    sheet.getInterController().addInter(glyph, button.shape);
+                    sheet.getInterController().assignGlyph(glyph, button.shape);
 
                     // Update history
                     shapeHistory.add(button.shape);
@@ -620,7 +620,7 @@ public class ShapeBoard
                             dndOperation = new DndOperation(
                                     sheet,
                                     zoom,
-                                    SymbolFactory.createManual(shape));
+                                    SymbolFactory.createManual(shape, sheet));
                         }
 
                         dndOperation.enteringTarget();

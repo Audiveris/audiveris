@@ -30,7 +30,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -107,7 +106,7 @@ public class AugmentationDotInter
         super.added();
 
         // Add it to containing measure stack
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
         if (stack != null) {
             stack.addInter(this);
@@ -236,7 +235,7 @@ public class AugmentationDotInter
         final List<Link> links = new ArrayList<Link>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
-        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
+        final MeasureStack dotStack = system.getStackAt(dotCenter);
 
         if (dotStack == null) {
             return links;
@@ -247,7 +246,7 @@ public class AugmentationDotInter
 
         // Relevant dots?
         final List<Inter> firsts = dotStack.filter(
-                SIGraph.intersectedInters(systemDots, GeoOrder.NONE, luBox));
+                Inters.intersectedInters(systemDots, GeoOrder.NONE, luBox));
 
         // Remove the augmentation dot, if any, that corresponds to the glyph at hand
         for (Inter first : firsts) {
@@ -297,7 +296,7 @@ public class AugmentationDotInter
         final List<Link> links = new ArrayList<Link>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
-        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
+        final MeasureStack dotStack = system.getStackAt(dotCenter);
 
         if (dotStack == null) {
             return null;
@@ -307,7 +306,7 @@ public class AugmentationDotInter
         final Rectangle luBox = getNotesLuBox(dotCenter, system);
 
         final List<Inter> chords = dotStack.filter(
-                SIGraph.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA, luBox));
+                Inters.intersectedInters(systemHeadChords, GeoOrder.BY_ABSCISSA, luBox));
         final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(manual));
 
         for (Inter ic : chords) {
@@ -391,7 +390,7 @@ public class AugmentationDotInter
         final List<Link> links = new ArrayList<Link>();
         final Scale scale = system.getSheet().getScale();
         final Point dotCenter = getCenter();
-        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
+        final MeasureStack dotStack = system.getStackAt(dotCenter);
 
         if (dotStack == null) {
             return links;
@@ -402,7 +401,7 @@ public class AugmentationDotInter
 
         // Relevant rests?
         final List<Inter> rests = dotStack.filter(
-                SIGraph.intersectedInters(systemRests, GeoOrder.BY_ABSCISSA, luBox));
+                Inters.intersectedInters(systemRests, GeoOrder.BY_ABSCISSA, luBox));
         final int minDx = scale.toPixels(AugmentationRelation.getXOutGapMinimum(manual));
 
         for (Inter inter : rests) {
@@ -436,7 +435,7 @@ public class AugmentationDotInter
     @Override
     public void remove (boolean extensive)
     {
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
         if (stack != null) {
             stack.removeInter(this);

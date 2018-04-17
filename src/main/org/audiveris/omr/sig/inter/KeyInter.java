@@ -118,6 +118,7 @@ public class KeyInter
                      Shape shape)
     {
         this(grade, (shape != null) ? valueOf(shape) : 0);
+        this.shape = shape;
     }
 
     /**
@@ -245,7 +246,7 @@ public class KeyInter
             bounds = Entities.getBounds(getMembers());
         }
 
-        return bounds;
+        return new Rectangle(bounds);
     }
 
     //-----------//

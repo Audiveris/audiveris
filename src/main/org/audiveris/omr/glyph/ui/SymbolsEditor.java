@@ -537,7 +537,7 @@ public class SymbolsEditor
             if (viewParams.isErrorPainting()) {
                 // Use specific background for stacks in error
                 for (SystemInfo system : sheet.getSystems()) {
-                    for (MeasureStack stack : system.getMeasureStacks()) {
+                    for (MeasureStack stack : system.getStacks()) {
                         if (stack.isAbnormal()) {
                             stack.render(g, Colors.STACK_ABNORMAL);
                         }

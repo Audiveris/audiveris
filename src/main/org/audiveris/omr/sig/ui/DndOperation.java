@@ -45,6 +45,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 /**
  * Class {@code DndOperation} handles one DnD operation with a moving inter.
@@ -131,7 +132,7 @@ public class DndOperation
                 dim.height);
         ghost.setBounds(bounds);
 
-        sheet.getInterController().dropInter(ghost, center);
+        sheet.getInterController().addInters(Arrays.asList(ghost));
 
         logger.debug("Dropped {} at {}", this, center);
     }

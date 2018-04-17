@@ -1128,6 +1128,9 @@ public abstract class AbstractInter
             logger.error("Inter referencing a non-registered glyph: " + this + " glyph: " + glyph);
         }
 
+        // Make sure bounds exist
+        getBounds();
+
         if (sig == null) {
             logger.error("Marshalling an inter with no sig " + this);
         }

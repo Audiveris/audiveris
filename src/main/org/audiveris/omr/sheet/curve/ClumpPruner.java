@@ -28,6 +28,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.HorizontalSide;
@@ -419,7 +420,7 @@ public class ClumpPruner
                 Rectangle box = bounds.get(side);
 
                 // Filter via box intersection
-                chords.put(side, SIGraph.intersectedInters(sysChords, null, box));
+                chords.put(side, Inters.intersectedInters(sysChords, null, box));
             }
         }
 

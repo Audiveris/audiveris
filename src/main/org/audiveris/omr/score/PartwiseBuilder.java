@@ -25,10 +25,14 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.Shape.CODA;
 import static org.audiveris.omr.glyph.Shape.SEGNO;
+
 import org.audiveris.omr.math.Rational;
+
 import static org.audiveris.omr.score.MusicXML.*;
+
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
@@ -36,7 +40,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffBarline;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -46,7 +50,9 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
+
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.QUARTER_DURATION;
+
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -79,12 +85,18 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
+
 import static org.audiveris.omr.text.TextRole.*;
+
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
 import org.audiveris.omr.util.OmrExecutors;
+
 import static org.audiveris.omr.util.VerticalSide.*;
+
 import org.audiveris.proxymusic.AboveBelow;
 import org.audiveris.proxymusic.Accidental;
 import org.audiveris.proxymusic.Articulations;
@@ -609,16 +621,16 @@ public class PartwiseBuilder
      */
     private PartBarline getBarlineOnLeft (Measure measure)
     {
-        if (measure.getLeftBarline() != null) {
-            return measure.getLeftBarline();
+        if (measure.getLeftPartBarline() != null) {
+            return measure.getLeftPartBarline();
         } else if (isFirst.measure) {
-            return measure.getPart().getLeftBarline();
+            return measure.getPart().getLeftPartBarline();
         } else {
             final Measure prevMeasure = measure.getPrecedingInSystem();
 
             if (prevMeasure != null) {
                 if (!prevMeasure.isDummy()) {
-                    return prevMeasure.getRightBarline();
+                    return prevMeasure.getRightPartBarline();
                 }
             }
         }
@@ -911,13 +923,14 @@ public class PartwiseBuilder
                     : partBarline.getEnding(
                             (location == RightLeftMiddle.LEFT) ? LEFT : RIGHT);
             final String endingValue = (ending != null) ? ending.getValue() : null;
-            String endingNumber = (ending != null) ? ending.getExportedNumber() : null;
+            String endingNumber = (ending != null) ? ending.getExportedNumber()
+                    : null;
 
             if (endingNumber == null) {
                 endingNumber = "99"; // Dummy integer value to mean: unknown
             }
 
-            if ((partBarline == current.measure.getLeftBarline())
+            if ((partBarline == current.measure.getLeftPartBarline())
                 || (location == RightLeftMiddle.MIDDLE)
                 || ((location == RightLeftMiddle.RIGHT)
                     && (stack.isRepeat(RIGHT) || !fermatas.isEmpty() || (ending != null)
@@ -1044,7 +1057,9 @@ public class PartwiseBuilder
                 Part part = current.measure.getPart();
                 Measure topMeasure = current.measure.getStack().getFirstMeasure();
                 PartBarline topPartBarline = getBarlineOnLeft(topMeasure);
-                StaffBarline topBarline = topPartBarline.getBarline(part, part.getFirstStaff());
+                StaffBarlineInter topBarline = topPartBarline.getStaffBarline(
+                        part,
+                        part.getFirstStaff());
 
                 for (Inter marker : topBarline.getRelatedInters(MarkerBarRelation.class)) {
                     processMarker((MarkerInter) marker);
@@ -1580,7 +1595,7 @@ public class PartwiseBuilder
             //
             //            // Mid barline?
             //            // TODO: insert this in proper location between notes???
-            //            process(measure.getMidBarline(), RightLeftMiddle.MIDDLE);
+            //            process(measure.getMidPartBarline(), RightLeftMiddle.MIDDLE);
             //
             // Divisions?
             if (isPageFirstMeasure) {
@@ -1720,7 +1735,7 @@ public class PartwiseBuilder
 
             // Right Barline
             if (!measure.isDummy()) {
-                processBarline(measure.getRightBarline(), RightLeftMiddle.RIGHT);
+                processBarline(measure.getRightPartBarline(), RightLeftMiddle.RIGHT);
             }
         } catch (Exception ex) {
             logger.warn("Error visiting " + measure + " in " + current.page, ex);

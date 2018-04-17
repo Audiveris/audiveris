@@ -37,7 +37,6 @@ import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffBarline;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -49,6 +48,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.util.Dumping;
@@ -211,7 +211,7 @@ public class EndingsBuilder
         box.grow(params.maxBarShift, 0);
         box.height = staff.getLastLine().yAt(end.x) - end.y;
 
-        List<Inter> bars = SIGraph.intersectedInters(systemBars, GeoOrder.NONE, box);
+        List<Inter> bars = Inters.intersectedInters(systemBars, GeoOrder.NONE, box);
         Collections.sort(bars, Inters.byAbscissa);
 
         if (bars.isEmpty()) {
@@ -365,18 +365,18 @@ public class EndingsBuilder
 
             if (leftBar == null) {
                 // Check the special case of a staff start (with header?, with no barline?)
-                MeasureStack firstStack = system.getFirstMeasureStack();
+                MeasureStack firstStack = system.getFirstStack();
                 Measure firstMeasure = firstStack.getMeasureAt(staff);
 
                 if (leftEnd.x >= firstMeasure.getAbscissa(RIGHT, staff)) {
                     continue; // segment starts after end of first measure
                 }
 
-                PartBarline partLine = staff.getPart().getLeftBarline();
+                PartBarline partLine = staff.getPart().getLeftPartBarline();
 
                 if (partLine != null) {
-                    StaffBarline staffLine = partLine.getBarline(staff.getPart(), staff);
-                    leftBar = staffLine.getBars().get(staffLine.getBars().size() - 1);
+                    StaffBarlineInter staffLine = partLine.getStaffBarline(staff.getPart(), staff);
+                    leftBar = staffLine.getRightBar();
                     leftRel.setGaps(0, 0, false);
                 }
             } else {

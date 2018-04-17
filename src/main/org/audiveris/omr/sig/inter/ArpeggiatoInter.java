@@ -29,7 +29,6 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -200,7 +199,7 @@ public class ArpeggiatoInter
         luBox.x += luBox.width;
         luBox.width = system.getSheet().getScale().toPixels(constants.areaDx);
 
-        final List<Inter> chords = SIGraph.intersectedInters(
+        final List<Inter> chords = Inters.intersectedInters(
                 systemHeadChords,
                 GeoOrder.BY_ABSCISSA,
                 luBox);

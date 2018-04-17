@@ -843,7 +843,7 @@ public class BeamsBuilder
                 3 * height);
         beam.addAttachment("=", luArea);
 
-        List<Inter> others = SIGraph.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
+        List<Inter> others = Inters.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
 
         others.remove(beam); // Safer
 
@@ -1271,7 +1271,7 @@ public class BeamsBuilder
         Area luArea = (maxGapDx != null) ? sideAreaOf(null, beam, side, 0, maxGapDx, 0)
                 : sideAreaOf("-", beam, side, 0, params.maxSideBeamDx, 0);
 
-        List<Inter> others = sig.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
+        List<Inter> others = Inters.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
         others.remove(beam); // Safer
 
         if (!others.isEmpty()) {
@@ -1459,7 +1459,7 @@ public class BeamsBuilder
     {
         // First filtering using rough intersection (area / rectangle)
         Area itemCore = item.getCoreArea();
-        List<Inter> beams = sig.intersectedInters(rawSystemBeams, GeoOrder.NONE, itemCore);
+        List<Inter> beams = Inters.intersectedInters(rawSystemBeams, GeoOrder.NONE, itemCore);
 
         if (beams.isEmpty()) {
             return false;

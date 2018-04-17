@@ -62,7 +62,7 @@ public class BarConnectorInter
      */
     private BarConnectorInter ()
     {
-        super(null, null, null, null, 0);
+        super(null, null, null, null, null);
         this.connection = null;
     }
 

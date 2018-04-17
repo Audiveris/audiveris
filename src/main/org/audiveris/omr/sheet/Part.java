@@ -198,6 +198,15 @@ public class Part
         measures.add(measure);
     }
 
+    //------------//
+    // addmeasure //
+    //------------//
+    public void addMeasure (int index,
+                            Measure measure)
+    {
+        measures.add(index, measure);
+    }
+
     //---------//
     // addSlur //
     //---------//
@@ -487,15 +496,15 @@ public class Part
         return staves.get(staves.size() - 1);
     }
 
-    //----------------//
-    // getLeftBarline //
-    //----------------//
+    //--------------------//
+    // getLeftPartBarline //
+    //--------------------//
     /**
-     * Get the barline that starts the part.
+     * Get the PartBarline that starts the part.
      *
-     * @return barline the starting bar line (which may be null)
+     * @return the starting PartBarline (which may be null)
      */
-    public PartBarline getLeftBarline ()
+    public PartBarline getLeftPartBarline ()
     {
         return leftBarline;
     }
@@ -536,7 +545,7 @@ public class Part
 
         if ((point.x >= staff.getAbscissa(LEFT)) && (point.x <= staff.getAbscissa(RIGHT))) {
             for (Measure measure : measures) {
-                PartBarline barline = measure.getRightBarline();
+                PartBarline barline = measure.getRightPartBarline();
 
                 if ((barline == null) || (point.x <= barline.getRightX(this, staff))) {
                     return measure;
@@ -553,11 +562,11 @@ public class Part
     /**
      * Report the collection of measures.
      *
-     * @return the measure list, which may be empty but not null
+     * @return an unmodifiable view on measures
      */
     public List<Measure> getMeasures ()
     {
-        return measures;
+        return Collections.unmodifiableList(measures);
     }
 
     //---------//
@@ -740,6 +749,14 @@ public class Part
         }
     }
 
+    //---------------//
+    // removeMeasure //
+    //---------------//
+    public void removeMeasure (Measure measure)
+    {
+        measures.remove(measure);
+    }
+
     //------------//
     // removeSLur //
     //------------//
@@ -791,15 +808,15 @@ public class Part
         }
     }
 
-    //----------------//
-    // setLeftBarline //
-    //----------------//
+    //--------------------//
+    // setLeftPartBarline //
+    //--------------------//
     /**
-     * Set the barline that starts the part.
+     * Set the PartBarline that starts the part.
      *
-     * @param leftBarline the starting barline
+     * @param leftBarline the starting PartBarline
      */
-    public void setLeftBarline (PartBarline leftBarline)
+    public void setLeftPartBarline (PartBarline leftBarline)
     {
         this.leftBarline = leftBarline;
     }

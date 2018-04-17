@@ -120,11 +120,11 @@ public class SystemInfo
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean indented;
 
-    /** Measure stacks in this system. */
+    /** Horizontal sequence of measure stacks in this system. */
     @XmlElement(name = "stack")
     private final List<MeasureStack> stacks = new ArrayList<MeasureStack>();
 
-    /** Real parts in this system (no dummy parts included). */
+    /** Vertical sequence of real parts in this system (no dummy parts included). */
     @XmlElement(name = "part")
     private final List<Part> parts = new ArrayList<Part>();
 
@@ -250,6 +250,34 @@ public class SystemInfo
         parts.add(partInfo);
     }
 
+    //----------//
+    // addStack //
+    //----------//
+    /**
+     * Add stack at end of system stacks
+     *
+     * @param stack stack to add
+     */
+    public void addStack (MeasureStack stack)
+    {
+        stacks.add(stack);
+    }
+
+    //----------//
+    // addStack //
+    //----------//
+    /**
+     * Add stack at provided index
+     *
+     * @param index provided index in system stacks
+     * @param stack stack to add
+     */
+    public void addStack (int index,
+                          MeasureStack stack)
+    {
+        stacks.add(index, stack);
+    }
+
     //-------------//
     // afterReload //
     //-------------//
@@ -263,6 +291,29 @@ public class SystemInfo
             // Doing so, measure chords can determine which staves they belong to.
             for (Staff staff : staves) {
                 staff.afterReload();
+            }
+
+            {
+                // Support for OldStaffBarline (in part left PartBarline and measures PartBarlines)
+                boolean upgraded = false;
+
+                for (Part part : parts) {
+                    final PartBarline lpb = part.getLeftPartBarline();
+
+                    if (lpb != null) {
+                        upgraded |= lpb.upgradeOldStuff();
+                    }
+
+                    for (Measure measure : part.getMeasures()) {
+                        for (PartBarline pb : measure.getContainedPartBarlines()) {
+                            upgraded |= pb.upgradeOldStuff();
+                        }
+                    }
+                }
+
+                if (upgraded) {
+                    sheet.getStub().setModified(true);
+                }
             }
 
             for (Part part : parts) {
@@ -418,23 +469,6 @@ public class SystemInfo
         return deltaY;
     }
 
-    //----------------------//
-    // getFirstMeasureStack //
-    //----------------------//
-    /**
-     * Report the first measure stack in this part.
-     *
-     * @return the first measure stack
-     */
-    public MeasureStack getFirstMeasureStack ()
-    {
-        if (stacks.isEmpty()) {
-            return null;
-        }
-
-        return stacks.get(0);
-    }
-
     //--------------//
     // getFirstPart //
     //--------------//
@@ -452,6 +486,23 @@ public class SystemInfo
         }
 
         return null;
+    }
+
+    //---------------//
+    // getFirstStack //
+    //---------------//
+    /**
+     * Report the first measure stack in this part.
+     *
+     * @return the first measure stack
+     */
+    public MeasureStack getFirstStack ()
+    {
+        if (stacks.isEmpty()) {
+            return null;
+        }
+
+        return stacks.get(0);
     }
 
     //---------------//
@@ -551,15 +602,15 @@ public class SystemInfo
         return getPage().getSystems().indexOf(this);
     }
 
-    //---------------------//
-    // getLastMeasureStack //
-    //---------------------//
+    //--------------//
+    // getLastStack //
+    //--------------//
     /**
      * Report the last measure stack in this part.
      *
      * @return the last measure stack
      */
-    public MeasureStack getLastMeasureStack ()
+    public MeasureStack getLastStack ()
     {
         if (stacks.isEmpty()) {
             return null;
@@ -609,44 +660,6 @@ public class SystemInfo
         sb.append("S").append(id).append(" ");
 
         return sb.toString();
-    }
-
-    //-------------------//
-    // getMeasureStackAt //
-    //-------------------//
-    /**
-     * Report the measure stack that contains the provided point.
-     *
-     * @param point the provided point
-     * @return the containing measure stack or null if none
-     */
-    public MeasureStack getMeasureStackAt (Point2D point)
-    {
-        final Staff staff = getStavesAround(point).get(0);
-        final double x = point.getX();
-
-        for (MeasureStack stack : stacks) {
-            final Measure measure = stack.getMeasureAt(staff);
-
-            if ((measure != null)
-                && (x >= measure.getAbscissa(LEFT, staff))
-                && (x <= measure.getAbscissa(RIGHT, staff))) {
-                return stack;
-            }
-        }
-
-        return null;
-    }
-
-    //------------------//
-    // getMeasureStacks //
-    //------------------//
-    /**
-     * @return the measureStacks
-     */
-    public List<MeasureStack> getMeasureStacks ()
-    {
-        return stacks;
     }
 
     //------------------------------//
@@ -905,6 +918,44 @@ public class SystemInfo
     public Skew getSkew ()
     {
         return sheet.getSkew();
+    }
+
+    //------------//
+    // getStackAt //
+    //------------//
+    /**
+     * Report the measure stack that contains the provided point.
+     *
+     * @param point the provided point
+     * @return the containing measure stack or null if none
+     */
+    public MeasureStack getStackAt (Point2D point)
+    {
+        final Staff staff = getStavesAround(point).get(0);
+        final double x = point.getX();
+
+        for (MeasureStack stack : stacks) {
+            final Measure measure = stack.getMeasureAt(staff);
+
+            if ((measure != null)
+                && (x >= measure.getAbscissa(LEFT, staff))
+                && (x <= measure.getAbscissa(RIGHT, staff))) {
+                return stack;
+            }
+        }
+
+        return null;
+    }
+
+    //-----------//
+    // getStacks //
+    //-----------//
+    /**
+     * @return a unmodifiable view on stacks
+     */
+    public List<MeasureStack> getStacks ()
+    {
+        return Collections.unmodifiableList(stacks);
     }
 
     //-------------------//
@@ -1192,6 +1243,25 @@ public class SystemInfo
                 }
             }
         }
+    }
+
+    //-------------//
+    // removeStack //
+    //-------------//
+    /**
+     * Remove the provided stack as well as its measures from system parts.
+     *
+     * @param stack the stack to remove
+     */
+    public void removeStack (MeasureStack stack)
+    {
+        for (Measure measure : stack.getMeasures()) {
+            // Part O--- Measure
+            measure.getPart().removeMeasure(measure);
+        }
+
+        // System O--- Stack
+        stacks.remove(stack);
     }
 
     //---------//

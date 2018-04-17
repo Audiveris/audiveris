@@ -31,7 +31,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffBarline;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.BarlineInter;
@@ -40,7 +40,9 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -101,8 +103,9 @@ public class MeasuresBuilder
      * Parts and physical BarlineInter's have been identified within the system.
      * Each staff has its BarlineInter's attached.
      * <p>
-     * To build the logical StaffBarline's, PartBarline's and Measures, the strategy is: <ol>
-     * <li>Staff by staff, gather barlines into groups of closely located barlines.</li>
+     * To build the logical StaffBarlineInter's, PartBarline's and Measures, the strategy is: <ol>
+     * <li>Staff by staff, gather barlines into groups of closely located barlines
+     * (StaffBarlineInter's).</li>
      * <li>Check and adjust consistency across all staves within the system</li>
      * <li>In each part, browsing the sequence of groups in first staff which is now the reference,
      * allocate the corresponding PartBarline's and measures.</li>
@@ -133,8 +136,8 @@ public class MeasuresBuilder
             buildPartMeasures(part);
         }
 
-        // Purge courtesy measure if any
-        purgeCourtesyMeasure();
+        // Empty courtesy measure if any
+        emptyCourtesyMeasure();
     }
 
     //-------------//
@@ -176,7 +179,7 @@ public class MeasuresBuilder
     // buildPartMeasures //
     //-------------------//
     /**
-     * Here, we build the sequence of PartBarlines in parallel with the StaffBarline
+     * Here, we build the sequence of PartBarlines in parallel with the StaffBarlineInter
      * sequence of each staff within part.
      *
      * @param part the containing part
@@ -184,6 +187,7 @@ public class MeasuresBuilder
      */
     private void buildPartMeasures (Part part)
     {
+        final SIGraph sig = system.getSig();
         final Staff topStaff = part.getFirstStaff();
         final List<Group> topGroups = staffMap.get(topStaff);
         final boolean noRightBar = topStaff.getSideBarline(HorizontalSide.RIGHT) == null;
@@ -201,13 +205,13 @@ public class MeasuresBuilder
 
                 final int im = part.getMeasures().size() - 1;
 
-                while (system.getMeasureStacks().size() <= im) {
-                    system.getMeasureStacks().add(new MeasureStack(system));
+                while (system.getStacks().size() <= im) {
+                    system.addStack(new MeasureStack(system));
                 }
             }
 
             if ((measure != null) && (leftBarPending != null)) {
-                measure.setLeftBarline(leftBarPending);
+                measure.setLeftPartBarline(leftBarPending);
                 leftBarPending = null;
             }
 
@@ -216,20 +220,22 @@ public class MeasuresBuilder
                 PartBarline partBar = new PartBarline();
 
                 for (Staff s : part.getStaves()) {
-                    StaffBarline staffBar = new StaffBarline();
+                    StaffBarlineInter staffBar = new StaffBarlineInter();
+                    staffBar.setStaff(s);
+                    sig.addVertex(staffBar);
                     partBar.addStaffBarline(staffBar);
 
                     Group group = staffMap.get(s).get(ig);
 
                     for (int i = 0; i < Math.min(2, topGroup.size()); i++) {
-                        staffBar.addBar(group.get(i));
+                        staffBar.addMember(group.get(i));
                     }
                 }
 
                 if (measure == null) {
-                    part.setLeftBarline(partBar);
+                    part.setLeftPartBarline(partBar);
                 } else {
-                    measure.setRightBarline(partBar);
+                    measure.setRightPartBarline(partBar);
                 }
 
                 if (topGroup.size() > 2) {
@@ -238,13 +244,15 @@ public class MeasuresBuilder
                     partBar = new PartBarline();
 
                     for (Staff s : part.getStaves()) {
-                        StaffBarline staffBar = new StaffBarline();
+                        StaffBarlineInter staffBar = new StaffBarlineInter();
+                        staffBar.setStaff(s);
+                        sig.addVertex(staffBar);
                         partBar.addStaffBarline(staffBar);
 
                         Group group = staffMap.get(s).get(ig);
 
                         for (int i = topGroup.size() - 2; i < topGroup.size(); i++) {
-                            staffBar.addBar(group.get(i));
+                            staffBar.addMember(group.get(i));
                         }
                     }
 
@@ -254,9 +262,59 @@ public class MeasuresBuilder
 
             if (measure != null) {
                 final int im = part.getMeasures().size() - 1;
-                MeasureStack stack = system.getMeasureStacks().get(im);
+                MeasureStack stack = system.getStacks().get(im);
                 measure.setStack(stack);
                 stack.addMeasure(measure);
+            }
+        }
+    }
+
+    //----------------------//
+    // emptyCourtesyMeasure //
+    //----------------------//
+    /**
+     * Remove head notes in very short ending measure (courtesy measure) if any.
+     */
+    private void emptyCourtesyMeasure ()
+    {
+        MeasureStack lastStack = system.getLastStack();
+        Measure topMeasure = lastStack.getFirstMeasure();
+
+        // Check it is a short measure with no ending barline
+        if (topMeasure.getRightPartBarline() != null) {
+            return;
+        }
+
+        int minStandardWidth = system.getSheet().getScale().toPixels(constants.minStandardWidth);
+
+        if (topMeasure.getWidth() >= minStandardWidth) {
+            return;
+        }
+
+        // Min abscissa value for the stack
+        int minX = Integer.MAX_VALUE;
+
+        for (Staff staff : system.getStaves()) {
+            Measure measure = lastStack.getMeasureAt(staff);
+            minX = Math.min(minX, measure.getAbscissa(LEFT, staff));
+        }
+
+        // Look for heads in courtesy stack
+        for (Inter inter : system.getSig().inters(HeadInter.class)) {
+            if (inter.getCenter().x < minX) {
+                continue;
+            }
+
+            HeadInter head = (HeadInter) inter;
+            Part part = head.getPart();
+            Measure measure = part.getMeasureAt(head.getCenter());
+
+            if (measure.getStack() == lastStack) {
+                if (logger.isDebugEnabled() || head.isVip()) {
+                    logger.info("Courtesy {} purging {}", lastStack, head);
+                }
+
+                head.remove();
             }
         }
     }
@@ -334,56 +392,6 @@ public class MeasuresBuilder
                     logger.info("{}deleting   half column:{}", prefix, column);
                     column.delete();
                 }
-            }
-        }
-    }
-
-    //----------------------//
-    // purgeCourtesyMeasure //
-    //----------------------//
-    /**
-     * Purge head notes in very short ending measure (courtesy measure) if any.
-     */
-    private void purgeCourtesyMeasure ()
-    {
-        MeasureStack lastStack = system.getLastMeasureStack();
-        Measure topMeasure = lastStack.getFirstMeasure();
-
-        // Check it is a short measure with no ending barline
-        if (topMeasure.getRightBarline() != null) {
-            return;
-        }
-
-        int minStandardWidth = system.getSheet().getScale().toPixels(constants.minStandardWidth);
-
-        if (topMeasure.getWidth() >= minStandardWidth) {
-            return;
-        }
-
-        // Min abscissa value for the stack
-        int minX = Integer.MAX_VALUE;
-
-        for (Staff staff : system.getStaves()) {
-            Measure measure = lastStack.getMeasureAt(staff);
-            minX = Math.min(minX, measure.getAbscissa(LEFT, staff));
-        }
-
-        // Look for heads in courtesy stack
-        for (Inter inter : system.getSig().inters(HeadInter.class)) {
-            if (inter.getCenter().x < minX) {
-                continue;
-            }
-
-            HeadInter head = (HeadInter) inter;
-            Part part = head.getPart();
-            Measure measure = part.getMeasureAt(head.getCenter());
-
-            if (measure.getStack() == lastStack) {
-                if (logger.isDebugEnabled() || head.isVip()) {
-                    logger.info("Courtesy {} purging {}", lastStack, head);
-                }
-
-                head.remove();
             }
         }
     }

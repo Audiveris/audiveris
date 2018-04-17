@@ -79,10 +79,6 @@ public class StaffHeader
 
     /** Time-sig found, if any. */
     @XmlIDREF
-//    @XmlElementRefs({
-//        @XmlElementRef(type = TimePairInter.class)
-//        , @XmlElementRef(type = TimeWholeInter.class)
-//    })
     public AbstractTimeInter time;
 
     // Transient data

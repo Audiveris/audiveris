@@ -45,6 +45,7 @@ import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
@@ -66,6 +67,7 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.Area;
+import java.util.List;
 
 /**
  * Class {@code PageCleaner} erases selected inter instances on the provided graphics
@@ -301,6 +303,20 @@ public abstract class PageCleaner
     public void visit (StemInter inter)
     {
         processGlyph(inter.getGlyph());
+    }
+
+    @Override
+    public void visit (StaffBarlineInter inter)
+    {
+        List<Inter> members = inter.getMembers();
+
+        if (!members.isEmpty()) {
+            for (Inter member : members) {
+                member.accept(this);
+            }
+        } else if (inter.getShape() != null) {
+            visit((Inter) inter);
+        }
     }
 
     @Override

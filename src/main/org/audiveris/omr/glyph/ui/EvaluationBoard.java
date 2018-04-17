@@ -427,7 +427,7 @@ public class EvaluationBoard
                     Shape shape = Shape.valueOf(str);
 
                     // Actually assign the shape
-                    interController.addInter(glyph, shape);
+                    interController.assignGlyph(glyph, shape);
 
                     ///sheet.getStub().getBook().getSampleRepository().addSample(shape, glyph, sheet);
                 }

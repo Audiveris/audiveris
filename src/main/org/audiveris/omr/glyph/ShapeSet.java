@@ -305,8 +305,8 @@ public class ShapeSet
             LEFT_REPEAT_SIGN,
             Colors.SCORE_FRAME,
             shapesOf(
-                    THICK_BARLINE,
                     THIN_BARLINE,
+                    THICK_BARLINE,
                     DOUBLE_BARLINE,
                     FINAL_BARLINE,
                     REVERSE_FINAL_BARLINE,

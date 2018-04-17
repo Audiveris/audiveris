@@ -964,7 +964,7 @@ public class BarsRetriever
                                 peak.isSet(THICK) ? Shape.THICK_BARLINE : Shape.THIN_BARLINE,
                                 peak.getImpacts(),
                                 median,
-                                peak.getWidth());
+                                (double) peak.getWidth());
 
                         for (HorizontalSide side : HorizontalSide.values()) {
                             if (peak.isStaffEnd(side)) {

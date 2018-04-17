@@ -31,7 +31,6 @@ import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -274,7 +273,7 @@ public abstract class AbstractFlagInter
             glyph.addAttachment("fs", luBox);
         }
 
-        List<Inter> stems = SIGraph.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
 
         for (Inter inter : stems) {
             StemInter stem = (StemInter) inter;

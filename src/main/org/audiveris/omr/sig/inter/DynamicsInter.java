@@ -31,7 +31,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -255,7 +254,7 @@ public class DynamicsInter
 
         // Look for a suitable chord related to this dynamics element
         final Point center = getCenter();
-        final MeasureStack stack = system.getMeasureStackAt(center);
+        final MeasureStack stack = system.getStackAt(center);
 
         if (stack == null) {
             return null;
@@ -351,7 +350,7 @@ public class DynamicsInter
         final int cplLength = cplString.length();
 
         // Look for relevant candidate for the complex at hand
-        for (Inter inter : SIGraph.intersectedInters(dynamics, GeoOrder.NONE, cplBox)) {
+        for (Inter inter : Inters.intersectedInters(dynamics, GeoOrder.NONE, cplBox)) {
             final DynamicsInter shorter = (DynamicsInter) inter;
             final String shortString = shorter.getSymbolString();
 

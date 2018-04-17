@@ -27,6 +27,7 @@ import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
 import static org.audiveris.omr.glyph.ShapeSet.*;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.header.TimeBuilder;
@@ -68,11 +69,13 @@ import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallFlagInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 
@@ -190,11 +193,13 @@ public class SymbolFactory
      * Create a manual inter instance to handle the provided shape.
      *
      * @param shape provided shape
+     * @param sheet related sheet
      * @return the created manual inter or null
      */
-    public static Inter createManual (Shape shape)
+    public static Inter createManual (Shape shape,
+                                      Sheet sheet)
     {
-        Inter ghost = doCreateManual(shape);
+        Inter ghost = doCreateManual(shape, sheet);
 
         if (ghost != null) {
             ghost.setManual(true);
@@ -554,9 +559,11 @@ public class SymbolFactory
      * This method is meant to address all shapes for which a manual inter can be created.
      *
      * @param shape provided shape
+     * @param sheet related sheet
      * @return the created ghost inter or null
      */
-    private static Inter doCreateManual (Shape shape)
+    private static Inter doCreateManual (Shape shape,
+                                         Sheet sheet)
     {
         final double GRADE = 1.0; // Grade value for any manual shape
 
@@ -568,7 +575,25 @@ public class SymbolFactory
             return null;
 
         // Brace, bracket TODO ???
-        // Barlines TODO ???
+        //
+        // Barlines
+        case THIN_BARLINE:
+        case THICK_BARLINE:
+
+            if (sheet.getStub().getLatestStep().compareTo(Step.MEASURES) < 0) {
+                return new BarlineInter(null, shape, GRADE, null, null);
+            } else {
+                return new StaffBarlineInter(shape, GRADE);
+            }
+
+        case DOUBLE_BARLINE:
+        case FINAL_BARLINE:
+        case REVERSE_FINAL_BARLINE:
+        case LEFT_REPEAT_SIGN:
+        case RIGHT_REPEAT_SIGN:
+        case BACK_TO_BACK_REPEAT_SIGN:
+            return new StaffBarlineInter(shape, GRADE);
+
         //
         // Beams
         case BEAM:
@@ -901,7 +926,7 @@ public class SymbolFactory
         });
 
         for (Inter inter : systemTimes) {
-            MeasureStack stack = system.getMeasureStackAt(inter.getCenter());
+            MeasureStack stack = system.getStackAt(inter.getCenter());
             Set<Inter> stackSet = timeMap.get(stack);
 
             if (stackSet == null) {

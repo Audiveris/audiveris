@@ -21,13 +21,17 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.sig.inter.Inter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 /**
  * Class {@code UITaskList} is a sequence of {@link UITask} instances, meant to
@@ -41,9 +45,24 @@ public class UITaskList
 
     private static final Logger logger = LoggerFactory.getLogger(UITaskList.class);
 
+    //~ Enumerations -------------------------------------------------------------------------------
+    /** Possible options. */
+    public static enum Option
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        /** User has validated the choice. */
+        VALIDATED,
+        /** Measures are to be updated. */
+        UPDATE_MEASURES;
+    }
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Sequence of related actions. */
     private final List<UITask> list = new ArrayList<UITask>();
+
+    /** Options for the actions list. */
+    private final Set<Option> options = new HashSet<Option>();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -80,12 +99,54 @@ public class UITaskList
         list.add(task);
     }
 
+    //-----------//
+    // getInters //
+    //-----------//
+    /**
+     * Report the list of Inters found in seq, that match the provided classes if any.
+     *
+     * @param classes provided inter classes
+     * @return the matching inters in seq
+     */
+    public List<Inter> getInters (Class... classes)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+
+        for (UITask task : list) {
+            if (task instanceof InterTask) {
+                final Inter inter = ((InterTask) task).getInter();
+
+                if (classes == null) {
+                    found.add(inter);
+                } else {
+                    final Class interClass = inter.getClass();
+
+                    for (Class cl : classes) {
+                        if (cl.isAssignableFrom(interClass)) {
+                            found.add(inter);
+                        }
+                    }
+                }
+            }
+        }
+
+        return found;
+    }
+
     //----------//
     // getTasks //
     //----------//
     public List<UITask> getTasks ()
     {
         return list;
+    }
+
+    //-------------//
+    // isOptionSet //
+    //-------------//
+    public boolean isOptionSet (Option key)
+    {
+        return options.contains(key);
     }
 
     //-----------//
@@ -114,6 +175,14 @@ public class UITaskList
         }
     }
 
+    //------------//
+    // setOptions //
+    //------------//
+    public void setOptions (Option... keys)
+    {
+        options.addAll(Arrays.asList(keys));
+    }
+
     //----------//
     // toString //
     //----------//
@@ -129,5 +198,13 @@ public class UITaskList
         sb.append("]");
 
         return sb.toString();
+    }
+
+    //--------------//
+    // unsetOptions //
+    //--------------//
+    public void unsetOptions (Option... keys)
+    {
+        options.removeAll(Arrays.asList(keys));
     }
 }

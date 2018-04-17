@@ -299,6 +299,11 @@ public abstract class AbstractInterVisitor
     }
 
     @Override
+    public void visit (StaffBarlineInter inter)
+    {
+    }
+
+    @Override
     public void visit (StemInter inter)
     {
     }

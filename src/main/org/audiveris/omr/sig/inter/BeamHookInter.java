@@ -30,12 +30,10 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.GradeImpacts;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import java.awt.Point;
@@ -192,7 +190,7 @@ public class BeamHookInter
         final Rectangle luBox = getBounds();
         luBox.grow(xMargin, yMargin);
 
-        final List<Inter> stems = SIGraph.intersectedInters(
+        final List<Inter> stems = Inters.intersectedInters(
                 systemStems,
                 GeoOrder.BY_ABSCISSA,
                 luBox);

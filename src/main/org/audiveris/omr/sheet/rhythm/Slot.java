@@ -331,15 +331,15 @@ public class Slot
         return id;
     }
 
-    //-----------------//
-    // getMeasureStack //
-    //-----------------//
+    //----------//
+    // getStack //
+    //----------//
     /**
      * Report the measure stack that contains this slot
      *
      * @return the containing measure stack
      */
-    public MeasureStack getMeasureStack ()
+    public MeasureStack getStack ()
     {
         return stack;
     }

@@ -55,15 +55,19 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.ui.symbol.Alignment;
+
 import static org.audiveris.omr.ui.symbol.Alignment.*;
+
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
+
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
+
 import org.audiveris.omr.ui.symbol.TextFont;
 
 import org.slf4j.Logger;
@@ -81,7 +85,9 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.CubicCurve2D;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 
 /**
  * Class {@code SigPainter} paints all the {@link Inter} instances of a SIG.
@@ -443,12 +449,7 @@ public class SigPainter
             final MusicFont font;
 
             if (shape.isHead()) {
-                //                if (shape == Shape.NOTEHEAD_VOID) {
-                //                    font = getMusicVoidFont(staff);
-                //                } else {
                 font = getMusicHeadFont(staff);
-
-                //                }
             } else {
                 font = getMusicFont(staff);
             }
@@ -556,6 +557,23 @@ public class SigPainter
         //TODO: use proper stem thickness! (see ledger)
         g.setStroke(stemStroke);
         stem.getGlyph().renderLine(g);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (StaffBarlineInter inter)
+    {
+        List<Inter> members = inter.getMembers();
+
+        if (!members.isEmpty()) {
+            for (Inter member : members) {
+                member.accept(this);
+            }
+        } else if (inter.getShape() != null) {
+            visit((Inter) inter);
+        }
     }
 
     //-------//

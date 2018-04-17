@@ -28,7 +28,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -238,7 +237,7 @@ public class ArticulationInter
         final Rectangle luBox = new Rectangle(arcticCenter);
         luBox.grow(maxDx, maxDy);
 
-        final List<Inter> chords = SIGraph.intersectedInters(
+        final List<Inter> chords = Inters.intersectedInters(
                 systemHeadChords,
                 GeoOrder.BY_ABSCISSA,
                 luBox);

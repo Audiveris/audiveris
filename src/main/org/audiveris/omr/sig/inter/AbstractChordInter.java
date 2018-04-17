@@ -197,7 +197,7 @@ public abstract class AbstractChordInter
         Point center = getCenter();
 
         if (center != null) {
-            MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+            MeasureStack stack = sig.getSystem().getStackAt(center);
 
             if (stack != null) {
                 stack.addInter(this);
@@ -907,7 +907,7 @@ public abstract class AbstractChordInter
             Point center = getCenter();
 
             if (center != null) {
-                MeasureStack stack = sig.getSystem().getMeasureStackAt(center);
+                MeasureStack stack = sig.getSystem().getStackAt(center);
 
                 if (stack != null) {
                     stack.addInter(this);

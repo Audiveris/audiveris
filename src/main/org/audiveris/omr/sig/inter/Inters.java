@@ -21,11 +21,20 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.math.GeoOrder;
+import static org.audiveris.omr.math.GeoOrder.BY_ABSCISSA;
+import static org.audiveris.omr.math.GeoOrder.BY_ORDINATE;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.util.Predicate;
+
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Class {@code Inters} gathers utilities on inter instances.
@@ -440,5 +449,220 @@ public abstract class Inters
         sb.append("]");
 
         return sb.toString();
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations for which the provided predicate applies within the
+     * provided collection.
+     *
+     * @param collection the collection of inters to browse
+     * @param predicate  the predicate to apply, or null
+     * @return the list of compliant interpretations, perhaps empty but not null
+     */
+    public static List<Inter> inters (Collection<? extends Inter> collection,
+                                      Predicate<Inter> predicate)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+
+        for (Inter inter : collection) {
+            if ((predicate == null) || predicate.check(inter)) {
+                found.add(inter);
+            }
+        }
+
+        return found;
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the specified class within the provided collection.
+     *
+     * @param collection the provided collection to browse
+     * @param classe     the class to search for
+     * @return the interpretations of desired class, perhaps empty but not null
+     */
+    public static List<Inter> inters (Collection<? extends Inter> collection,
+                                      final Class classe)
+    {
+        return inters(collection, new ClassPredicate(classe));
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Select in the provided collection the inters that relate to the specified staff.
+     *
+     * @param staff  the specified staff
+     * @param inters the collection to filter
+     * @return the list of interpretations, perhaps empty but not null
+     */
+    public static List<Inter> inters (Staff staff,
+                                      Collection<? extends Inter> inters)
+    {
+        List<Inter> filtered = new ArrayList<Inter>();
+
+        for (Inter inter : inters) {
+            if (inter.getStaff() == staff) {
+                filtered.add(inter);
+            }
+        }
+
+        return filtered;
+    }
+
+    //-------------------//
+    // intersectedInters //
+    //-------------------//
+    /**
+     * Lookup the provided list of interpretations for those whose bounds
+     * intersect the given area.
+     *
+     * @param inters the list of interpretations to search for
+     * @param order  if the list is already sorted by some order, this may speedup the search
+     * @param area   the intersecting area
+     * @return the intersected interpretations found, perhaps empty but not null
+     */
+    public static List<Inter> intersectedInters (List<Inter> inters,
+                                                 GeoOrder order,
+                                                 Area area)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+        Rectangle bounds = area.getBounds();
+        double xMax = bounds.getMaxX();
+        double yMax = bounds.getMaxY();
+
+        for (Inter inter : inters) {
+            if (inter.isRemoved()) {
+                continue;
+            }
+
+            Rectangle iBox = inter.getBounds();
+
+            if (area.intersects(iBox)) {
+                found.add(inter);
+            } else {
+                switch (order) {
+                case BY_ABSCISSA:
+
+                    if (iBox.x > xMax) {
+                        return found;
+                    }
+
+                    break;
+
+                case BY_ORDINATE:
+
+                    if (iBox.y > yMax) {
+                        return found;
+                    }
+
+                    break;
+
+                case NONE:
+                }
+            }
+        }
+
+        return found;
+    }
+
+    //-------------------//
+    // intersectedInters //
+    //-------------------//
+    /**
+     * Lookup the provided list of interpretations for those whose bounds
+     * intersect the given box.
+     *
+     * @param inters the list of interpretations to search for
+     * @param order  if the list is already sorted by some order, this may speedup the search
+     * @param box    the intersecting box
+     * @return the intersected interpretations found, perhaps empty but not null
+     */
+    public static List<Inter> intersectedInters (List<? extends Inter> inters,
+                                                 GeoOrder order,
+                                                 Rectangle box)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+        int xMax = (box.x + box.width) - 1;
+        int yMax = (box.y + box.height) - 1;
+
+        for (Inter inter : inters) {
+            if (inter.isRemoved()) {
+                continue;
+            }
+
+            Rectangle iBox = inter.getBounds();
+
+            if (box.intersects(iBox)) {
+                found.add(inter);
+            } else if ((order == BY_ABSCISSA) && (iBox.x > xMax)) {
+                break;
+            } else if ((order == BY_ORDINATE) && (iBox.y > yMax)) {
+                break;
+            }
+        }
+
+        return found;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // ClassPredicate //
+    //----------------//
+    public static class ClassPredicate
+            implements Predicate<Inter>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Class classe;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ClassPredicate (Class classe)
+        {
+            this.classe = classe;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean check (Inter inter)
+        {
+            return !inter.isRemoved() && (classe.isInstance(inter));
+        }
+    }
+
+    //------------------//
+    // ClassesPredicate //
+    //------------------//
+    public static class ClassesPredicate
+            implements Predicate<Inter>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Class[] classes;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ClassesPredicate (Class[] classes)
+        {
+            this.classes = classes;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public boolean check (Inter inter)
+        {
+            for (Class classe : classes) {
+                if (classe.isInstance(inter)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

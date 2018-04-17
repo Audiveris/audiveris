@@ -156,7 +156,7 @@ public class PageRhythm
             List<Inter> systemFrats = system.getSig().inters(FRAT_CLASSES);
             Collections.sort(systemFrats, Inters.byAbscissa);
 
-            for (MeasureStack stack : system.getMeasureStacks()) {
+            for (MeasureStack stack : system.getStacks()) {
                 final List<Inter> frats = stack.filter(systemFrats);
                 logger.debug("{} frats: {} {}", stack, frats.size(), Inters.ids(frats));
 
@@ -182,7 +182,7 @@ public class PageRhythm
             if (!systemTimes.isEmpty()) {
                 Collections.sort(systemTimes, Inters.byAbscissa);
 
-                for (MeasureStack stack : system.getMeasureStacks()) {
+                for (MeasureStack stack : system.getStacks()) {
                     boolean found = false;
                     List<Inter> stackTimes = stack.filter(systemTimes);
 
@@ -210,7 +210,7 @@ public class PageRhythm
             ranges.get(i).stopId = ranges.get(i + 1).startId - 1;
         }
 
-        ranges.get(ranges.size() - 1).stopId = page.getLastSystem().getLastMeasureStack()
+        ranges.get(ranges.size() - 1).stopId = page.getLastSystem().getLastStack()
                 .getIdValue();
     }
 
@@ -226,7 +226,7 @@ public class PageRhythm
         Range range = it.next(); // Current range
 
         for (SystemInfo system : page.getSystems()) {
-            for (MeasureStack stack : system.getMeasureStacks()) {
+            for (MeasureStack stack : system.getStacks()) {
                 // Start of range?
                 if (stack.getIdValue() == range.startId) {
                     logger.debug("Starting {}", range);
@@ -281,7 +281,7 @@ public class PageRhythm
 
         SystemLoop:
         for (SystemInfo system : page.getSystems()) {
-            for (MeasureStack stack : system.getMeasureStacks()) {
+            for (MeasureStack stack : system.getStacks()) {
                 int stackId = stack.getIdValue();
 
                 if (stackId < range.startId) {
@@ -355,7 +355,7 @@ public class PageRhythm
         Range range = it.next(); // Current range
 
         for (SystemInfo system : page.getSystems()) {
-            for (MeasureStack stack : system.getMeasureStacks()) {
+            for (MeasureStack stack : system.getStacks()) {
                 try {
                     logger.debug("\n--- Raw processing {} ---", stack);
                     new StackTuner(stack, true).process(null);

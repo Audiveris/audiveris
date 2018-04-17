@@ -31,7 +31,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -125,38 +124,6 @@ public class AlterInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    //-------//
-    // added //
-    //-------//
-    @Override
-    public void added ()
-    {
-        super.added();
-
-        setAbnormal(true); // No head linked yet
-    }
-
-    //---------------//
-    // checkAbnormal //
-    //---------------//
-    @Override
-    public boolean checkAbnormal ()
-    {
-        // Check if a head is connected
-        setAbnormal(!sig.hasRelation(this, AlterHeadRelation.class));
-
-        return isAbnormal();
-    }
-
-    //--------//
     // create //
     //--------//
     /**
@@ -200,19 +167,6 @@ public class AlterInter
         return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
     }
 
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
-    {
-        if (measuredPitch != null) {
-            return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
-        }
-
-        return super.getDetails();
-    }
-
     //-------------------//
     // getFlatAreaOffset //
     //-------------------//
@@ -237,6 +191,51 @@ public class AlterInter
     public static double getFlatPitchOffset ()
     {
         return constants.flatPitchOffset.getValue();
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No head linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if a head is connected
+        setAbnormal(!sig.hasRelation(this, AlterHeadRelation.class));
+
+        return isAbnormal();
+    }
+
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        if (measuredPitch != null) {
+            return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
+        }
+
+        return super.getDetails();
     }
 
     /**
@@ -415,7 +414,7 @@ public class AlterInter
                         ? (accidBox.y + (accidBox.height / 2))
                         : (accidBox.y + ((3 * accidBox.height) / 4)));
         Rectangle luBox = new Rectangle(accidPt.x, accidPt.y - yGapMax, xGapMax, 2 * yGapMax);
-        List<Inter> notes = SIGraph.intersectedInters(systemHeads, GeoOrder.BY_ABSCISSA, luBox);
+        List<Inter> notes = Inters.intersectedInters(systemHeads, GeoOrder.BY_ABSCISSA, luBox);
 
         if (!notes.isEmpty()) {
             if ((getGlyph() != null) && getGlyph().isVip()) {

@@ -144,7 +144,7 @@ public class BeamStemRelation
             // Include in proper BeamGroup set within containing Measure?
             SystemInfo system = stem.getSig().getSystem();
             Staff staff1 = chord.getTopStaff();
-            MeasureStack stack = system.getMeasureStackAt(stem.getCenter());
+            MeasureStack stack = system.getStackAt(stem.getCenter());
 
             if (stack != null) {
                 Measure measure = stack.getMeasureAt(staff1);

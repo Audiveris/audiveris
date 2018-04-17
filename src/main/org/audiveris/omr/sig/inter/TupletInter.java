@@ -33,7 +33,6 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
@@ -120,7 +119,7 @@ public class TupletInter
     {
         super.added();
 
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
         if (stack != null) {
             stack.addInter(this);
@@ -169,7 +168,7 @@ public class TupletInter
                 scale.toPixels(constants.maxTupletChordDx),
                 scale.toPixels(constants.maxTupletChordDy));
 
-        List<Inter> nearby = SIGraph.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
+        List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
 
         if (nearby.isEmpty()) {
             logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
@@ -281,7 +280,7 @@ public class TupletInter
     @Override
     public void remove (boolean extensive)
     {
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
         if (stack != null) {
             stack.removeInter(this);
@@ -304,7 +303,7 @@ public class TupletInter
     public Collection<Link> searchLinks (SystemInfo system,
                                          boolean doit)
     {
-        MeasureStack stack = system.getMeasureStackAt(getCenter());
+        MeasureStack stack = system.getStackAt(getCenter());
         Collection<Link> links = new TupletsBuilder(stack).lookupLinks(this);
 
         if (doit) {

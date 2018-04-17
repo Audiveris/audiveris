@@ -183,7 +183,7 @@ public class SheetResultPainter
     public void drawSlot (Slot slot,
                           Color color)
     {
-        final MeasureStack stack = slot.getMeasureStack();
+        final MeasureStack stack = slot.getStack();
         final SystemInfo system = stack.getSystem();
         final Color oldColor = g.getColor();
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1);
@@ -276,7 +276,7 @@ public class SheetResultPainter
     {
         sigPainter = getSigPainter();
 
-        final SIGraph sig = slot.getMeasureStack().getSystem().getSig();
+        final SIGraph sig = slot.getStack().getSystem().getSig();
         final Color oldColor = g.getColor();
         g.setColor(Colors.SLOT_CURRENT);
 
@@ -399,7 +399,7 @@ public class SheetResultPainter
         g.setColor(defaultColor);
 
         // Additional stuff
-        for (MeasureStack stack : system.getMeasureStacks()) {
+        for (MeasureStack stack : system.getStacks()) {
             processStack(stack);
         }
     }
@@ -448,7 +448,7 @@ public class SheetResultPainter
                 SystemInfo system = stack.getSystem();
                 Staff staff = system.getFirstStaff();
                 Part topRealPart = staff.getPart();
-                int stackIndex = system.getMeasureStacks().indexOf(stack);
+                int stackIndex = system.getStacks().indexOf(stack);
                 Measure topRealMeasure = topRealPart.getMeasures().get(stackIndex);
                 int left = topRealMeasure.getAbscissa(HorizontalSide.LEFT, staff);
                 Point loc = new Point(left, staff.getFirstLine().yAt(left) - annotationDy);

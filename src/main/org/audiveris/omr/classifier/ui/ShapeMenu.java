@@ -122,7 +122,7 @@ public class ShapeMenu
                 {
                     JMenuItem source = (JMenuItem) e.getSource();
                     Shape shape = Shape.valueOf(source.getText());
-                    sheet.getInterController().addInter(glyph, shape);
+                    sheet.getInterController().assignGlyph(glyph, shape);
                 }
             });
         }

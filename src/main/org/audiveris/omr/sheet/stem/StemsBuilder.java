@@ -681,7 +681,7 @@ public class StemsBuilder
                     systemBox.height);
             fatBox.grow(params.vicinityMargin, 0);
 
-            return SIGraph.intersectedInters(inters, GeoOrder.BY_ABSCISSA, fatBox);
+            return Inters.intersectedInters(inters, GeoOrder.BY_ABSCISSA, fatBox);
         }
 
         //---------------------//
@@ -780,7 +780,7 @@ public class StemsBuilder
                 targetPt = getTargetPt(new Line2D.Double(0, sysY, 100, sysY));
 
                 // Look for beams and beam hooks in the corner
-                List<Inter> beamCandidates = SIGraph.intersectedInters(
+                List<Inter> beamCandidates = Inters.intersectedInters(
                         neighborBeams,
                         GeoOrder.BY_ABSCISSA,
                         area);
@@ -856,7 +856,7 @@ public class StemsBuilder
                 area = getLuArea();
 
                 // Look for stems inters that intersect the lookup area
-                List<Inter> stems = SIGraph.intersectedInters(
+                List<Inter> stems = Inters.intersectedInters(
                         neighborStems,
                         GeoOrder.BY_ABSCISSA,
                         area);

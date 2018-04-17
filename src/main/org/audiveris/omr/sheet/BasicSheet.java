@@ -327,15 +327,14 @@ public class BasicSheet
                 systemManager.dispatchVerticalSections();
             }
 
+            // Complete inters index
             interIndex = new InterIndex();
+            interIndex.initTransients(this);
 
             for (SystemInfo system : getSystems()) {
                 // Forward reload request down system hierarchy
                 system.afterReload();
             }
-
-            // Finally, complete inters index, now that all sigs have been populated
-            interIndex.initTransients(this);
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }

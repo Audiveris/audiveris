@@ -33,7 +33,6 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffBarline;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -48,6 +47,7 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.Link;
@@ -179,21 +179,21 @@ public class DotFactory
      */
     private void assignStackRepeats ()
     {
-        for (MeasureStack stack : system.getMeasureStacks()) {
+        for (MeasureStack stack : system.getStacks()) {
             for (HorizontalSide side : HorizontalSide.values()) {
                 final List<RepeatDotInter> repeatDots = new ArrayList<RepeatDotInter>();
                 int barCount = 0;
 
                 for (Measure measure : stack.getMeasures()) {
                     final Part part = measure.getPart();
-                    final PartBarline partBarline = measure.getBarline(side);
+                    final PartBarline partBarline = measure.getPartBarlineOn(side);
 
                     if (partBarline == null) {
                         continue;
                     }
 
                     for (Staff staff : part.getStaves()) {
-                        StaffBarline staffBarline = partBarline.getBarline(part, staff);
+                        StaffBarlineInter staffBarline = partBarline.getStaffBarline(part, staff);
                         BarlineInter bar = (side == LEFT) ? staffBarline.getRightBar()
                                 : staffBarline.getLeftBar();
 
@@ -402,7 +402,7 @@ public class DotFactory
         final Rectangle luBox = new Rectangle(dotPt);
         luBox.grow(maxDx, maxDy);
 
-        final List<Inter> bars = SIGraph.intersectedInters(
+        final List<Inter> bars = Inters.intersectedInters(
                 symbolFactory.getSystemBars(),
                 GeoOrder.BY_ABSCISSA,
                 luBox);

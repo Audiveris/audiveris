@@ -66,7 +66,7 @@ public class ChordsLinker
     public void linkChords ()
     {
         // Allocate beam groups per stack
-        for (MeasureStack stack : system.getMeasureStacks()) {
+        for (MeasureStack stack : system.getStacks()) {
             BeamGroup.populate(stack);
         }
     }

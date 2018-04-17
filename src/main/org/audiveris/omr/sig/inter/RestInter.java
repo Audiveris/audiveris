@@ -30,7 +30,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Predicate;
 
@@ -142,7 +141,7 @@ public class RestInter
             // All head-chords in measure
             final int left = measure.getAbscissa(HorizontalSide.LEFT, staff);
             final int right = measure.getAbscissa(HorizontalSide.RIGHT, staff);
-            measureChords = SIGraph.inters(
+            measureChords = Inters.inters(
                     systemHeadChords,
                     new Predicate<Inter>()
             {

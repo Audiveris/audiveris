@@ -23,6 +23,7 @@ package org.audiveris.omr.sig;
 
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AlterInter;
@@ -135,10 +136,8 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 /**
  * Class {@code SigValue} represents the content of a SIG for use by JAXB.
  * <p>
- * There is a trick to handle separately the Inter instances that appear within the containing
- * system structure (and within the SIG) from the other Inter instances that exist only within the
- * SIG. The former ones are handled as XmlIDREF's in interRefs, the latter ones as XmlElement's in
- * interDefs.
+ * All Inter instances are defined within their containing SIG.
+ * If referred from outside SIG, they are handled via XmlIDREF's.
  *
  * @author Hervé Bitteur
  */
@@ -201,6 +200,7 @@ public class SigValue
         , @XmlElementRef(type = SmallBeamInter.class)
         , @XmlElementRef(type = SmallChordInter.class)
         , @XmlElementRef(type = SmallFlagInter.class)
+        , @XmlElementRef(type = StaffBarlineInter.class)
         , @XmlElementRef(type = StemInter.class)
         , @XmlElementRef(type = TimeNumberInter.class)
         , @XmlElementRef(type = TimePairInter.class)
@@ -276,8 +276,6 @@ public class SigValue
 
         /**
          * Generate a SigValue out of the existing SIG.
-         * We separate Inter instances already marshalled (the 'interRefs') from the other
-         * instances (the 'interDefs') that are used only in SIG.
          *
          * @param sig the existing SIG whose content is to be stored into a SigValue
          * @return the generated SigValue instance

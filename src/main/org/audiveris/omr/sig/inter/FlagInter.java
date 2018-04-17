@@ -87,7 +87,7 @@ public class FlagInter
     {
         super.added();
 
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
         if (stack != null) {
             stack.addInter(this);
@@ -166,7 +166,7 @@ public class FlagInter
     @Override
     public void remove (boolean extensive)
     {
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
         if (stack != null) {
             stack.removeInter(this);

@@ -48,7 +48,6 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
@@ -764,7 +763,7 @@ public class HeadInter
             int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
             int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
             Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
-            List<Inter> stems = SIGraph.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+            List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
             int xDir = (corner.hSide == RIGHT) ? 1 : (-1);
 
             for (Inter inter : stems) {
