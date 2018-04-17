@@ -461,7 +461,7 @@ public class SymbolFactory
             MarkerInter marker = MarkerInter.create(glyph, shape, grade, closestStaff); // OK
 
             sig.addVertex(marker);
-            marker.linkWithBarline();
+            marker.linkWithStaffBarline();
 
             return marker;
         }

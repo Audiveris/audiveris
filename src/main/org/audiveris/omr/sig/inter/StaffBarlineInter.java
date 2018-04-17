@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.PartBarline.Style;
 import static org.audiveris.omr.sheet.PartBarline.Style.*;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
@@ -41,6 +42,7 @@ import org.audiveris.omr.util.HorizontalSide;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -84,14 +86,7 @@ public class StaffBarlineInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code StaffBarlineInter} object.
-     */
-    public StaffBarlineInter ()
-    {
-    }
-
-    /**
-     * Creates a new {@code StaffBarlineInter} object.
+     * Creates a new {@code StaffBarlineInter} object from a shape.
      *
      * @param shape THIN_BARLINE, THICK_BARLINE, DOUBLE_BARLINE,FINAL_BARLINE,
      *              REVERSE_FINAL_BARLINE, LEFT_REPEAT_SIGN,
@@ -107,6 +102,42 @@ public class StaffBarlineInter
         if (shape != null) {
             style = toStyle(shape);
         }
+    }
+
+    /**
+     * Creates a new {@code StaffBarlineInter} object from its Barline members.
+     *
+     * @param members the barline members
+     */
+    public StaffBarlineInter (Collection<? extends Inter> members)
+    {
+        if (members.isEmpty()) {
+            return;
+        }
+
+        double g = 0;
+        Staff s = null;
+
+        for (Inter b : members) {
+            if (sig == null) {
+                sig = b.getSig();
+                sig.addVertex(this);
+            }
+
+            addMember(b);
+            g += b.getGrade();
+            s = b.getStaff();
+        }
+
+        setGrade(g / members.size());
+        setStaff(s);
+    }
+
+    /**
+     * No-arg constructor needed for JAXB.
+     */
+    private StaffBarlineInter ()
+    {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -154,6 +185,35 @@ public class StaffBarlineInter
         return new Rectangle(bounds);
     }
 
+    //------------------------//
+    // getClosestStaffBarline //
+    //------------------------//
+    /**
+     * From a provided StaffBarline collection, report the one which has the closest
+     * abscissa to a provided point.
+     *
+     * @param bars  the collection of StaffBarlineInter to browse
+     * @param point the reference point
+     * @return the abscissa-wise closest barline
+     */
+    public static StaffBarlineInter getClosestStaffBarline (Collection<StaffBarlineInter> bars,
+                                                            Point point)
+    {
+        StaffBarlineInter bestBar = null;
+        int bestDx = Integer.MAX_VALUE;
+
+        for (StaffBarlineInter bar : bars) {
+            int dx = Math.abs(bar.getCenter().x - point.x);
+
+            if (dx < bestDx) {
+                bestDx = dx;
+                bestBar = bar;
+            }
+        }
+
+        return bestBar;
+    }
+
     //-----------//
     // getEnding //
     //-----------//
@@ -165,6 +225,7 @@ public class StaffBarlineInter
      */
     public EndingInter getEnding (HorizontalSide side)
     {
+        // Use of bar members if any
         final List<Inter> bars = getMembers();
 
         for (Inter bar : bars) {
@@ -174,6 +235,15 @@ public class StaffBarlineInter
                 if (ebRel.getEndingSide() == side) {
                     return (EndingInter) sig.getOppositeInter(bar, rel);
                 }
+            }
+        }
+
+        // Use of direct relation
+        for (Relation rel : sig.getRelations(this, EndingBarRelation.class)) {
+            EndingBarRelation ebRel = (EndingBarRelation) rel;
+
+            if (ebRel.getEndingSide() == side) {
+                return (EndingInter) sig.getOppositeInter(this, rel);
             }
         }
 
@@ -190,6 +260,7 @@ public class StaffBarlineInter
      */
     public Set<FermataInter> getFermatas ()
     {
+        // Use of bar members if any
         final List<Inter> bars = getMembers();
         Set<FermataInter> fermatas = null;
 
@@ -202,6 +273,17 @@ public class StaffBarlineInter
                 }
 
                 fermatas.add((FermataInter) sig.getOppositeInter(bar, rel));
+            }
+        }
+
+        if (fermatas == null) {
+            // Use of direct relation
+            for (Relation rel : sig.getRelations(this, FermataBarRelation.class)) {
+                if (fermatas == null) {
+                    fermatas = new LinkedHashSet<FermataInter>();
+                }
+
+                fermatas.add((FermataInter) sig.getOppositeInter(this, rel));
             }
         }
 
@@ -383,6 +465,16 @@ public class StaffBarlineInter
             }
         }
 
+        if (bars.isEmpty()) {
+            for (Relation rel : sig.getRelations(this, relationClass)) {
+                if (related == null) {
+                    related = new ArrayList<Inter>();
+                }
+
+                related.add(sig.getOppositeInter(this, rel));
+            }
+        }
+
         if (related == null) {
             return Collections.emptyList();
         }
@@ -501,12 +593,14 @@ public class StaffBarlineInter
     //---------------//
     public boolean hasDotsOnLeft ()
     {
+        if ((shape == Shape.RIGHT_REPEAT_SIGN) || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+            return true;
+        }
+
         final Point center = getCenter();
         final List<Inter> bars = getMembers();
 
         for (Inter bar : bars) {
-            SIGraph sig = bar.getSig();
-
             for (Relation rel : sig.getRelations(bar, RepeatDotBarRelation.class)) {
                 Inter dot = sig.getOppositeInter(bar, rel);
 
@@ -524,12 +618,14 @@ public class StaffBarlineInter
     //----------------//
     public boolean hasDotsOnRight ()
     {
+        if ((shape == Shape.LEFT_REPEAT_SIGN) || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+            return true;
+        }
+
         final Point center = getCenter();
         final List<Inter> bars = getMembers();
 
         for (Inter bar : bars) {
-            SIGraph sig = bar.getSig();
-
             for (Relation rel : sig.getRelations(bar, RepeatDotBarRelation.class)) {
                 Inter dot = sig.getOppositeInter(bar, rel);
 

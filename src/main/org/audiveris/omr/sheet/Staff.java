@@ -39,6 +39,7 @@ import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.symbol.MusicFont;
@@ -275,6 +276,56 @@ public class Staff
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------------//
+    // getCompetingClefs //
+    //-------------------//
+    /**
+     * Report the competing clef candidates active at provided abscissa.
+     *
+     * @param x provided abscissa
+     * @return the collection of competing clefs
+     */
+    public List<ClefInter> getCompetingClefs (int x)
+    {
+        // Look for clef on left side in staff (together with its competing clefs)
+        SIGraph sig = getSystem().getSig();
+        List<Inter> staffClefs = sig.inters(this, ClefInter.class);
+        Collections.sort(staffClefs, Inters.byAbscissa);
+
+        Inter lastClef = null;
+
+        for (Inter inter : staffClefs) {
+            int xClef = inter.getBounds().x;
+
+            if (xClef < x) {
+                lastClef = inter;
+            }
+        }
+
+        if (lastClef == null) {
+            return Collections.emptyList();
+        }
+
+        // Pick up this clef together with all competing clefs
+        Set<Relation> excs = sig.getExclusions(lastClef);
+        List<ClefInter> clefs = new ArrayList<ClefInter>();
+        clefs.add((ClefInter) lastClef);
+
+        for (Relation rel : excs) {
+            Inter inter = Graphs.getOppositeVertex(sig, rel, lastClef);
+
+            if (inter instanceof ClefInter) {
+                ClefInter clef = (ClefInter) inter;
+
+                if ((clef.getStaff() == this) && !clefs.contains(clef)) {
+                    clefs.add(clef);
+                }
+            }
+        }
+
+        return clefs;
+    }
+
     //----------------------//
     // getDefiningPointSize //
     //----------------------//
@@ -715,54 +766,35 @@ public class Staff
         return lines.get(idx);
     }
 
-    //-------------------//
-    // getCompetingClefs //
-    //-------------------//
+    //----------------//
+    // getEndingSlope //
+    //----------------//
     /**
-     * Report the competing clef candidates active at provided abscissa.
+     * Report mean ending slope, on the provided side.
+     * We discard highest and lowest absolute slopes, and return the average
+     * values for the remaining ones.
      *
-     * @param x provided abscissa
-     * @return the collection of competing clefs
+     * @param side which side to select (left or right)
+     * @return a "mean" value
      */
-    public List<ClefInter> getCompetingClefs (int x)
+    public double getEndingSlope (HorizontalSide side)
     {
-        // Look for clef on left side in staff (together with its competing clefs)
-        SIGraph sig = getSystem().getSig();
-        List<Inter> staffClefs = sig.inters(this, ClefInter.class);
-        Collections.sort(staffClefs, Inters.byAbscissa);
+        List<Double> slopes = new ArrayList<Double>(lines.size());
 
-        Inter lastClef = null;
-
-        for (Inter inter : staffClefs) {
-            int xClef = inter.getBounds().x;
-
-            if (xClef < x) {
-                lastClef = inter;
-            }
+        for (LineInfo l : lines) {
+            StaffFilament line = (StaffFilament) l;
+            slopes.add(line.getSlopeAt(line.getEndPoint(side).getX(), Orientation.HORIZONTAL));
         }
 
-        if (lastClef == null) {
-            return Collections.emptyList();
+        Collections.sort(slopes);
+
+        double sum = 0;
+
+        for (Double slope : slopes.subList(1, slopes.size() - 1)) {
+            sum += slope;
         }
 
-        // Pick up this clef together with all competing clefs
-        Set<Relation> excs = sig.getExclusions(lastClef);
-        List<ClefInter> clefs = new ArrayList<ClefInter>();
-        clefs.add((ClefInter) lastClef);
-
-        for (Relation rel : excs) {
-            Inter inter = Graphs.getOppositeVertex(sig, rel, lastClef);
-
-            if (inter instanceof ClefInter) {
-                ClefInter clef = (ClefInter) inter;
-
-                if ((clef.getStaff() == this) && !clefs.contains(clef)) {
-                    clefs.add(clef);
-                }
-            }
-        }
-
-        return clefs;
+        return sum / (slopes.size() - 2);
     }
 
     //--------------------//
@@ -808,37 +840,6 @@ public class Staff
         } else {
             return -4 + (2 * lineIndex);
         }
-    }
-
-    //----------------//
-    // getEndingSlope //
-    //----------------//
-    /**
-     * Report mean ending slope, on the provided side.
-     * We discard highest and lowest absolute slopes, and return the average
-     * values for the remaining ones.
-     *
-     * @param side which side to select (left or right)
-     * @return a "mean" value
-     */
-    public double getEndingSlope (HorizontalSide side)
-    {
-        List<Double> slopes = new ArrayList<Double>(lines.size());
-
-        for (LineInfo l : lines) {
-            StaffFilament line = (StaffFilament) l;
-            slopes.add(line.getSlopeAt(line.getEndPoint(side).getX(), Orientation.HORIZONTAL));
-        }
-
-        Collections.sort(slopes);
-
-        double sum = 0;
-
-        for (Double slope : slopes.subList(1, slopes.size() - 1)) {
-            sum += slope;
-        }
-
-        return sum / (slopes.size() - 2);
     }
 
     //--------------//
@@ -1218,6 +1219,39 @@ public class Staff
     public int getSpecificInterline ()
     {
         return specificInterline;
+    }
+
+    //------------------//
+    // getStaffBarlines //
+    //------------------//
+    /**
+     * @return the barlines
+     */
+    public List<StaffBarlineInter> getStaffBarlines ()
+    {
+        SIGraph sig = getSystem().getSig();
+
+        if (sig == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<StaffBarlineInter> found = null;
+
+        for (Inter inter : sig.inters(StaffBarlineInter.class)) {
+            if (inter.getStaff() == this) {
+                if (found == null) {
+                    found = new ArrayList<StaffBarlineInter>();
+                }
+
+                found.add((StaffBarlineInter) inter);
+            }
+        }
+
+        if (found == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return found;
     }
 
     //-----------//

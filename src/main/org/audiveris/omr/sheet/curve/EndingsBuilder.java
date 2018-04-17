@@ -42,7 +42,6 @@ import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -185,9 +184,9 @@ public class EndingsBuilder
     // lookupBar //
     //-----------//
     /**
-     * Look for a bar line vertically aligned with the ending side.
+     * Look for a StaffBarline vertically aligned with the ending side.
      * <p>
-     * It is not very important to select a precise bar line within a group, since for left end we
+     * It is not very important to select a precise barline within a group, since for left end we
      * choose the right-most bar and the opposite for right end.
      * We simply have to make sure that the lookup area is wide enough.
      * <p>
@@ -198,13 +197,13 @@ public class EndingsBuilder
      * @param seg        the horizontal segment
      * @param reverse    which side is at stake
      * @param staff      related staff
-     * @param systemBars the collection of bar lines in the containing system
+     * @param systemBars the collection of StaffBarlines in the containing system
      * @return the selected bar line, or null if none
      */
-    private BarlineInter lookupBar (SegmentInfo seg,
-                                    boolean reverse,
-                                    Staff staff,
-                                    List<Inter> systemBars)
+    private StaffBarlineInter lookupBar (SegmentInfo seg,
+                                         boolean reverse,
+                                         Staff staff,
+                                         List<Inter> systemBars)
     {
         Point end = seg.getEnd(reverse);
         Rectangle box = new Rectangle(end);
@@ -218,7 +217,7 @@ public class EndingsBuilder
             return null;
         }
 
-        return (BarlineInter) bars.get(reverse ? (bars.size() - 1) : 0);
+        return (StaffBarlineInter) bars.get(reverse ? (bars.size() - 1) : 0);
     }
 
     //-----------//
@@ -350,7 +349,7 @@ public class EndingsBuilder
                 continue;
             }
 
-            List<Inter> systemBars = sig.inters(BarlineInter.class);
+            List<Inter> systemBars = sig.inters(StaffBarlineInter.class);
 
             // Left leg (mandatory)
             Filament leftLeg = lookupLeg(seg, true, staff);
@@ -360,7 +359,7 @@ public class EndingsBuilder
             }
 
             // Left bar (or header)
-            BarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
+            StaffBarlineInter leftBar = lookupBar(seg, true, staff, systemBars);
             final EndingBarRelation leftRel = new EndingBarRelation(LEFT, 0.5);
 
             if (leftBar == null) {
@@ -375,13 +374,11 @@ public class EndingsBuilder
                 PartBarline partLine = staff.getPart().getLeftPartBarline();
 
                 if (partLine != null) {
-                    StaffBarlineInter staffLine = partLine.getStaffBarline(staff.getPart(), staff);
-                    leftBar = staffLine.getRightBar();
+                    leftBar = partLine.getStaffBarline(staff.getPart(), staff);
                     leftRel.setGaps(0, 0, false);
                 }
             } else {
-                double leftDist = scale.pixelsToFrac(
-                        Math.abs(LineUtil.xAtY(leftBar.getMedian(), leftEnd.y) - leftEnd.x));
+                double leftDist = scale.pixelsToFrac(Math.abs(leftBar.getCenter().x - leftEnd.x));
                 leftRel.setGaps(leftDist, 0, false);
             }
 
@@ -389,14 +386,14 @@ public class EndingsBuilder
             Filament rightLeg = lookupLeg(seg, false, staff);
 
             // Right bar
-            BarlineInter rightBar = lookupBar(seg, false, staff, systemBars);
+            StaffBarlineInter rightBar = lookupBar(seg, false, staff, systemBars);
 
             if (rightBar == null) {
                 continue;
             }
 
             final double rightDist = scale.pixelsToFrac(
-                    Math.abs(LineUtil.xAtY(rightBar.getMedian(), rightEnd.y) - rightEnd.x));
+                    Math.abs(rightBar.getCenter().x - rightEnd.x));
             final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
             rightRel.setGaps(rightDist, 0, false);
 

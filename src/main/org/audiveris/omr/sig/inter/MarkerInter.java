@@ -98,22 +98,22 @@ public class MarkerInter
         return marker;
     }
 
-    //-----------------//
-    // linkWithBarline //
-    //-----------------//
+    //----------------------//
+    // linkWithStaffBarline //
+    //----------------------//
     /**
-     * (Try to) connect this marker with a suitable barline.
+     * (Try to) connect this marker with a suitable StaffBarline.
      *
      * @return true if successful
      */
-    public boolean linkWithBarline ()
+    public boolean linkWithStaffBarline ()
     {
         Point center = getCenter();
-        List<BarlineInter> bars = getStaff().getBarlines();
-        BarlineInter bar = BarlineInter.getClosestBarline(bars, center);
+        List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
+        StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
 
-        if ((bar != null) && (GeoUtil.xOverlap(getBounds(), bar.getBounds()) > 0)) {
-            sig.addEdge(this, bar, new MarkerBarRelation());
+        if ((staffBar != null) && (GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) > 0)) {
+            sig.addEdge(this, staffBar, new MarkerBarRelation());
 
             return true;
         }

@@ -47,6 +47,7 @@ import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TupletInter;
@@ -262,12 +263,14 @@ public abstract class Relations
         map(AugmentationDotInter.class, AugmentationRelation.class, AbstractNoteInter.class);
         map(AugmentationDotInter.class, DoubleDotRelation.class, AugmentationDotInter.class);
 
-        map(EndingInter.class, EndingBarRelation.class, BarlineInter.class);
+        map(EndingInter.class, EndingBarRelation.class, BarlineInter.class); // Old
+        map(EndingInter.class, EndingBarRelation.class, StaffBarlineInter.class);
         map(EndingInter.class, EndingSentenceRelation.class, SentenceInter.class);
 
         map(FermataDotInter.class, DotFermataRelation.class, FermataArcInter.class); // Temporary!
 
-        map(FermataInter.class, FermataBarRelation.class, BarlineInter.class);
+        map(FermataInter.class, FermataBarRelation.class, BarlineInter.class); // Old
+        map(FermataInter.class, FermataBarRelation.class, StaffBarlineInter.class);
         map(FermataInter.class, FermataChordRelation.class, AbstractChordInter.class);
 
         map(FlagInter.class, FlagStemRelation.class, StemInter.class);
@@ -282,7 +285,8 @@ public abstract class Relations
 
         map(HeadInter.class, HeadStemRelation.class, StemInter.class);
 
-        map(MarkerInter.class, MarkerBarRelation.class, BarlineInter.class);
+        map(MarkerInter.class, MarkerBarRelation.class, BarlineInter.class); // Old
+        map(MarkerInter.class, MarkerBarRelation.class, StaffBarlineInter.class);
 
         map(RepeatDotInter.class, RepeatDotBarRelation.class, BarlineInter.class);
         map(RepeatDotInter.class, RepeatDotPairRelation.class, RepeatDotInter.class);

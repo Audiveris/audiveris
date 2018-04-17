@@ -31,18 +31,16 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -216,20 +214,12 @@ public class MeasuresBuilder
             }
 
             if (topGroup != null) {
-                // Logical barline with at most first 2 bars of the group
+                // Logical barline
                 PartBarline partBar = new PartBarline();
 
                 for (Staff s : part.getStaves()) {
-                    StaffBarlineInter staffBar = new StaffBarlineInter();
-                    staffBar.setStaff(s);
-                    sig.addVertex(staffBar);
-                    partBar.addStaffBarline(staffBar);
-
                     Group group = staffMap.get(s).get(ig);
-
-                    for (int i = 0; i < Math.min(2, topGroup.size()); i++) {
-                        staffBar.addMember(group.get(i));
-                    }
+                    partBar.addStaffBarline(new StaffBarlineInter(group));
                 }
 
                 if (measure == null) {
@@ -239,23 +229,7 @@ public class MeasuresBuilder
                 }
 
                 if (topGroup.size() > 2) {
-                    // We have a second logical barline with last 2 bars of group
-                    // And it starts a new measure
-                    partBar = new PartBarline();
-
-                    for (Staff s : part.getStaves()) {
-                        StaffBarlineInter staffBar = new StaffBarlineInter();
-                        staffBar.setStaff(s);
-                        sig.addVertex(staffBar);
-                        partBar.addStaffBarline(staffBar);
-
-                        Group group = staffMap.get(s).get(ig);
-
-                        for (int i = topGroup.size() - 2; i < topGroup.size(); i++) {
-                            staffBar.addMember(group.get(i));
-                        }
-                    }
-
+                    // We have a back to back group, and it starts a new measure
                     leftBarPending = partBar;
                 }
             }

@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code MarkerBarRelation} represents the geographical relation between a marker
- * and a barline.
+ * and a StaffBarline.
  *
  * @author Hervé Bitteur
  */

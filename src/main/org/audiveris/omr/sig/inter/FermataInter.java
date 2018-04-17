@@ -245,30 +245,30 @@ public class FermataInter
     // linkWithBarline //
     //-----------------//
     /**
-     * (Try to) connect this fermata with a suitable barline.
+     * (Try to) connect this fermata with a suitable StaffBarline.
      *
      * @return true if successful
      */
     public boolean linkWithBarline ()
     {
         Point center = getCenter();
-        List<BarlineInter> bars = getStaff().getBarlines();
-        BarlineInter bar = BarlineInter.getClosestBarline(bars, center);
+        List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
+        StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
 
-        if ((bar != null) && (GeoUtil.xOverlap(getBounds(), bar.getBounds()) > 0)) {
+        if ((staffBar != null) && (GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) > 0)) {
             // Check vertical distance to bar/staff
             final Scale scale = sig.getSystem().getSheet().getScale();
             final int maxDy = scale.toPixels(constants.maxFermataDy);
             final int dyStaff = staff.distanceTo(center);
 
             if (dyStaff > maxDy) {
-                logger.debug("{} too far from barline: {}", this, bar);
+                logger.debug("{} too far from barline: {}", this, staffBar);
 
                 return false;
             }
 
-            // For fermata & for bar
-            sig.addEdge(this, bar, new FermataBarRelation());
+            // For fermata & for staffbar
+            sig.addEdge(this, staffBar, new FermataBarRelation());
 
             return true;
         }

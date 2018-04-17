@@ -21,14 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
-import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.EndingInter;
 import org.audiveris.omr.sig.inter.FermataInter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
@@ -64,8 +62,7 @@ public class PartBarline
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            PartBarline.class);
+    private static final Logger logger = LoggerFactory.getLogger(PartBarline.class);
 
     //~ Enumerations -------------------------------------------------------------------------------
     /**
@@ -222,7 +219,7 @@ public class PartBarline
     {
         int index = part.getStaves().indexOf(staff);
 
-        if (index != -1 && index < staffBarlines.size()) {
+        if ((index != -1) && (index < staffBarlines.size())) {
             return staffBarlines.get(index);
         }
 
@@ -311,27 +308,7 @@ public class PartBarline
         if (oldStaffBarlines != null) {
             if (!oldStaffBarlines.isEmpty()) {
                 for (OldStaffBarline oldSb : oldStaffBarlines) {
-                    final StaffBarlineInter sb = new StaffBarlineInter();
-                    SIGraph sig = null;
-                    double grade = 0;
-                    int count = 0;
-
-                    for (BarlineInter b : oldSb.bars) {
-                        if (sig == null) {
-                            sig = b.getSig();
-                            sig.addVertex(sb);
-                        }
-
-                        sb.addMember(b);
-                        grade += b.getGrade();
-                        count++;
-                    }
-
-                    if (count > 0) {
-                        sb.setGrade(grade / count);
-                    }
-
-                    staffBarlines.add(sb);
+                    staffBarlines.add(new StaffBarlineInter(oldSb.bars));
                 }
             }
 
