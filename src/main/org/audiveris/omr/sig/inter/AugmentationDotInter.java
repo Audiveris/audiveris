@@ -208,11 +208,18 @@ public class AugmentationDotInter
     @Override
     public Voice getVoice ()
     {
-        for (Relation rel : sig.getRelations(
-                this,
-                AugmentationRelation.class,
-                DoubleDotRelation.class)) {
+        // Use augmented note, if any
+        for (Relation rel : sig.getRelations(this, AugmentationRelation.class)) {
             return sig.getOppositeInter(this, rel).getVoice();
+        }
+
+        // If second dot, use first dot
+        for (Relation rel : sig.getRelations(this, DoubleDotRelation.class)) {
+            Inter firstDot = sig.getEdgeTarget(rel);
+
+            if (firstDot != this) {
+                return firstDot.getVoice();
+            }
         }
 
         return null;
