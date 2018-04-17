@@ -366,8 +366,8 @@ public class SymbolFactory
             return new KeyInter(grade, shape);
 
         // Time sig
-        case TIME_ZERO:
-        case TIME_ONE:
+        //        case TIME_ZERO:
+        //        case TIME_ONE:
         case TIME_TWO:
         case TIME_THREE:
         case TIME_FOUR:
