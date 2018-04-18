@@ -716,6 +716,17 @@ public class MeasureStack
         return slots.get(slots.size() - 1);
     }
 
+    //---------//
+    // getLeft //
+    //---------//
+    /**
+     * @return the left
+     */
+    public int getLeft ()
+    {
+        return left;
+    }
+
     //--------------//
     // getMeasureAt //
     //--------------//
@@ -852,6 +863,17 @@ public class MeasureStack
         }
 
         return null;
+    }
+
+    //----------//
+    // getRight //
+    //----------//
+    /**
+     * @return the right
+     */
+    public int getRight ()
+    {
+        return right;
     }
 
     //------------//

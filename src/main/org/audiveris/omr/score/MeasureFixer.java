@@ -276,6 +276,8 @@ public class MeasureFixer
                 logger.debug("realStart");
                 prevStack.mergeWithRight(stack);
                 system.removeStack(stack);
+                idx--;
+                stack = prevStack;
             } else {
                 logger.debug("normal");
 
@@ -300,7 +302,7 @@ public class MeasureFixer
     //-------//
     private void setId (int id)
     {
-        logger.debug("-> id={}", id);
+        logger.debug("-> id={} left:{} right:{}", id, stack.getLeft(), stack.getRight());
 
         stack.setIdValue(id);
 

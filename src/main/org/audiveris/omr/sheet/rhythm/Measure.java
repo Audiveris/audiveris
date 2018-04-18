@@ -27,7 +27,6 @@ import org.audiveris.omr.sheet.DurationFactor;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.sig.SIGraph;
@@ -42,11 +41,10 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
@@ -1327,6 +1325,10 @@ public class Measure
         // Beam groups
         beamGroups.addAll(right.beamGroups);
 
+        for (BeamGroup bg : right.beamGroups) {
+            bg.setMeasure(this);
+        }
+
         // Clefs
         if ((right.clefs != null) && !right.clefs.isEmpty()) {
             if (clefs == null) {
@@ -1359,11 +1361,19 @@ public class Measure
         // Head chords
         if (!right.getHeadChords().isEmpty()) {
             needHeadChords().addAll(right.getHeadChords());
+
+            for (HeadChordInter ch : right.getHeadChords()) {
+                ch.setMeasure(this);
+            }
         }
 
         // Rest chords
         if (!right.getRestChords().isEmpty()) {
             needRestChords().addAll(right.getRestChords());
+
+            for (RestChordInter ch : right.getRestChords()) {
+                ch.setMeasure(this);
+            }
         }
 
         // Flags
@@ -1395,6 +1405,10 @@ public class Measure
 
         // Voices
         voices.addAll(right.voices);
+
+        for (Voice voice : right.voices) {
+            voice.setMeasure(this);
+        }
     }
 
     //-----------------//

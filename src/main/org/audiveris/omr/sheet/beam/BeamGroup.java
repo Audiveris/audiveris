@@ -455,6 +455,17 @@ public class BeamGroup
         voice = null;
     }
 
+    //------------//
+    // setMeasure //
+    //------------//
+    /**
+     * @param measure the measure to set
+     */
+    public void setMeasure (Measure measure)
+    {
+        this.measure = measure;
+    }
+
     //--------//
     // setVip //
     //--------//
@@ -1037,18 +1048,19 @@ public class BeamGroup
                 Relation bs = sig.getRelation(beam, pivotStem, BeamStemRelation.class);
                 sig.removeEdge(bs);
                 sig.addEdge(beam, shortStem, bs);
-//
-//                // Move BeamHead relation(s) from pivot to short
-//                Set<Relation> bhRels = sig.getRelations(beam, BeamHeadRelation.class);
-//
-//                for (Relation bh : bhRels) {
-//                    Inter head = sig.getOppositeInter(beam, bh);
-//
-//                    if (head.getEnsemble() == pivotChord) {
-//                        sig.removeEdge(bh);
-//                        sig.addEdge(beam, head.getMirror(), bh);
-//                    }
-//                }
+
+                //
+                //                // Move BeamHead relation(s) from pivot to short
+                //                Set<Relation> bhRels = sig.getRelations(beam, BeamHeadRelation.class);
+                //
+                //                for (Relation bh : bhRels) {
+                //                    Inter head = sig.getOppositeInter(beam, bh);
+                //
+                //                    if (head.getEnsemble() == pivotChord) {
+                //                        sig.removeEdge(bh);
+                //                        sig.addEdge(beam, head.getMirror(), bh);
+                //                    }
+                //                }
             }
 
             // Notify updates to both chords

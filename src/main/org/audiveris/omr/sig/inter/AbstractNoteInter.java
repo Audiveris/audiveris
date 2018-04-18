@@ -233,7 +233,8 @@ public abstract class AbstractNoteInter
         if (octave == null) {
             AbstractChordInter chord = getChord();
             Measure measure = chord.getMeasure();
-            octave = ClefInter.octaveOf(measure.getClefBefore(getCenter(), getStaff()), pitch);
+            ClefInter clef = measure.getClefBefore(getCenter(), getStaff());
+            octave = ClefInter.octaveOf(clef, pitch);
         }
 
         return octave;

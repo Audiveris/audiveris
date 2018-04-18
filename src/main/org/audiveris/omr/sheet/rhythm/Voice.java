@@ -642,6 +642,17 @@ public class Voice
         this.id = id;
     }
 
+    //------------//
+    // setMeasure //
+    //------------//
+    /**
+     * @param measure the measure to set
+     */
+    public void setMeasure (Measure measure)
+    {
+        this.measure = measure;
+    }
+
     //-------------//
     // setSlotInfo //
     //-------------//

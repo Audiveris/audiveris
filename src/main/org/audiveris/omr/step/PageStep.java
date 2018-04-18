@@ -181,11 +181,11 @@ public class PageStep
             // Lyrics
             refineLyrics(page);
 
-            // Refine voices IDs (and thus colors) across all systems of the page
-            Voices.refinePage(page);
-
             // Merge / renumber measure stacks within the page
             new MeasureFixer().process(page);
+
+            // Refine voices IDs (and thus colors) across all systems of the page
+            Voices.refinePage(page);
         }
     }
 
