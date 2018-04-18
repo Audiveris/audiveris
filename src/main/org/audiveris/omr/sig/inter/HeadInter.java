@@ -269,84 +269,7 @@ public class HeadInter
      */
     public int getAlter (Integer fifths)
     {
-        // Look for local accidental
-        AlterInter accidental = getAccidental();
-
-        if (accidental != null) {
-            return alterationOf(accidental);
-        }
-
-        // Look for previous accidental with same note step in the measure
-        Measure measure = getChord().getMeasure();
-        MeasureStack stack = measure.getStack();
-        List<Slot> slots = stack.getSlots();
-
-        boolean started = false;
-
-        for (ListIterator<Slot> it = slots.listIterator(slots.size()); it.hasPrevious();) {
-            Slot slot = it.previous();
-
-            // Inspect all notes of all chords
-            for (AbstractChordInter chord : slot.getChords()) {
-                if (chord.isRest() || (chord.getMeasure() != measure)) {
-                    continue;
-                }
-
-                for (Inter inter : chord.getNotes()) {
-                    HeadInter note = (HeadInter) inter;
-
-                    if (note == this) {
-                        started = true;
-                    } else if (started
-                               && (note.getStep() == getStep())
-                               && (note.getOctave() == getOctave())
-                               && (note.getStaff() == getStaff())) {
-                        AlterInter accid = note.getAccidental();
-
-                        if (accid != null) {
-                            return alterationOf(accid);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Look for tie from previous measure (same system or previous system)
-        for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
-            SlurInter slur = (SlurInter) sig.getOppositeInter(this, rel);
-
-            if (slur.isTie() && (slur.getHead(HorizontalSide.RIGHT) == this)) {
-                // Is the starting head in same system?
-                HeadInter startHead = slur.getHead(HorizontalSide.LEFT);
-
-                if (startHead != null) {
-                    // Use start head alter
-                    return startHead.getAlter(fifths);
-                }
-
-                // Use slur extension to look into previous system
-                SlurInter prevSlur = slur.getExtension(HorizontalSide.LEFT);
-
-                if (prevSlur != null) {
-                    startHead = prevSlur.getHead(HorizontalSide.LEFT);
-
-                    if (startHead != null) {
-                        // Use start head alter
-                        return startHead.getAlter(fifths);
-                    }
-                }
-
-                // TODO: Here we should look in previous sheet/page...
-            }
-        }
-
-        // Finally, use the current key signature
-        if (fifths != null) {
-            return KeyInter.getAlterFor(getStep(), fifths);
-        }
-
-        // Nothing found, so...
-        return 0;
+        return getAlter(fifths, true);
     }
 
     //----------//
@@ -466,6 +389,50 @@ public class HeadInter
         }
 
         return set;
+    }
+
+    //----------------//
+    // haveSameHeight //
+    //----------------//
+    /**
+     * Check whether two heads represent the same height
+     * (same octave, same step, same alteration).
+     *
+     * @param n1 one head
+     * @param n2 the other head
+     * @return true if the heads are equivalent.
+     */
+    public static boolean haveSameHeight (HeadInter n1,
+                                          HeadInter n2)
+    {
+        if ((n1 == null) || (n2 == null)) {
+            return false;
+        }
+
+        // Step
+        if (n1.getStep() != n2.getStep()) {
+            return false;
+        }
+
+        // Octave
+        if (n1.getOctave() != n2.getOctave()) {
+            return false;
+        }
+
+        // Alteration
+        Staff s1 = n1.getStaff();
+        Measure m1 = s1.getPart().getMeasureAt(n1.getCenter());
+        KeyInter k1 = m1.getKeyBefore(s1);
+        int f1 = (k1 != null) ? k1.getFifths() : 0;
+        int a1 = n1.getAlter(f1, false);
+
+        Staff s2 = n2.getStaff();
+        Measure m2 = s2.getPart().getMeasureAt(n2.getCenter());
+        KeyInter k2 = m2.getKeyBefore(s2);
+        int f2 = (k2 != null) ? k2.getFifths() : 0;
+        int a2 = n2.getAlter(f2, false);
+
+        return a1 == a2;
     }
 
     //----------//
@@ -727,6 +694,103 @@ public class HeadInter
 
         //TODO: What if we have no stem? It's a WHOLE_NOTE or SMALL_WHOLE_NOTE
         // Perhaps check for a weak ledger, tangent to the note towards staff
+    }
+
+    //----------//
+    // getAlter //
+    //----------//
+    /**
+     * Report the actual alteration of this note, taking into account the accidental of
+     * this note if any, the accidental of previous note with same step within the same
+     * measure, a tie from previous measure and finally the current key signature.
+     *
+     * @param fifths fifths value for current key signature
+     * @param useTie true to use tie for check
+     * @return the actual alteration
+     */
+    private int getAlter (Integer fifths,
+                          boolean useTie)
+    {
+        // Look for local accidental
+        AlterInter accidental = getAccidental();
+
+        if (accidental != null) {
+            return alterationOf(accidental);
+        }
+
+        // Look for previous accidental with same note step in the measure
+        Measure measure = getChord().getMeasure();
+        MeasureStack stack = measure.getStack();
+        List<Slot> slots = stack.getSlots();
+
+        boolean started = false;
+
+        for (ListIterator<Slot> it = slots.listIterator(slots.size()); it.hasPrevious();) {
+            Slot slot = it.previous();
+
+            // Inspect all notes of all chords
+            for (AbstractChordInter chord : slot.getChords()) {
+                if (chord.isRest() || (chord.getMeasure() != measure)) {
+                    continue;
+                }
+
+                for (Inter inter : chord.getNotes()) {
+                    HeadInter note = (HeadInter) inter;
+
+                    if (note == this) {
+                        started = true;
+                    } else if (started
+                               && (note.getStep() == getStep())
+                               && (note.getOctave() == getOctave())
+                               && (note.getStaff() == getStaff())) {
+                        AlterInter accid = note.getAccidental();
+
+                        if (accid != null) {
+                            return alterationOf(accid);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (useTie) {
+            // Look for tie from previous measure (same system or previous system)
+            for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
+                SlurInter slur = (SlurInter) sig.getOppositeInter(this, rel);
+
+                if (slur.isTie() && (slur.getHead(HorizontalSide.RIGHT) == this)) {
+                    // Is the starting head in same system?
+                    HeadInter startHead = slur.getHead(HorizontalSide.LEFT);
+
+                    if (startHead != null) {
+                        // Use start head alter
+                        return startHead.getAlter(fifths);
+                    }
+
+                    // Use slur extension to look into previous system
+                    SlurInter prevSlur = slur.getExtension(HorizontalSide.LEFT);
+
+                    if (prevSlur != null) {
+                        startHead = prevSlur.getHead(HorizontalSide.LEFT);
+
+                        if (startHead != null) {
+                            // Use start head alter
+                            return startHead.getAlter(fifths);
+                        }
+                    }
+
+                    // TODO: Here we should look in previous sheet/page...
+                }
+            }
+        }
+
+        // Finally, use the current key signature
+        if (fifths != null) {
+            return KeyInter.getAlterFor(getStep(), fifths);
+        }
+
+        // Nothing found, so...
+        return 0;
     }
 
     //------------//

@@ -755,6 +755,38 @@ public class Measure
         return getKey(staff.getIndexInPart());
     }
 
+    //--------------//
+    // getKeyBefore //
+    //--------------//
+    /**
+     * Report the first key, if any, found at the beginning of this measure, then in
+     * previous measures in the same system, while staying in the same physical staff.
+     * <p>
+     * NOTA: There is no point in looking before the current system, since any system staff is
+     * required to start with a key or nothing.
+     *
+     * @param staff the containing staff (cannot be null)
+     * @return the latest key defined, or null
+     */
+    public KeyInter getKeyBefore (Staff staff)
+    {
+        // Look in current & preceding measures, within the same system/part, within the same staff
+        final int idx = staff.getIndexInPart();
+        Measure measure = this;
+
+        while (measure != null) {
+            KeyInter key = measure.getKey(idx);
+
+            if (key != null) {
+                return key;
+            }
+
+            measure = measure.getPrecedingInSystem();
+        }
+
+        return null; // No key previously defined
+    }
+
     //--------------------//
     // getLastMeasureClef //
     //--------------------//

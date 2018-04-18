@@ -379,7 +379,7 @@ public class SlurInter
     public void checkTie (SlurInter prevSlur)
     {
         // Tie?
-        boolean result = haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
+        boolean result = HeadInter.haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
 
         if (prevSlur.isTie() != result) {
             prevSlur.setTie(result);
@@ -682,6 +682,29 @@ public class SlurInter
         return tie;
     }
 
+    //------------//
+    // recheckTie //
+    //------------//
+    /**
+     * Recheck the tie status, now that alteration signs are available.
+     */
+    public void recheckTie ()
+    {
+        if (!tie) {
+            return;
+        }
+
+        HeadInter h1 = getHead(LEFT);
+        HeadInter h2 = getHead(RIGHT);
+
+        if ((h1 != null) && (h2 != null)) {
+            if (!HeadInter.haveSameHeight(h1, h2)) {
+                setTie(false);
+                sig.getSystem().getSheet().getStub().setModified(true);
+            }
+        }
+    }
+
     //--------//
     // remove //
     //--------//
@@ -792,26 +815,6 @@ public class SlurInter
                 sig.getSystem().getSheet().getStub().setModified(true);
             }
         }
-    }
-
-    //----------------//
-    // haveSameHeight //
-    //----------------//
-    /**
-     * Check whether two notes represent the same pitch (same octave, same step).
-     * This is needed to detects tie slurs.
-     *
-     * @param n1 one note
-     * @param n2 the other note
-     * @return true if the notes are equivalent.
-     */
-    private static boolean haveSameHeight (HeadInter n1,
-                                           HeadInter n2)
-    {
-        return (n1 != null) && (n2 != null) && (n1.getStep() == n2.getStep())
-               && (n1.getOctave() == n2.getOctave());
-
-        // TODO: what about alteration, if we have not processed them yet ???
     }
 
     //-------------//

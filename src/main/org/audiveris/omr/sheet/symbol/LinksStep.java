@@ -25,12 +25,11 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.BeamHeadCleaner;
-import org.audiveris.omr.sig.CrossDetector;
 import org.audiveris.omr.sig.SigReducer;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.ui.AdditionTask;
 import org.audiveris.omr.sig.ui.InterTask;
@@ -179,12 +178,13 @@ public class LinksStep
                              Void context)
             throws StepException
     {
-        super.doEpilog(sheet, context);
-
-        // Handle inters conflicts across systems
-        new CrossDetector(sheet).process();
-
-        new BeamHeadCleaner(sheet).process();
+        // Recheck the ties, now that alterations are available
+        for (SystemInfo system : sheet.getSystems()) {
+            for (Inter inter : system.getSig().inters(SlurInter.class)) {
+                SlurInter slur = (SlurInter) inter;
+                slur.recheckTie();
+            }
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
