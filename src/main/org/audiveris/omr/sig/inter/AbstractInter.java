@@ -999,6 +999,17 @@ public abstract class AbstractInter
         }
     }
 
+    //---------//
+    // setArea //
+    //---------//
+    /**
+     * @param area the area to set
+     */
+    public void setArea (Area area)
+    {
+        this.area = area;
+    }
+
     //-----------//
     // setBounds //
     //-----------//
@@ -1174,17 +1185,6 @@ public abstract class AbstractInter
         }
 
         return sb.toString();
-    }
-
-    //---------//
-    // setArea //
-    //---------//
-    /**
-     * @param area the area to set
-     */
-    protected void setArea (Area area)
-    {
-        this.area = area;
     }
 
     //------------//

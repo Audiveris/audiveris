@@ -81,6 +81,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -191,6 +192,14 @@ public class InterController
 
                     for (Inter inter : inters) {
                         SystemInfo system = inter.getStaff().getSystem();
+
+                        if (inter instanceof BarlineInter) {
+                            BarlineInter b = (BarlineInter) inter;
+
+                            if (b.getArea() == null) {
+                                b.setArea(new Area(b.getBounds()));
+                            }
+                        }
 
                         // If glyph used by another inter, delete this other inter
                         ///removeCompetitors(inter, inter.getGlyph(), system, seq);
