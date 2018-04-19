@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -225,6 +226,7 @@ public class MeasureFixer
 
         // Loop on stacks in system (the list of stacks being modified on the fly)
         for (int idx = 0; idx < system.getStacks().size(); idx++) {
+            boolean computeRepeats = true;
             stack = system.getStacks().get(idx);
             // First, compute voices terminations
             stack.checkDuration();
@@ -275,6 +277,11 @@ public class MeasureFixer
             } else if (isRealStart(stack)) {
                 logger.debug("realStart");
                 prevStack.mergeWithRight(stack);
+
+                if (stack.isRepeat(HorizontalSide.LEFT)) {
+                    prevStack.addRepeat(HorizontalSide.LEFT);
+                }
+
                 system.removeStack(stack);
                 idx--;
                 stack = prevStack;
@@ -285,6 +292,11 @@ public class MeasureFixer
                 setId(
                         (lastId != null) ? (lastId + 1)
                                 : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
+            }
+
+            // Inspect stack for repeat signs
+            if (computeRepeats) {
+                stack.computeRepeats();
             }
 
             // For next measure stack

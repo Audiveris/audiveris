@@ -170,90 +170,6 @@ public class DotFactory
         lateRepeatChecks(); // Dot as part of stack repeat (to say the last word)
     }
 
-    //--------------------//
-    // assignStackRepeats //
-    //--------------------//
-    /**
-     * Check left and right sides of every stack for (dot-based) repeat indication.
-     * If quorum reached, discard all other dot interpretations (such as augmentation dots).
-     */
-    private void assignStackRepeats ()
-    {
-        for (MeasureStack stack : system.getStacks()) {
-            for (HorizontalSide side : HorizontalSide.values()) {
-                final List<RepeatDotInter> repeatDots = new ArrayList<RepeatDotInter>();
-                int barCount = 0;
-
-                for (Measure measure : stack.getMeasures()) {
-                    final Part part = measure.getPart();
-                    final PartBarline partBarline = measure.getPartBarlineOn(side);
-
-                    if (partBarline == null) {
-                        continue;
-                    }
-
-                    for (Staff staff : part.getStaves()) {
-                        StaffBarlineInter staffBarline = partBarline.getStaffBarline(part, staff);
-                        BarlineInter bar = (side == LEFT) ? staffBarline.getRightBar()
-                                : staffBarline.getLeftBar();
-
-                        if (bar == null) {
-                            continue;
-                        }
-
-                        barCount++;
-
-                        Set<Relation> dRels = sig.getRelations(bar, RepeatDotBarRelation.class);
-
-                        if (dRels.isEmpty()) {
-                            continue;
-                        }
-
-                        for (Relation rel : dRels) {
-                            RepeatDotInter dot = (RepeatDotInter) sig.getOppositeInter(bar, rel);
-                            repeatDots.add(dot);
-                            logger.debug("Repeat dot for {}", dot);
-                        }
-                    }
-                }
-
-                int dotCount = repeatDots.size();
-                logger.trace("{} {} bars:{} dots:{}", stack, side, barCount, dotCount);
-
-                if ((dotCount != 0) && (dotCount >= barCount)) {
-                    // It's a repeat side, enforce it!
-                    stack.addRepeat(side);
-
-                    // Delete inters that conflict with repeat dots
-                    List<Inter> toDelete = new ArrayList<Inter>();
-
-                    for (RepeatDotInter dot : repeatDots) {
-                        Rectangle dotBox = dot.getBounds();
-
-                        for (Inter inter : sig.vertexSet()) {
-                            if (inter == dot) {
-                                continue;
-                            }
-
-                            try {
-                                if (dotBox.intersects(inter.getBounds()) && dot.overlaps(inter)) {
-                                    toDelete.add(inter);
-                                }
-                            } catch (DeletedInterException ignored) {
-                            }
-                        }
-                    }
-
-                    if (!toDelete.isEmpty()) {
-                        for (Inter inter : toDelete) {
-                            inter.remove();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     //------------------//
     // buildRepeatPairs //
     //------------------//
@@ -308,6 +224,103 @@ public class DotFactory
                 }
 
                 dot.remove();
+            }
+        }
+    }
+
+    //-------------------//
+    // checkStackRepeats //
+    //-------------------//
+    /**
+     * Check left and right sides of every stack for (dot-based) repeat indication.
+     * If quorum reached, discard all overlapping interpretations (such as augmentation dots).
+     */
+    private void checkStackRepeats ()
+    {
+        for (MeasureStack stack : system.getStacks()) {
+            for (HorizontalSide side : HorizontalSide.values()) {
+                final List<RepeatDotInter> repeatDots = new ArrayList<RepeatDotInter>();
+                int virtualDotCount = 0; // Virtual dots inferred from StaffBarline shape
+
+                for (Measure measure : stack.getMeasures()) {
+                    final Part part = measure.getPart();
+                    final PartBarline partBarline = measure.getPartBarlineOn(side);
+
+                    if (partBarline == null) {
+                        continue;
+                    }
+
+                    for (Staff staff : part.getStaves()) {
+                        StaffBarlineInter staffBarline = partBarline.getStaffBarline(part, staff);
+                        BarlineInter bar = (side == LEFT) ? staffBarline.getRightBar()
+                                : staffBarline.getLeftBar();
+
+                        if (bar != null) {
+                            // Use bar members
+                            Set<Relation> dRels = sig.getRelations(bar, RepeatDotBarRelation.class);
+
+                            if (dRels.isEmpty()) {
+                                continue;
+                            }
+
+                            for (Relation rel : dRels) {
+                                RepeatDotInter dot = (RepeatDotInter) sig.getOppositeInter(
+                                        bar,
+                                        rel);
+                                repeatDots.add(dot);
+                                logger.debug("Repeat dot for {}", dot);
+                            }
+                        } else {
+                            // Use StaffBarline shape
+                            Shape shape = staffBarline.getShape();
+
+                            if (side == LEFT) {
+                                if ((shape == Shape.LEFT_REPEAT_SIGN)
+                                    || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                    virtualDotCount += 2;
+                                }
+                            } else {
+                                if ((shape == Shape.RIGHT_REPEAT_SIGN)
+                                    || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                    virtualDotCount += 2;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                int dotCount = repeatDots.size() + virtualDotCount;
+                int staffCount = system.getStaves().size();
+                logger.trace("{} {} staves:{} dots:{}", stack, side, staffCount, dotCount);
+
+                if (dotCount >= staffCount) {
+                    // It's a repeat side, delete inters that conflict with repeat dots
+                    // This works for real dots only, not for virtual ones
+                    List<Inter> toDelete = new ArrayList<Inter>();
+
+                    for (RepeatDotInter dot : repeatDots) {
+                        Rectangle dotBox = dot.getBounds();
+
+                        for (Inter inter : sig.vertexSet()) {
+                            if (inter == dot) {
+                                continue;
+                            }
+
+                            try {
+                                if (dotBox.intersects(inter.getBounds()) && dot.overlaps(inter)) {
+                                    toDelete.add(inter);
+                                }
+                            } catch (DeletedInterException ignored) {
+                            }
+                        }
+                    }
+
+                    if (!toDelete.isEmpty()) {
+                        for (Inter inter : toDelete) {
+                            inter.remove();
+                        }
+                    }
+                }
             }
         }
     }
@@ -637,7 +650,7 @@ public class DotFactory
         checkRepeatPairs();
 
         // Assign repeats per stack
-        assignStackRepeats();
+        checkStackRepeats();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

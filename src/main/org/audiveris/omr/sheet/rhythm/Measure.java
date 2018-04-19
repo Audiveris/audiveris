@@ -812,9 +812,9 @@ public class Measure
         return null;
     }
 
-    //----------------//
+    //--------------------//
     // getLeftPartBarline //
-    //----------------//
+    //--------------------//
     public PartBarline getLeftPartBarline ()
     {
         return leftBarline;

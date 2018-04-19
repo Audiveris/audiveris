@@ -38,6 +38,7 @@ import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.RestChordInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -152,7 +153,7 @@ public class MeasureStack
     /** Repeat sign on either side of the measure stack. */
     @XmlList
     @XmlAttribute(name = "repeat")
-    private Set<HorizontalSide> repeat;
+    private Set<HorizontalSide> repeats;
 
     /** Theoretical measure stack duration, based on current time signature. */
     @XmlAttribute(name = "expected")
@@ -255,13 +256,18 @@ public class MeasureStack
     //-----------//
     // addRepeat //
     //-----------//
+    /**
+     * Add a repeat indication on the provided horizontal side.
+     *
+     * @param side provided side of the measure
+     */
     public void addRepeat (HorizontalSide side)
     {
-        if (repeat == null) {
-            repeat = EnumSet.noneOf(HorizontalSide.class);
+        if (repeats == null) {
+            repeats = EnumSet.noneOf(HorizontalSide.class);
         }
 
-        repeat.add(side);
+        repeats.add(side);
     }
 
     //------------------//
@@ -338,6 +344,48 @@ public class MeasureStack
         }
 
         stackTuplets.clear();
+    }
+
+    //----------------//
+    // computeRepeats //
+    //----------------//
+    /**
+     * Compute the possible repeat indications (left, right) for this stack.
+     */
+    public void computeRepeats ()
+    {
+        repeats = null;
+
+        Measure measure = getFirstMeasure();
+        PartBarline partBarline = measure.getPartBarlineOn(HorizontalSide.LEFT);
+
+        if (partBarline != null) {
+            StaffBarlineInter staffBarline = partBarline.getStaffBarlines().get(0);
+
+            if (staffBarline.isLeftRepeat()) {
+                addRepeat(HorizontalSide.LEFT);
+            }
+        }
+
+        partBarline = measure.getMidPartBarline();
+
+        if (partBarline != null) {
+            StaffBarlineInter staffBarline = partBarline.getStaffBarlines().get(0);
+
+            if (staffBarline.isLeftRepeat()) {
+                addRepeat(HorizontalSide.LEFT);
+            }
+        }
+
+        partBarline = measure.getRightPartBarline();
+
+        if (partBarline != null) {
+            StaffBarlineInter staffBarline = partBarline.getStaffBarlines().get(0);
+
+            if (staffBarline.isRightRepeat()) {
+                addRepeat(HorizontalSide.RIGHT);
+            }
+        }
     }
 
     //-------------------//
@@ -1291,7 +1339,7 @@ public class MeasureStack
     //----------//
     public boolean isRepeat (HorizontalSide side)
     {
-        return (repeat != null) && repeat.contains(side);
+        return (repeats != null) && repeats.contains(side);
     }
 
     //----------------//
@@ -1315,6 +1363,11 @@ public class MeasureStack
         if (rightStack.actualDuration != null) {
             actualDuration = (actualDuration == null) ? rightStack.actualDuration
                     : actualDuration.plus(rightStack.actualDuration);
+        }
+
+        // Merge the repeat info
+        if (rightStack.isRepeat(RIGHT)) {
+            this.addRepeat(RIGHT);
         }
 
         // Beware, merged slots must have their stack & xOffset updated accordingly

@@ -25,14 +25,10 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.Shape.CODA;
 import static org.audiveris.omr.glyph.Shape.SEGNO;
-
 import org.audiveris.omr.math.Rational;
-
 import static org.audiveris.omr.score.MusicXML.*;
-
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
@@ -40,7 +36,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -50,9 +45,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
-
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.QUARTER_DURATION;
-
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -70,6 +63,7 @@ import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
@@ -85,18 +79,12 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
-
 import static org.audiveris.omr.text.TextRole.*;
-
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-
 import org.audiveris.omr.util.OmrExecutors;
-
 import static org.audiveris.omr.util.VerticalSide.*;
-
 import org.audiveris.proxymusic.AboveBelow;
 import org.audiveris.proxymusic.Accidental;
 import org.audiveris.proxymusic.Articulations;
@@ -919,9 +907,8 @@ public class PartwiseBuilder
             final MeasureStack stack = current.measure.getStack();
             final PartBarline.Style style = partBarline.getStyle();
             final List<FermataInter> fermatas = partBarline.getFermatas(); // Top down list
-            final EndingInter ending = (location == RightLeftMiddle.MIDDLE) ? null
-                    : partBarline.getEnding(
-                            (location == RightLeftMiddle.LEFT) ? LEFT : RIGHT);
+            final EndingInter ending = partBarline.getEnding(
+                    (location == RightLeftMiddle.RIGHT) ? RIGHT : LEFT);
             final String endingValue = (ending != null) ? ending.getValue() : null;
             String endingNumber = (ending != null) ? ending.getExportedNumber()
                     : null;
@@ -930,17 +917,30 @@ public class PartwiseBuilder
                 endingNumber = "99"; // Dummy integer value to mean: unknown
             }
 
-            if ((partBarline == current.measure.getLeftPartBarline())
-                || (location == RightLeftMiddle.MIDDLE)
-                || ((location == RightLeftMiddle.RIGHT)
-                    && (stack.isRepeat(RIGHT) || !fermatas.isEmpty() || (ending != null)
-                        || (style != PartBarline.Style.REGULAR)))
-                || ((location == RightLeftMiddle.LEFT) && (stack.isRepeat(LEFT) || (ending != null)))) {
+            // Is export of barline element really needed? MusicXML says that if we just have a
+            // regular barline on right side of measure, and nothing else, answer is no.
+            boolean needed = false;
+
+            // Specific barline on left side:
+            needed |= (partBarline == current.measure.getLeftPartBarline());
+            // On left side, with stuff (left repeat, left ending):
+            needed |= ((location == RightLeftMiddle.LEFT)
+                       && (stack.isRepeat(LEFT) || (ending != null)));
+            // Specific barline on middle location:
+            needed |= (location == RightLeftMiddle.MIDDLE);
+            // On right side, but with stuff (right repeat, right ending, fermata) or non regular:
+            needed |= ((location == RightLeftMiddle.RIGHT)
+                       && (stack.isRepeat(RIGHT) || (ending != null) || !fermatas.isEmpty()
+                           || (style != PartBarline.Style.REGULAR)));
+
+            if (needed) {
                 try {
                     logger.debug("Visiting {} on {}", partBarline, location);
 
                     final Barline pmBarline = factory.createBarline();
-                    pmBarline.setLocation(location);
+                    pmBarline.setLocation(
+                            (location == RightLeftMiddle.RIGHT) ? RightLeftMiddle.RIGHT
+                                    : RightLeftMiddle.LEFT);
 
                     BarStyleColor barStyleColor = factory.createBarStyleColor();
                     barStyleColor.setValue(barStyleOf(style));
@@ -948,6 +948,7 @@ public class PartwiseBuilder
 
                     switch (location) {
                     case LEFT:
+                    case MIDDLE:
 
                         // (Left) repeat?
                         if (stack.isRepeat(LEFT)) {
@@ -980,11 +981,6 @@ public class PartwiseBuilder
                             pmBarline.setEnding(pmEnding);
                         }
 
-                        break;
-
-                    case MIDDLE:
-
-                        // Ending? TODO: Can an ending start or stop at a middle barline????
                         break;
 
                     case RIGHT:
@@ -1051,8 +1047,8 @@ public class PartwiseBuilder
                 }
             }
 
-            if (location == RightLeftMiddle.LEFT) {
-                // Marker(Coda,Segno)? (TODO: add daCapo & dalSegno?)
+            // Markers(Coda,Segno)? (TODO: add daCapo & dalSegno?)
+            if (location != RightLeftMiddle.RIGHT) {
                 // Check staffBarline of top staff of top part in current stack
                 Part part = current.measure.getPart();
                 Measure topMeasure = current.measure.getStack().getFirstMeasure();
@@ -1589,14 +1585,15 @@ public class PartwiseBuilder
             // Print?
             new MeasurePrint(measure).process();
 
-            // Left barline ?
-            processBarline(getBarlineOnLeft(measure), RightLeftMiddle.LEFT);
+            // Left/mid barline ?
+            PartBarline mid = measure.getMidPartBarline();
 
-            //
-            //            // Mid barline?
-            //            // TODO: insert this in proper location between notes???
-            //            process(measure.getMidPartBarline(), RightLeftMiddle.MIDDLE);
-            //
+            if (mid != null) {
+                processBarline(mid, RightLeftMiddle.MIDDLE);
+            } else {
+                processBarline(getBarlineOnLeft(measure), RightLeftMiddle.LEFT);
+            }
+
             // Divisions?
             if (isPageFirstMeasure) {
                 try {
