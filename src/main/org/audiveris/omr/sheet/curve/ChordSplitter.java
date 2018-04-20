@@ -22,7 +22,6 @@
 package org.audiveris.omr.sheet.curve;
 
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.SIGraph;
@@ -246,12 +245,11 @@ public class ChordSplitter
     private Map<StemInter, List<Partition>> getSubStems ()
     {
         final Map<StemInter, List<Partition>> stemMap = new LinkedHashMap<StemInter, List<Partition>>();
-        final Glyph rootGlyph = rootStem.getGlyph();
         int iFirst = 0; // Index of first partition pending
         int iLastAddressed = -1; // Index of last addressed partition
-        int yStart = (stemDir > 0) ? rootGlyph.getTop()
-                : ((rootGlyph.getTop()
-                    + rootGlyph.getHeight()) - 1);
+        final int rootHeight = rootStem.getBounds().height;
+        int yStart = (int) Math.rint(
+                ((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom()).getY());
 
         for (int iLast = 0, iMax = allPartitions.size() - 1; iLast <= iMax; iLast++) {
             final int yStop = (iLast != iMax)
@@ -260,7 +258,7 @@ public class ChordSplitter
             final int height = stemDir * (yStop - yStart + 1);
 
             // Extract a sub-stem only if height is significant and smaller than root stem height
-            if ((minSubStemLength <= height) && (height < rootGlyph.getHeight())) {
+            if ((minSubStemLength <= height) && (height < rootHeight)) {
                 StemInter subStem = rootStem.extractSubStem(yStart, yStop);
                 stemMap.put(subStem, allPartitions.subList(iFirst, iLast + 1));
                 iLastAddressed = iLast;

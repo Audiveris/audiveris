@@ -215,13 +215,12 @@ public abstract class AbstractBeamInter
         // Relation beam -> stem (if not yet present)
         BeamStemRelation bRel;
         final int yDir = (headToBeam == VerticalSide.TOP) ? (-1) : 1;
-        final Glyph stemGlyph = stem.getGlyph();
         final Line2D beamLimit = getBorder(headToBeam.opposite());
         bRel = new BeamStemRelation();
 
         // Precise cross point
-        Point2D start = stemGlyph.getStartPoint(Orientation.VERTICAL);
-        Point2D stop = stemGlyph.getStopPoint(Orientation.VERTICAL);
+        Point2D start = stem.getTop();
+        Point2D stop = stem.getBottom();
         Point2D crossPt = LineUtil.intersection(start, stop, beamLimit.getP1(), beamLimit.getP2());
 
         // Extension point

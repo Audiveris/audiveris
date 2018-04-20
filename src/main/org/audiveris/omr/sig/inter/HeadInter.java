@@ -832,9 +832,9 @@ public class HeadInter
 
             for (Inter inter : stems) {
                 StemInter stem = (StemInter) inter;
-                Glyph stemGlyph = stem.getGlyph();
-                Point2D start = stemGlyph.getStartPoint(VERTICAL);
-                Point2D stop = stemGlyph.getStopPoint(VERTICAL);
+                final Point2D start = stem.getTop();
+                final Point2D stop = stem.getBottom();
+
                 double crossX = LineUtil.xAtY(start, stop, refPt.getY());
                 final double xGap = xDir * (crossX - refPt.getX());
                 final double yGap;

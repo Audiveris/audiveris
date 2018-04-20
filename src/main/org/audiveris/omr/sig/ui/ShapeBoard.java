@@ -255,41 +255,41 @@ public class ShapeBoard
         char c;
 
         setMap.put(c = 'a', ShapeSet.Accidentals);
-        shapeMap.put(String.valueOf(new char[]{c, 'f'}), Shape.FLAT);
-        shapeMap.put(String.valueOf(new char[]{c, 'n'}), Shape.NATURAL);
-        shapeMap.put(String.valueOf(new char[]{c, 's'}), Shape.SHARP);
+        shapeMap.put("" + c + 'f', Shape.FLAT);
+        shapeMap.put("" + c + 'n', Shape.NATURAL);
+        shapeMap.put("" + c + 's', Shape.SHARP);
 
         setMap.put(c = 'b', ShapeSet.BeamsAndTuplets);
-        shapeMap.put(String.valueOf(new char[]{c, 'f'}), Shape.BEAM);
-        shapeMap.put(String.valueOf(new char[]{c, 'h'}), Shape.BEAM_HOOK);
-        shapeMap.put(String.valueOf(new char[]{c, '3'}), Shape.TUPLET_THREE);
+        shapeMap.put("" + c + 'f', Shape.BEAM);
+        shapeMap.put("" + c + 'h', Shape.BEAM_HOOK);
+        shapeMap.put("" + c + '3', Shape.TUPLET_THREE);
 
         setMap.put(c = 'd', ShapeSet.Dynamics);
-        shapeMap.put(String.valueOf(new char[]{c, 'p'}), Shape.DYNAMICS_P);
-        shapeMap.put(String.valueOf(new char[]{c, 'm'}), Shape.DYNAMICS_MF);
-        shapeMap.put(String.valueOf(new char[]{c, 'f'}), Shape.DYNAMICS_F);
+        shapeMap.put("" + c + 'p', Shape.DYNAMICS_P);
+        shapeMap.put("" + c + 'm', Shape.DYNAMICS_MF);
+        shapeMap.put("" + c + 'f', Shape.DYNAMICS_F);
 
         setMap.put(c = 'f', ShapeSet.Flags);
-        shapeMap.put(String.valueOf(new char[]{c, 'u'}), Shape.FLAG_1_UP);
-        shapeMap.put(String.valueOf(new char[]{c, 'd'}), Shape.FLAG_1);
+        shapeMap.put("" + c + 'u', Shape.FLAG_1_UP);
+        shapeMap.put("" + c + 'd', Shape.FLAG_1);
 
         setMap.put(c = 'h', ShapeSet.HeadsAndDot);
-        shapeMap.put(String.valueOf(new char[]{c, 'w'}), Shape.WHOLE_NOTE);
-        shapeMap.put(String.valueOf(new char[]{c, 'v'}), Shape.NOTEHEAD_VOID);
-        shapeMap.put(String.valueOf(new char[]{c, 'b'}), Shape.NOTEHEAD_BLACK);
-        shapeMap.put(String.valueOf(new char[]{c, 'd'}), Shape.AUGMENTATION_DOT);
+        shapeMap.put("" + c + 'w', Shape.WHOLE_NOTE);
+        shapeMap.put("" + c + 'v', Shape.NOTEHEAD_VOID);
+        shapeMap.put("" + c + 'b', Shape.NOTEHEAD_BLACK);
+        shapeMap.put("" + c + 'd', Shape.AUGMENTATION_DOT);
 
         setMap.put(c = 'r', ShapeSet.Rests);
-        shapeMap.put(String.valueOf(new char[]{c, '1'}), Shape.WHOLE_REST);
-        shapeMap.put(String.valueOf(new char[]{c, '2'}), Shape.HALF_REST);
-        shapeMap.put(String.valueOf(new char[]{c, '4'}), Shape.QUARTER_REST);
-        shapeMap.put(String.valueOf(new char[]{c, '8'}), Shape.EIGHTH_REST);
+        shapeMap.put("" + c + '1', Shape.WHOLE_REST);
+        shapeMap.put("" + c + '2', Shape.HALF_REST);
+        shapeMap.put("" + c + '4', Shape.QUARTER_REST);
+        shapeMap.put("" + c + '8', Shape.EIGHTH_REST);
 
         setMap.put(c = 'p', ShapeSet.Physicals);
-        shapeMap.put(String.valueOf(new char[]{c, 'l'}), Shape.LYRICS);
-        shapeMap.put(String.valueOf(new char[]{c, 't'}), Shape.TEXT);
-        shapeMap.put(String.valueOf(new char[]{c, 'a'}), Shape.SLUR);
-        shapeMap.put(String.valueOf(new char[]{c, 's'}), Shape.STEM);
+        shapeMap.put("" + c + 'l', Shape.LYRICS);
+        shapeMap.put("" + c + 't', Shape.TEXT);
+        shapeMap.put("" + c + 'a', Shape.SLUR);
+        shapeMap.put("" + c + 's', Shape.STEM);
     }
 
     //------------//
@@ -338,7 +338,7 @@ public class ShapeBoard
         map.put(ShapeSet.Markers, 40);
         map.put(ShapeSet.HeadsAndDot, 60);
         map.put(ShapeSet.Ornaments, 70);
-        map.put(ShapeSet.Physicals, 70);
+        map.put(ShapeSet.Physicals, 80);
         map.put(ShapeSet.Pluckings, 40);
         map.put(ShapeSet.Rests, 120);
         map.put(ShapeSet.Romans, 60);

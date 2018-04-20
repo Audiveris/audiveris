@@ -169,7 +169,7 @@ public abstract class Symbols
         dec.put(SLUR, new SlurSymbol());
         dec.put(STACCATISSIMO, new ArticulationSymbol(STACCATISSIMO, true, 174));
         dec.put(STACCATO, new ArticulationSymbol(STACCATO, true, 46));
-        dec.put(STEM, new StemSymbol());
+        dec.put(STEM, new StemSymbol(true));
         dec.put(STRONG_ACCENT, new ArticulationSymbol(STRONG_ACCENT, true, 94));
         dec.put(TENUTO, new ArticulationSymbol(TENUTO, true, 45));
         dec.put(TEXT, new TextSymbol(TEXT, "text"));
@@ -367,7 +367,7 @@ public abstract class Symbols
         // SLUR?
         small(SMALL_FLAG, 106);
         sym.put(SMALL_FLAG_SLASH, new SlashedFlagSymbol(false));
-        // STEM?
+        sym.put(STEM, new StemSymbol(false));
         sym.put(STACCATISSIMO, new ArticulationSymbol(STACCATISSIMO, false, 174));
         sym.put(STACCATO, new ArticulationSymbol(STACCATO, false, 46));
         sym.put(STRONG_ACCENT, new ArticulationSymbol(STRONG_ACCENT, false, 94));

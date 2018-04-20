@@ -23,7 +23,6 @@ package org.audiveris.omr.sheet.beam;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.Rational;
@@ -963,11 +962,10 @@ public class BeamGroup
         {
             final int stemDir = chord.getStemDir();
             final StemInter rootStem = chord.getStem();
-            final Glyph rootGlyph = rootStem.getGlyph();
 
             // Ordinate of head side of stem
-            final int yStart = (stemDir > 0) ? rootGlyph.getTop()
-                    : ((rootGlyph.getTop() + rootGlyph.getHeight()) - 1);
+            final int yStart = (int) Math.rint(
+                    ((stemDir > 0) ? rootStem.getTop() : rootStem.getBottom()).getY());
 
             return rootStem.extractSubStem(yStart, yStop);
         }

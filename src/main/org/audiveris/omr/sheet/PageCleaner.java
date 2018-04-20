@@ -302,7 +302,11 @@ public abstract class PageCleaner
     @Override
     public void visit (StemInter inter)
     {
-        processGlyph(inter.getGlyph());
+        if (inter.getGlyph() != null) {
+            processGlyph(inter.getGlyph());
+        } else {
+            processArea(inter.getArea());
+        }
     }
 
     @Override

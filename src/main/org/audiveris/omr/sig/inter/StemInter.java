@@ -591,6 +591,25 @@ public class StemInter
         super.remove(extensive);
     }
 
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        super.setBounds(bounds);
+
+        if (top == null) {
+            top = new Point2D.Double(bounds.x + (0.5 * bounds.width), bounds.y);
+        }
+
+        if (bottom == null) {
+            bottom = new Point2D.Double(
+                    bounds.x + (0.5 * bounds.width),
+                    (bounds.y + bounds.height) - 1);
+        }
+    }
+
     //----------//
     // setGlyph //
     //----------//

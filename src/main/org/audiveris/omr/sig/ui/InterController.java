@@ -61,9 +61,7 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
-
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
-
 import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.text.GlyphScanner;
@@ -124,8 +122,7 @@ public class InterController
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            InterController.class);
+    private static final Logger logger = LoggerFactory.getLogger(InterController.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
@@ -201,6 +198,12 @@ public class InterController
 
                             if (b.getArea() == null) {
                                 b.setArea(new Area(b.getBounds()));
+                            }
+                        } else if (inter instanceof StemInter) {
+                            StemInter stem = (StemInter) inter;
+
+                            if ((stem.getGlyph() == null) && (stem.getArea() == null)) {
+                                stem.setArea(new Area(stem.getBounds()));
                             }
                         }
 

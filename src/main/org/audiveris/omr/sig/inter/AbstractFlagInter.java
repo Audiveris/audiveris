@@ -23,11 +23,12 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
 import static org.audiveris.omr.glyph.ShapeSet.SmallFlags;
+
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -283,9 +284,8 @@ public abstract class AbstractFlagInter
                 continue;
             }
 
-            Glyph stemGlyph = stem.getGlyph();
-            Point2D start = stemGlyph.getStartPoint(VERTICAL);
-            Point2D stop = stemGlyph.getStopPoint(VERTICAL);
+            Point2D start = stem.getTop();
+            Point2D stop = stem.getBottom();
             double crossX = LineUtil.xAtY(start, stop, refPt.getY());
             final double xGap = refPt.getX() - crossX;
             final double yGap;

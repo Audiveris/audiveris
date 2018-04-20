@@ -918,14 +918,13 @@ public class StemsBuilder
                 bRel = (BeamStemRelation) sig.getRelation(beam, stem, BeamStemRelation.class);
 
                 if (bRel == null) {
-                    final Glyph stemGlyph = stem.getGlyph();
                     final Line2D beamLimit = getLimit(beam);
                     bRel = new BeamStemRelation();
 
                     // Precise cross point
-                    Point2D start = stemGlyph.getStartPoint(Orientation.VERTICAL);
-                    Point2D stop = stemGlyph.getStopPoint(Orientation.VERTICAL);
-                    Point2D crossPt = crossing(stemGlyph, beam);
+                    Point2D start = stem.getTop();
+                    Point2D stop = stem.getBottom();
+                    Point2D crossPt = crossing(stem, beam);
 
                     // Extension point
                     bRel.setExtensionPoint(
@@ -1097,15 +1096,15 @@ public class StemsBuilder
             /**
              * Compute the crossing point between a stem and a beam.
              *
-             * @param stemGlyph the stem (glyph)
-             * @param beam      the beam
+             * @param stem the stem
+             * @param beam the beam
              * @return the precise crossing point
              */
-            private Point2D crossing (Glyph stemGlyph,
+            private Point2D crossing (StemInter stem,
                                       AbstractBeamInter beam)
             {
-                Point2D start = stemGlyph.getStartPoint(Orientation.VERTICAL);
-                Point2D stop = stemGlyph.getStopPoint(Orientation.VERTICAL);
+                Point2D start = stem.getTop();
+                Point2D stop = stem.getBottom();
                 Line2D beamLimit = getLimit(beam);
 
                 return LineUtil.intersection(start, stop, beamLimit.getP1(), beamLimit.getP2());
@@ -1476,7 +1475,7 @@ public class StemsBuilder
                                         BeamStemRelation r = new BeamStemRelation();
                                         r.setBeamPortion(rel.getBeamPortion());
 
-                                        Point2D crossPt = crossing(stem.getGlyph(), next);
+                                        Point2D crossPt = crossing(stem, next);
                                         r.setExtensionPoint(
                                                 new Point2D.Double(
                                                         crossPt.getX(),
@@ -2074,10 +2073,7 @@ public class StemsBuilder
                 StemInter stem = (StemInter) sig.getOppositeInter(head, rel);
 
                 // For this test, we cannot trust stem extensions and must stay with physical stem
-                Glyph glyph = stem.getGlyph();
-                Line2D stemLine = new Line2D.Double(
-                        glyph.getStartPoint(VERTICAL),
-                        glyph.getStopPoint(VERTICAL));
+                Line2D stemLine = new Line2D.Double(stem.getTop(), stem.getBottom());
                 StemPortion portion = rel.getStemPortion(head, stemLine, scale);
                 HorizontalSide side = rel.getHeadSide();
                 double yGap = rel.getDy();

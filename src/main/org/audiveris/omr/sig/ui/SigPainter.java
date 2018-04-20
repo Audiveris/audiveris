@@ -46,6 +46,7 @@ import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
@@ -55,19 +56,15 @@ import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.ui.symbol.Alignment;
-
 import static org.audiveris.omr.ui.symbol.Alignment.*;
-
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.OmrFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
-
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_LOWER_HALF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
-
 import org.audiveris.omr.ui.symbol.TextFont;
 
 import org.slf4j.Logger;
@@ -87,7 +84,6 @@ import java.awt.geom.CubicCurve2D;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.audiveris.omr.sig.inter.StaffBarlineInter;
 
 /**
  * Class {@code SigPainter} paints all the {@link Inter} instances of a SIG.
@@ -556,7 +552,14 @@ public class SigPainter
 
         //TODO: use proper stem thickness! (see ledger)
         g.setStroke(stemStroke);
-        stem.getGlyph().renderLine(g);
+
+        final Glyph glyph = stem.getGlyph();
+
+        if (glyph != null) {
+            glyph.renderLine(g);
+        } else {
+            g.fill(stem.getArea());
+        }
     }
 
     //-------//

@@ -33,7 +33,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code ArticulationSymbol} implements a decorated articulation symbol.
+ * Class {@code ArticulationSymbol} implements an articulation symbol.
  *
  * @author Hervé Bitteur
  */
