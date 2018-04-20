@@ -112,6 +112,8 @@ public class SymbolsEditor
     /** Related nest view. */
     private final MyView view;
 
+    private final ShapeBoard shapeBoard;
+
     /** Pop-up menu related to page selection. */
     private final EditorMenu pageMenu;
 
@@ -134,6 +136,9 @@ public class SymbolsEditor
         this.sheet = sheet;
 
         pageMenu = new EditorMenu(sheet);
+
+        view = new MyView(sheet.getGlyphIndex());
+        view.setLocationService(sheet.getLocationService());
 
         List<Board> boards = new ArrayList<Board>();
         boards.add(new PixelBoard(sheet));
@@ -178,7 +183,7 @@ public class SymbolsEditor
 
         boards.add(new SymbolGlyphBoard(glyphsController, true, true));
         boards.add(new InterBoard(sheet));
-        boards.add(new ShapeBoard(sheet, true));
+        boards.add(shapeBoard = new ShapeBoard(sheet, this, true));
         boards.add(
                 new EvaluationBoard(
                         true,
@@ -198,15 +203,25 @@ public class SymbolsEditor
 
         BoardsPane boardsPane = new BoardsPane(boards);
 
-        view = new MyView(sheet.getGlyphIndex());
-        view.setLocationService(sheet.getLocationService());
-
         // Create a hosting pane for the view
         ScrollView slv = new ScrollView(view);
         sheet.getStub().getAssembly().addViewTab(SheetTab.DATA_TAB, slv, boardsPane);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------------//
+    // getShapeBoard //
+    //---------------//
+    /**
+     * Report the shape palette
+     *
+     * @return the shapeBoard
+     */
+    public ShapeBoard getShapeBoard ()
+    {
+        return shapeBoard;
+    }
+
     //--------------------//
     // getStrictMeasureAt //
     //--------------------//

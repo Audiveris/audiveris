@@ -61,7 +61,9 @@ import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
+
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
+
 import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.text.GlyphScanner;
@@ -122,7 +124,8 @@ public class InterController
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(InterController.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            InterController.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
@@ -1206,70 +1209,6 @@ public class InterController
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //----------//
-    // CtrlTask //
-    //----------//
-    /**
-     * Task class to run user-initiated processing asynchronously.
-     */
-    private abstract class CtrlTask
-            extends VoidTask
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        protected UITaskList seq = new UITaskList();
-
-        protected final OpKind opKind;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public CtrlTask (OpKind opKind)
-        {
-            this.opKind = opKind;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Background epilog for any user action sequence.
-         *
-         * @param seq sequence of user tasks
-         */
-        protected void epilog (UITaskList seq)
-        {
-            if (opKind == OpKind.DO) {
-                sheet.getStub().setModified(true);
-            }
-
-            // Re-process impacted steps
-            final Step latestStep = sheet.getStub().getLatestStep();
-            final Step firstStep = firstImpactedStep(seq);
-            logger.debug("firstStep: {}", firstStep);
-
-            if ((firstStep != null) && (firstStep.compareTo(latestStep) <= 0)) {
-                final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
-
-                for (Step step : steps) {
-                    logger.debug("Impact {}", step);
-                    step.impact(seq, opKind);
-                }
-            }
-        }
-
-        @Override
-        @UIThread
-        protected void finished ()
-        {
-            // This method runs on EDT
-
-            // Append to history?
-            if ((opKind == DO) && (seq != null)) {
-                history.add(seq);
-            }
-
-            // Refresh user display
-            refreshUI();
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -1406,6 +1345,70 @@ public class InterController
             sb.append("}");
 
             return sb.toString();
+        }
+    }
+
+    //----------//
+    // CtrlTask //
+    //----------//
+    /**
+     * Task class to run user-initiated processing asynchronously.
+     */
+    private abstract class CtrlTask
+            extends VoidTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        protected UITaskList seq = new UITaskList();
+
+        protected final OpKind opKind;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public CtrlTask (OpKind opKind)
+        {
+            this.opKind = opKind;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Background epilog for any user action sequence.
+         *
+         * @param seq sequence of user tasks
+         */
+        protected void epilog (UITaskList seq)
+        {
+            if (opKind == OpKind.DO) {
+                sheet.getStub().setModified(true);
+            }
+
+            // Re-process impacted steps
+            final Step latestStep = sheet.getStub().getLatestStep();
+            final Step firstStep = firstImpactedStep(seq);
+            logger.debug("firstStep: {}", firstStep);
+
+            if ((firstStep != null) && (firstStep.compareTo(latestStep) <= 0)) {
+                final EnumSet<Step> steps = EnumSet.range(firstStep, latestStep);
+
+                for (Step step : steps) {
+                    logger.debug("Impact {}", step);
+                    step.impact(seq, opKind);
+                }
+            }
+        }
+
+        @Override
+        @UIThread
+        protected void finished ()
+        {
+            // This method runs on EDT
+
+            // Append to history?
+            if ((opKind == DO) && (seq != null)) {
+                history.add(seq);
+            }
+
+            // Refresh user display
+            refreshUI();
         }
     }
 
