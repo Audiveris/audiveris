@@ -199,12 +199,6 @@ public class InterController
                             if (b.getArea() == null) {
                                 b.setArea(new Area(b.getBounds()));
                             }
-                        } else if (inter instanceof StemInter) {
-                            StemInter stem = (StemInter) inter;
-
-                            if ((stem.getGlyph() == null) && (stem.getArea() == null)) {
-                                stem.setArea(new Area(stem.getBounds()));
-                            }
                         }
 
                         // If glyph used by another inter, delete this other inter

@@ -305,7 +305,7 @@ public abstract class PageCleaner
         if (inter.getGlyph() != null) {
             processGlyph(inter.getGlyph());
         } else {
-            processArea(inter.getArea());
+            processArea(new Area(inter.getBounds()));
         }
     }
 

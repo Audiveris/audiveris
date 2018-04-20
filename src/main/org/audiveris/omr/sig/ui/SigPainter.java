@@ -558,7 +558,7 @@ public class SigPainter
         if (glyph != null) {
             glyph.renderLine(g);
         } else {
-            g.fill(stem.getArea());
+            g.fill(stem.getBounds());
         }
     }
 

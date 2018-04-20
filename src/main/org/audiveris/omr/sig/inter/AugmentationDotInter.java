@@ -121,8 +121,20 @@ public class AugmentationDotInter
     @Override
     public boolean checkAbnormal ()
     {
-        // Check if dot is connected to a note or a (first) dot
-        setAbnormal(!sig.hasRelation(this, AugmentationRelation.class, DoubleDotRelation.class));
+        // Check if dot is connected to a note or to another (first) dot
+        boolean ab = true;
+
+        if (sig.hasRelation(this, AugmentationRelation.class)) {
+            ab = false;
+        } else {
+            for (Relation dd : sig.getRelations(this, DoubleDotRelation.class)) {
+                if (sig.getEdgeSource(dd) == this) {
+                    ab = false;
+                }
+            }
+        }
+
+        setAbnormal(ab);
 
         return isAbnormal();
     }
@@ -196,7 +208,11 @@ public class AugmentationDotInter
     public AugmentationDotInter getSecondAugmentationDot ()
     {
         for (Relation dd : sig.getRelations(this, DoubleDotRelation.class)) {
-            return (AugmentationDotInter) sig.getOppositeInter(this, dd);
+            Inter dot = sig.getEdgeSource(dd);
+
+            if (dot != this) {
+                return (AugmentationDotInter) dot;
+            }
         }
 
         return null;
