@@ -186,9 +186,6 @@ public class ViewParameters
     /** Action for switching entity selection. (Must be lazily computed) */
     private ApplicationAction selectionAction;
 
-    /** Translucent painting is chosen to be not persistent. */
-    private boolean translucentPainting = true;
-
     /** Voice painting is chosen to be not persistent. */
     private boolean voicePainting = false;
 
@@ -349,7 +346,7 @@ public class ViewParameters
     //-----------------------//
     public boolean isTranslucentPainting ()
     {
-        return translucentPainting;
+        return constants.translucentPainting.getValue();
     }
 
     //-----------------//
@@ -505,8 +502,8 @@ public class ViewParameters
     //------------------------//
     public void setTranslucentPainting (boolean value)
     {
-        boolean oldValue = translucentPainting;
-        translucentPainting = value;
+        boolean oldValue = constants.translucentPainting.getValue();
+        constants.translucentPainting.setValue(value);
         firePropertyChange(TRANSLUCENT_PAINTING, oldValue, value);
     }
 
@@ -817,5 +814,9 @@ public class ViewParameters
         private final Constant.Boolean sentencePainting = new Constant.Boolean(
                 true,
                 "Should the sentence words links be painted");
+
+        private final Constant.Boolean translucentPainting = new Constant.Boolean(
+                true,
+                "Should the inters be painted with grade-based translucency");
     }
 }
