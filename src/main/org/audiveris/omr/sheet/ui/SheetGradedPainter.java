@@ -25,6 +25,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.SigPainter;
+import org.audiveris.omr.ui.ViewParameters;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -69,8 +70,12 @@ public class SheetGradedPainter
     private class GradedSigPainter
             extends SigPainter
     {
-        //~ Constructors ---------------------------------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
+        /** View parameters. */
+        private final ViewParameters viewParams = ViewParameters.getInstance();
+
+        //~ Constructors ---------------------------------------------------------------------------
         public GradedSigPainter (Graphics g,
                                  Scale scale)
         {
@@ -92,14 +97,21 @@ public class SheetGradedPainter
         {
             // Shape base color
             final Color base = inter.getColor();
+            final Color color;
 
-            // Prefer contextual grade over intrinsic grade when available
-            final double grade = inter.getBestGrade();
+            // Should we use translucency?
+            if (viewParams.isTranslucentPainting()) {
+                // Prefer contextual grade over intrinsic grade when available
+                final double grade = inter.getBestGrade();
 
-            // Alpha value [0 .. 255] is derived from grade [0.0 .. 1.0]
-            final int alpha = Math.min(255, Math.max(0, (int) Math.rint(255 * grade)));
+                // Alpha value [0 .. 255] is derived from grade [0.0 .. 1.0]
+                final int alpha = Math.min(255, Math.max(0, (int) Math.rint(255 * grade)));
 
-            final Color color = new Color(base.getRed(), base.getGreen(), base.getBlue(), alpha);
+                color = new Color(base.getRed(), base.getGreen(), base.getBlue(), alpha);
+            } else {
+                color = base;
+            }
+
             g.setColor(color);
         }
     }

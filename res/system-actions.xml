@@ -60,6 +60,7 @@
 
     <action domain="VIEW" section="10" class="org.audiveris.omr.sheet.ui.BookActions"  method="zoomWidth"                                                  button="javax.swing.JButton"/>
     <action domain="VIEW" section="10" class="org.audiveris.omr.sheet.ui.BookActions"  method="zoomHeight"                                                 button="javax.swing.JButton"/>
+    <action domain="VIEW" section="20" class="org.audiveris.omr.ui.ViewParameters"     method="toggleTranslucency"  item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="20" class="org.audiveris.omr.ui.ViewParameters"     method="toggleVoices"        item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
     <action domain="VIEW" section="20" class="org.audiveris.omr.ui.ViewParameters"     method="toggleErrors"        item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton"/>
     <action domain="VIEW" section="20" class="org.audiveris.omr.ui.ViewParameters"     method="switchSelections"                                           button="javax.swing.JButton" />

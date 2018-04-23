@@ -101,6 +101,9 @@ public class ViewParameters
     /** Should the sentence links be painted. */
     public static final String SENTENCE_PAINTING = "sentencePainting";
 
+    /** Should the inters be painted with grade-based translucency in input view. */
+    public static final String TRANSLUCENT_PAINTING = "translucentPainting";
+
     //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Enum {@code PaintingLayer} defines layers to be painted.
@@ -182,6 +185,9 @@ public class ViewParameters
 
     /** Action for switching entity selection. (Must be lazily computed) */
     private ApplicationAction selectionAction;
+
+    /** Translucent painting is chosen to be not persistent. */
+    private boolean translucentPainting = true;
 
     /** Voice painting is chosen to be not persistent. */
     private boolean voicePainting = false;
@@ -338,6 +344,14 @@ public class ViewParameters
         return constants.translationPainting.getValue();
     }
 
+    //-----------------------//
+    // isTranslucentPainting //
+    //-----------------------//
+    public boolean isTranslucentPainting ()
+    {
+        return translucentPainting;
+    }
+
     //-----------------//
     // isVoicePainting //
     //-----------------//
@@ -353,7 +367,7 @@ public class ViewParameters
     {
         boolean oldValue = constants.annotationPainting.getValue();
         constants.annotationPainting.setValue(value);
-        firePropertyChange(ANNOTATION_PAINTING, oldValue, constants.annotationPainting.getValue());
+        firePropertyChange(ANNOTATION_PAINTING, oldValue, value);
     }
 
     //-----------------------//
@@ -373,7 +387,7 @@ public class ViewParameters
     {
         boolean oldValue = errorPainting;
         errorPainting = value;
-        firePropertyChange(ERROR_PAINTING, oldValue, errorPainting);
+        firePropertyChange(ERROR_PAINTING, oldValue, value);
     }
 
     //------------------------//
@@ -413,7 +427,7 @@ public class ViewParameters
     {
         boolean oldValue = constants.markPainting.getValue();
         constants.markPainting.setValue(value);
-        firePropertyChange(MARK_PAINTING, oldValue, constants.markPainting.getValue());
+        firePropertyChange(MARK_PAINTING, oldValue, value);
     }
 
     //------------------//
@@ -423,7 +437,7 @@ public class ViewParameters
     {
         PaintingLayer oldValue = getPaintingLayer();
         paintingLayer = value;
-        firePropertyChange(LAYER_PAINTING, oldValue, getPaintingLayer());
+        firePropertyChange(LAYER_PAINTING, oldValue, value);
     }
 
     //------------------//
@@ -433,7 +447,7 @@ public class ViewParameters
     {
         SelectionMode oldValue = getSelectionMode();
         selectionMode = value;
-        firePropertyChange(SELECTION_MODE, oldValue, getSelectionMode());
+        firePropertyChange(SELECTION_MODE, oldValue, value);
     }
 
     //---------------------//
@@ -453,7 +467,7 @@ public class ViewParameters
     {
         boolean oldValue = constants.slotPainting.getValue();
         constants.slotPainting.setValue(value);
-        firePropertyChange(SLOT_PAINTING, oldValue, constants.slotPainting.getValue());
+        firePropertyChange(SLOT_PAINTING, oldValue, value);
     }
 
     //----------------------//
@@ -486,6 +500,16 @@ public class ViewParameters
         firePropertyChange(TRANSLATION_PAINTING, oldValue, value);
     }
 
+    //------------------------//
+    // setTranslucentPainting //
+    //------------------------//
+    public void setTranslucentPainting (boolean value)
+    {
+        boolean oldValue = translucentPainting;
+        translucentPainting = value;
+        firePropertyChange(TRANSLUCENT_PAINTING, oldValue, value);
+    }
+
     //------------------//
     // setVoicePainting //
     //------------------//
@@ -493,7 +517,7 @@ public class ViewParameters
     {
         boolean oldValue = voicePainting;
         voicePainting = value;
-        firePropertyChange(VOICE_PAINTING, oldValue, voicePainting);
+        firePropertyChange(VOICE_PAINTING, oldValue, value);
     }
 
     //--------------//
@@ -543,7 +567,9 @@ public class ViewParameters
 
         // Update toolbar/menu icon for this dedicated action
         if (selectionAction == null) {
-            selectionAction = ActionManager.getInstance().getActionInstance(this, "switchSelections");
+            selectionAction = ActionManager.getInstance().getActionInstance(
+                    this,
+                    "switchSelections");
         }
 
         Icon icon = mode.getIcon();
@@ -707,6 +733,19 @@ public class ViewParameters
      */
     @Action(selectedProperty = TRANSLATION_PAINTING)
     public void toggleTranslations (ActionEvent e)
+    {
+    }
+
+    //--------------------//
+    // toggleTranslucency //
+    //--------------------//
+    /**
+     * Action that toggles the display of inters with translucency.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = TRANSLUCENT_PAINTING)
+    public void toggleTranslucency (ActionEvent e)
     {
     }
 
