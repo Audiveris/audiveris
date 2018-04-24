@@ -383,6 +383,8 @@ public class ShapeBoard
             }
         }
 
+        panel.addKeyListener(keyListener);
+
         return panel;
     }
 
@@ -411,6 +413,7 @@ public class ShapeBoard
         close.setToolTipText("Back to shape sets");
         close.setBorderPainted(false);
         panel.add(close);
+        panel.addKeyListener(keyListener);
 
         // One button per shape
         addButtons(panel, set.getSortedShapes());
@@ -432,6 +435,7 @@ public class ShapeBoard
         setsPanel.setVisible(true);
 
         resizeBoard();
+        setsPanel.requestFocusInWindow();
     }
 
     //--------------//
@@ -520,6 +524,7 @@ public class ShapeBoard
         shapesPanel.setVisible(true);
 
         resizeBoard();
+        shapesPanel.requestFocusInWindow();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
