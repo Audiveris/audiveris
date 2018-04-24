@@ -23,6 +23,7 @@ package org.audiveris.omr.glyph.ui;
 
 import org.audiveris.omr.classifier.BasicClassifier;
 import org.audiveris.omr.classifier.DeepClassifier;
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.Filament;
@@ -122,8 +123,8 @@ public class SymbolsEditor
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a view in the sheet assembly tabs, dedicated to the
-     * display and handling of glyphs.
+     * Create the DATA_TAB view in the sheet assembly tabs, dedicated to the display and
+     * handling of glyphs and inters.
      *
      * @param sheet            the sheet whose glyph instances are considered
      * @param glyphsController the symbols controller for this sheet
@@ -141,7 +142,7 @@ public class SymbolsEditor
         view.setLocationService(sheet.getLocationService());
 
         List<Board> boards = new ArrayList<Board>();
-        boards.add(new PixelBoard(sheet));
+        boards.add(new PixelBoard(sheet, constants.selectPixelBoard.isSet()));
 
         Lag hLag = sheet.getLagManager().getLag(Lags.HLAG);
 
@@ -159,7 +160,7 @@ public class SymbolsEditor
             //                boards.add(new RunBoard(hLag, false));
             //            }
             //
-            boards.add(new SectionBoard(hLag, false));
+            boards.add(new SectionBoard(hLag, constants.selectHorizontalSectionBoard.isSet()));
         }
 
         Lag vLag = sheet.getLagManager().getLag(Lags.VLAG);
@@ -178,12 +179,13 @@ public class SymbolsEditor
             //                boards.add(new RunBoard(vLag, false));
             //            }
             //
-            boards.add(new SectionBoard(vLag, false));
+            boards.add(new SectionBoard(vLag, constants.selectVerticalSectionBoard.isSet()));
         }
 
-        boards.add(new SymbolGlyphBoard(glyphsController, true, true));
-        boards.add(new InterBoard(sheet));
-        boards.add(shapeBoard = new ShapeBoard(sheet, this, true));
+        boards.add(
+                new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet(), true));
+        boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
+        boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
         boards.add(
                 new EvaluationBoard(
                         true,
@@ -191,7 +193,7 @@ public class SymbolsEditor
                         BasicClassifier.getInstance(),
                         sheet.getGlyphIndex().getEntityService(),
                         interController,
-                        true));
+                        constants.selectBasicClassifierBoard.isSet()));
         boards.add(
                 new EvaluationBoard(
                         true,
@@ -199,7 +201,7 @@ public class SymbolsEditor
                         DeepClassifier.getInstance(),
                         sheet.getGlyphIndex().getEntityService(),
                         interController,
-                        false));
+                        constants.selectDeepClassifierBoard.isSet()));
 
         BoardsPane boardsPane = new BoardsPane(boards);
 
@@ -349,6 +351,38 @@ public class SymbolsEditor
         private final PixelCount measureMargin = new PixelCount(
                 10,
                 "Number of pixels as margin when highlighting a measure");
+
+        private final Constant.Boolean selectPixelBoard = new Constant.Boolean(
+                false,
+                "Should we select Pixel board by default?");
+
+        private final Constant.Boolean selectHorizontalSectionBoard = new Constant.Boolean(
+                false,
+                "Should we select Horizontal Section board by default?");
+
+        private final Constant.Boolean selectVerticalSectionBoard = new Constant.Boolean(
+                false,
+                "Should we select Vertical Section board by default?");
+
+        private final Constant.Boolean selectGlyphBoard = new Constant.Boolean(
+                false,
+                "Should we select Glyph board by default?");
+
+        private final Constant.Boolean selectInterBoard = new Constant.Boolean(
+                true,
+                "Should we select Inter board by default?");
+
+        private final Constant.Boolean selectShapeBoard = new Constant.Boolean(
+                true,
+                "Should we select Shape board by default?");
+
+        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
+                true,
+                "Should we select Basic Classifier board by default?");
+
+        private final Constant.Boolean selectDeepClassifierBoard = new Constant.Boolean(
+                false,
+                "Should we select Deep Classifier board by default?");
     }
 
     //--------//

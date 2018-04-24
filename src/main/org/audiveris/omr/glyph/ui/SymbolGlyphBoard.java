@@ -76,7 +76,7 @@ public class SymbolGlyphBoard
                              boolean useSpinners)
     {
         // For all glyphs
-        super(glyphsController, useSpinners, true);
+        super(glyphsController, useSpinners, selected);
 
         // Initial status
         width.setEnabled(false);

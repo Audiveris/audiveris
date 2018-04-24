@@ -83,13 +83,25 @@ public class PixelBoard
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a PixelBoard.
+     * Create a PixelBoard, pre-selected by default
      *
      * @param sheet the related sheet
      */
     public PixelBoard (Sheet sheet)
     {
-        super(Board.PIXEL, sheet.getLocationService(), eventsRead, true, false, false, false);
+        this(sheet, true);
+    }
+
+    /**
+     * Create a PixelBoard.
+     *
+     * @param sheet    the related sheet
+     * @param selected true for pre-selected, false for collapsed
+     */
+    public PixelBoard (Sheet sheet,
+                       boolean selected)
+    {
+        super(Board.PIXEL, sheet.getLocationService(), eventsRead, selected, false, false, false);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(

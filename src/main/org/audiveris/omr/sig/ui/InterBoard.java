@@ -113,11 +113,24 @@ public class InterBoard
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new InterBoard object.
+     * Creates a new InterBoard object, pre-selected by default.
      *
-     * @param sheet the related sheet
+     * @param sheet    the related sheet
+     * @param selected true for pre-selected, false for collapsed
      */
     public InterBoard (Sheet sheet)
+    {
+        this(sheet, true);
+    }
+
+    /**
+     * Creates a new InterBoard object.
+     *
+     * @param sheet    the related sheet
+     * @param selected true for pre-selected, false for collapsed
+     */
+    public InterBoard (Sheet sheet,
+                       boolean selected)
     {
         super(Board.INTER, sheet.getInterIndex().getEntityService(), true);
         this.sheet = sheet;
