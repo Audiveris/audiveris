@@ -145,30 +145,35 @@ public class BinarizationBoard
         if (rect != null) {
             FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
             ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.INITIAL);
-            PixelFilter filter = desc.getFilter(source);
 
-            if (filter == null) {
-                filter = new RandomFilter(
-                        source,
-                        AdaptiveFilter.getDefaultMeanCoeff(),
-                        AdaptiveFilter.getDefaultStdDevCoeff());
-            }
+            if (source != null) {
+                PixelFilter filter = desc.getFilter(source);
 
-            PixelFilter.Context context = filter.getContext(rect.x, rect.y);
-
-            if (context != null) {
-                if (context instanceof AdaptiveContext) {
-                    AdaptiveContext ctx = (AdaptiveContext) context;
-                    mean.setValue(ctx.mean);
-                    stdDev.setValue(ctx.standardDeviation);
-                } else {
-                    mean.setText("");
-                    stdDev.setText("");
+                if (filter == null) {
+                    filter = new RandomFilter(
+                            source,
+                            AdaptiveFilter.getDefaultMeanCoeff(),
+                            AdaptiveFilter.getDefaultStdDevCoeff());
                 }
 
-                threshold.setValue(context.threshold);
+                PixelFilter.Context context = filter.getContext(rect.x, rect.y);
 
-                return;
+                if (context != null) {
+                    if (context instanceof AdaptiveContext) {
+                        AdaptiveContext ctx = (AdaptiveContext) context;
+                        mean.setValue(ctx.mean);
+                        stdDev.setValue(ctx.standardDeviation);
+                    } else {
+                        mean.setText("");
+                        stdDev.setText("");
+                    }
+
+                    threshold.setValue(context.threshold);
+
+                    return;
+                }
+            } else {
+                logger.info("No INITIAL source available");
             }
         }
 

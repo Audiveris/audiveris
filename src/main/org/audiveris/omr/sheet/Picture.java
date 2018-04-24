@@ -299,7 +299,7 @@ public class Picture
     public void disposeSource (SourceKey key)
     {
         // Nullify cached data, if needed
-        if (key == SourceKey.INITIAL) {
+        if ((key == SourceKey.INITIAL) && constants.disposeOfInitialSource.isSet()) {
             initialImage = null;
         }
 
@@ -496,17 +496,6 @@ public class Picture
         }
     }
 
-    //-----------------//
-    // getLevelService //
-    //-----------------//
-    /**
-     * @return the pixelService
-     */
-    public SelectionService getPixelService ()
-    {
-        return pixelService;
-    }
-
     //---------//
     // getName //
     //---------//
@@ -518,6 +507,17 @@ public class Picture
     public String getName ()
     {
         return "Picture";
+    }
+
+    //-----------------//
+    // getLevelService //
+    //-----------------//
+    /**
+     * @return the pixelService
+     */
+    public SelectionService getPixelService ()
+    {
+        return pixelService;
     }
 
     //-----------//
@@ -982,6 +982,10 @@ public class Picture
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch(es)?");
+
+        private final Constant.Boolean disposeOfInitialSource = new Constant.Boolean(
+                true,
+                "Should we dispose of initial source once binarized?");
 
         private final Constant.Integer gaussianRadius = new Constant.Integer(
                 "pixels",
