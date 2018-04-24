@@ -100,7 +100,7 @@ public class MusicFont
     /** The music font used just for icons (half-size). */
     public static final MusicFont iconMusicFont = getPointFont(
             getPointSize(DEFAULT_INTERLINE) / 2,
-            DEFAULT_INTERLINE);
+            DEFAULT_INTERLINE / 2);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Interline value of the staves where this font is used. */
