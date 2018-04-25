@@ -356,6 +356,11 @@ public class ActionManager
 
             for (ActionDescriptor desc : Actions.getAllDescriptors()) {
                 if (desc.domain.equalsIgnoreCase(domain) && (desc.section == section)) {
+                    // Skip advanced topics, unless explicitly set
+                    if ((desc.topic != null) && !desc.topic.isSet()) {
+                        continue;
+                    }
+
                     logger.debug("Registering {}", desc);
 
                     try {

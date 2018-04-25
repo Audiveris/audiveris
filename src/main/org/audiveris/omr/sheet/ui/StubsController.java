@@ -137,55 +137,6 @@ public class StubsController
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // getCurrentBook //
-    //----------------//
-    /**
-     * Convenient method to get the current book instance, if any.
-     *
-     * @return the current book instance, or null
-     */
-    public static Book getCurrentBook ()
-    {
-        SheetStub stub = getCurrentStub();
-
-        if (stub == null) {
-            return null;
-        }
-
-        return stub.getBook();
-    }
-
-    //----------------//
-    // getCurrentStub //
-    //----------------//
-    /**
-     * Convenient method to get the currently selected sheet stub, if any.
-     *
-     * @return the selected stub, or null
-     */
-    public static SheetStub getCurrentStub ()
-    {
-        return getInstance().getSelectedStub();
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class.
-     *
-     * @return the single instance
-     */
-    public static StubsController getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new StubsController();
-        }
-
-        return INSTANCE;
-    }
-
     //-------------//
     // addAssembly //
     //-------------//
@@ -390,6 +341,51 @@ public class StubsController
         return stubsPane;
     }
 
+    //----------------//
+    // getCurrentBook //
+    //----------------//
+    /**
+     * Convenient method to get the current book instance, if any.
+     *
+     * @return the current book instance, or null
+     */
+    public static Book getCurrentBook ()
+    {
+        SheetStub stub = getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        return stub.getBook();
+    }
+
+    //----------------//
+    // getCurrentStub //
+    //----------------//
+    /**
+     * Convenient method to get the currently selected sheet stub, if any.
+     *
+     * @return the selected stub, or null
+     */
+    public static SheetStub getCurrentStub ()
+    {
+        return getInstance().getSelectedStub();
+    }
+
+    //--------------//
+    // getEarlyStep //
+    //--------------//
+    /**
+     * Report the step run by default on every new stub displayed.
+     *
+     * @return the default target step
+     */
+    public static Step getEarlyStep ()
+    {
+        return constants.earlyStep.getValue();
+    }
+
     //----------//
     // getIndex //
     //----------//
@@ -402,6 +398,23 @@ public class StubsController
     public Integer getIndex (SheetStub stub)
     {
         return stubsPane.indexOfComponent(stub.getAssembly().getComponent());
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this class.
+     *
+     * @return the single instance
+     */
+    public static StubsController getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new StubsController();
+        }
+
+        return INSTANCE;
     }
 
     //--------------//
@@ -528,45 +541,6 @@ public class StubsController
         }
     }
 
-    //-----------//
-    // reDisplay //
-    //-----------//
-    public void reDisplay (final SheetStub stub)
-    {
-        Callable<Void> task = new Callable<Void>()
-        {
-            @Override
-            public Void call ()
-                    throws Exception
-            {
-                try {
-                    LogUtil.start(stub);
-
-                    // Check whether we should run early steps on the sheet
-                    checkStubStatus(stub);
-
-                    SwingUtilities.invokeAndWait(
-                            new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            // Tell the selected assembly that it now has the focus
-                            stub.getAssembly().assemblySelected();
-                        }
-                    });
-
-                    return null;
-                } finally {
-                    LogUtil.stopStub();
-                }
-            }
-        };
-
-        // Since we are on Swing EDT, use asynchronous processing
-        OmrExecutors.getCachedLowExecutor().submit(task);
-    }
-
     //---------//
     // refresh //
     //---------//
@@ -638,6 +612,61 @@ public class StubsController
         } else {
             logger.warn("No tab found for {}", stub);
         }
+    }
+
+    //--------------//
+    // setEarlyStep //
+    //--------------//
+    /**
+     * Set the step run by default on every new stub displayed.
+     *
+     * @param step the default target step
+     */
+    public static void setEarlyStep (Step step)
+    {
+        if (step != getEarlyStep()) {
+            constants.earlyStep.setValue(step);
+            logger.info("Early step is now: {}", step);
+        }
+    }
+
+    //-----------//
+    // reDisplay //
+    //-----------//
+    public void reDisplay (final SheetStub stub)
+    {
+        Callable<Void> task = new Callable<Void>()
+        {
+            @Override
+            public Void call ()
+                    throws Exception
+            {
+                try {
+                    LogUtil.start(stub);
+
+                    // Check whether we should run early steps on the sheet
+                    checkStubStatus(stub);
+
+                    SwingUtilities.invokeAndWait(
+                            new Runnable()
+                    {
+                        @Override
+                        public void run ()
+                        {
+                            // Tell the selected assembly that it now has the focus
+                            stub.getAssembly().assemblySelected();
+                        }
+                    });
+
+                    return null;
+                } finally {
+                    LogUtil.stopStub();
+                }
+            }
+        };
+
+        // Since we are on Swing EDT, use asynchronous processing
+        OmrExecutors.getCachedLowExecutor().submit(task);
     }
 
     //-----------------//
@@ -788,19 +817,6 @@ public class StubsController
             stubsPane.setTitleAt(tabIndex, defineTitleFor(firstDisplayed, firstDisplayed));
             stubsPane.invalidate();
         }
-    }
-
-    //--------------//
-    // getEarlyStep //
-    //--------------//
-    /**
-     * Report the step run by default on every new stub displayed.
-     *
-     * @return the default target step
-     */
-    private static Step getEarlyStep ()
-    {
-        return constants.earlyStep.getValue();
     }
 
     //----------//

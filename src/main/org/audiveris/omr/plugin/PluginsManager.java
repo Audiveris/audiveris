@@ -292,7 +292,7 @@ public class PluginsManager
             if (!getSpecific().equals(specific)) {
                 constants.defaultPlugin.setValue(specific);
                 getInstance().setDefaultPlugin(specific);
-                logger.info("Default plugin is now '{}'", specific);
+                logger.info("Default plugin is now: {}", specific);
 
                 return true;
             }

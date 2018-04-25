@@ -22,7 +22,7 @@
 package org.audiveris.omr.util;
 
 /**
- * Class {@code Param} handles the context of operations performed on score and/or pages.
+ * Class {@code Param} handles the context of operations performed on book and sheets.
  *
  * @param <E> type of parameter handled
  *
@@ -32,7 +32,6 @@ public class Param<E>
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    //
     /** Parent param, if any, to inherit from. */
     protected final Param<E> parent;
 
@@ -81,7 +80,6 @@ public class Param<E>
         }
     }
 
-    //
     //-------------//
     // setSpecific //
     //-------------//

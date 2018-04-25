@@ -34,6 +34,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.ui.ShapeColorChooser;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.symbol.SymbolRipper;
 import org.audiveris.omr.ui.util.CursorController;
 import org.audiveris.omr.ui.util.OmrFileFilter;
@@ -237,6 +238,20 @@ public class GuiActions
         ShapeColorChooser.showFrame();
     }
 
+    //--------------//
+    // defineTopics //
+    //--------------//
+    /**
+     * Action that opens the dialog where topics can be enabled/disabled.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action
+    public void defineTopics (ActionEvent e)
+    {
+        OmrGui.getApplication().show(AdvancedTopics.getComponent());
+    }
+
     //------//
     // exit //
     //------//
@@ -384,18 +399,18 @@ public class GuiActions
 
         aboutAction.actionPerformed(e);
     }
-//
-//    //------------//
-//    // showManual //
-//    //------------//
-//    /**
-//     * Action to launch a browser on (local) Audiveris handbook
-//     *
-//     * @param e the event which triggered this action
-//     */
-//    @Action(enabledProperty = "browserSupported")
-//    public void showManual (ActionEvent e)
-//    {
+
+    //------------//
+    // showManual //
+    //------------//
+    /**
+     * Action to launch a browser on Audiveris manual
+     *
+     * @param e the event which triggered this action
+     */
+    @Action(enabledProperty = "browserSupported")
+    public void showManual (ActionEvent e)
+    {
 //        Path path = WellKnowns.DOC_FOLDER.resolve(constants.manualUrl.getValue());
 //
 //        if (!Files.exists(path)) {
@@ -404,12 +419,20 @@ public class GuiActions
 //            URI uri = path.toUri();
 //            WebBrowser.getBrowser().launch(uri);
 //        }
-//    }
-//
+        String str = constants.manualUrl.getValue();
+
+        try {
+            URI uri = new URI(str);
+            WebBrowser.getBrowser().launch(uri);
+        } catch (URISyntaxException ex) {
+            logger.warn("Illegal manual uri " + str, ex);
+        }
+
+    }
+
     //------------//
     // showMemory //
     //------------//
-
     /**
      * Action to display the current value of occupied memory
      *
@@ -730,11 +753,11 @@ public class GuiActions
         private final Constant.String wikiUrl = new Constant.String(
                 "https://github.com/Audiveris/audiveris/wiki",
                 "URL of Audiveris wiki");
-//
-//        private final Constant.String manualUrl = new Constant.String(
-//                "docs/manual/handbook.html",
-//                "URL of local Audiveris manual");
-//
+
+        private final Constant.String manualUrl = new Constant.String(
+                //"docs/manual/handbook.html",
+                "https://bacchushlg.gitbooks.io/audiveris-5-1/content/",
+                "URL of local Audiveris manual");
 
         private final Constant.Boolean boardsWindowDisplayed = new Constant.Boolean(
                 true,

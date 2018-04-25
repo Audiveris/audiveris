@@ -41,6 +41,7 @@ import org.audiveris.omr.sig.ui.GlyphListMenu;
 import org.audiveris.omr.sig.ui.InterListMenu;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.Step;
+import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.view.LocationDependentMenu;
 
 import org.slf4j.Logger;
@@ -91,13 +92,17 @@ public class EditorMenu
         addMenu(new InterListMenu(sheet));
         addMenu(new GlyphListMenu(sheet));
 
-        if (SampleRepository.USE_TRIBES) {
+        if (AdvancedTopics.Topic.SAMPLES.isSet() && SampleRepository.USE_TRIBES) {
             addMenu(new TribesMenu(sheet));
         }
 
         addMenu(new MeasureMenu());
         addMenu(new SlotMenu());
-        addMenu(new StaffMenu());
+
+        if (AdvancedTopics.Topic.PLOTS.isSet()) {
+            addMenu(new StaffMenu());
+        }
+
         addMenu(new ExtractionMenu(sheet));
     }
 

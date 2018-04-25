@@ -29,16 +29,13 @@ import org.audiveris.omr.image.AdaptiveDescriptor;
 import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.FilterKind;
 import org.audiveris.omr.image.GlobalDescriptor;
-import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.MidiAbstractions;
 import org.audiveris.omr.score.PartData;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
-import org.audiveris.omr.step.Step;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OCR.UnavailableOcrException;
-import org.audiveris.omr.ui.FileDropHandler;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.field.SpinnerUtil;
 import org.audiveris.omr.ui.util.Panel;
@@ -125,9 +122,6 @@ public class ScoreParameters
     /** The related book, if any. */
     private final Book book;
 
-    //    /** The related page, if any. */
-    //    private final Page page;
-    //
     /** The panel dedicated to setting of defaults. */
     private final MyPanel defaultPanel;
 
@@ -152,25 +146,13 @@ public class ScoreParameters
         MyPanel pagePanel = null;
 
         // Default panel
-        TextPane defaultTextPane = createTextPane(
-                null,
-                null,
-                null,
-                Language.defaultSpecification);
-        FilterPane defaultFilterPane = new FilterPane(
-                null,
-                null,
-                null,
-                FilterDescriptor.defaultFilter);
+        TextPane defaultTextPane = createTextPane(null, Language.defaultSpecification);
+        FilterPane defaultFilterPane = new FilterPane(null, FilterDescriptor.defaultFilter);
         ///TempoPane defaultTempoPane = new TempoPane(null, null, Tempo.defaultTempo);
         defaultPanel = new MyPanel(
                 "Default settings",
                 defaultTextPane,
-                defaultFilterPane,
-                ///defaultTempoPane,
-                new PluginPane(),
-                new DnDPane(),
-                new ParallelPane());
+                defaultFilterPane);
 
         component.addTab("Default", null, defaultPanel, defaultPanel.getName());
 
@@ -178,18 +160,10 @@ public class ScoreParameters
         if (book != null) {
             List<Pane> panes = new ArrayList<Pane>();
 
-            TextPane scoreTextPane = createTextPane(
-                    book,
-                    null,
-                    defaultTextPane,
-                    book.getLanguageParam());
+            TextPane scoreTextPane = createTextPane(defaultTextPane, book.getLanguageParam());
             panes.add(scoreTextPane);
 
-            FilterPane scoreFilterPane = new FilterPane(
-                    book,
-                    null,
-                    defaultFilterPane,
-                    book.getFilterParam());
+            FilterPane scoreFilterPane = new FilterPane(defaultFilterPane, book.getFilterParam());
             panes.add(scoreFilterPane);
 
             //            // Tempo: depends on page
@@ -208,8 +182,8 @@ public class ScoreParameters
                 for (SheetStub s : book.getStubs()) {
                     MyPanel panel = new MyPanel(
                             "Page settings",
-                            createTextPane(null, s, scoreTextPane, s.getLanguageParam()),
-                            new FilterPane(null, s, scoreFilterPane, s.getFilterParam()));
+                            createTextPane(scoreTextPane, s.getLanguageParam()),
+                            new FilterPane(scoreFilterPane, s.getFilterParam()));
                     component.addTab("P#" + s.getNumber(), null, panel, panel.getName());
 
                     if (s == stub) {
@@ -300,19 +274,15 @@ public class ScoreParameters
      * Factory method to get a TextPane, while handling exception when
      * no OCR is available.
      *
-     * @param book
-     * @param stub
      * @param parent
      * @return A usable TextPane instance, or null otherwise
      */
-    private TextPane createTextPane (Book book,
-                                     SheetStub stub,
-                                     TextPane parent,
+    private TextPane createTextPane (TextPane parent,
                                      Param<String> backup)
     {
         // Caution: The language pane needs Tesseract up & running
         try {
-            return new TextPane(book, stub, parent, backup);
+            return new TextPane(parent, backup);
         } catch (UnavailableOcrException ex) {
             logger.info("No language pane for lack of OCR");
         } catch (Throwable ex) {
@@ -355,7 +325,7 @@ public class ScoreParameters
     /**
      * A panel corresponding to a tab.
      */
-    private final class MyPanel
+    private static final class MyPanel
             extends Panel
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -426,7 +396,7 @@ public class ScoreParameters
      * no score or page relationship.
      * Scope can be: default.
      */
-    private abstract class BooleanPane
+    private abstract static class BooleanPane
             extends Pane<Boolean>
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -446,7 +416,7 @@ public class ScoreParameters
                             String tip,
                             Param<Boolean> backup)
         {
-            super(label, null, null, null, backup);
+            super(label, null, backup);
 
             this.label = new JLabel(text, SwingConstants.RIGHT);
             box.setToolTipText(tip);
@@ -486,244 +456,6 @@ public class ScoreParameters
         }
     }
 
-    //------//
-    // Pane //
-    //------//
-    /**
-     * A pane is able to host data, check data validity and apply the
-     * requested modifications.
-     */
-    private abstract class Pane<E>
-            extends Param<E>
-            implements ActionListener
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Backup parameter (cannot be null). */
-        protected final Param<E> backup;
-
-        /** Related book, if any. */
-        protected final Book book;
-
-        /** Related sheet stub, if any. */
-        protected final SheetStub stub;
-
-        /** Box for selecting specific vs inherited data. */
-        private final JCheckBox box;
-
-        /** Title for the pane. */
-        private final String title;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Pane (String title,
-                     Book book,
-                     SheetStub stub,
-                     Pane parent,
-                     Param<E> backup)
-        {
-            super(parent);
-
-            if (backup == null) {
-                throw new IllegalArgumentException("Null backup for pane '" + title + "'");
-            }
-
-            this.backup = backup;
-            this.title = title;
-            this.book = book;
-            this.stub = stub;
-
-            box = new JCheckBox();
-            box.addActionListener(this);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            // Pane (de)selection (programmatic or manual)
-            boolean sel = isSelected();
-
-            setEnabled(sel);
-
-            if (!sel) {
-                display(getTarget());
-            }
-        }
-
-        /**
-         * Commit the modifications, for the items that are not handled
-         * by the ParametersTask, which means all actions related to
-         * default values.
-         */
-        public void commit ()
-        {
-            if (isSelected()) {
-                //logger.info("   {}: {}", title, read());
-                backup.setSpecific(read());
-            }
-        }
-
-        /**
-         * Build the related user interface
-         *
-         * @param builder the shared panel builder
-         * @param cst     the cell constraints
-         * @param r       initial row value
-         * @return final row value
-         */
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            // Draw the specific/inherit box + separating line
-            builder.add(box, cst.xyw(1, r, 1));
-            builder.addSeparator(title, cst.xyw(3, r, 9));
-            r += 2;
-
-            return r;
-        }
-
-        /**
-         * Report the count of needed logical rows.
-         * Typically 2 (the label separator plus 1 line of data)
-         */
-        public int getLogicalRowCount ()
-        {
-            return 2;
-        }
-
-        /**
-         * Report the specific value for this pane, if any.
-         *
-         * @return the fields content when selected, otherwise the backup
-         *         specific data if any.
-         */
-        @Override
-        public E getSpecific ()
-        {
-            if (isSelected()) {
-                return read();
-            } else if (backup != null) {
-                return backup.getSpecific();
-            } else {
-                return null;
-            }
-        }
-
-        /**
-         * User has selected (and enabled) this pane
-         *
-         * @return true if selected
-         */
-        public boolean isSelected ()
-        {
-            return box.isSelected();
-        }
-
-        /**
-         * Check whether all the pane data are valid, and feed the
-         * ParametersTask accordingly with score or page information.
-         *
-         * @return true if everything is OK, false otherwise
-         */
-        public boolean isValid ()
-        {
-            return true; // By default
-        }
-
-        /**
-         * User selects (or deselects) this pane
-         *
-         * @param bool true for selection
-         */
-        public void setSelected (boolean bool)
-        {
-            box.setSelected(bool);
-        }
-
-        /**
-         * Write the parameter into the fields content
-         *
-         * @param content the data to display
-         */
-        protected abstract void display (E content);
-
-        /**
-         * Read the parameter as defined by the fields content.
-         *
-         * @return the pane parameter
-         */
-        protected abstract E read ();
-
-        /**
-         * Set the enabled flag for all data fields
-         *
-         * @param bool the flag value
-         */
-        protected abstract void setEnabled (boolean bool);
-    }
-
-    //---------//
-    // DnDPane //
-    //---------//
-    /**
-     * Which step should we trigger on Drag 'n Drop?.
-     * Scope can be: default.
-     */
-    private class DnDPane
-            extends Pane<Step>
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** ComboBox for desired step */
-        private final JComboBox<Step> stepCombo;
-
-        private final JLabel stepLabel = new JLabel("Triggered step", SwingConstants.RIGHT);
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public DnDPane ()
-        {
-            super("Drag n' Drop", null, null, null, FileDropHandler.defaultStep);
-
-            // ComboBox for triggered step
-            stepCombo = new JComboBox<Step>(Step.values());
-            stepCombo.setToolTipText("Step to trigger on Drag n' Drop");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            r = super.defineLayout(builder, cst, r);
-
-            builder.add(stepLabel, cst.xyw(5, r, 3));
-            builder.add(stepCombo, cst.xyw(9, r, 3));
-
-            return r + 2;
-        }
-
-        @Override
-        protected void display (Step content)
-        {
-            stepCombo.setSelectedItem(content);
-        }
-
-        @Override
-        protected Step read ()
-        {
-            return stepCombo.getItemAt(stepCombo.getSelectedIndex());
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            stepCombo.setEnabled(bool);
-            stepLabel.setEnabled(bool);
-        }
-    }
-
     //------------//
     // FilterPane //
     //------------//
@@ -731,7 +463,7 @@ public class ScoreParameters
      * Pane to define the pixel binarization parameters.
      * Scope can be: default, score, page.
      */
-    private class FilterPane
+    private static class FilterPane
             extends Pane<FilterDescriptor>
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -760,12 +492,10 @@ public class ScoreParameters
                 new SpinnerNumberModel(0.2, 0.2, 1.5, 0.1));
 
         //~ Constructors ---------------------------------------------------------------------------
-        public FilterPane (Book book,
-                           final SheetStub stub,
-                           FilterPane parent,
+        public FilterPane (FilterPane parent,
                            Param<FilterDescriptor> backup)
         {
-            super("Binarization", book, stub, parent, backup);
+            super("Binarization", parent, backup);
 
             // ComboBox for filter kind
             kindCombo.setToolTipText("Specific filter on image pixels");
@@ -913,6 +643,172 @@ public class ScoreParameters
         }
     }
 
+    //------//
+    // Pane //
+    //------//
+    /**
+     * A pane is able to host data, check data validity and apply the
+     * requested modifications.
+     */
+    private abstract static class Pane<E>
+            extends Param<E>
+            implements ActionListener
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Backup parameter (cannot be null). */
+        protected final Param<E> backup;
+
+        /** Box for selecting specific vs inherited data. */
+        private final JCheckBox box;
+
+        /** Title for the pane. */
+        private final String title;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Pane (String title,
+                     Pane parent,
+                     Param<E> backup)
+        {
+            super(parent);
+
+            if (backup == null) {
+                throw new IllegalArgumentException("Null backup for pane '" + title + "'");
+            }
+
+            this.backup = backup;
+            this.title = title;
+
+            box = new JCheckBox();
+            box.addActionListener(this);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Pane (de)selection (programmatic or manual)
+            boolean sel = isSelected();
+
+            setEnabled(sel);
+
+            if (!sel) {
+                display(getTarget());
+            }
+        }
+
+        /**
+         * Commit the modifications, for the items that are not handled
+         * by the ParametersTask, which means all actions related to
+         * default values.
+         */
+        public void commit ()
+        {
+            if (isSelected()) {
+                //logger.info("   {}: {}", title, read());
+                backup.setSpecific(read());
+            }
+        }
+
+        /**
+         * Build the related user interface
+         *
+         * @param builder the shared panel builder
+         * @param cst     the cell constraints
+         * @param r       initial row value
+         * @return final row value
+         */
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            // Draw the specific/inherit box + separating line
+            builder.add(box, cst.xyw(1, r, 1));
+            builder.addSeparator(title, cst.xyw(3, r, 9));
+            r += 2;
+
+            return r;
+        }
+
+        /**
+         * Report the count of needed logical rows.
+         * Typically 2 (the label separator plus 1 line of data)
+         */
+        public int getLogicalRowCount ()
+        {
+            return 2;
+        }
+
+        /**
+         * Report the specific value for this pane, if any.
+         *
+         * @return the fields content when selected, otherwise the backup specific data if any.
+         */
+        @Override
+        public E getSpecific ()
+        {
+            if (isSelected()) {
+                return read();
+            } else if (backup != null) {
+                return backup.getSpecific();
+            } else {
+                return null;
+            }
+        }
+
+        /**
+         * User has selected (and enabled) this pane
+         *
+         * @return true if selected
+         */
+        public boolean isSelected ()
+        {
+            return box.isSelected();
+        }
+
+        /**
+         * Check whether all the pane data are valid, and feed the
+         * ParametersTask accordingly with score or page information.
+         *
+         * @return true if everything is OK, false otherwise
+         */
+        public boolean isValid ()
+        {
+            return true; // By default
+        }
+
+        /**
+         * User selects (or deselects) this pane
+         *
+         * @param bool true for selection
+         */
+        public void setSelected (boolean bool)
+        {
+            box.setSelected(bool);
+        }
+
+        /**
+         * Write the parameter into the fields content
+         *
+         * @param content the data to display
+         */
+        protected abstract void display (E content);
+
+        /**
+         * Read the parameter as defined by the fields content.
+         *
+         * @return the pane parameter
+         */
+        protected abstract E read ();
+
+        /**
+         * Set the enabled flag for all data fields
+         *
+         * @param bool the flag value
+         */
+        protected abstract void setEnabled (boolean bool);
+    }
+
     //--------------//
     // ParallelPane //
     //--------------//
@@ -920,7 +816,7 @@ public class ScoreParameters
      * Should we use defaultParallelism as much as possible.
      * Scope can be: default.
      */
-    private class ParallelPane
+    private static class ParallelPane
             extends BooleanPane
     {
         //~ Constructors ---------------------------------------------------------------------------
@@ -941,7 +837,7 @@ public class ScoreParameters
     /**
      * Panel for details of one score part.
      */
-    private class PartPanel
+    private static class PartPanel
             extends Panel
     {
         //~ Static fields/initializers -------------------------------------------------------------
@@ -1122,75 +1018,13 @@ public class ScoreParameters
     //            }
     //        }
     //    }
-    //------------//
-    // PluginPane //
-    //------------//
-    /**
-     * Which Plugin should be the default one.
-     * Scope can be: default.
-     */
-    private class PluginPane
-            extends Pane<String>
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** ComboBox for registered plugins */
-        private final JComboBox<String> pluginCombo;
-
-        private final JLabel pluginLabel = new JLabel("Default plugin", SwingConstants.RIGHT);
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public PluginPane ()
-        {
-            super("Plugin", null, null, null, PluginsManager.defaultPluginId);
-
-            // ComboBox for triggered step
-            pluginCombo = new JComboBox<String>(
-                    PluginsManager.getInstance().getPluginIds().toArray(new String[0]));
-            pluginCombo.setToolTipText("Default plugin to be launched");
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            r = super.defineLayout(builder, cst, r);
-
-            builder.add(pluginLabel, cst.xyw(5, r, 3));
-            builder.add(pluginCombo, cst.xyw(9, r, 3));
-
-            return r + 2;
-        }
-
-        @Override
-        protected void display (String content)
-        {
-            pluginCombo.setSelectedItem(content);
-        }
-
-        @Override
-        protected String read ()
-        {
-            return pluginCombo.getItemAt(pluginCombo.getSelectedIndex());
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            pluginCombo.setEnabled(bool);
-            pluginLabel.setEnabled(bool);
-        }
-    }
-
     //----------//
     // SpinData //
     //----------//
     /**
      * A line with a labeled spinner.
      */
-    private class SpinData
+    private static class SpinData
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -1237,80 +1071,6 @@ public class ScoreParameters
         }
     }
 
-    //
-    //    //-----------//
-    //    // Tempopane //
-    //    //-----------//
-    //    /**
-    //     * Pane to set the dominant tempo value.
-    //     * Scope can be: default, score.
-    //     */
-    //    private class TempoPane
-    //            extends Pane<Integer>
-    //    {
-    //        //~ Instance fields ------------------------------------------------------------------------
-    //
-    //        // Tempo value
-    //        private final SpinData tempo = new SpinData(
-    //                "Quarters/Min",
-    //                "Tempo in quarters per minute",
-    //                new SpinnerNumberModel(20, 20, 400, 1));
-    //
-    //        //~ Constructors ---------------------------------------------------------------------------
-    //        public TempoPane (Score score,
-    //                          Pane parent,
-    //                          Param<Integer> backup)
-    //        {
-    //            super("Tempo", score, null, parent, backup);
-    //        }
-    //
-    //        //~ Methods --------------------------------------------------------------------------------
-    //        @Override
-    //        public int defineLayout (PanelBuilder builder,
-    //                                 CellConstraints cst,
-    //                                 int r)
-    //        {
-    //            r = super.defineLayout(builder, cst, r);
-    //
-    //            return tempo.defineLayout(builder, cst, r);
-    //        }
-    //
-    //        @Override
-    //        public boolean isValid ()
-    //        {
-    //            task.setTempo(read());
-    //
-    //            return true;
-    //        }
-    //
-    //        @Override
-    //        protected void display (Integer content)
-    //        {
-    //            tempo.spinner.setValue(content);
-    //        }
-    //
-    //        @Override
-    //        protected Integer read ()
-    //        {
-    //            commitSpinners();
-    //
-    //            return (int) tempo.spinner.getValue();
-    //        }
-    //
-    //        @Override
-    //        protected void setEnabled (boolean bool)
-    //        {
-    //            tempo.setEnabled(bool);
-    //        }
-    //
-    //        private void commitSpinners ()
-    //        {
-    //            try {
-    //                tempo.spinner.commitEdit();
-    //            } catch (ParseException ignored) {
-    //            }
-    //        }
-    //    }
     //----------//
     // TextPane //
     //----------//
@@ -1318,7 +1078,7 @@ public class ScoreParameters
      * Pane to set the dominant text language specification.
      * Scope can be: default, book, sheet.
      */
-    private class TextPane
+    private static class TextPane
             extends Pane<String>
             implements ListSelectionListener
     {
@@ -1337,12 +1097,10 @@ public class ScoreParameters
         private final JLabel langSpec = new JLabel("", SwingConstants.RIGHT);
 
         //~ Constructors ---------------------------------------------------------------------------
-        public TextPane (Book book,
-                         SheetStub stub,
-                         TextPane parent,
+        public TextPane (TextPane parent,
                          Param<String> backup)
         {
-            super("Language", book, stub, parent, backup);
+            super("Language", parent, backup);
 
             langList.setLayoutOrientation(JList.VERTICAL);
             langList.setToolTipText("Dominant languages for textual items");
@@ -1409,3 +1167,77 @@ public class ScoreParameters
         }
     }
 }
+//
+//    //-----------//
+//    // Tempopane //
+//    //-----------//
+//    /**
+//     * Pane to set the dominant tempo value.
+//     * Scope can be: default, score.
+//     */
+//    private class TempoPane
+//            extends Pane<Integer>
+//    {
+//        //~ Instance fields ------------------------------------------------------------------------
+//
+//        // Tempo value
+//        private final SpinData tempo = new SpinData(
+//                "Quarters/Min",
+//                "Tempo in quarters per minute",
+//                new SpinnerNumberModel(20, 20, 400, 1));
+//
+//        //~ Constructors ---------------------------------------------------------------------------
+//        public TempoPane (Score score,
+//                          Pane parent,
+//                          Param<Integer> backup)
+//        {
+//            super("Tempo", score, null, parent, backup);
+//        }
+//
+//        //~ Methods --------------------------------------------------------------------------------
+//        @Override
+//        public int defineLayout (PanelBuilder builder,
+//                                 CellConstraints cst,
+//                                 int r)
+//        {
+//            r = super.defineLayout(builder, cst, r);
+//
+//            return tempo.defineLayout(builder, cst, r);
+//        }
+//
+//        @Override
+//        public boolean isValid ()
+//        {
+//            task.setTempo(read());
+//
+//            return true;
+//        }
+//
+//        @Override
+//        protected void display (Integer content)
+//        {
+//            tempo.spinner.setValue(content);
+//        }
+//
+//        @Override
+//        protected Integer read ()
+//        {
+//            commitSpinners();
+//
+//            return (int) tempo.spinner.getValue();
+//        }
+//
+//        @Override
+//        protected void setEnabled (boolean bool)
+//        {
+//            tempo.setEnabled(bool);
+//        }
+//
+//        private void commitSpinners ()
+//        {
+//            try {
+//                tempo.spinner.commitEdit();
+//            } catch (ParseException ignored) {
+//            }
+//        }
+//    }

@@ -23,13 +23,11 @@ package org.audiveris.omr.ui;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.SampleRepository;
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.Step;
-import org.audiveris.omr.util.Param;
 import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
@@ -55,12 +53,7 @@ public class FileDropHandler
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants constants = new Constants();
-
     private static final Logger logger = LoggerFactory.getLogger(FileDropHandler.class);
-
-    /** Default step to be run on dropped image. */
-    public static final Param<Step> defaultStep = new Default();
 
     //~ Methods ------------------------------------------------------------------------------------
     //-----------//
@@ -120,7 +113,7 @@ public class FileDropHandler
                 } else if (fileName.endsWith("-" + SampleRepository.SAMPLES_FILE_NAME)) {
                     new DropSamplesTask(file).execute();
                 } else {
-                    new DropInputTask(file, defaultStep.getTarget()).execute();
+                    new DropInputTask(file, StubsController.getEarlyStep()).execute();
                 }
             }
         } catch (UnsupportedFlavorException ex) {
@@ -137,49 +130,6 @@ public class FileDropHandler
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Step.Constant dropStep = new Step.Constant(
-                null,
-                "Default step launched when an image file is dropped");
-    }
-
-    //---------//
-    // Default //
-    //---------//
-    private static class Default
-            extends Param<Step>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public Step getSpecific ()
-        {
-            return constants.dropStep.getValue();
-        }
-
-        @Override
-        public boolean setSpecific (Step specific)
-        {
-            final Step oldSpecific = getSpecific();
-
-            if (((oldSpecific == null) && (specific != null)) || !oldSpecific.equals(specific)) {
-                constants.dropStep.setValue(specific);
-                logger.info("Default drop step is now ''{}''", specific);
-
-                return true;
-            }
-
-            return false;
-        }
-    }
-
     //--------------//
     // DropBookTask //
     //--------------//
