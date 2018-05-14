@@ -22,10 +22,11 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.classifier.SampleRepository;
-import org.audiveris.omr.image.FilterDescriptor;
+import org.audiveris.omr.image.FilterParam;
+import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.step.Step;
-import org.audiveris.omr.util.Param;
+import org.audiveris.omr.util.param.Param;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -37,7 +38,6 @@ import java.util.concurrent.locks.Lock;
 
 import javax.swing.JFrame;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.score.Page;
 
 /**
  * Interface {@code Book} is the root class for handling a physical set of image input
@@ -91,8 +91,8 @@ import org.audiveris.omr.score.Page;
  *
  * <dt>Parameters</dt>
  * <dd><ul>
- * <li>{@link #getFilterParam}</li>
- * <li>{@link #getLanguageParam}</li>
+ * <li>{@link #getBinarizationFilter}</li>
+ * <li>{@link #getOcrLanguages}</li>
  * </ul></dd>
  *
  * <dt>Transcription</dt>
@@ -194,6 +194,13 @@ public interface Book
     String getAlias ();
 
     /**
+     * Report the binarization filter defined at book level.
+     *
+     * @return the filter parameter
+     */
+    FilterParam getBinarizationFilter ();
+
+    /**
      * Report where the book is kept.
      *
      * @return the book path
@@ -215,13 +222,6 @@ public interface Book
     Path getExportPathSansExt ();
 
     /**
-     * Report the binarization filter defined at book level.
-     *
-     * @return the filter parameter
-     */
-    Param<FilterDescriptor> getFilterParam ();
-
-    /**
      * Report the first non-discarded stub in this book
      *
      * @return the first non-discarded stub, or null
@@ -236,18 +236,18 @@ public interface Book
     Path getInputPath ();
 
     /**
-     * Report the OCR language(s) specification defined at book level
-     *
-     * @return the OCR language(s) spec
-     */
-    Param<String> getLanguageParam ();
-
-    /**
      * Report the lock that protects book project file.
      *
      * @return book project lock
      */
     Lock getLock ();
+
+    /**
+     * Report the OCR language(s) specification defined at book level, if any.
+     *
+     * @return the OCR language(s) spec
+     */
+    Param<String> getOcrLanguages ();
 
     /**
      * Report the offset of this book, with respect to a containing super-book.
@@ -262,6 +262,13 @@ public interface Book
      * @return the print path, or null
      */
     Path getPrintPath ();
+
+    /**
+     * Report the processing switches defined at bookk level, if any.
+     *
+     * @return the processing switches
+     */
+    ProcessingSwitches getProcessingSwitches ();
 
     /**
      * Report the radix of the file that corresponds to the book.

@@ -24,6 +24,7 @@ package org.audiveris.omr.util;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.step.ProcessingCancellationException;
+import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ public class OmrExecutors
             logger.info(
                     "Environment. CPU count: {}, Use of parallelism: {}",
                     cpuCount,
-                    defaultParallelism.getTarget());
+                    defaultParallelism.getValue());
         }
     }
 
@@ -337,13 +338,29 @@ public class OmrExecutors
         @Override
         public Boolean getSpecific ()
         {
+            if (constants.useParallelism.isSourceValue()) {
+                return null;
+            } else {
+                return constants.useParallelism.getValue();
+            }
+        }
+
+        @Override
+        public Boolean getValue ()
+        {
             return constants.useParallelism.getValue();
+        }
+
+        @Override
+        public boolean isSpecific ()
+        {
+            return !constants.useParallelism.isSourceValue();
         }
 
         @Override
         public boolean setSpecific (Boolean specific)
         {
-            if (!getSpecific().equals(specific)) {
+            if (!getValue().equals(specific)) {
                 constants.useParallelism.setValue(specific);
                 logger.info("Parallelism is {} allowed", specific ? "now" : "no longer");
 
@@ -426,7 +443,7 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
-                    defaultParallelism.getTarget() ? (cpuCount + 1) : 1,
+                    defaultParallelism.getValue() ? (cpuCount + 1) : 1,
                     new Factory(getName(), Thread.NORM_PRIORITY, 0));
         }
     }
@@ -450,7 +467,7 @@ public class OmrExecutors
         protected ExecutorService createPool ()
         {
             return Executors.newFixedThreadPool(
-                    defaultParallelism.getTarget() ? (cpuCount + 1) : 1,
+                    defaultParallelism.getValue() ? (cpuCount + 1) : 1,
                     new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
     }

@@ -318,7 +318,7 @@ public class EvaluationBoard
                 return;
             }
 
-            boolean enabled = true; ///constants.allowSampleCreation.isSet();
+            boolean enabled = true;
             double minGrade = constants.minGrade.getValue();
             int iBound = Math.min(evalCount(), positiveEvals(evals));
             int i;

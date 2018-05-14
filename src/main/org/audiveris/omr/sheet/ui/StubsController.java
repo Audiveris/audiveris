@@ -993,7 +993,8 @@ public class StubsController
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Step.Constant earlyStep = new Step.Constant(
+        private final Constant.Enum<Step> earlyStep = new Constant.Enum<Step>(
+                Step.class,
                 Step.BINARY,
                 "Early step triggered when an empty stub tab is selected ");
 

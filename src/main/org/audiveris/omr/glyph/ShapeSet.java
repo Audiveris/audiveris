@@ -22,9 +22,13 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.ui.Colors;
+
 import static org.audiveris.omr.glyph.Shape.*;
+
+import org.audiveris.omr.sheet.ProcessingSwitches;
+import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.ui.Colors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +59,6 @@ import javax.swing.JMenuItem;
 public class ShapeSet
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ShapeSet.class);
 
@@ -171,21 +173,10 @@ public class ShapeSet
             NOTEHEAD_VOID_SMALL);
 
     /** All supported small notes. (for cue/grace) */
-    public static final EnumSet<Shape> SmallNotes = EnumSet.noneOf(Shape.class);
-
-    static {
-        if (supportSmallHeadNotes()) {
-            SmallNotes.add(NOTEHEAD_BLACK_SMALL);
-        }
-
-        if (supportSmallVoidNotes()) {
-            SmallNotes.add(NOTEHEAD_VOID_SMALL);
-        }
-
-        if (supportSmallWholeNotes()) {
-            SmallNotes.add(WHOLE_NOTE_SMALL);
-        }
-    }
+    public static final EnumSet<Shape> SmallNotes = EnumSet.of(
+            NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE_SMALL);
 
     /** All heads without a stem. */
     public static final EnumSet<Shape> StemLessHeads = EnumSet.of(
@@ -209,62 +200,6 @@ public class ShapeSet
             NOTEHEAD_BLACK_SMALL,
             NOTEHEAD_VOID,
             NOTEHEAD_VOID_SMALL);
-
-    /** All notes handled by template matching. */
-    public static final EnumSet<Shape> TemplateNotes = EnumSet.noneOf(Shape.class);
-
-    static {
-        TemplateNotes.addAll(Arrays.asList(NOTEHEAD_BLACK, NOTEHEAD_VOID, WHOLE_NOTE));
-
-        if (supportSmallHeadNotes()) {
-            TemplateNotes.add(NOTEHEAD_BLACK_SMALL);
-        }
-
-        if (supportSmallVoidNotes()) {
-            TemplateNotes.add(NOTEHEAD_VOID_SMALL);
-        }
-
-        if (supportSmallWholeNotes()) {
-            TemplateNotes.add(WHOLE_NOTE_SMALL);
-        }
-    }
-
-    /** All stem-based notes handled by template matching. */
-    public static final EnumSet<Shape> StemTemplateNotes = EnumSet.noneOf(Shape.class);
-
-    static {
-        StemTemplateNotes.addAll(Arrays.asList(NOTEHEAD_BLACK, NOTEHEAD_VOID));
-
-        if (supportSmallHeadNotes()) {
-            StemTemplateNotes.add(NOTEHEAD_BLACK_SMALL);
-        }
-
-        if (supportSmallVoidNotes()) {
-            StemTemplateNotes.add(NOTEHEAD_VOID_SMALL);
-        }
-    }
-
-    /** All black notes handled by template matching. */
-    public static final EnumSet<Shape> BlackTemplateNotes = EnumSet.noneOf(Shape.class);
-
-    static {
-        BlackTemplateNotes.addAll(Arrays.asList(NOTEHEAD_BLACK));
-
-        if (supportSmallHeadNotes()) {
-            BlackTemplateNotes.add(NOTEHEAD_BLACK_SMALL);
-        }
-    }
-
-    /** All void notes handled by template matching. */
-    public static final EnumSet<Shape> VoidTemplateNotes = EnumSet.noneOf(Shape.class);
-
-    static {
-        VoidTemplateNotes.addAll(Arrays.asList(NOTEHEAD_VOID, WHOLE_NOTE));
-
-        if (supportSmallVoidNotes()) {
-            VoidTemplateNotes.add(NOTEHEAD_VOID_SMALL);
-        }
-    }
 
     /** FermataArcs. */
     public static final EnumSet<Shape> FermataArcs = EnumSet.of(FERMATA_ARC, FERMATA_ARC_BELOW);
@@ -665,45 +600,44 @@ public class ShapeSet
         return sb.toString();
     }
 
-    //----------//
-    // contains //
-    //----------//
+    //------------------//
+    // getTemplateNotes //
+    //------------------//
     /**
-     * Convenient method to check if encapsulated shapes set does
-     * contain the provided object.
+     * Report the template notes suitable for the provided sheet.
      *
-     * @param shape the Shape object to check for inclusion
-     * @return true if contained, false otherwise
+     * @param sheet provided sheet or null
+     * @return the template notes, perhaps limited by sheet processing switches
      */
-    public boolean contains (Shape shape)
+    public static EnumSet<Shape> getTemplateNotes (Sheet sheet)
     {
-        return shapes.contains(shape);
-    }
+        final EnumSet<Shape> set = EnumSet.of(
+                NOTEHEAD_BLACK,
+                NOTEHEAD_VOID,
+                WHOLE_NOTE,
+                NOTEHEAD_BLACK_SMALL,
+                NOTEHEAD_VOID_SMALL,
+                WHOLE_NOTE_SMALL);
 
-    //----------//
-    // getColor //
-    //----------//
-    /**
-     * Report the color currently assigned to the range, if any.
-     *
-     * @return the related color, or null
-     */
-    public Color getColor ()
-    {
-        return color;
-    }
+        if (sheet == null) {
+            return set;
+        }
 
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name of the set.
-     *
-     * @return the set name
-     */
-    public String getName ()
-    {
-        return name;
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+
+        if (!switches.getValue(Switch.smallBlackHeads)) {
+            set.remove(NOTEHEAD_BLACK_SMALL);
+        }
+
+        if (!switches.getValue(Switch.smallVoidHeads)) {
+            set.remove(NOTEHEAD_VOID_SMALL);
+        }
+
+        if (!switches.getValue(Switch.smallWholeHeads)) {
+            set.remove(WHOLE_NOTE_SMALL);
+        }
+
+        return set;
     }
 
     //--------//
@@ -733,6 +667,93 @@ public class ShapeSet
     public static List<ShapeSet> getShapeSets ()
     {
         return Sets.setList;
+    }
+
+    //-----------//
+    // getShapes //
+    //-----------//
+    /**
+     * Exports the set of shapes.
+     *
+     * @return the proper enum set
+     */
+    public EnumSet<Shape> getShapes ()
+    {
+        return shapes;
+    }
+
+    //----------------------//
+    // getStemTemplateNotes //
+    //----------------------//
+    /**
+     * Report the stem template notes suitable for the provided sheet.
+     *
+     * @param sheet provided sheet or null
+     * @return the stem template notes, perhaps limited by sheet processing switches
+     */
+    public static EnumSet<Shape> getStemTemplateNotes (Sheet sheet)
+    {
+        final EnumSet<Shape> set = EnumSet.of(
+                NOTEHEAD_BLACK,
+                NOTEHEAD_VOID,
+                NOTEHEAD_BLACK_SMALL,
+                NOTEHEAD_VOID_SMALL);
+
+        if (sheet == null) {
+            return set;
+        }
+
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+
+        if (!switches.getValue(Switch.smallBlackHeads)) {
+            set.remove(NOTEHEAD_BLACK_SMALL);
+        }
+
+        if (!switches.getValue(Switch.smallVoidHeads)) {
+            set.remove(NOTEHEAD_VOID_SMALL);
+        }
+
+        return set;
+    }
+
+    //----------------------//
+    // getVoidTemplateNotes //
+    //----------------------//
+    /**
+     * Report the void template notes suitable for the provided sheet.
+     *
+     * @param sheet provided sheet or null
+     * @return the void template notes, perhaps limited by sheet processing switches
+     */
+    public static EnumSet<Shape> getVoidTemplateNotes (Sheet sheet)
+    {
+        final EnumSet<Shape> set = EnumSet.of(NOTEHEAD_VOID, WHOLE_NOTE, NOTEHEAD_VOID_SMALL);
+
+        if (sheet == null) {
+            return set;
+        }
+
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
+
+        if (!switches.getValue(Switch.smallVoidHeads)) {
+            set.remove(NOTEHEAD_VOID_SMALL);
+        }
+
+        return set;
+    }
+
+    //------------------//
+    // setConstantColor //
+    //------------------//
+    /**
+     * Define a specific color for the set.
+     *
+     * @param color the specified color
+     */
+    public void setConstantColor (Color color)
+    {
+        constantColor.setValue(color);
+        setColor(color);
     }
 
     //----------//
@@ -774,6 +795,20 @@ public class ShapeSet
         shapes.addAll(col2);
 
         return shapes;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    /**
+     * Convenient way to build a collection of shapes.
+     *
+     * @param shapes an array of shapes
+     * @return a single collection
+     */
+    public static Collection<Shape> shapesOf (Shape... shapes)
+    {
+        return Arrays.asList(shapes);
     }
 
     //----------//
@@ -829,68 +864,6 @@ public class ShapeSet
         return shapes;
     }
 
-    //----------//
-    // shapesOf //
-    //----------//
-    /**
-     * Convenient way to build a collection of shapes.
-     *
-     * @param shapes an array of shapes
-     * @return a single collection
-     */
-    public static Collection<Shape> shapesOf (Shape... shapes)
-    {
-        return Arrays.asList(shapes);
-    }
-
-    //-------------------//
-    // supportFingerings //
-    //-------------------//
-    public static boolean supportFingerings ()
-    {
-        return constants.supportFingerings.isSet();
-    }
-
-    //--------------//
-    // supportFrets //
-    //--------------//
-    public static boolean supportFrets ()
-    {
-        return constants.supportFrets.isSet();
-    }
-
-    //------------------//
-    // supportPluckings //
-    //------------------//
-    public static boolean supportPluckings ()
-    {
-        return constants.supportPluckings.isSet();
-    }
-
-    //-----------------------//
-    // supportSmallHeadNotes //
-    //-----------------------//
-    public static boolean supportSmallHeadNotes ()
-    {
-        return constants.supportSmallHeadNotes.isSet();
-    }
-
-    //-----------------------//
-    // supportSmallVoidNotes //
-    //-----------------------//
-    public static boolean supportSmallVoidNotes ()
-    {
-        return constants.supportSmallVoidNotes.isSet();
-    }
-
-    //------------------------//
-    // supportSmallWholeNotes //
-    //------------------------//
-    public static boolean supportSmallWholeNotes ()
-    {
-        return constants.supportSmallWholeNotes.isSet();
-    }
-
     //---------//
     // valueOf //
     //---------//
@@ -905,17 +878,45 @@ public class ShapeSet
         return Sets.map.get(str);
     }
 
-    //-----------//
-    // getShapes //
-    //-----------//
+    //----------//
+    // contains //
+    //----------//
     /**
-     * Exports the set of shapes.
+     * Convenient method to check if encapsulated shapes set does
+     * contain the provided object.
      *
-     * @return the proper enum set
+     * @param shape the Shape object to check for inclusion
+     * @return true if contained, false otherwise
      */
-    public EnumSet<Shape> getShapes ()
+    public boolean contains (Shape shape)
     {
-        return shapes;
+        return shapes.contains(shape);
+    }
+
+    //----------//
+    // getColor //
+    //----------//
+    /**
+     * Report the color currently assigned to the range, if any.
+     *
+     * @return the related color, or null
+     */
+    public Color getColor ()
+    {
+        return color;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of the set.
+     *
+     * @return the set name
+     */
+    public String getName ()
+    {
+        return name;
     }
 
     //-----------------//
@@ -933,20 +934,6 @@ public class ShapeSet
         } else {
             return new ArrayList<Shape>(shapes);
         }
-    }
-
-    //------------------//
-    // setConstantColor //
-    //------------------//
-    /**
-     * Define a specific color for the set.
-     *
-     * @param color the specified color
-     */
-    public void setConstantColor (Color color)
-    {
-        constantColor.setValue(color);
-        setColor(color);
     }
 
     //----------------------//
@@ -1041,39 +1028,6 @@ public class ShapeSet
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean supportSmallHeadNotes = new Constant.Boolean(
-                true,
-                "Should we support NOTEHEAD_BLACK_SMALL shape?");
-
-        private final Constant.Boolean supportSmallVoidNotes = new Constant.Boolean(
-                false,
-                "Should we support NOTEHEAD_VOID_SMALL shape?");
-
-        private final Constant.Boolean supportSmallWholeNotes = new Constant.Boolean(
-                false,
-                "Should we support WHOLE_NOTE_SMALL shape?");
-
-        private final Constant.Boolean supportPluckings = new Constant.Boolean(
-                true,
-                "Should we support Pluckings (guitar right-hand)?");
-
-        private final Constant.Boolean supportFingerings = new Constant.Boolean(
-                true,
-                "Should we support Fingerings (guitar left-hand)?");
-
-        private final Constant.Boolean supportFrets = new Constant.Boolean(
-                true,
-                "Should we support Fret indications (guitar left-hand)?");
-    }
-
     //------//
     // Sets //
     //------//

@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                  O l d S t a f f B a r l i n e                                 //
+//                                     B o o l e a n P a r a m                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -19,36 +19,54 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet;
+package org.audiveris.omr.util.param;
 
-import org.audiveris.omr.sig.inter.BarlineInter;
-import org.audiveris.omr.sig.inter.StaffBarlineInter;
-
-import java.util.ArrayList;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlList;
-import javax.xml.bind.annotation.XmlValue;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class {@code OldStaffBarline} is a temporary fix to keep compatibility with old
- * .omr files.
- * <p>
- * Replaced by {@link StaffBarlineInter}.
+ * Class {@code BooleanParam} is a Param for Boolean.
  *
  * @author Hervé Bitteur
  */
-@Deprecated
-@XmlAccessorType(XmlAccessType.NONE)
-public class OldStaffBarline
+public class BooleanParam
+        extends Param<Boolean>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
 
-    /** Abscissa-ordered sequence of physical barlines. */
-    @XmlList
-    @XmlIDREF
-    @XmlValue
-    public final ArrayList<BarlineInter> bars = new ArrayList<BarlineInter>();
+    public static class Adapter
+            extends XmlAdapter<String, BooleanParam>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public String marshal (BooleanParam val)
+                throws Exception
+        {
+            if (val == null) {
+                return null;
+            }
+
+            Boolean spc = val.getSpecific();
+
+            if (spc == null) {
+                return null;
+            }
+
+            return spc.toString();
+        }
+
+        @Override
+        public BooleanParam unmarshal (String str)
+                throws Exception
+        {
+            if ((str == null) || str.trim().isEmpty()) {
+                return null;
+            }
+
+            BooleanParam b = new BooleanParam();
+            b.setSpecific(Boolean.parseBoolean(str));
+
+            return b;
+        }
+    }
 }

@@ -23,7 +23,7 @@ package org.audiveris.omr.score;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.util.Param;
+import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,13 +76,29 @@ public abstract class Tempo
         @Override
         public Integer getSpecific ()
         {
+            if (constants.defaultTempo.isSourceValue()) {
+                return null;
+            } else {
+                return constants.defaultTempo.getValue();
+            }
+        }
+
+        @Override
+        public Integer getValue ()
+        {
             return constants.defaultTempo.getValue();
+        }
+
+        @Override
+        public boolean isSpecific ()
+        {
+            return !constants.defaultTempo.isSourceValue();
         }
 
         @Override
         public boolean setSpecific (Integer specific)
         {
-            if (!getSpecific().equals(specific)) {
+            if (!getValue().equals(specific)) {
                 constants.defaultTempo.setValue(specific);
                 logger.info("Default tempo is now {}", specific);
 

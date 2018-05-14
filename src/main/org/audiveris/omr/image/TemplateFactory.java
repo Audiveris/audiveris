@@ -144,7 +144,7 @@ public class TemplateFactory
         //-------------------//
         private void buildAllTemplates ()
         {
-            for (Shape shape : ShapeSet.TemplateNotes) {
+            for (Shape shape : ShapeSet.getTemplateNotes(null)) {
                 descriptors.put(shape, new ShapeDescriptor(shape, pointSize));
             }
         }

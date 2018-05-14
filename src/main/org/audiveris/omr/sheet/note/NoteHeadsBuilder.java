@@ -171,6 +171,15 @@ public class NoteHeadsBuilder
     /** Offsets tried around a given (stem-based) abscissa. */
     private final int[] xOffsets;
 
+    /** All note templates for this sheet. */
+    private final EnumSet<Shape> sheetTemplateNotes;
+
+    /** All stem note templates for this sheet. */
+    private final EnumSet<Shape> sheetStemTemplateNotes;
+
+    /** All void note templates for this sheet. */
+    private final EnumSet<Shape> sheetVoidTemplateNotes;
+
     // Debug
     private final Perf seedsPerf = new Perf();
 
@@ -195,6 +204,10 @@ public class NoteHeadsBuilder
         sig = system.getSig();
         sheet = system.getSheet();
         scale = sheet.getScale();
+
+        sheetTemplateNotes = ShapeSet.getTemplateNotes(sheet);
+        sheetStemTemplateNotes = ShapeSet.getStemTemplateNotes(sheet);
+        sheetVoidTemplateNotes = ShapeSet.getVoidTemplateNotes(sheet);
 
         params = new Parameters(scale);
 
@@ -1368,8 +1381,8 @@ public class NoteHeadsBuilder
                 final int y0 = getTheoreticalOrdinate(x0);
 
                 // Shapes to try depend on whether location belongs to a black spot
-                EnumSet<Shape> shapeSet = relevants[x0 - scanLeft] ? ShapeSet.TemplateNotes
-                        : ShapeSet.VoidTemplateNotes;
+                EnumSet<Shape> shapeSet = relevants[x0 - scanLeft] ? sheetTemplateNotes
+                        : sheetVoidTemplateNotes;
                 ShapeLoop:
                 for (Shape shape : shapeSet) {
                     PixelDistance bestLoc = null;
@@ -1467,7 +1480,7 @@ public class NoteHeadsBuilder
                     // For each stem side and for each possible shape,
                     // keep the best match (if acceptable) among all locations tried.
                     ShapeLoop:
-                    for (Shape shape : ShapeSet.StemTemplateNotes) {
+                    for (Shape shape : sheetStemTemplateNotes) {
                         PixelDistance bestLoc = null;
 
                         // Brute force: explore the whole rectangle around (x0, y0)

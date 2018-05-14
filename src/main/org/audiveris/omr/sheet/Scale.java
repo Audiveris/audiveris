@@ -23,7 +23,6 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.math.Range;
-import org.audiveris.omr.util.DoubleValue;
 import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
@@ -1065,25 +1064,6 @@ public class Scale
         {
             this(0d, null);
         }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public DoubleValue getWrappedValue ()
-        {
-            return (DoubleValue) getCachedValue();
-        }
-
-        @Override
-        public void setValue (double val)
-        {
-            setTuple(java.lang.Double.toString(val), new DoubleValue(val));
-        }
-
-        @Override
-        protected DoubleValue decode (java.lang.String str)
-        {
-            return new DoubleValue(java.lang.Double.valueOf(str));
-        }
     }
 
     //----------------//
@@ -1221,25 +1201,6 @@ public class Scale
         private LineFraction ()
         {
             this(0d, null);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public DoubleValue getWrappedValue ()
-        {
-            return (DoubleValue) getCachedValue();
-        }
-
-        @Override
-        public void setValue (double val)
-        {
-            setTuple(java.lang.Double.toString(val), new DoubleValue(val));
-        }
-
-        @Override
-        protected DoubleValue decode (java.lang.String str)
-        {
-            return new DoubleValue(java.lang.Double.valueOf(str));
         }
     }
 

@@ -24,6 +24,8 @@ package org.audiveris.omr.text;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.score.StaffPosition;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.ProcessingSwitches;
+import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
@@ -131,8 +133,7 @@ public enum TextRole
         boolean isMainlyItalic = TextBuilder.isMainlyItalic(line);
 
         Sheet sheet = system.getSheet();
-
-        ///ScoreSystem system = system.getScoreSystem();
+        ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
         Scale scale = sheet.getScale();
         Point left = new Point(box.x, box.y + (box.height / 2));
         Point right = new Point(box.x + box.width, box.y + (box.height / 2));
@@ -239,7 +240,11 @@ public enum TextRole
             if (leftOfStaves) {
                 return PartName;
             } else if (lyricsAllowed
-                       && (partPosition == StaffPosition.BELOW_STAVES)
+                       && (switches.getValue(Switch.lyrics)
+                           || switches.getValue(Switch.lyricsAboveStaff))
+                       && ((partPosition == StaffPosition.BELOW_STAVES)
+                           || ((partPosition == StaffPosition.ABOVE_STAVES)
+                               && switches.getValue(Switch.lyricsAboveStaff)))
                        && !isMainlyItalic) {
                 return Lyrics;
             } else if (!tinySentence) {
@@ -262,6 +267,8 @@ public enum TextRole
 
             if (part.getStaves().size() == 1) {
                 if (lyricsAllowed
+                    && (switches.getValue(Switch.lyrics)
+                        || switches.getValue(Switch.lyricsAboveStaff))
                     && (partPosition == StaffPosition.BELOW_STAVES)
                     && !isMainlyItalic) {
                     return Lyrics;

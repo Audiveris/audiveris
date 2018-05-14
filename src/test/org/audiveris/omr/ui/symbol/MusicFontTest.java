@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
@@ -85,7 +86,7 @@ public class MusicFontTest
             document.open();
 
             PdfContentByte cb = writer.getDirectContent();
-            Graphics2D g = cb.createGraphics(pageWidth, pageHeight);
+            Graphics2D g = new PdfGraphics2D(cb, pageWidth, pageHeight);
             MusicFont musicFont = MusicFont.getPointFont(64, 0);
             Font stringFont = g.getFont().deriveFont(24f);
             Font infoFont = stringFont.deriveFont(15f);
@@ -108,7 +109,7 @@ public class MusicFontTest
                             document.setPageSize(rect);
                             document.newPage();
                             cb = writer.getDirectContent();
-                            g = cb.createGraphics(pageWidth, pageHeight);
+                            g = new PdfGraphics2D(cb, pageWidth, pageHeight);
                             x = xMargin;
                             y = yMargin;
                             line = 0;

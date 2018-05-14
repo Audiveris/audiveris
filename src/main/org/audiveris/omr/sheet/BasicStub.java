@@ -27,6 +27,7 @@ import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.FilterDescriptor;
+import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.PageRef;
@@ -40,12 +41,13 @@ import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.Jaxb;
-import org.audiveris.omr.util.LiveParam;
 import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.OmrExecutors;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.ZipFileSystem;
+import org.audiveris.omr.util.param.Param;
+import org.audiveris.omr.util.param.StringParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +60,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -70,6 +70,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 import javax.swing.SwingUtilities;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -109,6 +110,21 @@ public class BasicStub
     @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
     private boolean invalid;
 
+    /** Handling of binarization filter parameter. */
+    @XmlElement(name = "binarization")
+    @XmlJavaTypeAdapter(FilterParam.Adapter.class)
+    private FilterParam binarizationFilter;
+
+    /** Handling of dominant language(s) for this sheet. */
+    @XmlElement(name = "ocr-languages")
+    @XmlJavaTypeAdapter(StringParam.Adapter.class)
+    private StringParam ocrLanguages;
+
+    /** Handling of processing switches for this sheet. */
+    @XmlElement(name = "processing")
+    @XmlJavaTypeAdapter(ProcessingSwitches.Adapter.class)
+    private ProcessingSwitches switches;
+
     /** All steps already performed on this sheet. */
     @XmlList
     @XmlElement(name = "steps")
@@ -139,12 +155,6 @@ public class BasicStub
 
     /** Related assembly instance, if any. */
     private SheetAssembly assembly;
-
-    /** Param for pixel filter. */
-    private LiveParam<FilterDescriptor> filterContext;
-
-    /** Param for text language. */
-    private LiveParam<String> textContext;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -261,6 +271,20 @@ public class BasicStub
         return assembly;
     }
 
+    //-----------------------//
+    // getBinarizationFilter //
+    //-----------------------//
+    @Override
+    public FilterParam getBinarizationFilter ()
+    {
+        if (binarizationFilter == null) {
+            binarizationFilter = new FilterParam();
+            binarizationFilter.setParent(FilterDescriptor.defaultFilter);
+        }
+
+        return binarizationFilter;
+    }
+
     //---------//
     // getBook //
     //---------//
@@ -277,15 +301,6 @@ public class BasicStub
     public Step getCurrentStep ()
     {
         return currentStep;
-    }
-
-    //----------------//
-    // getFilterParam //
-    //----------------//
-    @Override
-    public LiveParam<FilterDescriptor> getFilterParam ()
-    {
-        return filterContext;
     }
 
     //-----------------//
@@ -312,15 +327,6 @@ public class BasicStub
         } else {
             return book.getRadix();
         }
-    }
-
-    //------------------//
-    // getLanguageParam //
-    //------------------//
-    @Override
-    public LiveParam<String> getLanguageParam ()
-    {
-        return textContext;
     }
 
     //----------------//
@@ -384,6 +390,20 @@ public class BasicStub
         return number;
     }
 
+    //-----------------//
+    // getOcrLanguages //
+    //-----------------//
+    @Override
+    public Param<String> getOcrLanguages ()
+    {
+        if (ocrLanguages == null) {
+            ocrLanguages = new StringParam();
+            ocrLanguages.setParent(book.getOcrLanguages());
+        }
+
+        return ocrLanguages;
+    }
+
     //-------------//
     // getPageRefs //
     //-------------//
@@ -394,6 +414,20 @@ public class BasicStub
     public List<PageRef> getPageRefs ()
     {
         return pageRefs;
+    }
+
+    //-----------------------//
+    // getProcessingSwitches //
+    //-----------------------//
+    @Override
+    public ProcessingSwitches getProcessingSwitches ()
+    {
+        if (switches == null) {
+            switches = new ProcessingSwitches();
+            switches.setParent(book.getProcessingSwitches());
+        }
+
+        return switches;
     }
 
     //----------//
@@ -535,7 +569,7 @@ public class BasicStub
     {
         final StubsController ctrl = (OMR.gui != null) ? StubsController.getInstance() : null;
         final StopWatch watch = new StopWatch("reachStep " + target);
-        SortedSet<Step> neededSteps = null;
+        EnumSet<Step> neededSteps = null;
         boolean ok = false;
         getLock().lock(); // Wait for completion of early processing if any
         logger.debug("reachStep got lock on {}", this);
@@ -781,6 +815,25 @@ public class BasicStub
         initTransients((Book) parent);
     }
 
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        if ((binarizationFilter != null) && !binarizationFilter.isSpecific()) {
+            binarizationFilter = null;
+        }
+
+        if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
+            ocrLanguages = null;
+        }
+
+        if ((switches != null) && switches.isEmpty()) {
+            switches = null;
+        }
+    }
+
     //-----------//
     // doOneStep //
     //-----------//
@@ -871,9 +924,9 @@ public class BasicStub
     //----------------//
     // getNeededSteps //
     //----------------//
-    private SortedSet<Step> getNeededSteps (Step target)
+    private EnumSet<Step> getNeededSteps (Step target)
     {
-        SortedSet<Step> neededSteps = new TreeSet<Step>();
+        EnumSet<Step> neededSteps = EnumSet.noneOf(Step.class);
 
         // Add all needed steps
         for (Step step : EnumSet.range(Step.first(), target)) {
@@ -902,8 +955,17 @@ public class BasicStub
             logger.trace("{} initTransients", this);
             this.book = book;
 
-            filterContext = new LiveParam<FilterDescriptor>(book.getFilterParam());
-            textContext = new LiveParam<String>(book.getLanguageParam());
+            if (binarizationFilter != null) {
+                binarizationFilter.setParent(book.getBinarizationFilter());
+            }
+
+            if (ocrLanguages != null) {
+                ocrLanguages.setParent(book.getOcrLanguages());
+            }
+
+            if (switches != null) {
+                switches.setParent(book.getProcessingSwitches());
+            }
 
             if (OMR.gui != null) {
                 assembly = new SheetAssembly(this);
@@ -949,5 +1011,56 @@ public class BasicStub
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch for sheet loading");
+    }
+
+    //-------------------//
+    // OcrSheetLanguages //
+    //-------------------//
+    private static final class OcrSheetLanguages
+            extends Param<String>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public boolean setSpecific (String specific)
+        {
+            // Normalize
+            if ((specific != null) && specific.isEmpty()) {
+                specific = null;
+            }
+
+            return super.setSpecific(specific);
+        }
+
+        //~ Inner Classes --------------------------------------------------------------------------
+        /**
+         * JAXB adapter to mimic XmlValue.
+         */
+        public static class Adapter
+                extends XmlAdapter<String, OcrSheetLanguages>
+        {
+            //~ Methods ----------------------------------------------------------------------------
+
+            @Override
+            public String marshal (OcrSheetLanguages val)
+                    throws Exception
+            {
+                if (val == null) {
+                    return null;
+                }
+
+                return val.getSpecific();
+            }
+
+            @Override
+            public OcrSheetLanguages unmarshal (String str)
+                    throws Exception
+            {
+                OcrSheetLanguages ol = new OcrSheetLanguages();
+                ol.setSpecific(str);
+
+                return ol;
+            }
+        }
     }
 }

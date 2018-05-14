@@ -25,9 +25,6 @@ import ij.process.ByteProcessor;
 
 import net.jcip.annotations.ThreadSafe;
 
-import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.constant.ConstantSet;
-
 /**
  * Class {@code GlobalFilter} implements Interface {@code PixelFilter} by using a
  * global threshold on pixel value.
@@ -39,11 +36,8 @@ public class GlobalFilter
         extends SourceWrapper
         implements PixelFilter
 {
-    //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
-
     //~ Instance fields ----------------------------------------------------------------------------
+
     /** Global threshold. */
     private final int threshold;
 
@@ -93,30 +87,6 @@ public class GlobalFilter
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    //----------------------//
-    // getDefaultDescriptor //
-    //----------------------//
-    public static FilterDescriptor getDefaultDescriptor ()
-    {
-        return GlobalDescriptor.getDefault();
-    }
-
-    //---------------------//
-    // getDefaultThreshold //
-    //---------------------//
-    public static int getDefaultThreshold ()
-    {
-        return constants.defaultThreshold.getValue();
-    }
-
-    //---------------------//
-    // setDefaultThreshold //
-    //---------------------//
-    public static void setDefaultThreshold (int threshold)
-    {
-        constants.defaultThreshold.setValue(threshold);
-    }
-
     // -------//
     // isFore //
     // -------//
@@ -125,20 +95,5 @@ public class GlobalFilter
                            int y)
     {
         return source.get(x, y) <= threshold;
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Integer defaultThreshold = new Constant.Integer(
-                "GrayLevel",
-                140,
-                "Default threshold value (in 0..255)");
     }
 }

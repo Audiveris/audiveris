@@ -820,7 +820,7 @@ public class InterController
                     ByteProcessor buffer = glyph.getBuffer();
                     List<TextLine> relativeLines = new GlyphScanner(sheet).scanBuffer(
                             buffer,
-                            sheet.getStub().getLanguageParam().getActual(),
+                            sheet.getStub().getOcrLanguages().getValue(),
                             glyph.getId());
 
                     // Retrieve absolute lines (and the underlying word glyphs)

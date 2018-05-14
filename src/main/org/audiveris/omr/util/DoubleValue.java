@@ -55,7 +55,7 @@ public class DoubleValue
      */
     public DoubleValue (Double value)
     {
-        this.value = value.doubleValue();
+        this.value = value;
     }
 
     /**

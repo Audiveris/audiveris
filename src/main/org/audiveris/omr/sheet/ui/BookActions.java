@@ -56,10 +56,10 @@ import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.HistoryMenu;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.FileUtil;
-import org.audiveris.omr.util.Param;
 import org.audiveris.omr.util.PathTask;
 import org.audiveris.omr.util.VoidTask;
 import org.audiveris.omr.util.WrappedBoolean;
+import org.audiveris.omr.util.param.Param;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
@@ -195,7 +195,7 @@ public class BookActions
      */
     public static boolean checkStored (Book book)
     {
-        if (book.isModified() && defaultPrompt.getSpecific()) {
+        if (book.isModified() && defaultPrompt.getValue()) {
             int answer = JOptionPane.showConfirmDialog(
                     OMR.gui.getFrame(),
                     "Save modified book " + book.getRadix() + "?");
@@ -1810,16 +1810,29 @@ public class BookActions
         @Override
         public Boolean getSpecific ()
         {
-            boolean val = constants.closeConfirmation.getValue();
-            logger.debug("closeConfirmation: {}", val);
+            if (isSpecific()) {
+                return getValue();
+            } else {
+                return null;
+            }
+        }
 
-            return val;
+        @Override
+        public Boolean getValue ()
+        {
+            return constants.closeConfirmation.getValue();
+        }
+
+        @Override
+        public boolean isSpecific ()
+        {
+            return !constants.closeConfirmation.isSourceValue();
         }
 
         @Override
         public boolean setSpecific (Boolean specific)
         {
-            if (!getSpecific().equals(specific)) {
+            if (!getValue().equals(specific)) {
                 constants.closeConfirmation.setValue(specific);
                 logger.info(
                         "You will {} be prompted to save book when closing",

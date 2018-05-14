@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * reloading from disk.
  * <p>
  * The actual value of an application "constant", as returned by the method
- * {@link Constant#getCurrentString}, is determined in the following order, any definition
+ * {@link Constant#getStringValue}, is determined in the following order, any definition
  * overriding the previous ones:
  * <ol> <li> First, <b>SOURCE</b> values are always provided within <em><b>source
  * declaration</b></em> of the constants in the Java source file itself.
@@ -135,11 +135,11 @@ public class ConstantManager
     //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Map of all constants created in the application, regardless whether these
-     * constants are enclosed in a ConstantSet or defined as standalone entities
+     * constants are enclosed in a ConstantSet or defined as standalone entities.
      */
     protected final ConcurrentHashMap<String, Constant> constants = new ConcurrentHashMap<String, Constant>();
 
-    /** User properties */
+    /** User properties. */
     private final UserHolder userHolder = new UserHolder(
             WellKnowns.CONFIG_FOLDER.resolve(USER_FILE_NAME));
 
@@ -406,7 +406,7 @@ public class ConstantManager
                 final String key = entry.getKey();
                 final Constant constant = entry.getValue();
 
-                final String current = constant.getCurrentString();
+                final String current = constant.getStringValue();
                 final String source = constant.getSourceString();
 
                 if (!current.equals(source)) {

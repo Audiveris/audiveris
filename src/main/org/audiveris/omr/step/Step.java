@@ -210,50 +210,6 @@ public enum Step
         return helper.getSheetTab();
     }
 
-    //----------//
-    // Constant //
-    //----------//
-    /**
-     * Class {@code Constant} is a {@link org.audiveris.omr.constant.Constant} meant to store a {@link
-     * Step} value.
-     */
-    public static class Constant
-            extends org.audiveris.omr.constant.Constant
-    {
-
-        public Constant (Step defaultValue,
-                         java.lang.String description)
-        {
-            super(null, (defaultValue != null) ? defaultValue.toString() : "", description);
-        }
-
-        public Step getValue ()
-        {
-            return (Step) getCachedValue();
-        }
-
-        public void setValue (Step step)
-        {
-            setTuple((step != null) ? step.toString() : "", step);
-        }
-
-        @Override
-        public void setValue (java.lang.String str)
-        {
-            setValue(decode(str));
-        }
-
-        @Override
-        protected Step decode (java.lang.String str)
-        {
-            if ((str == null) || str.trim().isEmpty()) {
-                return null;
-            }
-
-            return Step.valueOf(str);
-        }
-    }
-
     //--------//
     // impact //
     //--------//

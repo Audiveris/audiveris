@@ -49,7 +49,7 @@ public class UILookAndFeel
             System.setProperty("apple.laf.useScreenMenuBar", "true");
             //                  System.setProperty("apple.awt.brushMetalLook", "true");
             //                  System.setProperty("apple.awt.brushMetalRounded", "true");
-            constants.lookAndFeel.setValue(UIManager.getSystemLookAndFeelClassName());
+            constants.lookAndFeel.setStringValue(UIManager.getSystemLookAndFeelClassName());
         }
     }
 
@@ -110,7 +110,7 @@ public class UILookAndFeel
         try {
             if (className != null) {
                 UIManager.setLookAndFeel(className);
-                constants.lookAndFeel.setValue(className);
+                constants.lookAndFeel.setStringValue(className);
             } else {
                 UIManager.setLookAndFeel(constants.lookAndFeel.getValue());
             }

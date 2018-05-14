@@ -89,7 +89,7 @@ import javax.swing.JButton;
  * <li>Assignment from an existing glyph is performed by a double-click</li>
  * </ul>
  * <p>
- * A few 2-char strings typed by the user trigger the selection of a shape and its assignment.an
+ * A few 2-char strings typed by the user trigger the selection of a shape and its assignment.
  *
  * @author Hervé Bitteur
  */

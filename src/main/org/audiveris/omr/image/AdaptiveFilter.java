@@ -124,38 +124,6 @@ public abstract class AdaptiveFilter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------------------//
-    // getDefaultMeanCoeff //
-    //---------------------//
-    public static double getDefaultMeanCoeff ()
-    {
-        return constants.meanCoeff.getValue();
-    }
-
-    //-----------------------//
-    // getDefaultStdDevCoeff //
-    //-----------------------//
-    public static double getDefaultStdDevCoeff ()
-    {
-        return constants.stdDevCoeff.getValue();
-    }
-
-    //---------------------//
-    // setDefaultMeanCoeff //
-    //---------------------//
-    public static void setDefaultMeanCoeff (double meanCoeff)
-    {
-        constants.meanCoeff.setValue(meanCoeff);
-    }
-
-    //-----------------------//
-    // setDefaultStdDevCoeff //
-    //-----------------------//
-    public static void setDefaultStdDevCoeff (double stdDevCoeff)
-    {
-        constants.stdDevCoeff.setValue(stdDevCoeff);
-    }
-
     //---------------//
     // filteredImage //
     //---------------//
@@ -232,22 +200,6 @@ public abstract class AdaptiveFilter
         boolean isFore = pixValue <= threshold;
 
         return isFore;
-    }
-
-    //------------------//
-    // getAdaptiveClass //
-    //------------------//
-    static Class<?> getImplementationClass ()
-    {
-        String name = constants.className.getValue();
-
-        try {
-            return Class.forName(name);
-        } catch (ClassNotFoundException ex) {
-            logger.error("Cannot find adaptive filter class " + name);
-
-            return null;
-        }
     }
 
     //--------------//
@@ -441,17 +393,5 @@ public abstract class AdaptiveFilter
                 "Pixels",
                 18,
                 "Half size of window around a given pixel");
-
-        private final Constant.Ratio meanCoeff = new Constant.Ratio(
-                0.7,
-                "Threshold formula coefficient for mean pixel value");
-
-        private final Constant.Ratio stdDevCoeff = new Constant.Ratio(
-                0.9,
-                "Threshold formula coefficient for pixel standard deviation");
-
-        private final Constant.String className = new Constant.String(
-                "org.audiveris.omr.image.VerticalFilter",
-                "org.audiveris.omr.image.VerticalFilter or org.audiveris.omr.image.RandomFilter");
     }
 }

@@ -1,11 +1,11 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                      N a m e d D o u b l e                                     //
+//                                      S t r i n g P a r a m                                     //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright © Audiveris 2017. All rights reserved.
+//  Copyright ©  Audiveris 2017. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -19,49 +19,44 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.util;
+package org.audiveris.omr.util.param;
+
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Interface {@code NamedDouble}
+ * Class {@code StringParam} is a param for string.
  *
  * @author Hervé Bitteur
  */
-public interface NamedDouble
+public class StringParam
+        extends Param<String>
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
 
-    /**
-     * Get the description sentence recorded with the NamedDouble
-     *
-     * @return the description sentence as a string
-     */
-    String getDescription ();
+    public static class Adapter
+            extends XmlAdapter<String, StringParam>
+    {
+        //~ Methods --------------------------------------------------------------------------------
 
-    /**
-     * Report the name of the NamedDouble
-     *
-     * @return the NamedDouble name
-     */
-    String getName ();
+        @Override
+        public String marshal (StringParam val)
+                throws Exception
+        {
+            if (val == null) {
+                return null;
+            }
 
-    /**
-     * Report the unit, if any, used as base of quantity measure
-     *
-     * @return the quantity unit, if any
-     */
-    String getQuantityUnit ();
+            return val.getSpecific();
+        }
 
-    /**
-     * Report the current value
-     *
-     * @return current value
-     */
-    Double getValue ();
+        @Override
+        public StringParam unmarshal (String str)
+                throws Exception
+        {
+            StringParam sp = new StringParam();
+            sp.setSpecific(str);
 
-    /**
-     * Assign a new value
-     *
-     * @param value value to be assigned
-     */
-    void setValue (double value);
+            return sp;
+        }
+    }
 }

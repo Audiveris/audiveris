@@ -214,6 +214,6 @@ public class NameSet
             buf.append(n);
         }
 
-        constant.setValue(buf.toString());
+        constant.setStringValue(buf.toString());
     }
 }

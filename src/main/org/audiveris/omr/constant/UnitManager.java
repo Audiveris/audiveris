@@ -302,7 +302,7 @@ public class UnitManager
                 if (set != null) {
                     for (int i = 0; i < set.size(); i++) {
                         Constant constant = set.getConstant(i);
-                        constant.reset();
+                        constant.resetToSource();
                     }
                 }
             }

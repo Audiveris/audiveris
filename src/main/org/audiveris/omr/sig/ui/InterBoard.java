@@ -115,8 +115,7 @@ public class InterBoard
     /**
      * Creates a new InterBoard object, pre-selected by default.
      *
-     * @param sheet    the related sheet
-     * @param selected true for pre-selected, false for collapsed
+     * @param sheet the related sheet
      */
     public InterBoard (Sheet sheet)
     {

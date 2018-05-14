@@ -109,11 +109,11 @@ public abstract class ConstantSet
                     String.format(
                             "%-25s %12s %-14s =%5s %-25s\t%s%n",
                             constant.getName(),
-                            constant.getShortTypeName(),
+                            constant.getClass().getSimpleName(),
                             (constant.getQuantityUnit() != null) ? ("(" + constant.getQuantityUnit() + ")")
-                                    : "",
+                            : "",
                             origin,
-                            constant.getCurrentString(),
+                            constant.getStringValue(),
                             constant.getDescription()));
         }
 
@@ -175,26 +175,6 @@ public abstract class ConstantSet
     public boolean initialize ()
     {
         return getMap() != null;
-    }
-
-    //------------//
-    // isModified //
-    //------------//
-    /**
-     * Predicate to check whether at least one of the constant of the
-     * set has been modified
-     *
-     * @return the modification status of the whole set
-     */
-    public boolean isModified ()
-    {
-        for (Constant constant : getMap().values()) {
-            if (constant.isModified()) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     //------//

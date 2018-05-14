@@ -166,18 +166,7 @@ public class AdvancedTopics
         {
             setBorder(BorderFactory.createTitledBorder("These switches require a restart"));
 
-            final String fieldInterline = Panel.getFieldInterline();
-            StringBuilder sbr = new StringBuilder();
-
-            for (int i = Topic.values().length - 1; i >= 0; i--) {
-                sbr.append("pref");
-
-                if (i != 0) {
-                    sbr.append(",").append(fieldInterline).append(",");
-                }
-            }
-
-            FormLayout layout = new FormLayout("pref", sbr.toString());
+            FormLayout layout = new FormLayout("pref", Panel.makeRows(Topic.values().length));
             PanelBuilder builder = new PanelBuilder(layout, this);
             CellConstraints cst = new CellConstraints();
             int r = 1;
@@ -286,7 +275,7 @@ public class AdvancedTopics
             box = new JComboBox<String>(
                     PluginsManager.getInstance().getPluginIds().toArray(new String[0]));
             box.setToolTipText("Default plugin to be launched");
-            box.setSelectedItem(PluginsManager.defaultPluginId.getTarget());
+            box.setSelectedItem(PluginsManager.defaultPluginId.getValue());
 
             PanelBuilder builder = new PanelBuilder(layout2, this);
             CellConstraints cst = new CellConstraints();

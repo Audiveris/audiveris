@@ -289,7 +289,7 @@ public class StemsBuilder
         Collections.sort(systemBeams, Inters.byAbscissa);
 
         // The abscissa-sorted head interpretations for this system
-        final List<Inter> systemHeads = sig.inters(ShapeSet.StemTemplateNotes);
+        final List<Inter> systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
         Collections.sort(systemHeads, Inters.byAbscissa);
 
         // First phase, look around heads for stems (and beams if any)

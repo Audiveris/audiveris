@@ -141,7 +141,7 @@ public class ShapeDescriptor
         final int max = (args.length > 1) ? Integer.decode(args[1]) : min;
 
         for (int interline = min; interline <= max; interline++) {
-            for (Shape shape : ShapeSet.TemplateNotes) {
+            for (Shape shape : ShapeSet.getTemplateNotes(null)) {
                 new ShapeDescriptor(shape, interline);
             }
         }

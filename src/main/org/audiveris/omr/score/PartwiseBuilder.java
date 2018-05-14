@@ -1630,7 +1630,7 @@ public class PartwiseBuilder
                 pmWords.setValue("");
 
                 Sound sound = factory.createSound();
-                sound.setTempo(new BigDecimal(score.getTempoParam().getTarget()));
+                sound.setTempo(new BigDecimal(score.getTempoParam().getValue()));
                 direction.setSound(sound);
             }
 

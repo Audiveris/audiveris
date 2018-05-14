@@ -23,6 +23,9 @@ package org.audiveris.omr.image;
 
 import ij.process.ByteProcessor;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -38,8 +41,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class GlobalDescriptor
         extends FilterDescriptor
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The threshold value for the whole pixel source. */
     @XmlAttribute(name = "threshold")
     public final int threshold;
@@ -62,12 +68,52 @@ public class GlobalDescriptor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------------//
+    // defaultIsSpecific //
+    //-------------------//
+    public static boolean defaultIsSpecific ()
+    {
+        return !constants.defaultThreshold.isSourceValue();
+    }
+
     //------------//
     // getDefault //
     //------------//
     public static GlobalDescriptor getDefault ()
     {
-        return new GlobalDescriptor(GlobalFilter.getDefaultThreshold());
+        return new GlobalDescriptor(getDefaultThreshold());
+    }
+
+    //---------------------//
+    // getDefaultThreshold //
+    //---------------------//
+    public static int getDefaultThreshold ()
+    {
+        return constants.defaultThreshold.getValue();
+    }
+
+    //----------------//
+    // getSourceValue //
+    //----------------//
+    public static GlobalDescriptor getSourceValue ()
+    {
+        return new GlobalDescriptor(constants.defaultThreshold.getSourceValue());
+    }
+
+    //---------------//
+    // resetToSource //
+    //---------------//
+    public static void resetToSource ()
+    {
+        constants.defaultThreshold.resetToSource();
+    }
+
+    //---------------------//
+    // setDefaultThreshold //
+    //---------------------//
+    public static void setDefaultThreshold (int threshold)
+    {
+        constants.defaultThreshold.setValue(threshold);
     }
 
     //--------//
@@ -126,5 +172,20 @@ public class GlobalDescriptor
         sb.append(" threshold: ").append(threshold);
 
         return sb.toString();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Integer defaultThreshold = new Constant.Integer(
+                "GrayLevel",
+                140,
+                "Default threshold value (in 0..255)");
     }
 }

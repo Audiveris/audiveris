@@ -23,10 +23,11 @@ package org.audiveris.omr.image;
 
 import ij.process.ByteProcessor;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Constructor;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -44,6 +45,8 @@ public class AdaptiveDescriptor
         extends FilterDescriptor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(
             AdaptiveDescriptor.class);
@@ -80,21 +83,12 @@ public class AdaptiveDescriptor
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // equals //
-    //--------//
-    @Override
-    public boolean equals (Object obj)
+    //-------------------//
+    // defaultIsSpecific //
+    //-------------------//
+    public static boolean defaultIsSpecific ()
     {
-        if ((obj instanceof AdaptiveDescriptor) && super.equals(obj)) {
-            AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
-            final double epsilon = 0.00001;
-
-            return (Math.abs(this.meanCoeff - that.meanCoeff) < epsilon)
-                   && (Math.abs(this.stdDevCoeff - that.stdDevCoeff) < epsilon);
-        }
-
-        return false;
+        return !constants.meanCoeff.isSourceValue() || !constants.stdDevCoeff.isSourceValue();
     }
 
     //------------//
@@ -102,9 +96,41 @@ public class AdaptiveDescriptor
     //------------//
     public static AdaptiveDescriptor getDefault ()
     {
+        return new AdaptiveDescriptor(getDefaultMeanCoeff(), getDefaultStdDevCoeff());
+    }
+
+    //---------------------//
+    // getDefaultMeanCoeff //
+    //---------------------//
+    public static double getDefaultMeanCoeff ()
+    {
+        return constants.meanCoeff.getValue();
+    }
+
+    //-----------------------//
+    // getDefaultStdDevCoeff //
+    //-----------------------//
+    public static double getDefaultStdDevCoeff ()
+    {
+        return constants.stdDevCoeff.getValue();
+    }
+
+    //----------------//
+    // getSourceValue //
+    //----------------//
+    public static AdaptiveDescriptor getSourceValue ()
+    {
         return new AdaptiveDescriptor(
-                AdaptiveFilter.getDefaultMeanCoeff(),
-                AdaptiveFilter.getDefaultStdDevCoeff());
+                constants.meanCoeff.getSourceValue(),
+                constants.stdDevCoeff.getSourceValue());
+    }
+
+    //---------------------//
+    // setDefaultMeanCoeff //
+    //---------------------//
+    public static void setDefaultMeanCoeff (double meanCoeff)
+    {
+        constants.meanCoeff.setValue(meanCoeff);
     }
 
     //-----------//
@@ -113,18 +139,7 @@ public class AdaptiveDescriptor
     @Override
     public PixelFilter getFilter (ByteProcessor source)
     {
-        Class<?> classe = AdaptiveFilter.getImplementationClass();
-
-        try {
-            Constructor cons = classe.getConstructor(
-                    new Class[]{ByteProcessor.class, double.class, double.class});
-
-            return (PixelFilter) cons.newInstance(source, meanCoeff, stdDevCoeff);
-        } catch (Throwable ex) {
-            logger.error("Error on getFilter {}", ex.toString(), ex);
-
-            return null;
-        }
+        return new VerticalFilter(source, meanCoeff, stdDevCoeff);
     }
 
     //
@@ -154,6 +169,40 @@ public class AdaptiveDescriptor
         return hash;
     }
 
+    //---------------//
+    // resetToSource //
+    //---------------//
+    public static void resetToSource ()
+    {
+        constants.meanCoeff.resetToSource();
+        constants.stdDevCoeff.resetToSource();
+    }
+
+    //-----------------------//
+    // setDefaultStdDevCoeff //
+    //-----------------------//
+    public static void setDefaultStdDevCoeff (double stdDevCoeff)
+    {
+        constants.stdDevCoeff.setValue(stdDevCoeff);
+    }
+
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if ((obj instanceof AdaptiveDescriptor) && super.equals(obj)) {
+            AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
+            final double epsilon = 0.00001;
+
+            return (Math.abs(this.meanCoeff - that.meanCoeff) < epsilon)
+                   && (Math.abs(this.stdDevCoeff - that.stdDevCoeff) < epsilon);
+        }
+
+        return false;
+    }
+
     //-----------------//
     // internalsString //
     //-----------------//
@@ -165,5 +214,23 @@ public class AdaptiveDescriptor
         sb.append(" stdDevCoeff: ").append(stdDevCoeff);
 
         return sb.toString();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Ratio meanCoeff = new Constant.Ratio(
+                0.7,
+                "Threshold formula coefficient for mean pixel value");
+
+        private final Constant.Ratio stdDevCoeff = new Constant.Ratio(
+                0.9,
+                "Threshold formula coefficient for pixel standard deviation");
     }
 }

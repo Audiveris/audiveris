@@ -26,7 +26,8 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
-import static org.audiveris.omr.glyph.ShapeSet.*;
+import org.audiveris.omr.sheet.ProcessingSwitches;
+import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -139,6 +140,9 @@ public class SymbolFactory
     /** Dot factory companion. */
     private final DotFactory dotFactory;
 
+    /** Processing switches. */
+    private final ProcessingSwitches switches;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SymbolsFactory object.
@@ -161,6 +165,8 @@ public class SymbolFactory
         Collections.sort(systemHeadChords, Inters.byAbscissa);
 
         dotFactory = new DotFactory(this, system);
+
+        switches = system.getSheet().getStub().getProcessingSwitches();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -446,12 +452,13 @@ public class SymbolFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return ArticulationInter.createValidAdded(
-                    glyph,
-                    shape,
-                    grade,
-                    system,
-                    systemHeadChords);
+            return switches.getValue(Switch.articulations)
+                    ? ArticulationInter.createValidAdded(
+                            glyph,
+                            shape,
+                            grade,
+                            system,
+                            systemHeadChords) : null;
 
         // Markers
         case CODA:
@@ -518,14 +525,15 @@ public class SymbolFactory
         case DIGIT_2:
         case DIGIT_3:
         case DIGIT_4:
-            return supportFingerings() ? new FingeringInter(glyph, shape, grade) : null;
+            return switches.getValue(Switch.fingerings) ? new FingeringInter(glyph, shape, grade)
+                    : null;
 
         // Plucking
         case PLUCK_P:
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return supportPluckings() ? new PluckingInter(glyph, shape, grade) : null;
+            return switches.getValue(Switch.pluckings) ? new PluckingInter(glyph, shape, grade) : null;
 
         // Romans
         case ROMAN_I:
@@ -540,7 +548,7 @@ public class SymbolFactory
         case ROMAN_X:
         case ROMAN_XI:
         case ROMAN_XII:
-            return supportFrets() ? new FretInter(glyph, shape, grade) : null;
+            return switches.getValue(Switch.frets) ? new FretInter(glyph, shape, grade) : null;
 
         // Others
         default:
@@ -565,6 +573,7 @@ public class SymbolFactory
     private static Inter doCreateManual (Shape shape,
                                          Sheet sheet)
     {
+        final ProcessingSwitches switches = sheet.getStub().getProcessingSwitches();
         final double GRADE = 1.0; // Grade value for any manual shape
 
         switch (shape) {
@@ -743,7 +752,8 @@ public class SymbolFactory
         case STACCATO:
         case STACCATISSIMO:
         case STRONG_ACCENT:
-            return new ArticulationInter(null, shape, GRADE); // No visit
+            return switches.getValue(Switch.articulations)
+                    ? new ArticulationInter(null, shape, GRADE) : null; // No visit
 
         // Markers
         case CODA:
@@ -807,14 +817,15 @@ public class SymbolFactory
         case DIGIT_2:
         case DIGIT_3:
         case DIGIT_4:
-            return supportFingerings() ? new FingeringInter(null, shape, GRADE) : null; // No visit
+            return switches.getValue(Switch.fingerings) ? new FingeringInter(null, shape, GRADE)
+                    : null; // No visit
 
         // Plucking
         case PLUCK_P:
         case PLUCK_I:
         case PLUCK_M:
         case PLUCK_A:
-            return supportPluckings() ? new PluckingInter(null, shape, GRADE) : null; // No visit
+            return switches.getValue(Switch.pluckings) ? new PluckingInter(null, shape, GRADE) : null; // No visit
 
         // Romans
         case ROMAN_I:
@@ -829,7 +840,7 @@ public class SymbolFactory
         case ROMAN_X:
         case ROMAN_XI:
         case ROMAN_XII:
-            return supportFrets() ? new FretInter(null, shape, GRADE) : null; // No visit
+            return switches.getValue(Switch.frets) ? new FretInter(null, shape, GRADE) : null; // No visit
 
         // Others
         default:

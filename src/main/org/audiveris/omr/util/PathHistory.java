@@ -85,7 +85,7 @@ public class PathHistory
         Path parent = path.toAbsolutePath().getParent();
 
         if (folderConstant != null) {
-            folderConstant.setValue(parent.toAbsolutePath().toString());
+            folderConstant.setStringValue(parent.toAbsolutePath().toString());
         }
 
         if (OMR.gui != null) {

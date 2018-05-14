@@ -27,7 +27,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import ij.process.ByteProcessor;
 
-import org.audiveris.omr.image.AdaptiveFilter;
+import org.audiveris.omr.image.AdaptiveDescriptor;
 import org.audiveris.omr.image.AdaptiveFilter.AdaptiveContext;
 import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.PixelFilter;
@@ -143,7 +143,7 @@ public class BinarizationBoard
         Rectangle rect = sheetLocation.getData();
 
         if (rect != null) {
-            FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
+            FilterDescriptor desc = sheet.getStub().getBinarizationFilter().getValue();
             ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.INITIAL);
 
             if (source != null) {
@@ -152,8 +152,8 @@ public class BinarizationBoard
                 if (filter == null) {
                     filter = new RandomFilter(
                             source,
-                            AdaptiveFilter.getDefaultMeanCoeff(),
-                            AdaptiveFilter.getDefaultStdDevCoeff());
+                            AdaptiveDescriptor.getDefaultMeanCoeff(),
+                            AdaptiveDescriptor.getDefaultStdDevCoeff());
                 }
 
                 PixelFilter.Context context = filter.getContext(rect.x, rect.y);

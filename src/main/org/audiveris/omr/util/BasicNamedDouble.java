@@ -79,13 +79,7 @@ public class BasicNamedDouble
     }
 
     @Override
-    public String getShortTypeName ()
-    {
-        return name;
-    }
-
-    @Override
-    public double getValue ()
+    public Double getValue ()
     {
         return value;
     }

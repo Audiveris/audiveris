@@ -21,10 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.constant;
 
-import org.audiveris.omr.util.NamedDouble;
 import net.jcip.annotations.ThreadSafe;
 
 import org.audiveris.omr.util.DoubleValue;
+import org.audiveris.omr.util.NamedDouble;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +55,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * </ul>
  *
  * @author Hervé Bitteur
+ *
+ * @param <E> specific constant type
  */
 @ThreadSafe
-public abstract class Constant
+public abstract class Constant<E>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -86,9 +88,6 @@ public abstract class Constant
 
     // Data modified at any time
     //--------------------------
-    /** Initial Value (used for reset). Assigned once */
-    private java.lang.String initialString;
-
     /** Current data. */
     private AtomicReference<Tuple> tuple = new AtomicReference<Tuple>();
 
@@ -121,19 +120,6 @@ public abstract class Constant
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // getCurrentString //
-    //------------------//
-    /**
-     * Get the current value, as a String type.
-     *
-     * @return the String view of the value
-     */
-    public java.lang.String getCurrentString ()
-    {
-        return getTuple().currentString;
-    }
-
     //----------------//
     // getDescription //
     //----------------//
@@ -186,28 +172,6 @@ public abstract class Constant
         return quantityUnit;
     }
 
-    //------------------//
-    // getShortTypeName //
-    //------------------//
-    /**
-     * Report the very last part of the type name of the constant
-     *
-     * @return the type name (last part)
-     */
-    public java.lang.String getShortTypeName ()
-    {
-        final java.lang.String typeName = getClass().getName();
-        final int separator = Math.max(
-                typeName.lastIndexOf('$'),
-                typeName.lastIndexOf('.'));
-
-        if (separator != -1) {
-            return typeName.substring(separator + 1);
-        } else {
-            return typeName;
-        }
-    }
-
     //-----------------//
     // getSourceString //
     //-----------------//
@@ -221,20 +185,43 @@ public abstract class Constant
         return sourceString;
     }
 
-    //------------//
-    // isModified //
-    //------------//
+    //----------------//
+    // getSourceValue //
+    //----------------//
     /**
-     * Checks whether the current value is different from the original one.
-     * NOTA_BENE: The test is made on string literal, which may result in false
-     * modification signals, simply because the string for example contains an
-     * additional space
+     * Report the value corresponding to the source string.
      *
-     * @return The modification status
+     * @return the source value
      */
-    public boolean isModified ()
+    public E getSourceValue ()
     {
-        return !getCurrentString().equals(initialString);
+        return decode(getSourceString());
+    }
+
+    //----------------//
+    // getStringValue //
+    //----------------//
+    /**
+     * Get the current value, as a String type.
+     *
+     * @return the String view of the value
+     */
+    public java.lang.String getStringValue ()
+    {
+        return getTuple().currentString;
+    }
+
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Report the current constant value.
+     *
+     * @return constant value
+     */
+    public E getValue ()
+    {
+        return (E) getCachedValue();
     }
 
     //---------------//
@@ -248,42 +235,142 @@ public abstract class Constant
      */
     public boolean isSourceValue ()
     {
-        return getCurrentString().equals(sourceString);
+        return getStringValue().equals(sourceString);
     }
 
-    //--------//
-    // remove //
-    //--------//
+    //---------------//
+    // resetToSource //
+    //---------------//
     /**
-     * Remove a given constant from memory.
+     * Forget any modification made, and resetToSource to the source value.
      */
-    public void remove ()
-    {
-        ConstantManager.getInstance().removeConstant(this);
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Forget any modification made, and reset to the source value.
-     */
-    public void reset ()
+    public void resetToSource ()
     {
         setTuple(sourceString, decode(sourceString));
     }
 
-    //---------//
-    // setUnit //
-    //---------//
+    //----------------//
+    // setStringValue //
+    //----------------//
+    /**
+     * Modify the current value of the constant.
+     *
+     * @param string the new value, as a string to be checked
+     */
+    public void setStringValue (java.lang.String string)
+    {
+        setValue(decode(string));
+    }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Assign a new value to the constant.
+     *
+     * @param value new value
+     */
+    public void setValue (E value)
+    {
+        setTuple(value.toString(), value);
+    }
+
+    //------------------//
+    // toDetailedString //
+    //------------------//
+    /**
+     * Report detailed data about this constant
+     *
+     * @return data meant for end user
+     */
+    public java.lang.String toDetailedString ()
+    {
+        StringBuilder sb = new StringBuilder(getQualifiedName());
+        sb.append(" (").append(getStringValue()).append(")");
+        sb.append(" \"").append(getDescription()).append("\"");
+
+        return sb.toString();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    /**
+     * Used by UnitTreeTable to display the name of the constant,
+     * so only the unqualified name is returned.
+     *
+     * @return the (unqualified) constant name
+     */
+    @Override
+    public java.lang.String toString ()
+    {
+        return (name != null) ? name : "*no name*";
+    }
+
+    //--------//
+    // decode //
+    //--------//
+    /**
+     * Convert a given string to proper object value, as implemented by each subclass.
+     *
+     * @param str the encoded string
+     * @return the decoded object
+     */
+    protected abstract E decode (java.lang.String str);
+
+    //----------------//
+    // getCachedValue //
+    //----------------//
+    /**
+     * Report the current value of the constant
+     *
+     * @return the (cached) current value
+     */
+    protected Object getCachedValue ()
+    {
+        return getTuple().cachedValue;
+    }
+
+    //----------//
+    // setTuple //
+    //----------//
+    /**
+     * Modify the current parameter data in an atomic way,
+     * and remember the very first value (the initial string).
+     *
+     * @param str The new value (as a string)
+     * @param val The new value (as an object)
+     */
+    protected void setTuple (java.lang.String str,
+                             Object val)
+    {
+        while (true) {
+            Tuple old = tuple.get();
+            Tuple temp = new Tuple(str, val);
+
+            if (old == null) {
+                if (tuple.compareAndSet(null, temp)) {
+                    return;
+                }
+            } else {
+                tuple.set(temp);
+
+                return;
+            }
+        }
+    }
+
+    //----------------//
+    // setUnitAndName //
+    //----------------//
     /**
      * Allows to record the unit and name of the constant.
      *
      * @param unit the unit (class name) this constant belongs to
      * @param name the constant name
      */
-    public void setUnitAndName (java.lang.String unit,
-                                java.lang.String name)
+    protected void setUnitAndName (java.lang.String unit,
+                                   java.lang.String name)
     {
         //        System.out.println(
         //            Thread.currentThread().getName() + ": " + "Assigning unit:" + unit +
@@ -318,106 +405,6 @@ public abstract class Constant
         }
     }
 
-    //----------//
-    // setValue //
-    //----------//
-    /**
-     * Modify the current value of the constant.
-     * This abstract method is actually defined in each subclass, to enforce validation of the
-     * provided string with respect to the target constant type.
-     *
-     * @param string the new value, as a string to be checked
-     */
-    public abstract void setValue (java.lang.String string);
-
-    //------------------//
-    // toDetailedString //
-    //------------------//
-    /**
-     * Report detailed data about this constant
-     *
-     * @return data meant for end user
-     */
-    public java.lang.String toDetailedString ()
-    {
-        StringBuilder sb = new StringBuilder(getQualifiedName());
-        sb.append(" (").append(getCurrentString()).append(")");
-        sb.append(" \"").append(getDescription()).append("\"");
-
-        return sb.toString();
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    /**
-     * Used by UnitTreeTable to display the name of the constant,
-     * so only the unqualified name is returned.
-     *
-     * @return the (unqualified) constant name
-     */
-    @Override
-    public java.lang.String toString ()
-    {
-        return (name != null) ? name : "*no name*";
-    }
-
-    //--------//
-    // decode //
-    //--------//
-    /**
-     * Convert a given string to the proper object value, as
-     * implemented by each subclass.
-     *
-     * @param str the encoded string
-     * @return the decoded object
-     */
-    protected abstract Object decode (java.lang.String str);
-
-    //----------------//
-    // getCachedValue //
-    //----------------//
-    /**
-     * Report the current value of the constant
-     *
-     * @return the (cached) current value
-     */
-    protected Object getCachedValue ()
-    {
-        return getTuple().cachedValue;
-    }
-
-    //----------//
-    // setTuple //
-    //----------//
-    /**
-     * Modify the current parameter data in an atomic way,
-     * and remember the very first value (the initial string).
-     *
-     * @param str The new value (as a string)
-     * @param val The new value (as an object)
-     */
-    protected void setTuple (java.lang.String str,
-                             Object val)
-    {
-        while (true) {
-            Tuple old = tuple.get();
-            Tuple temp = new Tuple(str, val);
-
-            if (old == null) {
-                if (tuple.compareAndSet(null, temp)) {
-                    initialString = str;
-
-                    return;
-                }
-            } else {
-                tuple.set(temp);
-
-                return;
-            }
-        }
-    }
-
     //----------------//
     // getValueOrigin //
     //----------------//
@@ -430,7 +417,7 @@ public abstract class Constant
     java.lang.String getValueOrigin ()
     {
         ConstantManager mgr = ConstantManager.getInstance();
-        java.lang.String cur = getCurrentString();
+        java.lang.String cur = getStringValue();
         java.lang.String usr = mgr.getConstantUserValue(qualifiedName);
         java.lang.String src = sourceString;
 
@@ -518,7 +505,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store a boolean value.
      */
     public static class Boolean
-            extends Constant
+            extends Constant<java.lang.Boolean>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -536,16 +523,6 @@ public abstract class Constant
 
         //~ Methods --------------------------------------------------------------------------------
         /**
-         * Retrieve the current constant value
-         *
-         * @return the current (boolean) value
-         */
-        public boolean getValue ()
-        {
-            return (java.lang.Boolean) getCachedValue();
-        }
-
-        /**
          * Convenient method to access this boolean value
          *
          * @return true if set, false otherwise
@@ -553,28 +530,6 @@ public abstract class Constant
         public boolean isSet ()
         {
             return getValue();
-        }
-
-        /**
-         * Allows to set a new boolean value (passed as a string) to this
-         * constant. The string validity is actually checked.
-         *
-         * @param string the boolean value as a string
-         */
-        @Override
-        public void setValue (java.lang.String string)
-        {
-            setValue(java.lang.Boolean.parseBoolean(string));
-        }
-
-        /**
-         * Set a new value to the constant
-         *
-         * @param val the new (boolean) value
-         */
-        public void setValue (boolean val)
-        {
-            setTuple(java.lang.Boolean.toString(val), val);
         }
 
         @Override
@@ -593,7 +548,7 @@ public abstract class Constant
      * They have a disk repository which is separate from the other constants.
      */
     public static class Color
-            extends Constant
+            extends Constant<java.awt.Color>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -635,33 +590,7 @@ public abstract class Constant
                     color.getBlue());
         }
 
-        /**
-         * Retrieve the current constant value
-         *
-         * @return the current (Color) value
-         */
-        public java.awt.Color getValue ()
-        {
-            return (java.awt.Color) getCachedValue();
-        }
-
-        /**
-         * Allows to set a new int RGB value (passed as a string) to this
-         * constant. The string validity is actually checked.
-         *
-         * @param string the int value as a string
-         */
         @Override
-        public void setValue (java.lang.String string)
-        {
-            setValue(java.awt.Color.decode(string));
-        }
-
-        /**
-         * Set a new value to the constant
-         *
-         * @param val the new Color value
-         */
         public void setValue (java.awt.Color val)
         {
             setTuple(encodeColor(val), val);
@@ -681,7 +610,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store a double value.
      */
     public static class Double
-            extends Constant
+            extends Constant<java.lang.Double>
             implements NamedDouble
     {
         //~ Static fields/initializers -------------------------------------------------------------
@@ -711,7 +640,7 @@ public abstract class Constant
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public double getValue ()
+        public java.lang.Double getValue ()
         {
             return ((DoubleValue) getCachedValue()).doubleValue();
         }
@@ -723,26 +652,61 @@ public abstract class Constant
         }
 
         @Override
-        public void setValue (double val)
+        public void setValue (double value)
         {
-            setTuple(java.lang.Double.toString(val), new DoubleValue(val));
-        }
-
-        public void setValue (DoubleValue val)
-        {
-            setTuple(val.toString(), val);
+            setTuple(java.lang.Double.toString(value), value);
         }
 
         @Override
-        public void setValue (java.lang.String string)
+        protected java.lang.Double decode (java.lang.String str)
         {
-            setValue(decode(string));
+            return java.lang.Double.valueOf(str);
         }
 
         @Override
-        protected DoubleValue decode (java.lang.String str)
+        protected void setTuple (java.lang.String str,
+                                 Object val)
         {
-            return new DoubleValue(java.lang.Double.valueOf(str));
+            super.setTuple(str, new DoubleValue((java.lang.Double) val));
+        }
+    }
+
+    //------//
+    // Enum //
+    //------//
+    public static class Enum<E extends java.lang.Enum<E>>
+            extends Constant<java.lang.Enum<E>>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Class classe;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Enum (Class classe,
+                     E defaultValue,
+                     java.lang.String description)
+        {
+            super(null, defaultValue.toString(), description);
+            this.classe = classe;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public E getSourceValue ()
+        {
+            return decode(getSourceString());
+        }
+
+        @Override
+        public E getValue ()
+        {
+            return (E) getCachedValue();
+        }
+
+        @Override
+        protected E decode (java.lang.String str)
+        {
+            return (E) java.lang.Enum.valueOf(classe, str);
         }
     }
 
@@ -753,7 +717,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store an int value.
      */
     public static class Integer
-            extends Constant
+            extends Constant<java.lang.Integer>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -772,38 +736,6 @@ public abstract class Constant
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Retrieve the current constant value
-         *
-         * @return the current (int) value
-         */
-        public int getValue ()
-        {
-            return (java.lang.Integer) getCachedValue();
-        }
-
-        /**
-         * Allows to set a new int value (passed as a string) to this
-         * constant. The string validity is actually checked.
-         *
-         * @param string the int value as a string
-         */
-        @Override
-        public void setValue (java.lang.String string)
-        {
-            setValue(java.lang.Integer.parseInt(string));
-        }
-
-        /**
-         * Set a new value to the constant
-         *
-         * @param val the new (int) value
-         */
-        public void setValue (int val)
-        {
-            setTuple(java.lang.Integer.toString(val), val);
-        }
-
         @Override
         protected java.lang.Integer decode (java.lang.String str)
         {
@@ -849,7 +781,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store a string value.
      */
     public static class String
-            extends Constant
+            extends Constant<java.lang.String>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
@@ -883,28 +815,6 @@ public abstract class Constant
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Retrieve the current constant value.
-         * Actually this is synonymous with currentString()
-         *
-         * @return the current (string) value
-         */
-        public java.lang.String getValue ()
-        {
-            return (java.lang.String) getCachedValue();
-        }
-
-        /**
-         * Set a new string value to the constant
-         *
-         * @param val the new (string) value
-         */
-        @Override
-        public void setValue (java.lang.String val)
-        {
-            setTuple(val, val);
-        }
-
         @Override
         protected java.lang.String decode (java.lang.String str)
         {
@@ -916,8 +826,7 @@ public abstract class Constant
     // Tuple //
     //-------//
     /**
-     * Class used to handle the tuple [currentString + currentValue]
-     * in an atomic way.
+     * Class used to handle the tuple [currentString + currentValue] in an atomic way.
      */
     private static class Tuple
     {
@@ -946,4 +855,3 @@ public abstract class Constant
         }
     }
 }
-// <T extends Enum<T>> T getEnum(name, Class<T> enumClass, T defaultValue)

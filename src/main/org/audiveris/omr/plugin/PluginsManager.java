@@ -27,7 +27,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.ui.util.AbstractMenuListener;
 import org.audiveris.omr.ui.util.SeparableMenu;
-import org.audiveris.omr.util.Param;
+import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -283,14 +283,30 @@ public class PluginsManager
         @Override
         public String getSpecific ()
         {
+            if (isSpecific()) {
+                return getValue();
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public String getValue ()
+        {
             return constants.defaultPlugin.getValue();
+        }
+
+        @Override
+        public boolean isSpecific ()
+        {
+            return !constants.defaultPlugin.isSourceValue();
         }
 
         @Override
         public boolean setSpecific (String specific)
         {
-            if (!getSpecific().equals(specific)) {
-                constants.defaultPlugin.setValue(specific);
+            if (!getValue().equals(specific)) {
+                constants.defaultPlugin.setStringValue(specific);
                 getInstance().setDefaultPlugin(specific);
                 logger.info("Default plugin is now: {}", specific);
 
