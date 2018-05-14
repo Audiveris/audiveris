@@ -688,7 +688,7 @@ public class Scale
      */
     public double toPixelsDouble (Fraction frac)
     {
-        return fracToPixels(frac.getWrappedValue().doubleValue());
+        return fracToPixels(frac.getValue());
     }
 
     //----------------//
@@ -705,7 +705,7 @@ public class Scale
      */
     public double toPixelsDouble (LineFraction lineFrac)
     {
-        return (double) lineScale.main * lineFrac.getWrappedValue().doubleValue();
+        return (double) lineScale.main * lineFrac.getValue();
     }
 
     //----------//
@@ -1132,7 +1132,7 @@ public class Scale
         public static double toPixelsDouble (int interline,
                                              Fraction frac)
         {
-            return interline * frac.getWrappedValue().doubleValue();
+            return interline * frac.getValue();
         }
 
         /**
@@ -1257,7 +1257,7 @@ public class Scale
          */
         public double toPixelsDouble (LineFraction lineFrac)
         {
-            return (double) main * lineFrac.getWrappedValue().doubleValue();
+            return (double) main * lineFrac.getValue();
         }
     }
 

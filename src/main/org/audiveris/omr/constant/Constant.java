@@ -23,9 +23,6 @@ package org.audiveris.omr.constant;
 
 import net.jcip.annotations.ThreadSafe;
 
-import org.audiveris.omr.util.DoubleValue;
-import org.audiveris.omr.util.NamedDouble;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -611,7 +608,6 @@ public abstract class Constant<E>
      */
     public static class Double
             extends Constant<java.lang.Double>
-            implements NamedDouble
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
@@ -640,34 +636,9 @@ public abstract class Constant<E>
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public java.lang.Double getValue ()
-        {
-            return ((DoubleValue) getCachedValue()).doubleValue();
-        }
-
-        public DoubleValue getWrappedValue ()
-        {
-            // Return a copy
-            return new DoubleValue(getValue());
-        }
-
-        @Override
-        public void setValue (double value)
-        {
-            setTuple(java.lang.Double.toString(value), value);
-        }
-
-        @Override
         protected java.lang.Double decode (java.lang.String str)
         {
             return java.lang.Double.valueOf(str);
-        }
-
-        @Override
-        protected void setTuple (java.lang.String str,
-                                 Object val)
-        {
-            super.setTuple(str, new DoubleValue((java.lang.Double) val));
         }
     }
 

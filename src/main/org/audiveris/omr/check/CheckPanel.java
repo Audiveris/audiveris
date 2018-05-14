@@ -222,7 +222,7 @@ public class CheckPanel<C>
         }
 
         final int checkNb = suite.getChecks().size();
-        PanelBuilder b = new PanelBuilder(createLayout(checkNb), component);
+        PanelBuilder b = new PanelBuilder(createLayout(checkNb + 1), component);
 
         ///b.setDefaultDialogBorder();
         CellConstraints c = new CellConstraints();
@@ -343,6 +343,10 @@ public class CheckPanel<C>
         sbc.append(" right:pref").append(", ").append(COLUMN_GAP).append(", ");
         sbc.append(" right:pref").append(", ").append(COLUMN_GAP).append(", "); // High Limit
         sbc.append(" right:pref");
+
+        // BINGO
+        sbc.append(", right:pref");
+        sbc.append(", right:pref");
 
         logger.debug("sb cols={}", sbc);
 

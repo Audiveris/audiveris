@@ -56,7 +56,7 @@ import javax.swing.WindowConstants;
  *
  * @author Hervé Bitteur
  */
-public class AdvancedTopics
+public abstract class AdvancedTopics
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

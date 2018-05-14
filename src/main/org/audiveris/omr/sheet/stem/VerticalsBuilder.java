@@ -44,6 +44,7 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.step.StepException;
@@ -235,7 +236,7 @@ public class VerticalsBuilder
             Point center = stick.getCenter();
             Staff staff = system.getClosestStaff(center);
 
-            if (staff == null || center.x < staff.getHeaderStop()) {
+            if ((staff == null) || (center.x < staff.getHeaderStop())) {
                 continue;
             }
 
@@ -554,6 +555,11 @@ public class VerticalsBuilder
         private final Scale.Fraction straightHigh = new Scale.Fraction(
                 0.2,
                 "High maximum distance to average stem line");
+
+        private final Constant.Double maxCoTangentForCheck = new Constant.Double(
+                "cotangent",
+                0.1,
+                "Maximum cotangent for visual check");
     }
 
     //----------//
@@ -764,27 +770,28 @@ public class VerticalsBuilder
                     return;
                 }
 
-                //                if (event instanceof EntityListEvent) {
-                //                    EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
-                //                    final Glyph glyph = listEvent.getEntity();
-                //
-                //                    if (glyph != null) {
-                //                        // Make sure this is a rather vertical stick
-                //                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
-                //                            // Apply the check suite
-                //                            SystemManager systemManager = sheet.getSystemManager();
-                //
-                //                            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                //                                applySuite(new VerticalsBuilder(system).getSuite(),
-                //                                        new StickContext(glyph));
-                //
-                //                                return;
-                //                            }
-                //                        }
-                //                    }
-                //
-                //                    tellObject(null);
-                //                }
+                if (event instanceof EntityListEvent) {
+                    EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
+                    final Glyph glyph = listEvent.getEntity();
+
+                    if (glyph != null) {
+                        // Make sure this is a rather vertical stick
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                            // Apply the check suite
+                            SystemManager systemManager = sheet.getSystemManager();
+
+                            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                                applySuite(
+                                        new VerticalsBuilder(system).getSuite(),
+                                        new StickContext(glyph));
+
+                                return;
+                            }
+                        }
+                    }
+
+                    tellObject(null);
+                }
             } catch (Exception ex) {
                 logger.warn(getClass().getName() + " onEvent error", ex);
             }

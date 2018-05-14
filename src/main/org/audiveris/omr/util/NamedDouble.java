@@ -21,47 +21,103 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.constant.Constant;
+
 /**
- * Interface {@code NamedDouble}
+ * Class {@code NamedDouble} is a documented Double.
  *
  * @author Hervé Bitteur
  */
-public interface NamedDouble
+public class NamedDouble
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
+    private final String name;
+
+    private final String quantityUnit;
+
+    private double value;
+
+    private final String description;
+
+    //~ Constructors -------------------------------------------------------------------------------
+    /**
+     * Creates a new {@code BasicNamedDouble} object.
+     *
+     * @param name         a name for this entity
+     * @param quantityUnit unit used by value
+     * @param value        initial value
+     * @param description  semantic
+     */
+    public NamedDouble (String name,
+                        String quantityUnit,
+                        double value,
+                        String description)
+    {
+        this.name = name;
+        this.quantityUnit = quantityUnit;
+        this.value = value;
+        this.description = description;
+    }
+
+    /**
+     * Creates a new {@code BasicNamedDouble} object based on a {@link Constant.Double}.
+     *
+     * @param cst the provided Constant.DOuble instance
+     */
+    public NamedDouble (Constant.Double cst)
+    {
+        this(cst.getName(), cst.getQuantityUnit(), cst.getValue(), cst.getDescription());
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Get the description sentence recorded with the NamedDouble
      *
      * @return the description sentence as a string
      */
-    String getDescription ();
+    public String getDescription ()
+    {
+        return description;
+    }
 
     /**
      * Report the name of the NamedDouble
      *
      * @return the NamedDouble name
      */
-    String getName ();
+    public String getName ()
+    {
+        return name;
+    }
 
     /**
      * Report the unit, if any, used as base of quantity measure
      *
      * @return the quantity unit, if any
      */
-    String getQuantityUnit ();
+    public String getQuantityUnit ()
+    {
+        return quantityUnit;
+    }
 
     /**
      * Report the current value
      *
      * @return current value
      */
-    Double getValue ();
+    public Double getValue ()
+    {
+        return value;
+    }
 
     /**
      * Assign a new value
      *
      * @param value value to be assigned
      */
-    void setValue (double value);
+    public void setValue (double value)
+    {
+        this.value = value;
+    }
 }

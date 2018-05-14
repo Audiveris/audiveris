@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
+import org.audiveris.omr.ui.action.AdvancedTopics;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,11 +61,11 @@ public class StemSeedsStep
     public void displayUI (Step step,
                            Sheet sheet)
     {
-        // We need a system of this sheet (any one)
-        SystemInfo aSystem = sheet.getSystems().get(0);
-
-        // Add stem checkboard
-        new VerticalsBuilder(aSystem).addCheckBoard();
+        if (AdvancedTopics.Topic.DEBUG.isSet()) {
+            // Add stem checkboard (we need a system of this sheet, any one)
+            SystemInfo aSystem = sheet.getSystems().get(0);
+            new VerticalsBuilder(aSystem).addCheckBoard();
+        }
     }
 
     //----------//
