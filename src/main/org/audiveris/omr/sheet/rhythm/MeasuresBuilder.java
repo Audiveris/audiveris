@@ -185,7 +185,6 @@ public class MeasuresBuilder
      */
     private void buildPartMeasures (Part part)
     {
-        final SIGraph sig = system.getSig();
         final Staff topStaff = part.getFirstStaff();
         final List<Group> topGroups = staffMap.get(topStaff);
         final boolean noRightBar = topStaff.getSideBarline(HorizontalSide.RIGHT) == null;
@@ -252,6 +251,7 @@ public class MeasuresBuilder
     private void emptyCourtesyMeasure ()
     {
         MeasureStack lastStack = system.getLastStack();
+
         Measure topMeasure = lastStack.getFirstMeasure();
 
         // Check it is a short measure with no ending barline
@@ -262,6 +262,14 @@ public class MeasuresBuilder
         int minStandardWidth = system.getSheet().getScale().toPixels(constants.minStandardWidth);
 
         if (topMeasure.getWidth() >= minStandardWidth) {
+            return;
+        }
+
+        // Check stack has one measure per part, otherwise simply remove this pseudo stack
+        if (lastStack.getMeasures().size() < system.getParts().size()) {
+            logger.info("Partial courtesy stack removed {}", lastStack);
+            system.removeStack(lastStack);
+
             return;
         }
 
