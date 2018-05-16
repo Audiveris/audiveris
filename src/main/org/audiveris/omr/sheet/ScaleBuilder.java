@@ -314,9 +314,9 @@ public class ScaleBuilder
                 0.025,
                 "Ratio of total runs for derivative acceptance");
 
-        private final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
-                2.0,
-                "Minimum ratio between beam thickness and line thickness");
+        private final Constant.Ratio minBeamFraction = new Constant.Ratio(
+                0.25,
+                "Minimum ratio between beam thickness and interline");
 
         private final Constant.Ratio maxSecondRatio = new Constant.Ratio(
                 2.0,
@@ -451,14 +451,14 @@ public class ScaleBuilder
         /**
          * Try to retrieve a suitable beam thickness value.
          * <p>
-         * Take most frequent black local max for which key (beam thickness) is larger than about
-         * twice the main line thickness and smaller than main white gap between (large) staff
+         * Take most frequent black local max for which key (beam thickness) is larger than a
+         * minimum fraction of interline and smaller than main white gap between (large) staff
          * lines.
          */
         public void retrieveBeamKey ()
         {
-            double minBeamLineRatio = constants.minBeamLineRatio.getValue();
-            int minHeight = (int) Math.floor(minBeamLineRatio * blackPeak.main);
+            double minBeamFraction = constants.minBeamFraction.getValue();
+            int minHeight = (int) Math.rint(minBeamFraction * comboPeak.main);
             int maxHeight = getMaxWhite();
             List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight, maxHeight);
 
