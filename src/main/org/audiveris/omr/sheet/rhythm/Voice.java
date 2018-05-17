@@ -175,7 +175,9 @@ public class Voice
                         info.chord.assignVoice(this);
 
                         for (AbstractBeamInter beam : info.chord.getBeams()) {
-                            beam.getGroup().assignVoice(this);
+                            if (beam.getGroup() != null) {
+                                beam.getGroup().assignVoice(this);
+                            }
                         }
                     }
                 }

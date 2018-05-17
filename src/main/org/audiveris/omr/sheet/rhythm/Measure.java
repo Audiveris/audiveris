@@ -364,7 +364,9 @@ public class Measure
             // Clefs, keys, timeSigs to fill measure
             List<Inter> measureInters = filter(
                     sig.inters(
-                            new Class[]{ClefInter.class, KeyInter.class, AbstractTimeInter.class}));
+                            new Class[]{
+                                ClefInter.class, KeyInter.class, AbstractTimeInter.class, TupletInter.class
+                            }));
 
             for (Inter inter : measureInters) {
                 addInter(inter);

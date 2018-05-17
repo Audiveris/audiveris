@@ -24,7 +24,13 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.beam.BeamGroup;
+import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
@@ -82,11 +88,29 @@ public class HeadStemRelation
     @Override
     public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        final Inter head = e.getEdgeSource();
-        final Inter stem = e.getEdgeTarget();
+        final HeadInter head = (HeadInter) e.getEdgeSource();
+        final StemInter stem = (StemInter) e.getEdgeTarget();
 
         if (headSide == null) {
             headSide = (stem.getCenter().x < head.getCenter().x) ? LEFT : RIGHT;
+        }
+
+        if (isManual() || head.isManual() || stem.isManual()) {
+            // Update head chord with stem
+            HeadChordInter ch = head.getChord();
+
+            if (ch != null) {
+                ch.setStem(stem);
+
+                // Propagate to beam if any
+                Measure measure = ch.getMeasure();
+
+                for (AbstractBeamInter beam : stem.getBeams()) {
+                    if (beam.getGroup() == null) {
+                        BeamGroup.includeBeam(beam, measure);
+                    }
+                }
+            }
         }
 
         head.checkAbnormal();
@@ -183,8 +207,8 @@ public class HeadStemRelation
     @Override
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        final Inter head = e.getEdgeSource();
-        final Inter stem = e.getEdgeTarget();
+        final HeadInter head = (HeadInter) e.getEdgeSource();
+        final StemInter stem = (StemInter) e.getEdgeTarget();
 
         head.checkAbnormal();
         stem.checkAbnormal();

@@ -75,10 +75,6 @@ public class HeadChordInter
 
             AbstractChordInter c1 = n1.getChord();
 
-            //            if (c1 != n2.getChord()) {
-            //                logger.error("Comparing notes from different chords");
-            //            }
-            //
             return c1.getStemDir() * (n1.getCenter().y - n2.getCenter().y);
         }
     };

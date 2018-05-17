@@ -276,9 +276,9 @@ public class HeadInter
     // getChord //
     //----------//
     @Override
-    public AbstractChordInter getChord ()
+    public HeadChordInter getChord ()
     {
-        return (AbstractChordInter) getEnsemble();
+        return (HeadChordInter) getEnsemble();
     }
 
     //---------------//

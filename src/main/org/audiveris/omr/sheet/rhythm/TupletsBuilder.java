@@ -126,7 +126,7 @@ public class TupletsBuilder
         }
 
         // Candidates are exhausted, we lack chords
-        logger.info("{} {}", tuplet, collector.getStatusMessage());
+        logger.debug("{} {}", tuplet, collector.getStatusMessage());
 
         return null;
     }

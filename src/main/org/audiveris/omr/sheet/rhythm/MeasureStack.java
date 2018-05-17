@@ -41,7 +41,9 @@ import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -59,6 +61,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -1716,6 +1719,18 @@ public class MeasureStack
 
             // Insert leftMeasure into part, just before the old (right) measure
             part.addMeasure(index, leftMeasure);
+        }
+
+        // Stack tuplets (not in any measure yet)
+        if (!stackTuplets.isEmpty()) {
+            for (Iterator<TupletInter> it = stackTuplets.iterator(); it.hasNext();) {
+                TupletInter tuplet = it.next();
+
+                if (tuplet.getCenter().x <= leftStack.right) {
+                    leftStack.addInter(tuplet);
+                    it.remove();
+                }
+            }
         }
 
         // Insert leftStack into system, just before this old (right) stack

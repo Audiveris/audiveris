@@ -859,7 +859,7 @@ public class ShapeBoard
         public ShapeHistory ()
         {
             panel.setNoInsets();
-            panel.setPreferredSize(new Dimension(BOARD_WIDTH, 45));
+            panel.setPreferredSize(new Dimension(BOARD_WIDTH, 55));
             panel.setVisible(false);
 
             FlowLayout layout = new FlowLayout();

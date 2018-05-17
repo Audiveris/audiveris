@@ -458,7 +458,9 @@ public class ScaleBuilder
         public void retrieveBeamKey ()
         {
             double minBeamFraction = constants.minBeamFraction.getValue();
-            int minHeight = (int) Math.rint(minBeamFraction * comboPeak.main);
+            int minHeight = Math.max(
+                    blackPeak.max,
+                    (int) Math.rint(minBeamFraction * comboPeak.main));
             int maxHeight = getMaxWhite();
             List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight, maxHeight);
 

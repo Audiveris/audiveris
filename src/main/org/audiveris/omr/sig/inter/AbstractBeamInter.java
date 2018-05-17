@@ -262,43 +262,6 @@ public abstract class AbstractBeamInter
         }
     }
 
-    //
-    //    //----------------//
-    //    // determineGroup //
-    //    //----------------//
-    //    /**
-    //     * Determine which BeamGroup this beam is part of.
-    //     * The BeamGroup is either reused (if one of its beams has a linked chord
-    //     * in common with this beam) or created from scratch otherwise
-    //     *
-    //     * @param measure containing measure
-    //     */
-    //    private void determineGroup ()
-    //    {
-    //        // Check if this beam should belong to an existing group
-    //        Point center = getCenter();
-    //        MeasureStack stack = sig.getSystem().getStackAt(center);
-    //        stack.getMeasureAt(part)
-    //        for (BeamGroup grp : measure.getBeamGroups()) {
-    //            for (AbstractBeamInter beam : grp.getBeams()) {
-    //                for (AbstractChordInter chord : beam.getChords()) {
-    //                    if (this.chords.contains(chord)) {
-    //                        // We have a chord in common with this beam, so we are in same group
-    //                        switchToGroup(grp);
-    //                        logger.debug("{} Reused {} for {}", this, grp, this);
-    //
-    //                        return;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //
-    //        // No compatible group found, let's build a new one
-    //        switchToGroup(new BeamGroup(measure));
-    //
-    //        logger.debug("{} Created new {} for {}", this, getGroup(), this);
-    //    }
-    //
     //-----------//
     // getBorder //
     //-----------//
@@ -342,6 +305,21 @@ public abstract class AbstractBeamInter
         Collections.sort(chords, Inters.byCenterAbscissa);
 
         return chords;
+    }
+
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        StringBuilder sb = new StringBuilder(super.getDetails());
+
+        if (group != null) {
+            sb.append(" group:").append(group.getId());
+        }
+
+        return sb.toString();
     }
 
     //----------//

@@ -488,7 +488,7 @@ public class BeamGroup
         if (this.voice == null) {
             this.voice = voice;
 
-            // Formard this information to the beamed chords
+            // Forward this information to the beamed chords
             // Including the interleaved rests if any
             AbstractChordInter prevChord = null;
 
