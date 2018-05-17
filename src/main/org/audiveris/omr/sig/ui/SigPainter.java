@@ -21,6 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import com.jgoodies.forms.builder.PanelBuilder;
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
@@ -28,6 +32,7 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
@@ -66,11 +71,13 @@ import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACE_UPPER_HALF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
 import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -85,6 +92,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 /**
  * Class {@code SigPainter} paints all the {@link Inter} instances of a SIG.
  * <p>
@@ -98,12 +108,32 @@ import java.util.Set;
  *
  * @author Hervé Bitteur
  */
-public class SigPainter
+public abstract class SigPainter
         extends AbstractInterVisitor
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SigPainter.class);
+
+    /** Sequence of colors for voices. */
+    private static final int alpha = 200;
+
+    private static final Color[] voiceColors = new Color[]{
+        /** Blue */
+        new Color(0, 0, 255, alpha),
+        /** Green */
+        new Color(0, 255, 0, alpha),
+        /** Brown */
+        new Color(165, 42, 42, alpha),
+        /** Magenta */
+        new Color(255, 0, 255, alpha),
+        /** Cyan */
+        new Color(0, 255, 255, alpha),
+        /** Orange */
+        new Color(255, 200, 0, alpha),
+        /** Pink */
+        new Color(255, 150, 150, alpha)
+    };
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Graphic context. */
@@ -172,6 +202,42 @@ public class SigPainter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------------//
+    // getVoicePanel //
+    //---------------//
+    /**
+     * Build a panel which displays all defined voice ID colors.
+     *
+     * @return the populated voice panel
+     */
+    public static JPanel getVoicePanel ()
+    {
+        final int length = voiceColors.length;
+        final Font font = new Font("SansSerif", Font.BOLD, 22);
+        final Color background = Color.WHITE; //new Color(220, 220, 220);
+        final FormLayout layout = Panel.makeLabelsLayout(1, length, "0dlu", "10dlu");
+        final Panel panel = new Panel();
+        final PanelBuilder builder = new PanelBuilder(layout, panel);
+        final CellConstraints cst = new CellConstraints();
+
+        // Adjust dimensions
+        final Dimension cellDim = new Dimension(5, 22);
+        panel.setInsets(3, 0, 0, 3); // TLBR
+
+        for (int c = 1; c <= length; c++) {
+            final Color color = new Color(voiceColors[c - 1].getRGB()); // Remove alpha
+            final JLabel label = new JLabel("" + c, JLabel.CENTER);
+            label.setPreferredSize(cellDim);
+            label.setFont(font);
+            label.setOpaque(true);
+            label.setBackground(background);
+            label.setForeground(color);
+            builder.add(label, cst.xy((2 * c) - 1, 1));
+        }
+
+        return panel;
+    }
+
     //---------//
     // process //
     //---------//
@@ -611,6 +677,23 @@ public class SigPainter
         g.draw(wedge.getLine2());
     }
 
+    //---------//
+    // colorOf //
+    //---------//
+    /**
+     * Report the color to use when painting elements related to the provided voice
+     *
+     * @param voice the provided voice
+     * @return the color to use
+     */
+    protected Color colorOf (Voice voice)
+    {
+        // Use table of colors, circularly.
+        int index = (voice.getId() - 1) % voiceColors.length;
+
+        return voiceColors[index];
+    }
+
     //--------------//
     // getMusicFont //
     //--------------//
@@ -706,15 +789,11 @@ public class SigPainter
     // setColor //
     //----------//
     /**
-     * Use color that depends on shape with an alpha value that depends on interpretation
-     * grade.
+     * Use color adapted to current inter and global viewing parameters.
      *
      * @param inter the interpretation to colorize
      */
-    protected void setColor (Inter inter)
-    {
-        // void by default
-    }
+    protected abstract void setColor (Inter inter);
 
     //-----------//
     // paintWord //

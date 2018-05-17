@@ -29,6 +29,7 @@ import org.audiveris.omr.ui.ViewParameters;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import org.audiveris.omr.sheet.rhythm.Voice;
 
 /**
  * Class {@code SheetGradedPainter} paints a sheet using shape-based colors and
@@ -96,7 +97,16 @@ public class SheetGradedPainter
         protected void setColor (Inter inter)
         {
             // Shape base color
-            final Color base = inter.getColor();
+            Color base = inter.getColor();
+
+            if (viewParams.isVoicePainting()) {
+                final Voice voice = inter.getVoice();
+
+                if (voice != null) {
+                    base = colorOf(voice);
+                }
+            }
+
             final Color color;
 
             // Should we use translucency?

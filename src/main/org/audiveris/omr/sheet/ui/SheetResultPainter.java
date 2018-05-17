@@ -21,10 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import com.jgoodies.forms.builder.PanelBuilder;
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
-
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
@@ -53,11 +49,13 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
+
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-import org.audiveris.omr.ui.util.Panel;
+
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -65,8 +63,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Stroke;
@@ -74,9 +70,6 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 
 /**
  * Class {@code SheetResultPainter} paints the items resulting from the processing of a
@@ -105,26 +98,6 @@ public class SheetResultPainter
 
     /** View parameters. */
     protected static final ViewParameters viewParams = ViewParameters.getInstance();
-
-    /** Sequence of colors for voices. */
-    private static final int alpha = 200;
-
-    private static final Color[] voiceColors = new Color[]{
-        /** Blue */
-        new Color(0, 0, 255, alpha),
-        /** Green */
-        new Color(0, 255, 0, alpha),
-        /** Brown */
-        new Color(165, 42, 42, alpha),
-        /** Magenta */
-        new Color(255, 0, 255, alpha),
-        /** Cyan */
-        new Color(0, 255, 255, alpha),
-        /** Orange */
-        new Color(255, 200, 0, alpha),
-        /** Pink */
-        new Color(255, 150, 150, alpha)
-    };
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** For staff lines. */
@@ -226,42 +199,6 @@ public class SheetResultPainter
 
         g.setColor(oldColor);
         g.setStroke(oldStroke);
-    }
-
-    //---------------//
-    // getVoicePanel //
-    //---------------//
-    /**
-     * Build a panel which displays all defined voice ID colors.
-     *
-     * @return the populated voice panel
-     */
-    public static JPanel getVoicePanel ()
-    {
-        final int length = voiceColors.length;
-        final Font font = new Font("SansSerif", Font.BOLD, 22);
-        final Color background = Color.WHITE; //new Color(220, 220, 220);
-        final FormLayout layout = Panel.makeLabelsLayout(1, length, "0dlu", "10dlu");
-        final Panel panel = new Panel();
-        final PanelBuilder builder = new PanelBuilder(layout, panel);
-        final CellConstraints cst = new CellConstraints();
-
-        // Adjust dimensions
-        final Dimension cellDim = new Dimension(5, 22);
-        panel.setInsets(3, 0, 0, 3); // TLBR
-
-        for (int c = 1; c <= length; c++) {
-            final Color color = new Color(voiceColors[c - 1].getRGB()); // Remove alpha
-            final JLabel label = new JLabel("" + c, JLabel.CENTER);
-            label.setPreferredSize(cellDim);
-            label.setFont(font);
-            label.setOpaque(true);
-            label.setBackground(background);
-            label.setForeground(color);
-            builder.add(label, cst.xy((2 * c) - 1, 1));
-        }
-
-        return panel;
     }
 
     //---------------//
@@ -404,27 +341,6 @@ public class SheetResultPainter
         }
     }
 
-    //---------//
-    // colorOf //
-    //---------//
-    /**
-     * Report the color to use when painting elements related to the provided voice
-     *
-     * @param voice the provided voice
-     * @return the color to use
-     */
-    private Color colorOf (Voice voice)
-    {
-        if (coloredVoices) {
-            // Use table of colors, circularly.
-            int index = (voice.getId() - 1) % voiceColors.length;
-
-            return voiceColors[index];
-        } else {
-            return defaultColor;
-        }
-    }
-
     //--------------//
     // processStack //
     //--------------//
@@ -502,7 +418,7 @@ public class SheetResultPainter
                     g.setColor(defaultColor);
                 }
             } else {
-                super.setColor(inter);
+                g.setColor(defaultColor);
             }
         }
     }

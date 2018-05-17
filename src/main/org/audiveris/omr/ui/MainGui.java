@@ -35,8 +35,8 @@ import org.audiveris.omr.score.PartwiseBuilder;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.BookActions;
-import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.step.ui.StepMenu;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.ui.action.ActionManager;
@@ -682,7 +682,7 @@ public class MainGui
         // Gauges = voices | progress | memory
         JPanel gauges = new JPanel();
         gauges.setLayout(new BorderLayout());
-        gauges.add(SheetResultPainter.getVoicePanel(), BorderLayout.WEST);
+        gauges.add(SigPainter.getVoicePanel(), BorderLayout.WEST);
         gauges.add(StepMonitoring.createMonitor().getComponent(), BorderLayout.CENTER);
         gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
 
