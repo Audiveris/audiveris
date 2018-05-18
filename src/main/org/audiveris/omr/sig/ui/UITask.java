@@ -63,6 +63,11 @@ public abstract class UITask
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    public SIGraph getSig ()
+    {
+        return sig;
+    }
+
     public abstract void performDo ();
 
     public abstract void performUndo ();

@@ -29,7 +29,6 @@ import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
@@ -380,31 +379,38 @@ public class BeamGroup
     // populate //
     //----------//
     /**
-     * Populate all the BeamGroup instances for a given measure stack.
+     * Populate all the BeamGroup instances for a given measure.
      *
-     * @param stack the containing measure stack
+     * @param measure         the containing measure
+     * @param checkGroupSplit true for check on group split
      */
-    public static void populate (MeasureStack stack)
+    public static void populate (Measure measure,
+                                 boolean checkGroupSplit)
     {
-        for (Measure measure : stack.getMeasures()) {
-            measure.clearBeamGroups();
+        measure.clearBeamGroups();
 
-            // Retrieve beams in this measure
-            Set<AbstractBeamInter> beams = new LinkedHashSet<AbstractBeamInter>();
+        // Retrieve beams in this measure
+        Set<AbstractBeamInter> beams = new LinkedHashSet<AbstractBeamInter>();
 
-            for (AbstractChordInter chord : measure.getHeadChords()) {
-                beams.addAll(chord.getBeams());
+        for (AbstractChordInter chord : measure.getHeadChords()) {
+            beams.addAll(chord.getBeams());
+        }
+
+        // Reset group info in each beam
+        for (AbstractBeamInter beam : beams) {
+            beam.setGroup(null);
+        }
+
+        // Build beam groups for this measure stack
+        for (AbstractBeamInter beam : beams) {
+            if (beam.getGroup() == null) {
+                BeamGroup group = new BeamGroup(measure);
+                assignGroup(group, beam);
+                logger.debug("{}", group);
             }
+        }
 
-            // Build beam groups for this measure stack
-            for (AbstractBeamInter beam : beams) {
-                if (beam.getGroup() == null) {
-                    BeamGroup group = new BeamGroup(measure);
-                    assignGroup(group, beam);
-                    logger.debug("{}", group);
-                }
-            }
-
+        if (checkGroupSplit) {
             // In case something goes wrong, use an upper limit to loop
             int loopNb = constants.maxSplitLoops.getValue();
 
@@ -415,12 +421,12 @@ public class BeamGroup
                     break;
                 }
             }
+        }
 
-            // Detect groups that are linked to more than one staff
-            for (BeamGroup group : measure.getBeamGroups()) {
-                group.countStaves();
-                logger.debug("   {}", group);
-            }
+        // Detect groups that are linked to more than one staff
+        for (BeamGroup group : measure.getBeamGroups()) {
+            group.countStaves();
+            logger.debug("   {}", group);
         }
     }
 

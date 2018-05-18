@@ -21,7 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +118,7 @@ public class UITaskList
             if (task instanceof InterTask) {
                 final Inter inter = ((InterTask) task).getInter();
 
-                if (classes == null) {
+                if (classes.length == 0) {
                     found.add(inter);
                 } else {
                     final Class interClass = inter.getClass();
@@ -131,6 +133,52 @@ public class UITaskList
         }
 
         return found;
+    }
+
+    //--------------//
+    // getRelations //
+    //--------------//
+    /**
+     * Report the list of Relations found in seq, that match the provided classes if any.
+     *
+     * @param classes provided relation classes
+     * @return the matching relations in seq
+     */
+    public List<Relation> getRelations (Class... classes)
+    {
+        List<Relation> found = new ArrayList<Relation>();
+
+        for (UITask task : list) {
+            if (task instanceof RelationTask) {
+                final Relation relation = ((RelationTask) task).getRelation();
+
+                if (classes.length == 0) {
+                    found.add(relation);
+                } else {
+                    final Class relationClass = relation.getClass();
+
+                    for (Class cl : classes) {
+                        if (cl.isAssignableFrom(relationClass)) {
+                            found.add(relation);
+                        }
+                    }
+                }
+            }
+        }
+
+        return found;
+    }
+
+    //--------//
+    // getSig //
+    //--------//
+    public SIGraph getSig ()
+    {
+        for (UITask task : list) {
+            return task.getSig();
+        }
+
+        return null;
     }
 
     //----------//

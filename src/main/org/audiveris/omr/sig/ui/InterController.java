@@ -88,6 +88,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -1059,35 +1060,28 @@ public class InterController
      */
     private Step firstImpactedStep (UITaskList seq)
     {
-        Step firstStep = null;
+        // Classes of inter and relation instances involved
+        final Set<Class> classes = new HashSet<Class>();
 
         for (UITask task : seq.getTasks()) {
-            Inter inter = null;
-
             if (task instanceof InterTask) {
                 InterTask interTask = (InterTask) task;
-                inter = interTask.inter;
+                classes.add(interTask.getInter().getClass());
             } else if (task instanceof RelationTask) {
                 RelationTask relationTask = (RelationTask) task;
-                inter = relationTask.getSource();
+                classes.add(relationTask.getRelation().getClass());
             }
+        }
 
-            if (inter != null) {
-                final Class interClass = inter.getClass();
-
-                for (Step step : Step.values()) {
-                    if (step.isImpactedBy(interClass)) {
-                        if ((firstStep == null) || (firstStep.compareTo(step) > 0)) {
-                            firstStep = step;
-                        }
-
-                        break;
-                    }
+        for (Step step : Step.values()) {
+            for (Class classe : classes) {
+                if (step.isImpactedBy(classe)) {
+                    return step; // First step impacted
                 }
             }
         }
 
-        return firstStep;
+        return null; // No impact detected
     }
 
     //------------------------//

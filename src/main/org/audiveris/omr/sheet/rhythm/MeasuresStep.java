@@ -141,8 +141,6 @@ public class MeasuresStep
             for (Page page : system.getSheet().getPages()) {
                 page.numberMeasures();
             }
-
-            return;
         }
     }
 

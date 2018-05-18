@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet.note;
 
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.beam.BeamGroup;
+import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.util.Navigable;
 
@@ -67,7 +68,9 @@ public class ChordsLinker
     {
         // Allocate beam groups per stack
         for (MeasureStack stack : system.getStacks()) {
-            BeamGroup.populate(stack);
+            for (Measure measure : stack.getMeasures()) {
+                BeamGroup.populate(measure, true); // True for checkGroupSplit
+            }
         }
     }
 }
