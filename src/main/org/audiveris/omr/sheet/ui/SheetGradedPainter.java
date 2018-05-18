@@ -96,10 +96,11 @@ public class SheetGradedPainter
         @Override
         protected void setColor (Inter inter)
         {
-            // Shape base color
+            // Shape-based color (or red if abnormal)
             Color base = inter.getColor();
 
-            if (viewParams.isVoicePainting()) {
+            // Voice-based color?
+            if (!inter.isAbnormal() && viewParams.isVoicePainting()) {
                 final Voice voice = inter.getVoice();
 
                 if (voice != null) {
