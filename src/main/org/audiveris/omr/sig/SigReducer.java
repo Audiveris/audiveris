@@ -56,6 +56,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.StringSymbolInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
@@ -1291,23 +1292,29 @@ public class SigReducer
     private static boolean compatible (Inter[] inters)
     {
         for (int i = 0; i <= 1; i++) {
-            Inter inter = inters[i];
-            Inter other = inters[1 - i];
+            final Inter inter = inters[i];
+            final Inter other = inters[1 - i];
+            final Shape otherShape = other.getShape();
 
             if (inter instanceof AbstractBeamInter) {
                 if (other instanceof AbstractBeamInter) {
                     return true;
                 }
 
-                if (beamCompShapes.contains(other.getShape())) {
+                if (beamCompShapes.contains(otherShape)) {
                     return true;
                 }
             } else if (inter instanceof SlurInter) {
-                if (slurCompShapes.contains(other.getShape())) {
+                // Test StaffBarlineInter class, for which shape is always null
+                if (other instanceof StaffBarlineInter) {
+                    return true;
+                }
+
+                if (slurCompShapes.contains(otherShape)) {
                     return true;
                 }
             } else if (inter instanceof StemInter) {
-                if (stemCompShapes.contains(other.getShape())) {
+                if (stemCompShapes.contains(otherShape)) {
                     return true;
                 }
             }

@@ -178,8 +178,10 @@ public class Page
      * previous system if any.
      * <p>
      * Orphan slurs that don't connect (and are not manual) are removed from their SIG.
+     *
+     * @param checkTie true for tie checking
      */
-    public void connectOrphanSlurs ()
+    public void connectOrphanSlurs (boolean checkTie)
     {
         for (SystemInfo system : getSystems()) {
             SystemInfo prevSystem = system.getPrecedingInPage();
@@ -207,7 +209,9 @@ public class Page
                             slur.setExtension(LEFT, prevSlur);
                             prevSlur.setExtension(RIGHT, slur);
 
-                            slur.checkTie(prevSlur);
+                            if (checkTie) {
+                                slur.checkTie(prevSlur);
+                            }
                         }
 
                         orphans.removeAll(links.keySet());

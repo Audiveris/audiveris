@@ -176,7 +176,7 @@ public class PageStep
             new PageReduction(page).reduce();
 
             // Inter-system slurs connections
-            page.connectOrphanSlurs();
+            page.connectOrphanSlurs(true); // True for tie checking
 
             // Lyrics
             refineLyrics(page);
@@ -272,7 +272,7 @@ public class PageStep
             }
 
             if (impact.onSlurs) {
-                page.connectOrphanSlurs();
+                page.connectOrphanSlurs(true); // True for tie checking
             }
 
             if (impact.onLyrics) {

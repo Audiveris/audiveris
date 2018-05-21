@@ -141,11 +141,6 @@ public class RhythmsStep
         // Process each page of the sheet
         for (Page page : sheet.getPages()) {
             new PageRhythm(page).process();
-
-            // Complete each measure with its needed data
-            for (SystemInfo system : page.getSystems()) {
-                new MeasureFiller(system).process();
-            }
         }
     }
 

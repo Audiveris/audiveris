@@ -581,7 +581,10 @@ public class Measure
             }
         }
 
-        return null; // No clef previously defined
+        // This should not occur in a standard staff
+        logger.warn("No clef found in {} at or before {}", staff, point);
+
+        return null;
     }
 
     //----------//

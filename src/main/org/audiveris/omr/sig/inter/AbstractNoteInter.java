@@ -253,9 +253,8 @@ public abstract class AbstractNoteInter
         if (step == null) {
             AbstractChordInter chord = getChord();
             Measure measure = chord.getMeasure();
-            step = ClefInter.noteStepOf(
-                    measure.getClefBefore(getCenter(), staff),
-                    (int) Math.rint(pitch));
+            ClefInter clef = measure.getClefBefore(getCenter(), staff);
+            step = ClefInter.noteStepOf(clef, (int) Math.rint(pitch));
         }
 
         return step;

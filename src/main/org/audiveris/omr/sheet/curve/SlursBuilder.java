@@ -161,7 +161,7 @@ public class SlursBuilder
 
             // Try to connect orphans across systems (and purge the ones that don't connect)
             for (Page page : sheet.getPages()) {
-                page.connectOrphanSlurs();
+                page.connectOrphanSlurs(false); // False for checkTie
             }
 
             // Handle slurs collision on same head (TODO: just for information right now)

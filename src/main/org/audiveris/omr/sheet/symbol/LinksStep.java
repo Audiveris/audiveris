@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.rhythm.MeasureFiller;
 import org.audiveris.omr.sig.SigReducer;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
@@ -104,6 +105,9 @@ public class LinksStep
         // Reduction
         watch.start("reduceLinks");
         new SigReducer(system, false).reduceLinks();
+
+        // Complete each measure with clef(s) and key if any
+        new MeasureFiller(system).process();
 
         // Purge deleted lyrics from containing part
         new InterCleaner(system).purgeContainers();
