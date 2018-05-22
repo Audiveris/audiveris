@@ -366,7 +366,7 @@ public abstract class PageCleaner
      */
     protected boolean canHide (Inter inter)
     {
-        return inter.isContextuallyGood();
+        return inter.isFrozen() || inter.isContextuallyGood();
     }
 
     //-------------------//

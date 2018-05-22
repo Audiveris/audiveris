@@ -55,6 +55,8 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AbstractVerticalInter;
+import org.audiveris.omr.sig.inter.BarConnectorInter;
+import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
@@ -79,6 +81,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -162,6 +165,9 @@ public class NoteHeadsBuilder
     /** The competing interpretations for the system. */
     private List<Inter> systemCompetitors;
 
+    /** The forbidden rectangles around connectors and frozen barlines. */
+    private List<Rectangle> systemBarRectangles;
+
     /** The vertical (stem) seeds for the system. */
     private List<Glyph> systemSeeds;
 
@@ -230,6 +236,7 @@ public class NoteHeadsBuilder
     public void buildHeads ()
     {
         StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
+        systemBarRectangles = getSystemBarRectangles();
         systemCompetitors = getSystemCompetitors(); // Competitors
         systemSeeds = system.getGroupedGlyphs(Symbol.Group.VERTICAL_SEED); // Vertical seeds
         Collections.sort(systemSeeds, Glyphs.byOrdinate);
@@ -519,6 +526,38 @@ public class NoteHeadsBuilder
         return list;
     }
 
+    //------------------------//
+    // getSystemBarRectangles //
+    //------------------------//
+    private List<Rectangle> getSystemBarRectangles ()
+    {
+        List<Rectangle> rects = new ArrayList<Rectangle>();
+        List<Inter> inters = sig.inters(
+                new Predicate<Inter>()
+        {
+            @Override
+            public boolean check (Inter inter)
+            {
+                if (inter instanceof BarlineInter && inter.isFrozen()) {
+                    return true;
+                }
+
+                return inter instanceof BarConnectorInter;
+            }
+        });
+
+        Collections.sort(inters, Inters.byOrdinate);
+
+        for (Inter inter : inters) {
+            // Add margin around bar bounds
+            Rectangle box = inter.getBounds();
+            box.grow(params.hBarMargin, params.vBarMargin);
+            rects.add(box);
+        }
+
+        return rects;
+    }
+
     //----------------------//
     // getSystemCompetitors //
     //----------------------//
@@ -649,14 +688,14 @@ public class NoteHeadsBuilder
      * Retrieve notes along the provided staff.
      * <p>
      * Pay attention to adjust ordinate as precisely as possible in the middle
-     * of staff or ledger lines.
+     * of staff lines or ledger lines.
      *
-     * @param staff the staff to process
-     * @param seeds should we stick to stem seeds or not?
+     * @param staff    the staff to process
+     * @param useSeeds should we stick to stem seeds or not?
      * @return the list of created notes
      */
     private List<Inter> processStaff (Staff staff,
-                                      boolean seeds)
+                                      boolean useSeeds)
     {
         List<Inter> ch = new ArrayList<Inter>(); // Created heads
 
@@ -668,14 +707,14 @@ public class NoteHeadsBuilder
             LineAdapter adapter = new StaffLineAdapter(staff, line);
 
             // Look above line
-            ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, seeds).lookup());
+            ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, useSeeds).lookup());
 
             // Look exactly on line
-            ch.addAll(new Scanner(adapter, null, 0, pitch++, seeds).lookup());
+            ch.addAll(new Scanner(adapter, null, 0, pitch++, useSeeds).lookup());
 
             // For the last line only, look just below line
             if (pitch == 5) {
-                ch.addAll(new Scanner(adapter, null, 1, pitch++, seeds).lookup());
+                ch.addAll(new Scanner(adapter, null, 1, pitch++, useSeeds).lookup());
             }
 
             prevAdapter = adapter;
@@ -700,11 +739,11 @@ public class NoteHeadsBuilder
                     Glyph glyph = ledger.getGlyph();
                     LineAdapter adapter = new LedgerAdapter(staff, p, glyph);
                     // Look right on ledger
-                    ch.addAll(new Scanner(adapter, null, 0, pitch, seeds).lookup());
+                    ch.addAll(new Scanner(adapter, null, 0, pitch, useSeeds).lookup());
 
                     // Look just further from staff
                     int pitch2 = pitch + dir;
-                    ch.addAll(new Scanner(adapter, null, dir, pitch2, seeds).lookup());
+                    ch.addAll(new Scanner(adapter, null, dir, pitch2, useSeeds).lookup());
                 }
             }
         }
@@ -795,8 +834,7 @@ public class NoteHeadsBuilder
         //~ Methods --------------------------------------------------------------------------------
         /**
          * Report the competitors lookup area, according to limits above
-         * and below, defined as ordinate shifts relative to the
-         * reference line.
+         * and below, defined as ordinate shifts relative to the reference line.
          *
          * @param above offset (positive or negative) from line to top limit.
          * @param below offset (positive or negative) from line to bottom limit.
@@ -871,6 +909,14 @@ public class NoteHeadsBuilder
         private final Scale.Fraction minBeamWidth = new Scale.Fraction(
                 2.5,
                 "Minimum good beam width to exclude heads");
+
+        private final Scale.Fraction barHorizontalMargin = new Scale.Fraction(
+                0.35,
+                "Horizontal margin around frozen barline or connector");
+
+        private final Scale.Fraction barVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Vertical margin around frozen barline or connector");
 
         private final Constant.Ratio minHoleWhiteRatio = new Constant.Ratio(
                 0.2,
@@ -950,6 +996,10 @@ public class NoteHeadsBuilder
 
         final int minBeamWidth;
 
+        final int hBarMargin;
+
+        final int vBarMargin;
+
         //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -965,6 +1015,9 @@ public class NoteHeadsBuilder
             maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
             maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
             minBeamWidth = scale.toPixels(constants.minBeamWidth);
+
+            hBarMargin = scale.toPixels(constants.barHorizontalMargin);
+            vBarMargin = scale.toPixels(constants.barVerticalMargin);
         }
     }
 
@@ -1043,6 +1096,8 @@ public class NoteHeadsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        int bars;
+
         int overlaps;
 
         int evals;
@@ -1054,7 +1109,8 @@ public class NoteHeadsBuilder
         public String toString ()
         {
             return String.format(
-                    "%7d overlaps, %7d evals, %7d abandons",
+                    "%7d bars, %7d overlaps, %7d evals, %7d abandons",
+                    bars,
                     overlaps,
                     evals,
                     abandons);
@@ -1064,6 +1120,9 @@ public class NoteHeadsBuilder
     //---------//
     // Scanner //
     //---------//
+    /**
+     * Head scanner dedicated to a staff line or ledger.
+     */
     private class Scanner
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -1086,6 +1145,8 @@ public class NoteHeadsBuilder
 
         private final List<Inter> competitors;
 
+        private final List<Rectangle> barRectangles;
+
         private final List<LedgerAdapter> ledgers;
 
         private List<HeadInter> inters = new ArrayList<HeadInter>();
@@ -1095,11 +1156,11 @@ public class NoteHeadsBuilder
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
-         * Create a Scanner, dedicated to a staff line or ledger.
+         * Create a Scanner.
          *
          * @param line     adapter to the main line
          * @param line2    adapter to secondary line, if any, otherwise null
-         * @param dir      direction WRT main line
+         * @param dir      direction WRT main line (-1, 0, +1)
          * @param pitch    pitch position value
          * @param useSeeds true for seed-based notes, false for x-based notes
          */
@@ -1140,6 +1201,15 @@ public class NoteHeadsBuilder
                 competitorsArea = line.getArea(above, below);
             }
 
+            {
+                // Horizontal slice to detect bars/connectors
+                final double vMargin = scale.toPixelsDouble(constants.barVerticalMargin);
+                final double above = ((interline * dir) / 2) - vMargin;
+                final double below = ((interline * dir) / 2) + vMargin;
+                Area barsArea = line.getArea(above, below);
+                barRectangles = getBarRectangles(barsArea);
+            }
+
             if (constants.allowAttachments.isSet()) {
                 staff.addAttachment(line.getPrefix() + "#s" + pitch, seedsArea);
                 staff.addAttachment(line.getPrefix() + "#c" + pitch, competitorsArea);
@@ -1152,6 +1222,33 @@ public class NoteHeadsBuilder
         public List<HeadInter> lookup ()
         {
             return useSeeds ? lookupSeeds() : lookupRange();
+        }
+
+        //-------------//
+        // barInvolved //
+        //-------------//
+        /**
+         * Check whether the provided rectangle would intersect neighborhood of frozen
+         * barline/connector.
+         *
+         * @param rect provided rectangle
+         * @return true if neighborhood hit
+         */
+        private boolean barInvolved (Rectangle rect)
+        {
+            int xBreak = rect.x + rect.width;
+
+            for (Rectangle r : barRectangles) {
+                if (r.intersects(rect)) {
+                    return true;
+                }
+
+                if (r.x >= xBreak) {
+                    break; // Since barRectangles are ordered by abscissa
+                }
+            }
+
+            return false;
         }
 
         //-----------------//
@@ -1213,8 +1310,18 @@ public class NoteHeadsBuilder
             final ShapeDescriptor desc = catalog.getDescriptor(shape);
             final Rectangle symBox = desc.getSymbolBoundsAt(x, y, anchor);
 
+            // Skip if frozen barline/connector is too close
+            if (barInvolved(symBox)) {
+                if (useSeeds) {
+                    seedsPerf.bars++;
+                } else {
+                    rangePerf.bars++;
+                }
+
+                return null;
+            }
+
             // Skip if location already used by really good object (beam, etc)
-            //TODO: perhaps use a slightly fattened box?
             if (overlap(symBox, competitors)) {
                 if (useSeeds) {
                     seedsPerf.overlaps++;
@@ -1263,19 +1370,82 @@ public class NoteHeadsBuilder
             }
         }
 
-        //----------------------//
-        // getRelevantAbscissae //
-        //----------------------//
+        //------------------//
+        // getBarRectangles //
+        //------------------//
+        /**
+         * Build the list of rectangles around connectors and frozen barlines.
+         *
+         * @return the bar-centered rectangles
+         */
+        private List<Rectangle> getBarRectangles (Area area)
+        {
+            List<Rectangle> kept = new ArrayList<Rectangle>();
+
+            for (Rectangle r : systemBarRectangles) {
+                if (area.intersects(r)) {
+                    kept.add(r);
+                }
+            }
+
+            // Sort by abscissa for more efficient lookup
+            Collections.sort(
+                    kept,
+                    new Comparator<Rectangle>()
+            {
+                @Override
+                public int compare (Rectangle r1,
+                                    Rectangle r2)
+                {
+                    return Integer.compare(r1.x, r2.x);
+                }
+            });
+
+            return kept;
+        }
+
+        //---------------------//
+        // getBarSafeAbscissae //
+        //---------------------//
+        /**
+         * Select the x values sufficiently away from frozen barlines and connectors.
+         *
+         * @param scanLeft  range starting abscissa
+         * @param scanRight range stopping abscissa
+         * @return an array of booleans, telling which x values are allowed
+         */
+        private boolean[] getBarSafeAbscissae (int scanLeft,
+                                               int scanRight)
+        {
+            final boolean[] allowed = new boolean[scanRight - scanLeft + 1];
+            Arrays.fill(allowed, true);
+
+            for (Rectangle rect : barRectangles) {
+                for (int x = rect.x; x < (rect.x + rect.width); x++) {
+                    int ix = x - scanLeft;
+
+                    if ((ix >= 0) && (ix < allowed.length)) {
+                        allowed[ix] = false;
+                    }
+                }
+            }
+
+            return allowed;
+        }
+
+        //---------------------------//
+        // getRelevantBlackAbscissae //
+        //---------------------------//
         /**
          * Select the x values that are intersected by note spots and thus could
-         * correspond to notes.
+         * correspond to black heads.
          *
          * @param scanLeft  range starting abscissa
          * @param scanRight range stopping abscissa
          * @return an array of booleans, telling which x values are relevant
          */
-        private boolean[] getRelevantAbscissae (int scanLeft,
-                                                int scanRight)
+        private boolean[] getRelevantBlackAbscissae (int scanLeft,
+                                                     int scanRight)
         {
             List<Glyph> spots = getGlyphsSlice(systemSpots, competitorsArea);
             boolean[] relevants = new boolean[scanRight - scanLeft + 1];
@@ -1372,16 +1542,15 @@ public class NoteHeadsBuilder
                 return inters;
             }
 
-            // Use the note spots to limit the abscissae to be checked
-            // OK for blacks, not for voids
-            boolean[] relevants = getRelevantAbscissae(scanLeft, scanRight);
+            // Use the note spots to limit the abscissae to be checked for blacks
+            boolean[] blackRelevants = getRelevantBlackAbscissae(scanLeft, scanRight);
 
             // Scan from left to right
             for (int x0 = scanLeft; x0 <= scanRight; x0++) {
                 final int y0 = getTheoreticalOrdinate(x0);
 
                 // Shapes to try depend on whether location belongs to a black spot
-                EnumSet<Shape> shapeSet = relevants[x0 - scanLeft] ? sheetTemplateNotes
+                EnumSet<Shape> shapeSet = blackRelevants[x0 - scanLeft] ? sheetTemplateNotes
                         : sheetVoidTemplateNotes;
                 ShapeLoop:
                 for (Shape shape : shapeSet) {
