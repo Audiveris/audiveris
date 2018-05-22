@@ -23,10 +23,11 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.HeadChordInter;
-import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
@@ -111,14 +112,13 @@ public class SlurHeadRelation
         }
 
         if (isManual() || slur.isManual()) {
-            // Check for a tie
-            List<Inter> systemChords = slur.getSig().inters(HeadChordInter.class); // Costly...
+            final SIGraph sig = slur.getSig();
+            final Step latestStep = sig.getSystem().getSheet().getStub().getLatestStep();
 
-            HeadInter leftHead = slur.getHead(LEFT);
-            HeadInter rightHead = slur.getHead(RIGHT);
-
-            if (slur.checkTie(leftHead, rightHead, systemChords)) {
-                slur.setTie(true);
+            if (latestStep.compareTo(Step.LINKS) >= 0) {
+                // Check for a tie
+                List<Inter> systemHeadChords = sig.inters(HeadChordInter.class); // Costly...
+                slur.checkStaffTie(systemHeadChords);
             }
         }
 

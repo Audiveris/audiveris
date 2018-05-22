@@ -225,7 +225,7 @@ public abstract class Voices
                             final SlurInter slur = entry.getKey();
                             final SlurInter prevSlur = entry.getValue();
 
-                            slur.checkTie(prevSlur);
+                            slur.checkCrossTie(prevSlur);
                         }
 
                         // Purge orphans across pages

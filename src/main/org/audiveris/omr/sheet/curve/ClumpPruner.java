@@ -132,8 +132,9 @@ public class ClumpPruner
             SlurEntry selected = linker.selectSlur(areas);
 
             if (selected != null) {
-                // Is this a tie? (Assumption: a tie within a system does not cross a clef change)
-                // NOTA: either linked head may have a mirror head, so select proper head for tie
+                // Either linked head may have a mirror head, so select proper head for tie.
+                // NOTA: It is too early to check for a tie, since for instance clef changes or
+                // head alterations are not available before SYMBOLS step.
                 SlurHeadLink leftLink = selected.links.get(LEFT);
                 HeadInter leftHead = (leftLink != null) ? (HeadInter) leftLink.partner : null;
 
@@ -150,15 +151,15 @@ public class ClumpPruner
 
                         // Check there is no other chords in between
                         if (slur.isSpaceClear(leftHead, rightHead, sysChords)) {
-                            slur.setTie(true);
+                            ///slur.setTie(true);
                         } else if (slur.isSpaceClear(leftMirror, rightHead, sysChords)) {
-                            slur.setTie(true);
+                            ///slur.setTie(true);
                             switchMirrorHead(selected, LEFT);
                         } else if (slur.isSpaceClear(leftHead, rightMirror, sysChords)) {
-                            slur.setTie(true);
+                            ///slur.setTie(true);
                             switchMirrorHead(selected, RIGHT);
                         } else if (slur.isSpaceClear(leftMirror, rightMirror, sysChords)) {
-                            slur.setTie(true);
+                            ///slur.setTie(true);
                             switchMirrorHead(selected, LEFT);
                             switchMirrorHead(selected, RIGHT);
                         }

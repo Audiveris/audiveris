@@ -368,54 +368,47 @@ public class SlurInter
         return isAbnormal();
     }
 
-    //----------//
-    // checkTie //
-    //----------//
+    //---------------//
+    // checkCrossTie //
+    //---------------//
     /**
      * Check whether the cross-system slur connection is a tie.
      *
      * @param prevSlur slur at the end of previous system (perhaps in previous sheet)
      */
-    public void checkTie (SlurInter prevSlur)
+    public void checkCrossTie (SlurInter prevSlur)
     {
-        // Tie?
         boolean result = HeadInter.haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
 
-        if (prevSlur.isTie() != result) {
-            prevSlur.setTie(result);
-            prevSlur.getSig().getSystem().getSheet().getStub().setModified(true);
-        }
-
-        if (this.isTie() != result) {
-            this.setTie(result);
-            this.getSig().getSystem().getSheet().getStub().setModified(true);
-        }
+        prevSlur.setTie(result);
+        this.setTie(result);
 
         if (isVip() || prevSlur.isVip()) {
             logger.info("VIP {} connection {} -> {}", result ? "Tie" : "Slur", prevSlur, this);
         }
     }
 
-    //----------//
-    // checkTie //
-    //----------//
+    //---------------//
+    // checkStaffTie //
+    //---------------//
     /**
-     * Check whether the slur is a tie between the two provided heads, with no check
-     * for mirror heads potential mirrors.
+     * Check whether this slur is a tie within the same staff,
+     * with no check for mirror heads potential mirrors.
      *
-     * @param leftHead     head of left side
-     * @param rightHead    head on right side
-     * @param systemChords system head chords, not null
-     * @return true if this slur can be considered as a tie
+     * @param systemHeadChords system head chords, not null
      */
-    public boolean checkTie (HeadInter leftHead,
-                             HeadInter rightHead,
-                             List<Inter> systemChords)
+    public void checkStaffTie (List<Inter> systemHeadChords)
     {
-        return (leftHead != null) && (rightHead != null)
-               && (leftHead.getIntegerPitch() == rightHead.getIntegerPitch())
-               && (leftHead.getStaff() == rightHead.getStaff())
-               && isSpaceClear(leftHead, rightHead, systemChords);
+        HeadInter h1 = getHead(LEFT);
+        HeadInter h2 = getHead(RIGHT);
+        boolean result = (h1 != null) && (h2 != null) && (h1.getStaff() == h2.getStaff())
+                         && HeadInter.haveSameHeight(h1, h2)
+                         && isSpaceClear(h1, h2, systemHeadChords);
+        setTie(result);
+
+        if (isVip()) {
+            logger.info("VIP {} {}", result ? "Tie" : "Slur", this);
+        }
     }
 
     //----------------//
@@ -680,29 +673,6 @@ public class SlurInter
     public boolean isTie ()
     {
         return tie;
-    }
-
-    //------------//
-    // recheckTie //
-    //------------//
-    /**
-     * Recheck the tie status, now that alteration signs are available.
-     */
-    public void recheckTie ()
-    {
-        if (!tie) {
-            return;
-        }
-
-        HeadInter h1 = getHead(LEFT);
-        HeadInter h2 = getHead(RIGHT);
-
-        if ((h1 != null) && (h2 != null)) {
-            if (!HeadInter.haveSameHeight(h1, h2)) {
-                setTie(false);
-                sig.getSystem().getSheet().getStub().setModified(true);
-            }
-        }
     }
 
     //--------//

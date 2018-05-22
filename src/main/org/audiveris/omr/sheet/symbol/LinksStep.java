@@ -27,6 +27,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureFiller;
 import org.audiveris.omr.sig.SigReducer;
+import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -46,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -182,11 +184,13 @@ public class LinksStep
                              Void context)
             throws StepException
     {
-        // Recheck the ties, now that alterations are available
+        // Check for ties in same staff, now that head alterations and clef changes are available
         for (SystemInfo system : sheet.getSystems()) {
+            List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+
             for (Inter inter : system.getSig().inters(SlurInter.class)) {
                 SlurInter slur = (SlurInter) inter;
-                slur.recheckTie();
+                slur.checkStaffTie(systemHeadChords);
             }
         }
     }

@@ -81,13 +81,6 @@ public abstract class AbstractNoteInter
         G;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Note step. */
-    protected Step step;
-
-    /** Octave. */
-    protected Integer octave;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractNoteInter object.
@@ -230,34 +223,28 @@ public abstract class AbstractNoteInter
      */
     public int getOctave ()
     {
-        if (octave == null) {
-            AbstractChordInter chord = getChord();
-            Measure measure = chord.getMeasure();
-            ClefInter clef = measure.getClefBefore(getCenter(), getStaff());
-            octave = ClefInter.octaveOf(clef, pitch);
-        }
+        AbstractChordInter chord = getChord();
+        Measure measure = chord.getMeasure();
+        ClefInter clef = measure.getClefBefore(getCenter(), getStaff());
 
-        return octave;
+        return ClefInter.octaveOf(clef, pitch);
     }
 
     //---------//
     // getStep //
     //---------//
     /**
-     * Report the note step (within the octave)
+     * Report the note step (within the octave).
      *
      * @return the note step
      */
     public Step getStep ()
     {
-        if (step == null) {
-            AbstractChordInter chord = getChord();
-            Measure measure = chord.getMeasure();
-            ClefInter clef = measure.getClefBefore(getCenter(), staff);
-            step = ClefInter.noteStepOf(clef, (int) Math.rint(pitch));
-        }
+        AbstractChordInter chord = getChord();
+        Measure measure = chord.getMeasure();
+        ClefInter clef = measure.getClefBefore(getCenter(), staff);
 
-        return step;
+        return ClefInter.noteStepOf(clef, (int) Math.rint(pitch));
     }
 
     //----------//

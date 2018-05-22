@@ -210,7 +210,7 @@ public class Page
                             prevSlur.setExtension(RIGHT, slur);
 
                             if (checkTie) {
-                                slur.checkTie(prevSlur);
+                                slur.checkCrossTie(prevSlur);
                             }
                         }
 

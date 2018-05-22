@@ -582,9 +582,9 @@ public class Measure
         }
 
         // This should not occur in a standard staff
-        logger.warn("No clef found in {} at or before {}", staff, point);
-
-        return null;
+        String msg = "No clef found in " + staff + " before " + point;
+        logger.warn(msg);
+        throw new IllegalStateException(msg);
     }
 
     //----------//
