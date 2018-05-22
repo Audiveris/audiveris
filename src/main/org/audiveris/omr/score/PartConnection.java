@@ -25,9 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * Class {@code PartConnection} is in charge of finding the connections of parts across
@@ -48,10 +46,11 @@ import java.util.ListIterator;
  * same count of staves.</li>
  * <li>Parts cannot be swapped from one system to the other. In other words, we cannot have say
  * partA followed by partB in a system, and partB followed by partA in another system.</li>
- * <li>Additional parts appear at the top of a system, rather than at the bottom. So we process part
- * connections bottom up.</li>
+ * <li>A part with 2 staves, if any, is used to align connections.</li>
+ * <li>Otherwise, since additional parts appear at the top of a system, rather than at the bottom,
+ * we process part connections bottom up.</li>
  * <li>When possible, we use the part names (or abbreviations) to help the connection algorithm.
- * (this is not yet fully implemented).
+ * (this is not yet implemented).
  * </ul>
  *
  * @author Hervé Bitteur
@@ -121,10 +120,11 @@ public class PartConnection
      * @param resultIndex
      * @param candidate
      * @param resultEntries
+     * @return the entry created
      */
-    private void addResultEntry (int resultIndex,
-                                 Candidate candidate,
-                                 List<ResultEntry> resultEntries)
+    private ResultEntry addResultEntry (int resultIndex,
+                                        Candidate candidate,
+                                        List<ResultEntry> resultEntries)
     {
         // Create a brand new logical part for this candidate
         // Id is irrelevant for the time being
@@ -139,6 +139,28 @@ public class PartConnection
         entry.result = result;
         entry.candidates = candidates;
         resultEntries.add(resultIndex, entry);
+
+        return entry;
+    }
+
+    //---------//
+    // biIndex //
+    //---------//
+    /**
+     * Report the index in provided candidate sequence of the (first) 2-staff part.
+     *
+     * @param sequence sequence of parts
+     * @return index of bi-staff part in sequence, or -1 if not found
+     */
+    private int biIndex (List<Candidate> sequence)
+    {
+        for (Candidate candidate : sequence) {
+            if (candidate.getStaffCount() == 2) {
+                return sequence.indexOf(candidate);
+            }
+        }
+
+        return -1;
     }
 
     //---------//
@@ -154,78 +176,99 @@ public class PartConnection
      */
     private List<ResultEntry> connect (List<List<Candidate>> sequences)
     {
-        /** Resulting sequence of logical parts */
+        /** Resulting sequence of logical parts. */
         resultEntries = new ArrayList<ResultEntry>();
 
+        // Two-staff entry found, if any
+        ResultEntry biEntry = null;
+
         // Process each sequence of candidate parts in turn
-        for (List<Candidate> sequence : sequences) {
-            // Current index in resultEntries (built in reverse order)
-            int resultIndex = -1;
+        for (int iSeq = 0; iSeq < sequences.size(); iSeq++) {
+            final List<Candidate> sequence = sequences.get(iSeq);
+            final int biIndex = biIndex(sequence);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Processing new sequence ...");
+            if (iSeq == 0) {
+                dispatch(sequence, resultEntries, +1);
 
-                for (Candidate candidate : sequence) {
-                    logger.debug("- {}", candidate);
+                if (biIndex != -1) {
+                    biEntry = resultEntries.get(biIndex);
                 }
-            }
+            } else {
+                if ((biEntry != null) && (biIndex != -1)) {
+                    // Align on the biEntry
+                    biEntry.candidates.add(sequence.get(biIndex));
 
-            // Process the sequence in reverse order (bottom up)
-            for (ListIterator<Candidate> it = sequence.listIterator(sequence.size());
-                    it.hasPrevious();) {
-                Candidate candidate = it.previous();
-                logger.debug(
-                        "Processing candidate {} count:{}",
-                        candidate,
-                        candidate.getStaffCount());
+                    // Process parts above bi
+                    dispatch(
+                            sequence.subList(0, biIndex),
+                            resultEntries.subList(0, resultEntries.indexOf(biEntry)),
+                            -1);
 
-                // Check with logical parts currently defined
-                resultIndex++;
-                logger.debug("resultIndex:{}", resultIndex);
-
-                if (resultIndex >= resultEntries.size()) {
-                    logger.debug("No more entries available");
-
-                    // Create a brand new logical part for this candidate
-                    addResultEntry(resultIndex, candidate, resultEntries);
+                    // Process parts below bi
+                    dispatch(
+                            sequence.subList(biIndex + 1, sequence.size()),
+                            resultEntries.subList(
+                                    resultEntries.indexOf(biEntry) + 1,
+                                    resultEntries.size()),
+                            +1);
                 } else {
-                    ResultEntry resultEntry = resultEntries.get(resultIndex);
-                    LogicalPart result = resultEntry.result;
-                    logger.debug("Part:{}", result);
-
-                    // Check we are compatible in terms of staves
-                    if (result.getStaffCount() != candidate.getStaffCount()) {
-                        logger.debug("Count incompatibility");
-
-                        // Create a brand new logical part for this candidate
-                        addResultEntry(resultIndex, candidate, resultEntries);
-                    } else {
-                        // Can we use names? Just for fun for the time being
-                        if ((candidate.getName() != null) && (result.getName() != null)) {
-                            boolean namesOk = candidate.getName().equalsIgnoreCase(
-                                    result.getName());
-
-                            logger.debug("Names OK: {}", namesOk);
-
-                            if (!namesOk) {
-                                logger.debug(
-                                        "\"{}\" vs \"{}\"",
-                                        candidate.getName(),
-                                        result.getName());
-                            }
-                        }
-
-                        // We are compatible
-                        resultEntry.candidates.add(candidate);
-                    }
+                    dispatch(sequence, resultEntries, -1);
                 }
             }
         }
 
-        // Reverse and renumber
+        // Assign numbers to logical parts
         renumberResults();
 
         return resultEntries;
+    }
+
+    /**
+     * Dispatch the list of candidate parts (perhaps a sublist of a system) to the
+     * current sublist of logical parts.
+     *
+     * @param sequence the candidate parts to dispatch
+     * @param results  (input/output) the current sublist of logicals
+     * @param dir      -1 or +1 for browsing up or down
+     */
+    private void dispatch (List<Candidate> sequence,
+                           List<ResultEntry> results,
+                           int dir)
+    {
+        final int ic1 = (dir > 0) ? 0 : (sequence.size() - 1);
+        final int ic2 = (dir > 0) ? sequence.size() : (-1);
+        int resultIndex = (dir > 0) ? (-1) : results.size();
+
+        for (int ic = ic1; ic != ic2; ic += dir) {
+            Candidate candidate = sequence.get(ic);
+            logger.debug("Processing {}", candidate);
+
+            // Check with logical parts currently defined
+            resultIndex += dir;
+            logger.debug("resultIndex:{}", resultIndex);
+
+            if (((dir > 0) && (resultIndex >= results.size())) || ((dir < 0) && (resultIndex < 0))) {
+                logger.debug("No more entries available");
+
+                // Create a brand new logical part for this candidate
+                addResultEntry((dir < 0) ? 0 : resultIndex, candidate, results);
+            } else {
+                ResultEntry resultEntry = results.get(resultIndex);
+                LogicalPart result = resultEntry.result;
+                logger.debug("Part:{}", result);
+
+                // Check we are compatible in terms of staves
+                if (result.getStaffCount() != candidate.getStaffCount()) {
+                    logger.debug("Count incompatibility");
+
+                    // Create a brand new logical part for this candidate
+                    addResultEntry(resultIndex, candidate, results);
+                } else {
+                    // We are compatible
+                    resultEntry.candidates.add(candidate);
+                }
+            }
+        }
     }
 
     //-----------------//
@@ -236,8 +279,7 @@ public class PartConnection
      */
     private void renumberResults ()
     {
-        Collections.reverse(resultEntries);
-
+        ///Collections.reverse(resultEntries);
         for (int i = 0; i < resultEntries.size(); i++) {
             ResultEntry resultEntry = resultEntries.get(i);
             LogicalPart result = resultEntry.result;
