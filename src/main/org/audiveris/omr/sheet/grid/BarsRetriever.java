@@ -310,7 +310,7 @@ public class BarsRetriever
         recordBars(); // Record barlines in staff
 
         watch.start("createGroups");
-        createGroups(); // Build groups
+        createGroups(); // Build groups of staves
 
         watch.start("createParts");
         createParts(); // Build parts
@@ -765,6 +765,9 @@ public class BarsRetriever
                     if ((topInter != null) && (bottomInter != null)) {
                         Relation bcRel = new BarConnectionRelation(connection.getImpacts());
                         sig.addEdge(topInter, bottomInter, bcRel);
+
+                        // Extend this information to sibling barlines in system height
+                        extendConnection(connection);
                     } else {
                         logger.info("Cannot create connection for {}", align);
                     }
@@ -1389,6 +1392,47 @@ public class BarsRetriever
 
         for (PartGroup group : groups) {
             logger.info("   {}", group);
+        }
+    }
+
+    //------------------//
+    // extendConnection //
+    //------------------//
+    /**
+     * Process the provided concrete connection by freezing its barlines as well as
+     * the corresponding barlines in all the other staves of the system.
+     *
+     * @param connection the concrete connection (between barlines, not brackets)
+     */
+    private void extendConnection (BarConnection connection)
+    {
+        final StaffPeak topPeak = connection.topPeak;
+
+        if (topPeak.isBracket()) {
+            return;
+        }
+
+        // Build the column of peaks, recursively
+        final List<StaffPeak> list = new ArrayList<StaffPeak>();
+        list.add(topPeak);
+
+        for (int i = 0; i < list.size(); i++) {
+            StaffPeak peak = list.get(i);
+
+            for (BarAlignment align : peakGraph.edgesOf(peak)) {
+                for (VerticalSide side : VerticalSide.values()) {
+                    StaffPeak p = align.getPeak(side);
+
+                    if (!list.contains(p)) {
+                        list.add(p);
+                    }
+                }
+            }
+        }
+
+        // Freeze the corresponding inters
+        for (StaffPeak peak : list) {
+            peak.getInter().freeze();
         }
     }
 
