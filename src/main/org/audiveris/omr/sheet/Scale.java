@@ -714,6 +714,14 @@ public class Scale
     @Override
     public String toString ()
     {
+        return toString(/* full: */true);
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    public String toString (boolean full)
+    {
         StringBuilder sb = new StringBuilder("Scale{");
 
         sb.append("line").append(lineScale);
@@ -727,12 +735,14 @@ public class Scale
             sb.append(" ").append(stemScale);
         }
 
-        if (blackHeadScale != null) {
-            sb.append(" ").append(blackHeadScale);
-        }
+        if (full) {
+            if (blackHeadScale != null) {
+                sb.append(" ").append(blackHeadScale);
+            }
 
-        if (musicFontScale != null) {
-            sb.append(" ").append(musicFontScale);
+            if (musicFontScale != null) {
+                sb.append(" ").append(musicFontScale);
+            }
         }
 
         if (smallScale != null) {

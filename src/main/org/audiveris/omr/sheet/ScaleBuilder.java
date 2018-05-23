@@ -584,7 +584,7 @@ public class ScaleBuilder
             xMax = (xMax * 5) / 4; // Add some margin
 
             Scale scale = sheet.getScale();
-            String xLabel = "Lengths - " + ((scale != null) ? scale : "NO_SCALE");
+            String xLabel = "Lengths - " + ((scale != null) ? scale.toString(false) : "NO_SCALE");
 
             try {
                 final String title = sheet.getId() + " " + blackFinder.name;
