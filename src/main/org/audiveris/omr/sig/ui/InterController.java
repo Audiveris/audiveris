@@ -52,6 +52,7 @@ import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.WordInter;
@@ -60,6 +61,7 @@ import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
@@ -73,6 +75,8 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.UIThread;
+import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.*;
 import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
@@ -442,6 +446,20 @@ public class InterController
 
                     // Remove conflicting relations if any
                     Set<Relation> toRemove = new LinkedHashSet<Relation>();
+
+                    if (relation instanceof SlurHeadRelation) {
+                        // This relation is declared multi-source & multi-target
+                        // But is single target (head) for each given side
+                        SlurInter slur = (SlurInter) source;
+                        HeadInter head = (HeadInter) target;
+                        HorizontalSide side = (head.getCenter().x < slur.getCenter().x)
+                                ? LEFT : RIGHT;
+                        SlurHeadRelation existingRel = slur.getHeadRelation(side);
+
+                        if (existingRel != null) {
+                            toRemove.add(existingRel);
+                        }
+                    }
 
                     if (relation.isSingleSource()) {
                         for (Relation rel : sig.getRelations(target, relation.getClass())) {

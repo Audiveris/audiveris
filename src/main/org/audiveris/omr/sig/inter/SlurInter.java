@@ -502,11 +502,31 @@ public class SlurInter
      */
     public HeadInter getHead (HorizontalSide side)
     {
+        SlurHeadRelation shRel = getHeadRelation(side);
+
+        if (shRel != null) {
+            return (HeadInter) sig.getOppositeInter(this, shRel);
+        }
+
+        return null;
+    }
+
+    //----------------//
+    //getHeadRelation //
+    //----------------//
+    /**
+     * Report the relation to note head, if any, on the specified side.
+     *
+     * @param side the desired side
+     * @return the relation found or null
+     */
+    public SlurHeadRelation getHeadRelation (HorizontalSide side)
+    {
         for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
             SlurHeadRelation shRel = (SlurHeadRelation) rel;
 
             if (shRel.getSide() == side) {
-                return (HeadInter) sig.getOppositeInter(this, rel);
+                return shRel;
             }
         }
 

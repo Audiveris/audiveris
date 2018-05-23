@@ -96,7 +96,7 @@ public class RelationVector
     /**
      * Process the vector into a relation.
      *
-     * @param doit true to actually set the relation, false for just a dry run
+     * @param doit (unused) true to actually set the relation, false for just a dry run
      */
     public void process (boolean doit)
     {
