@@ -210,8 +210,7 @@ public class PageRhythm
             ranges.get(i).stopId = ranges.get(i + 1).startId - 1;
         }
 
-        ranges.get(ranges.size() - 1).stopId = page.getLastSystem().getLastStack()
-                .getIdValue();
+        ranges.get(ranges.size() - 1).stopId = page.getLastSystem().getLastStack().getIdValue();
     }
 
     //---------------//
@@ -365,16 +364,21 @@ public class PageRhythm
 
                 // End of range?
                 if (stack.getIdValue() == range.stopId) {
-                    // Use CURRENT MATERIAL of voices to determine expected duration on this range
-                    Rational guess = retrieveExpectedDuration(range);
-
-                    if (guess != null) {
-                        range.duration = guess;
-                    } else if (range.ts != null) {
+                    // If range is governed by a manual time signature, use it!
+                    if ((range.ts != null) && range.ts.isManual()) {
                         range.duration = range.ts.getTimeRational().getValue();
-                    }
+                    } else {
+                        // Use CURRENT MATERIAL of voices to determine expected duration on this range
+                        Rational guess = retrieveExpectedDuration(range);
 
-                    logger.info("{} guess:{}", range, guess);
+                        if (guess != null) {
+                            range.duration = guess;
+                        } else if (range.ts != null) {
+                            range.duration = range.ts.getTimeRational().getValue();
+                        }
+
+                        logger.info("{} guess:{}", range, guess);
+                    }
 
                     if (it.hasNext()) {
                         range = it.next();
