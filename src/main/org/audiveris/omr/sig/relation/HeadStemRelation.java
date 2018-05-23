@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.image.Anchored.Anchor;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
@@ -33,8 +34,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
-import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -81,7 +82,7 @@ public class HeadStemRelation
     // added //
     //-------//
     /**
-     * Populate headSide if needed.
+     * Populate headSide and extensionPoint if needed.
      *
      * @param e edge change event
      */
@@ -93,6 +94,13 @@ public class HeadStemRelation
 
         if (headSide == null) {
             headSide = (stem.getCenter().x < head.getCenter().x) ? LEFT : RIGHT;
+        }
+
+        if (extensionPoint == null) {
+            Anchor anchor = (headSide == LEFT) ? Anchor.LEFT_STEM : Anchor.RIGHT_STEM;
+            int interline = head.getStaff().getSpecificInterline();
+            Point2D refPt = head.getStemReferencePoint(anchor, interline);
+            extensionPoint = refPt;
         }
 
         if (isManual() || head.isManual() || stem.isManual()) {

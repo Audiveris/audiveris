@@ -903,7 +903,7 @@ public abstract class AbstractChordInter
             }
         }
 
-        if ((sig != null) && !isRemoved()) {
+        if ((sig != null) && !isRemoved() && (measure == null)) {
             Point center = getCenter();
 
             if (center != null) {

@@ -417,9 +417,12 @@ public class InterController
 
                         if (headChord != null) {
                             List<HeadChordInter> stemChords = stem.getChords();
+                            HeadChordInter stemChord = (!stemChords.isEmpty())
+                                    ? stemChords.get(0) : null;
 
-                            if (!stemChords.isEmpty() && !stemChords.contains(headChord)) {
-                                // Unlink head from headChord
+                            if ((stemChords.isEmpty() && (headChord.getStem() != null))
+                                || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
+                                // Extract head from headChord
                                 seq.add(
                                         new UnlinkTask(
                                                 sig,
@@ -433,13 +436,26 @@ public class InterController
                                     seq.add(new RemovalTask(headChord));
                                 }
 
-                                // Link head to stem chord
+                                if (stemChord == null) {
+                                    // Create a HeadChord on the fly based on stem
+                                    stemChord = new HeadChordInter(-1);
+                                    seq.add(
+                                            new AdditionTask(
+                                                    sig,
+                                                    stemChord,
+                                                    stem.getBounds(),
+                                                    Collections.EMPTY_SET));
+                                    seq.add(
+                                            new LinkTask(
+                                                    sig,
+                                                    stemChord,
+                                                    stem,
+                                                    new ChordStemRelation()));
+                                }
+
+                                // Insert head to stem chord
                                 seq.add(
-                                        new LinkTask(
-                                                sig,
-                                                stemChords.get(0),
-                                                head,
-                                                new BasicContainment()));
+                                        new LinkTask(sig, stemChord, head, new BasicContainment()));
                             }
                         }
                     }
