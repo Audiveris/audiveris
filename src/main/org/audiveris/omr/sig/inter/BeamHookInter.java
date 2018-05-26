@@ -205,8 +205,7 @@ public class BeamHookInter
 
             for (Inter stemInter : stems) {
                 StemInter stem = (StemInter) stemInter;
-                Line2D stemLine = new Line2D.Double(stem.getTop(), stem.getBottom());
-                double d2 = stemLine.ptSegDist(refPt);
+                double d2 = stem.getMedian().ptSegDist(refPt);
 
                 if (bestDist > d2) {
                     bestDist = d2;

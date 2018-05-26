@@ -38,24 +38,22 @@ import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
-import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.Unmarshaller;
@@ -215,13 +213,13 @@ public abstract class AbstractBeamInter
         // Relation beam -> stem (if not yet present)
         BeamStemRelation bRel;
         final int yDir = (headToBeam == VerticalSide.TOP) ? (-1) : 1;
-        final Line2D beamLimit = getBorder(headToBeam.opposite());
+        final Line2D beamBorder = getBorder(headToBeam.opposite());
         bRel = new BeamStemRelation();
 
         // Precise cross point
         Point2D start = stem.getTop();
         Point2D stop = stem.getBottom();
-        Point2D crossPt = LineUtil.intersection(start, stop, beamLimit.getP1(), beamLimit.getP2());
+        Point2D crossPt = LineUtil.intersection(stem.getMedian(), beamBorder);
 
         // Extension point
         bRel.setExtensionPoint(
@@ -229,8 +227,8 @@ public abstract class AbstractBeamInter
 
         // Abscissa -> beamPortion
         // toLeft & toRight are >0 if within beam, <0 otherwise
-        double toLeft = crossPt.getX() - beamLimit.getX1();
-        double toRight = beamLimit.getX2() - crossPt.getX();
+        double toLeft = crossPt.getX() - beamBorder.getX1();
+        double toRight = beamBorder.getX2() - crossPt.getX();
         final double xGap;
 
         final int maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
@@ -532,9 +530,51 @@ public abstract class AbstractBeamInter
         }
     }
 
+    /**
+     * Define lookup area around the beam for potential stems
+     *
+     * @return the look up area
+     */
+    private Area getLookupArea (Scale scale)
+    {
+        final Line2D top = getBorder(VerticalSide.TOP);
+        final Line2D bottom = getBorder(VerticalSide.BOTTOM);
+        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
+        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
+        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
+
+        final Path2D lu = new Path2D.Double();
+        double xMin = top.getX1() - xOut;
+        double xMax = top.getX2() + xOut;
+        Point2D topLeft = LineUtil.intersectionAtX(top, xMin);
+        lu.moveTo(topLeft.getX(), topLeft.getY() - yGap);
+
+        Point2D topRight = LineUtil.intersectionAtX(top, xMax);
+        lu.lineTo(topRight.getX(), topRight.getY() - yGap);
+
+        Point2D bottomRight = LineUtil.intersectionAtX(bottom, xMax);
+        lu.lineTo(bottomRight.getX(), bottomRight.getY() + yGap);
+
+        Point2D bottomLeft = LineUtil.intersectionAtX(bottom, xMin);
+        lu.lineTo(bottomLeft.getX(), bottomLeft.getY() + yGap);
+        lu.closePath();
+
+        return new Area(lu);
+    }
+
     //-------------//
     // lookupLinks //
     //-------------//
+    /**
+     * Look up for potential Beam-Stem links around this Beam instance.
+     * <p>
+     * This method used to check for stems only on beam left and right sides.
+     * Now, it check also for stems within the whole beam width.
+     *
+     * @param systemStems all stems in system, sorted by abscissa
+     * @param system      containing system
+     * @return the potential links
+     */
     private Collection<Link> lookupLinks (List<Inter> systemStems,
                                           SystemInfo system)
     {
@@ -546,68 +586,23 @@ public abstract class AbstractBeamInter
             logger.info("VIP lookupLinks for {}", this);
         }
 
-        final Line2D top = getBorder(VerticalSide.TOP);
-        final Line2D bottom = getBorder(VerticalSide.BOTTOM);
+        final List<Link> links = new ArrayList<Link>();
         final Scale scale = system.getSheet().getScale();
-        final int xOut = scale.toPixels(
-                BeamStemRelation.getXOutGapMaximum(manual));
-        final int xIn = scale.toPixels(
-                BeamStemRelation.getXInGapMaximum(manual));
-        final int yGap = scale.toPixels(
-                BeamStemRelation.getYGapMaximum(manual));
+        final Area luArea = getLookupArea(scale);
+        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luArea);
 
-        final Map<HorizontalSide, Link> sideLinks = new EnumMap<HorizontalSide, Link>(
-                HorizontalSide.class);
+        for (Inter inter : stems) {
+            StemInter stem = (StemInter) inter;
+            Point2D stemMiddle = PointUtil.middle(stem.getMedian());
+            VerticalSide vSide = (median.relativeCCW(stemMiddle) > 0) ? TOP : BOTTOM;
+            Link link = checkLink(stem, vSide, scale);
 
-        for (HorizontalSide hSide : HorizontalSide.values()) {
-            Link bestLink = null;
-            double bestGrade = Double.MAX_VALUE;
-
-            final Rectangle luBox = new Rectangle(-1, -1); // "Non-existant" rectangle
-
-            if (hSide == HorizontalSide.LEFT) {
-                Point iTop = PointUtil.rounded(top.getP1());
-                luBox.add(iTop.x - xOut, iTop.y - yGap);
-                luBox.add(iTop.x + xIn, iTop.y - yGap);
-
-                Point iBottom = PointUtil.rounded(bottom.getP1());
-                luBox.add(iBottom.x - xOut, iBottom.y + yGap);
-                luBox.add(iBottom.x + xIn, iBottom.y + yGap);
-            } else {
-                Point iTop = PointUtil.rounded(top.getP2());
-                luBox.add(iTop.x - xIn, iTop.y - yGap);
-                luBox.add(iTop.x + xOut, iTop.y - yGap);
-
-                Point iBottom = PointUtil.rounded(bottom.getP2());
-                luBox.add(iBottom.x - xIn, iBottom.y + yGap);
-                luBox.add(iBottom.x + xOut, iBottom.y + yGap);
-            }
-
-            List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luBox);
-
-            for (Inter inter : stems) {
-                StemInter stem = (StemInter) inter;
-
-                for (VerticalSide vSide : VerticalSide.values()) {
-                    Link link = checkLink(stem, vSide, scale);
-
-                    if (link != null) {
-                        BeamStemRelation rel = (BeamStemRelation) link.relation;
-
-                        if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
-                            bestLink = link;
-                            bestGrade = rel.getGrade();
-                        }
-                    }
-                }
-            }
-
-            if (bestLink != null) {
-                sideLinks.put(hSide, bestLink);
+            if (link != null) {
+                links.add(link);
             }
         }
 
-        return sideLinks.values();
+        return links;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

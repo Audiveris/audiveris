@@ -23,6 +23,8 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.math.LineUtil;
+import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -35,6 +37,7 @@ import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.sig.relation.BeamPortion.*;
+import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -42,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -77,30 +81,6 @@ public class BeamStemRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // getXInGapMaximum //
-    //------------------//
-    public static Scale.Fraction getXInGapMaximum (boolean manual)
-    {
-        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
-    }
-
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
-    {
-        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
-    {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
-    }
-
     //-------//
     // added //
     //-------//
@@ -117,6 +97,10 @@ public class BeamStemRelation
     {
         final AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
         final StemInter stem = (StemInter) e.getEdgeTarget();
+
+        if (extensionPoint == null) {
+            extensionPoint = computeExtensionPoint(beam, stem);
+        }
 
         if (beamPortion == null) {
             if (beam instanceof BeamHookInter) {
@@ -153,6 +137,56 @@ public class BeamStemRelation
         }
 
         beam.checkAbnormal();
+    }
+
+    //-----------------------//
+    // computeExtensionPoint //
+    //-----------------------//
+    /**
+     * Compute the extension point where beam meets stem.
+     * <p>
+     * As for HeadStemRelation, the extension point is the <b>last</b> point where stem meets beam
+     * when going along stem from head to beam.
+     *
+     * @param beam the provided beam
+     * @param stem the provided stem
+     * @return the corresponding extension point
+     */
+    public static Point2D computeExtensionPoint (AbstractBeamInter beam,
+                                                 StemInter stem)
+    {
+        // Determine if stem is above or below the beam, to choose proper beam border
+        // If stem is below the beam, we choose the top border of beam.
+        Line2D stemMedian = stem.getMedian();
+        Point2D stemMiddle = PointUtil.middle(stemMedian);
+        int above = beam.getMedian().relativeCCW(stemMiddle);
+        Line2D beamBorder = beam.getBorder((above < 0) ? TOP : BOTTOM);
+
+        return LineUtil.intersection(stemMedian, beamBorder);
+    }
+
+    //------------------//
+    // getXInGapMaximum //
+    //------------------//
+    public static Scale.Fraction getXInGapMaximum (boolean manual)
+    {
+        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
+    }
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    {
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (boolean manual)
+    {
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     //----------------//

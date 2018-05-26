@@ -461,6 +461,19 @@ public class StemInter
         return set;
     }
 
+    //-----------//
+    // getMedian //
+    //-----------//
+    /**
+     * Report the stem median line which goes from stem top to stem bottom.
+     *
+     * @return the stem median line
+     */
+    public Line2D getMedian ()
+    {
+        return new Line2D.Double(top, bottom);
+    }
+
     //-------------//
     // getMinGrade //
     //-------------//
