@@ -1168,7 +1168,7 @@ public class ClustersRetriever
                 "Maximum dy to aggregate a filament to a cluster");
 
         private final Scale.Fraction maxMergeDx = new Scale.Fraction(
-                20,
+                6,
                 "Maximum dx to merge two clusters");
 
         private final Scale.Fraction maxMergeDy = new Scale.Fraction(
