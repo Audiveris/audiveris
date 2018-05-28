@@ -1168,6 +1168,10 @@ public abstract class AbstractInter
             sb.append(" MANUAL");
         }
 
+        if (isFrozen()) {
+            sb.append(" FROZEN");
+        }
+
         sb.append(String.format("(%.3f", grade));
 
         if (ctxGrade != null) {

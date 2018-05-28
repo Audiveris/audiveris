@@ -746,12 +746,14 @@ public class BarsRetriever
                 }
 
                 try {
+                    BarConnectorInter connector = null;
+
                     if (topPeak.isBracket()) {
                         sig.addVertex(
                                 new BracketConnectorInter(connection, connection.getImpacts()));
                     } else {
                         sig.addVertex(
-                                new BarConnectorInter(
+                                connector = new BarConnectorInter(
                                         connection,
                                         topPeak.isSet(THICK) ? Shape.THICK_CONNECTOR : Shape.THIN_CONNECTOR,
                                         connection.getImpacts()));
@@ -767,7 +769,10 @@ public class BarsRetriever
                         sig.addEdge(topInter, bottomInter, bcRel);
 
                         // Extend this information to sibling barlines in system height
-                        extendConnection(connection);
+                        if ((connector != null) && connector.isGood()) {
+                            connector.freeze();
+                            extendConnection(connection);
+                        }
                     } else {
                         logger.info("Cannot create connection for {}", align);
                     }

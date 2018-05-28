@@ -54,6 +54,9 @@ public abstract class Grades
     /** The minimum grade to consider a relation as good. */
     public static final double goodRelationGrade = constants.goodRelationGrade.getValue();
 
+    /** The minimum grade to consider a BarConnector as good. */
+    public static final double goodBarConnectorGrade = constants.goodBarConnectorGrade.getValue();
+
     // Minimum specific values
     //------------------------
     /** Minimum grade for a clef glyph. */
@@ -105,6 +108,10 @@ public abstract class Grades
         private final Constant.Ratio minContextualGrade = new Constant.Ratio(
                 0.5,
                 "Default minimum interpretation contextual grade");
+
+        private final Constant.Ratio goodBarConnectorGrade = new Constant.Ratio(
+                0.65,
+                "Good interpretation grade for a bar connector");
 
         private final Constant.Ratio goodInterGrade = new Constant.Ratio(
                 0.5,

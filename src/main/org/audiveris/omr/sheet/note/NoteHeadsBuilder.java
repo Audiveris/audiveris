@@ -538,11 +538,9 @@ public class NoteHeadsBuilder
             @Override
             public boolean check (Inter inter)
             {
-                if (inter instanceof BarlineInter && inter.isFrozen()) {
-                    return true;
-                }
-
-                return inter instanceof BarConnectorInter;
+                return inter.isFrozen()
+                       && (inter instanceof BarlineInter
+                           || inter instanceof BarConnectorInter);
             }
         });
 

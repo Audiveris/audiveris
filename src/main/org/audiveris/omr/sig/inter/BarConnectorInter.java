@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.grid.BarConnection;
 import org.audiveris.omr.sig.GradeImpacts;
@@ -74,6 +75,15 @@ public class BarConnectorInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //--------//
+    // isGood //
+    //--------//
+    @Override
+    public boolean isGood ()
+    {
+        return grade >= Grades.goodBarConnectorGrade;
     }
 
     //-----------//

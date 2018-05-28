@@ -127,6 +127,10 @@ public class StaffBarlineInter
             addMember(b);
             g += b.getGrade();
             s = b.getStaff();
+
+            if (b.isFrozen()) {
+                this.freeze();
+            }
         }
 
         setGrade(g / members.size());
