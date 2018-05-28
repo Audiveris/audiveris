@@ -22,6 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.BasicImpacts;
@@ -56,11 +57,11 @@ public class WedgeInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Top line. */
     @XmlElement
-    private final Line2D l1;
+    private Line2D l1;
 
     /** Bottom line. */
     @XmlElement
-    private final Line2D l2;
+    private Line2D l2;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -81,6 +82,24 @@ public class WedgeInter
         super(null, bounds, shape, impacts);
         this.l1 = l1;
         this.l2 = l2;
+    }
+
+    /**
+     * Creates a new {@code WedgeInter} object, meant for manual assignment.
+     *
+     * @param glyph underlying glyph, if any
+     * @param shape CRESCENDO or DIMINUENDO
+     * @param grade assigned grade
+     */
+    public WedgeInter (Glyph glyph,
+                       Shape shape,
+                       double grade)
+    {
+        super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
+
+        if (glyph != null) {
+            setGlyph(glyph);
+        }
     }
 
     /**
@@ -152,6 +171,37 @@ public class WedgeInter
     public static Scale.Fraction getStackAbscissaMargin ()
     {
         return constants.stackAbscissaMargin;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if (glyph == null) {
+            return;
+        }
+
+        Rectangle b = glyph.getBounds();
+
+        if ((l1 == null) || (l2 == null)) {
+            switch (shape) {
+            case CRESCENDO:
+                l1 = new Line2D.Double(b.x, b.y + (b.height / 2), b.x + b.width, b.y);
+                l2 = new Line2D.Double(b.x, b.y + (b.height / 2), b.x + b.width, b.y + b.height);
+
+                break;
+
+            case DIMINUENDO:
+                l1 = new Line2D.Double(b.x, b.y, b.x + b.width, b.y + (b.height / 2));
+                l2 = new Line2D.Double(b.x, b.y + b.height, b.x + b.width, b.y + (b.height / 2));
+
+                break;
+            }
+        }
     }
 
     //-----------//

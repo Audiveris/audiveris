@@ -75,6 +75,7 @@ import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Navigable;
@@ -494,9 +495,12 @@ public class SymbolFactory
         case DYNAMICS_FP:
         case DYNAMICS_SF:
         case DYNAMICS_SFZ:
+            return new DynamicsInter(glyph, shape, grade);
+
+        // Wedges
         case CRESCENDO:
         case DIMINUENDO:
-            return new DynamicsInter(glyph, shape, grade);
+            return new WedgeInter(glyph, shape, grade);
 
         // Ornaments (TODO: Really handle GRACE_NOTE and GRACE_NOTE_SLASH)
         case GRACE_NOTE_SLASH:
@@ -786,9 +790,12 @@ public class SymbolFactory
         case DYNAMICS_FP:
         case DYNAMICS_SF:
         case DYNAMICS_SFZ:
+            return new DynamicsInter(null, shape, GRADE); // No visit
+
+        // Wedges
         case CRESCENDO:
         case DIMINUENDO:
-            return new DynamicsInter(null, shape, GRADE); // No visit
+            return new WedgeInter(null, shape, GRADE); // ?
 
         // Ornaments
         case GRACE_NOTE_SLASH:
