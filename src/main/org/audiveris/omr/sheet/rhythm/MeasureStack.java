@@ -41,9 +41,7 @@ import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -1693,15 +1691,17 @@ public class MeasureStack
      */
     public MeasureStack splitAtBarline (List<PartBarline> systemBarline)
     {
-        final int index = system.getStacks().indexOf(this);
+        final int stackIndex = system.getStacks().indexOf(this);
         final MeasureStack leftStack = new MeasureStack(system);
         leftStack.left = this.left;
         leftStack.right = 0;
         this.left = Integer.MAX_VALUE;
 
-        for (Part part : system.getParts()) {
-            final int ip = part.getId();
-            final PartBarline partBarline = systemBarline.get(ip - 1);
+        final List<Part> systemParts = system.getParts();
+
+        for (int partIndex = 0; partIndex < systemParts.size(); partIndex++) {
+            final Part part = systemParts.get(partIndex);
+            final PartBarline partBarline = systemBarline.get(partIndex);
             Map<Staff, Integer> xRefs = new HashMap<Staff, Integer>();
 
             for (Staff staff : part.getStaves()) {
@@ -1718,7 +1718,7 @@ public class MeasureStack
             leftStack.measures.add(leftMeasure);
 
             // Insert leftMeasure into part, just before the old (right) measure
-            part.addMeasure(index, leftMeasure);
+            part.addMeasure(stackIndex, leftMeasure);
         }
 
         // Stack tuplets (not in any measure yet)
@@ -1734,7 +1734,7 @@ public class MeasureStack
         }
 
         // Insert leftStack into system, just before this old (right) stack
-        system.addStack(index, leftStack);
+        system.addStack(stackIndex, leftStack);
 
         return leftStack;
     }

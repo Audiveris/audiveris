@@ -114,7 +114,10 @@ public class Part
     // Persistent data
     //----------------
     //
-    /** Id of this part within the system, or set as logical part ID. */
+    /**
+     * Id of this part within the system, or set as logical part ID.
+     * <b>BEWARE</b>, this ID is not always an index, hence don't use it as an index!
+     */
     @XmlAttribute
     private int id;
 
