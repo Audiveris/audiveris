@@ -2,7 +2,6 @@ package org.audiveris.omr.scorepad;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -84,8 +83,8 @@ public class ScorepadParserTest {
      */
     @Test
     public void parseSample() {
-        String json = "{\"test\": [1001, 159, 1005, 163, \"articStaccatoBelow\"]}";
-        JSONArray array = new JSONObject(json).getJSONArray("test");
+        String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\"]";
+        JSONArray array = new JSONArray(json);
         Object sample = ScorepadParser.parseSample(array);
         // TODO: Make a class for the parsed samples.
     }
