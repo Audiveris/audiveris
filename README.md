@@ -8,7 +8,7 @@ music recognition (OMR) engine.
 As opposed to Audiveris [earlier generation][6], which was a stand-alone OMR application composed
 of an engine and a (limited) user interface, this repository is focused on the OMR engine.
 
-The internals of OMR engine are made publicly available, either directly by XML-based ".omr" 
+The internals of the OMR engine are made publicly available, either directly by XML-based ".omr" 
 project files or via the Java API of this software.
 
 The engine can directly export data using [MusicXML][8] 3.0 format, via an integrated exporter.
@@ -23,7 +23,7 @@ Full GUIs, meant for the end-user, are expected to be provided by external edito
 First of all, you'll need the following dependencies installed and working from
 the command line:
 
-+ [Java Development Kit (JDK) version 7 or later (version 8 is recommended)][1].
++ [Java Development Kit (JDK) version 7 or 8 (version 8 is recommended; version 9 is not yet supported)][1].
   **Please ensure you're running a 64-bit JVM. Audiveris doesn't support a 32-bit
   JVM because deeplearning4j is 64-bit only.**
 + [Git](https://git-scm.com) version control system.
