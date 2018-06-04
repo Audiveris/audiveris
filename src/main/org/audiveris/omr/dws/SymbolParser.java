@@ -5,24 +5,32 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+
 /**
- * Class {@code DataParser} parses the output from the neural network.
+ * Class {@code SymbolParser} parses the output from the neural network.
  *
  * @author Raphael Emberger
  */
-public class DataParser {
+public class SymbolParser {
 
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(DataParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolParser.class);
 
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //-------//
+    // parse //
+    //-------//
     /**
      * Parses the output from the neural network.
      *
      * @param json The JSON formatted output of the neural network.
      * @return A yet to be specified format for AudiVeris to digest.
      */
-    public static Object parse(String json) {
+    public static ArrayList<Symbol> parse(String json) {
+        ArrayList<Symbol> symbols = new ArrayList<>();
         JSONArray array = extractArray(json);
         if (array == null) return null;
         for (int index = 0; index < array.length(); index++) {
@@ -30,11 +38,14 @@ public class DataParser {
             if (symbol == null) {
                 continue;
             }
-            // TODO: Process symbols.
+            symbols.add(symbol);
         }
-        return null;
+        return symbols;
     }
 
+    //--------------//
+    // extractArray //
+    //--------------//
     /**
      * Extracts the array of the data to parse from the JSON String.
      *
@@ -51,6 +62,9 @@ public class DataParser {
         }
     }
 
+    //-------------//
+    // parseSymbol //
+    //-------------//
     /**
      * Parses a jsonSymbol from the array and returns a proper object representation.
      *

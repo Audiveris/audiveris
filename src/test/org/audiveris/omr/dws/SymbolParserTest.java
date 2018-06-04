@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
@@ -16,10 +17,10 @@ import static org.junit.Assert.*;
  *
  * @author Raphael Emberger
  */
-public class DataParserTest {
+public class SymbolParserTest {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(DataParserTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolParserTest.class);
 
     //~ Fields -------------------------------------------------------------------------------------
 
@@ -41,8 +42,11 @@ public class DataParserTest {
      */
     @Test
     public void parse() {
-        // TODO: Inquire about how to represent the parsed data.
-        DataParser.parse(jsonString);
+        ArrayList<Symbol> symbols = SymbolParser.parse(jsonString);
+        assertNotNull(symbols);
+        assertEquals(438, symbols.size());
+        Symbol symbol = symbols.get(1);
+        assertEquals("noteheadBlack", symbol.getSymbolId());
     }
 
     /**
@@ -50,7 +54,7 @@ public class DataParserTest {
      */
     @Test
     public void extractArray() {
-        JSONArray array = DataParser.extractArray(jsonString);
+        JSONArray array = SymbolParser.extractArray(jsonString);
         assertNotNull(array);
         assertTrue(array.length() > 10);
     }
@@ -61,13 +65,13 @@ public class DataParserTest {
     @Test
     public void doNotExtractFaultyArray() {
         String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\"]";
-        assertNull(DataParser.extractArray(json));
+        assertNull(SymbolParser.extractArray(json));
         json = "[[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]";
-        assertNull(DataParser.extractArray(json));
+        assertNull(SymbolParser.extractArray(json));
         json = "{[[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]}";
-        assertNull(DataParser.extractArray(json));
+        assertNull(SymbolParser.extractArray(json));
         json = "{\"Niet!\": [[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]}";
-        assertNull(DataParser.extractArray(json));
+        assertNull(SymbolParser.extractArray(json));
     }
 
     /**
@@ -77,7 +81,7 @@ public class DataParserTest {
     public void parseSample() {
         String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\"]";
         JSONArray array = new JSONArray(json);
-        Symbol symbol = DataParser.parseSymbol(array);
+        Symbol symbol = SymbolParser.parseSymbol(array);
         assertNotNull(symbol);
         assertEquals(1001, symbol.getFrom().x);
         assertEquals(159, symbol.getFrom().y);
