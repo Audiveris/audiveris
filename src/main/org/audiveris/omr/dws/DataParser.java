@@ -26,8 +26,11 @@ public class DataParser {
         JSONArray array = extractArray(json);
         if (array == null) return null;
         for (int index = 0; index < array.length(); index++) {
-            Object sample = parseSample(array.getJSONArray(index));
-            // TODO: Process samples.
+            Symbol symbol = parseSymbol(array.getJSONArray(index));
+            if (symbol == null) {
+                continue;
+            }
+            // TODO: Process symbols.
         }
         return null;
     }
@@ -49,13 +52,23 @@ public class DataParser {
     }
 
     /**
-     * Parses a sample from the array and returns a proper object representation.
+     * Parses a jsonSymbol from the array and returns a proper object representation.
      *
-     * @param sample The JSON represented sample.
-     * @return The parsed sample.
+     * @param jsonSymbol The JSON represented jsonSymbol.
+     * @return The parsed jsonSymbol.
      */
-    static Object parseSample(JSONArray sample) {
-        // TODO: Parse samples.
-        return null;
+    static Symbol parseSymbol(JSONArray jsonSymbol) {
+        String symbolId = jsonSymbol.getString(4);
+        Symbol symbol = SymbolFactory.produce(symbolId);
+        if (symbol == null) {
+            return null;
+        }
+        symbol.assignCoordinates(
+                jsonSymbol.getInt(0),
+                jsonSymbol.getInt(1),
+                jsonSymbol.getInt(2),
+                jsonSymbol.getInt(3)
+        );
+        return symbol;
     }
 }
