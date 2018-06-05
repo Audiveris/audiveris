@@ -148,6 +148,13 @@ public interface EntityIndex<E extends Entity>
     void reset ();
 
     /**
+     * Populate the index with the provided entities.
+     *
+     * @param entities provided entities
+     */
+    void setEntities (Collection<E> entities);
+
+    /**
      * Assign and connect an entity selection service.
      *
      * @param entityService the entity service, not null

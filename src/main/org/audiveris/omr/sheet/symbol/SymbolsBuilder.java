@@ -92,7 +92,7 @@ public class SymbolsBuilder
     /** Companion factory for symbols inters. */
     private final SymbolFactory factory;
 
-    /** Aras where fine glyphs may be needed. */
+    /** Areas where fine glyphs may be needed. */
     private final List<Rectangle> fineBoxes = new ArrayList<Rectangle>();
 
     /** Scale-dependent global constants. */

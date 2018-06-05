@@ -383,7 +383,7 @@ public class Main
 
         private final Constant.Integer sheetStepTimeOut = new Constant.Integer(
                 "Seconds",
-                120,
+                1200, // BINGO: dirty hack for looooong annotations step
                 "Time-out for one step on a sheet, specified in seconds");
     }
 }

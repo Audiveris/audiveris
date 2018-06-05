@@ -53,6 +53,7 @@ public enum Step
     LOAD("Load the sheet (gray) picture", new LoadStep()),
     BINARY("Binarize the sheet picture", new BinaryStep()),
     SCALE("Compute sheet line thickness, interline, beam thickness", new ScaleStep()),
+    ANNOTATIONS("Detect and classify most symbols", new AnnotationsStep()),
     GRID("Retrieve staff lines, barlines, systems & parts", new GridStep()),
     HEADERS("Retrieve Clef-Key-Time systems headers", new HeadersStep()),
     STEM_SEEDS("Retrieve stem thickness & seeds for stems", new StemSeedsStep()),

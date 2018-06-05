@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.classifier.AnnotationIndex;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.FilamentIndex;
 import org.audiveris.omr.glyph.ui.GlyphsController;
@@ -155,6 +156,11 @@ public interface Sheet
     void annotate ();
 
     /**
+     * Display the ANNOTATION_TAB.
+     */
+    void displayAnnotationTab ();
+
+    /**
      * Display the DATA_TAB.
      */
     void displayDataTab ();
@@ -179,6 +185,13 @@ public interface Sheet
     void export (Path path);
 
     /**
+     * Report the global index for annotations of this sheet
+     *
+     * @return the index for annotations
+     */
+    AnnotationIndex getAnnotationIndex ();
+
+    /**
      * In non batch mode, report the editor dealing with detected errors in this sheet
      *
      * @return the errors editor, or null
@@ -193,9 +206,9 @@ public interface Sheet
     FilamentIndex getFilamentIndex ();
 
     /**
-     * Report the global nest for glyphs of this sheet, or null
+     * Report the global index for glyphs of this sheet
      *
-     * @return the nest for glyphs, perhaps null
+     * @return the index for glyphs
      */
     GlyphIndex getGlyphIndex ();
 

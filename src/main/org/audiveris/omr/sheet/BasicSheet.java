@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.OMR;
+import org.audiveris.omr.classifier.AnnotationIndex;
 import org.audiveris.omr.classifier.Annotations;
 import org.audiveris.omr.classifier.AnnotationsBuilder;
 import org.audiveris.omr.classifier.SampleRepository;
@@ -53,6 +54,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractPitchedInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.InterController;
+import org.audiveris.omr.step.AnnotationsStep;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.BoardsPane;
@@ -79,9 +81,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 import static java.nio.file.StandardOpenOption.CREATE;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -164,7 +164,11 @@ public class BasicSheet
     @XmlElement(name = "page")
     private final List<Page> pages = new ArrayList<Page>();
 
+    /** Global annotation index. */
+    private AnnotationIndex annotationIndex;
+
     /** Global glyph index.
+     * See annotated get/set methods: {@link #getGlyphIndexContent()}
      * See annotated get/set methods: {@link #getGlyphIndexContent()}
      */
     private GlyphIndex glyphIndex;
@@ -261,6 +265,7 @@ public class BasicSheet
         Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
 
         glyphIndex = new GlyphIndex();
+        annotationIndex = new AnnotationIndex(this);
 
         initTransients(stub);
 
@@ -443,6 +448,19 @@ public class BasicSheet
                 new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
 
+    //----------------------//
+    // displayAnnotationTab //
+    //----------------------//
+    @Override
+    public void displayAnnotationTab ()
+    {
+        try {
+            AnnotationsStep.displayAnnotationTab(this);
+        } catch (Throwable ex) {
+            logger.warn("Error in displayAnnotationTab " + ex, ex);
+        }
+    }
+
     //
     //    //--------------//
     //    // deleteExport //
@@ -590,6 +608,19 @@ public class BasicSheet
         } catch (Exception ex) {
             logger.warn("Error exporting " + this + ", " + ex, ex);
         }
+    }
+
+    //--------------------//
+    // getAnnotationIndex //
+    //--------------------//
+    @Override
+    public AnnotationIndex getAnnotationIndex ()
+    {
+        if (annotationIndex == null) {
+            annotationIndex = new AnnotationIndex(this);
+        }
+
+        return annotationIndex;
     }
 
     //-----------------//
@@ -1028,6 +1059,19 @@ public class BasicSheet
             }
         }
 
+        // Annotations, if any
+        if (annotationIndex != null) {
+            try {
+                // Make sure the folder exists for sheet internals
+                Files.createDirectories(sheetFolder);
+
+                // Save index
+                annotationIndex.store(sheetFolder, oldSheetFolder);
+            } catch (IOException ex) {
+                logger.warn("IOException on storing " + this, ex);
+            }
+        }
+
         // Sheet structure (sheet#n.xml)
         try {
             Path structurePath = sheetFolder.resolve(getSheetFileName(stub.getNumber()));
@@ -1101,7 +1145,6 @@ public class BasicSheet
                         interController.clearHistory();
                     }
                 });
-
             }
         }
     }
@@ -1241,6 +1284,14 @@ public class BasicSheet
 
         if (glyphIndex != null) {
             glyphIndex.initTransients(this);
+        }
+
+        if (annotationIndex == null) {
+            annotationIndex = AnnotationIndex.load(stub);
+        }
+
+        if (annotationIndex != null) {
+            annotationIndex.initTransients(this);
         }
 
         for (Page page : pages) {

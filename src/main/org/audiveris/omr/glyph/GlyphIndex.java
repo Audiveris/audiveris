@@ -103,6 +103,41 @@ public class GlyphIndex
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // initTransients //
+    //----------------//
+    public final void initTransients (Sheet sheet)
+    {
+        // ID generator
+        weakIndex.setIdGenerator(sheet.getPersistentIdGenerator());
+
+        // Declared VIP IDs?
+        List<Integer> vipIds = IntUtil.parseInts(constants.vipGlyphs.getValue());
+
+        if (!vipIds.isEmpty()) {
+            logger.info("VIP glyphs: {}", vipIds);
+            weakIndex.setVipIds(vipIds);
+        }
+
+        for (Iterator<Glyph> it = iterator(); it.hasNext();) {
+            Glyph glyph = it.next();
+
+            if (glyph != null) {
+                glyph.setIndex(this);
+
+                if (isVipId(glyph.getId())) {
+                    glyph.setVip(true);
+                }
+            }
+        }
+
+        // User glyph service?
+        if (OMR.gui != null) {
+            SelectionService locationService = sheet.getLocationService();
+            setEntityService(new GlyphService(this, locationService));
+        }
+    }
+
     //----------------------//
     // getContainedEntities //
     //----------------------//
@@ -225,41 +260,6 @@ public class GlyphIndex
         }
     }
 
-    //----------------//
-    // initTransients //
-    //----------------//
-    public final void initTransients (Sheet sheet)
-    {
-        // ID generator
-        weakIndex.setIdGenerator(sheet.getPersistentIdGenerator());
-
-        // Declared VIP IDs?
-        List<Integer> vipIds = IntUtil.parseInts(constants.vipGlyphs.getValue());
-
-        if (!vipIds.isEmpty()) {
-            logger.info("VIP glyphs: {}", vipIds);
-            weakIndex.setVipIds(vipIds);
-        }
-
-        for (Iterator<Glyph> it = iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            if (glyph != null) {
-                glyph.setIndex(this);
-
-                if (isVipId(glyph.getId())) {
-                    glyph.setVip(true);
-                }
-            }
-        }
-
-        // User glyph service?
-        if (OMR.gui != null) {
-            SelectionService locationService = sheet.getLocationService();
-            setEntityService(new GlyphService(this, locationService));
-        }
-    }
-
     //---------//
     // isVipId //
     //---------//
@@ -373,7 +373,8 @@ public class GlyphIndex
     //-------------//
     // setEntities //
     //-------------//
-    public void setEntities (ArrayList<Glyph> glyphs)
+    @Override
+    public void setEntities (Collection<Glyph> glyphs)
     {
         for (Glyph glyph : glyphs) {
             WeakGlyph weak = new WeakGlyph(glyph);
@@ -441,32 +442,6 @@ public class GlyphIndex
                 "(Debug) Comma-separated values of VIP glyphs IDs");
     }
 
-    //----------------//
-    // WeakGlyphIndex //
-    //----------------//
-    private static class WeakGlyphIndex
-            extends BasicIndex<WeakGlyph>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public void insert (WeakGlyph weak)
-        {
-            super.insert(weak);
-        }
-
-        @Override
-        protected boolean isValid (WeakGlyph weak)
-        {
-            return (weak != null) && (weak.get() != null);
-        }
-
-        void setIdGenerator (AtomicInteger lastId)
-        {
-            this.lastId = lastId;
-        }
-    }
-
     //------------------//
     // SkippingIterator //
     //------------------//
@@ -527,6 +502,32 @@ public class GlyphIndex
             }
 
             return null;
+        }
+    }
+
+    //----------------//
+    // WeakGlyphIndex //
+    //----------------//
+    private static class WeakGlyphIndex
+            extends BasicIndex<WeakGlyph>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void insert (WeakGlyph weak)
+        {
+            super.insert(weak);
+        }
+
+        @Override
+        protected boolean isValid (WeakGlyph weak)
+        {
+            return (weak != null) && (weak.get() != null);
+        }
+
+        void setIdGenerator (AtomicInteger lastId)
+        {
+            this.lastId = lastId;
         }
     }
 }

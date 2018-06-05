@@ -383,6 +383,24 @@ public class BookActions
         applyUserSettings(StubsController.getCurrentStub());
     }
 
+    //--------------------//
+    // displayAnnotations //
+    //--------------------//
+    /**
+     * Action that allows to display the view on annotations
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void displayAnnotations (ActionEvent e)
+    {
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub.isDone(Step.ANNOTATIONS)) {
+            stub.getSheet().displayAnnotationTab();
+        }
+    }
+
     //-------------//
     // displayData //
     //-------------//

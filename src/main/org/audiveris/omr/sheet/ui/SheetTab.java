@@ -36,6 +36,7 @@ public enum SheetTab
     FILAMENT_TAB("Filaments"),
     BEAM_SPOT_TAB("BeamSpots"),
     GRAY_SPOT_TAB("GraySpots"),
+    ANNOTATION_TAB("Annotations"),
     LEDGER_TAB("Ledgers"),
     SKELETON_TAB("Skeleton"),
     TEMPLATE_TAB("Templates"),

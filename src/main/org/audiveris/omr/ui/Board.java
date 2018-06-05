@@ -92,6 +92,8 @@ public abstract class Board
 
     public static final Desc GLYPH = new Desc("Glyph", 500);
 
+    public static final Desc ANNOTATION = new Desc("Annotation", 525);
+
     public static final Desc INTER = new Desc("Inter", 550);
 
     public static final Desc TEMPLATE = new Desc("Template", 575);
