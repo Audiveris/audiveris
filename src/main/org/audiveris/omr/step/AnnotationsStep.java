@@ -131,8 +131,8 @@ public class AnnotationsStep
             //
             // Post image to web service
             // Receive annotations (json file)
-            ///List<Annotation> annotations = Annotation.readAnnotations("Issue-87.json", ratio);
-            List<Annotation> annotations = postRequest(file, ratio);
+            List<Annotation> annotations = Annotation.readAnnotations("Issue-87.json", ratio);
+            ///List<Annotation> annotations = postRequest(file, ratio);
             //
             AnnotationIndex index = sheet.getAnnotationIndex();
 

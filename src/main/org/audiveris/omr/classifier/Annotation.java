@@ -23,6 +23,7 @@ package org.audiveris.omr.classifier;
 
 import org.audiveris.omr.util.AbstractEntity;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,46 +69,46 @@ public class Annotation
     @XmlJavaTypeAdapter(Jaxb.RectangleAdapter.class)
     private final Rectangle bounds;
 
-    @XmlAttribute(name = "name")
-    private final String name;
+    @XmlAttribute(name = "omr-shape")
+    private final OmrShape omrShape;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code Annotation} object.
      *
-     * @param bounds bounding box of the symbol
-     * @param name   name of the symbol
+     * @param bounds   bounding box of the symbol
+     * @param omrShape name of the symbol shape
      */
     public Annotation (Rectangle bounds,
-                       String name)
+                       OmrShape omrShape)
     {
         this.bounds = bounds;
-        this.name = name;
+        this.omrShape = omrShape;
     }
 
     /**
      * Creates a new {@code Annotation} object.
      *
-     * @param x1   x min
-     * @param y1   y min
-     * @param x2   x max
-     * @param y2   y max
-     * @param name symbol name
+     * @param x1       x min
+     * @param y1       y min
+     * @param x2       x max
+     * @param y2       y max
+     * @param omrShape symbol name
      */
     public Annotation (int x1,
                        int y1,
                        int x2,
                        int y2,
-                       String name)
+                       OmrShape omrShape)
     {
-        this(new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1), name);
+        this(new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1), omrShape);
     }
 
     // Meant for JAXB
     private Annotation ()
     {
         this.bounds = null;
-        this.name = null;
+        this.omrShape = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -123,9 +124,9 @@ public class Annotation
         return new Rectangle(bounds);
     }
 
-    public String getName ()
+    public OmrShape getOmrShape ()
     {
-        return name;
+        return omrShape;
     }
 
     //-----------------//
@@ -143,7 +144,7 @@ public class Annotation
                                                     double ratio)
             throws Exception
     {
-        logger.info("Reading annotations from {}", jsonPath);
+        logger.info("Reading annotations from file {}", jsonPath);
 
         InputStream in = new FileInputStream(new File(jsonPath));
         List<Annotation> annotations = readAnnotations(in, ratio);
@@ -167,7 +168,7 @@ public class Annotation
                                                     double ratio)
             throws Exception
     {
-        logger.info("Reading annotations from stream");
+        logger.debug("Reading annotations from stream");
 
         List<Annotation> annotations = new ArrayList<Annotation>();
         JsonReader reader = Json.createReader(in);
@@ -176,21 +177,27 @@ public class Annotation
 
         JsonArray results = root.getJsonArray("bounding_boxes");
 
-        ///logger.info("results: {}", results);
         for (Iterator<JsonValue> it = results.iterator(); it.hasNext();) {
             JsonValue value = it.next();
-
-            ///logger.info("value : {} type: {}", value, value.getValueType());
             JsonArray t = value.asJsonArray();
-            Annotation ann = new Annotation(
-                    (int) Math.rint(t.getInt(0) / ratio),
-                    (int) Math.rint(t.getInt(1) / ratio),
-                    (int) Math.rint(t.getInt(2) / ratio),
-                    (int) Math.rint(t.getInt(3) / ratio),
-                    t.getString(4));
-            logger.info("{}", ann);
-            annotations.add(ann);
+            String omrShapeString = t.getString(4);
+
+            try {
+                OmrShape omrShape = OmrShape.valueOf(omrShapeString);
+                Annotation ann = new Annotation(
+                        (int) Math.rint(t.getInt(0) / ratio),
+                        (int) Math.rint(t.getInt(1) / ratio),
+                        (int) Math.rint(t.getInt(2) / ratio),
+                        (int) Math.rint(t.getInt(3) / ratio),
+                        omrShape);
+                logger.debug("{}", ann);
+                annotations.add(ann);
+            } catch (IllegalArgumentException ex) {
+                logger.error("Unknown OmrShape {}", omrShapeString);
+            }
         }
+
+        logger.info("Annotations: {}", annotations.size());
 
         return annotations;
     }
@@ -199,7 +206,7 @@ public class Annotation
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("annotation{");
-        sb.append(bounds).append(" ").append(name);
+        sb.append(bounds).append(" ").append(omrShape);
         sb.append("}");
 
         return sb.toString();

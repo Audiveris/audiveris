@@ -248,8 +248,11 @@ public class SymbolInfo
     {
         switch (omrShape) {
         // Clefs (change)
-        case cClef:
-            return OmrShape.cClefChange;
+        case cClefAlto:
+            return OmrShape.cClefAltoChange;
+
+        case cClefTenor:
+            return OmrShape.cClefTenorChange;
 
         case fClef:
             return OmrShape.fClefChange;

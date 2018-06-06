@@ -21,14 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-import java.util.EnumMap;
-import java.util.Map;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omrdataset.api.OmrShape;
 import org.audiveris.omrdataset.api.OmrShapes;
-
 import static org.audiveris.omrdataset.api.OmrShapes.COMBO_MAP;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Class {@code OmrShapeMapping} handles mappings between Shape and OmrShape.
@@ -84,6 +84,16 @@ public abstract class OmrShapeMapping
             }
         }
 
+        // OmrShape items with no corresponding item in Shape
+        map.put(OmrShape.cClefAlto, Shape.C_CLEF);
+        map.put(OmrShape.cClefTenor, Shape.C_CLEF);
+
+        //        map.put(OmrShape.cClefAltoChange, Shape.XXX);
+        //        map.put(OmrShape.cClefTenor, Shape.XXX);
+        //
+        //        map.put(OmrShape.graceNoteAcciaccaturaStemDown, Shape.XXX);
+        //        map.put(OmrShape.graceNoteAppoggiaturaStemDown, Shape.XXX);
+        //
         return map;
     }
 
@@ -106,7 +116,7 @@ public abstract class OmrShapeMapping
         map.put(Shape.G_CLEF_SMALL, OmrShape.gClefChange);
         map.put(Shape.G_CLEF_8VA, OmrShape.gClef8va);
         map.put(Shape.G_CLEF_8VB, OmrShape.gClef8vb);
-        map.put(Shape.C_CLEF, OmrShape.cClef);
+        ///map.put(Shape.C_CLEF, OmrShape.cClef);
         map.put(Shape.F_CLEF, OmrShape.fClef);
         map.put(Shape.F_CLEF_SMALL, OmrShape.fClefChange);
         map.put(Shape.F_CLEF_8VA, OmrShape.fClef8va);

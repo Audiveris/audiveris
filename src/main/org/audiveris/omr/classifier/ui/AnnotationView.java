@@ -107,7 +107,7 @@ public class AnnotationView
 
             for (Annotation a : annotations) {
                 Rectangle b = a.getBounds();
-                g.drawString(a.getName(), b.x, b.y);
+                g.drawString(a.getOmrShape().name(), b.x, b.y);
             }
 
             g.setFont(oldFont);
