@@ -22,7 +22,6 @@
 package org.audiveris.omr.step;
 
 import ij.process.ByteProcessor;
-import org.apache.commons.io.IOUtils;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.classifier.AnnotationIndex;
@@ -47,7 +46,6 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -115,7 +113,7 @@ public class AnnotationsStep
             // Scale image if different from expected interline
             RunTable binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
             ByteProcessor binBuffer = binary.getBuffer();
-            int interline = constants.expectedInterline.getValue();//sheet.getScale().getInterline();
+            int interline = sheet.getScale().getInterline();
             int expected = constants.expectedInterline.getValue();
             double ratio = (double) expected / interline;
             ByteProcessor buf = (ratio != 1.0) ? scaledBuffer(binBuffer, ratio) : binBuffer;
@@ -129,15 +127,15 @@ public class AnnotationsStep
             // Post image to web service
             // Receive annotations (json file)
             //TODO: Exchange test file with actual post request.
-            String jsonString;
-            try (FileInputStream inputStream = new FileInputStream("data/examples/Bach_Fuge_C_DUR.json")) {
-                jsonString = IOUtils.toString(inputStream);
-            } catch (Exception e) {
-                logger.error(e.getMessage());
-                return;
-            }
-            List<Annotation> annotations = AnnotationParser.parse(jsonString, ratio);
-            ///List<Annotation> annotations = postRequest(file, ratio);
+//            String jsonString;
+//            try (FileInputStream inputStream = new FileInputStream("data/examples/Bach_Fuge_C_DUR.json")) {
+//                jsonString = IOUtils.toString(inputStream);
+//            } catch (Exception e) {
+//                logger.error(e.getMessage());
+//                return;
+//            }
+//            List<Annotation> annotations = AnnotationParser.parse(jsonString, ratio);
+            List<Annotation> annotations = postRequest(file, ratio);
             //
             AnnotationIndex index = sheet.getAnnotationIndex();
 
