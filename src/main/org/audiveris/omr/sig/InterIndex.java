@@ -25,16 +25,12 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.InterService;
 import org.audiveris.omr.util.BasicIndex;
-import org.audiveris.omr.util.IntUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * Class {@code InterIndex} keeps an index of all Inter instances registered
@@ -75,23 +71,7 @@ public class InterIndex
         lastId = sheet.getPersistentIdGenerator();
 
         // Declared VIP IDs?
-        List<Integer> vipIds = IntUtil.parseInts(constants.vipInters.getValue());
-
-        if (!vipIds.isEmpty()) {
-            logger.info("VIP inters: {}", vipIds);
-            setVipIds(vipIds);
-        }
-
-        // Browse inters from all SIGs to set VIPs
-        for (SystemInfo system : sheet.getSystems()) {
-            SIGraph sig = system.getSig();
-
-            for (Inter inter : sig.vertexSet()) {
-                if (this.isVipId(inter.getId())) {
-                    inter.setVip(true);
-                }
-            }
-        }
+        setVipIds(constants.vipInters.getValue());
 
         // User Inter service?
         if (OMR.gui != null) {
@@ -99,15 +79,6 @@ public class InterIndex
         } else {
             entityService = null;
         }
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "interIndex";
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

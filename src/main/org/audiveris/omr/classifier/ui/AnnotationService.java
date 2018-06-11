@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code AnnotationService} is an EnityService for annotations.
+ * Class {@code AnnotationService} is an EntityService for annotations.
  *
  * @author Hervé Bitteur
  */

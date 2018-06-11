@@ -21,10 +21,17 @@
 // </editor-fold>
 package org.audiveris.omr.classifier.ui;
 
+import com.jgoodies.forms.layout.CellConstraints;
+
 import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
+import org.audiveris.omr.ui.field.LTextField;
+import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
+import org.audiveris.omrdataset.api.OmrShape;
+
+import javax.swing.JLabel;
 
 /**
  * Class {@code AnnotationBoard} defines a UI board dedicated to the display of
@@ -35,8 +42,15 @@ import org.audiveris.omr.ui.selection.EntityService;
 public class AnnotationBoard
         extends EntityBoard<Annotation>
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
+    /** Output : shape icon. */
+    private final JLabel shapeIcon = new JLabel();
+
+    /** Output : shape. */
+    private final LTextField shapeField = new LTextField("", "Shape for this annotation");
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code AnnotationBoard} object.
      *
@@ -47,5 +61,52 @@ public class AnnotationBoard
                             boolean selected)
     {
         super(Board.ANNOTATION, service, selected);
+
+        defineLayout();
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Annotation> listEvent)
+    {
+        super.handleEntityListEvent(listEvent);
+
+        final Annotation annotation = listEvent.getEntity();
+
+        // Shape
+        OmrShape omrShape = (annotation != null) ? annotation.getOmrShape() : null;
+
+        if (omrShape != null) {
+            shapeField.setText(omrShape.toString());
+
+            ///shapeIcon.setIcon(omrShape.getDecoratedSymbol());
+        } else {
+            shapeField.setText("");
+            shapeIcon.setIcon(null);
+        }
+    }
+
+    //--------------//
+    // defineLayout //
+    //--------------//
+    /**
+     * Define the layout for InterBoard specific fields.
+     */
+    private void defineLayout ()
+    {
+        final CellConstraints cst = new CellConstraints();
+
+        // Layout
+        int r = 1; // -----------------------------
+
+        // Shape Icon (start, spans several rows) + grade + Deassign button
+        builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
+
+        r += 2; // --------------------------------
+
+        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
     }
 }

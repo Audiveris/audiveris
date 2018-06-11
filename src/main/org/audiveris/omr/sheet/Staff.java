@@ -276,56 +276,6 @@ public class Staff
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------------//
-    // getCompetingClefs //
-    //-------------------//
-    /**
-     * Report the competing clef candidates active at provided abscissa.
-     *
-     * @param x provided abscissa
-     * @return the collection of competing clefs
-     */
-    public List<ClefInter> getCompetingClefs (int x)
-    {
-        // Look for clef on left side in staff (together with its competing clefs)
-        SIGraph sig = getSystem().getSig();
-        List<Inter> staffClefs = sig.inters(this, ClefInter.class);
-        Collections.sort(staffClefs, Inters.byAbscissa);
-
-        Inter lastClef = null;
-
-        for (Inter inter : staffClefs) {
-            int xClef = inter.getBounds().x;
-
-            if (xClef < x) {
-                lastClef = inter;
-            }
-        }
-
-        if (lastClef == null) {
-            return Collections.emptyList();
-        }
-
-        // Pick up this clef together with all competing clefs
-        Set<Relation> excs = sig.getExclusions(lastClef);
-        List<ClefInter> clefs = new ArrayList<ClefInter>();
-        clefs.add((ClefInter) lastClef);
-
-        for (Relation rel : excs) {
-            Inter inter = Graphs.getOppositeVertex(sig, rel, lastClef);
-
-            if (inter instanceof ClefInter) {
-                ClefInter clef = (ClefInter) inter;
-
-                if ((clef.getStaff() == this) && !clefs.contains(clef)) {
-                    clefs.add(clef);
-                }
-            }
-        }
-
-        return clefs;
-    }
-
     //----------------------//
     // getDefiningPointSize //
     //----------------------//
@@ -764,6 +714,56 @@ public class Staff
         }
 
         return lines.get(idx);
+    }
+
+    //-------------------//
+    // getCompetingClefs //
+    //-------------------//
+    /**
+     * Report the competing clef candidates active at provided abscissa.
+     *
+     * @param x provided abscissa
+     * @return the collection of competing clefs
+     */
+    public List<ClefInter> getCompetingClefs (int x)
+    {
+        // Look for clef on left side in staff (together with its competing clefs)
+        SIGraph sig = getSystem().getSig();
+        List<Inter> staffClefs = sig.inters(this, ClefInter.class);
+        Collections.sort(staffClefs, Inters.byAbscissa);
+
+        Inter lastClef = null;
+
+        for (Inter inter : staffClefs) {
+            int xClef = inter.getBounds().x;
+
+            if (xClef < x) {
+                lastClef = inter;
+            }
+        }
+
+        if (lastClef == null) {
+            return Collections.emptyList();
+        }
+
+        // Pick up this clef together with all competing clefs
+        Set<Relation> excs = sig.getExclusions(lastClef);
+        List<ClefInter> clefs = new ArrayList<ClefInter>();
+        clefs.add((ClefInter) lastClef);
+
+        for (Relation rel : excs) {
+            Inter inter = Graphs.getOppositeVertex(sig, rel, lastClef);
+
+            if (inter instanceof ClefInter) {
+                ClefInter clef = (ClefInter) inter;
+
+                if ((clef.getStaff() == this) && !clefs.contains(clef)) {
+                    clefs.add(clef);
+                }
+            }
+        }
+
+        return clefs;
     }
 
     //----------------//
@@ -1790,6 +1790,15 @@ public class Staff
         return commonBottom > commonTop;
     }
 
+    //--------------//
+    // afterMarshal //
+    //--------------//
+    @SuppressWarnings("unused")
+    private void afterMarshal (Marshaller m)
+    {
+        ledgersValue = null;
+    }
+
     //---------------//
     // beforeMarshal //
     //---------------//
@@ -1971,7 +1980,7 @@ public class Staff
     // LedgersEntry //
     //--------------//
     /**
-     * This temporary structure is needed to marshall / unmarshall the ledgerMap,
+     * This temporary structure is needed to marshal / unmarshal the ledgerMap,
      * because of its use of IDREF's.
      */
     private static class LedgersEntry

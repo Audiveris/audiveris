@@ -108,7 +108,8 @@ public class AnnotationsStep
      * @param sheet the provided sheet
      */
     @Override
-    public void doit(Sheet sheet) {
+    public void doit (Sheet sheet)
+    {
         try {
             // Scale image if different from expected interline
             RunTable binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
@@ -135,8 +136,9 @@ public class AnnotationsStep
 //                return;
 //            }
 //            List<Annotation> annotations = AnnotationParser.parse(jsonString, ratio);
+            ///List<Annotation> annotations = Annotation.readAnnotations("Issue-87.json", ratio);
             List<Annotation> annotations = postRequest(file, ratio);
-            //
+
             AnnotationIndex index = sheet.getAnnotationIndex();
 
             for (Annotation annotation : annotations) {

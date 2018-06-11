@@ -23,6 +23,8 @@ package org.audiveris.omr.classifier;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.ui.AnnotationService;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.ui.selection.SelectionService;
@@ -37,12 +39,14 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -50,18 +54,18 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Hervé Bitteur
  */
-@XmlAccessorType(XmlAccessType.NONE)
-@XmlRootElement(name = "annotations")
+//@XmlAccessorType(XmlAccessType.NONE)
+//@XmlRootElement(name = "annotations")
 public class AnnotationIndex
         extends BasicIndex<Annotation>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(AnnotationIndex.class);
 
     public static final String FILE_NAME = "annotations.xml";
-
-    private static JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** To avoid useless marshalling to disk. */
@@ -86,6 +90,13 @@ public class AnnotationIndex
         super(sheet.getPersistentIdGenerator());
     }
 
+    private AnnotationIndex (AnnotationsValue value)
+    {
+        for (Annotation annotation : value.list) {
+            insert(annotation);
+        }
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getName //
@@ -104,27 +115,9 @@ public class AnnotationIndex
         // ID generator
         lastId = sheet.getPersistentIdGenerator();
 
-        //
-        //        // Declared VIP IDs?
-        //        List<Integer> vipIds = IntUtil.parseInts(constants.vipGlyphs.getValue());
-        //
-        //        if (!vipIds.isEmpty()) {
-        //            logger.info("VIP glyphs: {}", vipIds);
-        //            weakIndex.setVipIds(vipIds);
-        //        }
-        //
-        //        for (Iterator<Glyph> it = iterator(); it.hasNext();) {
-        //            Glyph glyph = it.next();
-        //
-        //            if (glyph != null) {
-        //                glyph.setIndex(this);
-        //
-        //                if (isVipId(glyph.getId())) {
-        //                    glyph.setVip(true);
-        //                }
-        //            }
-        //        }
-        //
+        // Declared VIP IDs?
+        setVipIds(constants.vipAnnotations.getValue());
+
         // User annotation service?
         if (OMR.gui != null) {
             SelectionService locationService = sheet.getLocationService();
@@ -143,6 +136,12 @@ public class AnnotationIndex
     //------//
     // load //
     //------//
+    /**
+     * Unmarshal to a temporary AnnotationsValue instance, then build index from it.
+     *
+     * @param stub related sheet stub
+     * @return the loaded index
+     */
     public static AnnotationIndex load (SheetStub stub)
     {
         AnnotationIndex index = null;
@@ -150,17 +149,18 @@ public class AnnotationIndex
         try {
             stub.getBook().getLock().lock();
 
-            Unmarshaller um = getJaxbContext().createUnmarshaller();
+            Unmarshaller um = AnnotationsValue.getJaxbContext().createUnmarshaller();
 
             // Open book file system
             Path dataFile = stub.getBook().openSheetFolder(stub.getNumber()).resolve(FILE_NAME);
             logger.debug("path: {}", dataFile);
 
             InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
-            index = (AnnotationIndex) um.unmarshal(is);
+            AnnotationsValue value = (AnnotationsValue) um.unmarshal(is);
             is.close();
 
             dataFile.getFileSystem().close(); // Close book file system
+            index = new AnnotationIndex(value);
             index.setModified(false);
             logger.debug("Loaded {}", dataFile);
         } catch (Exception ex) {
@@ -183,6 +183,12 @@ public class AnnotationIndex
     //-------//
     // store //
     //-------//
+    /**
+     * Build a temporary AnnotationsValue instance from index, then marshal value.
+     *
+     * @param sheetFolder    target sheet folder within .omr file
+     * @param oldSheetFolder sheet folder in old .omr file if any
+     */
     public void store (Path sheetFolder,
                        Path oldSheetFolder)
     {
@@ -203,7 +209,9 @@ public class AnnotationIndex
             try {
                 Files.deleteIfExists(path);
 
-                Jaxb.marshal(this, path, getJaxbContext());
+                AnnotationsValue value = new AnnotationsValue();
+                value.list.addAll(entities.values());
+                Jaxb.marshal(value, path, AnnotationsValue.getJaxbContext());
                 setModified(false);
                 logger.info("Stored {}", path);
             } catch (Exception ex) {
@@ -211,57 +219,57 @@ public class AnnotationIndex
             }
         }
     }
-//
-//    //------------//
-//    // getContent //
-//    //------------//
-//    /**
-//     * Mean for JAXB marshalling only.
-//     *
-//     * @return collection of annotations from annotationIndex
-//     */
-//    @SuppressWarnings("unchecked")
-//    @XmlElement(name = "annotation")
-//    private ArrayList<Annotation> getContent ()
-//    {
-//        Collection<Annotation> col = getEntities();
-//        logger.info("col@{}{}", Integer.toHexString(col.hashCode()), col);
-//
-//        ArrayList<Annotation> arr = new ArrayList<Annotation>(col);
-//        logger.info("arr@{}{}", Integer.toHexString(arr.hashCode()), arr);
-//
-//        return arr;
-//    }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------//
+    // AnnotationsValue //
+    //------------------//
+    /**
+     * Temporary structure meant for JAXB only.
+     */
+    @XmlAccessorType(XmlAccessType.NONE)
+    @XmlRootElement(name = "annotations")
+    private static class AnnotationsValue
     {
-        if (jaxbContext == null) {
-            try {
-                jaxbContext = JAXBContext.newInstance(AnnotationIndex.class);
-            } catch (JAXBException ex) {
-                logger.error("Jaxb error " + ex, ex);
-            }
+        //~ Static fields/initializers -------------------------------------------------------------
+
+        private static JAXBContext jaxbContext;
+
+        //~ Instance fields ------------------------------------------------------------------------
+        @XmlElement(name = "annotation")
+        ArrayList<Annotation> list = new ArrayList<Annotation>();
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /** No-arg constructor needed by JAXB. */
+        public AnnotationsValue ()
+        {
         }
 
-        return jaxbContext;
+        //~ Methods --------------------------------------------------------------------------------
+        static JAXBContext getJaxbContext ()
+        {
+            if (jaxbContext == null) {
+                try {
+                    jaxbContext = JAXBContext.newInstance(AnnotationsValue.class);
+                } catch (JAXBException ex) {
+                    logger.error("Jaxb error " + ex, ex);
+                }
+            }
+
+            return jaxbContext;
+        }
     }
-//
-//    //------------//
-//    // setContent //
-//    //------------//
-//    /**
-//     * Meant for JAXB unmarshalling only.
-//     *
-//     * @param annotations collection of annotations to feed to the annotationIndex
-//     */
-//    @SuppressWarnings("unchecked")
-//    private void setContent (ArrayList<Annotation> annotations)
-//    {
-//        logger.info("annotations@{}{}", Integer.toHexString(annotations.hashCode()), annotations);
-//
-//        setEntities(annotations);
-//    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.String vipAnnotations = new Constant.String(
+                "",
+                "(Debug) Comma-separated values of VIP annotation IDs");
+    }
 }

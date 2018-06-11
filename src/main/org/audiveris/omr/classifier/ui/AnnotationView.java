@@ -23,6 +23,8 @@ package org.audiveris.omr.classifier.ui;
 
 import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.classifier.AnnotationIndex;
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
@@ -47,8 +49,11 @@ import java.util.Collection;
 public class AnnotationView
         extends EntityView<Annotation>
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
+    //~ Instance fields ----------------------------------------------------------------------------
     protected final AnnotationIndex annotationIndex;
 
     @Navigable(false)
@@ -97,12 +102,12 @@ public class AnnotationView
             g.draw(b);
         }
 
-        // Names
+        // OmrShape
         double ratio = g.getTransform().getScaleX();
 
-        if (ratio >= 2) {
+        if (ratio >= constants.minZoomForNames.getValue()) {
             Font oldFont = g.getFont();
-            g.setFont(oldFont.deriveFont(10f / (float) ratio));
+            g.setFont(oldFont.deriveFont((float) (constants.nameFontSize.getValue() / ratio)));
             g.setColor(Color.MAGENTA);
 
             for (Annotation a : annotations) {
@@ -125,5 +130,24 @@ public class AnnotationView
     {
         // Global sheet renderers if any
         sheet.renderItems(g);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Ratio minZoomForNames = new Constant.Ratio(
+                0.5,
+                "Minimum zoom ratio to display shape names");
+
+        private final Constant.Integer nameFontSize = new Constant.Integer(
+                "pointSize",
+                10,
+                "Font size for shape names");
     }
 }

@@ -229,7 +229,7 @@ public class BasicIndex<E extends Entity>
     @Override
     public String getName ()
     {
-        return "";
+        return getClass().getSimpleName();
     }
 
     //--------//
@@ -381,9 +381,24 @@ public class BasicIndex<E extends Entity>
     //-----------//
     // setVipIds //
     //-----------//
-    public void setVipIds (List<Integer> vipIds)
+    /**
+     * Declare a list of VIP IDs.
+     *
+     * @param vipIdsString a string formatted as a comma-separated list of ID numbers
+     */
+    public void setVipIds (String vipIdsString)
     {
-        this.vipIds = vipIds;
+        vipIds = IntUtil.parseInts(vipIdsString);
+
+        if (!vipIds.isEmpty()) {
+            logger.info("VIP {}: {}", getClass().getSimpleName(), vipIds);
+
+            for (E entity : entities.values()) {
+                if ((entity != null) && isVipId(entity.getId())) {
+                    entity.setVip(true);
+                }
+            }
+        }
     }
 
     //----------//
@@ -496,51 +511,6 @@ public class BasicIndex<E extends Entity>
         }
     }
 
-    //    //---------//
-    //    // Adapter //
-    //    //---------//
-    //    /**
-    //     * This adapter converts an un-mappable BasicIndex to/from
-    //     * a JAXB-mappable IndexValue (a flat list).
-    //     *
-    //     * @param <E> the specific entity type
-    //     */
-    //    public static class Adapter<E extends AbstractEntity>
-    //            extends XmlAdapter<IndexValue<E>, BasicIndex<E>>
-    //    {
-    //        //~ Methods --------------------------------------------------------------------------------
-    //
-    //        @Override
-    //        public IndexValue<E> marshal (BasicIndex<E> index)
-    //                throws Exception
-    //        {
-    //            if (index == null) {
-    //                return null;
-    //            }
-    //
-    //            IndexValue<E> value = new IndexValue<E>();
-    //            value.list = new ArrayList<E>(index.entities.values());
-    //
-    //            return value;
-    //        }
-    //
-    //        @Override
-    //        public BasicIndex<E> unmarshal (IndexValue<E> value)
-    //                throws Exception
-    //        {
-    //            if (value == null) {
-    //                return null;
-    //            }
-    //
-    //            BasicIndex<E> index = new BasicIndex<E>();
-    //
-    //            for (E entity : value.list) {
-    //                index.entities.put(entity.getId(), entity);
-    //            }
-    //
-    //            return index;
-    //        }
-    //    }
     //------------//
     // IndexValue //
     //------------//
