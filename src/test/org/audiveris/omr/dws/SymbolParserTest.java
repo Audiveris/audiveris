@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 
@@ -83,10 +84,11 @@ public class SymbolParserTest {
         JSONArray array = new JSONArray(json);
         Symbol symbol = SymbolParser.parseSymbol(array);
         assertNotNull(symbol);
-        assertEquals(1001, symbol.getFrom().x);
-        assertEquals(159, symbol.getFrom().y);
-        assertEquals(1005, symbol.getTo().x);
-        assertEquals(163, symbol.getTo().y);
+        Rectangle rectangle = symbol.getRectangle();
+        assertEquals(1001, rectangle.x);
+        assertEquals(159, rectangle.y);
+        assertEquals(4, rectangle.width);
+        assertEquals(4, rectangle.height);
         assertEquals("articStaccatoBelow", symbol.getSymbolId());
     }
 }

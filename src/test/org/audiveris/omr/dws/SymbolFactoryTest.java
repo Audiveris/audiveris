@@ -47,8 +47,8 @@ public class SymbolFactoryTest {
         String symbolId = "fingering0";
         Symbol symbol = SymbolFactory.produce(symbolId);
         symbol.assignCoordinates(0, 1, 2, 3);
-        assertNotNull(symbol.getFrom());
+        assertNotNull(symbol.getRectangle());
         Symbol symbol1 = SymbolFactory.produce(symbolId);
-        assertNull(symbol1.getFrom());
+        assertNull(symbol1.getRectangle());
     }
 }

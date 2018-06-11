@@ -4,6 +4,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+
 import static org.junit.Assert.*;
 
 /**
@@ -24,15 +26,14 @@ public class SymbolTest {
     @Test
     public void assignCoordinates() {
         Symbol symbol = new Symbol(0, "test", "test");
-        assertNull(symbol.getFrom());
-        assertNull(symbol.getTo());
+        assertNull(symbol.getRectangle());
         symbol.assignCoordinates(1, 2, 3, 4);
-        assertNotNull(symbol.getFrom());
-        assertNotNull(symbol.getTo());
-        assertEquals(1, symbol.getFrom().x);
-        assertEquals(2, symbol.getFrom().y);
-        assertEquals(3, symbol.getTo().x);
-        assertEquals(4, symbol.getTo().y);
+        Rectangle rectangle = symbol.getRectangle();
+        assertNotNull(rectangle);
+        assertEquals(1, rectangle.x);
+        assertEquals(2, rectangle.y);
+        assertEquals(2, rectangle.width);
+        assertEquals(2, rectangle.height);
     }
 
     /**
@@ -56,9 +57,6 @@ public class SymbolTest {
         symbol.assignCoordinates(1, 2, 3, 4);
         Symbol symbol1 = symbol.deepCopy();
         symbol1.assignCoordinates(5, 6, 7, 8);
-        assertNotSame(symbol1.getFrom().x, symbol.getFrom().x);
-        assertNotSame(symbol1.getFrom().y, symbol.getFrom().y);
-        assertNotSame(symbol1.getTo().x, symbol.getTo().x);
-        assertNotSame(symbol1.getTo().y, symbol.getTo().y);
+        assertNotSame(symbol1.getRectangle(), symbol.getRectangle());
     }
 }

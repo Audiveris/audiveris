@@ -21,8 +21,7 @@ public final class Symbol {
     private int number;
     private String symbolId;
     private String symbolDesc;
-    private Point from;
-    private Point to;
+    private Rectangle rectangle;
 
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -67,25 +66,14 @@ public final class Symbol {
     }
 
     //---------//
-    // getFrom //
+    // getRectangle //
     //---------//
 
     /**
-     * First coordinate.
+     * Rectangle of the symbol.
      */
-    public Point getFrom() {
-        return from;
-    }
-
-    //-------//
-    // getTo //
-    //-------//
-
-    /**
-     * Second coordinate.
-     */
-    public Point getTo() {
-        return to;
+    public Rectangle getRectangle() {
+        return rectangle;
     }
 
     //-------------------//
@@ -101,8 +89,7 @@ public final class Symbol {
      * @param x4 Fourth argument.
      */
     public void assignCoordinates(int x1, int x2, int x3, int x4) {
-        from = new Point(x1, x2);
-        to = new Point(x3, x4);
+        rectangle = new Rectangle(x1, x2, x3 - x1, x4 - x2);
     }
 
     //----------//
@@ -116,11 +103,8 @@ public final class Symbol {
      */
     public Symbol deepCopy() {
         Symbol symbol = new Symbol(number, symbolId, symbolDesc);
-        if (from != null) {
-            symbol.from = new Point(from.x, from.y);
-        }
-        if (to != null) {
-            symbol.to = new Point(to.x, to.y);
+        if (rectangle != null) {
+            symbol.rectangle = new Rectangle(rectangle);
         }
         return symbol;
     }
