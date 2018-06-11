@@ -1,4 +1,4 @@
-package org.audiveris.omr.dws;
+package org.audiveris.omr.classifier;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -18,10 +18,10 @@ import static org.junit.Assert.*;
  *
  * @author Raphael Emberger
  */
-public class SymbolParserTest {
+public class AnnotationParserTest {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SymbolParserTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(AnnotationParserTest.class);
 
     //~ Fields -------------------------------------------------------------------------------------
 
@@ -43,11 +43,11 @@ public class SymbolParserTest {
      */
     @Test
     public void parse() {
-        ArrayList<Symbol> symbols = SymbolParser.parse(jsonString);
-        assertNotNull(symbols);
-        assertEquals(438, symbols.size());
-        Symbol symbol = symbols.get(1);
-        assertEquals("noteheadBlack", symbol.getSymbolId());
+        ArrayList<Annotation> annotations = AnnotationParser.parse(jsonString, 1.0);
+        assertNotNull(annotations);
+        assertEquals(438, annotations.size());
+        Annotation annotation = annotations.get(1);
+        assertEquals("noteheadBlack", annotation.getSymbolId());
     }
 
     /**
@@ -55,7 +55,7 @@ public class SymbolParserTest {
      */
     @Test
     public void extractArray() {
-        JSONArray array = SymbolParser.extractArray(jsonString);
+        JSONArray array = AnnotationParser.extractArray(jsonString);
         assertNotNull(array);
         assertTrue(array.length() > 10);
     }
@@ -66,13 +66,13 @@ public class SymbolParserTest {
     @Test
     public void doNotExtractFaultyArray() {
         String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\"]";
-        assertNull(SymbolParser.extractArray(json));
+        assertNull(AnnotationParser.extractArray(json));
         json = "[[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]";
-        assertNull(SymbolParser.extractArray(json));
+        assertNull(AnnotationParser.extractArray(json));
         json = "{[[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]}";
-        assertNull(SymbolParser.extractArray(json));
+        assertNull(AnnotationParser.extractArray(json));
         json = "{\"Niet!\": [[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]}";
-        assertNull(SymbolParser.extractArray(json));
+        assertNull(AnnotationParser.extractArray(json));
     }
 
     /**
@@ -82,13 +82,13 @@ public class SymbolParserTest {
     public void parseSample() {
         String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\"]";
         JSONArray array = new JSONArray(json);
-        Symbol symbol = SymbolParser.parseSymbol(array);
-        assertNotNull(symbol);
-        Rectangle rectangle = symbol.getRectangle();
-        assertEquals(1001, rectangle.x);
-        assertEquals(159, rectangle.y);
-        assertEquals(4, rectangle.width);
-        assertEquals(4, rectangle.height);
-        assertEquals("articStaccatoBelow", symbol.getSymbolId());
+        Annotation annotation = AnnotationParser.parseSymbol(array, 1.0);
+        assertNotNull(annotation);
+        Rectangle bounds = annotation.getBounds();
+        assertEquals(1001, bounds.x);
+        assertEquals(159, bounds.y);
+        assertEquals(5, bounds.width);
+        assertEquals(5, bounds.height);
+        assertEquals("articStaccatoBelow", annotation.getSymbolId());
     }
 }

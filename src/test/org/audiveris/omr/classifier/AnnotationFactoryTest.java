@@ -1,4 +1,4 @@
-package org.audiveris.omr.dws;
+package org.audiveris.omr.classifier;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -11,10 +11,10 @@ import static org.junit.Assert.*;
  *
  * @author Raphael Emberger
  */
-public class SymbolFactoryTest {
+public class AnnotationFactoryTest {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SymbolFactoryTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(AnnotationFactoryTest.class);
 
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -24,9 +24,9 @@ public class SymbolFactoryTest {
     @Test
     public void produceSymbol() {
         String symbolId = "fingering0";
-        Symbol symbol = SymbolFactory.produce(symbolId);
-        assertNotNull(symbol);
-        assertEquals(symbolId, symbol.getSymbolId());
+        Annotation annotation = AnnotationFactory.produce(symbolId);
+        assertNotNull(annotation);
+        assertEquals(symbolId, annotation.getSymbolId());
     }
 
     /**
@@ -34,8 +34,8 @@ public class SymbolFactoryTest {
      */
     @Test
     public void doNotProduceSymbol() {
-        Symbol symbol = SymbolFactory.produce("An OmInOuS sYmBoL iD");
-        assertNull(symbol);
+        Annotation annotation = AnnotationFactory.produce("An OmInOuS sYmBoL iD");
+        assertNull(annotation);
     }
 
     /**
@@ -45,10 +45,10 @@ public class SymbolFactoryTest {
     @Test
     public void doNotAlterFields() {
         String symbolId = "fingering0";
-        Symbol symbol = SymbolFactory.produce(symbolId);
-        symbol.assignCoordinates(0, 1, 2, 3);
-        assertNotNull(symbol.getRectangle());
-        Symbol symbol1 = SymbolFactory.produce(symbolId);
-        assertNull(symbol1.getRectangle());
+        Annotation annotation = AnnotationFactory.produce(symbolId);
+        annotation.assignCoordinates(0, 1, 2, 3);
+        assertNotNull(annotation.getBounds());
+        Annotation annotation1 = AnnotationFactory.produce(symbolId);
+        assertTrue(annotation1.getBounds().x == 0);
     }
 }

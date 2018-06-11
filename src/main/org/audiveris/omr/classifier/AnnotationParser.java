@@ -1,4 +1,4 @@
-package org.audiveris.omr.dws;
+package org.audiveris.omr.classifier;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -8,15 +8,15 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 
 /**
- * Class {@code SymbolParser} parses the output from the neural network.
+ * Class {@code AnnotationParser} parses the output from the neural network.
  *
  * @author Raphael Emberger
  */
-public class SymbolParser {
+public class AnnotationParser {
 
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SymbolParser.class);
+    private static final Logger logger = LoggerFactory.getLogger(AnnotationParser.class);
 
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -29,18 +29,20 @@ public class SymbolParser {
      * @param json The JSON formatted output of the neural network.
      * @return A yet to be specified format for AudiVeris to digest.
      */
-    public static ArrayList<Symbol> parse(String json) {
-        ArrayList<Symbol> symbols = new ArrayList<>();
+    public static ArrayList<Annotation> parse(String json, double ratio) {
+        ArrayList<Annotation> annotations = new ArrayList<>();
+        logger.info("json: {}", json);
         JSONArray array = extractArray(json);
         if (array == null) return null;
         for (int index = 0; index < array.length(); index++) {
-            Symbol symbol = parseSymbol(array.getJSONArray(index));
-            if (symbol == null) {
+            Annotation annotation = parseSymbol(array.getJSONArray(index), ratio);
+            logger.debug("{}", annotation);
+            if (annotation == null) {
                 continue;
             }
-            symbols.add(symbol);
+            annotations.add(annotation);
         }
-        return symbols;
+        return annotations;
     }
 
     //--------------//
@@ -71,18 +73,18 @@ public class SymbolParser {
      * @param jsonSymbol The JSON represented jsonSymbol.
      * @return The parsed jsonSymbol.
      */
-    static Symbol parseSymbol(JSONArray jsonSymbol) {
+    static Annotation parseSymbol(JSONArray jsonSymbol, double ratio) {
         String symbolId = jsonSymbol.getString(4);
-        Symbol symbol = SymbolFactory.produce(symbolId);
-        if (symbol == null) {
+        Annotation annotation = AnnotationFactory.produce(symbolId);
+        if (annotation == null) {
             return null;
         }
-        symbol.assignCoordinates(
-                jsonSymbol.getInt(0),
-                jsonSymbol.getInt(1),
-                jsonSymbol.getInt(2),
-                jsonSymbol.getInt(3)
+        annotation.assignCoordinates(
+                (int) (Math.round(jsonSymbol.getInt(0) / ratio)),
+                (int) (Math.round(jsonSymbol.getInt(1) / ratio)),
+                (int) (Math.round(jsonSymbol.getInt(2) / ratio)),
+                (int) (Math.round(jsonSymbol.getInt(3) / ratio))
         );
-        return symbol;
+        return annotation;
     }
 }

@@ -22,10 +22,11 @@
 package org.audiveris.omr.step;
 
 import ij.process.ByteProcessor;
-
+import org.apache.commons.io.IOUtils;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.classifier.AnnotationIndex;
+import org.audiveris.omr.classifier.AnnotationParser;
 import org.audiveris.omr.classifier.ui.AnnotationBoard;
 import org.audiveris.omr.classifier.ui.AnnotationService;
 import org.audiveris.omr.classifier.ui.AnnotationView;
@@ -40,18 +41,17 @@ import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.MultipartUtility;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 /**
  * Class {@code AnnotationsStep} implements <b>ANNOTATIONS</b>, which delegates to the
@@ -108,17 +108,14 @@ public class AnnotationsStep
      * {@inheritDoc}
      *
      * @param sheet the provided sheet
-     * @throws StepException
      */
     @Override
-    public void doit (Sheet sheet)
-            throws StepException
-    {
+    public void doit(Sheet sheet) {
         try {
             // Scale image if different from expected interline
             RunTable binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
             ByteProcessor binBuffer = binary.getBuffer();
-            int interline = sheet.getScale().getInterline();
+            int interline = constants.expectedInterline.getValue();//sheet.getScale().getInterline();
             int expected = constants.expectedInterline.getValue();
             double ratio = (double) expected / interline;
             ByteProcessor buf = (ratio != 1.0) ? scaledBuffer(binBuffer, ratio) : binBuffer;
@@ -131,7 +128,15 @@ public class AnnotationsStep
             //
             // Post image to web service
             // Receive annotations (json file)
-            List<Annotation> annotations = Annotation.readAnnotations("Issue-87.json", ratio);
+            //TODO: Exchange test file with actual post request.
+            String jsonString;
+            try (FileInputStream inputStream = new FileInputStream("data/examples/Bach_Fuge_C_DUR.json")) {
+                jsonString = IOUtils.toString(inputStream);
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+                return;
+            }
+            List<Annotation> annotations = AnnotationParser.parse(jsonString, ratio);
             ///List<Annotation> annotations = postRequest(file, ratio);
             //
             AnnotationIndex index = sheet.getAnnotationIndex();
@@ -172,7 +177,7 @@ public class AnnotationsStep
         byte[] bytes = answers.get(0).getBytes(StandardCharsets.UTF_8);
         Files.write(jsonPath, bytes);
 
-        List<Annotation> annotations = Annotation.readAnnotations(jsonPath.toString(), ratio);
+        List<Annotation> annotations = AnnotationParser.parse(new String(bytes), ratio);
 
         return annotations;
     }
