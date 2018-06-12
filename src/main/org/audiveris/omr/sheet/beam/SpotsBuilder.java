@@ -38,9 +38,7 @@ import org.audiveris.omr.run.Orientation;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
-import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sheet.ui.ImageView;
@@ -158,12 +156,6 @@ public class SpotsBuilder
                                    String cueId)
     {
         final StopWatch watch = new StopWatch("buildSpots");
-
-        // Erase Header for non-cue buffers
-        if (cueId == null) {
-            eraseHeaderAreas(buffer);
-        }
-
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
         final float radius = (float) (diameter - 1) / 2;
         logger.debug(
@@ -272,31 +264,6 @@ public class SpotsBuilder
         }
 
         logger.debug("Spots retrieved: {}", count);
-    }
-
-    //------------------//
-    // eraseHeaderAreas //
-    //------------------//
-    private void eraseHeaderAreas (ByteProcessor buffer)
-    {
-        final int dmzDyMargin = sheet.getScale().toPixels(constants.staffVerticalMargin);
-
-        buffer.setValue(255);
-
-        for (SystemInfo system : sheet.getSystems()) {
-            Staff firstStaff = system.getFirstStaff();
-            Staff lastStaff = system.getLastStaff();
-            int start = system.getBounds().x;
-            int stop = firstStaff.getHeaderStop();
-            int top = firstStaff.getFirstLine().yAt(stop) - dmzDyMargin;
-            int bot = lastStaff.getLastLine().yAt(stop) + dmzDyMargin;
-
-            buffer.setRoi(start, top, stop - start + 1, bot - top + 1);
-            buffer.fill();
-            buffer.resetRoi();
-        }
-
-        buffer.setValue(0);
     }
 
     //-----------//
@@ -420,9 +387,5 @@ public class SpotsBuilder
                 "pixel",
                 170,
                 "Global binarization threshold for heads");
-
-        private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
-                2.0,
-                "Margin erased above & below staff header area");
     }
 }

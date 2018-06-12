@@ -225,14 +225,6 @@ public class StemScaler
                 false,
                 "Should we store stem images on disk?");
 
-        private final Constant.Boolean useHeader = new Constant.Boolean(
-                true,
-                "Should we erase the header at system start");
-
-        private final Scale.Fraction systemVerticalMargin = new Scale.Fraction(
-                2.0,
-                "Margin erased above & below system header area");
-
         private final Constant.Ratio minValueRatio = new Constant.Ratio(
                 0.1,
                 "Absolute ratio of total pixels for peak acceptance");
@@ -352,11 +344,6 @@ public class StemScaler
                 // Erase the inters
                 for (Inter inter : erased) {
                     inter.accept(this);
-                }
-
-                // Erase system header?
-                if (constants.useHeader.isSet()) {
-                    eraseSystemHeader(system, constants.systemVerticalMargin);
                 }
             }
         }
