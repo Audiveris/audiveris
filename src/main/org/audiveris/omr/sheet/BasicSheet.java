@@ -27,6 +27,7 @@ import org.audiveris.omr.classifier.Annotations;
 import org.audiveris.omr.classifier.AnnotationsBuilder;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.SampleSheet;
+import org.audiveris.omr.classifier.ui.AnnotationPainter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.GlyphsModel;
@@ -47,6 +48,7 @@ import org.audiveris.omr.score.ui.BookPdfOutput;
 import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
+import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.InterIndex;
@@ -961,10 +963,35 @@ public class BasicSheet
                 Files.createDirectories(parent);
             }
 
-            new BookPdfOutput(getBook(), sheetPrintPath.toFile()).write(this);
+            new BookPdfOutput(getBook(), sheetPrintPath.toFile()).write(
+                    this,
+                    new SheetResultPainter.PdfResultPainter());
             logger.info("Sheet printed to {}", sheetPrintPath);
         } catch (Exception ex) {
             logger.warn("Cannot print sheet to " + sheetPrintPath + " " + ex, ex);
+        }
+    }
+
+    //------------------//
+    // printAnnotations //
+    //------------------//
+    @Override
+    public void printAnnotations (Path sheetPrintPath)
+    {
+        // Actually write the PDF
+        try {
+            Path parent = sheetPrintPath.getParent();
+
+            if (!Files.exists(parent)) {
+                Files.createDirectories(parent);
+            }
+
+            new BookPdfOutput(getBook(), sheetPrintPath.toFile()).write(
+                    this,
+                    new AnnotationPainter.SimpleAnnotationPainter());
+            logger.info("Sheet annotations printed to {}", sheetPrintPath);
+        } catch (Exception ex) {
+            logger.warn("Cannot print sheet annotations to " + sheetPrintPath + " " + ex, ex);
         }
     }
 
@@ -1287,7 +1314,11 @@ public class BasicSheet
         }
 
         if (annotationIndex == null) {
-            annotationIndex = AnnotationIndex.load(stub);
+            if (stub.getLatestStep().compareTo(Step.ANNOTATIONS) >= 0) {
+                annotationIndex = AnnotationIndex.load(stub);
+            } else {
+                annotationIndex = new AnnotationIndex(this);
+            }
         }
 
         if (annotationIndex != null) {

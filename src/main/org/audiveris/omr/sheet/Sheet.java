@@ -368,6 +368,13 @@ public interface Sheet
     void print (Path sheetPrintPath);
 
     /**
+     * Print the sheet annotations using PDF format.
+     *
+     * @param sheetPrintPath path of sheet print file
+     */
+    void printAnnotations (Path sheetPrintPath);
+
+    /**
      * In non batch mode, apply the registered item renderings on the provided graphics.
      *
      * @param g the graphics context

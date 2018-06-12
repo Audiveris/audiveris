@@ -922,6 +922,35 @@ public class BookActions
         return printBookAs(e);
     }
 
+    //------------------------//
+    // printBookAnnotationsAs //
+    //------------------------//
+    /**
+     * Write annotations of the currently selected book, using PDF format, to a
+     * user-provided file.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = BOOK_IDLE)
+    public Task<Void, Void> printBookAnnotationsAs (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book == null) {
+            return null;
+        }
+
+        // Select target book print path
+        final Path bookPrintPath = choosePrintPath(book, ".annotations");
+
+        if ((bookPrintPath == null) || !confirmed(bookPrintPath)) {
+            return null;
+        }
+
+        return new PrintBookAnnotationTask(book, bookPrintPath);
+    }
+
     //-------------//
     // printBookAs //
     //-------------//
@@ -941,18 +970,48 @@ public class BookActions
         }
 
         // Select target book print path
-        final Path bookPrintPath = UIUtil.pathChooser(
-                true,
-                OMR.gui.getFrame(),
-                BookManager.getDefaultPrintPath(book),
-                new OmrFileFilter(OMR.PDF_EXTENSION),
-                "Choose book print target");
+        final Path bookPrintPath = choosePrintPath(book, "");
 
         if ((bookPrintPath == null) || !confirmed(bookPrintPath)) {
             return null;
         }
 
         return new PrintBookTask(book, bookPrintPath);
+    }
+
+    //-------------------------//
+    // printSheetAnnotationsAs //
+    //-------------------------//
+    /**
+     * Write annotations of the currently selected sheet, using PDF format, to a
+     * user-provided location.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = STUB_IDLE)
+    public Task<Void, Void> printSheetAnnotationsAs (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        if (stub.getLatestStep().compareTo(Step.ANNOTATIONS) < 0) {
+            logger.info("Annotations are not yet available");
+
+            return null;
+        }
+
+        // Let the user select a PDF output file
+        final Path sheetPrintPath = choosePrintPath(stub, ".annotations");
+
+        if ((sheetPrintPath == null) || !confirmed(sheetPrintPath)) {
+            return null;
+        }
+
+        return new PrintSheetAnnotationTask(stub.getSheet(), sheetPrintPath);
     }
 
     //--------------//
@@ -974,19 +1033,7 @@ public class BookActions
         }
 
         // Let the user select a PDF output file
-        final Book book = stub.getBook();
-        final String ext = OMR.PDF_EXTENSION;
-        final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
-        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
-        final String suffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
-        final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
-
-        final Path sheetPrintPath = UIUtil.pathChooser(
-                true,
-                OMR.gui.getFrame(),
-                defaultSheetPath,
-                filter(ext),
-                "Choose sheet print target");
+        final Path sheetPrintPath = choosePrintPath(stub, "");
 
         if ((sheetPrintPath == null) || !confirmed(sheetPrintPath)) {
             return null;
@@ -1508,6 +1555,51 @@ public class BookActions
         }
     }
 
+    //-----------------//
+    // choosePrintPath //
+    //-----------------//
+    private Path choosePrintPath (Book book,
+                                  String preExt)
+    {
+        final String ext = preExt + OMR.PDF_EXTENSION;
+        Path defaultBookPath = BookManager.getDefaultPrintPath(book);
+        Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
+
+        if (!preExt.isEmpty()) {
+            bookSansExt = FileUtil.avoidExtensions(bookSansExt, preExt);
+        }
+
+        defaultBookPath = Paths.get(bookSansExt + ext);
+
+        return UIUtil.pathChooser(
+                true,
+                OMR.gui.getFrame(),
+                defaultBookPath,
+                filter(ext),
+                "Choose book print target");
+    }
+
+    //-----------------//
+    // choosePrintPath //
+    //-----------------//
+    private Path choosePrintPath (SheetStub stub,
+                                  String preExt)
+    {
+        final Book book = stub.getBook();
+        final String ext = preExt + OMR.PDF_EXTENSION;
+        final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
+        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
+        final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
+        final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
+
+        return UIUtil.pathChooser(
+                true,
+                OMR.gui.getFrame(),
+                defaultSheetPath,
+                filter(ext),
+                "Choose sheet print target");
+    }
+
     //-----------//
     // confirmed //
     //-----------//
@@ -1654,6 +1746,42 @@ public class BookActions
         }
     }
 
+    //-------------------------//
+    // PrintBookAnnotationTask //
+    //-------------------------//
+    public static class PrintBookAnnotationTask
+            extends VoidTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Book book;
+
+        final Path bookPrintPath;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PrintBookAnnotationTask (Book book,
+                                        Path bookPrintPath)
+        {
+            this.book = book;
+            this.bookPrintPath = bookPrintPath;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                LogUtil.start(book);
+                book.printAnnotations(bookPrintPath);
+            } finally {
+                LogUtil.stopBook();
+            }
+
+            return null;
+        }
+    }
+
     //---------------//
     // PrintBookTask //
     //---------------//
@@ -1685,6 +1813,42 @@ public class BookActions
                 book.print();
             } finally {
                 LogUtil.stopBook();
+            }
+
+            return null;
+        }
+    }
+
+    //--------------------------//
+    // PrintSheetAnnotationTask //
+    //--------------------------//
+    public static class PrintSheetAnnotationTask
+            extends VoidTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Sheet sheet;
+
+        final Path sheetPrintPath;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PrintSheetAnnotationTask (Sheet sheet,
+                                         Path sheetPrintPath)
+        {
+            this.sheet = sheet;
+            this.sheetPrintPath = sheetPrintPath;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                LogUtil.start(sheet.getStub());
+                sheet.printAnnotations(sheetPrintPath);
+            } finally {
+                LogUtil.stopStub();
             }
 
             return null;

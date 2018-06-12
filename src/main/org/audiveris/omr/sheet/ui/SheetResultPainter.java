@@ -49,13 +49,10 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.ViewParameters;
-
 import static org.audiveris.omr.ui.symbol.Alignment.BOTTOM_CENTER;
 import static org.audiveris.omr.ui.symbol.Alignment.TOP_LEFT;
-
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -64,6 +61,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.font.TextLayout;
@@ -391,6 +389,28 @@ public class SheetResultPainter
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //------------------//
+    // PdfResultPainter //
+    //------------------//
+    public static class PdfResultPainter
+            implements SimpleSheetPainter
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void paint (Sheet sheet,
+                           Graphics2D g)
+        {
+            SheetResultPainter painter = new SheetResultPainter(
+                    sheet,
+                    g,
+                    false, // No voice painting
+                    true, // Paint staff lines
+                    false); // No annotations
+            painter.process();
+        }
+    }
+
     //------------------//
     // ResultSigPainter //
     //------------------//

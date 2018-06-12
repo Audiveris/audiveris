@@ -26,6 +26,7 @@ import org.audiveris.omr.ProgramId;
 import org.audiveris.omr.WellKnowns;
 import static org.audiveris.omr.classifier.Annotations.BOOK_ANNOTATIONS_SUFFIX;
 import org.audiveris.omr.classifier.SampleRepository;
+import org.audiveris.omr.classifier.ui.AnnotationPainter;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.FilterDescriptor;
@@ -43,6 +44,7 @@ import org.audiveris.omr.score.ui.BookPdfOutput;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sheet.ui.BookBrowser;
+import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.Step;
@@ -1080,8 +1082,38 @@ public class BasicBook
                 BookManager.getDefaultPrintPath(this));
 
         try {
-            new BookPdfOutput(BasicBook.this, pdfPath.toFile()).write(null);
+            new BookPdfOutput(BasicBook.this, pdfPath.toFile()).write(
+                    null,
+                    new SheetResultPainter.PdfResultPainter());
             setPrintPath(pdfPath);
+        } catch (Exception ex) {
+            logger.warn("Cannot write PDF to " + pdfPath, ex);
+        }
+    }
+
+    //------------------//
+    // printAnnotations //
+    //------------------//
+    public void printAnnotations ()
+    {
+        // Path to print file
+        final Path pdfPath = BookManager.getActualPath(
+                getPrintPath(),
+                BookManager.getDefaultPrintPath(this));
+
+        printAnnotations(pdfPath);
+    }
+
+    //------------------//
+    // printAnnotations //
+    //------------------//
+    @Override
+    public void printAnnotations (Path pdfPath)
+    {
+        try {
+            new BookPdfOutput(BasicBook.this, pdfPath.toFile()).write(
+                    null,
+                    new AnnotationPainter.SimpleAnnotationPainter());
         } catch (Exception ex) {
             logger.warn("Cannot write PDF to " + pdfPath, ex);
         }

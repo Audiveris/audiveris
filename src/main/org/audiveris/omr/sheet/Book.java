@@ -407,6 +407,11 @@ public interface Book
     void print ();
 
     /**
+     * Print annotations of this book in PDF format.
+     */
+    void printAnnotations (Path bookPrintPath);
+
+    /**
      * Reach a specific step (and all needed intermediate steps) on all valid sheets
      * of this book.
      *
