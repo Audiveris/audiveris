@@ -18,18 +18,19 @@ import static org.junit.Assert.*;
  *
  * @author Raphael Emberger
  */
-public class AnnotationParserTest {
+public class AnnotationJsonParserTest
+{
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(AnnotationParserTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(AnnotationJsonParserTest.class);
 
     //~ Fields -------------------------------------------------------------------------------------
-
     private String jsonString;
 
     //~ Methods ------------------------------------------------------------------------------------
     @Before
-    public void setUp() {
+    public void setUp ()
+    {
         String file = "data/examples/Bach_Fuge_C_DUR.json";
         try (FileInputStream inputStream = new FileInputStream(file)) {
             jsonString = IOUtils.toString(inputStream);
@@ -42,20 +43,22 @@ public class AnnotationParserTest {
      * Test the parsing method.
      */
     @Test
-    public void parse() {
-        ArrayList<Annotation> annotations = AnnotationParser.parse(jsonString, 1.0);
+    public void parse ()
+    {
+        ArrayList<Annotation> annotations = AnnotationJsonParser.parse(jsonString, 1.0);
         assertNotNull(annotations);
         assertEquals(438, annotations.size());
         Annotation annotation = annotations.get(1);
-        assertEquals("noteheadBlack", annotation.getSymbolId());
+        assertEquals("noteheadBlack", annotation.getOmrShape().name());
     }
 
     /**
      * Extract the sample array from the JSON string.
      */
     @Test
-    public void extractArray() {
-        JSONArray array = AnnotationParser.extractArray(jsonString);
+    public void extractArray ()
+    {
+        JSONArray array = AnnotationJsonParser.extractArray(jsonString);
         assertNotNull(array);
         assertTrue(array.length() > 10);
     }
@@ -64,31 +67,33 @@ public class AnnotationParserTest {
      * Handle faulty input appropriately.
      */
     @Test
-    public void doNotExtractFaultyArray() {
+    public void doNotExtractFaultyArray ()
+    {
         String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\"]";
-        assertNull(AnnotationParser.extractArray(json));
+        assertNull(AnnotationJsonParser.extractArray(json));
         json = "[[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]";
-        assertNull(AnnotationParser.extractArray(json));
+        assertNull(AnnotationJsonParser.extractArray(json));
         json = "{[[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]}";
-        assertNull(AnnotationParser.extractArray(json));
+        assertNull(AnnotationJsonParser.extractArray(json));
         json = "{\"Niet!\": [[1001, 159, 1005, 163, \"articStaccatoBelow\"],[1001, 159, 1005, 163, \"articStaccatoBelow\"]]}";
-        assertNull(AnnotationParser.extractArray(json));
+        assertNull(AnnotationJsonParser.extractArray(json));
     }
 
     /**
      * Parse a sample from the array.
      */
     @Test
-    public void parseSample() {
+    public void parseSample ()
+    {
         String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\"]";
         JSONArray array = new JSONArray(json);
-        Annotation annotation = AnnotationParser.parseSymbol(array, 1.0);
+        Annotation annotation = AnnotationJsonParser.parseSymbol(array, 1.0);
         assertNotNull(annotation);
         Rectangle bounds = annotation.getBounds();
         assertEquals(1001, bounds.x);
         assertEquals(159, bounds.y);
         assertEquals(5, bounds.width);
         assertEquals(5, bounds.height);
-        assertEquals("articStaccatoBelow", annotation.getSymbolId());
+        assertEquals("articStaccatoBelow", annotation.getOmrShape().name());
     }
 }

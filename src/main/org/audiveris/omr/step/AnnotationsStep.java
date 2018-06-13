@@ -22,10 +22,11 @@
 package org.audiveris.omr.step;
 
 import ij.process.ByteProcessor;
+
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.classifier.AnnotationIndex;
-import org.audiveris.omr.classifier.AnnotationParser;
+import org.audiveris.omr.classifier.AnnotationJsonParser;
 import org.audiveris.omr.classifier.ui.AnnotationBoard;
 import org.audiveris.omr.classifier.ui.AnnotationService;
 import org.audiveris.omr.classifier.ui.AnnotationView;
@@ -40,16 +41,18 @@ import org.audiveris.omr.ui.BoardsPane;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.MultipartUtility;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 /**
  * Class {@code AnnotationsStep} implements <b>ANNOTATIONS</b>, which delegates to the
@@ -75,6 +78,11 @@ public class AnnotationsStep
     //----------------------//
     // displayAnnotationTab //
     //----------------------//
+    /**
+     * Convenient method to (re)display the tab dedicated to annotations data.
+     *
+     * @param sheet the related sheet
+     */
     public static void displayAnnotationTab (Sheet sheet)
     {
         AnnotationService service = (AnnotationService) sheet.getAnnotationIndex().getEntityService();
@@ -103,7 +111,8 @@ public class AnnotationsStep
     // doit //
     //------//
     /**
-     * {@inheritDoc}
+     * Submit the (properly scaled) image of the provided sheet to the full-page
+     * classifier and record the detected annotations.
      *
      * @param sheet the provided sheet
      */
@@ -128,14 +137,14 @@ public class AnnotationsStep
             // Post image to web service
             // Receive annotations (json file)
             //TODO: Exchange test file with actual post request.
-//            String jsonString;
-//            try (FileInputStream inputStream = new FileInputStream("data/examples/Bach_Fuge_C_DUR.json")) {
-//                jsonString = IOUtils.toString(inputStream);
-//            } catch (Exception e) {
-//                logger.error(e.getMessage());
-//                return;
-//            }
-//            List<Annotation> annotations = AnnotationParser.parse(jsonString, ratio);
+            //            String jsonString;
+            //            try (FileInputStream inputStream = new FileInputStream("data/examples/Bach_Fuge_C_DUR.json")) {
+            //                jsonString = IOUtils.toString(inputStream);
+            //            } catch (Exception e) {
+            //                logger.error(e.getMessage());
+            //                return;
+            //            }
+            //            List<Annotation> annotations = AnnotationJsonParser.parse(jsonString, ratio);
             ///List<Annotation> annotations = Annotation.readAnnotations("Issue-87.json", ratio);
             List<Annotation> annotations = postRequest(file, ratio);
 
@@ -154,6 +163,15 @@ public class AnnotationsStep
     //-------------//
     // postRequest //
     //-------------//
+    /**
+     * For a page classifier accessed as a web service, this method posts the input image
+     * and then waits for the detected annotations.
+     *
+     * @param file  file that contains the input image
+     * @param ratio scale ratio already applied to the image
+     * @return the (un-scaled) detected annotations
+     * @throws Exception if anything goes wrong
+     */
     private List<Annotation> postRequest (File file,
                                           double ratio)
             throws Exception
@@ -169,15 +187,16 @@ public class AnnotationsStep
         List<String> answers = mu.finish();
         final long stop = System.currentTimeMillis();
         logger.info("Duration= {} ms", stop - start);
-        logger.info("Answers= {}", answers);
+        logger.debug("Answers= {}", answers);
 
-        // Save json string into json file
+        // Save json string into json file (to ease later debugging)
         String radix = FileUtil.getNameSansExtension(file);
         Path jsonPath = file.toPath().resolveSibling(radix + ".json");
         byte[] bytes = answers.get(0).getBytes(StandardCharsets.UTF_8);
         Files.write(jsonPath, bytes);
 
-        List<Annotation> annotations = AnnotationParser.parse(new String(bytes), ratio);
+        // Parse annotations out of json data
+        List<Annotation> annotations = AnnotationJsonParser.parse(new String(bytes), ratio);
 
         return annotations;
     }
@@ -185,6 +204,13 @@ public class AnnotationsStep
     //--------------//
     // scaledBuffer //
     //--------------//
+    /**
+     * Report a scaled version of the provided buffer, according to the desired ratio.
+     *
+     * @param binBuffer initial (binary) buffer
+     * @param ratio     desired ratio
+     * @return the scaled buffer (no longer binary)
+     */
     private ByteProcessor scaledBuffer (ByteProcessor binBuffer,
                                         double ratio)
     {

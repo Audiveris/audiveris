@@ -47,6 +47,9 @@ public class AnnotationBoard
     /** Output : shape icon. */
     private final JLabel shapeIcon = new JLabel();
 
+    /** Output : confidence. */
+    private final LTextField grade = new LTextField("Conf", "Confidence");
+
     /** Output : shape. */
     private final LTextField shapeField = new LTextField("", "Shape for this annotation");
 
@@ -61,6 +64,9 @@ public class AnnotationBoard
                             boolean selected)
     {
         super(Board.ANNOTATION, service, selected);
+
+        grade.setEnabled(false);
+        shapeField.setEnabled(false);
 
         defineLayout();
     }
@@ -87,6 +93,12 @@ public class AnnotationBoard
             shapeField.setText("");
             shapeIcon.setIcon(null);
         }
+
+        if (annotation != null) {
+            grade.setText(String.format("%.2f", annotation.getConfidence()));
+        } else {
+            grade.setText("");
+        }
     }
 
     //--------------//
@@ -104,6 +116,9 @@ public class AnnotationBoard
 
         // Shape Icon (start, spans several rows) + grade + Deassign button
         builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
+
+        builder.add(grade.getLabel(), cst.xy(5, r));
+        builder.add(grade.getField(), cst.xy(7, r));
 
         r += 2; // --------------------------------
 
