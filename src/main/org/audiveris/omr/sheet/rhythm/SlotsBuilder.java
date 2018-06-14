@@ -265,8 +265,8 @@ public class SlotsBuilder
             return false;
         }
 
-        final Rectangle box1 = ch1.getBounds();
-        final Rectangle box2 = ch2.getBounds();
+        final Rectangle box1 = ch1.getBoundsWithDots();
+        final Rectangle box2 = ch2.getBoundsWithDots();
 
         // Check horizontal void gap
         final int xGap = GeoUtil.xGap(box1, box2);

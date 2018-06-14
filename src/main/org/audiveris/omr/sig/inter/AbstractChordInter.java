@@ -393,6 +393,42 @@ public abstract class AbstractChordInter
         return super.getBounds();
     }
 
+    //-------------------//
+    // getBoundsWithDots //
+    //-------------------//
+    /**
+     * Report the chord bounding box, including the related augmentation dot(s) if any.
+     *
+     * @return the bounding box of chord + augmentation dots
+     */
+    public Rectangle getBoundsWithDots ()
+    {
+        final Rectangle box = getBounds();
+        final int n = getDotsNumber();
+
+        if (n > 0) {
+            // Expand box with the related dots
+            for (Inter member : getMembers()) {
+                AbstractNoteInter note = (AbstractNoteInter) member;
+                AugmentationDotInter firstDot = note.getFirstAugmentationDot();
+
+                if (firstDot != null) { // Safer
+                    box.add(firstDot.getBounds());
+
+                    if (n > 1) {
+                        AugmentationDotInter secondDot = firstDot.getSecondAugmentationDot();
+
+                        if (secondDot != null) { // Safer
+                            box.add(secondDot.getBounds());
+                        }
+                    }
+                }
+            }
+        }
+
+        return box;
+    }
+
     //---------------//
     // getDotsNumber //
     //---------------//
