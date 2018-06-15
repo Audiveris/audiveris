@@ -31,9 +31,11 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.sig.relation.BeamPortion.*;
@@ -66,11 +68,6 @@ public class BeamStemRelation
 
     private static final Logger logger = LoggerFactory.getLogger(
             BeamStemRelation.class);
-
-    private static final double[] IN_WEIGHTS = new double[]{
-        constants.xInWeight.getValue(),
-        constants.yWeight.getValue()
-    };
 
     private static final double[] OUT_WEIGHTS = new double[]{
         constants.xOutWeight.getValue(),
@@ -241,21 +238,31 @@ public class BeamStemRelation
         return false;
     }
 
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        // If stem has a chord with heads, remove all beam-head relations
+        final AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
+        final StemInter stem = (StemInter) e.getEdgeTarget();
+        final SIGraph sig = stem.getSig();
+
+        for (HeadChordInter headChord : stem.getChords()) {
+            for (Inter inter : headChord.getNotes()) {
+                HeadInter head = (HeadInter) inter;
+                sig.removeEdge(beam, head);
+            }
+        }
+    }
+
     /**
      * @param beamPortion the beamPortion to set
      */
     public void setBeamPortion (BeamPortion beamPortion)
     {
         this.beamPortion = beamPortion;
-    }
-
-    //--------------//
-    // getInWeights //
-    //--------------//
-    @Override
-    protected double[] getInWeights ()
-    {
-        return IN_WEIGHTS;
     }
 
     //---------------//
@@ -364,10 +371,6 @@ public class BeamStemRelation
         private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
                 0.2,
                 "Maximum manual horizontal gap between stem & beam");
-
-        private final Constant.Ratio xInWeight = new Constant.Ratio(
-                0,
-                "Relative impact weight for xInGap");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 1,

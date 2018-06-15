@@ -432,7 +432,7 @@ public class AlterInter
                 double xGap = notePt.x - accidPt.x;
                 double yGap = Math.abs(notePt.y - accidPt.y);
                 AlterHeadRelation rel = new AlterHeadRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+                rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if ((bestRel == null) || (bestYGap > yGap)) {

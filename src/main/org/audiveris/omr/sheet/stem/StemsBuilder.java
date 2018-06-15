@@ -955,7 +955,7 @@ public class StemsBuilder
                     final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY())
                             : Math.max(0, start.getY() - crossPt.getY());
 
-                    bRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
+                    bRel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
 
                     if (bRel.getGrade() >= bRel.getMinGrade()) {
                         sig.addEdge(beam, stem, bRel);
@@ -1026,7 +1026,7 @@ public class StemsBuilder
                         }
                     }
 
-                    hRel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
+                    hRel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
 
                     if (hRel.getGrade() >= hRel.getMinGrade()) {
                         hRel.setExtensionPoint(

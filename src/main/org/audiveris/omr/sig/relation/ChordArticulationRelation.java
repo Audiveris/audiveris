@@ -76,19 +76,19 @@ public class ChordArticulationRelation
     }
 
     //----------------//
-    // getYGapMinimum //
-    //----------------//
-    public static Scale.Fraction getYGapMinimum (boolean manual)
-    {
-        return manual ? constants.yGapMinManual : constants.yGapMin;
-    }
-
-    //----------------//
     // getYGapMaximum //
     //----------------//
     public static Scale.Fraction getYGapMaximum (boolean manual)
     {
         return manual ? constants.yGapMaxManual : constants.yGapMax;
+    }
+
+    //----------------//
+    // getYGapMinimum //
+    //----------------//
+    public static Scale.Fraction getYGapMinimum (boolean manual)
+    {
+        return manual ? constants.yGapMinManual : constants.yGapMin;
     }
 
     //----------------//
@@ -117,15 +117,6 @@ public class ChordArticulationRelation
     {
         final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
         articulation.checkAbnormal();
-    }
-
-    //--------------//
-    // getInWeights //
-    //--------------//
-    @Override
-    protected double[] getInWeights ()
-    {
-        return WEIGHTS;
     }
 
     //---------------//

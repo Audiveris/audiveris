@@ -245,7 +245,7 @@ public class OrnamentInter
             double xGap = Math.abs(center.x - ornamentCenter.x);
             double yGap = Math.abs(yRef - ornamentCenter.y);
             ChordOrnamentRelation rel = new ChordOrnamentRelation();
-            rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+            rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestYGap > yGap)) {
