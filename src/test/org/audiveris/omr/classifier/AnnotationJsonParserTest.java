@@ -85,7 +85,7 @@ public class AnnotationJsonParserTest
     @Test
     public void parseSample ()
     {
-        String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\"]";
+        String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\", 0.97]";
         JSONArray array = new JSONArray(json);
         Annotation annotation = AnnotationJsonParser.parseSymbol(array, 1.0);
         assertNotNull(annotation);
