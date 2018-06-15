@@ -110,7 +110,7 @@ public abstract class AbstractConnection
         double yMax = getYGapMax(manual).getValue();
         double yImpact = (yMax - dy) / yMax;
 
-        if (dx >= 0) {
+        if (dx > 0) {
             double xMax = getXOutGapMax(manual).getValue();
             double xImpact = (xMax - dx) / xMax;
             setImpacts(new OutImpacts(xImpact, yImpact, getOutWeights()));
