@@ -67,6 +67,16 @@ public class BeamStemRelation
     private static final Logger logger = LoggerFactory.getLogger(
             BeamStemRelation.class);
 
+    private static final double[] IN_WEIGHTS = new double[]{
+        constants.xInWeight.getValue(),
+        constants.yWeight.getValue()
+    };
+
+    private static final double[] OUT_WEIGHTS = new double[]{
+        constants.xOutWeight.getValue(),
+        constants.yWeight.getValue()
+    };
+
     //~ Instance fields ----------------------------------------------------------------------------
     /** Which portion of beam is used?. */
     @XmlAttribute(name = "beam-portion")
@@ -239,6 +249,24 @@ public class BeamStemRelation
         this.beamPortion = beamPortion;
     }
 
+    //--------------//
+    // getInWeights //
+    //--------------//
+    @Override
+    protected double[] getInWeights ()
+    {
+        return IN_WEIGHTS;
+    }
+
+    //---------------//
+    // getOutWeights //
+    //---------------//
+    @Override
+    protected double[] getOutWeights ()
+    {
+        return OUT_WEIGHTS;
+    }
+
     //----------------//
     // getSourceCoeff //
     //----------------//
@@ -336,5 +364,17 @@ public class BeamStemRelation
         private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
                 0.2,
                 "Maximum manual horizontal gap between stem & beam");
+
+        private final Constant.Ratio xInWeight = new Constant.Ratio(
+                0,
+                "Relative impact weight for xInGap");
+
+        private final Constant.Ratio xOutWeight = new Constant.Ratio(
+                1,
+                "Relative impact weight for xOutGap");
+
+        private final Constant.Ratio yWeight = new Constant.Ratio(
+                4,
+                "Relative impact weight for yGap");
     }
 }
