@@ -443,7 +443,7 @@ public class DotFactory
             double xGap = Math.abs(barX - dotPt.x);
             double yGap = Math.abs(barY - dotPt.y);
             RepeatDotBarRelation rel = new RepeatDotBarRelation();
-            rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
+            rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestXGap > xGap)) {
@@ -578,7 +578,7 @@ public class DotFactory
                             : (halfBox.y + (halfBox.height * 0.75));
                     double yGap = Math.abs(dotCenter.y - yTarget);
                     DotFermataRelation rel = new DotFermataRelation();
-                    rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
+                    rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
 
                     if (rel.getGrade() >= rel.getMinGrade()) {
                         if (dotInter == null) {

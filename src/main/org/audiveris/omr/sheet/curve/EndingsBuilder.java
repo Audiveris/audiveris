@@ -375,11 +375,11 @@ public class EndingsBuilder
 
                 if (partLine != null) {
                     leftBar = partLine.getStaffBarline(staff.getPart(), staff);
-                    leftRel.setGaps(0, 0, false);
+                    leftRel.setOutGaps(0, 0, false);
                 }
             } else {
                 double leftDist = scale.pixelsToFrac(Math.abs(leftBar.getCenter().x - leftEnd.x));
-                leftRel.setGaps(leftDist, 0, false);
+                leftRel.setOutGaps(leftDist, 0, false);
             }
 
             // Right leg (optional)
@@ -395,7 +395,7 @@ public class EndingsBuilder
             final double rightDist = scale.pixelsToFrac(
                     Math.abs(rightBar.getCenter().x - rightEnd.x));
             final EndingBarRelation rightRel = new EndingBarRelation(RIGHT, rightDist);
-            rightRel.setGaps(rightDist, 0, false);
+            rightRel.setOutGaps(rightDist, 0, false);
 
             // Create ending inter
             GradeImpacts segImp = segment.getImpacts();

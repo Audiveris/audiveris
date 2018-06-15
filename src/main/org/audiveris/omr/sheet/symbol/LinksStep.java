@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureFiller;
+import org.audiveris.omr.sig.BeamHeadCleaner;
 import org.audiveris.omr.sig.SigReducer;
 import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.Inter;
@@ -113,6 +114,9 @@ public class LinksStep
 
         // Purge deleted lyrics from containing part
         new InterCleaner(system).purgeContainers();
+
+        // Remove all Beam-Head relations, now useless
+        new BeamHeadCleaner(system).process();
 
         // Remove all free glyphs?
         if (constants.removeFreeGlyphs.isSet()) {

@@ -289,7 +289,7 @@ public class AugmentationDotInter
             if (xGap >= minDx) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 DoubleDotRelation rel = new DoubleDotRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+                rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     links.add(new Link(first, rel, true));
@@ -371,7 +371,7 @@ public class AugmentationDotInter
                     if (xGap > 0) {
                         double yGap = Math.abs(refPt.y - dotCenter.y);
                         AugmentationRelation rel = new AugmentationRelation();
-                        rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+                        rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                         if (rel.getGrade() >= rel.getMinGrade()) {
                             links.add(new Link(head, rel, true));
@@ -435,7 +435,7 @@ public class AugmentationDotInter
             if (xGap >= minDx) {
                 double yGap = Math.abs(refPt.y - dotCenter.y);
                 AugmentationRelation rel = new AugmentationRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+                rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     links.add(new Link(rest, rel, true));

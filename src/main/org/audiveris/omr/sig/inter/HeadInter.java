@@ -848,7 +848,7 @@ public class HeadInter
                 }
 
                 HeadStemRelation rel = new HeadStemRelation();
-                rel.setGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+                rel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if ((bestLink == null) || (rel.getGrade() > bestGrade)) {

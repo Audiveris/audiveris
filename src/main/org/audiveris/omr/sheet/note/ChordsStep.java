@@ -22,13 +22,11 @@
 package org.audiveris.omr.sheet.note;
 
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
-import org.audiveris.omr.sig.BeamHeadCleaner;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.HeadInter;
@@ -168,19 +166,6 @@ public class ChordsStep
     public boolean isImpactedBy (Class classe)
     {
         return isImpactedBy(classe, impactingClasses);
-    }
-
-    //----------//
-    // doProlog //
-    //----------//
-    @Override
-    protected Void doProlog (Sheet sheet)
-            throws StepException
-    {
-        // Remove all BeamHeadRelation instances in the sheet
-        new BeamHeadCleaner(sheet).process();
-
-        return null;
     }
 
     //--------------------//

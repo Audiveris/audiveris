@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig;
 
-import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -32,8 +31,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Set;
 
 /**
- * Class {@code BeamHeadCleaner} remove all BeamHeadRelation links when they are no
- * longer needed.
+ * Class {@code BeamHeadCleaner} remove all BeamHeadRelation links of a system
+ * when they are no longer needed.
  *
  * @author Hervé Bitteur
  */
@@ -44,18 +43,18 @@ public class BeamHeadCleaner
     private static final Logger logger = LoggerFactory.getLogger(BeamHeadCleaner.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Related sheet. */
-    private final Sheet sheet;
+    /** Related system. */
+    private final SystemInfo system;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BeamHeadCleaner} object.
      *
-     * @param sheet underlying sheet
+     * @param system the system to process
      */
-    public BeamHeadCleaner (Sheet sheet)
+    public BeamHeadCleaner (SystemInfo system)
     {
-        this.sheet = sheet;
+        this.system = system;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -64,11 +63,9 @@ public class BeamHeadCleaner
     //---------//
     public void process ()
     {
-        for (SystemInfo system : sheet.getSystems()) {
-            SIGraph sig = system.getSig();
-            Set<Relation> set = SIGraph.getRelations(sig.edgeSet(), BeamHeadRelation.class);
-            logger.debug("System#{} BeamHeadRelation instances: {}", system.getId(), set.size());
-            sig.removeAllEdges(set);
-        }
+        SIGraph sig = system.getSig();
+        Set<Relation> set = SIGraph.getRelations(sig.edgeSet(), BeamHeadRelation.class);
+        logger.debug("System#{} BeamHeadRelation instances: {}", system.getId(), set.size());
+        sig.removeAllEdges(set);
     }
 }

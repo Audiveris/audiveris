@@ -272,7 +272,7 @@ public class ArticulationInter
 
             double absYGap = Math.abs(yGap);
             ChordArticulationRelation rel = new ChordArticulationRelation();
-            rel.setGaps(scale.pixelsToFrac(absXGap), scale.pixelsToFrac(absYGap), manual);
+            rel.setOutGaps(scale.pixelsToFrac(absXGap), scale.pixelsToFrac(absYGap), manual);
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestYGap > absYGap)) {

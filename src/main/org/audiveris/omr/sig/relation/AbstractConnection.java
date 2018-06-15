@@ -93,15 +93,17 @@ public abstract class AbstractConnection
     }
 
     /**
-     * Set the gaps for this connection.
+     * Set the gaps for this connection, with different handling for xIn and xOut gaps.
+     * <p>
+     * Beware, if dx is positive or null, it's an xOut gap, otherwise it's an xIn gap
      *
      * @param dx     the horizontal distance (positive for gap and negative for overlap)
      * @param dy     the vertical distance (absolute)
      * @param manual true if computed for manual assignment
      */
-    public void setGaps (double dx,
-                         double dy,
-                         boolean manual)
+    public void setInOutGaps (double dx,
+                              double dy,
+                              boolean manual)
     {
         this.dx = dx;
         this.dy = dy;
@@ -110,7 +112,7 @@ public abstract class AbstractConnection
         double yMax = getYGapMax(manual).getValue();
         double yImpact = (yMax - dy) / yMax;
 
-        if (dx > 0) {
+        if (dx >= 0) {
             double xMax = getXOutGapMax(manual).getValue();
             double xImpact = (xMax - dx) / xMax;
             setImpacts(new OutImpacts(xImpact, yImpact, getOutWeights()));
@@ -122,6 +124,20 @@ public abstract class AbstractConnection
 
         // Compute grade
         setGrade(impacts.getGrade());
+    }
+
+    /**
+     * Set the gaps for this connection, with no difference between xIn and xOut gaps.
+     *
+     * @param dx     the horizontal distance (only its absolute value is considered)
+     * @param dy     the vertical distance (absolute)
+     * @param manual true if computed for manual assignment
+     */
+    public void setOutGaps (double dx,
+                            double dy,
+                            boolean manual)
+    {
+        setInOutGaps(Math.abs(dx), dy, manual);
     }
 
     /**
