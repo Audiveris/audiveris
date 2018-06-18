@@ -133,8 +133,10 @@ public class ClumpPruner
 
             if (selected != null) {
                 // Either linked head may have a mirror head, so select proper head for tie.
-                // NOTA: It is too early to check for a tie, since for instance clef changes or
-                // head alterations are not available before SYMBOLS step.
+                // NOTA: It is a bit early to check for a tie, since for instance clef changes or
+                // head alterations are not yet available, but ties are here set for the sake of
+                // tie collision which will trigger chord splitting.
+                // Ties will be (re-)checked again at end of LINKS step.
                 SlurHeadLink leftLink = selected.links.get(LEFT);
                 HeadInter leftHead = (leftLink != null) ? (HeadInter) leftLink.partner : null;
 
@@ -151,15 +153,15 @@ public class ClumpPruner
 
                         // Check there is no other chords in between
                         if (slur.isSpaceClear(leftHead, rightHead, sysChords)) {
-                            ///slur.setTie(true);
+                            slur.setTie(true);
                         } else if (slur.isSpaceClear(leftMirror, rightHead, sysChords)) {
-                            ///slur.setTie(true);
+                            slur.setTie(true);
                             switchMirrorHead(selected, LEFT);
                         } else if (slur.isSpaceClear(leftHead, rightMirror, sysChords)) {
-                            ///slur.setTie(true);
+                            slur.setTie(true);
                             switchMirrorHead(selected, RIGHT);
                         } else if (slur.isSpaceClear(leftMirror, rightMirror, sysChords)) {
-                            ///slur.setTie(true);
+                            slur.setTie(true);
                             switchMirrorHead(selected, LEFT);
                             switchMirrorHead(selected, RIGHT);
                         }

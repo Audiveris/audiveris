@@ -1404,7 +1404,7 @@ public class MeasureStack
 
             // Slot headers
             if (!slots.isEmpty()) {
-                sb.append("\n   ");
+                sb.append("\n    ");
 
                 for (Slot slot : slots) {
                     if (slot.getTimeOffset() != null) {
@@ -1416,7 +1416,7 @@ public class MeasureStack
             }
 
             for (Measure measure : measures) {
-                sb.append("\n-- P").append(measure.getPart().getId());
+                sb.append("\n--- P").append(measure.getPart().getId());
 
                 for (Voice voice : measure.getVoices()) {
                     sb.append("\n").append(voice.toStrip());

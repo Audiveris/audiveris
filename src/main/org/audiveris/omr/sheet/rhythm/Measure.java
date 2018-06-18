@@ -91,6 +91,9 @@ public class Measure
     private static final Logger logger = LoggerFactory.getLogger(
             Measure.class);
 
+    /** Offset in voice ID, according to its initial staff. */
+    private static int ID_STAFF_OFFSET = 4;
+
     //~ Instance fields ----------------------------------------------------------------------------
     //
     // Persistent data
@@ -478,6 +481,28 @@ public class Measure
         }
 
         return kept;
+    }
+
+    //-----------------//
+    // generateVoiceId //
+    //-----------------//
+    /**
+     * Generate a new voice ID, starting in provided staff.
+     * <p>
+     * Use 1-4 for first staff, 5-8 for second staff
+     *
+     * @param staff staff on which the voice starts
+     * @return the generated ID, or -1 if none could be assigned.
+     */
+    public int generateVoiceId (Staff staff)
+    {
+        int offset = ID_STAFF_OFFSET * part.getStaves().indexOf(staff);
+
+        for (int id = offset + 1;; id++) {
+            if (getVoiceById(id) == null) {
+                return id;
+            }
+        }
     }
 
     //-------------//
@@ -1176,19 +1201,6 @@ public class Measure
         return (tuplets != null) ? Collections.unmodifiableSet(tuplets) : Collections.EMPTY_SET;
     }
 
-    //---------------//
-    // getVoiceCount //
-    //---------------//
-    /**
-     * Report the number of voices in this measure.
-     *
-     * @return the number of voices computed
-     */
-    public int getVoiceCount ()
-    {
-        return voices.size();
-    }
-
     //-----------//
     // getVoices //
     //-----------//
@@ -1542,10 +1554,24 @@ public class Measure
     //--------------//
     // renameVoices //
     //--------------//
+    /**
+     * Adjust voice ID per staff, in line with their order.
+     */
     public void renameVoices ()
     {
-        for (int i = 0; i < voices.size(); i++) {
-            voices.get(i).setId(i + 1);
+        final List<Staff> staves = part.getStaves();
+
+        for (int index = 0; index < staves.size(); index++) {
+            final Staff staff = staves.get(index);
+            int id = ID_STAFF_OFFSET * index;
+
+            for (int i = 0; i < voices.size(); i++) {
+                final Voice voice = voices.get(i);
+
+                if (voice.getStartingStaff() == staff) {
+                    voice.setId(++id);
+                }
+            }
         }
     }
 
@@ -1906,6 +1932,20 @@ public class Measure
         }
 
         return right;
+    }
+
+    //--------------//
+    // getVoiceById //
+    //--------------//
+    private Voice getVoiceById (int id)
+    {
+        for (Voice voice : voices) {
+            if (voice.getId() == id) {
+                return voice;
+            }
+        }
+
+        return null;
     }
 
     //----------------//

@@ -602,20 +602,9 @@ public class Slot
                 continue;
             }
 
-            // Try to reuse an existing voice in same part (and within same staff if possible)
+            // Try to reuse an existing voice in same part
             for (Voice voice : measure.getVoices()) {
-                if (voice.isFree(this)) {
-                    // If we have more than one incoming,
-                    // avoid migrating a voice from one staff to another
-                    AbstractChordInter latestVoiceChord = voice.getChordBefore(this);
-
-                    if (latestVoiceChord != null) {
-                        if ((measureIncomings.size() > 1)
-                            && (latestVoiceChord.getTopStaff() != chord.getTopStaff())) {
-                            continue;
-                        }
-                    }
-
+                if (voice.isFree(this) && voice.getStartingStaff() == chord.getTopStaff()) {
                     chord.setVoice(voice);
 
                     break;
@@ -767,11 +756,11 @@ public class Slot
 
         private static final int NOT_A_REST = 5;
 
-        private static final int NEW_IN_STAFF = 10;
+        private static final int NEW_IN_STAFF = 40; // 10;
 
         private static final int NO_LINK = 20;
 
-        private static final int STAFF_DIFF = 40;
+        private static final int STAFF_DIFF = 50; // 40;
 
         private static final int INCOMPATIBLE_VOICES = 10000; // Forbidden
 
@@ -831,13 +820,9 @@ public class Slot
 
             // OK, here old chord and new chord are in the same staff
             //
-            // Penalty for a chord of a beam group that spans several staves
-            int ds = 0;
-            BeamGroup group = oldChord.getBeamGroup();
-
-            if ((group != null) && group.isMultiStaff()) {
-                ds = NEW_IN_STAFF;
-            }
+            // Penalty for a chord which originated in a different staff
+            int ds = (oldChord.getVoice().getStartingStaff() != newChord.getTopStaff())
+                    ? NEW_IN_STAFF : 0;
 
             // A rest is a placeholder, hence bonus for rest (implemented by penalty on non-rest)
             int dr = 0;

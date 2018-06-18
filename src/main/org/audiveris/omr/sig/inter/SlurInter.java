@@ -399,6 +399,10 @@ public class SlurInter
      */
     public void checkStaffTie (List<Inter> systemHeadChords)
     {
+        if (isVip()) {
+            logger.info("VIP checkStaffTie? for {}", this);
+        }
+
         HeadInter h1 = getHead(LEFT);
         HeadInter h2 = getHead(RIGHT);
         boolean result = (h1 != null) && (h2 != null) && (h1.getStaff() == h2.getStaff())

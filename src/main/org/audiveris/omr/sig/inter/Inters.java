@@ -110,6 +110,19 @@ public abstract class Inters
     };
 
     /**
+     * For comparing interpretations by reverse center abscissa.
+     */
+    public static final Comparator<Inter> byReverseCenterAbscissa = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter i1,
+                            Inter i2)
+        {
+            return Integer.compare(i2.getCenter().x, i1.getCenter().x);
+        }
+    };
+
+    /**
      * For comparing interpretations by center ordinate.
      */
     public static final Comparator<Inter> byCenterOrdinate = new Comparator<Inter>()

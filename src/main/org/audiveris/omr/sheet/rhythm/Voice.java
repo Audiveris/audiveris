@@ -25,6 +25,7 @@ import org.audiveris.omr.math.GCD;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.score.Mark;
 import org.audiveris.omr.score.TimeRational;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import static org.audiveris.omr.sheet.rhythm.Voice.Status.BEGIN;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
@@ -50,6 +51,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code Voice} gathers all informations related to a voice within a measure.
+ * <p>
+ * We now assign voice ID according to the part staff where this voice starts:<ol>
+ * <li>If starting on first staff, we use IDs: 1..4
+ * <li>If starting on second staff, we use IDs: 5..8
+ * </ol>
  *
  * @author Hervé Bitteur
  */
@@ -111,6 +117,9 @@ public class Voice
     @Navigable(false)
     private Measure measure;
 
+    /** The staff in which this voice started. */
+    private Staff startingStaff;
+
     /**
      * How the voice finishes (value = voiceEndTime - expectedMeasureEndTime).
      * - null: We can't tell
@@ -135,11 +144,8 @@ public class Voice
     {
         initTransient(measure);
 
-        if (measure.isDummy()) {
-            id = measure.getVoices().size() + 1;
-        } else {
-            id = measure.getVoiceCount() + 1;
-        }
+        startingStaff = chord.getTopStaff();
+        id = measure.generateVoiceId(startingStaff);
 
         chord.setVoice(this);
 
@@ -569,6 +575,19 @@ public class Voice
         return null;
     }
 
+    //------------------//
+    // getStartingStaff //
+    //------------------//
+    /**
+     * Report the staff in which this voice was created.
+     *
+     * @return the startingStaff
+     */
+    public Staff getStartingStaff ()
+    {
+        return startingStaff;
+    }
+
     //----------------//
     // getTermination //
     //----------------//
@@ -682,6 +701,19 @@ public class Voice
         logger.debug("setSlotInfo slot#{} {}", slot.getId(), this);
     }
 
+    //------------------//
+    // setStartingStaff //
+    //------------------//
+    /**
+     * Set voice starting staff.
+     *
+     * @param startingStaff the startingStaff to set
+     */
+    public void setStartingStaff (Staff startingStaff)
+    {
+        this.startingStaff = startingStaff;
+    }
+
     //------------//
     // startChord //
     //------------//
@@ -728,7 +760,7 @@ public class Voice
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("V").append(id).append(" ");
+        sb.append(String.format("V%2d ", id));
 
         // Whole/Multi
         if (isWhole()) {
