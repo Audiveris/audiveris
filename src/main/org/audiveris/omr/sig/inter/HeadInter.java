@@ -44,8 +44,6 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sheet.rhythm.MeasureStack;
-import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
@@ -66,12 +64,12 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -398,41 +396,47 @@ public class HeadInter
      * Check whether two heads represent the same height
      * (same octave, same step, same alteration).
      *
-     * @param n1 one head
-     * @param n2 the other head
+     * @param h1 first head
+     * @param h2 second head, down the score
      * @return true if the heads are equivalent.
      */
-    public static boolean haveSameHeight (HeadInter n1,
-                                          HeadInter n2)
+    public static boolean haveSameHeight (HeadInter h1,
+                                          HeadInter h2)
     {
-        if ((n1 == null) || (n2 == null)) {
+        if ((h1 == null) || (h2 == null)) {
             return false;
         }
 
         // Step
-        if (n1.getStep() != n2.getStep()) {
+        if (h1.getStep() != h2.getStep()) {
             return false;
         }
 
         // Octave
-        if (n1.getOctave() != n2.getOctave()) {
+        if (h1.getOctave() != h2.getOctave()) {
             return false;
         }
 
         // Alteration
-        Staff s1 = n1.getStaff();
-        Measure m1 = s1.getPart().getMeasureAt(n1.getCenter());
+        Staff s1 = h1.getStaff();
+        Measure m1 = s1.getPart().getMeasureAt(h1.getCenter());
         KeyInter k1 = m1.getKeyBefore(s1);
         int f1 = (k1 != null) ? k1.getFifths() : 0;
-        int a1 = n1.getAlter(f1, false);
 
-        Staff s2 = n2.getStaff();
-        Measure m2 = s2.getPart().getMeasureAt(n2.getCenter());
+        Staff s2 = h2.getStaff();
+        Measure m2 = s2.getPart().getMeasureAt(h2.getCenter());
         KeyInter k2 = m2.getKeyBefore(s2);
         int f2 = (k2 != null) ? k2.getFifths() : 0;
-        int a2 = n2.getAlter(f2, false);
 
-        return a1 == a2;
+        if (m1 == m2) {
+            // Both heads are in same measure
+            return (f1 == f2) && (h1.getStaff() == h2.staff);
+        } else {
+            int a1 = h1.getAlter(f1, false);
+            int a2 = h2.getAlter(f2, false);
+
+            return a1 == a2;
+        }
     }
 
     //----------//
@@ -718,37 +722,31 @@ public class HeadInter
             return alterationOf(accidental);
         }
 
-        // Look for previous accidental with same note step in the measure
+        // Look for previous accidental with same note step in the same measure
+        // Let's avoid the use of time slots (which would require RHYTHMS step to be done!)
         Measure measure = getChord().getMeasure();
-        MeasureStack stack = measure.getStack();
-        List<Slot> slots = stack.getSlots();
+        List<Inter> heads = new ArrayList<Inter>();
+
+        for (HeadChordInter headChord : measure.getHeadChords()) {
+            heads.addAll(headChord.getMembers());
+        }
 
         boolean started = false;
+        Collections.sort(heads, Inters.byReverseCenterAbscissa);
 
-        for (ListIterator<Slot> it = slots.listIterator(slots.size()); it.hasPrevious();) {
-            Slot slot = it.previous();
+        for (Inter inter : heads) {
+            HeadInter head = (HeadInter) inter;
 
-            // Inspect all notes of all chords
-            for (AbstractChordInter chord : slot.getChords()) {
-                if (chord.isRest() || (chord.getMeasure() != measure)) {
-                    continue;
-                }
+            if (head == this) {
+                started = true;
+            } else if (started
+                       && (head.getStep() == getStep())
+                       && (head.getOctave() == getOctave())
+                       && (head.getStaff() == getStaff())) {
+                AlterInter accid = head.getAccidental();
 
-                for (Inter inter : chord.getNotes()) {
-                    HeadInter note = (HeadInter) inter;
-
-                    if (note == this) {
-                        started = true;
-                    } else if (started
-                               && (note.getStep() == getStep())
-                               && (note.getOctave() == getOctave())
-                               && (note.getStaff() == getStaff())) {
-                        AlterInter accid = note.getAccidental();
-
-                        if (accid != null) {
-                            return alterationOf(accid);
-                        }
-                    }
+                if (accid != null) {
+                    return alterationOf(accid);
                 }
             }
         }

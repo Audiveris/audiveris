@@ -72,6 +72,7 @@ import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 import static org.audiveris.omr.ui.symbol.Symbols.SYMBOL_BRACKET_UPPER_SERIF;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,20 +120,22 @@ public abstract class SigPainter
     private static final int alpha = 200;
 
     private static final Color[] voiceColors = new Color[]{
-        /** Blue */
-        new Color(0, 0, 255, alpha),
-        /** Green */
+        /** 1 Purple */
+        new Color(128, 64, 255, alpha),
+        /** 2 Green */
         new Color(0, 255, 0, alpha),
-        /** Brown */
+        /** 3 Brown */
         new Color(165, 42, 42, alpha),
-        /** Magenta */
+        /** 4 Magenta */
         new Color(255, 0, 255, alpha),
-        /** Cyan */
+        /** 5 Cyan */
         new Color(0, 255, 255, alpha),
-        /** Orange */
+        /** 6 Orange */
         new Color(255, 200, 0, alpha),
-        /** Pink */
-        new Color(255, 150, 150, alpha)
+        /** 7 Pink */
+        new Color(255, 150, 150, alpha),
+        /** 8 BlueGreen */
+        new Color(0, 128, 128, alpha)
     };
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -489,6 +492,16 @@ public abstract class SigPainter
     {
         // Consider it as a plain inter
         visit((Inter) head);
+
+        if (head.getMirror() != null) {
+            // Draw a sign using complementary color of head
+            Color compColor = UIUtil.complementaryColor(g.getColor());
+            Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+            Rectangle box = head.getBounds();
+            g.setColor(compColor);
+            g.drawLine(box.x, box.y, box.x + box.width, box.y + box.height);
+            g.setStroke(oldStroke);
+        }
     }
 
     //-------//

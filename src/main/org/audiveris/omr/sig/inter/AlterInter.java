@@ -307,7 +307,7 @@ public class AlterInter
     /**
      * Try to detect relation with heads nearby (perhaps with their mirror).
      *
-     * @param systemHeads ordered collection of notes in system
+     * @param systemHeads ordered collection of heads in system
      */
     public void setLinks (List<Inter> systemHeads)
     {
@@ -387,7 +387,7 @@ public class AlterInter
      * Try to detect link between this Alter instance and a head nearby (and its
      * mirror head if any)
      *
-     * @param systemHeads ordered collection of notes in system
+     * @param systemHeads ordered collection of heads in system
      * @return the collection of links found, perhaps null
      */
     private Collection<Link> lookupLinks (List<Inter> systemHeads)

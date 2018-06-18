@@ -25,6 +25,7 @@ import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
@@ -85,49 +86,43 @@ public abstract class Voices
                 return Part.byId.compare(p1, p2);
             }
 
-            // Look for the first time slot with incoming chords for both voices.
-            // If such slot exists, compare the two chords ordinates in that slot.
-            Slot firstSlot1 = null;
-            Slot firstSlot2 = null;
+            // Check if they originate from different staves
+            Staff s1 = v1.getStartingStaff();
+            Staff s2 = v2.getStartingStaff();
 
-            for (Slot slot : v1.getMeasure().getStack().getSlots()) {
-                Voice.SlotVoice vc1 = v1.getSlotInfo(slot);
-
-                if ((vc1 == null) || (vc1.status != Voice.Status.BEGIN)) {
-                    continue;
-                }
-
-                if (firstSlot1 == null) {
-                    firstSlot1 = slot;
-                }
-
-                AbstractChordInter c1 = vc1.chord;
-
-                Voice.SlotVoice vc2 = v2.getSlotInfo(slot);
-
-                if ((vc2 == null) || (vc2.status != Voice.Status.BEGIN)) {
-                    continue;
-                }
-
-                if (firstSlot2 == null) {
-                    firstSlot2 = slot;
-                }
-
-                AbstractChordInter c2 = vc2.chord;
-
-                return Inters.byOrdinate.compare(c1, c2);
+            if (s1 != s2) {
+                return Staff.byId.compare(s1, s2);
             }
 
-            // No common slot found, use index of first slot for each voice
-            if ((firstSlot1 != null) && (firstSlot2 != null)) {
-                return Integer.compare(firstSlot1.getId(), firstSlot2.getId());
-            }
-
-            // Use ordinate (there is a whole rest)
             AbstractChordInter c1 = v1.getFirstChord();
             AbstractChordInter c2 = v2.getFirstChord();
+            Slot firstSlot1 = c1.getSlot();
+            Slot firstSlot2 = c2.getSlot();
 
-            return Inters.byOrdinate.compare(c1, c2);
+            // Check if the voices started in different time slots
+            // Beware of whole rests, they have no time slot
+            if ((firstSlot1 != null) && (firstSlot2 != null)) {
+                int comp = Integer.compare(firstSlot1.getId(), firstSlot2.getId());
+
+                if (comp != 0) {
+                    return comp;
+                }
+
+                // Same first time slot, so let's use chord ordinate
+                return Inters.byOrdinate.compare(c1, c2);
+            } else {
+                // We have at least one whole rest (which always starts on slot 1, by definition)
+                if ((firstSlot2 != null) && (firstSlot2.getId() > 1)) {
+                    return -1;
+                }
+
+                if ((firstSlot1 != null) && (firstSlot1.getId() > 1)) {
+                    return 1;
+                }
+
+                // Both are at beginning of measure, so let's use chord ordinates
+                return Inters.byOrdinate.compare(c1, c2);
+            }
         }
     };
 
@@ -272,13 +267,13 @@ public abstract class Voices
      * (whole voices first, then slot voices, with each voice remaining in its part).
      * See {@link Slot#buildVoices(java.util.List)} method.
      * <p>
-     * Here we simply rename the IDs from top to bottom (roughly), within each part.
+     * Here we simply rename the IDs from top to bottom (roughly), within each staff.
      *
      * @param stack the stack to process
      */
     public static void refineStack (MeasureStack stack)
     {
-        // Within each measure, sort voices vertically and rename them accordingly.
+        // Within each measure, sort voices vertically and rename them accordingly per staff.
         for (Measure measure : stack.getMeasures()) {
             measure.sortVoices();
             measure.renameVoices();
