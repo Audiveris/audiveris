@@ -1511,6 +1511,8 @@ public class BeamsBuilder
     {
         final Rectangle box = beam.getBounds();
         final ByteProcessor buf = new ByteProcessor(box.width, box.height);
+        final int filterWidth = pixelFilter.getWidth();
+        final int filterHeight = pixelFilter.getHeight();
         ByteUtil.raz(buf);
 
         final Point p = new Point(0, 0);
@@ -1521,10 +1523,12 @@ public class BeamsBuilder
             for (int dx = 0; dx < box.width; dx++) {
                 p.x = box.x + dx;
 
-                final int val = pixelFilter.get(p.x, p.y);
+                if (p.x < filterWidth && p.y < filterHeight) {
+                    final int val = pixelFilter.get(p.x, p.y);
 
-                if ((val == 0) && beam.contains(p)) {
-                    buf.set(dx, dy, 0);
+                    if ((val == 0) && beam.contains(p)) {
+                        buf.set(dx, dy, 0);
+                    }
                 }
             }
         }
