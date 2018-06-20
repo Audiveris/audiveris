@@ -110,8 +110,8 @@ public class Language
     public static class ListModel
             extends AbstractListModel<String>
     {
-
         //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public String getElementAt (int index)
         {
@@ -266,7 +266,7 @@ public class Language
 
             // Now, keep only the supported codes
             // TODO: Protect against no OCR!
-            Set<String> supported = TextBuilder.getOcr().getLanguages();
+            Set<String> supported = OcrUtil.getOcr().getLanguages();
             codes.keySet().retainAll(supported);
 
             // Create parallel list of codes

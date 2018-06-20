@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                     G l y p h S c a n n e r                                    //
+//                                     B l o c k S c a n n e r                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -22,44 +22,36 @@
 package org.audiveris.omr.text;
 
 import ij.process.ByteProcessor;
+
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sheet.Sheet;
-
-import static org.audiveris.omr.text.TextBuilder.getOcr;
-
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
- * Class {@code GlyphScanner} launches the OCR on a glyph, to retrieve the TextLine
- * instance(s) this glyph represents.
+ * Class {@code BlockScanner} launches the OCR on a buffer, typically a glyph buffer,
+ * to retrieve the TextLine instance(s) this buffer represents.
  * <p>
  * As opposed to [@link SheetScanner}, here Tesseract is used in SINGLE_BLOCK layout mode,
- * since the glyph, as complex as it can be with many lines and words, is considered as a single
+ * since the buffer, as complex as it can be with many lines and words, is considered as a single
  * block of text.
  * <p>
  * The raw OCR output will later be processed at system level by dedicated TextBuilder instances.
  *
  * @author Hervé Bitteur
  */
-public class GlyphScanner
+public class BlockScanner
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(GlyphScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(BlockScanner.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
@@ -72,7 +64,7 @@ public class GlyphScanner
      *
      * @param sheet underlying sheet
      */
-    public GlyphScanner (Sheet sheet)
+    public BlockScanner (Sheet sheet)
     {
         this.sheet = sheet;
     }
@@ -97,92 +89,13 @@ public class GlyphScanner
                                       String language,
                                       int id)
     {
-        final BufferedImage img = buffer.getBufferedImage();
-        final int width = buffer.getWidth();
-        final int height = buffer.getHeight();
-        final Point origin = new Point(0, 0);
-
-        // Add some white some white margin around the glyph
-        final int margin = constants.whiteMarginAdded.getValue();
-        final BufferedImage bi;
-
-        if (margin > 0) {
-            bi = new BufferedImage(
-                    width + (2 * margin),
-                    height + (2 * margin),
-                    BufferedImage.TYPE_BYTE_GRAY);
-
-            // Background filled with white
-            Graphics g = bi.createGraphics();
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
-
-            // Glyph image drawn with margins shift
-            g.drawImage(img, margin, margin, null);
-            origin.translate(-margin, -margin);
-        } else {
-            bi = img;
-        }
-
-        return getOcr().recognize(
-                sheet.getScale().getInterline(),
-                bi,
-                origin,
-                language,
+        return OcrUtil.scan(
+                buffer.getBufferedImage(),
+                constants.whiteMarginAdded.getValue(),
                 OCR.LayoutMode.SINGLE_BLOCK,
-                sheet.getId() + "-g" + id);
-    }
-
-    //-----------//
-    // scanGlyph //
-    //-----------//
-    /**
-     * Launch the OCR on the provided glyph, to retrieve the TextLine instance(s)
-     * with <b>absolute</b> coordinates (sheet origin).
-     * <p>
-     * Tesseract OCR generally gives better results if the processed image exhibits white pixels
-     * on the image contour, so here we (transparently) add a white margin around the glyph.
-     *
-     * @param glyph    the glyph to OCR
-     * @param language the probable language spec
-     * @return a list, not null but perhaps empty, of raw TextLine's with absolute coordinates.
-     */
-    public List<TextLine> scanGlyph (Glyph glyph,
-                                     String language)
-    {
-        final BufferedImage img = glyph.getBuffer().getBufferedImage();
-        final Rectangle box = glyph.getBounds();
-        final Point origin = box.getLocation();
-
-        // Add some white some white margin around the glyph
-        final int margin = constants.whiteMarginAdded.getValue();
-        final BufferedImage bi;
-
-        if (margin > 0) {
-            bi = new BufferedImage(
-                    box.width + (2 * margin),
-                    box.height + (2 * margin),
-                    BufferedImage.TYPE_BYTE_GRAY);
-
-            // Background filled with white
-            Graphics g = bi.createGraphics();
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
-
-            // Glyph image drawn with margins shift
-            g.drawImage(img, margin, margin, null);
-            origin.translate(-margin, -margin);
-        } else {
-            bi = img;
-        }
-
-        return getOcr().recognize(
-                sheet.getScale().getInterline(),
-                bi,
-                origin,
                 language,
-                OCR.LayoutMode.SINGLE_BLOCK,
-                sheet.getId() + "-g" + glyph.getId());
+                sheet.getScale().getInterline(),
+                sheet.getId() + "-b" + id);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -197,6 +110,6 @@ public class GlyphScanner
         private final Constant.Integer whiteMarginAdded = new Constant.Integer(
                 "pixels",
                 10,
-                "Margin of white pixels added around a glyph image");
+                "Margin of white pixels added around block image");
     }
 }

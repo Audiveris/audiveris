@@ -175,8 +175,10 @@ public class TesseractOrder
             api.AnalyseLayout();
 
             // Perform image recognition
-            if (api.Recognize(null) != 0) {
-                logger.warn("Error in Tesseract recognize");
+            final int result = api.Recognize(null);
+
+            if (result != 0) {
+                logger.warn("Error in Tesseract recognize, exit code: {}", result);
 
                 return finish(null);
             }
