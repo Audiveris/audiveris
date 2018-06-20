@@ -66,7 +66,7 @@ import org.audiveris.omr.sig.ui.UITask.OpKind;
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
 import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.Step;
-import org.audiveris.omr.text.GlyphScanner;
+import org.audiveris.omr.text.BlockScanner;
 import org.audiveris.omr.text.TextBuilder;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
@@ -853,7 +853,7 @@ public class InterController
 
                     // Retrieve lines relative to glyph origin
                     ByteProcessor buffer = glyph.getBuffer();
-                    List<TextLine> relativeLines = new GlyphScanner(sheet).scanBuffer(
+                    List<TextLine> relativeLines = new BlockScanner(sheet).scanBuffer(
                             buffer,
                             sheet.getStub().getOcrLanguages().getValue(),
                             glyph.getId());

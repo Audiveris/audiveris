@@ -50,7 +50,6 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.symbol.TextFont;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
@@ -103,9 +102,6 @@ public class TextBuilder
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(TextBuilder.class);
-
-    /** The related OCR. */
-    private static final OCR ocr = TesseractOCR.getInstance();
 
     /** Abnormal characters. */
     private static final char[] ABNORMAL_CHARS = new char[]{'\\'};
@@ -174,19 +170,6 @@ public class TextBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // getOcr //
-    //--------//
-    /**
-     * Report the related OCR engine, if one is available.
-     *
-     * @return the available OCR engine, or null
-     */
-    public static OCR getOcr ()
-    {
-        return ocr;
-    }
-
     //----------------//
     // isMainlyItalic //
     //----------------//
