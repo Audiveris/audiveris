@@ -183,15 +183,6 @@ public class OrnamentInter
         return Collections.singleton(link);
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //------------//
     // lookupLink //
     //------------//

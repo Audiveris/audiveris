@@ -204,15 +204,6 @@ public class WedgeInter
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //

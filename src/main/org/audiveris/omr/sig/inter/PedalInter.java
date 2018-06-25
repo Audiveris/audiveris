@@ -91,13 +91,4 @@ public class PedalInter
 
         return null;
     }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
 }

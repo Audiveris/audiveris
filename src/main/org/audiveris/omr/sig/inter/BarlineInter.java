@@ -328,15 +328,6 @@ public class BarlineInter
         staffEnd = side;
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //-------------//
     // browseGroup //
     //-------------//

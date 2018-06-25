@@ -39,9 +39,9 @@ public abstract class OmrShapeMapping
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    public static final Map<Shape, OmrShape> SHAPE_TO_OMRSHAPE = buildShapeMap();
+    private static final Map<Shape, OmrShape> SHAPE_TO_OMRSHAPE = buildShapeMap();
 
-    public static final Map<OmrShape, Shape> OMRSHAPE_TO_SHAPE = buildOmrShapeMap();
+    private static final Map<OmrShape, Shape> OMRSHAPE_TO_SHAPE = buildOmrShapeMap();
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
@@ -67,6 +67,28 @@ public abstract class OmrShapeMapping
     }
 
     /**
+     * Report the OmrShape that corresponds to the provided shape.
+     *
+     * @param shape provided shape
+     * @return related OmrShape or null
+     */
+    public static OmrShape omrShapeOf (Shape shape)
+    {
+        return SHAPE_TO_OMRSHAPE.get(shape);
+    }
+
+    /**
+     * Report the Shape that corresponds to the provided omrShape.
+     *
+     * @param omrShape provided omrShape
+     * @return related Shape or null
+     */
+    public static Shape shapeOf (OmrShape omrShape)
+    {
+        return OMRSHAPE_TO_SHAPE.get(omrShape);
+    }
+
+    /**
      * Build the map (OmrShape -> Shape) as the reverse of SHAPE_TO_OMRSHAPE.
      *
      * @return the initialized map
@@ -84,12 +106,20 @@ public abstract class OmrShapeMapping
             }
         }
 
-        // OmrShape items with no corresponding item in Shape
+        //-------------------
+        // Manual adjustments
+        //-------------------
+        //
         map.put(OmrShape.cClefAlto, Shape.C_CLEF);
         map.put(OmrShape.cClefTenor, Shape.C_CLEF);
 
         //        map.put(OmrShape.cClefAltoChange, Shape.XXX);
         //        map.put(OmrShape.cClefTenor, Shape.XXX);
+        //
+        map.put(OmrShape.keyFlat, Shape.FLAT);
+        map.put(OmrShape.keySharp, Shape.SHARP);
+        map.put(OmrShape.keyNatural, Shape.NATURAL);
+
         //
         //        map.put(OmrShape.graceNoteAcciaccaturaStemDown, Shape.XXX);
         //        map.put(OmrShape.graceNoteAppoggiaturaStemDown, Shape.XXX);
@@ -273,8 +303,8 @@ public abstract class OmrShapeMapping
         //        map.put(Shape.ENDING_VERTICAL, OmrShape.none);
         //        map.put(Shape.SEGMENT, OmrShape.none);
         map.put(Shape.STEM, OmrShape.stem);
-        map.put(Shape.KEY_FLAT_1, OmrShape.keyFlat);
-        map.put(Shape.KEY_SHARP_1, OmrShape.keySharp);
+        //        map.put(Shape.KEY_FLAT_1, OmrShape.keyFlat);
+        //        map.put(Shape.KEY_SHARP_1, OmrShape.keySharp);
         map.put(Shape.GRACE_NOTE_SLASH, OmrShape.graceNoteAcciaccaturaStemUp);
         map.put(Shape.GRACE_NOTE, OmrShape.graceNoteAppoggiaturaStemUp);
         map.put(Shape.FERMATA, OmrShape.fermataAbove);

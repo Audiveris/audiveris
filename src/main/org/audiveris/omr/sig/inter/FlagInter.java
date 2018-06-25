@@ -174,13 +174,4 @@ public class FlagInter
 
         super.remove(extensive);
     }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
 }

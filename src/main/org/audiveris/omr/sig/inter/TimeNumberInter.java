@@ -26,10 +26,14 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.util.VerticalSide;
+import org.audiveris.omrdataset.api.OmrShape;
+import org.audiveris.omrdataset.api.OmrShapes;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -70,6 +74,29 @@ public class TimeNumberInter
 
         if (!ShapeSet.PartialTimes.contains(shape)) {
             throw new IllegalArgumentException(shape + " not allowed as TimeNumberInter shape");
+        }
+
+        this.side = side;
+    }
+
+    /**
+     * Creates a new TimeNumberInter object.
+     *
+     * @param bounds   entity bounds
+     * @param omrShape precise OMR shape
+     * @param grade    evaluation value
+     * @param side     top or bottom
+     */
+    public TimeNumberInter (Rectangle bounds,
+                            OmrShape omrShape,
+                            double grade,
+                            VerticalSide side)
+    {
+        super(bounds, omrShape, grade);
+
+        if (!OmrShapes.TIME_PARTIALS.contains(omrShape)) {
+            throw new IllegalArgumentException(
+                    omrShape + " not allowed as TimeNumberInter OmrShape");
         }
 
         this.side = side;
@@ -125,6 +152,38 @@ public class TimeNumberInter
         return inter;
     }
 
+    /**
+     * (Try to) create a top or bottom number for time signature.
+     *
+     * @param bounds   symbol bounds
+     * @param omrShape precise shape
+     * @param grade    evaluation value
+     * @param staff    related staff
+     * @return the created instance or null if failed
+     */
+    public static TimeNumberInter create (Rectangle bounds,
+                                          OmrShape omrShape,
+                                          double grade,
+                                          Staff staff)
+    {
+        // Check pitch of item
+        Point center = GeoUtil.centerOf(bounds);
+        double pitch = staff.pitchPositionOf(center);
+        double absPitch = Math.abs(pitch);
+
+        if ((absPitch < constants.minAbsolutePitch.getValue())
+            || (absPitch > constants.maxAbsolutePitch.getValue())) {
+            return null;
+        }
+
+        VerticalSide side = (pitch < 0) ? VerticalSide.TOP : VerticalSide.BOTTOM;
+
+        TimeNumberInter inter = new TimeNumberInter(bounds, omrShape, grade, side);
+        inter.setStaff(staff);
+
+        return inter;
+    }
+
     //---------//
     // getSide //
     //---------//
@@ -142,15 +201,6 @@ public class TimeNumberInter
     public void setSide (VerticalSide side)
     {
         this.side = side;
-    }
-
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

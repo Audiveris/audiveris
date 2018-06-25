@@ -24,15 +24,17 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.sheet.rhythm.MeasureStack;
 
 /**
  * Class {@code ClefInter} handles a Clef interpretation.
@@ -133,6 +135,27 @@ public class ClefInter
     }
 
     /**
+     * Creates a new ClefInter object.
+     *
+     * @param bounds   the clef bounds
+     * @param omrShape the precise OMR shape
+     * @param grade    the interpretation quality
+     * @param staff    the related staff
+     * @param pitch    pitch position
+     * @param kind     clef kind
+     */
+    private ClefInter (Rectangle bounds,
+                       OmrShape omrShape,
+                       double grade,
+                       Staff staff,
+                       Double pitch,
+                       ClefKind kind)
+    {
+        super(bounds, omrShape, grade, staff, pitch);
+        this.kind = kind;
+    }
+
+    /**
      * No-arg constructor needed for JAXB.
      */
     private ClefInter ()
@@ -142,6 +165,15 @@ public class ClefInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     //--------//
     // create //
     //--------//
@@ -191,6 +223,63 @@ public class ClefInter
     }
 
     //--------//
+    // create //
+    //--------//
+    /**
+     * Create a Clef inter.
+     *
+     * @param bounds   clef bounds
+     * @param omrShape precise OMR shape
+     * @param grade    evaluation value
+     * @param staff    related staff
+     * @return the created instance
+     * @throws IllegalArgumentException if provided omrShape is not supported
+     */
+    public static ClefInter create (Rectangle bounds,
+                                    OmrShape omrShape,
+                                    double grade,
+                                    Staff staff)
+    {
+        switch (omrShape) {
+        case gClef:
+        case gClef8vb:
+        case gClef8va:
+        case gClef15mb:
+        case gClef15ma:
+            return new ClefInter(bounds, omrShape, grade, staff, 2.0, ClefKind.TREBLE);
+
+        case cClefAlto:
+            return new ClefInter(bounds, omrShape, grade, staff, 0.0, ClefKind.ALTO);
+
+        case cClefTenor:
+            return new ClefInter(bounds, omrShape, grade, staff, -2.0, ClefKind.TENOR);
+
+        case fClef:
+        case fClef8vb:
+        case fClef8va:
+        case fClef15mb:
+        case fClef15ma:
+            return new ClefInter(bounds, omrShape, grade, staff, -2.0, ClefKind.BASS);
+
+        case unpitchedPercussionClef1:
+            return new ClefInter(bounds, omrShape, grade, staff, 0.0, ClefKind.PERCUSSION);
+        }
+
+        throw new IllegalArgumentException("Cannot create ClefInter for " + omrShape);
+    }
+
+    //---------//
+    // getKind //
+    //---------//
+    /**
+     * @return the kind
+     */
+    public ClefKind getKind ()
+    {
+        return kind;
+    }
+
+    //--------//
     // kindOf //
     //--------//
     public static ClefKind kindOf (Glyph glyph,
@@ -224,6 +313,43 @@ public class ClefInter
         default:
             return null;
         }
+    }
+
+    /**
+     * Report the ClefKind for a provided OmrShape
+     *
+     * @param omrShape provided OmrShape
+     * @return related ClefKind
+     * @throws IllegalArgumentException if provided omrShape is not mapped
+     */
+    public static ClefKind kindOf (OmrShape omrShape)
+    {
+        switch (omrShape) {
+        case gClef:
+        case gClef8vb:
+        case gClef8va:
+        case gClef15mb:
+        case gClef15ma:
+            return ClefKind.TREBLE;
+
+        case cClefAlto:
+            return ClefKind.ALTO;
+
+        case cClefTenor:
+            return ClefKind.TENOR;
+
+        case fClef:
+        case fClef8vb:
+        case fClef8va:
+        case fClef15mb:
+        case fClef15ma:
+            return ClefKind.BASS;
+
+        case unpitchedPercussionClef1:
+            return ClefKind.PERCUSSION;
+        }
+
+        throw new IllegalArgumentException("No ClefKind for " + omrShape);
     }
 
     //------------//
@@ -270,26 +396,6 @@ public class ClefInter
     }
 
     //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    //---------//
-    // getKind //
-    //---------//
-    /**
-     * @return the kind
-     */
-    public ClefKind getKind ()
-    {
-        return kind;
-    }
-
-    //--------//
     // remove //
     //--------//
     /**
@@ -330,7 +436,7 @@ public class ClefInter
     @Override
     protected String internals ()
     {
-        return super.internals() + " " + shape + " " + kind;
+        return super.internals() + " " + kind;
     }
 
     //------------//

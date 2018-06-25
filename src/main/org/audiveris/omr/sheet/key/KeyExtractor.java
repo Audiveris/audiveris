@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet.header;
+package org.audiveris.omr.sheet.key;
 
 import ij.process.ByteProcessor;
 
@@ -67,6 +67,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.audiveris.omr.sheet.header.StaffHeader;
 
 /**
  * Class {@code KeyExtractor} is a companion of KeyBuilder, focused on extracting key

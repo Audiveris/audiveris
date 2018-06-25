@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
@@ -39,7 +40,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TimePairInter} is a time signature composed of two halves (num &amp; den).
+ * Class {@code TimePairInter} is a time signature composed of two halves (num and den).
  *
  * @author Hervé Bitteur
  */
@@ -71,7 +72,7 @@ public class TimePairInter
      */
     private TimePairInter ()
     {
-        super(null, null, 0);
+        super((Glyph) null, null, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

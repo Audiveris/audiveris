@@ -197,6 +197,15 @@ public class GlyphIndex
         return weakIndex.getIdBefore(id);
     }
 
+    //------------------------//
+    // getIntersectedEntities //
+    //------------------------//
+    @Override
+    public List<Glyph> getIntersectedEntities (Rectangle rectangle)
+    {
+        return Entities.intersectedEntities(iterator(), rectangle);
+    }
+
     @Override
     public int getLastId ()
     {

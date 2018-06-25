@@ -25,18 +25,18 @@ import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.Shape.*;
+
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.header.TimeBuilder;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractFlagInter;
-import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.ArticulationInter;
@@ -47,7 +47,6 @@ import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.BreathMarkInter;
 import org.audiveris.omr.sig.inter.CaesuraInter;
 import org.audiveris.omr.sig.inter.ClefInter;
-import org.audiveris.omr.sig.inter.DeletedInterException;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
@@ -57,7 +56,6 @@ import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.FretInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.inter.InterEnsemble;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
@@ -79,23 +77,20 @@ import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import org.audiveris.omr.sheet.time.BasicTimeColumn;
 
 /**
  * Class {@code SymbolFactory} generates the inter instances corresponding to
@@ -957,41 +952,8 @@ public class SymbolFactory
         // Finally, scan each stack populated with some time sig(s)
         for (Entry<MeasureStack, Set<Inter>> entry : timeMap.entrySet()) {
             MeasureStack stack = entry.getKey();
-            TimeBuilder.BasicColumn column = new TimeBuilder.BasicColumn(stack, entry.getValue());
-            int res = column.retrieveTime();
-
-            // If the stack does have a validated time sig, discard overlapping stuff right now!
-            if (res != -1) {
-                final Collection<AbstractTimeInter> times = column.getTimeInters().values();
-                final Rectangle columnBox = Inters.getBounds(times);
-                List<Inter> neighbors = sig.inters(
-                        new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return inter.getBounds().intersects(columnBox)
-                               && !(inter instanceof InterEnsemble);
-                    }
-                });
-
-                neighbors.removeAll(times);
-
-                for (AbstractTimeInter time : times) {
-                    for (Iterator<Inter> it = neighbors.iterator(); it.hasNext();) {
-                        Inter neighbor = it.next();
-
-                        try {
-                            if (neighbor.overlaps(time)) {
-                                logger.debug("Deleting time overlapping {}", neighbor);
-                                neighbor.remove();
-                                it.remove();
-                            }
-                        } catch (DeletedInterException ignored) {
-                        }
-                    }
-                }
-            }
+            BasicTimeColumn column = new BasicTimeColumn(stack, entry.getValue());
+            column.retrieveTime();
         }
     }
 }

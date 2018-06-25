@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet.header;
+package org.audiveris.omr.sheet.key;
 
 /**
  * Formalizes an event (peak or space) while browsing key signature abscissa range.

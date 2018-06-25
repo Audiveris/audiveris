@@ -19,14 +19,18 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet.header;
+package org.audiveris.omr.sheet.key;
 
+import org.audiveris.omr.classifier.Annotation;
+import org.audiveris.omr.classifier.AnnotationIndex;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.Shape.FLAT;
 import static org.audiveris.omr.glyph.Shape.SHARP;
+
 import org.audiveris.omr.math.HiLoPeakFinder;
 import org.audiveris.omr.math.IntegerFunction;
 import org.audiveris.omr.math.Range;
@@ -35,7 +39,7 @@ import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.header.KeyColumn.PartStatus;
+import org.audiveris.omr.sheet.key.KeyColumn.PartStatus;
 import org.audiveris.omr.sig.GradeUtil;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -48,8 +52,11 @@ import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.KeyAltersRelation;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.ChartPlotter;
+import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.IntUtil;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omrdataset.api.OmrShape;
+import org.audiveris.omrdataset.api.OmrShapes;
 
 import org.jfree.data.xy.XYSeries;
 
@@ -67,6 +74,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.audiveris.omr.sheet.header.StaffHeader;
 
 /**
  * Class {@code KeyBuilder} retrieves a staff key signature through the vertical
@@ -174,17 +182,20 @@ public class KeyBuilder
     /** Estimated beginning abscissa for browsing. */
     private final int browseStart;
 
+    /** Browse area. */
+    private final Rectangle browseRect;
+
     /** (Competing) active clef(s) in staff, just before key signature. */
     private final List<ClefInter> clefs = new ArrayList<ClefInter>();
 
     /** Projection of foreground pixels, indexed by abscissa. */
-    private final IntegerFunction projection;
+    private IntegerFunction projection;
 
     /** Companion in charge of glyph extraction & recognition. */
-    private final KeyExtractor extractor;
+    private KeyExtractor extractor;
 
     /** Peak finder companion based on derivative HiLos. */
-    private final HiLoPeakFinder peakFinder;
+    private HiLoPeakFinder peakFinder;
 
     /** Builders per shape. */
     private final Map<Shape, ShapeBuilder> shapeBuilders = new EnumMap<Shape, ShapeBuilder>(
@@ -221,11 +232,12 @@ public class KeyBuilder
         params = new Parameters(sheet.getScale(), staff.getSpecificInterline());
 
         final int browseStop = staff.getBrowseStop(browseStart, measureStart + globalWidth);
-        final Rectangle browseRect = getBrowseRect(browseStart, browseStop);
-        extractor = new KeyExtractor(staff);
-        projection = extractor.getProjection(measureStart, browseRect);
-        peakFinder = new HiLoPeakFinder("Key", projection, browseStart, browseStop);
+        browseRect = getBrowseRect(browseStart, browseStop);
 
+        //        extractor = new KeyExtractor(staff);
+        //        projection = extractor.getProjection(measureStart, browseRect);
+        //        peakFinder = new HiLoPeakFinder("Key", projection, browseStart, browseStop);
+        //
         shapeBuilders.put(SHARP, new ShapeBuilder(SHARP, browseRect));
         shapeBuilders.put(FLAT, new ShapeBuilder(FLAT, browseRect));
     }
@@ -241,45 +253,50 @@ public class KeyBuilder
      */
     public void addPlot (ChartPlotter plotter)
     {
-        retrieveHiLoPeaks();
+        if (peakFinder != null) {
+            retrieveHiLoPeaks();
+        }
 
         // Choose range
         StaffHeader.Range range = staff.getHeader().keyRange; // If key already processed
-        Integer derStart;
 
-        if ((range != null) && range.hasStart()) {
-            derStart = range.getStart();
-        } else {
-            derStart = staff.getKeyStart();
-        }
+        if (peakFinder != null) {
+            Integer derStart;
 
-        if (derStart == null) {
-            derStart = browseStart;
-        }
+            if ((range != null) && range.hasStart()) {
+                derStart = range.getStart();
+            } else {
+                derStart = staff.getKeyStart();
+            }
 
-        int derStop = (range != null) ? range.getStop() : projection.getXMax();
+            if (derStart == null) {
+                derStart = browseStart;
+            }
 
-        // Peaks
-        if ((peakFinder.getPeaks() != null) && !peakFinder.getPeaks().isEmpty()) {
-            plotter.add(peakFinder.getPeakSeries(derStart, derStop), Colors.CHART_PEAK);
-        }
+            int derStop = (range != null) ? range.getStop() : projection.getXMax();
 
-        // HiLos
-        plotter.add(peakFinder.getHiloSeries(derStart, derStop), Colors.CHART_HILO, true);
+            // Peaks
+            if ((peakFinder.getPeaks() != null) && !peakFinder.getPeaks().isEmpty()) {
+                plotter.add(peakFinder.getPeakSeries(derStart, derStop), Colors.CHART_PEAK);
+            }
 
-        {
-            // Values (w/ threshold)
-            XYSeries valueSeries = peakFinder.getValueSeries(
-                    projection.getXMin(),
-                    projection.getXMax());
-            valueSeries.setKey("Key");
-            plotter.add(valueSeries, Colors.CHART_VALUE);
-        }
+            // HiLos
+            plotter.add(peakFinder.getHiloSeries(derStart, derStop), Colors.CHART_HILO, true);
 
-        {
-            // Derivatives (w/ thresholds)
-            XYSeries derSeries = peakFinder.getDerivativeSeries(derStart + 1, derStop);
-            plotter.add(derSeries, Colors.CHART_DERIVATIVE);
+            {
+                // Values (w/ threshold)
+                XYSeries valueSeries = peakFinder.getValueSeries(
+                        projection.getXMin(),
+                        projection.getXMax());
+                valueSeries.setKey("Key");
+                plotter.add(valueSeries, Colors.CHART_VALUE);
+            }
+
+            {
+                // Derivatives (w/ thresholds)
+                XYSeries derSeries = peakFinder.getDerivativeSeries(derStart + 1, derStop);
+                plotter.add(derSeries, Colors.CHART_DERIVATIVE);
+            }
         }
 
         List<Integer> alterStarts = staff.getHeader().alterStarts;
@@ -324,7 +341,7 @@ public class KeyBuilder
             plotter.add(series, Color.BLACK);
         }
 
-        {
+        if (projection != null) {
             // Space threshold
             XYSeries chunkSeries = new XYSeries("Space", false); // No autosort
             chunkSeries.add(browseStart, params.maxSpaceCumul);
@@ -477,7 +494,9 @@ public class KeyBuilder
     /**
      * Process the potential key signature of the underlying staff in isolation.
      * <p>
-     * This builds peaks, slices, alters and checks trailing space and clef(s) compatibility.
+     * This used to build peaks, slices, alters and checks trailing space and clef(s) compatibility.
+     * <p>
+     * Now with annotations, we simply browse the browseRect area for compatible annotations
      */
     public void process ()
     {
@@ -485,10 +504,29 @@ public class KeyBuilder
             logger.info("VIP process key for S#{} staff#{}", system.getId(), getId());
         }
 
-        List<Range> hiloPeaks = retrieveHiLoPeaks(); // Retrieve all hilo peaks
+        //
+        //        List<Range> hiloPeaks = retrieveHiLoPeaks(); // Retrieve all hilo peaks
+        //
+        //        for (ShapeBuilder shapeBuilder : shapeBuilders.values()) {
+        //            shapeBuilder.process(hiloPeaks);
+        //        }
+        //
+        // Relevant annotations
+        final List<Annotation> relevants = new ArrayList<Annotation>();
+        final AnnotationIndex annotationIndex = sheet.getAnnotationIndex();
+
+        for (Annotation annotation : annotationIndex.getIntersectedEntities(browseRect)) {
+            final OmrShape omrShape = annotation.getOmrShape();
+
+            if (OmrShapes.KEY_ALTERS.contains(omrShape)) {
+                relevants.add(annotation);
+            }
+        }
+
+        Collections.sort(relevants, Entities.byCenterAbscissa);
 
         for (ShapeBuilder shapeBuilder : shapeBuilders.values()) {
-            shapeBuilder.process(hiloPeaks);
+            shapeBuilder.processAnnotations(relevants);
         }
 
         selectBestClef(); // In case staff clef has not yet been selected
@@ -667,8 +705,12 @@ public class KeyBuilder
     // ShapeBuilder //
     //--------------//
     /**
-     * Key building focused on a given key shape.
-     * If successful,it contains a non-null instance of KeyInter.
+     * Key building focused on a given key shape, either SHARP (+ some NATURAL?) or
+     * FLAT (+ some NATURAL?).
+     * <p>
+     * NOTA: NATURAL items are not yet supported.
+     * <p>
+     * If successful, it contains a non-null instance of KeyInter.
      */
     class ShapeBuilder
     {
@@ -676,6 +718,9 @@ public class KeyBuilder
 
         /** Shape used for key signature. */
         private final Shape keyShape;
+
+        /** OmrShape used for key signature. */
+        private final OmrShape keyOmrShape;
 
         private final StaffHeader.Range range;
 
@@ -693,6 +738,15 @@ public class KeyBuilder
                              Rectangle browseRect)
         {
             this.keyShape = keyShape;
+
+            if (keyShape == Shape.SHARP) {
+                keyOmrShape = OmrShape.keySharp;
+            } else if (keyShape == Shape.FLAT) {
+                keyOmrShape = OmrShape.keyFlat;
+            } else {
+                throw new IllegalArgumentException("Illegal key shape: " + keyShape);
+            }
+
             roi = new KeyRoi(
                     staff,
                     keyShape,
@@ -942,6 +996,11 @@ public class KeyBuilder
             KeySlice lastValidSlice = roi.getLastValidSlice();
 
             if (lastValidSlice != null) {
+                // Annotation specific
+                if (!range.hasStart()) {
+                    range.setStart(roi.get(0).getStart());
+                }
+
                 // Adjust key signature stop for this staff
                 Rectangle bounds = lastValidSlice.getAlter().getBounds();
                 int end = (bounds.x + bounds.width) - 1;
@@ -1005,7 +1064,8 @@ public class KeyBuilder
         // process //
         //---------//
         /**
-         * Process the potential key signature of the underlying staff in isolation.
+         * Process the potential key signature of the underlying staff in isolation,
+         * based on hilo sequence.
          * <p>
          * This builds peaks, slices, alters and checks trailing space and clef(s) compatibility.
          */
@@ -1064,6 +1124,37 @@ public class KeyBuilder
                     }
                 }
             }
+        }
+
+        //---------//
+        // process //
+        //---------//
+        /**
+         * Process the potential key signature of the underlying staff in isolation,
+         * based on annotations sequence.
+         */
+        public void processAnnotations (List<Annotation> annotations)
+        {
+            if (isVip) {
+                logger.info("VIP {} key for S#{} staff#{}", keyShape, system.getId(), getId());
+            }
+
+            // Filter annotations compatible with builder keyShape
+            for (Annotation annotation : annotations) {
+                final OmrShape omrShape = annotation.getOmrShape();
+
+                if (omrShape == keyOmrShape) {
+                    Rectangle bounds = annotation.getBounds();
+                    KeySlice slice = new KeySlice(bounds, roi);
+                    double grade = annotation.getConfidence() * Grades.intrinsicRatio;
+                    KeyAlterInter alter = KeyAlterInter.create(bounds, omrShape, grade, staff);
+                    sig.addVertex(alter);
+                    slice.setAlter(alter);
+                    roi.add(slice);
+                }
+            }
+
+            createKeyInter();
         }
 
         //--------//

@@ -32,6 +32,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.util.Entity;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import java.awt.Color;
 import java.awt.Point;
@@ -206,6 +207,13 @@ public interface Inter
      * @return the mirror instance or null
      */
     Inter getMirror ();
+
+    /**
+     * Report the OMR shape related to interpretation.
+     *
+     * @return the omr shape
+     */
+    OmrShape getOmrShape ();
 
     /**
      * Report the containing part, if any.

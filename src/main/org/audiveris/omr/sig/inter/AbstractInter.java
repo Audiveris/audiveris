@@ -43,6 +43,7 @@ import org.audiveris.omr.ui.util.BasicAttachmentHolder;
 import org.audiveris.omr.util.AbstractEntity;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +72,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.classifier.OmrShapeMapping;
 
 /**
  * Class {@code AbstractInter} is the abstract implementation basis for {@link Inter}
@@ -102,8 +104,12 @@ public abstract class AbstractInter
     //----------------
     //
     /** The assigned shape. */
-    @XmlAttribute
+    @XmlAttribute(name = "shape")
     protected Shape shape;
+
+    /** The precise omr shape. */
+    @XmlAttribute(name = "omr-shape")
+    protected OmrShape omrShape;
 
     /** The underlying glyph, if any. */
     @XmlIDREF
@@ -213,6 +219,25 @@ public abstract class AbstractInter
                 setVip(true);
             }
         }
+    }
+
+    /**
+     * Creates a new AbstractInter object, with a simple grade value.
+     *
+     * @param bounds   the object bounds
+     * @param omrShape the OMR shape
+     * @param grade    the interpretation quality
+     */
+    public AbstractInter (Rectangle bounds,
+                          OmrShape omrShape,
+                          double grade)
+    {
+        this.bounds = bounds;
+        this.omrShape = omrShape;
+        this.grade = grade;
+
+        // Just in case old shape information is needed
+        shape = OmrShapeMapping.shapeOf(omrShape);
     }
 
     /**
@@ -621,6 +646,15 @@ public abstract class AbstractInter
     public Inter getMirror ()
     {
         return mirror;
+    }
+
+    //-------------//
+    // getOmrShape //
+    //-------------//
+    @Override
+    public OmrShape getOmrShape ()
+    {
+        return omrShape;
     }
 
     //---------//
@@ -1186,6 +1220,14 @@ public abstract class AbstractInter
 
         if (staff != null) {
             sb.append(" s:").append(staff.getId());
+        }
+
+        if (shape != null) {
+            sb.append(" ").append(shape);
+        }
+
+        if (omrShape != null) {
+            sb.append(" ").append(omrShape);
         }
 
         return sb.toString();

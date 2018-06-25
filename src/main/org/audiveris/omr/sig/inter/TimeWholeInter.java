@@ -34,6 +34,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code TimeWholeInter} is a time signature defined by a single symbol (either
@@ -66,11 +67,30 @@ public class TimeWholeInter
     }
 
     /**
+     * Creates a new {@code TimeWholeInter} object.
+     *
+     * @param bounds   annotation bounds
+     * @param omrShape OMR shape (timeSigCommon, timeSigCutCommon or a predefined combo like
+     *                 timeSig2over4)
+     * @param grade    evaluation grade
+     */
+    public TimeWholeInter (Rectangle bounds,
+                           OmrShape omrShape,
+                           double grade)
+    {
+        super(bounds, omrShape, grade);
+
+        if (!ShapeSet.WholeTimes.contains(shape)) {
+            throw new IllegalArgumentException(shape + " not allowed as TimeWholeInter shape");
+        }
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
     private TimeWholeInter ()
     {
-        super(null, null, 0);
+        super((Glyph) null, null, 0);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -34,6 +35,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +95,27 @@ public class AlterInter
     }
 
     /**
+     * Creates a new AlterInter object.
+     *
+     * @param bounds        the alter bounds
+     * @param omrShape      precise shape
+     * @param grade         evaluation value
+     * @param staff         the related staff
+     * @param pitch         the pitch value WRT staff
+     * @param measuredPitch the measured pitch
+     */
+    public AlterInter (Rectangle bounds,
+                       OmrShape omrShape,
+                       double grade,
+                       Staff staff,
+                       Double pitch,
+                       Double measuredPitch)
+    {
+        super(bounds, omrShape, grade, staff, pitch);
+        this.measuredPitch = measuredPitch;
+    }
+
+    /**
      * Creates a new AlterlInter object.
      *
      * @param glyph         underlying glyph
@@ -123,6 +146,38 @@ public class AlterInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No head linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if a head is connected
+        setAbnormal(!sig.hasRelation(this, AlterHeadRelation.class));
+
+        return isAbnormal();
+    }
+
     //--------//
     // create //
     //--------//
@@ -167,6 +222,19 @@ public class AlterInter
         return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
     }
 
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        if (measuredPitch != null) {
+            return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
+        }
+
+        return super.getDetails();
+    }
+
     //-------------------//
     // getFlatAreaOffset //
     //-------------------//
@@ -191,51 +259,6 @@ public class AlterInter
     public static double getFlatPitchOffset ()
     {
         return constants.flatPitchOffset.getValue();
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    //-------//
-    // added //
-    //-------//
-    @Override
-    public void added ()
-    {
-        super.added();
-
-        setAbnormal(true); // No head linked yet
-    }
-
-    //---------------//
-    // checkAbnormal //
-    //---------------//
-    @Override
-    public boolean checkAbnormal ()
-    {
-        // Check if a head is connected
-        setAbnormal(!sig.hasRelation(this, AlterHeadRelation.class));
-
-        return isAbnormal();
-    }
-
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
-    {
-        if (measuredPitch != null) {
-            return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
-        }
-
-        return super.getDetails();
     }
 
     /**
@@ -371,13 +394,26 @@ public class AlterInter
         }
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
+    protected static Pitches computePitch (Rectangle bounds,
+                                           OmrShape omrShape,
+                                           Staff staff)
     {
-        return super.internals() + " " + shape;
+        final Point center = GeoUtil.centerOf(bounds);
+        final double geoPitch;
+
+        // Pitch offset for flat-based alterations
+        if ((omrShape == OmrShape.keyFlat)
+            || (omrShape == OmrShape.accidentalFlat)
+            || (omrShape == OmrShape.accidentalDoubleFlat)
+            || (omrShape == OmrShape.accidentalFlatSmall)) {
+            // Heuristic center WRT area box
+            geoPitch = staff.pitchPositionOf(
+                    new Point2D.Double(center.x, center.y + (getFlatAreaOffset() * bounds.height)));
+        } else {
+            geoPitch = staff.pitchPositionOf(center);
+        }
+
+        return new Pitches((int) Math.rint(geoPitch), geoPitch);
     }
 
     //-------------//

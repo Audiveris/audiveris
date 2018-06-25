@@ -92,15 +92,6 @@ public class FingeringInter
         return value;
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //---------//
     // valueOf //
     //---------//

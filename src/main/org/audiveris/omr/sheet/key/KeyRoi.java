@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet.header;
+package org.audiveris.omr.sheet.key;
 
 import ij.process.Blitter;
 import ij.process.ByteProcessor;
@@ -41,6 +41,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.audiveris.omr.sheet.header.StaffHeader;
 
 /**
  * Class {@code KeyRoi} handles the region of interest for key retrieval, split into

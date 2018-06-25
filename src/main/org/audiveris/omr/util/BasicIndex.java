@@ -214,6 +214,15 @@ public class BasicIndex<E extends Entity>
         return 0;
     }
 
+    //------------------------//
+    // getIntersectedEntities //
+    //------------------------//
+    @Override
+    public List<E> getIntersectedEntities (Rectangle rectangle)
+    {
+        return Entities.intersectedEntities(iterator(), rectangle);
+    }
+
     //-----------//
     // getLastId //
     //-----------//

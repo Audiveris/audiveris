@@ -136,6 +136,7 @@ public class AnnotationsStep
             //
             // Post image to web service
             // Receive annotations (json file)
+            List<Annotation> annotations = null;
             //TODO: Exchange test file with actual post request.
             //            String jsonString;
             //            try (FileInputStream inputStream = new FileInputStream("data/examples/Bach_Fuge_C_DUR.json")) {
@@ -144,9 +145,8 @@ public class AnnotationsStep
             //                logger.error(e.getMessage());
             //                return;
             //            }
-            //            List<Annotation> annotations = AnnotationJsonParser.parse(jsonString, ratio);
-            ///List<Annotation> annotations = Annotation.readAnnotations("Issue-87.json", ratio);
-            List<Annotation> annotations = postRequest(file, ratio);
+            //            annotations = AnnotationJsonParser.parse(jsonString, ratio);
+            annotations = postRequest(file, ratio);
 
             AnnotationIndex index = sheet.getAnnotationIndex();
 
@@ -196,7 +196,7 @@ public class AnnotationsStep
         Files.write(jsonPath, bytes);
 
         // Parse annotations out of json data
-        List<Annotation> annotations = AnnotationJsonParser.parse(new String(bytes), ratio);
+        List<Annotation> annotations = AnnotationJsonParser.parse(answers.get(0), ratio);
 
         return annotations;
     }

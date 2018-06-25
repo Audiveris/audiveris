@@ -45,6 +45,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code AbstractTimeInter} represents a time signature, with either one (full)
@@ -128,6 +129,22 @@ public abstract class AbstractTimeInter
     /**
      * Creates a new TimeInter object.
      *
+     * @param bounds   annotation bounds
+     * @param omrShape OMR shape (timeSigCommon, timeSigCutCommon or a predefined combo like
+     *                 timeSig2over4)
+     * @param grade    evaluation grade
+     */
+    public AbstractTimeInter (Rectangle bounds,
+                              OmrShape omrShape,
+                              double grade)
+    {
+        super(bounds, omrShape, grade);
+        timeRational = rationalOf(omrShape);
+    }
+
+    /**
+     * Creates a new TimeInter object.
+     *
      * @param glyph        underlying glyph
      * @param bounds       bounding bounds
      * @param timeRational the pair of num and den numbers
@@ -201,6 +218,68 @@ public abstract class AbstractTimeInter
 
         case TIME_SIX_EIGHT:
             return new TimeRational(6, 8);
+
+        default:
+            return null;
+        }
+    }
+
+    //------------//
+    // rationalOf //
+    //------------//
+    /**
+     * Report the num/den pair of predefined time signature shapes.
+     *
+     * @param omrShape the queried shape
+     * @return the related num/den or null
+     */
+    public static TimeRational rationalOf (OmrShape omrShape)
+    {
+        if (omrShape == null) {
+            return null;
+        }
+
+        switch (omrShape) {
+        case timeSigCommon:
+        case timeSig4over4:
+            return new TimeRational(4, 4);
+
+        case timeSigCutCommon:
+        case timeSig2over2:
+            return new TimeRational(2, 2);
+
+        case timeSig2over4:
+            return new TimeRational(2, 4);
+
+        case timeSig3over2:
+            return new TimeRational(3, 2);
+
+        case timeSig3over4:
+            return new TimeRational(3, 4);
+
+        case timeSig3over8:
+            return new TimeRational(3, 8);
+
+        case timeSig5over4:
+            return new TimeRational(5, 4);
+
+        case timeSig5over8:
+            return new TimeRational(5, 8);
+
+        case timeSig6over4:
+            return new TimeRational(6, 4);
+
+        case timeSig6over8:
+            return new TimeRational(6, 8);
+
+        case timeSig7over8:
+            return new TimeRational(7, 8);
+
+        case timeSig9over8:
+            return new TimeRational(9, 8);
+
+        case timeSig12over8:
+            return new TimeRational(12, 8);
 
         default:
             return null;

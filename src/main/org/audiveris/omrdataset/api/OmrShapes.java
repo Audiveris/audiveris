@@ -41,6 +41,40 @@ public abstract class OmrShapes
     /** OmrShapes as a list a strings. */
     public static final List<String> NAMES = getNames();
 
+    /** Predefined numbers for time signatures. */
+    public static final EnumSet<OmrShape> TIME_NUMBERS = EnumSet.of(
+            timeSig0,
+            timeSig1,
+            timeSig2,
+            timeSig3,
+            timeSig4,
+            timeSig5,
+            timeSig6,
+            timeSig7,
+            timeSig8,
+            timeSig9,
+            timeSig12,
+            timeSig16);
+
+    /** Partial numbers for time signatures. */
+    public static final EnumSet<OmrShape> TIME_PARTIALS = EnumSet.of(
+            timeSig1,
+            timeSig2,
+            timeSig3,
+            timeSig4,
+            timeSig5,
+            timeSig6,
+            timeSig7,
+            timeSig8,
+            timeSig9,
+            timeSig12,
+            timeSig16);
+
+    /** Predefined commons for time signatures. */
+    public static final EnumSet<OmrShape> TIME_COMMONS = EnumSet.of(
+            timeSigCommon,
+            timeSigCutCommon);
+
     /** Predefined combos for time signatures. */
     public static final EnumSet<OmrShape> TIME_COMBOS = EnumSet.of(
             timeSig2over4,
@@ -56,6 +90,41 @@ public abstract class OmrShapes
             timeSig7over8,
             timeSig9over8,
             timeSig12over8);
+
+    /** All time signature items. */
+    public static final EnumSet<OmrShape> TIMES = EnumSet.noneOf(OmrShape.class);
+
+    static {
+        TIMES.addAll(TIME_PARTIALS);
+        TIMES.addAll(TIME_COMMONS);
+        TIMES.addAll(TIME_COMBOS);
+    }
+
+    /** Clef shapes (not including changes, nor 8 and 15 separate entities). */
+    public static final EnumSet<OmrShape> CLEFS = EnumSet.of(
+            gClef,
+            gClef8vb,
+            gClef8va,
+            gClef15mb,
+            gClef15ma,
+            cClefAlto,
+            cClefTenor,
+            fClef,
+            fClef8vb,
+            fClef8va,
+            fClef15mb,
+            fClef15ma,
+            unpitchedPercussionClef1);
+
+    /** Clef changes (usually smaller). */
+    public static final EnumSet<OmrShape> CLEF_CHANGES = EnumSet.of(
+            gClefChange,
+            cClefAltoChange,
+            cClefTenorChange,
+            fClefChange);
+
+    /** Key items (including keyNatural). */
+    public static final EnumSet<OmrShape> KEY_ALTERS = EnumSet.of(keyFlat, keyNatural, keySharp);
 
     /** Map of predefined combos to num/den integer pairs. */
     public static final Map<OmrShape, NumDen> COMBO_MAP = buildComboMap();

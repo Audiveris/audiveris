@@ -27,6 +27,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import java.awt.Rectangle;
 import java.util.Comparator;
@@ -114,6 +115,26 @@ public abstract class AbstractPitchedInter
     }
 
     /**
+     * Creates a new AbstractPitchedInter object.
+     *
+     * @param bounds   the object bounds
+     * @param omrShape the OMR shape
+     * @param grade    the interpretation quality
+     * @param staff    the related staff
+     * @param pitch    the pitch value WRT staff
+     */
+    public AbstractPitchedInter (Rectangle bounds,
+                                 OmrShape omrShape,
+                                 double grade,
+                                 Staff staff,
+                                 Double pitch)
+    {
+        super(bounds, omrShape, grade);
+        this.pitch = pitch;
+        setStaff(staff);
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
     protected AbstractPitchedInter ()
@@ -155,7 +176,7 @@ public abstract class AbstractPitchedInter
     {
         super.setBounds(bounds);
 
-        if (pitch == null && staff != null) {
+        if ((pitch == null) && (staff != null)) {
             setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)));
         }
     }

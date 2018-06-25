@@ -33,7 +33,7 @@ public class AnnotationJsonParserTest
     {
         String file = "data/examples/Bach_Fuge_C_DUR.json";
         try (FileInputStream inputStream = new FileInputStream(file)) {
-            jsonString = IOUtils.toString(inputStream);
+            jsonString = IOUtils.toString(inputStream, "UTF-8");
         } catch (Exception e) {
             logger.error(e.getMessage());
         }
@@ -85,15 +85,20 @@ public class AnnotationJsonParserTest
     @Test
     public void parseSample ()
     {
-        String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\", 0.97]";
+        ///String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\", 0.97]";
+        String json = "[1001, 159, 1005, 163, \"articStaccatoBelow\", 1]";
+        logger.info("json: {}", json);
         JSONArray array = new JSONArray(json);
         Annotation annotation = AnnotationJsonParser.parseSymbol(array, 1.0);
         assertNotNull(annotation);
+        logger.info("Parsed: {}", annotation);
         Rectangle bounds = annotation.getBounds();
         assertEquals(1001, bounds.x);
         assertEquals(159, bounds.y);
         assertEquals(5, bounds.width);
         assertEquals(5, bounds.height);
         assertEquals("articStaccatoBelow", annotation.getOmrShape().name());
+        ///assertEquals(0.97, annotation.getConfidence(), 0.01);
+        assertEquals(1.0, annotation.getConfidence(), 0.01);
     }
 }

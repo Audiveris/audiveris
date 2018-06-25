@@ -36,6 +36,7 @@ import org.audiveris.omr.sheet.stem.StemSeedsStep;
 import org.audiveris.omr.sheet.stem.StemsStep;
 import org.audiveris.omr.sheet.symbol.LinksStep;
 import org.audiveris.omr.sheet.symbol.SymbolsStep;
+import org.audiveris.omr.sheet.time.TimesStep;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
 import org.audiveris.omr.sig.ui.UITaskList;
@@ -53,12 +54,13 @@ public enum Step
     LOAD("Load the sheet (gray) picture", new LoadStep()),
     BINARY("Binarize the sheet picture", new BinaryStep()),
     SCALE("Compute sheet line thickness, interline, beam thickness", new ScaleStep()),
-    ANNOTATIONS("Detect and classify most symbols", new AnnotationsStep()),
     GRID("Retrieve staff lines, barlines, systems & parts", new GridStep()),
+    ANNOTATIONS("Detect and classify most symbols", new AnnotationsStep()),
+    TIMES("Retrieve columns of time-signatures", new TimesStep()),
+    HEADERS("Retrieve Clef-Key systems headers", new HeadersStep()),
     STEM_SEEDS("Retrieve stem thickness & seeds for stems", new StemSeedsStep()),
     BEAMS("Retrieve beams", new BeamsStep()),
     LEDGERS("Retrieve ledgers", new LedgersStep()),
-    HEADERS("Retrieve Clef-Key-Time systems headers", new HeadersStep()),
     HEADS("Retrieve note heads & whole notes", new HeadsStep()),
     STEMS("Build stems connected to heads & beams", new StemsStep()),
     REDUCTION("Reduce conflicts in heads, stems & beams", new ReductionStep()),

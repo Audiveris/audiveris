@@ -19,7 +19,7 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet.header;
+package org.audiveris.omr.sheet.key;
 
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.Clustering;
@@ -28,7 +28,7 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.header.KeyBuilder.ShapeBuilder;
+import org.audiveris.omr.sheet.key.KeyBuilder.ShapeBuilder;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.util.ChartPlotter;
 
@@ -327,7 +327,6 @@ public class KeyColumn
             }
         }
 
-        ///spreadStuff(); // ????????????????????
         if (logger.isDebugEnabled()) {
             printSliceTable();
         }
@@ -504,72 +503,3 @@ public class KeyColumn
         }
     }
 }
-//
-//    //-------------//
-//    // spreadStuff //
-//    //-------------//
-//    /**
-//     * Spread stuffed slices across staves.
-//     * A "stuffed" slice is occupied by some ink which is not considered as a key alter, therefore
-//     * this abscissa cannot be occupied by a key alter in any other staff within the same system.
-//     */
-//    private void spreadStuff ()
-//    {
-//        Integer firstStuffIndex = getFirstStuffIndex();
-//
-//        if (firstStuffIndex != null) {
-//            for (KeyBuilder builder : builders.values()) {
-//                final int bid = builder.getId();
-//                final KeyRoi roi = builder.getRoi();
-//
-//                for (int i = 0; i < roi.size(); i++) {
-//                    KeySlice slice = roi.get(i);
-//
-//                    if (!slice.isStuffed()) {
-//                        int x = slice.getRect().x;
-//                        int offset = x - builder.getMeasureStart();
-//                        Integer index = getGlobalIndex(offset);
-//
-//                        if (index >= firstStuffIndex) {
-//                            logger.debug("Staff#{} stuff spread from slice {}", bid, index + 1);
-//                            builder.getRoi().stuffSlicesFrom(index);
-//
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//
-//    //--------------------//
-//    // getFirstStuffIndex //
-//    //--------------------//
-//    private Integer getFirstStuffIndex ()
-//    {
-//        Integer firstStuffIndex = null;
-//
-//        for (KeyBuilder builder : builders.values()) {
-//            final KeyRoi roi = builder.getRoi();
-//
-//            for (int i = 0; i < roi.size(); i++) {
-//                KeySlice slice = roi.get(i);
-//
-//                if (slice.isStuffed()) {
-//                    int x = slice.getRect().x;
-//                    int offset = x - builder.getMeasureStart();
-//                    Integer index = getGlobalIndex(offset);
-//
-//                    if (index != null) {
-//                        if ((firstStuffIndex == null) || (firstStuffIndex > index)) {
-//                            firstStuffIndex = index;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        return firstStuffIndex;
-//    }
-//

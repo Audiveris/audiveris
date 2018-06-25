@@ -245,14 +245,14 @@ public class AnnotationsBuilder
 
             if (items.size() == 1) {
                 // Isolated barline
-                OmrShape oShape = OmrShapeMapping.SHAPE_TO_OMRSHAPE.get(bar.getShape());
+                OmrShape oShape = OmrShapeMapping.omrShapeOf(bar.getShape());
                 annotations.addSymbol(
                         new SymbolInfo(oShape, interline, bar.getId(), null, bar.getBounds()));
             } else {
                 List<SymbolInfo> inners = new ArrayList<SymbolInfo>();
 
                 for (Inter item : items) {
-                    OmrShape oShape = OmrShapeMapping.SHAPE_TO_OMRSHAPE.get(item.getShape());
+                    OmrShape oShape = OmrShapeMapping.omrShapeOf(item.getShape());
                     inners.add(
                             new SymbolInfo(oShape, interline, item.getId(), null, item.getBounds()));
                 }
@@ -309,7 +309,7 @@ public class AnnotationsBuilder
             } else if (inter instanceof ArticulationInter) {
                 omrShape = getOmrShape((ArticulationInter) inter);
             } else {
-                omrShape = OmrShapeMapping.SHAPE_TO_OMRSHAPE.get(interShape);
+                omrShape = OmrShapeMapping.omrShapeOf(interShape);
 
                 if (omrShape == null) {
                     logger.info("{} shape is not mapped.", inter);
@@ -382,7 +382,7 @@ public class AnnotationsBuilder
             final List<SymbolInfo> inners = new ArrayList<SymbolInfo>();
 
             for (Inter inter : pair.getMembers()) {
-                OmrShape oShape = OmrShapeMapping.SHAPE_TO_OMRSHAPE.get(inter.getShape());
+                OmrShape oShape = OmrShapeMapping.omrShapeOf(inter.getShape());
 
                 if (oShape != null) {
                     inners.add(

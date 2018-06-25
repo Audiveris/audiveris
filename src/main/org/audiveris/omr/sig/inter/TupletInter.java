@@ -316,15 +316,6 @@ public class TupletInter
     }
 
     //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
-    //-----------//
     // getFactor //
     //-----------//
     /**

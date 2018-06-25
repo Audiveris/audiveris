@@ -19,11 +19,13 @@
 //  program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
-package org.audiveris.omr.sheet.header;
+package org.audiveris.omr.sheet.clef;
 
 import ij.process.Blitter;
 import ij.process.ByteProcessor;
 
+import org.audiveris.omr.classifier.Annotation;
+import org.audiveris.omr.classifier.AnnotationIndex;
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.ShapeClassifier;
@@ -63,8 +65,9 @@ import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
+import org.audiveris.omrdataset.api.OmrShape;
+import org.audiveris.omrdataset.api.OmrShapes;
 
-import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.SimpleGraph;
 
 import org.slf4j.Logger;
@@ -82,6 +85,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import org.audiveris.omr.sheet.header.StaffHeader;
+import org.jgrapht.alg.ConnectivityInspector;
 
 /**
  * Class {@code ClefBuilder} extracts the clef symbol at the beginning of a staff.
@@ -193,6 +198,8 @@ public class ClefBuilder
         Map<ClefKind, ClefInter> bestMap = getBestMap(true);
 
         if (bestMap.isEmpty()) {
+            logger.warn("No Clef annotation found in header of staff#{}", staff.getId());
+
             // Second attempt, focused on inner area only
             bestMap = getBestMap(false);
         }
@@ -237,24 +244,45 @@ public class ClefBuilder
      */
     private Map<ClefKind, ClefInter> getBestMap (boolean isFirstPass)
     {
-        List<Glyph> parts = getParts(isFirstPass);
-
-        // Formalize parts relationships in a global graph
-        SimpleGraph<Glyph, GlyphLink> graph = Glyphs.buildLinks(parts, params.maxPartGap);
-        List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(graph).connectedSets();
-        logger.debug("Staff#{} sets: {}", staff.getId(), sets.size());
-
         // Best inter per clef kind
         Map<ClefKind, ClefInter> bestMap = new EnumMap<ClefKind, ClefInter>(ClefKind.class);
 
-        for (Set<Glyph> set : sets) {
-            // Use only the subgraph for this set
-            SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(set, graph, false);
-            ClefAdapter adapter = new ClefAdapter(subGraph, bestMap);
-            new GlyphCluster(adapter, null).decompose();
+        if (isFirstPass) {
+            //ANNOTATIONS: Use innerRect to grab a clef annotation, if any
+            AnnotationIndex annotationIndex = sheet.getAnnotationIndex();
 
-            int trials = adapter.trials;
-            logger.debug("Staff#{} clef parts:{} trials:{}", staff.getId(), set.size(), trials);
+            for (Annotation annotation : annotationIndex.getIntersectedEntities(innerRect)) {
+                final OmrShape omrShape = annotation.getOmrShape();
+
+                if (OmrShapes.CLEFS.contains(omrShape)) {
+                    Rectangle bounds = annotation.getBounds();
+                    ClefKind kind = ClefInter.kindOf(omrShape);
+                    double grade = annotation.getConfidence() * Grades.intrinsicRatio;
+                    ClefInter clefInter = ClefInter.create(bounds, omrShape, grade, staff);
+                    bestMap.put(kind, clefInter);
+                }
+            }
+        } else {
+            // Use old glyph classifier
+            List<Glyph> parts = getParts(isFirstPass);
+
+            // Formalize parts relationships in a global graph
+            SimpleGraph<Glyph, GlyphLink> graph = Glyphs.buildLinks(parts, params.maxPartGap);
+            List<Set<Glyph>> sets = new ConnectivityInspector<Glyph, GlyphLink>(graph).connectedSets();
+            logger.debug("Staff#{} sets: {}", staff.getId(), sets.size());
+
+            for (Set<Glyph> set : sets) {
+                // Use only the subgraph for this set
+                SimpleGraph<Glyph, GlyphLink> subGraph = GlyphCluster.getSubGraph(
+                        set,
+                        graph,
+                        false);
+                ClefAdapter adapter = new ClefAdapter(subGraph, bestMap);
+                new GlyphCluster(adapter, null).decompose();
+
+                int trials = adapter.trials;
+                logger.debug("Staff#{} clef parts:{} trials:{}", staff.getId(), set.size(), trials);
+            }
         }
 
         // Discard poor candidates as much as possible
@@ -452,21 +480,33 @@ public class ClefBuilder
             Rectangle clefBox = inter.getSymbolBounds(staff.getSpecificInterline());
             Symbol symbol = Symbols.getSymbol(inter.getShape());
             Point symbolCentroid = symbol.getCentroid(clefBox);
-            Point glyphCentroid = inter.getGlyph().getCentroid();
-            int dx = glyphCentroid.x - symbolCentroid.x;
-            int dy = glyphCentroid.y - symbolCentroid.y;
-            logger.debug("Centroid translation dx:{} dy:{}", dx, dy);
-            clefBox.translate(dx, 0);
-            inter.setBounds(clefBox); // Force theoretical bounds as inter bounds!
-            inter.setStaff(staff);
+            Glyph glyph = inter.getGlyph();
+            final Rectangle rawBounds;
 
-            int gid = inter.getGlyph().getId();
+            if (glyph != null) {
+                Point glyphCentroid = glyph.getCentroid();
+                int dx = glyphCentroid.x - symbolCentroid.x;
+                int dy = glyphCentroid.y - symbolCentroid.y;
+                logger.debug("Centroid translation dx:{} dy:{}", dx, dy);
+                clefBox.translate(dx, 0);
+                rawBounds = clefBox;
+                inter.setBounds(clefBox); // Force theoretical bounds as inter bounds!
+            } else {
+                rawBounds = inter.getBounds();
+            }
+
+            inter.setStaff(staff);
             sig.addVertex(inter);
-            logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, gid, clefBox);
+
+            if (glyph != null) {
+                logger.debug("Staff#{} {} g#{} {}", staff.getId(), inter, glyph.getId(), clefBox);
+            } else {
+                logger.debug("Staff#{} {}  {}", staff.getId(), inter, clefBox);
+            }
 
             if (idx == 0) {
                 // Case of best clef
-                Rectangle box = inter.getGlyph().getBounds().intersection(clefBox);
+                Rectangle box = rawBounds.intersection(clefBox);
                 int end = (box.x + box.width) - 1;
                 staff.setClefStop(end);
             }
@@ -494,7 +534,11 @@ public class ClefBuilder
 
             // Pickup the first one as header clef
             ClefInter bestClef = clefs.get(0);
-            bestClef.setGlyph(sheet.getGlyphIndex().registerOriginal(bestClef.getGlyph()));
+
+            if (bestClef.getGlyph() != null) {
+                bestClef.setGlyph(sheet.getGlyphIndex().registerOriginal(bestClef.getGlyph()));
+            }
+
             staff.getHeader().clef = bestClef;
 
             // Delete the other clef candidates
