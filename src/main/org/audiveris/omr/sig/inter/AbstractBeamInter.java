@@ -357,6 +357,37 @@ public abstract class AbstractBeamInter
         return median;
     }
 
+    //-----------//
+    // getStemOn //
+    //-----------//
+    /**
+     * Report the stem, if any, connected on desired beam portion (LEFT,CENTER or RIGHT).
+     * <ul>
+     * <li>For LEFT and for RIGHT, there can be at most one stem.
+     * <li>For CENTER, there can be from 0 to N stems, so only the first one found is returned.
+     * </ul>
+     *
+     * @param portion provided portion
+     * @return the connected stem or null
+     */
+    public StemInter getStemOn (BeamPortion portion)
+    {
+        if (isVip()) {
+            logger.info("VIP getStemOn for {} on {}", this, portion);
+        }
+
+        for (Relation rel : sig.getRelations(this, BeamStemRelation.class)) {
+            BeamStemRelation bsRel = (BeamStemRelation) rel;
+            BeamPortion p = bsRel.getBeamPortion();
+
+            if (p == portion) {
+                return (StemInter) sig.getOppositeInter(this, rel);
+            }
+        }
+
+        return null;
+    }
+
     //----------//
     // getStems //
     //----------//
