@@ -575,7 +575,9 @@ public class BasicStub
         logger.debug("reachStep got lock on {}", this);
 
         try {
-            if (force && isDone(target)) {
+            final Step latestStep = getLatestStep();
+
+            if (force && (target.compareTo(latestStep) <= 0)) {
                 resetToBinary();
             }
 
