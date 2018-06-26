@@ -266,15 +266,16 @@ public class AnnotationTimeColumn
                         if ((staff != null) && (staff.distanceTo(center) < 0)) {
                             // We've got the containing staff
                             final double grade = annotation.getConfidence() * Grades.intrinsicRatio;
+                            final int id = annotation.getId();
                             final Inter inter;
 
                             if (OmrShapes.TIME_COMMONS.contains(omrShape)
                                 || OmrShapes.TIME_COMBOS.contains(omrShape)) {
                                 // Whole time sig
-                                inter = new TimeWholeInter(bounds, omrShape, grade);
+                                inter = new TimeWholeInter(id, bounds, omrShape, grade);
                             } else {
                                 // Partial time sig: num or den
-                                inter = TimeNumberInter.create(bounds, omrShape, grade, staff);
+                                inter = TimeNumberInter.create(id, bounds, omrShape, grade, staff);
                             }
 
                             List<Inter> staffList = interMap.get(staff);

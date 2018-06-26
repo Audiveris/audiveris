@@ -21,7 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -42,7 +44,6 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.glyph.Shape;
 
 /**
  * Class {@code SentenceInter} represents a full sentence of words.
@@ -107,7 +108,7 @@ public class SentenceInter
                           FontInfo meanFont,
                           TextRole role)
     {
-        super(null, bounds, null, grade);
+        super((Glyph) null, bounds, null, grade);
 
         this.meanFont = meanFont;
         this.role = role;

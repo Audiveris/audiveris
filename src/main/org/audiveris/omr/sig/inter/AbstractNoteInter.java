@@ -126,19 +126,21 @@ public abstract class AbstractNoteInter
     /**
      * Creates a new AbstractNoteInter object.
      *
-     * @param bounds   the object bounds
-     * @param omrShape the underlying omrShape
-     * @param grade    the assignment quality
-     * @param staff    the related staff
-     * @param pitch    the note pitch
+     * @param annotationId Id of the original annotation if any
+     * @param bounds       the object bounds
+     * @param omrShape     the underlying omrShape
+     * @param grade        the assignment quality
+     * @param staff        the related staff
+     * @param pitch        the note pitch
      */
-    public AbstractNoteInter (Rectangle bounds,
+    public AbstractNoteInter (Integer annotationId,
+                              Rectangle bounds,
                               OmrShape omrShape,
                               double grade,
                               Staff staff,
                               Double pitch)
     {
-        super(bounds, omrShape, grade, staff, pitch);
+        super(annotationId, bounds, omrShape, grade, staff, pitch);
     }
 
     /**

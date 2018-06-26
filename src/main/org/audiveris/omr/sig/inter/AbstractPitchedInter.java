@@ -117,19 +117,21 @@ public abstract class AbstractPitchedInter
     /**
      * Creates a new AbstractPitchedInter object.
      *
-     * @param bounds   the object bounds
-     * @param omrShape the OMR shape
-     * @param grade    the interpretation quality
-     * @param staff    the related staff
-     * @param pitch    the pitch value WRT staff
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       the object bounds
+     * @param omrShape     the OMR shape
+     * @param grade        the interpretation quality
+     * @param staff        the related staff
+     * @param pitch        the pitch value WRT staff
      */
-    public AbstractPitchedInter (Rectangle bounds,
+    public AbstractPitchedInter (Integer annotationId,
+                                 Rectangle bounds,
                                  OmrShape omrShape,
                                  double grade,
                                  Staff staff,
                                  Double pitch)
     {
-        super(bounds, omrShape, grade);
+        super(annotationId, bounds, omrShape, grade);
         this.pitch = pitch;
         setStaff(staff);
     }

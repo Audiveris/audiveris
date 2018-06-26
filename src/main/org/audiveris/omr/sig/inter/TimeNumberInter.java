@@ -82,17 +82,19 @@ public class TimeNumberInter
     /**
      * Creates a new TimeNumberInter object.
      *
-     * @param bounds   entity bounds
-     * @param omrShape precise OMR shape
-     * @param grade    evaluation value
-     * @param side     top or bottom
+     * @param annotationId ID of original annotation if any
+     * @param bounds       entity bounds
+     * @param omrShape     precise OMR shape
+     * @param grade        evaluation value
+     * @param side         top or bottom
      */
-    public TimeNumberInter (Rectangle bounds,
+    public TimeNumberInter (Integer annotationId,
+                            Rectangle bounds,
                             OmrShape omrShape,
                             double grade,
                             VerticalSide side)
     {
-        super(bounds, omrShape, grade);
+        super(annotationId, bounds, omrShape, grade);
 
         if (!OmrShapes.TIME_PARTIALS.contains(omrShape)) {
             throw new IllegalArgumentException(
@@ -155,13 +157,15 @@ public class TimeNumberInter
     /**
      * (Try to) create a top or bottom number for time signature.
      *
-     * @param bounds   symbol bounds
-     * @param omrShape precise shape
-     * @param grade    evaluation value
-     * @param staff    related staff
+     * @param annotationId ID of original annotation if any
+     * @param bounds       symbol bounds
+     * @param omrShape     precise shape
+     * @param grade        evaluation value
+     * @param staff        related staff
      * @return the created instance or null if failed
      */
-    public static TimeNumberInter create (Rectangle bounds,
+    public static TimeNumberInter create (Integer annotationId,
+                                          Rectangle bounds,
                                           OmrShape omrShape,
                                           double grade,
                                           Staff staff)
@@ -178,7 +182,7 @@ public class TimeNumberInter
 
         VerticalSide side = (pitch < 0) ? VerticalSide.TOP : VerticalSide.BOTTOM;
 
-        TimeNumberInter inter = new TimeNumberInter(bounds, omrShape, grade, side);
+        TimeNumberInter inter = new TimeNumberInter(annotationId, bounds, omrShape, grade, side);
         inter.setStaff(staff);
 
         return inter;

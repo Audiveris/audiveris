@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.Population;
@@ -118,7 +119,7 @@ public abstract class AbstractChordInter
      */
     public AbstractChordInter (double grade)
     {
-        super(null, null, null, grade);
+        super((Glyph) null, null, null, grade);
     }
 
     /**

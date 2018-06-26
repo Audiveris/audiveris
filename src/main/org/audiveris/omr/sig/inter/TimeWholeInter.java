@@ -28,13 +28,13 @@ import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.NumDenSymbol;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code TimeWholeInter} is a time signature defined by a single symbol (either
@@ -69,16 +69,18 @@ public class TimeWholeInter
     /**
      * Creates a new {@code TimeWholeInter} object.
      *
-     * @param bounds   annotation bounds
-     * @param omrShape OMR shape (timeSigCommon, timeSigCutCommon or a predefined combo like
-     *                 timeSig2over4)
-     * @param grade    evaluation grade
+     * @param annotationId ID of original annotation if any
+     * @param bounds       annotation bounds
+     * @param omrShape     OMR shape (timeSigCommon, timeSigCutCommon or a predefined combo like
+     *                     timeSig2over4)
+     * @param grade        evaluation grade
      */
-    public TimeWholeInter (Rectangle bounds,
+    public TimeWholeInter (Integer annotationId,
+                           Rectangle bounds,
                            OmrShape omrShape,
                            double grade)
     {
-        super(bounds, omrShape, grade);
+        super(annotationId, bounds, omrShape, grade);
 
         if (!ShapeSet.WholeTimes.contains(shape)) {
             throw new IllegalArgumentException(shape + " not allowed as TimeWholeInter shape");

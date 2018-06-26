@@ -111,6 +111,10 @@ public abstract class AbstractInter
     @XmlAttribute(name = "omr-shape")
     protected OmrShape omrShape;
 
+    /** ID of original annotation, if any. */
+    @XmlAttribute(name = "annotation-id")
+    protected Integer annotationId;
+
     /** The underlying glyph, if any. */
     @XmlIDREF
     @XmlAttribute(name = "glyph")
@@ -224,14 +228,17 @@ public abstract class AbstractInter
     /**
      * Creates a new AbstractInter object, with a simple grade value.
      *
-     * @param bounds   the object bounds
-     * @param omrShape the OMR shape
-     * @param grade    the interpretation quality
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       the object bounds
+     * @param omrShape     the OMR shape
+     * @param grade        the interpretation quality
      */
-    public AbstractInter (Rectangle bounds,
+    public AbstractInter (Integer annotationId,
+                          Rectangle bounds,
                           OmrShape omrShape,
                           double grade)
     {
+        this.annotationId = annotationId;
         this.bounds = bounds;
         this.omrShape = omrShape;
         this.grade = grade;
@@ -417,6 +424,15 @@ public abstract class AbstractInter
         return Collections.EMPTY_SET;
     }
 
+    //-----------------//
+    // getAnnotationId //
+    //-----------------//
+    @Override
+    public Integer getAnnotationId ()
+    {
+        return annotationId;
+    }
+
     //---------//
     // getArea //
     //---------//
@@ -500,6 +516,32 @@ public abstract class AbstractInter
         Rectangle bounds = getBounds();
 
         return new Point(bounds.x, bounds.y + (bounds.height / 2));
+    }
+
+    //--------------//
+    // getGoodGrade //
+    //--------------//
+    /**
+     * Report the minimum grade to consider an interpretation as good.
+     *
+     * @return the minimum grade value for a good interpretation
+     */
+    public static double getGoodGrade ()
+    {
+        return Grades.goodInterGrade;
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum grade for an acceptable interpretation
+     *
+     * @return the minimum grade for keeping an Inter instance
+     */
+    public static double getMinGrade ()
+    {
+        return Grades.minInterGrade;
     }
 
     //----------------//
@@ -595,19 +637,6 @@ public abstract class AbstractInter
         return glyph;
     }
 
-    //--------------//
-    // getGoodGrade //
-    //--------------//
-    /**
-     * Report the minimum grade to consider an interpretation as good.
-     *
-     * @return the minimum grade value for a good interpretation
-     */
-    public static double getGoodGrade ()
-    {
-        return Grades.goodInterGrade;
-    }
-
     //----------//
     // getGrade //
     //----------//
@@ -624,19 +653,6 @@ public abstract class AbstractInter
     public GradeImpacts getImpacts ()
     {
         return impacts;
-    }
-
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    /**
-     * Report the minimum grade for an acceptable interpretation
-     *
-     * @return the minimum grade for keeping an Inter instance
-     */
-    public static double getMinGrade ()
-    {
-        return Grades.minInterGrade;
     }
 
     //-----------//
@@ -1216,6 +1232,10 @@ public abstract class AbstractInter
         }
 
         sb.append(")");
+
+        if (annotationId != null) {
+            sb.append(" S").append(annotationId);
+        }
 
         if (mirror != null) {
             sb.append(" mirror#").append(mirror.getId());

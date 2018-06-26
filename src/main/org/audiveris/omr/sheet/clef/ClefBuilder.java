@@ -258,7 +258,8 @@ public class ClefBuilder
                     Rectangle bounds = annotation.getBounds();
                     ClefKind kind = ClefInter.kindOf(omrShape);
                     double grade = annotation.getConfidence() * Grades.intrinsicRatio;
-                    ClefInter clefInter = ClefInter.create(bounds, omrShape, grade, staff);
+                    int annId = annotation.getId();
+                    ClefInter clefInter = ClefInter.create(annId, bounds, omrShape, grade, staff);
                     bestMap.put(kind, clefInter);
                 }
             }

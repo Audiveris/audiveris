@@ -29,6 +29,7 @@ import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.score.TimeRational;
 import org.audiveris.omr.score.TimeValue;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code AbstractTimeInter} represents a time signature, with either one (full)
@@ -129,16 +129,18 @@ public abstract class AbstractTimeInter
     /**
      * Creates a new TimeInter object.
      *
-     * @param bounds   annotation bounds
-     * @param omrShape OMR shape (timeSigCommon, timeSigCutCommon or a predefined combo like
-     *                 timeSig2over4)
-     * @param grade    evaluation grade
+     * @param annotationId ID of original annotation if any
+     * @param bounds       annotation bounds
+     * @param omrShape     OMR shape (timeSigCommon, timeSigCutCommon or a predefined combo like
+     *                     timeSig2over4)
+     * @param grade        evaluation grade
      */
-    public AbstractTimeInter (Rectangle bounds,
+    public AbstractTimeInter (Integer annotationId,
+                              Rectangle bounds,
                               OmrShape omrShape,
                               double grade)
     {
-        super(bounds, omrShape, grade);
+        super(annotationId, bounds, omrShape, grade);
         timeRational = rationalOf(omrShape);
     }
 

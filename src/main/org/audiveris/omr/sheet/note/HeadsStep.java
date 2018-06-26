@@ -26,6 +26,7 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
+import org.audiveris.omrdataset.api.OmrShapes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,8 +65,8 @@ public class HeadsStep
                           Context context)
             throws StepException
     {
-//        final List<Glyph> spots = context.sheetSpots.get(system);
-//        new NoteHeadsBuilder(system, context.distanceTable, spots).buildHeads();
+        //        final List<Glyph> spots = context.sheetSpots.get(system);
+        //        new NoteHeadsBuilder(system, context.distanceTable, spots).buildHeads();
         //
         final List<Annotation> headAnnotations = context.annotationMap.get(system);
         new HeadsBuilder(system, headAnnotations).buildHeads();
@@ -86,10 +87,11 @@ public class HeadsStep
         //
         //        return new Context(distances, sheetSpots);
         //
-        // Dispatch head annotations per system
-        Map<SystemInfo, List<Annotation>> annotationMap = new HeadAnnotationDispatcher(sheet).getHeadAnnotations();
 
-        return new Context(annotationMap);
+        // Dispatch head annotations to systems
+        final List<Annotation> heads = sheet.getAnnotationIndex().filterPositives(OmrShapes.HEADS);
+
+        return new Context(sheet.getSystemManager().dispatchAnnotations(heads));
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

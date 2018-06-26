@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.BasicIndex;
 import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -98,41 +101,6 @@ public class AnnotationIndex
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // getName //
-    //---------//
-    @Override
-    public String getName ()
-    {
-        return "annotationIndex";
-    }
-
-    //----------------//
-    // initTransients //
-    //----------------//
-    public void initTransients (Sheet sheet)
-    {
-        // ID generator
-        lastId = sheet.getPersistentIdGenerator();
-
-        // Declared VIP IDs?
-        setVipIds(constants.vipAnnotations.getValue());
-
-        // User annotation service?
-        if (OMR.gui != null) {
-            SelectionService locationService = sheet.getLocationService();
-            setEntityService(new AnnotationService(this, locationService));
-        }
-    }
-
-    //------------//
-    // isModified //
-    //------------//
-    public boolean isModified ()
-    {
-        return modified;
-    }
-
     //------//
     // load //
     //------//
@@ -170,6 +138,87 @@ public class AnnotationIndex
         }
 
         return index;
+    }
+
+    //-----------------//
+    // filterNegatives //
+    //-----------------//
+    /**
+     * Report the annotations that don't belong to any of the provided sets of OmrShape.
+     *
+     * @param shapeSets the sets of omr shapes
+     * @return the annotations found
+     */
+    public List<Annotation> filterNegatives (EnumSet<OmrShape>... shapeSets)
+    {
+        final List<Annotation> negatives = new ArrayList<Annotation>(getEntities());
+        final List<Annotation> positives = filterPositives(shapeSets);
+        negatives.removeAll(positives);
+
+        return negatives;
+    }
+
+    //-----------------//
+    // filterPositives //
+    //-----------------//
+    /**
+     * Report the annotations that belong to one of the provided sets of OmrShape.
+     *
+     * @param shapeSets the sets of omr shapes
+     * @return the annotations found
+     */
+    public List<Annotation> filterPositives (EnumSet<OmrShape>... shapeSets)
+    {
+        final List<Annotation> positives = new ArrayList<Annotation>();
+
+        for (Annotation annotation : getEntities()) {
+            final OmrShape omrShape = annotation.getOmrShape();
+
+            for (EnumSet<OmrShape> set : shapeSets) {
+                if (set.contains(omrShape)) {
+                    positives.add(annotation);
+
+                    break;
+                }
+            }
+        }
+
+        return positives;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    @Override
+    public String getName ()
+    {
+        return "annotationIndex";
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    public void initTransients (Sheet sheet)
+    {
+        // ID generator
+        lastId = sheet.getPersistentIdGenerator();
+
+        // Declared VIP IDs?
+        setVipIds(constants.vipAnnotations.getValue());
+
+        // User annotation service?
+        if (OMR.gui != null) {
+            SelectionService locationService = sheet.getLocationService();
+            setEntityService(new AnnotationService(this, locationService));
+        }
+    }
+
+    //------------//
+    // isModified //
+    //------------//
+    public boolean isModified ()
+    {
+        return modified;
     }
 
     //-------------//

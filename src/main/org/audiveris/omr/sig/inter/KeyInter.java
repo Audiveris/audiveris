@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.SIGraph;
@@ -103,7 +104,7 @@ public class KeyInter
     public KeyInter (double grade,
                      int fifths)
     {
-        super(null, null, null, grade);
+        super((Glyph) null, null, null, grade);
 
         this.fifths = fifths;
     }

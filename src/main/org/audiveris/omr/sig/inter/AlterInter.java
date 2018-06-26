@@ -97,6 +97,7 @@ public class AlterInter
     /**
      * Creates a new AlterInter object.
      *
+     * @param annotationId  ID of the original annotation if any
      * @param bounds        the alter bounds
      * @param omrShape      precise shape
      * @param grade         evaluation value
@@ -104,14 +105,15 @@ public class AlterInter
      * @param pitch         the pitch value WRT staff
      * @param measuredPitch the measured pitch
      */
-    public AlterInter (Rectangle bounds,
+    public AlterInter (Integer annotationId,
+                       Rectangle bounds,
                        OmrShape omrShape,
                        double grade,
                        Staff staff,
                        Double pitch,
                        Double measuredPitch)
     {
-        super(bounds, omrShape, grade, staff, pitch);
+        super(annotationId, bounds, omrShape, grade, staff, pitch);
         this.measuredPitch = measuredPitch;
     }
 

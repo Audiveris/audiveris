@@ -447,11 +447,13 @@ public abstract class PageCleaner
      */
     protected void processGlyph (Glyph glyph)
     {
-        // Use pixels of underlying glyph
-        Color oldColor = g.getColor();
-        g.setColor(Color.WHITE);
-        glyph.getRunTable().render(g, glyph.getTopLeft());
-        g.setColor(oldColor);
+        if (glyph != null) {
+            // Use pixels of underlying glyph
+            Color oldColor = g.getColor();
+            g.setColor(Color.WHITE);
+            glyph.getRunTable().render(g, glyph.getTopLeft());
+            g.setColor(oldColor);
+        }
     }
 
     private int dilated (int pointSize)

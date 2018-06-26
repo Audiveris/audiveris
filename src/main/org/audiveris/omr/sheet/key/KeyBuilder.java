@@ -1146,8 +1146,9 @@ public class KeyBuilder
                 if (omrShape == keyOmrShape) {
                     Rectangle bounds = annotation.getBounds();
                     KeySlice slice = new KeySlice(bounds, roi);
+                    int id = annotation.getId();
                     double grade = annotation.getConfidence() * Grades.intrinsicRatio;
-                    KeyAlterInter alter = KeyAlterInter.create(bounds, omrShape, grade, staff);
+                    KeyAlterInter alter = KeyAlterInter.create(id, bounds, omrShape, grade, staff);
                     sig.addVertex(alter);
                     slice.setAlter(alter);
                     roi.add(slice);

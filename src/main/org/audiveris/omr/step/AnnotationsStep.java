@@ -186,7 +186,7 @@ public class AnnotationsStep
         final long start = System.currentTimeMillis();
         List<String> answers = mu.finish();
         final long stop = System.currentTimeMillis();
-        logger.info("Duration= {} ms", stop - start);
+        logger.info("Duration= {} seconds", (stop - start) / 1000);
         logger.debug("Answers= {}", answers);
 
         // Save json string into json file (to ease later debugging)

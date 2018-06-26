@@ -21,15 +21,15 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import java.awt.Rectangle;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
-
 import static org.audiveris.omr.sig.inter.AlterInter.computePitch;
+import org.audiveris.omrdataset.api.OmrShape;
+
+import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code KeyAlterInter} is an Alteration inter, which is part of a key signature.
@@ -65,6 +65,7 @@ public class KeyAlterInter
     /**
      * Creates a new KeyAlterInter object.
      *
+     * @param annotationId  ID of the original annotation if any
      * @param bounds        annotation bounds
      * @param omrShape      OMR shape
      * @param grade         evaluation value
@@ -72,14 +73,15 @@ public class KeyAlterInter
      * @param pitch         the pitch value WRT staff
      * @param measuredPitch the measured pitch
      */
-    public KeyAlterInter (Rectangle bounds,
+    public KeyAlterInter (Integer annotationId,
+                          Rectangle bounds,
                           OmrShape omrShape,
                           double grade,
                           Staff staff,
                           double pitch,
                           double measuredPitch)
     {
-        super(bounds, omrShape, grade, staff, pitch, measuredPitch);
+        super(annotationId, bounds, omrShape, grade, staff, pitch, measuredPitch);
     }
 
     /**
@@ -147,19 +149,28 @@ public class KeyAlterInter
     /**
      * Create an Alter inter, with a grade value, determining pitch WRT provided staff.
      *
-     * @param bounds   alter bounds
-     * @param omrShape precise shape
-     * @param grade    evaluation value
-     * @param staff    related staff
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       alter bounds
+     * @param omrShape     precise shape
+     * @param grade        evaluation value
+     * @param staff        related staff
      * @return the created instance or null if failed
      */
-    public static KeyAlterInter create (Rectangle bounds,
+    public static KeyAlterInter create (Integer annotationId,
+                                        Rectangle bounds,
                                         OmrShape omrShape,
                                         double grade,
                                         Staff staff)
     {
         Pitches p = computePitch(bounds, omrShape, staff);
 
-        return new KeyAlterInter(bounds, omrShape, grade, staff, p.pitch, p.measuredPitch);
+        return new KeyAlterInter(
+                annotationId,
+                bounds,
+                omrShape,
+                grade,
+                staff,
+                p.pitch,
+                p.measuredPitch);
     }
 }

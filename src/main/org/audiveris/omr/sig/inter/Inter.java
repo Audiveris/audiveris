@@ -109,6 +109,13 @@ public interface Inter
     Set<Inter> getAllEnsembles ();
 
     /**
+     * Report the ID of the original annotation if any.
+     *
+     * @return the original annotation ID or null
+     */
+    Integer getAnnotationId ();
+
+    /**
      * Report the precise defining area
      *
      * @return the inter area, if any

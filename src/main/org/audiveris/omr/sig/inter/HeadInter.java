@@ -170,19 +170,21 @@ public class HeadInter
     /**
      * Creates a new {@code HeadInter} object, with no pivot or anchor.
      *
-     * @param bounds   the object bounds
-     * @param omrShape the precise omr shape
-     * @param grade    quality grade
-     * @param staff    the related staff
-     * @param pitch    the note pitch
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       the object bounds
+     * @param omrShape     the precise omr shape
+     * @param grade        quality grade
+     * @param staff        the related staff
+     * @param pitch        the note pitch
      */
-    public HeadInter (Rectangle bounds,
+    public HeadInter (Integer annotationId,
+                      Rectangle bounds,
                       OmrShape omrShape,
                       double grade,
                       Staff staff,
                       Double pitch)
     {
-        super(bounds, omrShape, grade, staff, pitch);
+        super(annotationId, bounds, omrShape, grade, staff, pitch);
     }
 
     /** No-arg constructor needed by JAXB. */

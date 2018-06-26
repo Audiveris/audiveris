@@ -21,25 +21,30 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.symbol;
 
+import org.audiveris.omr.classifier.Annotation;
+import org.audiveris.omr.classifier.AnnotationIndex;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sheet.note.ChordsBuilder;
+import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omrdataset.api.OmrShapes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Map.Entry;
 
 /**
  * Class {@code SymbolsStep} retrieves fixed-shape symbols in a system.
@@ -100,19 +105,26 @@ public class SymbolsStep
 
         // Retrieve symbols inters
         watch.start("buildSymbols");
-        new SymbolsBuilder(system, factory).buildSymbols(context.optionalsMap);
 
-        // Allocate rest-based chords
-        watch.start("buildRestChords");
-        new ChordsBuilder(system).buildRestChords();
+        //////////////////////////////////////////////////////////////new SymbolsBuilder(system, factory).buildSymbols(context.optionalsMap);
+        logger.info("{}", system);
 
-        // Some checks that need presence of other symbols
-        watch.start("lateChecks");
-        factory.lateChecks();
-
-        if (constants.printWatch.isSet()) {
-            watch.print();
+        for (Annotation a : context.annotationMap.get(system)) {
+            logger.info("   {}", a);
         }
+
+        //
+        //        // Allocate rest-based chords
+        //        watch.start("buildRestChords");
+        //        new ChordsBuilder(system).buildRestChords();
+        //
+        //        // Some checks that need presence of other symbols
+        //        watch.start("lateChecks");
+        //        factory.lateChecks();
+        //
+        //        if (constants.printWatch.isSet()) {
+        //            watch.print();
+        //        }
     }
 
     //----------//
@@ -122,14 +134,45 @@ public class SymbolsStep
     protected Context doProlog (Sheet sheet)
             throws StepException
     {
+        //        /**
+        //         * Prepare image without staff lines, with all good and weak inters erased and
+        //         * with all weak inters saved as optional symbol parts.
+        //         */
+        //        final Context context = new Context();
+        //        new SymbolsFilter(sheet).process(context.optionalsMap);
+        //
         /**
-         * Prepare image without staff lines, with all good and weak inters erased and
-         * with all weak inters saved as optional symbol parts.
+         * Filter annotations on their shape and dispatch to relevant systems.
          */
-        final Context context = new Context();
-        new SymbolsFilter(sheet).process(context.optionalsMap);
+        final AnnotationIndex index = sheet.getAnnotationIndex();
+        final List<Annotation> annotations = index.filterNegatives(
+                OmrShapes.HEADS,
+                OmrShapes.TIMES);
+        final Map<SystemInfo, List<Annotation>> map = sheet.getSystemManager()
+                .dispatchAnnotations(annotations);
 
-        return context;
+        for (Entry<SystemInfo, List<Annotation>> entry : map.entrySet()) {
+            final SIGraph sig = entry.getKey().getSig();
+
+            // Discard annotations already used
+            final List<Annotation> used = new ArrayList<Annotation>();
+
+            for (Inter inter : sig.vertexSet()) {
+                Integer id = inter.getAnnotationId();
+
+                if (id != null) {
+                    Annotation annotation = index.getEntity(id);
+
+                    if (annotation != null) {
+                        used.add(annotation);
+                    }
+                }
+            }
+
+            entry.getValue().removeAll(used);
+        }
+
+        return new Context(map);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -140,8 +183,18 @@ public class SymbolsStep
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Map of optional (weak) glyphs per system. */
-        public final Map<SystemInfo, List<Glyph>> optionalsMap = new TreeMap<SystemInfo, List<Glyph>>();
+        //
+        //        /** Map of optional (weak) glyphs per system. */
+        //        public final Map<SystemInfo, List<Glyph>> optionalsMap = new TreeMap<SystemInfo, List<Glyph>>();
+        //
+        /** Map of relevant annotations per system. */
+        public final Map<SystemInfo, List<Annotation>> annotationMap;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Context (Map<SystemInfo, List<Annotation>> annotationMap)
+        {
+            this.annotationMap = annotationMap;
+        }
     }
 
     //-----------//

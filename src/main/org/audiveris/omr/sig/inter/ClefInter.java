@@ -137,21 +137,23 @@ public class ClefInter
     /**
      * Creates a new ClefInter object.
      *
-     * @param bounds   the clef bounds
-     * @param omrShape the precise OMR shape
-     * @param grade    the interpretation quality
-     * @param staff    the related staff
-     * @param pitch    pitch position
-     * @param kind     clef kind
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       the clef bounds
+     * @param omrShape     the precise OMR shape
+     * @param grade        the interpretation quality
+     * @param staff        the related staff
+     * @param pitch        pitch position
+     * @param kind         clef kind
      */
-    private ClefInter (Rectangle bounds,
+    private ClefInter (Integer annotationId,
+                       Rectangle bounds,
                        OmrShape omrShape,
                        double grade,
                        Staff staff,
                        Double pitch,
                        ClefKind kind)
     {
-        super(bounds, omrShape, grade, staff, pitch);
+        super(annotationId, bounds, omrShape, grade, staff, pitch);
         this.kind = kind;
     }
 
@@ -228,14 +230,16 @@ public class ClefInter
     /**
      * Create a Clef inter.
      *
-     * @param bounds   clef bounds
-     * @param omrShape precise OMR shape
-     * @param grade    evaluation value
-     * @param staff    related staff
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       clef bounds
+     * @param omrShape     precise OMR shape
+     * @param grade        evaluation value
+     * @param staff        related staff
      * @return the created instance
      * @throws IllegalArgumentException if provided omrShape is not supported
      */
-    public static ClefInter create (Rectangle bounds,
+    public static ClefInter create (Integer annotationId,
+                                    Rectangle bounds,
                                     OmrShape omrShape,
                                     double grade,
                                     Staff staff)
@@ -246,23 +250,44 @@ public class ClefInter
         case gClef8va:
         case gClef15mb:
         case gClef15ma:
-            return new ClefInter(bounds, omrShape, grade, staff, 2.0, ClefKind.TREBLE);
+            return new ClefInter(
+                    annotationId,
+                    bounds,
+                    omrShape,
+                    grade,
+                    staff,
+                    2.0,
+                    ClefKind.TREBLE);
 
         case cClefAlto:
-            return new ClefInter(bounds, omrShape, grade, staff, 0.0, ClefKind.ALTO);
+            return new ClefInter(annotationId, bounds, omrShape, grade, staff, 0.0, ClefKind.ALTO);
 
         case cClefTenor:
-            return new ClefInter(bounds, omrShape, grade, staff, -2.0, ClefKind.TENOR);
+            return new ClefInter(
+                    annotationId,
+                    bounds,
+                    omrShape,
+                    grade,
+                    staff,
+                    -2.0,
+                    ClefKind.TENOR);
 
         case fClef:
         case fClef8vb:
         case fClef8va:
         case fClef15mb:
         case fClef15ma:
-            return new ClefInter(bounds, omrShape, grade, staff, -2.0, ClefKind.BASS);
+            return new ClefInter(annotationId, bounds, omrShape, grade, staff, -2.0, ClefKind.BASS);
 
         case unpitchedPercussionClef1:
-            return new ClefInter(bounds, omrShape, grade, staff, 0.0, ClefKind.PERCUSSION);
+            return new ClefInter(
+                    annotationId,
+                    bounds,
+                    omrShape,
+                    grade,
+                    staff,
+                    0.0,
+                    ClefKind.PERCUSSION);
         }
 
         throw new IllegalArgumentException("Cannot create ClefInter for " + omrShape);

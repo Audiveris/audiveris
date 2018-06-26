@@ -80,15 +80,17 @@ public abstract class AbstractNumberInter
     /**
      * Creates a new AbstractNumberInter object.
      *
-     * @param bounds   bounding box of the number
-     * @param omrShape precise shape
-     * @param grade    evaluation value
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box of the number
+     * @param omrShape     precise shape
+     * @param grade        evaluation value
      */
-    public AbstractNumberInter (Rectangle bounds,
+    public AbstractNumberInter (Integer annotationId,
+                                Rectangle bounds,
                                 OmrShape omrShape,
                                 double grade)
     {
-        super(bounds, omrShape, grade);
+        super(annotationId, bounds, omrShape, grade);
         this.value = (omrShape != null) ? valueOf(omrShape) : (-1);
     }
 

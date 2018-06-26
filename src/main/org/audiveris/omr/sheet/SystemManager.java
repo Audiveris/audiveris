@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.lag.Lags;
@@ -30,9 +31,12 @@ import org.audiveris.omr.math.ReversePathIterator;
 import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
+
 import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
@@ -49,6 +53,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import org.audiveris.omr.math.GeoUtil;
 
 /**
  * Class {@code SystemManager} handles physical information about all the systems of a
@@ -195,6 +202,42 @@ public class SystemManager
         }
 
         return found;
+    }
+
+    //---------------------//
+    // dispatchAnnotations //
+    //---------------------//
+    /**
+     * Dispatch the provided annotations per relevant systems.
+     * <p>
+     * NOTA: The same annotation can be dispatched to two different systems, when located in the
+     * gutter between the two systems.
+     *
+     * @param annotations the annotations to dispatch
+     * @return the map of annotations, per system
+     */
+    public SortedMap<SystemInfo, List<Annotation>> dispatchAnnotations (List<Annotation> annotations)
+    {
+        final SortedMap<SystemInfo, List<Annotation>> map = new TreeMap<SystemInfo, List<Annotation>>();
+        final List<SystemInfo> systemsFound = new ArrayList<SystemInfo>();
+
+        for (Annotation annotation : annotations) {
+            // Relevant systems for this annotation
+            final Point center = GeoUtil.centerOf(annotation.getBounds());
+            getSystemsOf(center, systemsFound);
+
+            for (SystemInfo system : systemsFound) {
+                List<Annotation> list = map.get(system);
+
+                if (list == null) {
+                    map.put(system, list = new ArrayList<Annotation>());
+                }
+
+                list.add(annotation);
+            }
+        }
+
+        return map;
     }
 
     //----------------------------//

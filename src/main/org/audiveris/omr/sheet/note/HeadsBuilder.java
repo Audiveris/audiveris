@@ -106,6 +106,7 @@ public class HeadsBuilder
             if (np != null) {
                 final double grade = annotation.getConfidence() * Grades.intrinsicRatio;
                 final HeadInter head = new HeadInter(
+                        annotation.getId(),
                         bounds,
                         annotation.getOmrShape(),
                         grade,
