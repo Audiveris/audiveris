@@ -56,6 +56,7 @@ import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
 import static org.audiveris.omr.util.VerticalSide.*;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,11 +106,11 @@ public class HeadInter
     //
     /** Absolute location of head template pivot. */
     @XmlElement
-    private final Point pivot;
+    private Point pivot;
 
     /** Relative pivot position WRT head. */
     @XmlAttribute
-    private final Anchor anchor;
+    private Anchor anchor;
 
     // Transient data
     //---------------
@@ -166,11 +167,27 @@ public class HeadInter
         this.anchor = anchor;
     }
 
+    /**
+     * Creates a new {@code HeadInter} object, with no pivot or anchor.
+     *
+     * @param bounds   the object bounds
+     * @param omrShape the precise omr shape
+     * @param grade    quality grade
+     * @param staff    the related staff
+     * @param pitch    the note pitch
+     */
+    public HeadInter (Rectangle bounds,
+                      OmrShape omrShape,
+                      double grade,
+                      Staff staff,
+                      Double pitch)
+    {
+        super(bounds, omrShape, grade, staff, pitch);
+    }
+
     /** No-arg constructor needed by JAXB. */
     private HeadInter ()
     {
-        this.pivot = null;
-        this.anchor = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------

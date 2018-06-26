@@ -41,6 +41,20 @@ public abstract class OmrShapes
     /** OmrShapes as a list a strings. */
     public static final List<String> NAMES = getNames();
 
+    /** All note heads. */
+    public static final EnumSet<OmrShape> HEADS = EnumSet.of(
+            noteheadBlack,
+            noteheadBlackSmall,
+            noteheadHalf,
+            noteheadHalfSmall,
+            noteheadWhole,
+            noteheadWholeSmall,
+            noteheadDoubleWhole,
+            noteheadDoubleWholeSmall,
+            noteheadXBlack,
+            noteheadXHalf,
+            noteheadXWhole);
+
     /** Predefined numbers for time signatures. */
     public static final EnumSet<OmrShape> TIME_NUMBERS = EnumSet.of(
             timeSig0,

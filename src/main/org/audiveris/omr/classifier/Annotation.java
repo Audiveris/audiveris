@@ -164,16 +164,16 @@ public class Annotation
         return omrShape;
     }
 
-    //----------//
-    // toString //
-    //----------//
+    //-----------//
+    // internals //
+    //-----------//
     @Override
-    public String toString ()
+    protected String internals ()
     {
-        StringBuilder sb = new StringBuilder("annotation{");
-        sb.append(omrShape).append(" ").append(String.format("%.2f", confidence)).append(" ").append(
-                bounds);
-        sb.append("}");
+        StringBuilder sb = new StringBuilder(super.internals());
+        sb.append(" ").append(omrShape);
+        sb.append(" ").append(String.format("%.2f", confidence));
+        sb.append(" ").append(bounds);
 
         return sb.toString();
     }

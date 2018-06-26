@@ -31,6 +31,7 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,6 +121,24 @@ public abstract class AbstractNoteInter
                               Double pitch)
     {
         super(glyph, bounds, shape, grade, staff, pitch);
+    }
+
+    /**
+     * Creates a new AbstractNoteInter object.
+     *
+     * @param bounds   the object bounds
+     * @param omrShape the underlying omrShape
+     * @param grade    the assignment quality
+     * @param staff    the related staff
+     * @param pitch    the note pitch
+     */
+    public AbstractNoteInter (Rectangle bounds,
+                              OmrShape omrShape,
+                              double grade,
+                              Staff staff,
+                              Double pitch)
+    {
+        super(bounds, omrShape, grade, staff, pitch);
     }
 
     /**

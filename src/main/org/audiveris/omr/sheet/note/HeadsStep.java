@@ -21,8 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.note;
 
-import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.image.DistanceTable;
+import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.step.AbstractSystemStep;
@@ -65,8 +64,11 @@ public class HeadsStep
                           Context context)
             throws StepException
     {
-        final List<Glyph> spots = context.sheetSpots.get(system);
-        new NoteHeadsBuilder(system, context.distanceTable, spots).buildHeads();
+//        final List<Glyph> spots = context.sheetSpots.get(system);
+//        new NoteHeadsBuilder(system, context.distanceTable, spots).buildHeads();
+        //
+        final List<Annotation> headAnnotations = context.annotationMap.get(system);
+        new HeadsBuilder(system, headAnnotations).buildHeads();
     }
 
     //----------//
@@ -76,13 +78,18 @@ public class HeadsStep
     protected Context doProlog (Sheet sheet)
             throws StepException
     {
-        // Build proper distance table and make it available for system-level processing
-        DistanceTable distances = new DistancesBuilder(sheet).buildDistances();
+        //        // Build proper distance table and make it available for system-level processing
+        //        DistanceTable distances = new DistancesBuilder(sheet).buildDistances();
+        //
+        //        // Retrieve spots for (black) notes
+        //        Map<SystemInfo, List<Glyph>> sheetSpots = new HeadSpotsBuilder(sheet).getSpots();
+        //
+        //        return new Context(distances, sheetSpots);
+        //
+        // Dispatch head annotations per system
+        Map<SystemInfo, List<Annotation>> annotationMap = new HeadAnnotationDispatcher(sheet).getHeadAnnotations();
 
-        // Retrieve spots for (black) notes
-        Map<SystemInfo, List<Glyph>> sheetSpots = new HeadSpotsBuilder(sheet).getSpots();
-
-        return new Context(distances, sheetSpots);
+        return new Context(annotationMap);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -93,16 +100,23 @@ public class HeadsStep
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        public final DistanceTable distanceTable;
-
-        public final Map<SystemInfo, List<Glyph>> sheetSpots;
+        //
+        //        public final DistanceTable distanceTable;
+        //
+        //        public final Map<SystemInfo, List<Glyph>> sheetSpots;
+        //
+        public final Map<SystemInfo, List<Annotation>> annotationMap;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Context (DistanceTable distanceTable,
-                        Map<SystemInfo, List<Glyph>> sheetSpots)
+        //        public Context (DistanceTable distanceTable,
+        //                        Map<SystemInfo, List<Glyph>> sheetSpots)
+        //        {
+        //            this.distanceTable = distanceTable;
+        //            this.sheetSpots = sheetSpots;
+        //        }
+        public Context (Map<SystemInfo, List<Annotation>> annotationMap)
         {
-            this.distanceTable = distanceTable;
-            this.sheetSpots = sheetSpots;
+            this.annotationMap = annotationMap;
         }
     }
 }

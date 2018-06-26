@@ -637,27 +637,20 @@ public class Staff
     public IndexedLedger getClosestLedger (Point2D point)
     {
         IndexedLedger bestLedger = null;
-        double top = getFirstLine().yAt(point.getX());
-        double bottom = getLastLine().yAt(point.getX());
-        double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom - top);
+        final double top = getFirstLine().yAt(point.getX());
+        final double bottom = getLastLine().yAt(point.getX());
+        final double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom - top);
 
         if (Math.abs(rawPitch) <= 5) {
             return null;
         }
 
-        Rectangle2D searchBox;
-
-        if (rawPitch < 0) {
-            searchBox = new Rectangle2D.Double(
-                    point.getX(),
-                    point.getY(),
-                    0,
-                    top - point.getY() + 1);
-        } else {
-            searchBox = new Rectangle2D.Double(point.getX(), bottom, 0, point.getY() - bottom + 1);
-        }
-
-        //searchBox.grow(interline, interline);
+        // Define the lookup box for ledgers
+        final Rectangle2D searchBox = new Rectangle2D.Double(
+                point.getX(),
+                (rawPitch < 0) ? point.getY() : bottom,
+                0,
+                (rawPitch < 0) ? (top - point.getY() + 1) : (point.getY() - bottom + 1));
         searchBox.setRect(
                 searchBox.getX() - specificInterline,
                 searchBox.getY() - specificInterline,
@@ -665,7 +658,7 @@ public class Staff
                 searchBox.getHeight() + (2 * specificInterline));
 
         // Browse all staff ledgers
-        Set<IndexedLedger> foundLedgers = new LinkedHashSet<IndexedLedger>();
+        final Set<IndexedLedger> foundLedgers = new LinkedHashSet<IndexedLedger>();
 
         for (Map.Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
             for (LedgerInter ledger : entry.getValue()) {
@@ -680,8 +673,8 @@ public class Staff
             double bestDist = Double.MAX_VALUE;
 
             for (IndexedLedger iLedger : foundLedgers) {
-                Point2D center = iLedger.ledger.getGlyph().getCenter();
-                double dist = Math.abs(center.getY() - point.getY());
+                final Point2D center = iLedger.ledger.getGlyph().getCenter();
+                final double dist = Math.abs(center.getY() - point.getY());
 
                 if (dist < bestDist) {
                     bestDist = dist;

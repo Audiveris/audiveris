@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.classifier.OmrShapeMapping;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
@@ -72,7 +73,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlIDREF;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import org.audiveris.omr.classifier.OmrShapeMapping;
 
 /**
  * Class {@code AbstractInter} is the abstract implementation basis for {@link Inter}
@@ -325,7 +325,7 @@ public abstract class AbstractInter
             }
         }
 
-        if (isManual()) {
+        if (isManual() || (omrShape != null)) {
             // Here we use bounds only...
             return true; // Audaces fortuna juvat!
         }
@@ -911,6 +911,9 @@ public abstract class AbstractInter
             } else if (that.getGlyph() != null) {
                 // Area <--> Glyph?
                 return that.getGlyph().intersects(this.area);
+            } else {
+                // Area <--> Bounds
+                return this.area.intersects(that.getBounds());
             }
         }
 
