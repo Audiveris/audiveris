@@ -479,34 +479,6 @@ public class SigReducer
         }
     }
 
-    //------------------//
-    // beamHasBothStems //
-    //------------------//
-    private boolean beamHasBothStems (BeamInter beam)
-    {
-        boolean hasLeft = false;
-        boolean hasRight = false;
-
-        if (beam.isVip()) {
-            logger.info("VIP beamHasBothStems for {}", beam);
-        }
-
-        for (Relation rel : sig.edgesOf(beam)) {
-            if (rel instanceof BeamStemRelation) {
-                BeamStemRelation bsRel = (BeamStemRelation) rel;
-                BeamPortion portion = bsRel.getBeamPortion();
-
-                if (portion == BeamPortion.LEFT) {
-                    hasLeft = true;
-                } else if (portion == BeamPortion.RIGHT) {
-                    hasRight = true;
-                }
-            }
-        }
-
-        return hasLeft && hasRight;
-    }
-
     //-----------------------//
     // checkAugmentationDots //
     //-----------------------//
@@ -674,13 +646,17 @@ public class SigReducer
         for (Inter inter : beams) {
             final BeamInter beam = (BeamInter) inter;
 
-            if (!beamHasBothStems(beam)) {
-                if (beam.isVip()) {
-                    logger.info("VIP deleting beam lacking stem {}", beam);
-                }
+            for (BeamPortion portion : new BeamPortion[]{BeamPortion.LEFT, BeamPortion.RIGHT}) {
+                if (beam.getStemOn(portion) == null) {
+                    if (beam.isVip()) {
+                        logger.info("VIP deleting beam lacking stem {} on {}", beam, portion);
+                    }
 
-                beam.remove();
-                modifs++;
+                    beam.remove();
+                    modifs++;
+
+                    break;
+                }
             }
         }
 
