@@ -698,11 +698,16 @@ public class SystemInfo
      * if any.
      *
      * @param point the center of the provided note entity
-     * @return the proper note position (staff &amp; pitch)
+     * @return the proper note position (staff and pitch) or null
      */
     public NotePosition getNoteStaffAt (Point point)
     {
         Staff staff = getClosestStaff(point);
+
+        if (staff == null) {
+            return null;
+        }
+
         NotePosition pos = staff.getNotePosition(point);
 
         logger.debug("{} -> {}", point, pos);
