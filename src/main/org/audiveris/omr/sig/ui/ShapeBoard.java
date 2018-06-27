@@ -33,7 +33,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.ui.SymbolsEditor;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.symbol.SymbolFactory;
+import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.OmrGlassPane;
 import org.audiveris.omr.ui.dnd.AbstractGhostDropListener;
@@ -836,7 +836,7 @@ public class ShapeBoard
                             dndOperation = new DndOperation(
                                     sheet,
                                     zoom,
-                                    SymbolFactory.createManual(shape, sheet));
+                                    InterFactory.createManual(shape, sheet));
                         }
 
                         dndOperation.enteringTarget();
