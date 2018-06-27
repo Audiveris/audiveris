@@ -36,10 +36,8 @@ import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.Shape.*;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -48,6 +46,7 @@ import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sig.GradeUtil;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.ClefInter;
@@ -56,11 +55,9 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.relation.ClefKeyRelation;
 import org.audiveris.omr.sig.relation.Exclusion;
-import org.audiveris.omr.ui.symbol.Symbol;
+import org.audiveris.omr.ui.symbol.SymbolIcon;
 import org.audiveris.omr.ui.symbol.Symbols;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.VerticalSide;
 
@@ -450,7 +447,7 @@ public class ClefBuilder
             // For inter bounds, use font-based symbol bounds rather than glyph bounds
             //TODO: we could also check histogram right after clef end, looking for a low point?
             Rectangle clefBox = inter.getSymbolBounds(staff.getSpecificInterline());
-            Symbol symbol = Symbols.getSymbol(inter.getShape());
+            SymbolIcon symbol = Symbols.getSymbol(inter.getShape());
             Point symbolCentroid = symbol.getCentroid(clefBox);
             Point glyphCentroid = inter.getGlyph().getCentroid();
             int dx = glyphCentroid.x - symbolCentroid.x;
