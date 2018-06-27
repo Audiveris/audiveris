@@ -68,7 +68,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code DotFactory} is a companion of {@link SymbolFactory}, dedicated to the
+ * Class {@code DotFactory} is a companion of {@link InterFactory}, dedicated to the
  * interpretation of dot-shaped symbols.
  * <p>
  * Some dot processing can be done instantly while the symbol is being built, other dot processing
@@ -95,7 +95,7 @@ public class DotFactory
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The related symbol factory. */
-    private final SymbolFactory symbolFactory;
+    private final InterFactory symbolFactory;
 
     /** The related system. */
     private final SystemInfo system;
@@ -114,7 +114,7 @@ public class DotFactory
      * @param symbolFactory the mother factory
      * @param system        underlying system
      */
-    public DotFactory (SymbolFactory symbolFactory,
+    public DotFactory (InterFactory symbolFactory,
                        SystemInfo system)
     {
         this.symbolFactory = symbolFactory;

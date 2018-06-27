@@ -101,7 +101,7 @@ public class SymbolsStep
         StopWatch watch = new StopWatch("SymbolsStep doSystem #" + system.getId());
         watch.start("factory");
 
-        final SymbolFactory factory = new SymbolFactory(system);
+        final InterFactory factory = new InterFactory(system);
 
         // Retrieve symbols inters
         watch.start("buildSymbols");

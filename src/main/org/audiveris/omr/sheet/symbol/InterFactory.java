@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    S y m b o l F a c t o r y                                   //
+//                                     I n t e r F a c t o r y                                    //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -91,7 +91,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class {@code SymbolFactory} generates the inter instances corresponding to
+ * Class {@code InterFactory} generates the inter instances corresponding to
  * to an acceptable symbol evaluation in a given system.
  * <p>
  * (Generally there is one inter instance per evaluation, an exception is the case of full time
@@ -99,11 +99,11 @@ import java.util.TreeMap;
  *
  * @author Hervé Bitteur
  */
-public class SymbolFactory
+public class InterFactory
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(SymbolFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(InterFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
@@ -139,11 +139,11 @@ public class SymbolFactory
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new SymbolsFactory object.
+     * Creates a new InterFactory object.
      *
      * @param system the dedicated system
      */
-    public SymbolFactory (SystemInfo system)
+    public InterFactory (SystemInfo system)
     {
         this.system = system;
 
@@ -897,14 +897,14 @@ public class SymbolFactory
     // handleTimes //
     //-------------//
     /**
-     * Handle time symbols outside of system header.
+     * Handle time inters outside of system header.
      * <p>
-     * Isolated time symbols found outside of system header lead to the retrieval of a column of
+     * Isolated time inters found outside of system header lead to the retrieval of a column of
      * time signatures.
      */
     private void handleTimes ()
     {
-        // Retrieve all time symbols (outside staff headers)
+        // Retrieve all time inters (outside staff headers)
         List<Inter> systemTimes = sig.inters(
                 new Class[]{TimeWholeInter.class, // Whole symbol like C or 6/8
                             TimeNumberInter.class}); // Partial symbol like 6 or 8
@@ -924,7 +924,7 @@ public class SymbolFactory
             return;
         }
 
-        // Dispatch these time symbols into their containing stack
+        // Dispatch these time inters into their containing stack
         Map<MeasureStack, Set<Inter>> timeMap = new TreeMap<MeasureStack, Set<Inter>>(
                 new Comparator<MeasureStack>()
         {

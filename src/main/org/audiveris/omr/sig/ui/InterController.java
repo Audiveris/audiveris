@@ -37,7 +37,7 @@ import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
-import org.audiveris.omr.sheet.symbol.SymbolFactory;
+import org.audiveris.omr.sheet.symbol.InterFactory;
 import org.audiveris.omr.sheet.ui.BookActions;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.BarlineInter;
@@ -63,7 +63,9 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
+
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
+
 import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.text.BlockScanner;
@@ -76,7 +78,9 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.UIThread;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
@@ -248,7 +252,7 @@ public class InterController
         }
 
         final Glyph glyph = sheet.getGlyphIndex().registerOriginal(aGlyph);
-        final Inter ghost = SymbolFactory.createManual(shape, sheet);
+        final Inter ghost = InterFactory.createManual(shape, sheet);
         ghost.setBounds(glyph.getBounds());
         ghost.setGlyph(glyph);
 

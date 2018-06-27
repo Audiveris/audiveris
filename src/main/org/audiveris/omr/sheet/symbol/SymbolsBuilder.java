@@ -90,7 +90,7 @@ public class SymbolsBuilder
     private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
 
     /** Companion factory for symbols inters. */
-    private final SymbolFactory factory;
+    private final InterFactory factory;
 
     /** Areas where fine glyphs may be needed. */
     private final List<Rectangle> fineBoxes = new ArrayList<Rectangle>();
@@ -106,7 +106,7 @@ public class SymbolsBuilder
      * @param factory the dedicated symbol factory
      */
     public SymbolsBuilder (SystemInfo system,
-                           SymbolFactory factory)
+                           InterFactory factory)
     {
         this.system = system;
         this.factory = factory;
