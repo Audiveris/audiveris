@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.glyph;
 
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 
 import org.jgrapht.Graphs;
 import org.jgrapht.graph.SimpleGraph;
@@ -61,7 +61,7 @@ public class GlyphCluster
     private final Adapter adapter;
 
     /** Group, if any, to be assigned to created glyphs. */
-    private final Group group;
+    private final GlyphGroup group;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -71,7 +71,7 @@ public class GlyphCluster
      * @param group   group to be assigned, if any
      */
     public GlyphCluster (Adapter adapter,
-                         Group group)
+                         GlyphGroup group)
     {
         this.adapter = adapter;
         this.group = group;

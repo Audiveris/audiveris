@@ -62,7 +62,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "glyph")
 public class BasicGlyph
-        extends AbstractSymbol
+        extends AbstractWeightedEntity
         implements Glyph
 {
     //~ Static fields/initializers -----------------------------------------------------------------

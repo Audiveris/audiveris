@@ -27,7 +27,7 @@ import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.image.ChamferDistance;
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.run.Orientation;
@@ -175,7 +175,7 @@ public class DistancesBuilder
             }
 
             // "Erase" stem seeds
-            List<Glyph> systemSeeds = system.getGroupedGlyphs(Group.VERTICAL_SEED);
+            List<Glyph> systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
 
             for (Glyph seed : systemSeeds) {
                 paintGlyph(seed);

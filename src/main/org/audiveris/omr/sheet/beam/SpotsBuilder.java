@@ -29,7 +29,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.GlyphIndex;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.MorphoProcessor;
 import org.audiveris.omr.image.StructureElement;
@@ -252,7 +252,7 @@ public class SpotsBuilder
                 // Check glyph is within system abscissa boundaries
                 if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
                     glyph = glyphIndex.registerOriginal(glyph);
-                    glyph.addGroup(Group.BEAM_SPOT);
+                    glyph.addGroup(GlyphGroup.BEAM_SPOT);
                     system.addFreeGlyph(glyph);
                     created = true;
                 }
