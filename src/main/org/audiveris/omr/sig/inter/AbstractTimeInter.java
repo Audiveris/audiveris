@@ -135,7 +135,7 @@ public abstract class AbstractTimeInter
      *                     timeSig2over4)
      * @param grade        evaluation grade
      */
-    public AbstractTimeInter (Integer annotationId,
+    public AbstractTimeInter (int annotationId,
                               Rectangle bounds,
                               OmrShape omrShape,
                               double grade)

@@ -32,6 +32,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Predicate;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +76,26 @@ public class RestInter
                       Double pitch)
     {
         super(glyph, null, shape, grade, staff, pitch);
+    }
+
+    /**
+     * Creates a new RestInter object.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     detected shape
+     * @param grade        evaluation value
+     * @param staff        the related staff
+     * @param pitch        the rest pitch
+     */
+    public RestInter (int annotationId,
+                      Rectangle bounds,
+                      OmrShape omrShape,
+                      double grade,
+                      Staff staff,
+                      Double pitch)
+    {
+        super(annotationId, bounds, omrShape, grade, staff, pitch);
     }
 
     /**

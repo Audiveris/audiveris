@@ -27,8 +27,11 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code CaesuraInter} represents a caesura sign above a staff.
@@ -51,6 +54,20 @@ public class CaesuraInter
                          double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.CAESURA, grade);
+    }
+
+    /**
+     * Creates a new {@code CaesuraInter} object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       the bounding box
+     * @param grade        the interpretation quality
+     */
+    public CaesuraInter (int annotationId,
+                         Rectangle bounds,
+                         double grade)
+    {
+        super(annotationId, bounds, OmrShape.caesura, grade);
     }
 
     /**
@@ -94,6 +111,37 @@ public class CaesuraInter
         }
 
         final CaesuraInter caesura = new CaesuraInter(glyph, grade);
+        caesura.setStaff(staff);
+
+        return caesura;
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * (Try to) create a caesura inter.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       the bounding box
+     * @param grade        the interpretation quality
+     * @param system       the related system
+     * @return the created caesura or null
+     */
+    public static CaesuraInter create (int annotationId,
+                                       Rectangle bounds,
+                                       double grade,
+                                       SystemInfo system)
+    {
+        // Look for staff below
+        final Point center = GeoUtil.centerOf(bounds);
+        final Staff staff = system.getStaffAtOrBelow(center);
+
+        if (staff == null) {
+            return null;
+        }
+
+        final CaesuraInter caesura = new CaesuraInter(annotationId, bounds, grade);
         caesura.setStaff(staff);
 
         return caesura;

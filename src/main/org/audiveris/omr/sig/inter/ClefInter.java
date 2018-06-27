@@ -145,7 +145,7 @@ public class ClefInter
      * @param pitch        pitch position
      * @param kind         clef kind
      */
-    private ClefInter (Integer annotationId,
+    private ClefInter (int annotationId,
                        Rectangle bounds,
                        OmrShape omrShape,
                        double grade,
@@ -238,7 +238,7 @@ public class ClefInter
      * @return the created instance
      * @throws IllegalArgumentException if provided omrShape is not supported
      */
-    public static ClefInter create (Integer annotationId,
+    public static ClefInter create (int annotationId,
                                     Rectangle bounds,
                                     OmrShape omrShape,
                                     double grade,

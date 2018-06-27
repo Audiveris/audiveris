@@ -21,11 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import java.awt.Rectangle;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code RepeatDotInter} represents a repeat dot, near a bar line.
@@ -52,6 +54,24 @@ public class RepeatDotInter
                            Double pitch)
     {
         super(glyph, null, Shape.REPEAT_DOT, grade, staff, pitch);
+    }
+
+    /**
+     * Creates a new RepeatDotInter object.
+     *
+     * @param annotationId id of original annotation if any
+     * @param bounds       bounding box
+     * @param grade        evaluation value
+     * @param staff        the related staff
+     * @param pitch        dot pitch
+     */
+    public RepeatDotInter (int annotationId,
+                           Rectangle bounds,
+                           double grade,
+                           Staff staff,
+                           Double pitch)
+    {
+        super(annotationId, bounds, OmrShape.repeatDot, grade, staff, pitch);
     }
 
     /**

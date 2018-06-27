@@ -467,6 +467,41 @@ public abstract class Jaxb
         }
     }
 
+    //------------------------//
+    // IntegerPositiveAdapter //
+    //------------------------//
+    /**
+     * Only strictly positive value is marshalled into the output,
+     * zero or negative value is not marshalled.
+     */
+    public static class IntegerPositiveAdapter
+            extends XmlAdapter<String, Integer>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public String marshal (Integer i)
+                throws Exception
+        {
+            if (i == null) {
+                return null;
+            }
+
+            return (i > 0) ? Integer.toString(i) : null;
+        }
+
+        @Override
+        public Integer unmarshal (String s)
+                throws Exception
+        {
+            if (s == null) {
+                return 0;
+            }
+
+            return Integer.parseInt(s);
+        }
+    }
+
     //---------------//
     // Line2DAdapter //
     //---------------//

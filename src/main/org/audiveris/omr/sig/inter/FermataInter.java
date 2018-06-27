@@ -42,6 +42,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code FermataInter} represents a full fermata interpretation, either upright
@@ -91,6 +92,22 @@ public class FermataInter
                          double grade)
     {
         super(null, null, shape, grade);
+    }
+
+    /**
+     * Creates a new {@code FermataInter} object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise shape
+     * @param grade        the interpretation quality
+     */
+    public FermataInter (int annotationId,
+                         Rectangle bounds,
+                         OmrShape omrShape,
+                         double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
     }
 
     /**

@@ -23,6 +23,9 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omrdataset.api.OmrShape;
+
+import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -55,6 +58,23 @@ public class FingeringInter
     {
         super(glyph, null, shape, grade);
         this.value = (shape != null) ? valueOf(shape) : (-1);
+    }
+
+    /**
+     * Creates a new FingeringInter object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise shape
+     * @param grade        evaluation value
+     */
+    public FingeringInter (int annotationId,
+                           Rectangle bounds,
+                           OmrShape omrShape,
+                           double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
+        this.value = (omrShape != null) ? valueOf(omrShape) : (-1);
     }
 
     /**
@@ -132,5 +152,33 @@ public class FingeringInter
         }
 
         throw new IllegalArgumentException("No fingering value for " + shape);
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    private static int valueOf (OmrShape omrShape)
+    {
+        switch (omrShape) {
+        case fingering0:
+            return 0;
+
+        case fingering1:
+            return 1;
+
+        case fingering2:
+            return 2;
+
+        case fingering3:
+            return 3;
+
+        case fingering4:
+            return 4;
+
+        case fingering5:
+            return 5;
+        }
+
+        throw new IllegalArgumentException("No fingering value for " + omrShape);
     }
 }

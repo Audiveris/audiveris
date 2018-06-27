@@ -135,7 +135,7 @@ public class SymbolsBuilder
      *          - build compound glyph                  // Build one compound glyph per subset
      *          - evaluateGlyph(compound)               // Run shape classifier on compound
      *          - FOREACH acceptable evaluation
-     *             + symbolFactory.create(eval, glyph) // Create inter(s) related to evaluation
+     *             + interFactory.create(eval, glyph) // Create inter(s) related to evaluation
      * </pre>
      *
      * @param optionalsMap the optional (weak) glyphs per system

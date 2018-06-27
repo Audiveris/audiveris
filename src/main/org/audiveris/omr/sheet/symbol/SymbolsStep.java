@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.note.ChordsBuilder;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.step.AbstractSystemStep;
@@ -106,25 +107,20 @@ public class SymbolsStep
         // Retrieve symbols inters
         watch.start("buildSymbols");
 
-        //////////////////////////////////////////////////////////////new SymbolsBuilder(system, factory).buildSymbols(context.optionalsMap);
-        logger.info("{}", system);
+        ///new SymbolsBuilder(system, factory).buildSymbols(context.optionalsMap);
+        new AnnotationSymbolsBuilder(system, context.annotationMap.get(system), factory).process();
 
-        for (Annotation a : context.annotationMap.get(system)) {
-            logger.info("   {}", a);
+        // Allocate rest-based chords
+        watch.start("buildRestChords");
+        new ChordsBuilder(system).buildRestChords();
+
+        // Some checks that need presence of other symbols
+        watch.start("lateChecks");
+        factory.lateChecks();
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
         }
-
-        //
-        //        // Allocate rest-based chords
-        //        watch.start("buildRestChords");
-        //        new ChordsBuilder(system).buildRestChords();
-        //
-        //        // Some checks that need presence of other symbols
-        //        watch.start("lateChecks");
-        //        factory.lateChecks();
-        //
-        //        if (constants.printWatch.isSet()) {
-        //            watch.print();
-        //        }
     }
 
     //----------//

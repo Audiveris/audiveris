@@ -133,7 +133,7 @@ public abstract class AbstractNoteInter
      * @param staff        the related staff
      * @param pitch        the note pitch
      */
-    public AbstractNoteInter (Integer annotationId,
+    public AbstractNoteInter (int annotationId,
                               Rectangle bounds,
                               OmrShape omrShape,
                               double grade,

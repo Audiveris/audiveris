@@ -31,6 +31,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,22 @@ public class OrnamentInter
                           double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
+    }
+
+    /**
+     * Creates a new OrnamentInter object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise shape
+     * @param grade        evaluation value
+     */
+    public OrnamentInter (int annotationId,
+                          Rectangle bounds,
+                          OmrShape omrShape,
+                          double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
     }
 
     /**
@@ -117,6 +134,42 @@ public class OrnamentInter
         }
 
         OrnamentInter orn = new OrnamentInter(glyph, shape, grade);
+        Link link = orn.lookupLink(systemHeadChords);
+
+        if (link != null) {
+            system.getSig().addVertex(orn);
+            link.applyTo(orn);
+
+            return orn;
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add a valid OrnamentInter.
+     * <p>
+     * TODO: this is to be refined for GRACE ornaments which are located on left side of chord.
+     *
+     * @param annotationId     ID of original annotation if any
+     * @param bounds           bounding box
+     * @param omrShape         detected shape
+     * @param grade            assigned grade
+     * @param system           containing system
+     * @param systemHeadChords system head chords, ordered by abscissa
+     * @return the created articulation or null
+     */
+    public static OrnamentInter createValidAdded (int annotationId,
+                                                  Rectangle bounds,
+                                                  OmrShape omrShape,
+                                                  double grade,
+                                                  SystemInfo system,
+                                                  List<Inter> systemHeadChords)
+    {
+        OrnamentInter orn = new OrnamentInter(annotationId, bounds, omrShape, grade);
         Link link = orn.lookupLink(systemHeadChords);
 
         if (link != null) {

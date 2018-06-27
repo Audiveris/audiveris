@@ -23,6 +23,9 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omrdataset.api.OmrShape;
+
+import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -57,6 +60,23 @@ public class PluckingInter
     {
         super(glyph, null, shape, grade);
         this.letter = valueOf(shape);
+    }
+
+    /**
+     * Creates a new {@code PluckingInter} object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise shape
+     * @param grade        evaluation value
+     */
+    public PluckingInter (int annotationId,
+                          Rectangle bounds,
+                          OmrShape omrShape,
+                          double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
+        this.letter = valueOf(omrShape);
     }
 
     /**
@@ -115,5 +135,27 @@ public class PluckingInter
         }
 
         throw new IllegalArgumentException("Invalid plucking shape " + shape);
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    private static char valueOf (OmrShape omrShape)
+    {
+        switch (omrShape) {
+        case fingeringPLower:
+            return 'p';
+
+        case fingeringILower:
+            return 'i';
+
+        case fingeringMLower:
+            return 'm';
+
+        case fingeringALower:
+            return 'a';
+        }
+
+        throw new IllegalArgumentException("Invalid plucking shape " + omrShape);
     }
 }

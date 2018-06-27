@@ -21,12 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import java.awt.Rectangle;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.Relation;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code PedalInter} represents a pedal (start) or pedal up (stop) event
@@ -51,6 +53,22 @@ public class PedalInter
                        double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
+    }
+
+    /**
+     * Creates a new {@code PedalInter} object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise shape
+     * @param grade        the interpretation quality
+     */
+    public PedalInter (int annotationId,
+                       Rectangle bounds,
+                       OmrShape omrShape,
+                       double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
     }
 
     /**

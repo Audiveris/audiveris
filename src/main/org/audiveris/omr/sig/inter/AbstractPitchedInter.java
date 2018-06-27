@@ -124,7 +124,7 @@ public abstract class AbstractPitchedInter
      * @param staff        the related staff
      * @param pitch        the pitch value WRT staff
      */
-    public AbstractPitchedInter (Integer annotationId,
+    public AbstractPitchedInter (int annotationId,
                                  Rectangle bounds,
                                  OmrShape omrShape,
                                  double grade,

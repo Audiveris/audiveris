@@ -23,10 +23,13 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -51,6 +54,20 @@ public class BreathMarkInter
                             double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.BREATH_MARK, grade);
+    }
+
+    /**
+     * Creates a new {@code BreathMarkInter} object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       the bounding box
+     * @param grade        the interpretation quality
+     */
+    public BreathMarkInter (int annotationId,
+                            Rectangle bounds,
+                            double grade)
+    {
+        super(annotationId, bounds, OmrShape.breathMarkComma, grade);
     }
 
     /**
@@ -94,6 +111,37 @@ public class BreathMarkInter
         }
 
         final BreathMarkInter breathMark = new BreathMarkInter(glyph, grade);
+        breathMark.setStaff(staff);
+
+        return breathMark;
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * (Try to) create a breathMark inter.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       the breath bounds
+     * @param grade        the interpretation quality
+     * @param system       the related system
+     * @return the created breathMark or null
+     */
+    public static BreathMarkInter create (int annotationId,
+                                          Rectangle bounds,
+                                          double grade,
+                                          SystemInfo system)
+    {
+        // Look for staff below
+        final Point center = GeoUtil.centerOf(bounds);
+        final Staff staff = system.getStaffAtOrBelow(center);
+
+        if (staff == null) {
+            return null;
+        }
+
+        final BreathMarkInter breathMark = new BreathMarkInter(annotationId, bounds, grade);
         breathMark.setStaff(staff);
 
         return breathMark;

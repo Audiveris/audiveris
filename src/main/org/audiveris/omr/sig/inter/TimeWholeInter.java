@@ -75,7 +75,7 @@ public class TimeWholeInter
      *                     timeSig2over4)
      * @param grade        evaluation grade
      */
-    public TimeWholeInter (Integer annotationId,
+    public TimeWholeInter (int annotationId,
                            Rectangle bounds,
                            OmrShape omrShape,
                            double grade)

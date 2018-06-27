@@ -73,7 +73,7 @@ public class KeyAlterInter
      * @param pitch         the pitch value WRT staff
      * @param measuredPitch the measured pitch
      */
-    public KeyAlterInter (Integer annotationId,
+    public KeyAlterInter (int annotationId,
                           Rectangle bounds,
                           OmrShape omrShape,
                           double grade,
@@ -156,7 +156,7 @@ public class KeyAlterInter
      * @param staff        related staff
      * @return the created instance or null if failed
      */
-    public static KeyAlterInter create (Integer annotationId,
+    public static KeyAlterInter create (int annotationId,
                                         Rectangle bounds,
                                         OmrShape omrShape,
                                         double grade,

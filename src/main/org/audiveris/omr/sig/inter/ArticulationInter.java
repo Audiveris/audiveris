@@ -31,6 +31,8 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omrdataset.api.OmrShape;
+import org.audiveris.omrdataset.api.OmrShapes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +72,26 @@ public class ArticulationInter
                               double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
+    }
+
+    /**
+     * Creates a new ArticulationInter object.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise OmrShape in {@link OmrShapes#ARTICULATIONS}
+     * @param grade        evaluation value
+     */
+    public ArticulationInter (int annotationId,
+                              Rectangle bounds,
+                              OmrShape omrShape,
+                              double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
+
+        if (!OmrShapes.ARTICULATIONS.contains(omrShape)) {
+            throw new IllegalArgumentException(omrShape + " not in ARTICULATIONS");
+        }
     }
 
     /**
@@ -136,6 +158,39 @@ public class ArticulationInter
         }
 
         ArticulationInter artic = new ArticulationInter(glyph, shape, grade);
+        Link link = artic.lookupLink(systemHeadChords);
+
+        if (link != null) {
+            system.getSig().addVertex(artic);
+            link.applyTo(artic);
+
+            return artic;
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create an ArticulationInter.
+     *
+     * @param annotationId     ID of original annotation if any
+     * @param bounds           bounding box
+     * @param omrShape         detected shape
+     * @param system           containing system
+     * @param systemHeadChords system head chords, ordered by abscissa
+     * @return the created articulation or null
+     */
+    public static ArticulationInter createValidAdded (int annotationId,
+                                                      Rectangle bounds,
+                                                      OmrShape omrShape,
+                                                      double grade,
+                                                      SystemInfo system,
+                                                      List<Inter> systemHeadChords)
+    {
+        ArticulationInter artic = new ArticulationInter(annotationId, bounds, omrShape, grade);
         Link link = artic.lookupLink(systemHeadChords);
 
         if (link != null) {

@@ -143,6 +143,105 @@ public abstract class OmrShapes
     /** Map of predefined combos to num/den integer pairs. */
     public static final Map<OmrShape, NumDen> COMBO_MAP = buildComboMap();
 
+    /** Articulations. */
+    public static final EnumSet<OmrShape> ARTICULATIONS = EnumSet.of(
+            articAccentAbove,
+            articAccentBelow,
+            articStaccatoAbove,
+            articStaccatoBelow,
+            articTenutoAbove,
+            articTenutoBelow,
+            articStaccatissimoAbove,
+            articStaccatissimoBelow,
+            articMarcatoAbove,
+            articMarcatoBelow,
+            articTenutoStaccatoAbove,
+            articTenutoStaccatoBelow);
+
+    /** Flags. */
+    public static final EnumSet<OmrShape> FLAGS = EnumSet.of(
+            flag8thUp,
+            flag8thUpSmall,
+            flag16thUp,
+            flag32ndUp,
+            flag64thUp,
+            flag128thUp,
+            flag256thUp,
+            flag512thUp,
+            flag1024thUp,
+            flag8thDown,
+            flag8thDownSmall,
+            flag16thDown,
+            flag32ndDown,
+            flag64thDown,
+            flag128thDown,
+            flag256thDown,
+            flag512thDown,
+            flag1024thDown);
+
+    /** Rests. */
+    public static final EnumSet<OmrShape> RESTS = EnumSet.of(
+            restMaxima,
+            restLonga,
+            restDoubleWhole,
+            restWhole,
+            restHalf,
+            restQuarter,
+            rest8th,
+            rest16th,
+            rest32nd,
+            rest64th,
+            rest128th,
+            rest256th,
+            rest512th,
+            rest1024th,
+            restHBar);
+
+    /** Accidentals. */
+    public static final EnumSet<OmrShape> ACCIDENTALS = EnumSet.of(
+            accidentalFlat,
+            accidentalFlatSmall,
+            accidentalNatural,
+            accidentalNaturalSmall,
+            accidentalSharp,
+            accidentalSharpSmall,
+            accidentalDoubleSharp,
+            accidentalDoubleFlat);
+
+    /** Dynamics. */
+    public static final EnumSet<OmrShape> DYNAMICS = EnumSet.of(
+            dynamicPiano,
+            dynamicMezzo,
+            dynamicForte,
+            dynamicRinforzando,
+            dynamicSforzando,
+            dynamicZ,
+            dynamicNiente,
+            dynamicPPPPPP,
+            dynamicPPPPP,
+            dynamicPPPP,
+            dynamicPPP,
+            dynamicPP,
+            dynamicMP,
+            dynamicMF,
+            dynamicPF,
+            dynamicFF,
+            dynamicFFF,
+            dynamicFFFF,
+            dynamicFFFFF,
+            dynamicFFFFFF,
+            dynamicFortePiano,
+            dynamicForzando,
+            dynamicSforzando1,
+            dynamicSforzandoPiano,
+            dynamicSforzandoPianissimo,
+            dynamicSforzato,
+            dynamicSforzatoPiano,
+            dynamicSforzatoFF,
+            dynamicRinforzando1,
+            dynamicRinforzando2
+    );
+
     //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the list of OmrShape values, to be used by DL4J.

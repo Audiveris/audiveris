@@ -111,9 +111,9 @@ public interface Inter
     /**
      * Report the ID of the original annotation if any.
      *
-     * @return the original annotation ID or null
+     * @return the original annotation ID or 0
      */
-    Integer getAnnotationId ();
+    int getAnnotationId ();
 
     /**
      * Report the precise defining area

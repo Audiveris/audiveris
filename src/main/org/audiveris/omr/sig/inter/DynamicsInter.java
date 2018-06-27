@@ -35,6 +35,7 @@ import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.VerticalSide;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,6 +166,22 @@ public class DynamicsInter
                           double grade)
     {
         super(glyph, null, shape, grade);
+    }
+
+    /**
+     * Creates a new DynamicsInter object.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise shape
+     * @param grade        evaluation value
+     */
+    public DynamicsInter (int annotationId,
+                          Rectangle bounds,
+                          OmrShape omrShape,
+                          double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
     }
 
     /**

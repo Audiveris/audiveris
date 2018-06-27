@@ -98,7 +98,7 @@ public class SentenceInter
     /**
      * Creates a new {@code SentenceInter} object.
      *
-     * @param bounds   the bounding bounds
+     * @param bounds   the bounding box
      * @param grade    the interpretation quality
      * @param meanFont the font averaged on whole text line
      * @param role     text role for the line

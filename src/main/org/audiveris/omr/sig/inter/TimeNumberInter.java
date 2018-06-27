@@ -88,7 +88,7 @@ public class TimeNumberInter
      * @param grade        evaluation value
      * @param side         top or bottom
      */
-    public TimeNumberInter (Integer annotationId,
+    public TimeNumberInter (int annotationId,
                             Rectangle bounds,
                             OmrShape omrShape,
                             double grade,
@@ -164,7 +164,7 @@ public class TimeNumberInter
      * @param staff        related staff
      * @return the created instance or null if failed
      */
-    public static TimeNumberInter create (Integer annotationId,
+    public static TimeNumberInter create (int annotationId,
                                           Rectangle bounds,
                                           OmrShape omrShape,
                                           double grade,

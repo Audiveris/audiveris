@@ -177,7 +177,7 @@ public class HeadInter
      * @param staff        the related staff
      * @param pitch        the note pitch
      */
-    public HeadInter (Integer annotationId,
+    public HeadInter (int annotationId,
                       Rectangle bounds,
                       OmrShape omrShape,
                       double grade,

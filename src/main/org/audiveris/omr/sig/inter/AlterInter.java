@@ -98,14 +98,14 @@ public class AlterInter
      * Creates a new AlterInter object.
      *
      * @param annotationId  ID of the original annotation if any
-     * @param bounds        the alter bounds
+     * @param bounds        bounding box
      * @param omrShape      precise shape
      * @param grade         evaluation value
      * @param staff         the related staff
      * @param pitch         the pitch value WRT staff
      * @param measuredPitch the measured pitch
      */
-    public AlterInter (Integer annotationId,
+    public AlterInter (int annotationId,
                        Rectangle bounds,
                        OmrShape omrShape,
                        double grade,
@@ -200,6 +200,37 @@ public class AlterInter
         Pitches pitches = computePitch(glyph, shape, staff);
 
         return new AlterInter(glyph, shape, grade, staff, pitches.pitch, pitches.measuredPitch);
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create an Alter inter, with a grade value, determining pitch WRT provided staff.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     detected shape
+     * @param grade        evaluation value
+     * @param staff        closest staff (questionable)
+     * @return the created instance
+     */
+    public static AlterInter create (int annotationId,
+                                     Rectangle bounds,
+                                     OmrShape omrShape,
+                                     double grade,
+                                     Staff staff)
+    {
+        Pitches p = computePitch(bounds, omrShape, staff);
+
+        return new AlterInter(
+                annotationId,
+                bounds,
+                omrShape,
+                grade,
+                staff,
+                p.pitch,
+                p.measuredPitch);
     }
 
     //--------//

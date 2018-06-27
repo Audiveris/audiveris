@@ -23,10 +23,8 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
 import static org.audiveris.omr.glyph.ShapeSet.SmallFlags;
-
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.sheet.Scale;
@@ -35,6 +33,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +86,22 @@ public abstract class AbstractFlagInter
         super(glyph, null, shape, grade);
     }
 
+    /**
+     * Creates a new {@code AbstractFlagInter} object.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise shape
+     * @param grade        evaluation value
+     */
+    protected AbstractFlagInter (int annotationId,
+                                 Rectangle bounds,
+                                 OmrShape omrShape,
+                                 double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // createValidAdded //
@@ -112,6 +127,45 @@ public abstract class AbstractFlagInter
                                                       List<Inter> systemStems)
     {
         AbstractFlagInter flag = new FlagInter(glyph, shape, grade);
+
+        Link link = flag.lookupLink(systemStems);
+
+        if (link != null) {
+            system.getSig().addVertex(flag);
+            link.applyTo(flag);
+
+            return flag;
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add a Flag inter (either standard FlagInter or SmallFlagInter).
+     * <p>
+     * At this time note heads have already been validated (with their attached stem).
+     * So, a flag is created only if it can be related to stems with consistent size head(s),
+     * and if it is correctly located WRT note heads on the stem.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     flag shape
+     * @param grade        the interpretation quality
+     * @param system       the related system
+     * @param systemStems  ordered collection of stems in system
+     * @return the created instance or null
+     */
+    public static AbstractFlagInter createValidAdded (int annotationId,
+                                                      Rectangle bounds,
+                                                      OmrShape omrShape,
+                                                      double grade,
+                                                      SystemInfo system,
+                                                      List<Inter> systemStems)
+    {
+        AbstractFlagInter flag = new FlagInter(annotationId, bounds, omrShape, grade);
 
         Link link = flag.lookupLink(systemStems);
 

@@ -21,10 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import java.awt.Rectangle;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code SmallFlagInter} is a flag for grace note (with or without slash).
@@ -49,6 +51,22 @@ public class SmallFlagInter
                            double grade)
     {
         super(glyph, shape, grade);
+    }
+
+    /**
+     * Creates a new SmallFlagInter object.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     flag shape
+     * @param grade        evaluation value
+     */
+    public SmallFlagInter (int annotationId,
+                           Rectangle bounds,
+                           OmrShape omrShape,
+                           double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
     }
 
     /**

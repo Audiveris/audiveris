@@ -113,7 +113,8 @@ public abstract class AbstractInter
 
     /** ID of original annotation, if any. */
     @XmlAttribute(name = "annotation-id")
-    protected Integer annotationId;
+    @XmlJavaTypeAdapter(type = int.class, value = Jaxb.IntegerPositiveAdapter.class)
+    protected int annotationId;
 
     /** The underlying glyph, if any. */
     @XmlIDREF
@@ -233,7 +234,7 @@ public abstract class AbstractInter
      * @param omrShape     the OMR shape
      * @param grade        the interpretation quality
      */
-    public AbstractInter (Integer annotationId,
+    public AbstractInter (int annotationId,
                           Rectangle bounds,
                           OmrShape omrShape,
                           double grade)
@@ -428,7 +429,7 @@ public abstract class AbstractInter
     // getAnnotationId //
     //-----------------//
     @Override
-    public Integer getAnnotationId ()
+    public int getAnnotationId ()
     {
         return annotationId;
     }
@@ -1233,7 +1234,7 @@ public abstract class AbstractInter
 
         sb.append(")");
 
-        if (annotationId != null) {
+        if (annotationId > 0) {
             sb.append(" S").append(annotationId);
         }
 

@@ -36,6 +36,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +91,22 @@ public class TupletInter
     }
 
     /**
+     * Creates a new {@code TupletInter} object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise shape
+     * @param grade        the inter quality
+     */
+    public TupletInter (int annotationId,
+                        Rectangle bounds,
+                        OmrShape omrShape,
+                        double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
     private TupletInter ()
@@ -97,6 +114,82 @@ public class TupletInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // createValid //
+    //-------------//
+    /**
+     * (Try to) create a tuplet inter, checking that there is at least one (head) chord
+     * nearby.
+     *
+     * @param glyph        the candidate tuplet glyph
+     * @param shape        TUPLET_THREE or TUPLET_SIX
+     * @param grade        the interpretation quality
+     * @param system       the related system
+     * @param systemChords abscissa-ordered list of chords in this system
+     * @return the create TupletInter or null
+     */
+    public static TupletInter createValid (Glyph glyph,
+                                           Shape shape,
+                                           double grade,
+                                           SystemInfo system,
+                                           List<Inter> systemChords)
+    {
+        Rectangle luBox = glyph.getBounds();
+        Scale scale = system.getSheet().getScale();
+        luBox.grow(
+                scale.toPixels(constants.maxTupletChordDx),
+                scale.toPixels(constants.maxTupletChordDy));
+
+        List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
+
+        if (nearby.isEmpty()) {
+            logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
+
+            return null;
+        }
+
+        return new TupletInter(glyph, shape, grade);
+    }
+
+    //-------------//
+    // createValid //
+    //-------------//
+    /**
+     * (Try to) create a tuplet inter, checking that there is at least one (head) chord
+     * nearby.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     detected shape
+     * @param grade        the interpretation quality
+     * @param system       the related system
+     * @param systemChords abscissa-ordered list of chords in this system
+     * @return the create TupletInter or null
+     */
+    public static TupletInter createValid (int annotationId,
+                                           Rectangle bounds,
+                                           OmrShape omrShape,
+                                           double grade,
+                                           SystemInfo system,
+                                           List<Inter> systemChords)
+    {
+        Rectangle luBox = new Rectangle(bounds);
+        Scale scale = system.getSheet().getScale();
+        luBox.grow(
+                scale.toPixels(constants.maxTupletChordDx),
+                scale.toPixels(constants.maxTupletChordDy));
+
+        List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
+
+        if (nearby.isEmpty()) {
+            logger.debug("Discarding isolated tuplet candidate annotation#{}", annotationId);
+
+            return null;
+        }
+
+        return new TupletInter(annotationId, bounds, omrShape, grade);
+    }
+
     //--------//
     // accept //
     //--------//
@@ -140,43 +233,6 @@ public class TupletInter
         setAbnormal(embraced == null);
 
         return isAbnormal();
-    }
-
-    //-------------//
-    // createValid //
-    //-------------//
-    /**
-     * (Try to) create a tuplet inter, checking that there is at least one (head) chord
-     * nearby.
-     *
-     * @param glyph        the candidate tuplet glyph
-     * @param shape        TUPLET_THREE or TUPLET_SIX
-     * @param grade        the interpretation quality
-     * @param system       the related system
-     * @param systemChords abscissa-ordered list of chords in this system
-     * @return the create TupletInter or null
-     */
-    public static TupletInter createValid (Glyph glyph,
-                                           Shape shape,
-                                           double grade,
-                                           SystemInfo system,
-                                           List<Inter> systemChords)
-    {
-        Rectangle luBox = glyph.getBounds();
-        Scale scale = system.getSheet().getScale();
-        luBox.grow(
-                scale.toPixels(constants.maxTupletChordDx),
-                scale.toPixels(constants.maxTupletChordDy));
-
-        List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
-
-        if (nearby.isEmpty()) {
-            logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
-
-            return null;
-        }
-
-        return new TupletInter(glyph, shape, grade);
     }
 
     //-----------------//

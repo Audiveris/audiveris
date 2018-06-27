@@ -26,8 +26,10 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -56,6 +58,22 @@ public class MarkerInter
                         double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
+    }
+
+    /**
+     * Creates a new {@code MarkerInter} object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise shape
+     * @param grade        quality
+     */
+    public MarkerInter (int annotationId,
+                        Rectangle bounds,
+                        OmrShape omrShape,
+                        double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
     }
 
     /**
@@ -98,6 +116,31 @@ public class MarkerInter
         return marker;
     }
 
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a MarkerInter.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     detected shape
+     * @param grade        evaluation value
+     * @param staff        related staff
+     * @return the created instance
+     */
+    public static MarkerInter create (int annotationId,
+                                      Rectangle bounds,
+                                      OmrShape omrShape,
+                                      double grade,
+                                      Staff staff)
+    {
+        MarkerInter marker = new MarkerInter(annotationId, bounds, omrShape, grade);
+        marker.setStaff(staff);
+
+        return marker;
+    }
+
     //----------------------//
     // linkWithStaffBarline //
     //----------------------//
@@ -110,7 +153,9 @@ public class MarkerInter
     {
         Point center = getCenter();
         List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
-        StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
+        StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(
+                staffBars,
+                center);
 
         if ((staffBar != null) && (GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) > 0)) {
             sig.addEdge(this, staffBar, new MarkerBarRelation());

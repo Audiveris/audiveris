@@ -21,11 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.symbol;
 
+import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
 import org.audiveris.omr.sheet.Sheet;
@@ -76,10 +78,13 @@ import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -186,6 +191,26 @@ public class InterFactory
         }
     }
 
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create and add to SIG the proper inter instance(s) for provided annotation.
+     *
+     * @param annotation   provided annotation
+     * @param closestStaff only the closest staff, ordinate-wise
+     */
+    public void create (Annotation annotation,
+                        Staff closestStaff)
+    {
+        final Inter inter = doCreate(annotation, closestStaff);
+
+        // Add to SIG if not already done
+        if ((inter != null) && (inter.getSig() == null)) {
+            sig.addVertex(inter);
+        }
+    }
+
     //--------------//
     // createManual //
     //--------------//
@@ -278,6 +303,336 @@ public class InterFactory
         }
 
         return systemNotes;
+    }
+
+    //----------//
+    // doCreate //
+    //----------//
+    /**
+     * Create proper inter instance(s) for provided annotation.
+     * <p>
+     * This method addresses only the symbols handled via a classifier.
+     * In current OMR design, this does not address: <ul>
+     * <li>Brace
+     * <li>Bracket
+     * <li>Barline
+     * <li>Beam, Beam_hook
+     * <li>Head (already done)
+     * <li>Time (already done)
+     * <li>Fermata, Fermata_below SHOULD!
+     * <li>Ledger
+     * <li>Stem
+     * <li>Curve
+     * <li>Text, Lyrics
+     * </ul>
+     *
+     * @param annotation   provided annotation
+     * @param closestStaff only the closest staff, ordinate-wise
+     */
+    private Inter doCreate (Annotation annotation,
+                            Staff closestStaff)
+    {
+        final OmrShape omrShape = annotation.getOmrShape();
+        final Rectangle bounds = annotation.getBounds();
+        final int id = annotation.getId();
+        final double grade = Grades.intrinsicRatio * annotation.getConfidence();
+
+        if (annotation.isVip()) {
+            logger.info("VIP annotation#{} symbol created as {}", annotation.getId(), omrShape);
+        }
+
+        switch (omrShape) {
+        // Brace and bracket: No
+        //
+        // Ledger: No
+        //
+        // Barlines: No
+        //
+        // Repeats
+        case repeatDot:
+            ///return new AugmentationDotInter(id, bounds, grade);
+            dotFactory.instantDotChecks(annotation);
+
+            return null;
+
+        case dalSegno:
+        case daCapo:
+        case segno:
+        case coda:
+        case codaSquare: {
+            MarkerInter marker = MarkerInter.create(id, bounds, omrShape, grade, closestStaff); // OK
+
+            sig.addVertex(marker);
+            marker.linkWithStaffBarline();
+
+            return marker;
+        }
+
+        // Clefs
+        case gClef:
+        case gClef8vb:
+        case gClef8va:
+        case gClef15mb:
+        case gClef15ma:
+        case cClefAlto:
+        case cClefTenor:
+        case fClef:
+        case fClef8vb:
+        case fClef8va:
+        case fClef15mb:
+        case fClef15ma:
+        case unpitchedPercussionClef1:
+        case gClefChange:
+        case cClefAltoChange:
+        case cClefTenorChange:
+        case fClefChange:
+            return ClefInter.create(id, bounds, omrShape, grade, closestStaff); // Staff is OK
+
+        // Keys?
+        //
+        // Times (all have been addressed in TIMES step)
+        //
+        // Heads: No
+        case augmentationDot:
+            ///return new AugmentationDotInter(id, bounds, grade);
+            dotFactory.instantDotChecks(annotation);
+
+            return null;
+
+        // Stem: No
+        //
+        // Tremolo???
+        //
+        // Flags
+        case flag8thUp:
+        case flag16thUp:
+        case flag32ndUp:
+        case flag64thUp:
+        case flag128thUp:
+        case flag256thUp:
+        case flag512thUp:
+        case flag1024thUp:
+        case flag8thDown:
+        case flag16thDown:
+        case flag32ndDown:
+        case flag64thDown:
+        case flag128thDown:
+        case flag256thDown:
+        case flag512thDown:
+        case flag1024thDown:
+            return AbstractFlagInter.createValidAdded(
+                    id,
+                    bounds,
+                    omrShape,
+                    grade,
+                    system,
+                    systemStems);
+
+        // Small flags
+        case flag8thUpSmall:
+        case flag8thDownSmall:
+            return new SmallFlagInter(id, bounds, omrShape, grade);
+
+        // Accidentals
+        case accidentalFlat:
+        case accidentalFlatSmall:
+        case accidentalNatural:
+        case accidentalNaturalSmall:
+        case accidentalSharp:
+        case accidentalSharpSmall:
+        case accidentalDoubleSharp:
+        case accidentalDoubleFlat: {
+            AlterInter alter = AlterInter.create(id, bounds, omrShape, grade, closestStaff); // Staff is very questionable!
+
+            sig.addVertex(alter);
+            alter.setLinks(systemHeads);
+
+            return alter;
+        }
+
+        // Articulations
+        case articAccentAbove:
+        case articAccentBelow:
+        case articStaccatoAbove:
+        case articStaccatoBelow:
+        case articTenutoAbove:
+        case articTenutoBelow:
+        case articStaccatissimoAbove:
+        case articStaccatissimoBelow:
+        case articMarcatoAbove:
+        case articMarcatoBelow:
+        case articTenutoStaccatoAbove:
+        case articTenutoStaccatoBelow:
+            return ArticulationInter.createValidAdded(
+                    id,
+                    bounds,
+                    omrShape,
+                    grade,
+                    system,
+                    systemHeadChords);
+
+        // Holds
+        case fermataAbove:
+        case fermataBelow: {
+            FermataInter fermata = new FermataInter(id, bounds, omrShape, grade);
+            fermata.setStaff(closestStaff);
+
+            return fermata;
+        }
+
+        case breathMarkComma:
+            return BreathMarkInter.create(id, bounds, grade, system);
+
+        case caesura:
+            return CaesuraInter.create(id, bounds, grade, system);
+
+        // Rests (very close to staff)
+        case restMaxima:
+        case restLonga:
+        case restDoubleWhole:
+        case restWhole: {
+            Point center = GeoUtil.centerOf(bounds);
+            final double restPitch = closestStaff.pitchPositionOf(center);
+            RestInter restInter = new RestInter(
+                    id,
+                    bounds,
+                    omrShape,
+                    grade,
+                    closestStaff,
+                    restPitch);
+            closestStaff.addNote(restInter);
+
+            return restInter;
+        }
+
+        // Rests (perhaps far from staff)
+        case restHalf:
+        case restQuarter:
+        case rest8th:
+        case rest16th:
+        case rest32nd:
+        case rest64th:
+        case rest128th:
+        case rest256th:
+        case rest512th:
+        case rest1024th:
+        case restHBar: {
+            ///return RestInter.createValid(id, bounds, omrShape, grade, system, systemHeadChords);
+            //TODO: should use a finer detection for staff see RestInter.createValid method
+            Point center = GeoUtil.centerOf(bounds);
+            final double restPitch = closestStaff.pitchPositionOf(center);
+            RestInter restInter = new RestInter(
+                    id,
+                    bounds,
+                    omrShape,
+                    grade,
+                    closestStaff,
+                    restPitch);
+            closestStaff.addNote(restInter);
+
+            return restInter;
+        }
+
+        // Octaves???
+        //
+        // Dynamics
+        case dynamicPiano:
+        case dynamicMezzo:
+        case dynamicForte:
+        case dynamicRinforzando:
+        case dynamicSforzando:
+        case dynamicZ:
+        case dynamicNiente:
+        case dynamicPPPPPP:
+        case dynamicPPPPP:
+        case dynamicPPPP:
+        case dynamicPPP:
+        case dynamicPP:
+        case dynamicMP:
+        case dynamicMF:
+        case dynamicPF:
+        case dynamicFF:
+        case dynamicFFF:
+        case dynamicFFFF:
+        case dynamicFFFFF:
+        case dynamicFFFFFF:
+        case dynamicFortePiano:
+        case dynamicForzando:
+        case dynamicSforzando1:
+        case dynamicSforzandoPiano:
+        case dynamicSforzandoPianissimo:
+        case dynamicSforzato:
+        case dynamicSforzatoPiano:
+        case dynamicSforzatoFF:
+        case dynamicRinforzando1:
+        case dynamicRinforzando2:
+            return new DynamicsInter(id, bounds, omrShape, grade);
+
+        // Ornaments
+        case graceNoteAcciaccaturaStemUp:
+        case graceNoteAppoggiaturaStemUp:
+        case graceNoteAcciaccaturaStemDown:
+        case graceNoteAppoggiaturaStemDown:
+        case ornamentTrill:
+        case ornamentTurn:
+        case ornamentTurnInverted:
+        case ornamentTurnSlash:
+        case ornamentTurnUp:
+        case ornamentMordent:
+        case ornamentMordentInverted:
+            return OrnamentInter.createValidAdded(
+                    id,
+                    bounds,
+                    omrShape,
+                    grade,
+                    system,
+                    systemHeadChords);
+
+        // String techniques???
+        //
+        // Plucked techniques
+        case arpeggiato:
+            return ArpeggiatoInter.createValidAdded(id, bounds, grade, system, systemHeadChords);
+
+        // Keyboards
+        case keyboardPedalPed:
+        case keyboardPedalUp:
+            return new PedalInter(id, bounds, omrShape, grade);
+
+        // Tuplets
+        case tuplet3:
+        case tuplet6:
+            return TupletInter.createValid(id, bounds, omrShape, grade, system, systemHeadChords);
+
+        // Fingering
+        case fingering0:
+        case fingering1:
+        case fingering2:
+        case fingering3:
+        case fingering4:
+        case fingering5:
+            return switches.getValue(Switch.fingerings)
+                    ? new FingeringInter(id, bounds, omrShape, grade) : null;
+
+        // Plucking
+        case fingeringPLower:
+        case fingeringILower:
+        case fingeringMLower:
+        case fingeringALower:
+            return switches.getValue(Switch.pluckings)
+                    ? new PluckingInter(id, bounds, omrShape, grade) : null;
+
+        //
+        // Romans ???
+        //            return switches.getValue(Switch.frets) ? new FretInter(glyph, shape, grade) : null;
+        //
+        //
+        // Others
+        default:
+            logger.info("No support yet for {}", omrShape);
+
+            return null;
+        }
     }
 
     //----------//

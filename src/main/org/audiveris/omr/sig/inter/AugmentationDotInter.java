@@ -35,6 +35,7 @@ import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
+
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 
 import org.slf4j.Logger;
@@ -48,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code AugmentationDotInter} represent an augmentation dot for a note or a rest.
@@ -73,6 +75,20 @@ public class AugmentationDotInter
                                  double grade)
     {
         super(glyph, null, Shape.AUGMENTATION_DOT, grade);
+    }
+
+    /**
+     * Creates a new {@code AugmentationDotInter} object.
+     *
+     * @param annotationId ID of original annotation if any
+     * @param bounds       bounding box
+     * @param grade        evaluation value
+     */
+    public AugmentationDotInter (int annotationId,
+                                 Rectangle bounds,
+                                 double grade)
+    {
+        super(annotationId, bounds, OmrShape.augmentationDot, grade);
     }
 
     /**

@@ -85,7 +85,7 @@ public abstract class AbstractNumberInter
      * @param omrShape     precise shape
      * @param grade        evaluation value
      */
-    public AbstractNumberInter (Integer annotationId,
+    public AbstractNumberInter (int annotationId,
                                 Rectangle bounds,
                                 OmrShape omrShape,
                                 double grade)

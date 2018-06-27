@@ -26,6 +26,7 @@ import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sig.GradeImpacts;
 
 import java.awt.Rectangle;
+import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code AbstractDirectionInter} represents any direction.
@@ -52,6 +53,22 @@ public abstract class AbstractDirectionInter
                                    double grade)
     {
         super(glyph, box, shape, grade);
+    }
+
+    /**
+     * Creates a new {@code AbstractDirectionInter} object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       bounding box
+     * @param omrShape     precise shape
+     * @param grade        the interpretation quality
+     */
+    public AbstractDirectionInter (int annotationId,
+                                   Rectangle bounds,
+                                   OmrShape omrShape,
+                                   double grade)
+    {
+        super(annotationId, bounds, omrShape, grade);
     }
 
     /**

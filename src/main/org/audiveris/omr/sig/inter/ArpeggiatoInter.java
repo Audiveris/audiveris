@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code ArpeggiatoInter} represents the arpeggiato notation along the heads
@@ -70,6 +71,20 @@ public class ArpeggiatoInter
                             double grade)
     {
         super(glyph, (glyph != null) ? glyph.getBounds() : null, Shape.ARPEGGIATO, grade);
+    }
+
+    /**
+     * Creates a new {@code ArpeggiatoInter} object.
+     *
+     * @param annotationId ID of the original annotation if any
+     * @param bounds       the bounding box
+     * @param grade        the interpretation quality
+     */
+    public ArpeggiatoInter (int annotationId,
+                            Rectangle bounds,
+                            double grade)
+    {
+        super(annotationId, bounds, OmrShape.arpeggiato, grade);
     }
 
     /**
@@ -130,6 +145,39 @@ public class ArpeggiatoInter
                                                     List<Inter> systemHeadChords)
     {
         ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
+
+        Link link = arpeggiato.lookupLink(systemHeadChords, system);
+
+        if (link != null) {
+            system.getSig().addVertex(arpeggiato);
+            link.applyTo(arpeggiato);
+
+            return arpeggiato;
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add an arpeggiato inter.
+     *
+     * @param annotationId     ID of the original annotation if any
+     * @param bounds           the bounding box
+     * @param grade            the interpretation quality
+     * @param system           the related system
+     * @param systemHeadChords abscissa-ordered list of head-chords in this system
+     * @return the created arpeggiato or null
+     */
+    public static ArpeggiatoInter createValidAdded (int annotationId,
+                                                    Rectangle bounds,
+                                                    double grade,
+                                                    SystemInfo system,
+                                                    List<Inter> systemHeadChords)
+    {
+        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(annotationId, bounds, grade);
 
         Link link = arpeggiato.lookupLink(systemHeadChords, system);
 
