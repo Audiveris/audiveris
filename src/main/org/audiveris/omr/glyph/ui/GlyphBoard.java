@@ -25,7 +25,7 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -145,12 +145,12 @@ public class GlyphBoard
 
         if (entity != null) {
             // Group
-            EnumSet<Group> groups = entity.getGroups();
+            EnumSet<GlyphGroup> groups = entity.getGroups();
 
             if (groups.isEmpty()) {
                 groupField.setText("");
             } else {
-                Group firstFroup = groups.iterator().next();
+                GlyphGroup firstFroup = groups.iterator().next();
                 groupField.setText(firstFroup.toString());
             }
         } else {

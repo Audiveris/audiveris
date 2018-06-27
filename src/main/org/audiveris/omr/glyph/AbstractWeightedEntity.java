@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                   A b s t r a c t S y m b o l                                  //
+//                           A b s t r a c t W e i g h t e d E n t i t y                          //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -40,19 +40,19 @@ import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code AbstractSymbol}
+ * Class {@code AbstractWeightedEntity}
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "symbol")
-public abstract class AbstractSymbol
+public abstract class AbstractWeightedEntity
         extends AbstractEntity
-        implements Symbol
+        implements WeightedEntity
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final EnumSet<Group> NO_GROUP = EnumSet.noneOf(Group.class);
+    private static final EnumSet<GlyphGroup> NO_GROUP = EnumSet.noneOf(GlyphGroup.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -62,7 +62,7 @@ public abstract class AbstractSymbol
     /** Assigned groups, if any. */
     @XmlList
     @XmlAttribute
-    protected EnumSet<Group> groups = EnumSet.noneOf(Group.class);
+    protected EnumSet<GlyphGroup> groups = EnumSet.noneOf(GlyphGroup.class);
 
     // Transient data
     //---------------
@@ -74,7 +74,7 @@ public abstract class AbstractSymbol
     /**
      * Creates a new {@code AbstractSymbol} object.
      */
-    protected AbstractSymbol ()
+    protected AbstractWeightedEntity ()
     {
     }
 
@@ -93,11 +93,11 @@ public abstract class AbstractSymbol
     }
 
     @Override
-    public void addGroup (Group group)
+    public void addGroup (GlyphGroup group)
     {
         if (group != null) {
             if (groups == null) {
-                groups = EnumSet.noneOf(Group.class);
+                groups = EnumSet.noneOf(GlyphGroup.class);
             }
 
             groups.add(group);
@@ -125,7 +125,7 @@ public abstract class AbstractSymbol
     }
 
     @Override
-    public EnumSet<Group> getGroups ()
+    public EnumSet<GlyphGroup> getGroups ()
     {
         if (groups != null) {
             return groups;
@@ -147,7 +147,7 @@ public abstract class AbstractSymbol
     }
 
     @Override
-    public boolean hasGroup (Group group)
+    public boolean hasGroup (GlyphGroup group)
     {
         if (groups == null) {
             return false;

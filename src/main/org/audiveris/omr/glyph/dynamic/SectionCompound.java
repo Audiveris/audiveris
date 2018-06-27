@@ -23,15 +23,18 @@ package org.audiveris.omr.glyph.dynamic;
 
 import ij.process.ByteProcessor;
 
-import org.audiveris.omr.glyph.AbstractSymbol;
+import org.audiveris.omr.glyph.AbstractWeightedEntity;
 import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.Barycenter;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
+
 import static org.audiveris.omr.run.Orientation.*;
+
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.util.ByteUtil;
@@ -52,7 +55,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class SectionCompound
-        extends AbstractSymbol
+        extends AbstractWeightedEntity
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
@@ -444,7 +447,7 @@ public class SectionCompound
      * @param group targeted group, perhaps null
      * @return a glyph made of compound pixels
      */
-    public Glyph toGlyph (Group group)
+    public Glyph toGlyph (GlyphGroup group)
     {
         // Fill buffer with section pixels
         final ByteProcessor buffer = toBuffer();

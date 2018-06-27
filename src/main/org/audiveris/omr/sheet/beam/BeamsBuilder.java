@@ -30,7 +30,7 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.image.AreaMask;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.math.AreaUtil;
@@ -39,7 +39,9 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
+
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -62,11 +64,15 @@ import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.VerticalSide;
+
 import static org.audiveris.omr.util.VerticalSide.*;
+
 import org.audiveris.omr.util.WrappedInteger;
 
 import org.slf4j.Logger;
@@ -186,7 +192,7 @@ public class BeamsBuilder
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
         // First, retrieve beam candidates from spots
-        sortedBeamSpots = system.getGroupedGlyphs(Group.BEAM_SPOT);
+        sortedBeamSpots = system.getGroupedGlyphs(GlyphGroup.BEAM_SPOT);
 
         // Create initial beams by checking spots individually
         createBeams();
@@ -763,7 +769,7 @@ public class BeamsBuilder
     private void extendBeams ()
     {
         // All stem seeds for this system, sorted by abscissa
-        sortedSystemSeeds = system.getGroupedGlyphs(Group.VERTICAL_SEED);
+        sortedSystemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
 
         // The beam & hook inters for this system, NOT sorted by abscissa.
         // We may add to this list, but not remove elements (they are simply logically 'deleted').
@@ -2099,7 +2105,7 @@ public class BeamsBuilder
             List<Inter> beams = new ArrayList<Inter>();
 
             for (Glyph glyph : glyphs) {
-                glyph = system.registerGlyph(glyph, Group.BEAM_SPOT);
+                glyph = system.registerGlyph(glyph, GlyphGroup.BEAM_SPOT);
                 spots.add(glyph);
 
                 List<Inter> glyphBeams = new ArrayList<Inter>();

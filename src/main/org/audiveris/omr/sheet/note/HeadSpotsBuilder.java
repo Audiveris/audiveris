@@ -23,7 +23,7 @@ package org.audiveris.omr.sheet.note;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
@@ -75,7 +75,7 @@ public class HeadSpotsBuilder
     public Map<SystemInfo, List<Glyph>> getSpots ()
     {
         RunTable headRuns = sheet.getPicture().getTable(Picture.TableKey.HEAD_SPOTS);
-        List<Glyph> spots = GlyphFactory.buildGlyphs(headRuns, new Point(0, 0), Group.HEAD_SPOT);
+        List<Glyph> spots = GlyphFactory.buildGlyphs(headRuns, new Point(0, 0), GlyphGroup.HEAD_SPOT);
 
         // Dispose the runTable
         sheet.getPicture().removeTable(Picture.TableKey.HEAD_SPOTS);
@@ -113,7 +113,7 @@ public class HeadSpotsBuilder
                         spotMap.put(system, list = new ArrayList<Glyph>());
                     }
 
-                    spot.addGroup(Group.HEAD_SPOT); // Needed
+                    spot.addGroup(GlyphGroup.HEAD_SPOT); // Needed
                     list.add(spot);
                 }
             }

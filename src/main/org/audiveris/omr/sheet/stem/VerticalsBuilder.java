@@ -32,13 +32,15 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.NearLine;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.dynamic.StickFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
+
 import static org.audiveris.omr.run.Orientation.*;
+
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -246,7 +248,7 @@ public class VerticalsBuilder
             ///logger.debug("suite=> {} for {}", res, stick);
             if (res >= suite.getMinThreshold()) {
                 final Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(null));
-                glyph.addGroup(Group.VERTICAL_SEED); // Needed
+                glyph.addGroup(GlyphGroup.VERTICAL_SEED); // Needed
                 system.addFreeGlyph(glyph);
                 seedNb++;
             }

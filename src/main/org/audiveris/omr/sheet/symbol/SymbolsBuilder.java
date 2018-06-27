@@ -31,7 +31,7 @@ import org.audiveris.omr.glyph.GlyphCluster;
 import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -252,7 +252,7 @@ public class SymbolsBuilder
         // Sorted by abscissa, ordinate, id
         List<Glyph> glyphs = new ArrayList<Glyph>();
 
-        for (Glyph glyph : system.getGroupedGlyphs(Group.SYMBOL)) {
+        for (Glyph glyph : system.getGroupedGlyphs(GlyphGroup.SYMBOL)) {
             final int weight = glyph.getWeight();
 
             if (weight >= params.minWeight) {
@@ -341,7 +341,7 @@ public class SymbolsBuilder
                 // Use just the subgraph for this (sub)set
                 final SimpleGraph<Glyph, GlyphLink> subGraph;
                 subGraph = GlyphCluster.getSubGraph(subSet, systemGraph, true);
-                new GlyphCluster(new SymbolAdapter(subGraph), Group.SYMBOL).decompose();
+                new GlyphCluster(new SymbolAdapter(subGraph), GlyphGroup.SYMBOL).decompose();
             } else {
                 // The set is just an isolated glyph, to be evaluated directly
                 final Glyph glyph = set.iterator().next();

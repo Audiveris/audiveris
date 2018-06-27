@@ -23,9 +23,8 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphIndex;
-import org.audiveris.omr.glyph.Symbol;
-import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.score.LogicalPart;
 import org.audiveris.omr.score.Page;
@@ -551,7 +550,7 @@ public class SystemInfo
      * @param group the desired group
      * @return the glyphs found
      */
-    public List<Glyph> getGroupedGlyphs (Symbol.Group group)
+    public List<Glyph> getGroupedGlyphs (GlyphGroup group)
     {
         List<Glyph> found = new ArrayList<Glyph>();
 
@@ -1181,7 +1180,7 @@ public class SystemInfo
      * @return the (perhaps new) registered glyph
      */
     public Glyph registerGlyph (Glyph glyph,
-                                Group group)
+                                GlyphGroup group)
     {
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
 
@@ -1202,7 +1201,7 @@ public class SystemInfo
      * @param group group to assign, or null
      */
     public void registerGlyphs (List<Glyph> parts,
-                                Group group)
+                                GlyphGroup group)
     {
         for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
             li.set(registerGlyph(li.next(), group));
@@ -1236,12 +1235,12 @@ public class SystemInfo
      *
      * @param group the group of glyphs to remove
      */
-    public void removeGroupedGlyphs (Symbol.Group group)
+    public void removeGroupedGlyphs (GlyphGroup group)
     {
         if (freeGlyphs != null) {
             for (Iterator<BasicGlyph> it = freeGlyphs.iterator(); it.hasNext();) {
                 final Glyph glyph = it.next();
-                final EnumSet<Group> glyphGroups = glyph.getGroups();
+                final EnumSet<GlyphGroup> glyphGroups = glyph.getGroups();
 
                 if ((glyphGroups.size() == 1) && glyphGroups.contains(group)) {
                     it.remove();

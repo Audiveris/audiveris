@@ -26,10 +26,10 @@ import ij.process.ByteProcessor;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import org.audiveris.omr.glyph.Symbol;
 import org.audiveris.omr.image.Anchored.Anchor;
 import static org.audiveris.omr.image.Anchored.Anchor.*;
 import org.audiveris.omr.image.DistanceTable;
@@ -238,7 +238,7 @@ public class NoteHeadsBuilder
         StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
         systemBarRectangles = getSystemBarRectangles();
         systemCompetitors = getSystemCompetitors(); // Competitors
-        systemSeeds = system.getGroupedGlyphs(Symbol.Group.VERTICAL_SEED); // Vertical seeds
+        systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED); // Vertical seeds
         Collections.sort(systemSeeds, Glyphs.byOrdinate);
         Collections.sort(systemSpots, Glyphs.byOrdinate);
         image = sheet.getPicture().getSource(Picture.SourceKey.BINARY);

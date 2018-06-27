@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                           S y m b o l                                          //
+//                                   W e i g h t e d E n t i t y                                  //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -29,61 +29,22 @@ import java.awt.Point;
 import java.util.EnumSet;
 
 /**
- * Interface {@code Symbol} is the base interface for a (fixed or dynamic) set of pixels.
+ * Interface {@code WeightedEntity} is the base interface for a (fixed or dynamic) set
+ * of pixels.
  *
  * @author Hervé Bitteur
  */
-public interface Symbol
+public interface WeightedEntity
         extends Entity, AttachmentHolder
 {
-    //~ Enumerations -------------------------------------------------------------------------------
-
-    /**
-     * This enumeration is used to group glyph instances by their intended use.
-     * A single glyph instance can be assigned several groups.
-     * TODO: perhaps this should be moved from Symbol to Glyph only (not dynamic ones)?
-     */
-    enum Group
-    {
-        //~ Enumeration constant initializers ------------------------------------------------------
-
-        /** Only the first 4 ones are needed. */
-        BEAM_SPOT("Beam-oriented spot"),
-        BLACK_HEAD_SPOT("BlackHead-oriented spot"),
-        BLACK_STACK_SPOT("Stack of blackHead-oriented spot"),
-        HEAD_SPOT("Head-oriented spot"),
-        VERTICAL_SEED("Vertical seed"),
-        SYMBOL("Fixed symbol"),
-        /**
-         * The remaining ones below are not needed. But may still exist in .omr files...
-         */
-        STAFF_LINE("Staff Line"),
-        LEDGER("Ledger"),
-        LEDGER_CANDIDATE("Ledger candidate"),
-        WEAK_PART("Optional part"),
-        TIME_PART("Part of time sig"),
-        ALTER_PART("Part of alteration"),
-        CLEF_PART("Part of clef"),
-        DROP("DnD glyph");
-
-        //~ Instance fields ------------------------------------------------------------------------
-        /** Role of the group. */
-        public final String description;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        Group (String description)
-        {
-            this.description = description;
-        }
-    }
-
     //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Assign a group to this symbol.
      *
      * @param group the group to be added to this glyph
      */
-    void addGroup (Group group);
+    void addGroup (GlyphGroup group);
 
     /**
      * Report the ratio of length over thickness, using provided orientation.
@@ -113,7 +74,7 @@ public interface Symbol
      *
      * @return set of assigned groups
      */
-    EnumSet<Group> getGroups ();
+    EnumSet<GlyphGroup> getGroups ();
 
     /**
      * Report the symbol height in pixels.
@@ -187,5 +148,5 @@ public interface Symbol
      * @param group the group value to check
      * @return true if assigned
      */
-    boolean hasGroup (Group group);
+    boolean hasGroup (GlyphGroup group);
 }

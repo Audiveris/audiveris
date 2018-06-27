@@ -57,7 +57,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlJavaTypeAdapter(BasicGlyph.Adapter.class)
 public interface Glyph
-        extends Symbol, NearLine
+        extends WeightedEntity, NearLine
 {
     //~ Methods ------------------------------------------------------------------------------------
 

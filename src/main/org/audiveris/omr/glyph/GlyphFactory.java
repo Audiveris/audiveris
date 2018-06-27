@@ -23,9 +23,11 @@ package org.audiveris.omr.glyph;
 
 import ij.process.ByteProcessor;
 
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.run.MarkedRun;
+
 import static org.audiveris.omr.run.Orientation.VERTICAL;
+
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
@@ -70,7 +72,7 @@ public class GlyphFactory
     private final Point offset;
 
     /** Target group for all created glyphs. */
-    private final Group group;
+    private final GlyphGroup group;
 
     /** Global list of all glyphs created. */
     private final List<Glyph> created = new ArrayList<Glyph>();
@@ -90,7 +92,7 @@ public class GlyphFactory
     //~ Constructors -------------------------------------------------------------------------------
     private GlyphFactory (RunTable runTable,
                           Point offset,
-                          Group group)
+                          GlyphGroup group)
     {
         this.runTable = runTable;
         this.offset = (offset != null) ? offset : new Point(0, 0);
@@ -158,7 +160,7 @@ public class GlyphFactory
      */
     public static List<Glyph> buildGlyphs (RunTable runTable,
                                            Point offset,
-                                           Group group)
+                                           GlyphGroup group)
     {
         return new GlyphFactory(runTable, offset, group).process();
     }

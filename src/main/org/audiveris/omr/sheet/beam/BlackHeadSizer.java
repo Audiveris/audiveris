@@ -27,8 +27,8 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Glyphs;
-import org.audiveris.omr.glyph.Symbol;
 import org.audiveris.omr.image.MorphoProcessor;
 import org.audiveris.omr.image.StructureElement;
 import org.audiveris.omr.math.Population;
@@ -128,10 +128,10 @@ public class BlackHeadSizer
             final int weight = glyph.getWeight();
 
             if ((height <= params.maxHeight) && (weight <= params.maxWeight)) {
-                glyph.addGroup(Symbol.Group.BLACK_HEAD_SPOT);
+                glyph.addGroup(GlyphGroup.BLACK_HEAD_SPOT);
                 singles.add(glyph);
             } else if ((height >= params.minStackHeight) && (weight >= params.minStackWeight)) {
-                glyph.addGroup(Symbol.Group.BLACK_STACK_SPOT);
+                glyph.addGroup(GlyphGroup.BLACK_STACK_SPOT);
                 stacks.add(glyph);
             }
         }
