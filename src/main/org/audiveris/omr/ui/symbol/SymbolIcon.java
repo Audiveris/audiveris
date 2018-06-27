@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                          S y m b o l                                           //
+//                                      S y m b o l I c o n                                       //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -30,10 +30,11 @@ import java.awt.image.BufferedImage;
 import javax.swing.Icon;
 
 /**
- * Interface {@code Symbol} handles the display of a symbol.
- * A Symbol can provide several features:<ul>
+ * Interface {@code SymbolIcon} handles the display of a symbol.
+ * A SymbolIcon can provide several features:<ul>
  *
- * <li>It can be used as an <b>icon</b> for buttons, menus, etc. For that purpose, {@code Symbol}
+ * <li>It can be used as an <b>icon</b> for buttons, menus, etc. For that purpose,
+ * {@code SymbolIcon}
  * implements the {@link Icon} interface.</li>
  *
  * <li>It can be used as an <b>image</b> for precise drawing on score views, whatever the desired
@@ -52,7 +53,7 @@ import javax.swing.Icon;
  *
  * @author Hervé Bitteur
  */
-public interface Symbol
+public interface SymbolIcon
         extends Icon
 {
     //~ Methods ------------------------------------------------------------------------------------
