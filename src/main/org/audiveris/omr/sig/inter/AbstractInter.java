@@ -1235,7 +1235,7 @@ public abstract class AbstractInter
         sb.append(")");
 
         if (annotationId > 0) {
-            sb.append(" S").append(annotationId);
+            sb.append(" A").append(annotationId);
         }
 
         if (mirror != null) {

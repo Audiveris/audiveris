@@ -39,6 +39,7 @@ import org.audiveris.omr.ui.field.LComboBox;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,10 +198,23 @@ public class InterBoard
 
         // Shape text and icon
         Shape shape = (inter != null) ? inter.getShape() : null;
+        OmrShape omrShape = (inter != null) ? inter.getOmrShape() : null;
 
-        if (shape != null) {
-            shapeField.setText(shape.toString());
-            shapeIcon.setIcon(shape.getDecoratedSymbol());
+        if ((omrShape != null) || (shape != null)) {
+            StringBuilder sb = new StringBuilder();
+
+            if (omrShape != null) {
+                sb.append(omrShape);
+            }
+
+            sb.append("/");
+
+            if (shape != null) {
+                shapeIcon.setIcon(shape.getDecoratedSymbol());
+                sb.append(shape);
+            }
+
+            shapeField.setText(sb.toString());
         } else {
             shapeField.setText((inter != null) ? inter.shapeString() : "");
             shapeIcon.setIcon(null);
@@ -290,7 +304,7 @@ public class InterBoard
 
         r += 2; // --------------------------------
 
-        builder.add(shapeField.getField(), cst.xyw(7, r, 5));
+        builder.add(shapeField.getField(), cst.xyw(3, r, 9));
 
         r += 2; // --------------------------------
 
