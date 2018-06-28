@@ -43,6 +43,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -80,21 +81,19 @@ public class AnnotationIndex
      */
     public AnnotationIndex ()
     {
-        super(null);
+        // The index has its own scope of IDs
+        super(new AtomicInteger(0));
     }
 
     /**
-     * Creates a new {@code AnnotationIndex} object.
+     * Creates a new {@code AnnotationIndex} object from a flat value.
      *
-     * @param sheet underlying sheet
+     * @param value flat index value
      */
-    public AnnotationIndex (Sheet sheet)
-    {
-        super(sheet.getPersistentIdGenerator());
-    }
-
     private AnnotationIndex (AnnotationsValue value)
     {
+        this();
+
         for (Annotation annotation : value.list) {
             insert(annotation);
         }
@@ -126,8 +125,8 @@ public class AnnotationIndex
             InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
             AnnotationsValue value = (AnnotationsValue) um.unmarshal(is);
             is.close();
-
             dataFile.getFileSystem().close(); // Close book file system
+
             index = new AnnotationIndex(value);
             index.setModified(false);
             logger.debug("Loaded {}", dataFile);
@@ -200,9 +199,6 @@ public class AnnotationIndex
     //----------------//
     public void initTransients (Sheet sheet)
     {
-        // ID generator
-        lastId = sheet.getPersistentIdGenerator();
-
         // Declared VIP IDs?
         setVipIds(constants.vipAnnotations.getValue());
 

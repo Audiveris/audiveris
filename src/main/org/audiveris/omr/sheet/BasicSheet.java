@@ -224,18 +224,32 @@ public class BasicSheet
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code BasicSheet} object with a binary table.
+     * Creates a new {@code BasicSheet} object with optional informations:
+     * binary table, scale and annotations.
      *
-     * @param stub        the related sheet stub
-     * @param binaryTable the binary table, if any
+     * @param stub            the related sheet stub
+     * @param binaryTable     the binary table, if any
+     * @param scale           the scale information, if any
+     * @param annotationIndex the annotations index, if any
      */
     public BasicSheet (SheetStub stub,
-                       RunTable binaryTable)
+                       RunTable binaryTable,
+                       Scale scale,
+                       AnnotationIndex annotationIndex)
     {
-        this(stub);
+        this(stub, annotationIndex);
 
         if (binaryTable != null) {
             setBinary(binaryTable);
+
+            if (scale != null) {
+                setScale(scale);
+                done(Step.SCALE);
+
+                if (annotationIndex != null) {
+                    done(Step.ANNOTATIONS);
+                }
+            }
         }
     }
 
@@ -250,7 +264,7 @@ public class BasicSheet
                        BufferedImage image)
             throws StepException
     {
-        this(stub);
+        this(stub, (AnnotationIndex) null);
 
         if (image != null) {
             setImage(image);
@@ -260,14 +274,19 @@ public class BasicSheet
     /**
      * Create a new {@code Sheet} instance within a book.
      *
-     * @param stub the related sheet stub
+     * @param stub            the related sheet stub
+     * @param annotationIndex the annotation index, perhaps null
      */
-    private BasicSheet (SheetStub stub)
+    private BasicSheet (SheetStub stub,
+                        AnnotationIndex annotationIndex)
     {
         Objects.requireNonNull(stub, "Cannot create a sheet in a null stub");
 
         glyphIndex = new GlyphIndex();
-        annotationIndex = new AnnotationIndex(this);
+
+        if (annotationIndex != null) {
+            this.annotationIndex = annotationIndex;
+        }
 
         initTransients(stub);
 
@@ -619,7 +638,7 @@ public class BasicSheet
     public AnnotationIndex getAnnotationIndex ()
     {
         if (annotationIndex == null) {
-            annotationIndex = new AnnotationIndex(this);
+            annotationIndex = new AnnotationIndex();
         }
 
         return annotationIndex;
@@ -1044,7 +1063,7 @@ public class BasicSheet
     // setScale //
     //----------//
     @Override
-    public void setScale (Scale scale)
+    public final void setScale (Scale scale)
     {
         this.scale = scale;
     }
@@ -1317,7 +1336,7 @@ public class BasicSheet
             if (stub.getLatestStep().compareTo(Step.ANNOTATIONS) >= 0) {
                 annotationIndex = AnnotationIndex.load(stub);
             } else {
-                annotationIndex = new AnnotationIndex(this);
+                annotationIndex = new AnnotationIndex();
             }
         }
 

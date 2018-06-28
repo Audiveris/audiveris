@@ -287,7 +287,12 @@ public interface SheetStub
     void reset ();
 
     /**
-     * Reset this stub to its BINARY step.
+     * Reset this stub to end of its ANNOTATIONS step.
+     */
+    void resetToAnnotations ();
+
+    /**
+     * Reset this stub to end of its BINARY step.
      */
     void resetToBinary ();
 

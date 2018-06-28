@@ -448,6 +448,11 @@ public interface Book
     void reset ();
 
     /**
+     * Reset all valid sheets of this book to their ANNOTATIONS step.
+     */
+    void resetToAnnotations ();
+
+    /**
      * Reset all valid sheets of this book to their BINARY step.
      */
     void resetToBinary ();

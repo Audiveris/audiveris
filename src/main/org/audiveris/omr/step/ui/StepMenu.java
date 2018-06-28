@@ -150,9 +150,13 @@ public class StepMenu
                         Step sofar = stub.getLatestStep();
 
                         if ((sofar != null) & (sofar.compareTo(step) >= 0)) {
+                            // Determine from which step we restart
+                            final Step from = (step.compareTo(Step.ANNOTATIONS) > 0)
+                                    ? Step.ANNOTATIONS : Step.BINARY;
+
                             int answer = JOptionPane.showConfirmDialog(
                                     OMR.gui.getFrame(),
-                                    "About to re-perform step " + step + " from scratch."
+                                    "About to re-perform from " + from + " to " + step
                                     + "\nDo you confirm?",
                                     "Redo confirmation",
                                     JOptionPane.YES_NO_OPTION,
@@ -166,7 +170,7 @@ public class StepMenu
                         try {
                             LogUtil.start(stub);
                             stub.reachStep(step, true);
-                            logger.info("End of sheet step {}", step);
+                            logger.info("End of step {}", step);
                         } finally {
                             LogUtil.stopStub();
                         }

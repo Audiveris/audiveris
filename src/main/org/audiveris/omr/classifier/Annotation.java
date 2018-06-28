@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import javax.xml.bind.Unmarshaller;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -57,7 +58,7 @@ public class Annotation
 
     /** Confidence in guess. */
     @XmlAttribute(name = "confidence")
-    private final double confidence;
+    private double confidence;
 
     /** Bounding box of the guessed symbol. */
     @XmlElement(name = "bounds")
@@ -176,5 +177,21 @@ public class Annotation
         sb.append(" ").append(bounds);
 
         return sb.toString();
+    }
+
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
+    /**
+     * Dirty hack for old annotations without confidence information.
+     * TODO: TO BE REMOVED ASAP!
+     */
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller m,
+                                 Object parent)
+    {
+        if (confidence <= 0) {
+            confidence = 1.0;
+        }
     }
 }

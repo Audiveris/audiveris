@@ -1089,6 +1089,31 @@ public class BookActions
         }
     }
 
+    //------------------------//
+    // resetBookToAnnotations //
+    //------------------------//
+    /**
+     * Action that tries to reset to ANNOTATIONS all valid sheets of selected book.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = BOOK_ANNOTATED)
+    public void resetBookToAnnotations (ActionEvent e)
+    {
+        final Book book = StubsController.getCurrentBook();
+
+        if (book != null) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to reset all valid sheets of " + book.getRadix()
+                    + " to their ANNOTATIONS step." + "\nDo you confirm?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                book.resetToAnnotations();
+            }
+        }
+    }
+
     //-------------------//
     // resetBookToBinary //
     //-------------------//
@@ -1135,6 +1160,31 @@ public class BookActions
 
             if (answer == JOptionPane.YES_OPTION) {
                 stub.reset();
+            }
+        }
+    }
+
+    //-------------------------//
+    // resetSheetToAnnotations //
+    //-------------------------//
+    /**
+     * Action that resets the currently selected sheet to the annotations step.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_ANNOTATED)
+    public void resetSheetToAnnotations (ActionEvent e)
+    {
+        SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub != null) {
+            int answer = JOptionPane.showConfirmDialog(
+                    OMR.gui.getFrame(),
+                    "About to reset sheet " + stub.getId() + " to its ANNOTATIONS step."
+                    + "\nDo you confirm?");
+
+            if (answer == JOptionPane.YES_OPTION) {
+                stub.resetToAnnotations();
             }
         }
     }

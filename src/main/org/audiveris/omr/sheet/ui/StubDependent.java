@@ -49,6 +49,9 @@ public abstract class StubDependent
 
     private static final Logger logger = LoggerFactory.getLogger(StubDependent.class);
 
+    /** Name of property linked to sheet annotations availability. */
+    public static final String STUB_ANNOTATED = "stubAnnotated";
+
     /** Name of property linked to sheet transcription ability. */
     public static final String STUB_TRANSCRIBABLE = "stubTranscribable";
 
@@ -60,6 +63,9 @@ public abstract class StubDependent
 
     /** Name of property linked to sheet lack of activity. */
     public static final String STUB_IDLE = "stubIdle";
+
+    /** Name of property linked to (some) book annotations availability. */
+    public static final String BOOK_ANNOTATED = "bookAnnotated";
 
     /** Name of property linked to book transcription ability. */
     public static final String BOOK_TRANSCRIBABLE = "bookTranscribable";
@@ -77,6 +83,9 @@ public abstract class StubDependent
     public static final String REDOABLE = "redoable";
 
     //~ Instance fields ----------------------------------------------------------------------------
+    /** Indicates whether the current sheet stub has been annotated. */
+    protected boolean stubAnnotated = false;
+
     /** Indicates whether the current sheet stub can be transcribed. */
     protected boolean stubTranscribable = false;
 
@@ -88,6 +97,9 @@ public abstract class StubDependent
 
     /** Indicates whether current sheet is idle. */
     protected boolean stubIdle = false;
+
+    /** Indicates whether the current book has some annotations. */
+    protected boolean bookAnnotated = false;
 
     /** Indicates whether the current book can be transcribed. */
     protected boolean bookTranscribable = false;
@@ -115,6 +127,19 @@ public abstract class StubDependent
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // isBookAnnotated //
+    //-----------------//
+    /**
+     * Getter for bookAnnotated property
+     *
+     * @return the current property value
+     */
+    public boolean isBookAnnotated ()
+    {
+        return bookAnnotated;
+    }
+
     //------------//
     // isBookIdle //
     //------------//
@@ -165,6 +190,19 @@ public abstract class StubDependent
     public boolean isRedoable ()
     {
         return redoable;
+    }
+
+    //-----------------//
+    // isStubAnnotated //
+    //-----------------//
+    /**
+     * Getter for stubAnnotated property
+     *
+     * @return the current property value
+     */
+    public boolean isStubAnnotated ()
+    {
+        return stubAnnotated;
     }
 
     //-----------------//
@@ -262,25 +300,29 @@ public abstract class StubDependent
             // Update stubValid
             setStubValid((stub != null) && stub.isValid());
 
-            // Update stubIdle & stubTranscribable
+            // Update stubIdle & stubTranscribable & stubAnnotated
             if (stub != null) {
                 final Step currentStep = stub.getCurrentStep();
                 final boolean idle = currentStep == null;
                 setStubIdle(idle);
                 setStubTranscribable(idle && stub.isValid() && !stub.isDone(Step.last()));
+                setStubAnnotated(idle && stub.isDone(Step.ANNOTATIONS));
             } else {
                 setStubIdle(false);
                 setStubTranscribable(false);
+                setStubAnnotated(false);
             }
 
-            // Update bookIdle & bookTranscribable
+            // Update bookIdle & bookTranscribable & bookAnnotated
             if (stub != null) {
                 final boolean idle = isBookIdle(stub.getBook());
                 setBookIdle(idle);
                 setBookTranscribable(idle && isBookTranscribable(stub.getBook()));
+                setBookAnnotated(idle && isBookAnnotated(stub.getBook()));
             } else {
                 setBookIdle(false);
                 setBookTranscribable(false);
+                setBookAnnotated(false);
             }
 
             // Update bookModified
@@ -301,6 +343,24 @@ public abstract class StubDependent
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //------------------//
+    // setBookAnnotated //
+    //------------------//
+    /**
+     * Setter for bookAnnotated property.
+     *
+     * @param bookAnnotated the new property value
+     */
+    public void setBookAnnotated (boolean bookAnnotated)
+    {
+        boolean oldValue = this.bookAnnotated;
+        this.bookAnnotated = bookAnnotated;
+
+        if (bookAnnotated != oldValue) {
+            firePropertyChange(BOOK_ANNOTATED, oldValue, this.bookAnnotated);
         }
     }
 
@@ -373,6 +433,24 @@ public abstract class StubDependent
 
         if (redoable != oldValue) {
             firePropertyChange(REDOABLE, oldValue, this.redoable);
+        }
+    }
+
+    //------------------//
+    // setStubAnnotated //
+    //------------------//
+    /**
+     * Setter for stubAnnotated property.
+     *
+     * @param stubAnnotated the new property value
+     */
+    public void setStubAnnotated (boolean stubAnnotated)
+    {
+        boolean oldValue = this.stubAnnotated;
+        this.stubAnnotated = stubAnnotated;
+
+        if (stubAnnotated != oldValue) {
+            firePropertyChange(STUB_ANNOTATED, oldValue, this.stubAnnotated);
         }
     }
 
@@ -464,6 +542,21 @@ public abstract class StubDependent
         if (undoable != oldValue) {
             firePropertyChange(UNDOABLE, oldValue, this.undoable);
         }
+    }
+
+    //-----------------//
+    // isBookAnnotated //
+    //-----------------//
+    private boolean isBookAnnotated (Book book)
+    {
+        // Book is assumed idle
+        for (SheetStub stub : book.getValidStubs()) {
+            if (stub.isDone(Step.ANNOTATIONS)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     //------------//

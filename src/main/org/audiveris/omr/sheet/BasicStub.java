@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.Main;
 import org.audiveris.omr.OMR;
 import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
+import org.audiveris.omr.classifier.AnnotationIndex;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.FilterDescriptor;
@@ -578,7 +579,11 @@ public class BasicStub
             final Step latestStep = getLatestStep();
 
             if (force && (target.compareTo(latestStep) <= 0)) {
-                resetToBinary();
+                if (target.compareTo(Step.ANNOTATIONS) > 0) {
+                    resetToAnnotations();
+                } else {
+                    resetToBinary();
+                }
             }
 
             neededSteps = getNeededSteps(target);
@@ -664,6 +669,30 @@ public class BasicStub
         }
     }
 
+    //--------------------//
+    // resetToAnnotations //
+    //--------------------//
+    @Override
+    public void resetToAnnotations ()
+    {
+        try {
+            if (getLatestStep().compareTo(Step.ANNOTATIONS) >= 0) {
+                RunTable binaryTable = grabBinaryTable();
+                Scale scale = getSheet().getScale();
+                AnnotationIndex annotationIndex = getSheet().getAnnotationIndex();
+
+                doReset();
+                sheet = new BasicSheet(this, binaryTable, scale, annotationIndex);
+                logger.info("Sheet#{} reset to ANNOTATIONS.", number);
+            } else {
+                logger.info("No annotations yet for Sheet#{}", number);
+            }
+        } catch (Throwable ex) {
+            logger.warn("Could not reset to ANNOTATIONS {}", ex.toString(), ex);
+            reset();
+        }
+    }
+
     //---------------//
     // resetToBinary //
     //---------------//
@@ -671,23 +700,10 @@ public class BasicStub
     public void resetToBinary ()
     {
         try {
-            // Avoid loading sheet just to reset to binary:
-            // If sheet is available, use its picture.getTable()
-            // Otherwise, load it directly from binary.xml on disk
-            RunTable binaryTable = null;
-
-            if (hasSheet()) {
-                logger.debug("Getting BINARY from sheet");
-                binaryTable = getSheet().getPicture().getTable(TableKey.BINARY);
-            }
-
-            if (binaryTable == null) {
-                logger.debug("Loading BINARY from disk");
-                binaryTable = new RunTableHolder(TableKey.BINARY).getData(this);
-            }
+            RunTable binaryTable = grabBinaryTable();
 
             doReset();
-            sheet = new BasicSheet(this, binaryTable);
+            sheet = new BasicSheet(this, binaryTable, null, null);
             logger.info("Sheet#{} reset to BINARY.", number);
         } catch (Throwable ex) {
             logger.warn("Could not reset to BINARY {}", ex.toString(), ex);
@@ -938,6 +954,29 @@ public class BasicStub
         }
 
         return neededSteps;
+    }
+
+    //-----------------//
+    // grabBinaryTable //
+    //-----------------//
+    private RunTable grabBinaryTable ()
+    {
+        // Avoid loading sheet just to reset to binary:
+        // If sheet is available, use its picture.getTable()
+        // Otherwise, load it directly from binary.xml on disk
+        RunTable binaryTable = null;
+
+        if (hasSheet()) {
+            logger.debug("Getting BINARY from sheet");
+            binaryTable = getSheet().getPicture().getTable(TableKey.BINARY);
+        }
+
+        if (binaryTable == null) {
+            logger.debug("Loading BINARY from disk");
+            binaryTable = new RunTableHolder(TableKey.BINARY).getData(this);
+        }
+
+        return binaryTable;
     }
 
     //----------------//

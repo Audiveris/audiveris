@@ -54,8 +54,8 @@ public enum Step
     LOAD("Load the sheet (gray) picture", new LoadStep()),
     BINARY("Binarize the sheet picture", new BinaryStep()),
     SCALE("Compute sheet line thickness, interline, beam thickness", new ScaleStep()),
-    GRID("Retrieve staff lines, barlines, systems & parts", new GridStep()),
     ANNOTATIONS("Detect and classify most symbols", new AnnotationsStep()),
+    GRID("Retrieve staff lines, barlines, systems & parts", new GridStep()),
     TIMES("Retrieve columns of time-signatures", new TimesStep()),
     HEADERS("Retrieve Clef-Key systems headers", new HeadersStep()),
     STEM_SEEDS("Retrieve stem thickness & seeds for stems", new StemSeedsStep()),
@@ -69,9 +69,9 @@ public enum Step
     MEASURES("Retrieve raw measures from groups of bar lines", new MeasuresStep()),
     CHORDS("Gather notes heads into chords", new ChordsStep()),
     CURVES("Retrieve slurs, wedges & endings", new CurvesStep()),
-    TEXTS("Call OCR on textual items", new TextsStep()),
     LINKS("Link and reduce symbols", new LinksStep()),
     RHYTHMS("Handle rhythms within measures", new RhythmsStep()),
+    TEXTS("Call OCR on textual items", new TextsStep()),
     PAGE("Connect systems within page", new PageStep());
 
     /** Description of the step. */

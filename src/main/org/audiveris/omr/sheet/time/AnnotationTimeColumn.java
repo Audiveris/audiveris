@@ -273,6 +273,7 @@ public class AnnotationTimeColumn
                                 || OmrShapes.TIME_COMBOS.contains(omrShape)) {
                                 // Whole time sig
                                 inter = new TimeWholeInter(id, bounds, omrShape, grade);
+                                inter.setStaff(staff);
                             } else {
                                 // Partial time sig: num or den
                                 inter = TimeNumberInter.create(id, bounds, omrShape, grade, staff);

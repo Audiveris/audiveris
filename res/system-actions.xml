@@ -23,6 +23,7 @@
     <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="openBook"/>
     <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBook"/>
     <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBookToBinary"/>
+    <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBookToAnnotations"/>
     <action domain="BOOK" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeBook"                           button="javax.swing.JButton"/>
     <action domain="BOOK" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="defineParameters"                         button="javax.swing.JButton"/>
     <action domain="BOOK" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="swapSheets"/>
@@ -43,6 +44,7 @@
     <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="redo"                                            button="javax.swing.JButton"/>
     <action domain="SHEET" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetSheet"/>
     <action domain="SHEET" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetSheetToBinary"/>
+    <action domain="SHEET" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetSheetToAnnotations"/>
     <action domain="SHEET" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeSheet"/>
     <action domain="SHEET" section="18" class="org.audiveris.omr.sheet.ui.BookActions" method="invalidateSheet"/>
     <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotScale"               topic="PLOTS"/>

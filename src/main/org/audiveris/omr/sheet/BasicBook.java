@@ -1294,6 +1294,19 @@ public class BasicBook
         scores.clear();
     }
 
+    //--------------------//
+    // resetToAnnotations //
+    //--------------------//
+    @Override
+    public void resetToAnnotations ()
+    {
+        for (SheetStub stub : getValidStubs()) {
+            stub.resetToAnnotations();
+        }
+
+        scores.clear();
+    }
+
     //---------------//
     // resetToBinary //
     //---------------//
