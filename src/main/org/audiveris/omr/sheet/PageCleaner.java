@@ -60,7 +60,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
+
 import static java.awt.BasicStroke.*;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -259,6 +261,9 @@ public abstract class PageCleaner
         boolean isSmall = (inter.getStaff() != null) && inter.getStaff().isSmall();
         MusicFont font = isSmall ? smallMusicFont : musicFont;
         symbol.paintSymbol(g, font, center, Alignment.AREA_CENTER);
+
+        // Erase the inter core rectangle (because of poor annotation bounds)
+        g.fill(inter.getCoreBounds());
     }
 
     @Override

@@ -321,7 +321,7 @@ public abstract class AbstractFlagInter
         final Rectangle luBox = new Rectangle(
                 (flagBox.x - 1) - stemWidth,
                 y,
-                2 * stemWidth,
+                4 * stemWidth, // 2 * stemWidth, // Augmented to cope with annotation poor bounds
                 footHeight);
 
         if (glyph != null) {

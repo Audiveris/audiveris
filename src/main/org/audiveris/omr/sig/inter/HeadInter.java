@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.inter;
 
 import ij.process.ByteProcessor;
 
+import org.audiveris.omr.classifier.OmrShapeMapping;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.BasicGlyph;
@@ -242,7 +243,15 @@ public class HeadInter
     //-------------//
     public HeadInter duplicateAs (Shape shape)
     {
-        HeadInter clone = new HeadInter(pivot, anchor, bounds, shape, impacts, staff, pitch);
+        final HeadInter clone;
+
+        if (annotationId != 0) {
+            OmrShape newOmrShape = OmrShapeMapping.omrShapeOf(shape);
+            clone = new HeadInter(annotationId, bounds, newOmrShape, grade, staff, pitch);
+        } else {
+            clone = new HeadInter(pivot, anchor, bounds, shape, impacts, staff, pitch);
+        }
+
         clone.setGlyph(this.glyph);
         clone.setMirror(this);
 
@@ -302,9 +311,13 @@ public class HeadInter
     // getCoreBounds //
     //---------------//
     @Override
-    public Rectangle2D getCoreBounds ()
+    public Rectangle getCoreBounds ()
     {
-        return shrink(getBounds());
+        if (coreBounds == null) {
+            coreBounds = shrink(getBounds()).getBounds();
+        }
+
+        return coreBounds;
     }
 
     //---------------//
@@ -623,9 +636,9 @@ public class HeadInter
     // shrink //
     //--------//
     /**
-     * Shrink a bit a bounding bounds when checking for note overlap.
+     * Shrink a bit a bounding box when checking for note overlap.
      *
-     * @param box the bounding bounds
+     * @param box the bounding box
      * @return the shrunk bounds
      */
     public static Rectangle2D shrink (Rectangle box)

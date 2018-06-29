@@ -197,7 +197,7 @@ public class FlagStemRelation
                 "Value for target (stem) coeff in support formula");
 
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.3,
+                0.45, //0.3, for annotation poor bounds
                 "Maximum horizontal overlap between stem & flag");
 
         private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
@@ -205,7 +205,7 @@ public class FlagStemRelation
                 "Maximum manual horizontal overlap between stem & flag");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.3,
+                0.45, // 0.3, for annotation poor bounds
                 "Maximum horizontal gap between stem & flag");
 
         private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(

@@ -649,8 +649,8 @@ public class SlurInter
         final BeamGroup rightGroup = rightChord.getBeamGroup();
 
         // Define a lookup box limited to heads and stems tail ends
-        Rectangle box = leftHead.getCoreBounds().getBounds();
-        box.add(rightHead.getCoreBounds().getBounds());
+        Rectangle box = leftHead.getCoreBounds();
+        box.add(rightHead.getCoreBounds());
         box.add(leftChord.getTailLocation());
         box.add(rightChord.getTailLocation());
 

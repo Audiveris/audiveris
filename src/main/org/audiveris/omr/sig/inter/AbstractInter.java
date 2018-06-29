@@ -39,6 +39,8 @@ import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.MusicFont;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.symbol.Symbols;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
 import org.audiveris.omr.util.AbstractEntity;
@@ -50,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -181,6 +184,9 @@ public abstract class AbstractInter
 
     /** Potential attachments, lazily allocated. */
     private AttachmentHolder attachments;
+
+    /** Core bounds meant for overlap check. */
+    protected Rectangle coreBounds;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -586,9 +592,34 @@ public abstract class AbstractInter
     // getCoreBounds //
     //---------------//
     @Override
-    public Rectangle2D getCoreBounds ()
+    public Rectangle getCoreBounds ()
     {
-        return getBounds();
+        if (coreBounds == null) {
+            final Rectangle box = getBounds();
+
+            if (annotationId != 0) {
+                // Temporary trick to alleviate the poor bounds of annotations
+                // We use the dimension of standard shape, centered on annotation bounds
+                ShapeSymbol symbol = Symbols.getSymbol(shape);
+
+                if (symbol != null) {
+                    final int interline = sig.getSystem().getSheet().getScale().getInterline();
+                    final MusicFont font = MusicFont.getBaseFont(interline);
+                    final Dimension d = symbol.getDimension(font);
+                    final Point c = GeoUtil.centerOf(box);
+
+                    return coreBounds = new Rectangle(
+                            c.x - (d.width / 2),
+                            c.y - (d.height / 2),
+                            d.width,
+                            d.height);
+                }
+            }
+
+            coreBounds = box;
+        }
+
+        return coreBounds;
     }
 
     //------------//
@@ -876,6 +907,12 @@ public abstract class AbstractInter
     public boolean overlaps (Inter that)
             throws DeletedInterException
     {
+        // Discard overlapping if both involved items are annotation-based
+        // (because they have been considered as compatible by the page classifier)
+        if ((this.getAnnotationId() != 0) && (that.getAnnotationId() != 0)) {
+            return false;
+        }
+
         // Trivial case?
         if (!this.getCoreBounds().intersects(that.getCoreBounds())) {
             return false;
@@ -932,6 +969,14 @@ public abstract class AbstractInter
                 // Area <--> Bounds
                 return this.area.intersects(that.getBounds());
             }
+        }
+
+        if ((this.getGlyph() != null)) {
+            return this.getGlyph().intersects(that.getBounds());
+        }
+
+        if ((that.getGlyph() != null)) {
+            return that.getGlyph().intersects(this.getBounds());
         }
 
         return true;

@@ -102,6 +102,10 @@ public class AnnotationSymbolsBuilder
     //-------------------//
     private void processAnnotation (Annotation annotation)
     {
+        if (annotation.isVip()) {
+            logger.info("VIP AnnotationSymbolsBuilder.processAnnotation for {}", annotation);
+        }
+
         final Rectangle bounds = annotation.getBounds();
         final Point center = GeoUtil.centerOf(bounds);
         final Staff closestStaff = system.getClosestStaff(center); // Just an indication!

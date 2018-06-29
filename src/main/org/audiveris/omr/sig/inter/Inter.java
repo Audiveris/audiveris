@@ -38,7 +38,6 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
-import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Set;
 
@@ -165,11 +164,11 @@ public interface Inter
     Double getContextualGrade ();
 
     /**
-     * Report the core bounds for this interpretation.
+     * Report the core bounds (meant for overlap detection).
      *
-     * @return a small core box
+     * @return a smaller bounding box
      */
-    Rectangle2D getCoreBounds ();
+    Rectangle getCoreBounds ();
 
     /**
      * Details for tip.
