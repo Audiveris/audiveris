@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
+import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
@@ -378,6 +379,20 @@ public class SystemInfo
         final Staff closestStaff = getClosestStaff(point); // This is just an indication!
 
         return closestStaff.pitchPositionOf(point);
+    }
+
+    //---------------//
+    // getAnnotation //
+    //---------------//
+    /**
+     * Convenient method to retrieve an annotation via its ID
+     *
+     * @param annotationId ID of desired annotation
+     * @return the annotation
+     */
+    public Annotation getAnnotation (int annotationId)
+    {
+        return sheet.getAnnotationIndex().getEntity(annotationId);
     }
 
     //---------//

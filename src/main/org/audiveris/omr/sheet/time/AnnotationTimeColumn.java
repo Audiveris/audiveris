@@ -146,7 +146,11 @@ public class AnnotationTimeColumn
     @Override
     protected void cleanup ()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        logger.warn("{} Uncomplete column of Time signatures around {}", system, timeSet);
+
+        for (Inter inter : timeSet) {
+            inter.remove();
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

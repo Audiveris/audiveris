@@ -23,15 +23,18 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omrdataset.api.OmrShape;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
 
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.math.GeoUtil;
-import org.audiveris.omrdataset.api.OmrShape;
 
 /**
  * Class {@code CaesuraInter} represents a caesura sign above a staff.
@@ -42,8 +45,11 @@ import org.audiveris.omrdataset.api.OmrShape;
 public class CaesuraInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(CaesuraInter.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code CaesuraInter} object.
      *
@@ -138,6 +144,10 @@ public class CaesuraInter
         final Staff staff = system.getStaffAtOrBelow(center);
 
         if (staff == null) {
+            logger.warn(
+                    "No staff for CaesuraInter based on {}",
+                    system.getAnnotation(annotationId));
+
             return null;
         }
 

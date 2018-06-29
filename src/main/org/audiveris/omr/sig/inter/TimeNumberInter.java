@@ -32,6 +32,9 @@ import org.audiveris.omr.util.VerticalSide;
 import org.audiveris.omrdataset.api.OmrShape;
 import org.audiveris.omrdataset.api.OmrShapes;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 
@@ -48,6 +51,8 @@ public class TimeNumberInter
         extends AbstractNumberInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(TimeNumberInter.class);
 
     private static final Constants constants = new Constants();
 
@@ -177,6 +182,11 @@ public class TimeNumberInter
 
         if ((absPitch < constants.minAbsolutePitch.getValue())
             || (absPitch > constants.maxAbsolutePitch.getValue())) {
+            logger.warn(
+                    "Abnormal pitch {} for TimeNumberInter based on {}",
+                    pitch,
+                    staff.getSystem().getAnnotation(annotationId));
+
             return null;
         }
 

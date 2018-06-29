@@ -28,6 +28,9 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omrdataset.api.OmrShape;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 
@@ -42,8 +45,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class BreathMarkInter
         extends AbstractInter
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(BreathMarkInter.class);
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BreathMarkInter} object.
      *
@@ -138,6 +144,10 @@ public class BreathMarkInter
         final Staff staff = system.getStaffAtOrBelow(center);
 
         if (staff == null) {
+            logger.warn(
+                    "No staff for BreathMarkInter based on {}",
+                    system.getAnnotation(annotationId));
+
             return null;
         }
 
