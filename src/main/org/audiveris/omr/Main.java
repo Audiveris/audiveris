@@ -114,6 +114,15 @@ public class Main
      */
     public static void main (String[] args)
     {
+        // Log files
+        LogUtil.addFileAppender();
+
+        // Locale to be used in the whole application?
+        checkLocale();
+
+        // Environment
+        showEnvironment();
+
         // Process CLI parameters
         processCli(args);
 
@@ -124,17 +133,8 @@ public class Main
             return;
         }
 
-        // Log files
-        LogUtil.addFileAppender();
-
         // Initialize tool parameters
         initialize();
-
-        // Locale to be used in the whole application?
-        checkLocale();
-
-        // Environment
-        showEnvironment();
 
         // Engine
         OMR.engine = BookManager.getInstance();
