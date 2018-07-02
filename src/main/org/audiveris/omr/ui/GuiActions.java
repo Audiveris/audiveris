@@ -34,6 +34,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.ui.ShapeColorChooser;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.text.tesseract.TesseractOCR;
 import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.symbol.SymbolRipper;
 import org.audiveris.omr.ui.util.CursorController;
@@ -411,14 +412,14 @@ public class GuiActions
     @Action(enabledProperty = "browserSupported")
     public void showManual (ActionEvent e)
     {
-//        Path path = WellKnowns.DOC_FOLDER.resolve(constants.manualUrl.getValue());
-//
-//        if (!Files.exists(path)) {
-//            logger.warn("Cannot find file {}", path);
-//        } else {
-//            URI uri = path.toUri();
-//            WebBrowser.getBrowser().launch(uri);
-//        }
+        //        Path path = WellKnowns.DOC_FOLDER.resolve(constants.manualUrl.getValue());
+        //
+        //        if (!Files.exists(path)) {
+        //            logger.warn("Cannot find file {}", path);
+        //        } else {
+        //            URI uri = path.toUri();
+        //            WebBrowser.getBrowser().launch(uri);
+        //        }
         String str = constants.manualUrl.getValue();
 
         try {
@@ -427,7 +428,6 @@ public class GuiActions
         } catch (URISyntaxException ex) {
             logger.warn("Illegal manual uri " + str, ex);
         }
-
     }
 
     //------------//
@@ -554,6 +554,8 @@ public class GuiActions
             book(new JEditorPane("text/html", "")),
             /** License */
             license(new JTextField()),
+            /** OCR version */
+            ocr(new JTextField()),
             /** Java vendor */
             javaVendor(new JTextField()),
             /** Java version */
@@ -659,6 +661,8 @@ public class GuiActions
             Topic.version.comp.setText(WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD);
             Topic.classes.comp.setText(WellKnowns.CLASS_CONTAINER.toString());
             Topic.license.comp.setText("GNU Affero GPL v3");
+
+            Topic.ocr.comp.setText(TesseractOCR.getInstance().identify());
 
             Topic.javaVendor.comp.setText(System.getProperty("java.vendor"));
             Topic.javaVersion.comp.setText(System.getProperty("java.version"));
