@@ -30,6 +30,7 @@ import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.jai.JaiLoader;
 import org.audiveris.omr.log.LogPane;
+import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.PartwiseBuilder;
 import org.audiveris.omr.sheet.Book;
@@ -501,6 +502,7 @@ public class MainGui
     {
         logger.debug("MainGui. 2/startup");
         logger.info("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
+        logger.info("\n{}", LogUtil.allInitialMessages());
 
         // Make the OmrGui instance available for the other classes
         OMR.gui = this;
