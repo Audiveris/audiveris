@@ -80,8 +80,8 @@ public class CLI
     /** Name of the program. */
     private final String toolName;
 
-    /** Actual sequence of arguments for this run. */
-    private String[] actualArgs;
+    /** Sequence of (trimmed) arguments for this run. */
+    private String[] trimmedArgs;
 
     /** Parameters structure to be populated. */
     private final Parameters params = new Parameters();
@@ -204,9 +204,15 @@ public class CLI
             throws CmdLineException
     {
         logger.info("CLI args: {}", Arrays.toString(args));
-        actualArgs = args;
 
-        parser.parseArgument(args);
+        // Bug fix if an arg is made of spaces
+        trimmedArgs = new String[args.length];
+
+        for (int i = 0; i < args.length; i++) {
+            trimmedArgs[i] = args[i].trim();
+        }
+
+        parser.parseArgument(trimmedArgs);
 
         if (logger.isDebugEnabled()) {
             new Dumping().dump(params);
@@ -231,7 +237,7 @@ public class CLI
             sb.append(toolName).append(" ");
         }
 
-        sb.append(actualArgs);
+        sb.append(trimmedArgs);
         logger.info(sb.toString());
     }
 
