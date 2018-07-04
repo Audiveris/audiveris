@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -226,11 +227,28 @@ public class Zoom
         rect.height = scaled(rect.height);
     }
 
+    //-------//
+    // scale //
+    //-------//
+    /**
+     * Scale provided line
+     *
+     * @param line the line to be scaled
+     */
+    public void scale (Line2D line)
+    {
+        line.setLine(
+                scaled(line.getX1()),
+                scaled(line.getY1()),
+                scaled(line.getX2()),
+                scaled(line.getY2()));
+    }
+
     //--------//
     // scaled //
     //--------//
     /**
-     * Coordinate computation, Source -> Display
+     * Coordinate computation, Source &rarr; Display
      *
      * @param val a source value
      *
@@ -245,7 +263,7 @@ public class Zoom
     // scaled //
     //--------//
     /**
-     * Coordinate computation, Source -> Display
+     * Coordinate computation, Source &rarr; Display
      *
      * @param pt source point
      *
@@ -263,7 +281,7 @@ public class Zoom
     // scaled //
     //--------//
     /**
-     * Coordinate computation, Source -> Display
+     * Coordinate computation, Source &rarr; Display
      *
      * @param dim source dimension
      *
@@ -281,7 +299,7 @@ public class Zoom
     // scaled //
     //--------//
     /**
-     * Coordinate computation, Source -> Display
+     * Coordinate computation, Source &rarr; Display
      *
      * @param rect source rectangle
      *
@@ -377,7 +395,7 @@ public class Zoom
     // truncScaled //
     //-------------//
     /**
-     * Coordinate computation, Source -> Display, but with a truncation
+     * Coordinate computation, Source &rarr; Display, but with a truncation
      * rather than rounding.
      *
      * @param val a source value
@@ -385,14 +403,14 @@ public class Zoom
      */
     public int truncScaled (double val)
     {
-        return (int) (val * ratio);
+        return (int) Math.floor(val * ratio);
     }
 
     //---------------//
     // truncUnscaled //
     //---------------//
     /**
-     * Coordinate computation, Display -> Source, but with a truncation
+     * Coordinate computation, Display &rarr; Source, but with a truncation
      * rather than rounding.
      *
      * @param val a display value
@@ -400,7 +418,7 @@ public class Zoom
      */
     public int truncUnscaled (double val)
     {
-        return (int) (val / ratio);
+        return (int) Math.floor(val / ratio);
     }
 
     //---------//
@@ -421,7 +439,7 @@ public class Zoom
     // unscaled //
     //----------//
     /**
-     * Coordinate computation Display -> Source
+     * Coordinate computation Display &rarr; Source
      *
      * @param val a display value
      * @return the corresponding (unscaled) source coordinate
@@ -435,7 +453,7 @@ public class Zoom
     // unscaled //
     //----------//
     /**
-     * Point computation Display -> Source
+     * Point computation Display &rarr; Source
      *
      * @param pt a display point
      * @return the corresponding (unscaled) source point

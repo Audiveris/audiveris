@@ -91,8 +91,7 @@ public class CheckBoard<C>
     // applySuite //
     //------------//
     /**
-     * Assign a (new) suite to the check board and apply it to the
-     * provided object.
+     * Assign a (new) suite to the check board and apply it to the provided object.
      *
      * @param suite  the (new) check suite to be used
      * @param object the object to apply the checks suite on

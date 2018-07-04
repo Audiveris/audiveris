@@ -23,14 +23,12 @@ package org.audiveris.omr.image;
 
 import ij.process.ByteProcessor;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.util.Param;
+import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 /**
  * Management data meant to describe an implementation instance of a PixelFilter.
@@ -134,7 +132,6 @@ public abstract class FilterDescriptor
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //
     //-----------//
     // Constants //
     //-----------//
@@ -143,7 +140,8 @@ public abstract class FilterDescriptor
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final FilterKind.Constant defaultKind = new FilterKind.Constant(
+        private final Constant.Enum<FilterKind> defaultKind = new Constant.Enum<FilterKind>(
+                FilterKind.class,
                 FilterKind.ADAPTIVE,
                 "Default kind of PixelFilter (GLOBAL or ADAPTIVE)");
     }
@@ -157,61 +155,104 @@ public abstract class FilterDescriptor
         //~ Methods --------------------------------------------------------------------------------
 
         @Override
+        public FilterDescriptor getSourceValue ()
+        {
+            final FilterKind sourceKind = constants.defaultKind.getSourceValue();
+
+            switch (sourceKind) {
+            case GLOBAL:
+                return GlobalDescriptor.getSourceValue();
+
+            default:
+            case ADAPTIVE:
+                return AdaptiveDescriptor.getSourceValue();
+            }
+        }
+
+        @Override
         public FilterDescriptor getSpecific ()
         {
-            final String method = "getDefaultDescriptor";
+            if (isSpecific()) {
+                return getValue();
+            } else {
+                return null;
+            }
+        }
 
-            try {
-                FilterKind kind = getDefaultKind();
+        @Override
+        public FilterDescriptor getValue ()
+        {
+            switch (getDefaultKind()) {
+            case GLOBAL:
+                return GlobalDescriptor.getDefault();
 
-                // Access the underlying class
-                Method getDesc = kind.classe.getMethod(method, (Class[]) null);
+            default:
+            case ADAPTIVE:
+                return AdaptiveDescriptor.getDefault();
+            }
+        }
 
-                if (Modifier.isStatic(getDesc.getModifiers())) {
-                    return (FilterDescriptor) getDesc.invoke(null);
-                } else {
-                    logger.error(method + " must be static");
-                }
-            } catch (Throwable ex) {
-                logger.warn("Could not call " + method, ex);
+        @Override
+        public boolean isSpecific ()
+        {
+            if (!constants.defaultKind.isSourceValue()) {
+                return true;
             }
 
-            return null;
+            switch (getDefaultKind()) {
+            case GLOBAL:
+                return GlobalDescriptor.defaultIsSpecific();
+
+            default:
+            case ADAPTIVE:
+                return AdaptiveDescriptor.defaultIsSpecific();
+            }
         }
 
         @Override
         public boolean setSpecific (FilterDescriptor specific)
         {
-            if (!getSpecific().equals(specific)) {
-                FilterKind kind = specific.getKind();
-                FilterDescriptor.setDefaultKind(kind);
+            if (!getValue().equals(specific)) {
+                FilterDescriptor desc;
 
-                switch (kind) {
-                case GLOBAL:
+                if (specific == null) {
+                    if (!getValue().equals(getSourceValue())) {
+                        // Reset to source
+                        constants.defaultKind.resetToSource();
+                        GlobalDescriptor.resetToSource();
+                        AdaptiveDescriptor.resetToSource();
 
-                    if (specific instanceof GlobalDescriptor) {
+                        desc = getValue();
+                        logger.info("Default binarization filter reset to {}", desc);
+                    } else {
+                        return false;
+                    }
+                } else {
+                    desc = specific;
+                    logger.info("Default binarization filter set to {}", desc);
+
+                    FilterKind kind = specific.getKind();
+                    FilterDescriptor.setDefaultKind(kind);
+
+                    switch (kind) {
+                    case GLOBAL:
+
                         GlobalDescriptor gDesc = (GlobalDescriptor) specific;
-                        GlobalFilter.setDefaultThreshold(gDesc.threshold);
-                    } else {
-                        logger.error("Wrong class for {} find {}", specific, kind);
-                    }
+                        GlobalDescriptor.setDefaultThreshold(gDesc.threshold);
+                        AdaptiveDescriptor.resetToSource();
 
-                    break;
+                        break;
 
-                case ADAPTIVE:
+                    case ADAPTIVE:
 
-                    if (specific instanceof AdaptiveDescriptor) {
                         AdaptiveDescriptor aDesc = (AdaptiveDescriptor) specific;
-                        AdaptiveFilter.setDefaultMeanCoeff(aDesc.meanCoeff);
-                        AdaptiveFilter.setDefaultStdDevCoeff(aDesc.stdDevCoeff);
-                    } else {
-                        logger.error("Wrong class for {} find {}", specific, kind);
+                        AdaptiveDescriptor.setDefaultMeanCoeff(aDesc.meanCoeff);
+                        AdaptiveDescriptor.setDefaultStdDevCoeff(aDesc.stdDevCoeff);
+                        GlobalDescriptor.resetToSource();
+
+                        break;
                     }
-
-                    break;
                 }
-
-                logger.info("Default filter is now ''{}''", specific);
 
                 return true;
             }

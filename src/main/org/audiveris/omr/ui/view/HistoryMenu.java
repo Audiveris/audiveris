@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.ui.view;
 
-import org.audiveris.omr.OMR;
+import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.util.PathHistory;
 import org.audiveris.omr.util.PathTask;
 
@@ -107,7 +107,7 @@ public class HistoryMenu
         });
 
         // Resource injection
-        ResourceMap resource = OMR.gui.getApplication().getContext().getResourceMap(resourceClass);
+        ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(resourceClass);
         resource.injectComponents(menu);
         this.menu = menu;
 

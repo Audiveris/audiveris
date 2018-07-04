@@ -25,8 +25,11 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import static org.audiveris.omr.glyph.ShapeSet.FlagsUp;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sig.inter.FlagInter;
 import org.audiveris.omr.sig.inter.Inter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +55,16 @@ public class FlagStemRelation
     private static final Logger logger = LoggerFactory.getLogger(FlagStemRelation.class);
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final FlagInter flag = (FlagInter) e.getEdgeSource();
+        flag.checkAbnormal();
+    }
+
     //----------------//
     // getStemPortion //
     //----------------//
@@ -72,25 +85,53 @@ public class FlagStemRelation
     //------------------//
     // getXInGapMaximum //
     //------------------//
-    public static Scale.Fraction getXInGapMaximum ()
+    public static Scale.Fraction getXInGapMaximum (boolean manual)
     {
-        return constants.xInGapMax;
+        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
     }
 
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
     {
-        return constants.xOutGapMax;
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum ()
+    public static Scale.Fraction getYGapMaximum (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final FlagInter flag = (FlagInter) e.getEdgeSource();
+        flag.checkAbnormal();
     }
 
     //----------------//
@@ -115,27 +156,27 @@ public class FlagStemRelation
     // getXInGapMax //
     //--------------//
     @Override
-    protected Scale.Fraction getXInGapMax ()
+    protected Scale.Fraction getXInGapMax (boolean manual)
     {
-        return getXInGapMaximum();
+        return getXInGapMaximum(manual);
     }
 
     //---------------//
     // getXOutGapMax //
     //---------------//
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return getXOutGapMaximum();
+        return getXOutGapMaximum(manual);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
-        return getYGapMaximum();
+        return getYGapMaximum(manual);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -155,16 +196,28 @@ public class FlagStemRelation
                 3,
                 "Value for target (stem) coeff in support formula");
 
-        private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.5,
-                "Maximum vertical gap between stem & flag");
-
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.3,
                 "Maximum horizontal overlap between stem & flag");
 
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
+                0.45,
+                "Maximum manual horizontal overlap between stem & flag");
+
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.3,
                 "Maximum horizontal gap between stem & flag");
+
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                0.45,
+                "Maximum manual horizontal gap between stem & flag");
+
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                0.5,
+                "Maximum vertical gap between stem & flag");
+
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                0.75,
+                "Maximum manual vertical gap between stem & flag");
     }
 }

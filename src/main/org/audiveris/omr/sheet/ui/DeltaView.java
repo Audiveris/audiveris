@@ -22,9 +22,10 @@
 package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.run.RunTable;
-import org.audiveris.omr.score.ui.PaintingParameters;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.ui.ViewParameters;
+import static org.audiveris.omr.ui.ViewParameters.PaintingLayer.*;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.WeakPropertyChangeListener;
@@ -61,6 +62,9 @@ public class DeltaView
     /** Underlying sheet. */
     private final Sheet sheet;
 
+    /** View parameters. */
+    private final ViewParameters viewParams = ViewParameters.getInstance();
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code DeltaView} instance, dedicated to a sheet.
@@ -79,8 +83,8 @@ public class DeltaView
         view.setLocationService(sheet.getLocationService());
 
         // Listen to all painting parameters
-        PaintingParameters.getInstance()
-                .addPropertyChangeListener(new WeakPropertyChangeListener(this));
+        ViewParameters.getInstance().addPropertyChangeListener(
+                new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);
@@ -139,10 +143,7 @@ public class DeltaView
             gbi.setColor(Color.BLACK);
             gbi.setComposite(AlphaComposite.SrcOver);
 
-            PaintingParameters painting = PaintingParameters.getInstance();
-            logger.debug("PaintingLayer:{}", painting.getPaintingLayer());
-
-            switch (painting.getPaintingLayer()) {
+            switch (viewParams.getPaintingLayer()) {
             case INPUT:
                 /** Display NEGATIVES. */
                 input.render(gbi, new Point(0, 0));

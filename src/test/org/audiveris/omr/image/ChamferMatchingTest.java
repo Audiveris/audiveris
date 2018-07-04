@@ -24,12 +24,6 @@ package org.audiveris.omr.image;
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.image.ChamferDistance;
-import org.audiveris.omr.image.DistanceMatching;
-import org.audiveris.omr.image.DistanceTable;
-import org.audiveris.omr.image.PixelDistance;
-import org.audiveris.omr.image.Template;
-import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.math.TableUtil;
 
 import org.junit.Test;
@@ -107,7 +101,7 @@ public class ChamferMatchingTest
     {
         System.out.println("match");
 
-        Template template = TemplateFactory.getInstance().getCatalog(14)
+        Template template = TemplateFactory.getInstance().getCatalog(56)
                 .getTemplate(Shape.NOTEHEAD_BLACK);
         template.dump();
 

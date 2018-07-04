@@ -57,7 +57,7 @@ public class StackTuner
     /** The dedicated measure stack. */
     private final MeasureStack stack;
 
-    /** Fail fast mode, just meant to guess expected duration. */
+    /** Fail-fast mode, just meant to guess expected duration. */
     private final boolean failFast;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -81,15 +81,16 @@ public class StackTuner
     /**
      * Process the stack to find out a correct configuration of rhythm data.
      *
-     * @param initialDuration The expected duration for this stack, or null
+     * @param expectedDuration The expected duration for this stack, or null if not known
      */
-    public void process (Rational initialDuration)
+    public void process (Rational expectedDuration)
     {
-        stack.setExpectedDuration(initialDuration);
+        stack.setExpectedDuration(expectedDuration);
 
         try {
             if (!check() && !failFast) {
                 logger.info("{}{} no correct rhythm", stack.getSystem().getLogPrefix(), stack);
+                stack.setAbnormal(true);
             }
         } catch (Exception ex) {
             logger.warn("Error " + ex + " checkConfig ", ex);
@@ -134,11 +135,11 @@ public class StackTuner
         countChordDots();
 
         // Link tuplets
-        final Set<TupletInter> toDelete = new TupletsBuilder(stack).linkTuplets();
+        final Set<TupletInter> toDelete = new TupletsBuilder(stack).linkStackTuplets();
 
         if (!toDelete.isEmpty()) {
             for (TupletInter tuplet : toDelete) {
-                tuplet.delete();
+                tuplet.remove();
             }
         }
 
@@ -157,18 +158,22 @@ public class StackTuner
     private boolean checkVoices ()
     {
         try {
-            Rational stackDur = stack.getCurrentDuration();
+            // Determine stack actual duration
+            final Rational actualDuration;
 
-            if (!stackDur.equals(Rational.ZERO)) {
-                // Make sure the stack duration is not bigger than limit (TODO: why???)
-                if (stackDur.compareTo(stack.getExpectedDuration()) <= 0) {
-                    stack.setActualDuration(stackDur);
+            if (stack.getVoices().isEmpty()) {
+                actualDuration = Rational.ZERO; // No voice, hence no duration
+            } else {
+                Rational slotsDur = stack.getSlotsDuration();
+
+                if (!slotsDur.equals(Rational.ZERO)) {
+                    actualDuration = slotsDur; // Slots found, use slots-based duration
                 } else {
-                    stack.setActualDuration(stackDur);
-
-                    ///stack.setActualDuration(stack.getExpectedDuration());
+                    actualDuration = stack.getExpectedDuration(); // No slot, just whole/multi rests
                 }
             }
+
+            stack.setActualDuration(actualDuration);
 
             stack.checkDuration(); // Compute voices terminations
 
@@ -177,14 +182,18 @@ public class StackTuner
             }
 
             Rational expectedDuration = stack.getExpectedDuration();
-            logger.debug("{} expected:{} current:{}", stack, expectedDuration, stackDur);
+            logger.debug("{} expected:{} actual:{}", stack, expectedDuration, actualDuration);
 
             for (Voice voice : stack.getVoices()) {
                 Rational voiceDur = voice.getDuration();
-                TimeRational inferred = voice.getInferredTimeSignature();
-                logger.debug("{} ends at {} ts: {}", voice, voiceDur, inferred);
 
-                if (voiceDur != null) {
+                {
+                    // Nota: For the time being, this is just for information
+                    TimeRational inferred = voice.getInferredTimeSignature();
+                    logger.debug("{} ends at {} ts: {}", voice, voiceDur, inferred);
+                }
+
+                if ((voiceDur != null) && (expectedDuration != null)) {
                     Rational delta = voiceDur.minus(expectedDuration);
                     final int sign = delta.compareTo(Rational.ZERO);
 

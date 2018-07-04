@@ -51,6 +51,7 @@ public class SheetCounter
      * Main entry point.
      *
      * @param args list of file names, processing depending on file extension (.omr, .pdf, ...)
+     * @throws CmdLineException if there was any error parsing CLI arguments
      */
     public static void main (String[] args)
             throws CmdLineException

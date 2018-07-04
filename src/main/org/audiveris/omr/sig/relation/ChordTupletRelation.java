@@ -24,6 +24,10 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.TupletInter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -48,6 +52,8 @@ public class ChordTupletRelation
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code TupletChordRelation} object.
+     *
+     * @param shape the tuplet shape (currently either TUPLET_THREE or TUPLET_SIX)
      */
     public ChordTupletRelation (Shape shape)
     {
@@ -55,14 +61,52 @@ public class ChordTupletRelation
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-arg constructor meant for JAXB and user allocation.
      */
-    private ChordTupletRelation ()
+    public ChordTupletRelation ()
     {
         this.tupletCoeff = 0;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final TupletInter tuplet = (TupletInter) e.getEdgeTarget();
+        tuplet.checkAbnormal();
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final TupletInter tuplet = (TupletInter) e.getEdgeTarget();
+        tuplet.checkAbnormal();
+    }
+
     //----------------//
     // getTargetCoeff //
     //----------------//

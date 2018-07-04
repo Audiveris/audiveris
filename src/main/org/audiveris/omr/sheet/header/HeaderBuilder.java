@@ -279,7 +279,7 @@ public class HeaderBuilder
             final int start = staff.getHeaderStart();
             final int stop = staff.getHeaderStop();
 
-            for (BarlineInter bar : new ArrayList<BarlineInter>(staff.getBars())) {
+            for (BarlineInter bar : new ArrayList<BarlineInter>(staff.getBarlines())) {
                 final Point center = bar.getCenter();
 
                 if ((center.x > start) && (center.x < stop) && !bar.isStaffEnd(LEFT)) {
@@ -287,7 +287,7 @@ public class HeaderBuilder
                         logger.info("Deleting {} in staff#{} header", bar, staff.getId());
                     }
 
-                    bar.delete();
+                    bar.remove();
                 }
             }
         }

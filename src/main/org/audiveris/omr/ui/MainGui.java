@@ -30,13 +30,14 @@ import org.audiveris.omr.constant.ConstantManager;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.jai.JaiLoader;
 import org.audiveris.omr.log.LogPane;
-import org.audiveris.omr.plugin.PluginManager;
+import org.audiveris.omr.log.LogUtil;
+import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.PartwiseBuilder;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.BookActions;
-import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.StubsController;
+import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.step.ui.StepMenu;
 import org.audiveris.omr.step.ui.StepMonitoring;
 import org.audiveris.omr.ui.action.ActionManager;
@@ -85,9 +86,7 @@ import javax.swing.SwingUtilities;
  * Class {@code MainGui} is the Java User Interface, the main class for displaying a
  * sheet, the message log and the various tools.
  * <p>
- * This user interface is structured according to BSAF lifecycle:
- * <p>
- * <img src="https://kenai.com/attachments/wiki_images/bsaf/ApplicationLifecycle.png">
+ * This user interface is structured according to BSAF lifecycle.
  *
  * @author Hervé Bitteur
  */
@@ -133,6 +132,9 @@ public class MainGui
     /** Step menu. */
     private StepMenu stepMenu;
 
+    /** Map of class resources. */
+    private ResourceMap resources;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code MainGui} instance, to handle any user display and interaction.
@@ -158,13 +160,34 @@ public class MainGui
     @Override
     public boolean displayConfirmation (String message)
     {
+        return displayConfirmation(message, "Confirm");
+    }
+
+    //---------------------//
+    // displayConfirmation //
+    //---------------------//
+    @Override
+    public boolean displayConfirmation (String message,
+                                        String title)
+    {
         int answer = JOptionPane.showConfirmDialog(
                 frame,
                 message,
-                "Confirm - " + appName,
+                title + " - " + appName,
                 JOptionPane.YES_NO_OPTION);
 
         return answer == JOptionPane.YES_OPTION;
+    }
+
+    //---------------------//
+    // displayConfirmation //
+    //---------------------//
+    @Override
+    public int displayConfirmation (String message,
+                                    String title,
+                                    int optionType)
+    {
+        return JOptionPane.showConfirmDialog(frame, message, title + " - " + appName, optionType);
     }
 
     //--------------//
@@ -210,10 +233,20 @@ public class MainGui
     @Override
     public void displayWarning (String message)
     {
+        displayWarning(message, "Warning - " + appName);
+    }
+
+    //----------------//
+    // displayWarning //
+    //----------------//
+    @Override
+    public void displayWarning (String message,
+                                String title)
+    {
         JOptionPane.showMessageDialog(
                 frame,
                 message,
-                "Warning - " + appName,
+                title + " - " + appName,
                 JOptionPane.WARNING_MESSAGE);
     }
 
@@ -292,9 +325,7 @@ public class MainGui
                     // Update frame title
                     sb.append(" - ");
 
-                    ResourceMap resource = Application.getInstance().getContext().getResourceMap(
-                            getClass());
-                    sb.append(resource.getString("mainFrame.title"));
+                    sb.append(resources.getString("mainFrame.title"));
                     frame.setTitle(sb.toString());
                 }
             });
@@ -318,7 +349,7 @@ public class MainGui
         Boolean display = (Boolean) evt.getNewValue();
 
         switch (propertyName) {
-        case GuiActions.BOARDS_DISPLAYED:
+        case GuiActions.BOARDS_WINDOW_DISPLAYED:
 
             // Toggle display of boards
             if (display) {
@@ -331,7 +362,7 @@ public class MainGui
 
             break;
 
-        case GuiActions.LOG_DISPLAYED:
+        case GuiActions.LOG_WINDOW_DISPLAYED:
 
             // Toggle display of log
             if (display) {
@@ -342,7 +373,7 @@ public class MainGui
 
             break;
 
-        case GuiActions.ERRORS_DISPLAYED:
+        case GuiActions.ERRORS_WINDOW_DISPLAYED:
 
             // Toggle display of errors
             if (display) {
@@ -440,6 +471,9 @@ public class MainGui
     {
         logger.debug("MainGui. 3/ready");
 
+        // Get resources, now that application is available
+        resources = Application.getInstance().getContext().getResourceMap(getClass());
+
         // Set application exit listener
         addExitListener(new GuiExitListener());
 
@@ -467,6 +501,8 @@ public class MainGui
     protected void startup ()
     {
         logger.debug("MainGui. 2/startup");
+        logger.info("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
+        logger.info("\n{}", LogUtil.allInitialMessages());
 
         // Make the OmrGui instance available for the other classes
         OMR.gui = this;
@@ -560,20 +596,18 @@ public class MainGui
         content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
         content.add(appPane, BorderLayout.CENTER);
 
-        // Suppress all internal borders, recursively
-        ///UIUtilities.suppressBorders(frame.getContentPane());
         // Display the boards pane?
-        if (GuiActions.getInstance().isBoardsDisplayed()) {
+        if (GuiActions.getInstance().isBoardsWindowDisplayed()) {
             appPane.add(boardsScrollPane, BorderLayout.EAST);
         }
 
         // Display the log pane?
-        if (GuiActions.getInstance().isLogDisplayed()) {
+        if (GuiActions.getInstance().isLogWindowDisplayed()) {
             bottomPane.setLeftComponent(logPane.getComponent());
         }
 
         // Display the errors pane?
-        if (GuiActions.getInstance().isErrorsDisplayed()) {
+        if (GuiActions.getInstance().isErrorsWindowDisplayed()) {
             bottomPane.setRightComponent(null);
         }
 
@@ -595,7 +629,7 @@ public class MainGui
         stepMenu = new StepMenu(new SeparableMenu());
 
         // Specific plugin menu
-        JMenu pluginMenu = PluginManager.getInstance().getMenu(null);
+        JMenu pluginMenu = PluginsManager.getInstance().getMenu(null);
 
         // For some specific top-level menus
         ActionManager mgr = ActionManager.getInstance();
@@ -650,7 +684,7 @@ public class MainGui
         // Gauges = voices | progress | memory
         JPanel gauges = new JPanel();
         gauges.setLayout(new BorderLayout());
-        gauges.add(SheetResultPainter.getVoicePanel(), BorderLayout.WEST);
+        gauges.add(SigPainter.getVoicePanel(), BorderLayout.WEST);
         gauges.add(StepMonitoring.createMonitor().getComponent(), BorderLayout.CENTER);
         gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
 
@@ -683,8 +717,8 @@ public class MainGui
      */
     private boolean needBottomPane ()
     {
-        return GuiActions.getInstance().isLogDisplayed()
-               || GuiActions.getInstance().isErrorsDisplayed();
+        return GuiActions.getInstance().isLogWindowDisplayed()
+               || GuiActions.getInstance().isErrorsWindowDisplayed();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

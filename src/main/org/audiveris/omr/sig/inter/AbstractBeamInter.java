@@ -21,29 +21,46 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.AreaUtil;
+import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.LineUtil;
+import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.run.Orientation;
+import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.beam.BeamGroup;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.relation.BeamPortion;
+import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.VerticalSide;
+import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.geom.Area;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
@@ -74,17 +91,11 @@ public abstract class AbstractBeamInter
     /** Beam height. */
     @XmlAttribute
     @XmlJavaTypeAdapter(type = double.class, value = Jaxb.Double1Adapter.class)
-    private final double height;
+    protected double height;
 
     /** Median line. */
     @XmlElement
-    private final Line2D median;
-
-    /** Chords that are linked by this beam. */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "chords")
-    private final List<AbstractChordInter> chords = new ArrayList<AbstractChordInter>();
+    protected Line2D median;
 
     // Transient data
     //---------------
@@ -116,6 +127,23 @@ public abstract class AbstractBeamInter
         }
     }
 
+    /**
+     * Creates a new AbstractBeamInter <b>ghost</b> object.
+     * Median and height must be assigned later
+     *
+     * @param shape BEAM or BEAM_HOOK
+     * @param grade the grade
+     */
+    protected AbstractBeamInter (Shape shape,
+                                 double grade)
+    {
+        super(null, null, shape, grade);
+
+        if (median != null) {
+            computeArea();
+        }
+    }
+
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
@@ -126,50 +154,112 @@ public abstract class AbstractBeamInter
         visitor.visit(this);
     }
 
-    //----------//
-    // addChord //
-    //----------//
-    public void addChord (AbstractChordInter chord)
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
     {
-        if (!chords.contains(chord)) {
-            chords.add(chord);
+        super.added();
+
+        setAbnormal(true); // No stem linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if beam is connected to stems on both ends
+        boolean left = false;
+        boolean right = false;
+
+        for (Relation rel : sig.getRelations(this, BeamStemRelation.class)) {
+            BeamStemRelation bsRel = (BeamStemRelation) rel;
+            BeamPortion portion = bsRel.getBeamPortion();
+
+            if (portion == BeamPortion.LEFT) {
+                left = true;
+            } else if (portion == BeamPortion.RIGHT) {
+                right = true;
+            }
+        }
+
+        setAbnormal(!left || !right);
+
+        return isAbnormal();
+    }
+
+    //-----------//
+    // checkLink //
+    //-----------//
+    /**
+     * Check if a Beam-Stem link is possible between this beam and the provided stem.
+     *
+     * @param stem       the provided stem
+     * @param headToBeam vertical direction (from head) to beam
+     * @param scale      scaling information
+     * @return the link if OK, otherwise null
+     */
+    public Link checkLink (StemInter stem,
+                           VerticalSide headToBeam,
+                           Scale scale)
+    {
+        if (isVip() && stem.isVip()) {
+            logger.info("VIP checkLink {} & {}", this, stem);
+        }
+
+        // Relation beam -> stem (if not yet present)
+        BeamStemRelation bRel;
+        final int yDir = (headToBeam == VerticalSide.TOP) ? (-1) : 1;
+        final Line2D beamBorder = getBorder(headToBeam.opposite());
+        bRel = new BeamStemRelation();
+
+        // Precise cross point
+        Point2D start = stem.getTop();
+        Point2D stop = stem.getBottom();
+        Point2D crossPt = LineUtil.intersection(stem.getMedian(), beamBorder);
+
+        // Extension point
+        bRel.setExtensionPoint(
+                new Point2D.Double(crossPt.getX(), crossPt.getY() + (yDir * (getHeight() - 1))));
+
+        // Abscissa -> beamPortion
+        // toLeft & toRight are >0 if within beam, <0 otherwise
+        double toLeft = crossPt.getX() - beamBorder.getX1();
+        double toRight = beamBorder.getX2() - crossPt.getX();
+        final double xGap;
+
+        final int maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
+
+        if (this instanceof BeamInter && (Math.min(toLeft, toRight) > maxBeamInDx)) {
+            // It's a beam center connection
+            bRel.setBeamPortion(BeamPortion.CENTER);
+            xGap = 0;
+        } else if (toLeft < toRight) {
+            bRel.setBeamPortion(BeamPortion.LEFT);
+            xGap = Math.max(0, -toLeft);
+        } else {
+            bRel.setBeamPortion(BeamPortion.RIGHT);
+            xGap = Math.max(0, -toRight);
+        }
+
+        // Ordinate
+        final double yGap = (yDir > 0) ? Math.max(0, crossPt.getY() - stop.getY())
+                : Math.max(0, start.getY() - crossPt.getY());
+
+        bRel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+
+        if (bRel.getGrade() >= bRel.getMinGrade()) {
+            logger.debug("{} {} {}", this, stem, bRel);
+
+            return new Link(stem, bRel, true);
+        } else {
+            return null;
         }
     }
 
-    //
-    //    //----------------//
-    //    // determineGroup //
-    //    //----------------//
-    //    /**
-    //     * Determine which BeamGroup this beam is part of.
-    //     * The BeamGroup is either reused (if one of its beams has a linked chord
-    //     * in common with this beam) or created from scratch otherwise
-    //     *
-    //     * @param measure containing measure
-    //     */
-    //    public void determineGroup (Measure measure)
-    //    {
-    //        // Check if this beam should belong to an existing group
-    //        for (BeamGroup grp : measure.getBeamGroups()) {
-    //            for (AbstractBeamInter beam : grp.getBeams()) {
-    //                for (AbstractChordInter chord : beam.getChords()) {
-    //                    if (this.chords.contains(chord)) {
-    //                        // We have a chord in common with this beam, so we are in same group
-    //                        switchToGroup(grp);
-    //                        logger.debug("{} Reused {} for {}", this, grp, this);
-    //
-    //                        return;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //
-    //        // No compatible group found, let's build a new one
-    //        switchToGroup(new BeamGroup(measure));
-    //
-    //        logger.debug("{} Created new {} for {}", this, getGroup(), this);
-    //    }
-    //
     //-----------//
     // getBorder //
     //-----------//
@@ -200,7 +290,34 @@ public abstract class AbstractBeamInter
      */
     public List<AbstractChordInter> getChords ()
     {
+        List<AbstractChordInter> chords = new ArrayList<AbstractChordInter>();
+
+        for (StemInter stem : getStems()) {
+            for (AbstractChordInter chord : stem.getChords()) {
+                if (!chords.contains(chord)) {
+                    chords.add(chord);
+                }
+            }
+        }
+
+        Collections.sort(chords, Inters.byCenterAbscissa);
+
         return chords;
+    }
+
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        StringBuilder sb = new StringBuilder(super.getDetails());
+
+        if (group != null) {
+            sb.append(" group:").append(group.getId());
+        }
+
+        return sb.toString();
     }
 
     //----------//
@@ -240,6 +357,57 @@ public abstract class AbstractBeamInter
         return median;
     }
 
+    //-----------//
+    // getStemOn //
+    //-----------//
+    /**
+     * Report the stem, if any, connected on desired beam portion (LEFT,CENTER or RIGHT).
+     * <ul>
+     * <li>For LEFT and for RIGHT, there can be at most one stem.
+     * <li>For CENTER, there can be from 0 to N stems, so only the first one found is returned.
+     * </ul>
+     *
+     * @param portion provided portion
+     * @return the connected stem or null
+     */
+    public StemInter getStemOn (BeamPortion portion)
+    {
+        if (isVip()) {
+            logger.info("VIP getStemOn for {} on {}", this, portion);
+        }
+
+        for (Relation rel : sig.getRelations(this, BeamStemRelation.class)) {
+            BeamStemRelation bsRel = (BeamStemRelation) rel;
+            BeamPortion p = bsRel.getBeamPortion();
+
+            if (p == portion) {
+                return (StemInter) sig.getOppositeInter(this, rel);
+            }
+        }
+
+        return null;
+    }
+
+    //----------//
+    // getStems //
+    //----------//
+    /**
+     * Report the stems connected to this beam.
+     *
+     * @return the set of connected stems, perhaps empty
+     */
+    public Set<StemInter> getStems ()
+    {
+        Set<StemInter> stems = new LinkedHashSet<StemInter>();
+
+        for (Relation bs : sig.getRelations(this, BeamStemRelation.class)) {
+            StemInter stem = (StemInter) sig.getOppositeInter(this, bs);
+            stems.add(stem);
+        }
+
+        return stems;
+    }
+
     //----------//
     // getVoice //
     //----------//
@@ -270,12 +438,60 @@ public abstract class AbstractBeamInter
         return false;
     }
 
-    //-------------//
-    // removeChord //
-    //-------------//
-    public void removeChord (AbstractChordInter chord)
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove (boolean extensive)
     {
-        chords.remove(chord);
+        if (group != null) {
+            group.removeBeam(this);
+        }
+
+        for (AbstractChordInter chord : getChords()) {
+            chord.invalidateCache();
+        }
+
+        super.remove(extensive);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemStems = system.getSig().inters(StemInter.class);
+        Collections.sort(systemStems, Inters.byAbscissa);
+
+        Collection<Link> links = lookupLinks(systemStems, system);
+
+        if (doit) {
+            for (Link link : links) {
+                link.applyTo(this);
+            }
+        }
+
+        return links;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if (area == null) {
+            // Case of manual beam: Compute height and median parameters and area
+            height = (int) Math.rint(glyph.getMeanThickness(Orientation.HORIZONTAL));
+            median = glyph.getLine();
+
+            computeArea();
+        }
     }
 
     //----------//
@@ -318,6 +534,17 @@ public abstract class AbstractBeamInter
         this.group = group;
     }
 
+    //-------------//
+    // computeArea //
+    //-------------//
+    protected void computeArea ()
+    {
+        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
+
+        // Define precise bounds based on this path
+        setBounds(getArea().getBounds());
+    }
+
     //----------------//
     // afterUnmarshal //
     //----------------//
@@ -334,15 +561,79 @@ public abstract class AbstractBeamInter
         }
     }
 
-    //-------------//
-    // computeArea //
-    //-------------//
-    private void computeArea ()
+    /**
+     * Define lookup area around the beam for potential stems
+     *
+     * @return the look up area
+     */
+    private Area getLookupArea (Scale scale)
     {
-        setArea(AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height));
+        final Line2D top = getBorder(VerticalSide.TOP);
+        final Line2D bottom = getBorder(VerticalSide.BOTTOM);
+        final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
+        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
+        final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
 
-        // Define precise bounds based on this path
-        setBounds(getArea().getBounds());
+        final Path2D lu = new Path2D.Double();
+        double xMin = top.getX1() - xOut;
+        double xMax = top.getX2() + xOut;
+        Point2D topLeft = LineUtil.intersectionAtX(top, xMin);
+        lu.moveTo(topLeft.getX(), topLeft.getY() - yGap);
+
+        Point2D topRight = LineUtil.intersectionAtX(top, xMax);
+        lu.lineTo(topRight.getX(), topRight.getY() - yGap);
+
+        Point2D bottomRight = LineUtil.intersectionAtX(bottom, xMax);
+        lu.lineTo(bottomRight.getX(), bottomRight.getY() + yGap);
+
+        Point2D bottomLeft = LineUtil.intersectionAtX(bottom, xMin);
+        lu.lineTo(bottomLeft.getX(), bottomLeft.getY() + yGap);
+        lu.closePath();
+
+        return new Area(lu);
+    }
+
+    //-------------//
+    // lookupLinks //
+    //-------------//
+    /**
+     * Look up for potential Beam-Stem links around this Beam instance.
+     * <p>
+     * This method used to check for stems only on beam left and right sides.
+     * Now, it check also for stems within the whole beam width.
+     *
+     * @param systemStems all stems in system, sorted by abscissa
+     * @param system      containing system
+     * @return the potential links
+     */
+    private Collection<Link> lookupLinks (List<Inter> systemStems,
+                                          SystemInfo system)
+    {
+        if (systemStems.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        if (isVip()) {
+            logger.info("VIP lookupLinks for {}", this);
+        }
+
+        final List<Link> links = new ArrayList<Link>();
+        final Scale scale = system.getSheet().getScale();
+        final Area luArea = getLookupArea(scale);
+        List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.NONE, luArea);
+
+        for (Inter inter : stems) {
+            StemInter stem = (StemInter) inter;
+            Point2D stemMiddle = PointUtil.middle(stem.getMedian());
+            VerticalSide vSide = (median.relativeCCW(stemMiddle) > 0) ? TOP : BOTTOM;
+            Link link = checkLink(stem, vSide, scale);
+
+            if (link != null) {
+                links.add(link);
+            }
+        }
+
+        return links;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

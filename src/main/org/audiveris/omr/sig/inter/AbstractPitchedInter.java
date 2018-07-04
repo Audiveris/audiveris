@@ -155,7 +155,7 @@ public abstract class AbstractPitchedInter
     {
         super.setBounds(bounds);
 
-        if (staff != null) {
+        if (pitch == null && staff != null) {
             setPitch(staff.pitchPositionOf(GeoUtil.centerOf(bounds)));
         }
     }

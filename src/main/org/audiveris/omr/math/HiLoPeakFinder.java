@@ -100,7 +100,7 @@ public class HiLoPeakFinder
      * Creates a new {@code HiLoPeakFinder} object on (sub-)domain of provided function.
      *
      * @param name     a name for this finder
-     * @param function underlying function x -> y
+     * @param function underlying function x &rarr; y
      * @param xMin     minimum x value
      * @param xMax     maximum x value
      */
@@ -126,7 +126,7 @@ public class HiLoPeakFinder
      * Creates a new {@code HiLoPeakFinder} object aligned on provided function.
      *
      * @param name     a name for this finder
-     * @param function underlying function x -> y
+     * @param function underlying function x &rarr; y
      */
     public HiLoPeakFinder (String name,
                            IntegerFunction function)

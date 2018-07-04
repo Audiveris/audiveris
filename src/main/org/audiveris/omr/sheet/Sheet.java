@@ -71,8 +71,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getSystems}</li>
  * </ul></dd>
  *
- * <dt>Samples</dt>
+ * <dt>Symbols</dt>
  * <dd><ul>
+ * <li>{@link #annotate}</li>
  * <li>{@link #sample}</li>
  * </ul></dd>
  *
@@ -142,6 +143,18 @@ public interface Sheet
     void afterReload (SheetStub stub);
 
     /**
+     * Save sheet symbols annotations into the provided folder.
+     *
+     * @param sheetFolder target folder (perhaps in a zip file system)
+     */
+    void annotate (Path sheetFolder);
+
+    /**
+     * Save sheet symbols annotations.
+     */
+    void annotate ();
+
+    /**
      * Display the DATA_TAB.
      */
     void displayDataTab ();
@@ -208,6 +221,13 @@ public interface Sheet
     String getId ();
 
     /**
+     * In non batch mode, report the UI module for inter management in this sheet
+     *
+     * @return the inter controller
+     */
+    InterController getInterController ();
+
+    /**
      * Access to the Inter index for this sheet
      *
      * @return the sheet Inter's index
@@ -220,13 +240,6 @@ public interface Sheet
      * @return the scale interline value
      */
     int getInterline ();
-
-    /**
-     * In non batch mode, report the UI module for inter management in this sheet
-     *
-     * @return the inter controller
-     */
-    InterController getInterController ();
 
     /**
      * Access to the lag manager for this sheet
@@ -349,10 +362,15 @@ public interface Sheet
     void renderItems (Graphics2D g);
 
     /**
+     * Save sheet samples into book repository.
+     */
+    void sample ();
+
+    /**
      * Assign the related image to this sheet
      *
      * @param image the loaded image
-     * @throws StepException
+     * @throws StepException if processing failed at this step
      */
     void setImage (BufferedImage image)
             throws StepException;
@@ -374,14 +392,9 @@ public interface Sheet
     /**
      * Store sheet internals into book file system.
      *
-     * @param sheetPath    path of sheet in new) book file
-     * @param oldSheetPath path of sheet in old book file, if any
+     * @param sheetFolder    path of sheet folder in (new) book file
+     * @param oldSheetFolder path of sheet folder in old book file, if any
      */
-    void store (Path sheetPath,
-                Path oldSheetPath);
-
-    /**
-     * Save sheet samples into book repository.
-     */
-    void sample ();
+    void store (Path sheetFolder,
+                Path oldSheetFolder);
 }

@@ -27,6 +27,7 @@ import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.glyph.Shape.*;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.TemplateSymbol;
 
@@ -79,21 +80,21 @@ public class ShapeDescriptor
             WHOLE_NOTE_SMALL);
 
     /** Color for foreground pixels. */
-    private static final int BLACK = Color.BLACK.getRGB();
+    private static final int FORE = Color.BLACK.getRGB();
 
     /** Color for background pixels. */
-    private static final int RED = Color.RED.getRGB();
+    private static final int BACK = Color.RED.getRGB();
 
     /** Color for hole pixels. */
-    private static final int GREEN = Color.GREEN.getRGB();
+    private static final int HOLE = Color.PINK.getRGB();
 
-    /** Color for irrelevant pixels (fully transparent). */
-    private static final int TRANS = new Color(0, 0, 0, 0).getRGB();
+    /** Color for irrelevant pixels. */
+    private static final int IRRELEVANT = new Color(0, 0, 0, 0).getRGB(); // Fully transparent
 
     //~ Instance fields ----------------------------------------------------------------------------
     private final Shape shape;
 
-    private final int interline;
+    private final int pointSize;
 
     private final Template template;
 
@@ -108,18 +109,44 @@ public class ShapeDescriptor
      * Creates a new ShapeDescriptor object.
      *
      * @param shape     the described shape
-     * @param interline global scale value
+     * @param pointSize precise scaling value
      */
     public ShapeDescriptor (Shape shape,
-                            int interline)
+                            int pointSize)
     {
         this.shape = shape;
-        this.interline = interline;
+        this.pointSize = pointSize;
 
-        template = createTemplate(shape, interline);
+        template = createTemplate(shape, pointSize);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //------//
+    // main //
+    //------//
+    /**
+     * An entry point to allow generation and visual check of a bunch of templates.
+     *
+     * @param args minimum and maximum interline values
+     */
+    public static void main (String... args)
+    {
+        if ((args == null) || (args.length == 0)) {
+            logger.warn("Expected args: minInterline maxInterline");
+
+            return;
+        }
+
+        final int min = Integer.decode(args[0]);
+        final int max = (args.length > 1) ? Integer.decode(args[1]) : min;
+
+        for (int interline = min; interline <= max; interline++) {
+            for (Shape shape : ShapeSet.getTemplateNotes(null)) {
+                new ShapeDescriptor(shape, interline);
+            }
+        }
+    }
+
     //----------//
     // evaluate //
     //----------//
@@ -138,6 +165,26 @@ public class ShapeDescriptor
                             DistanceTable distances)
     {
         return template.evaluate(x, y, anchor, distances);
+    }
+
+    //--------------//
+    // evaluateHole //
+    //--------------//
+    /**
+     * Evaluate the ratio of actual white pixels in expected hole.
+     *
+     * @param x         location abscissa
+     * @param y         location ordinate
+     * @param anchor    location WRT template
+     * @param distances table of distances
+     * @return the best distance found
+     */
+    public double evaluateHole (int x,
+                                int y,
+                                Anchor anchor,
+                                DistanceTable distances)
+    {
+        return template.evaluateHole(x, y, anchor, distances);
     }
 
     //-----------//
@@ -241,7 +288,7 @@ public class ShapeDescriptor
         StringBuilder sb = new StringBuilder();
         sb.append(shape);
         sb.append("-");
-        sb.append(interline);
+        sb.append(pointSize);
         sb.append("(").append(width).append("x").append(height).append(")");
 
         return sb.toString();
@@ -297,8 +344,11 @@ public class ShapeDescriptor
             distances.dump(shape + "  distances");
         }
 
-        // Trim the distance table of its surrounding rectangle?
-        return distances;
+        // Trim the distance table of its surrounding rectangle
+        final Rectangle roi = new Rectangle(1, 1, width, height);
+        final DistanceTable trimmed = (DistanceTable) distances.getView(roi);
+
+        return trimmed;
     }
 
     //---------//
@@ -332,7 +382,6 @@ public class ShapeDescriptor
      * Build the collection of key points to be used for matching tests.
      * These are the locations where the image distance value will be checked against the recorded
      * template distance value.
-     * TODO: We could carefully select a subset of these locations?
      *
      * @param img       the template source image
      * @param distances the template distances (extended on each direction)
@@ -341,25 +390,20 @@ public class ShapeDescriptor
     private static List<PixelDistance> getKeyPoints (BufferedImage img,
                                                      DistanceTable distances)
     {
-        // Generate key points
         List<PixelDistance> keyPoints = new ArrayList<PixelDistance>();
 
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
-                Color pix = new Color(img.getRGB(x, y), true);
+                int pix = img.getRGB(x, y);
 
-                // Select only relevant pixels
-                if (pix.getAlpha() == 255) {
-                    if (pix.getGreen() != 0) {
-                        // Green = hole, use dist to nearest foreground
-                        keyPoints.add(new PixelDistance(x, y, distances.getValue(x + 1, y + 1)));
-                    } else if (pix.getRed() != 0) {
-                        // Red = background, use dist to nearest foreground
-                        keyPoints.add(new PixelDistance(x, y, distances.getValue(x + 1, y + 1)));
-                    } else {
-                        // Black = foreground,  dist to nearest foreground is 0
-                        keyPoints.add(new PixelDistance(x, y, 0));
-                    }
+                // We consider only relevant pixels
+                if (pix != IRRELEVANT) {
+                    // For hole, use *NEGATIVE* dist to nearest foreground
+                    // For background, use dist to nearest foreground
+                    // For foreground, dist to nearest foreground is 0 by definition
+                    final int val = distances.getValue(x, y);
+                    final int d = (pix == HOLE) ? (-val) : ((pix == BACK) ? val : 0);
+                    keyPoints.add(new PixelDistance(x, y, d));
                 }
             }
         }
@@ -375,17 +419,19 @@ public class ShapeDescriptor
      * All templates get basic anchors at construction time, but some may need additional anchors.
      *
      * @param template the template to populate
+     * @param img      the colored image
      */
-    private void addAnchors (Template template)
+    private void addAnchors (Template template,
+                             BufferedImage img)
     {
-        // Symbol bounds (relative to template origin)
-        final Rectangle sym = template.getSymbolBounds();
-        final double xMiddle = (sym.x + (0.5 * sym.width)) / width;
-        final double yMiddle = (sym.y + (0.5 * sym.height)) / height;
+        // Realistic symbol bounds (relative to template origin)
+        final Rectangle sym = realisticBounds(template.getSymbolBounds(), img);
+        final Point center = GeoUtil.centerOf(sym);
 
         // Define common basic anchors
-        template.addAnchor(Anchor.CENTER, xMiddle, yMiddle);
-        template.addAnchor(Anchor.MIDDLE_LEFT, (double) sym.x / width, yMiddle);
+        template.addAnchor(Anchor.CENTER, center.x, center.y);
+        template.addAnchor(Anchor.MIDDLE_LEFT, sym.x, center.y);
+        template.addAnchor(Anchor.MIDDLE_RIGHT, (sym.x + sym.width) - 1, center.y);
 
         // WHOLE_NOTE & WHOLE_NOTE_SMALL are not concerned further
         if (ShapeSet.StemLessHeads.contains(template.getShape())) {
@@ -393,21 +439,21 @@ public class ShapeDescriptor
         }
 
         // Add anchors for potential stems on left and right sides
-        final double dx = constants.stemDx.getValue();
-        final double left = (sym.x + (dx * sym.width)) / width;
-        final double right = (sym.x + ((1 - dx) * sym.width)) / width;
+        final int dx = (int) Math.rint(constants.stemDx.getValue() * sym.width);
+        final int left = sym.x + dx;
+        final int right = (sym.x + sym.width) - dx - 1;
 
-        final double dy = constants.stemDy.getValue();
-        final double top = (sym.y + (dy * sym.height)) / height;
-        final double bottom = (sym.y + ((1 - dy) * sym.height)) / height;
+        final int dy = (int) Math.rint(constants.stemDy.getValue() * sym.height);
+        final int top = sym.y + dy;
+        final int bottom = (sym.y + sym.height) - dy - 1;
 
-        template.addAnchor(Anchor.TOP_LEFT_STEM, left, top);
-        template.addAnchor(Anchor.LEFT_STEM, left, yMiddle);
+        template.addAnchor(Anchor.TOP_LEFT_STEM, left, center.y);
+        template.addAnchor(Anchor.LEFT_STEM, left, center.y);
         template.addAnchor(Anchor.BOTTOM_LEFT_STEM, left, bottom);
 
         template.addAnchor(Anchor.TOP_RIGHT_STEM, right, top);
-        template.addAnchor(Anchor.RIGHT_STEM, right, yMiddle);
-        template.addAnchor(Anchor.BOTTOM_RIGHT_STEM, right, bottom);
+        template.addAnchor(Anchor.RIGHT_STEM, right, center.y);
+        template.addAnchor(Anchor.BOTTOM_RIGHT_STEM, right, center.y);
     }
 
     //----------//
@@ -416,7 +462,7 @@ public class ShapeDescriptor
     /**
      * Background pixels inside a given shape must be recognized as such.
      * <p>
-     * Such pixels are marked with a specific color (green foreground) so that the template can
+     * Such pixels are marked with a specific color (pink foreground) so that the template can
      * measure their distance to (black) foreground.
      *
      * @param img the source image
@@ -432,17 +478,17 @@ public class ShapeDescriptor
             // We have no ledger, just a big hole in the symbol center
             holeSeeds.add(new Point(box.x + (box.width / 2), box.y + (box.height / 2)));
 
-            // Fill the holes if any with green color
+            // Fill the holes if any with HOLE color
             FloodFiller floodFiller = new FloodFiller(img);
 
             for (Point seed : holeSeeds) {
-                // Background (red) -> background (green)
+                // Background (BACK) -> interior background (HOLE)
                 // Hole seeds are very coarse with low interline value, so try points nearby
                 Neiborhood:
                 for (int iy = 0; iy <= 1; iy++) {
                     for (int ix = 0; ix <= 1; ix++) {
                         if (isBackground(img, seed.x + ix, seed.y + iy)) {
-                            floodFiller.fill(seed.x + ix, seed.y + iy, RED, GREEN);
+                            floodFiller.fill(seed.x + ix, seed.y + iy, BACK, HOLE);
 
                             break Neiborhood;
                         }
@@ -472,12 +518,12 @@ public class ShapeDescriptor
                     Color color = new Color(pix.getRGB(), false);
 
                     if (color.getRed() >= threshold) {
-                        img.setRGB(x, y, RED);
+                        img.setRGB(x, y, BACK);
                     } else {
-                        img.setRGB(x, y, BLACK);
+                        img.setRGB(x, y, FORE);
                     }
                 } else {
-                    img.setRGB(x, y, TRANS);
+                    img.setRGB(x, y, IRRELEVANT);
                 }
             }
         }
@@ -490,18 +536,14 @@ public class ShapeDescriptor
      * Build a template for desired shape and size, based on MusicFont.
      *
      * @param shape     shape of the template
-     * @param interline scaling for font
+     * @param pointSize precise scaling for font
      * @return the brand new template
      */
     private Template createTemplate (Shape shape,
-                                     int interline)
+                                     int pointSize)
     {
-        // Void head templates are generally too small, so we cheat on font size
-        if (shape == Shape.NOTEHEAD_VOID) {
-            interline += MusicFont.NOTEHEAD_VOID_EXTENT;
-        }
-
-        MusicFont font = MusicFont.getFont(interline);
+        int interline = (pointSize + 2) / 4; // Approximate value
+        MusicFont font = MusicFont.getPointFont(pointSize, interline);
 
         // Get symbol image painted on template rectangle
         final TemplateSymbol symbol = new TemplateSymbol(shape, getCode(shape));
@@ -515,28 +557,32 @@ public class ShapeDescriptor
         final DistanceTable distances = computeDistances(img, shape);
 
         // Add holes if any
-        addHoles(img, symbol.getSymbolBounds(font));
+        final Rectangle symbolBounds = symbol.getSymbolBounds(font);
+        addHoles(img, symbolBounds);
 
         // Flag non-relevant pixels
         flagIrrelevantPixels(img, distances);
-
-        // Store a copy on disk for visual check?
-        if (constants.keepTemplates.isSet()) {
-            ImageUtil.saveOnDisk(img, shape + ".tpl" + interline);
-        }
 
         // Generate key points for relevant pixels (fore, holes or back)
         final List<PixelDistance> keyPoints = getKeyPoints(img, distances);
 
         // Generate the template instance
-        Template template = new Template(shape, interline, symbol, width, height, keyPoints);
+        Template template = new Template(
+                shape,
+                pointSize,
+                symbol,
+                width,
+                height,
+                keyPoints,
+                symbolBounds);
 
         // Add specific anchor points, if any
-        addAnchors(template);
+        addAnchors(template, img);
 
-        if (logger.isDebugEnabled()) {
-            logger.info("Created {}", template);
-            template.dump();
+        // Store a copy on disk for visual check?
+        if (constants.keepTemplates.isSet()) {
+            BufferedImage output = template.buildDecoratedImage(img);
+            ImageUtil.saveOnDisk(output, shape + ".tpl" + pointSize);
         }
 
         return template;
@@ -570,9 +616,9 @@ public class ShapeDescriptor
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
                 // Check (non-hole) background pixel
-                if (img.getRGB(x, y) == RED) {
+                if (img.getRGB(x, y) == BACK) {
                     if (extensions.getValue(x, y) != 1) {
-                        img.setRGB(x, y, TRANS);
+                        img.setRGB(x, y, IRRELEVANT);
                     }
                 }
             }
@@ -589,13 +635,13 @@ public class ShapeDescriptor
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
                 // Check foreground pixel
-                if (img.getRGB(x, y) == BLACK) {
+                if (img.getRGB(x, y) == FORE) {
                     // North
                     for (int ny = y - 1; ny >= 0; ny--) {
                         int pix = img.getRGB(x, ny);
 
-                        if (pix != BLACK) {
-                            if (pix == RED) {
+                        if (pix != FORE) {
+                            if (pix == BACK) {
                                 borders.add(new Point(x, ny));
                             }
 
@@ -607,8 +653,8 @@ public class ShapeDescriptor
                     for (int ny = y + 1; ny < h; ny++) {
                         int pix = img.getRGB(x, ny);
 
-                        if (pix != BLACK) {
-                            if (pix == RED) {
+                        if (pix != FORE) {
+                            if (pix == BACK) {
                                 borders.add(new Point(x, ny));
                             }
 
@@ -620,8 +666,8 @@ public class ShapeDescriptor
                     for (int nx = x - 1; nx >= 0; nx--) {
                         int pix = img.getRGB(nx, y);
 
-                        if (pix != BLACK) {
-                            if (pix == RED) {
+                        if (pix != FORE) {
+                            if (pix == BACK) {
                                 borders.add(new Point(nx, y));
                             }
 
@@ -633,8 +679,8 @@ public class ShapeDescriptor
                     for (int nx = x + 1; nx < w; nx++) {
                         int pix = img.getRGB(nx, y);
 
-                        if (pix != BLACK) {
-                            if (pix == RED) {
+                        if (pix != FORE) {
+                            if (pix == BACK) {
                                 borders.add(new Point(nx, y));
                             }
 
@@ -664,11 +710,11 @@ public class ShapeDescriptor
         for (Point p : borders) {
             ext.setValue(p.x, p.y, 1);
 
-            int dist = distances.getValue(p.x + 1, p.y + 1);
+            int dist = distances.getValue(p.x, p.y);
 
             // North
             for (int ny = p.y - 1; ny >= 0; ny--) {
-                int d = distances.getValue(p.x + 1, ny + 1);
+                int d = distances.getValue(p.x, ny);
 
                 if (d > dist) {
                     dist = d;
@@ -679,10 +725,10 @@ public class ShapeDescriptor
             }
 
             // South
-            dist = distances.getValue(p.x + 1, p.y + 1);
+            dist = distances.getValue(p.x, p.y);
 
             for (int ny = p.y + 1; ny < h; ny++) {
-                int d = distances.getValue(p.x + 1, ny + 1);
+                int d = distances.getValue(p.x, ny);
 
                 if (d > dist) {
                     dist = d;
@@ -693,10 +739,10 @@ public class ShapeDescriptor
             }
 
             // West
-            dist = distances.getValue(p.x + 1, p.y + 1);
+            dist = distances.getValue(p.x, p.y);
 
             for (int nx = p.x - 1; nx >= 0; nx--) {
-                int d = distances.getValue(nx + 1, p.y + 1);
+                int d = distances.getValue(nx, p.y);
 
                 if (d > dist) {
                     dist = d;
@@ -707,10 +753,10 @@ public class ShapeDescriptor
             }
 
             // East
-            dist = distances.getValue(p.x + 1, p.y + 1);
+            dist = distances.getValue(p.x, p.y);
 
             for (int nx = p.x + 1; nx < w; nx++) {
-                int d = distances.getValue(nx + 1, p.y + 1);
+                int d = distances.getValue(nx, p.y);
 
                 if (d > dist) {
                     dist = d;
@@ -732,10 +778,102 @@ public class ShapeDescriptor
                                   int y)
     {
         if ((x >= 0) && (x < img.getWidth()) && (y >= 0) && (y < img.getHeight())) {
-            return img.getRGB(x, y) == RED;
+            return img.getRGB(x, y) == BACK;
         }
 
         return false;
+    }
+
+    //-----------------//
+    // realisticBounds //
+    //-----------------//
+    /**
+     * Retrieve the realistic bounds of the symbol, relative to image.
+     *
+     * @param img image centered on symbol
+     * @return symbol relative rectangle
+     */
+    private Rectangle realisticBounds (Rectangle sym,
+                                       BufferedImage img)
+    {
+        final int imgWidth = img.getWidth();
+        final int imgHeight = img.getHeight();
+        final int minCells = 2;
+
+        int x1 = sym.x;
+        int x2 = (sym.x + sym.width) - 1;
+        int y1 = sym.y;
+        int y2 = (sym.y + sym.height) - 1;
+
+        // West
+        for (int x = 0; x < imgWidth; x++) {
+            int n = 0;
+
+            for (int y = 0; y < imgHeight; y++) {
+                if (img.getRGB(x, y) == FORE) {
+                    n++;
+                }
+            }
+
+            if (n >= minCells) {
+                x1 = x;
+
+                break;
+            }
+        }
+
+        // East
+        for (int x = imgWidth - 1; x >= 0; x--) {
+            int n = 0;
+
+            for (int y = 0; y < imgHeight; y++) {
+                if (img.getRGB(x, y) == FORE) {
+                    n++;
+                }
+            }
+
+            if (n >= minCells) {
+                x2 = x;
+
+                break;
+            }
+        }
+
+        // North
+        for (int y = 0; y < imgHeight; y++) {
+            int n = 0;
+
+            for (int x = 0; x < imgWidth; x++) {
+                if (img.getRGB(x, y) == FORE) {
+                    n++;
+                }
+            }
+
+            if (n >= minCells) {
+                y1 = y;
+
+                break;
+            }
+        }
+
+        // South
+        for (int y = imgHeight - 1; y >= 0; y--) {
+            int n = 0;
+
+            for (int x = 0; x < imgWidth; x++) {
+                if (img.getRGB(x, y) == FORE) {
+                    n++;
+                }
+            }
+
+            if (n >= minCells) {
+                y2 = y;
+
+                break;
+            }
+        }
+
+        return new Rectangle(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -756,7 +894,7 @@ public class ShapeDescriptor
                 "(Ratio) abscissa of stem anchor WRT symbol width");
 
         private final Constant.Ratio stemDy = new Constant.Ratio(
-                0.15,
+                0.25,
                 "(Ratio) ordinate of stem anchor WRT symbol height");
     }
 }

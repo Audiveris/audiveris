@@ -22,7 +22,9 @@
 package org.audiveris.omr.sheet.symbol;
 
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
@@ -40,16 +42,17 @@ import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
-import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
+import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.TextRole;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 
 import org.slf4j.Logger;
@@ -96,6 +99,109 @@ public class SymbolsLinker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // linkOneSentence //
+    //-----------------//
+    /**
+     * Link a text sentence, according to its role, with its related entity if any.
+     *
+     * @param sentence the sentence to link
+     */
+    public void linkOneSentence (SentenceInter sentence)
+    {
+        try {
+            if (sentence.isVip()) {
+                logger.info("VIP linkOneSentence for {}", sentence);
+            }
+
+            final TextRole role = sentence.getRole();
+
+            if (role == null) {
+                logger.info("No role for {}", sentence);
+
+                return;
+            }
+
+            final Point location = sentence.getLocation();
+            final Rectangle bounds = sentence.getBounds();
+            final Scale scale = system.getSheet().getScale();
+
+            switch (role) {
+            case Lyrics: {
+                // Map each syllable with proper chord, in staff just above
+                for (Inter wInter : sentence.getMembers()) {
+                    LyricItemInter item = (LyricItemInter) wInter;
+                    item.mapToChord();
+                }
+            }
+
+            break;
+
+            case Direction: {
+                // Map direction with proper chord
+                MeasureStack stack = system.getStackAt(location);
+
+                if (stack == null) {
+                    logger.info(
+                            "No measure stack for direction {} {}",
+                            sentence,
+                            sentence.getValue());
+
+                    break;
+                }
+
+                int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
+                Rectangle fatBounds = new Rectangle(bounds);
+                fatBounds.grow(xGapMax, 0);
+
+                AbstractChordInter chord = stack.getEventChord(location, fatBounds);
+
+                if (chord != null) {
+                    sig.addEdge(chord, sentence, new ChordSentenceRelation());
+                } else {
+                    logger.info("No chord near direction {} {}", sentence, sentence.getValue());
+                }
+            }
+
+            break;
+
+            case PartName:
+
+                // Assign part name to proper part
+                Staff staff = system.getClosestStaff(sentence.getCenter());
+                Part part = staff.getPart();
+                part.setName(sentence);
+
+                break;
+
+            case ChordName: {
+                // Map chordName with proper chord
+                MeasureStack stack = system.getStackAt(location);
+
+                if (stack == null) {
+                    logger.info("No stack at {}", sentence);
+                } else {
+                    AbstractChordInter chordBelow = stack.getStandardChordBelow(location, bounds);
+
+                    if (chordBelow != null) {
+                        sig.addEdge(chordBelow, sentence, new ChordNameRelation());
+                    } else {
+                        logger.info("No chord below chordName {}", sentence);
+                    }
+                }
+            }
+
+            break;
+
+            default:
+
+            // Roles other than [Lyrics, Direction, PartName, ChordName] stand by themselves
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in linkOneSentence for {} {}", sentence, ex.toString(), ex);
+        }
+    }
+
     //---------//
     // process //
     //---------//
@@ -107,6 +213,74 @@ public class SymbolsLinker
         linkWedges();
         linkFermatas();
         linkGraces();
+    }
+
+    //-------------------//
+    // unlinkOneSentence //
+    //-------------------//
+    /**
+     * Unlink a text sentence, according to its role, with its related entity if any.
+     *
+     * @param sentence the sentence to unlink
+     * @param oldRole  the role this sentence had
+     */
+    public void unlinkOneSentence (SentenceInter sentence,
+                                   TextRole oldRole)
+    {
+        try {
+            if (sentence.isVip()) {
+                logger.info("VIP unlinkOneSentence for {}", sentence);
+            }
+
+            if (oldRole == null) {
+                logger.info("Null old role for {}", sentence);
+
+                return;
+            }
+
+            switch (oldRole) {
+            case Lyrics: {
+                for (Inter wInter : sentence.getMembers()) {
+                    LyricItemInter item = (LyricItemInter) wInter;
+
+                    for (Relation rel : sig.getRelations(item, ChordSyllableRelation.class)) {
+                        sig.removeEdge(rel);
+                    }
+                }
+            }
+
+            break;
+
+            case Direction: {
+                for (Relation rel : sig.getRelations(sentence, ChordSentenceRelation.class)) {
+                    sig.removeEdge(rel);
+                }
+            }
+
+            break;
+
+            case PartName: {
+                // Look for proper part
+                Staff staff = system.getClosestStaff(sentence.getCenter());
+                Part part = staff.getPart();
+                part.setName(null);
+            }
+
+            break;
+
+            case ChordName: {
+                for (Relation rel : sig.getRelations(sentence, ChordNameRelation.class)) {
+                    sig.removeEdge(rel);
+                }
+            }
+
+            break;
+
+            default:
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in unlinkOneSentence for {} {}", sentence, ex.toString(), ex);
+        }
     }
 
     //--------------//
@@ -149,12 +323,12 @@ public class SymbolsLinker
                 }
 
                 if (dot == null) {
-                    arc.delete();
+                    arc.remove();
 
                     continue;
                 }
 
-                FermataInter fermata = FermataInter.create(arc, dot, system);
+                FermataInter fermata = FermataInter.createAdded(arc, dot, system);
                 sig.addVertex(fermata);
 
                 if (fermata.isVip()) {
@@ -166,7 +340,7 @@ public class SymbolsLinker
                     // Look for a chord (head or rest) related to this fermata
                     final Point center = fermata.getCenter();
                     final Rectangle bounds = arc.getBounds();
-                    final MeasureStack stack = system.getMeasureStackAt(center);
+                    final MeasureStack stack = system.getStackAt(center);
                     final Collection<AbstractChordInter> chords = (fermata.getShape() == Shape.FERMATA_BELOW)
                             ? stack.getStandardChordsAbove(
                                     center,
@@ -174,9 +348,9 @@ public class SymbolsLinker
 
                     if (!fermata.linkWithChords(chords)) {
                         // No link to barline, no link to chord, discard it
-                        fermata.delete();
-                        arc.delete();
-                        dot.delete();
+                        fermata.remove();
+                        arc.remove();
+                        dot.remove();
                     }
                 }
             } catch (Exception ex) {
@@ -198,7 +372,7 @@ public class SymbolsLinker
             final SmallChordInter smallChord = (SmallChordInter) chordInter;
 
             if (smallChord.isVip()) {
-                logger.info("VIP linkGracesl for {}", smallChord);
+                logger.info("VIP linkGraces for {}", smallChord);
             }
 
             try {
@@ -243,7 +417,7 @@ public class SymbolsLinker
 
                 final Point location = pedal.getCenter();
                 final Rectangle bounds = pedal.getBounds();
-                final MeasureStack stack = system.getMeasureStackAt(location);
+                final MeasureStack stack = system.getStackAt(location);
                 final AbstractChordInter chordAbove = stack.getStandardChordAbove(location, bounds);
 
                 if (chordAbove != null) {
@@ -266,91 +440,9 @@ public class SymbolsLinker
      */
     private void linkTexts ()
     {
-        final Scale scale = system.getSheet().getScale();
-
         for (Inter sInter : sig.inters(SentenceInter.class)) {
             final SentenceInter sentence = (SentenceInter) sInter;
-
-            try {
-                if (sentence.isVip()) {
-                    logger.info("VIP linkTexts for {}", sentence);
-                }
-
-                final TextRole role = sentence.getRole();
-
-                if (role == null) {
-                    logger.info("No role for {}", sentence);
-
-                    continue;
-                }
-
-                final Point location = sentence.getLocation();
-                final Rectangle bounds = sentence.getBounds();
-
-                switch (role) {
-                case Lyrics: {
-                    // Map each syllable with proper chord, in staff just above
-                    for (Inter wInter : sentence.getMembers()) {
-                        LyricItemInter item = (LyricItemInter) wInter;
-                        item.mapToChord();
-                    }
-                }
-
-                break;
-
-                case Direction: {
-                    // Map direction with proper chord
-                    MeasureStack stack = system.getMeasureStackAt(location);
-
-                    if (stack == null) {
-                        logger.info(
-                                "No measure stack for direction {} {}",
-                                sentence,
-                                sentence.getValue());
-
-                        break;
-                    }
-
-                    int xGapMax = scale.toPixels(ChordSentenceRelation.getXGapMax());
-                    Rectangle fatBounds = new Rectangle(bounds);
-                    fatBounds.grow(xGapMax, 0);
-
-                    AbstractChordInter chord = stack.getEventChord(location, fatBounds);
-
-                    if (chord != null) {
-                        sig.addEdge(chord, sentence, new ChordSentenceRelation());
-                    } else {
-                        logger.info(
-                                "No chord above direction {} {}",
-                                sentence,
-                                sentence.getValue());
-                    }
-                }
-
-                break;
-
-                case ChordName: {
-                    // Map chordName with proper chord
-                    MeasureStack stack = system.getMeasureStackAt(location);
-                    AbstractChordInter chordBelow = stack.getStandardChordBelow(location, bounds);
-
-                    if (chordBelow != null) {
-                        WordInter word = sentence.getFirstWord(); // The single word in fact
-                        sig.addEdge(chordBelow, word, new ChordNameRelation());
-                    } else {
-                        logger.info("No chord above chordName {}", sentence);
-                    }
-                }
-
-                break;
-
-                default:
-
-                // Roles other than [Lyrics, Direction, ChordName] don't use relations
-                }
-            } catch (Exception ex) {
-                logger.warn("Error in linkTexts for {} {}", sentence, ex.toString(), ex);
-            }
+            linkOneSentence(sentence);
         }
     }
 
@@ -362,6 +454,9 @@ public class SymbolsLinker
      */
     private void linkWedges ()
     {
+        final Scale scale = system.getSheet().getScale();
+        final double xMargin = scale.toPixels(WedgeInter.getStackAbscissaMargin());
+
         for (Inter inter : sig.inters(WedgeInter.class)) {
             try {
                 if (inter.isVip()) {
@@ -372,9 +467,14 @@ public class SymbolsLinker
                 final Line2D topLine = wedge.getLine1();
 
                 for (HorizontalSide side : HorizontalSide.values()) {
-                    final Point2D location = (side == LEFT) ? topLine.getP1()
-                            : topLine.getP2();
-                    final MeasureStack stack = system.getMeasureStackAt(location);
+                    final Point2D location = (side == LEFT)
+                            ? new Point2D.Double(
+                                    topLine.getX1() + xMargin,
+                                    topLine.getY1())
+                            : new Point2D.Double(
+                                    topLine.getX2() - xMargin,
+                                    topLine.getY2());
+                    final MeasureStack stack = system.getStackAt(location);
                     final AbstractChordInter chordAbove = stack.getStandardChordAbove(
                             location,
                             null);

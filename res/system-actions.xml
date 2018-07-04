@@ -19,74 +19,82 @@
     <action domain="FILE" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="openImageFile"      button="javax.swing.JButton"/>
     <action domain="FILE" section="70" class="org.audiveris.omr.ui.GuiActions"        method="exit"/>
 
-    <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" menu="bookHistory"          button="javax.swing.JButton"/>
+    <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" menu="bookHistory"                                button="javax.swing.JButton"/>
     <action domain="BOOK" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="openBook"/>
     <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBook"/>
     <action domain="BOOK" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetBookToBinary"/>
-    <action domain="BOOK" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeBook"     button="javax.swing.JButton"/>
-    <action domain="BOOK" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="defineParameters"   button="javax.swing.JButton"/>
+    <action domain="BOOK" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeBook"                           button="javax.swing.JButton"/>
+    <action domain="BOOK" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="defineParameters"                         button="javax.swing.JButton"/>
     <action domain="BOOK" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="swapSheets"/>
-    <action domain="BOOK" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printBook"          button="javax.swing.JButton"/>
+    <action domain="BOOK" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printBook"                                button="javax.swing.JButton"/>
     <action domain="BOOK" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printBookAs"/>
     <action domain="BOOK" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportBook"/>
     <action domain="BOOK" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportBookAs"/>
-    <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="sampleBook"/>
-    <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="viewBookRepository"/>
-    <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookRepository"/>
-    <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBook"           button="javax.swing.JButton"/>
+    <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="sampleBook"         topic="SAMPLES"/>
+    <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="viewBookRepository" topic="SAMPLES"/>
+    <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookRepository" topic="SAMPLES"/>
+    <action domain="BOOK" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="annotateBook"       topic="ANNOTATIONS"/>
+    <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBook"                                 button="javax.swing.JButton"/>
     <action domain="BOOK" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="saveBookAs"/>
     <action domain="BOOK" section="60" class="org.audiveris.omr.sheet.ui.BookActions" method="closeBook"/>
     
+    <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="undo"                                            button="javax.swing.JButton"/>
+    <action domain="SHEET" section="05" class="org.audiveris.omr.sheet.ui.BookActions" method="redo"                                            button="javax.swing.JButton"/>
     <action domain="SHEET" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetSheet"/>
     <action domain="SHEET" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetSheetToBinary"/>
     <action domain="SHEET" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeSheet"/>
     <action domain="SHEET" section="18" class="org.audiveris.omr.sheet.ui.BookActions" method="invalidateSheet"/>
-    <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotScale"/>
-    <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotStem"/>
-    <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotStaves"/>
+    <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotScale"               topic="PLOTS"/>
+    <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotStem"                topic="PLOTS"/>
+    <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotStaves"              topic="PLOTS"/>
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayPicture"/>
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayData"/>
-    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayNoStaff"/>
-    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayStaffLineGlyphs"/>
+    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayNoStaff"          topic="SPECIFIC_TABS"/>
+    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayStaffLineGlyphs"  topic="SPECIFIC_TABS"/>
     <action domain="SHEET" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="printSheetAs"/>
-    <action domain="SHEET" section="45" class="org.audiveris.omr.sheet.ui.BookActions" method="sampleSheet"/>
     <action domain="SHEET" section="40" class="org.audiveris.omr.sheet.ui.BookActions" method="exportSheetAs"/>
+    <action domain="SHEET" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="sampleSheet"             topic="SAMPLES"/>
+    <action domain="SHEET" section="50" class="org.audiveris.omr.sheet.ui.BookActions" method="annotateSheet"           topic="ANNOTATIONS"/>
 
-<!--    STEP menu is generated automatically -->
+<!--    STEP menu is generated automatically and thus not listed here -->
 
-    <action domain="VIEW" section="10" class="org.audiveris.omr.sheet.ui.BookActions"        method="zoomWidth"                                                  button="javax.swing.JButton"/>
-    <action domain="VIEW" section="10" class="org.audiveris.omr.sheet.ui.BookActions"        method="zoomHeight"                                                 button="javax.swing.JButton"/>
-    <action domain="VIEW" section="15" class="org.audiveris.omr.score.ui.PaintingParameters" method="switchLayers"                                               button="javax.swing.JButton"/>
-    <action domain="VIEW" section="15" class="org.audiveris.omr.score.ui.PaintingParameters" method="toggleAnnotations"   item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20" class="org.audiveris.omr.score.ui.PaintingParameters" method="toggleSlots"         item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20" class="org.audiveris.omr.score.ui.PaintingParameters" method="toggleVoices"        item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
-    <action domain="VIEW" section="20" class="org.audiveris.omr.score.ui.PaintingParameters" method="toggleMarks"         item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="20" class="org.audiveris.omr.score.ui.PaintingParameters" method="toggleErrors"        item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="25" class="org.audiveris.omr.ui.ViewParameters"           method="toggleInvalidSheets" item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"           method="toggleStaffLines"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"           method="toggleStaffPeaks"    item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"           method="toggleLines"         item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"           method="toggleLetters"       item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"           method="toggleAttachments"   item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"           method="toggleSentences"     item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"           method="toggleSections"      item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
-    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.GuiActions"               method="toggleBoards"        item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.GuiActions"               method="toggleLog"           item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.GuiActions"               method="toggleErrors"        item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="10" class="org.audiveris.omr.sheet.ui.BookActions"  method="zoomWidth"                                                  button="javax.swing.JButton"/>
+    <action domain="VIEW" section="10" class="org.audiveris.omr.sheet.ui.BookActions"  method="zoomHeight"                                                 button="javax.swing.JButton"/>
+    <action domain="VIEW" section="20" class="org.audiveris.omr.ui.ViewParameters"     method="toggleInvalidSheets"                         item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="toggleTranslucency"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="toggleVoices"        item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
+    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="toggleErrors"        item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton"/>
+    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="switchSelections"                                           button="javax.swing.JButton" />
+    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="switchLayers"                                               button="javax.swing.JButton"/>
+    <action domain="VIEW" section="40" class="org.audiveris.omr.ui.ViewParameters"     method="toggleSlots"                                 item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="40" class="org.audiveris.omr.ui.ViewParameters"     method="toggleAnnotations"                           item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleMarks"         topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleStaffLines"    topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleStaffPeaks"    topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleLines"         topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleLetters"       topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleAttachments"   topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleSentences"     topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+    <action domain="VIEW" section="60" class="org.audiveris.omr.ui.GuiActions"         method="toggleBoards"        topic="WINDOW_LAYOUT"   item="javax.swing.JCheckBoxMenuItem"/>
+<!--    <action domain="VIEW" section="60" class="org.audiveris.omr.ui.GuiActions"         method="toggleLog"           topic="WINDOW_LAYOUT"   item="javax.swing.JCheckBoxMenuItem"/>-->
+<!--    <action domain="VIEW" section="60" class="org.audiveris.omr.ui.GuiActions"         method="toggleErrors"        topic="WINDOW_LAYOUT"   item="javax.swing.JCheckBoxMenuItem"/>-->
 
-    <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="browseGlobalSamples" />
-    <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="saveGlobalSamples" />
-    <action domain="TOOL" section="15" class="org.audiveris.omr.ui.GuiActions"        method="browseLocalSamples" />
-    <action domain="TOOL" section="20" class="org.audiveris.omr.ui.GuiActions"        method="launchTrainer" />
+    <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="browseGlobalSamples"  topic="SAMPLES"/>
+    <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="saveGlobalSamples"    topic="SAMPLES"/>
+    <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="browseLocalSamples"   topic="SAMPLES"/>
+    <action domain="TOOL" section="10" class="org.audiveris.omr.ui.GuiActions"        method="launchTrainer"        topic="SAMPLES"/>
 <!--    <action domain="TOOL" section="20"  class="org.audiveris.omr.ui.GuiActions" method="defineShapeColors" />-->
     <action domain="TOOL" section="30" class="org.audiveris.omr.ui.GuiActions"        method="showMemory" />
     <action domain="TOOL" section="40" class="org.audiveris.omr.ui.GuiActions"        method="defineOptions" />
+    <action domain="TOOL" section="40" class="org.audiveris.omr.ui.GuiActions"        method="defineTopics" />
 
     <action domain="PLUGIN" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="invokeDefaultPlugin" button="javax.swing.JButton" />
 
-    <action domain="DEBUG" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="browseBook"/>
+    <action domain="DEBUG" section="30" class="org.audiveris.omr.sheet.ui.BookActions" method="browseBook"          topic="DEBUG"/>
+    <action domain="DEBUG" section="50" class="org.audiveris.omr.ui.GuiActions"        method="clearLog"            topic="DEBUG"   button="javax.swing.JButton"/>
+    <action domain="DEBUG" section="70" class="org.audiveris.omr.sheet.ui.BookActions" method="dumpEventServices"   topic="DEBUG"/>
     
-<!--    <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="showManual" />-->
+    <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="showManual" />
     <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="visitWiki" />
     <action domain="HELP" section="20" class="org.audiveris.omr.ui.GuiActions" method="visitWebSite" />
     <action domain="HELP" section="40" class="org.audiveris.omr.ui.GuiActions" method="showAbout" />

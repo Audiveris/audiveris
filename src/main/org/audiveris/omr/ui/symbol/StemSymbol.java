@@ -29,10 +29,9 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
-import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code StemSymbol} implements a decorated stem symbol
+ * Class {@code StemSymbol} implements a stem symbol.
  *
  * @author Hervé Bitteur
  */
@@ -49,21 +48,25 @@ public class StemSymbol
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a StemSymbol
+     * Create a {@code StemSymbol} (with decoration?) standard size
+     *
+     * @param decorated true for a decorated image
      */
-    public StemSymbol ()
+    public StemSymbol (boolean decorated)
     {
-        this(false);
+        this(false, decorated);
     }
 
     /**
-     * Create a StemSymbol
+     * Create a {@code StemSymbol}(with decoration?)
      *
-     * @param isIcon true for an icon
+     * @param isIcon    true for an icon
+     * @param decorated true for a decorated image
      */
-    protected StemSymbol (boolean isIcon)
+    protected StemSymbol (boolean isIcon,
+                          boolean decorated)
     {
-        super(isIcon, Shape.STEM, true); // Decorated
+        super(isIcon, Shape.STEM, decorated);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -73,7 +76,7 @@ public class StemSymbol
     @Override
     protected ShapeSymbol createIcon ()
     {
-        return new StemSymbol(true);
+        return new StemSymbol(true, decorated);
     }
 
     //-----------//
@@ -84,16 +87,22 @@ public class StemSymbol
     {
         MyParams p = new MyParams();
 
-        // Quarter layout
-        p.layout = font.layout(quarter.getString());
-
         // Stem layout
-        p.stemLayout = font.layout(stem.getString());
+        p.layout = font.layout(stem.getString());
 
-        Rectangle2D qRect = p.layout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(qRect.getWidth()),
-                (int) Math.ceil(qRect.getHeight()));
+        Rectangle rs = p.layout.getBounds().getBounds(); // Stem bounds
+
+        if (decorated) {
+            // Quarter layout
+            p.quarterLayout = font.layout(quarter.getString());
+
+            p.rect = p.quarterLayout.getBounds().getBounds();
+
+            // Define specific offset
+            p.offset = new Point((p.rect.width - rs.width) / 2, -(p.rect.height - rs.height) / 2);
+        } else {
+            p.rect = p.layout.getBounds().getBounds();
+        }
 
         return p;
     }
@@ -109,16 +118,22 @@ public class StemSymbol
     {
         MyParams p = (MyParams) params;
 
-        Point loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
+        if (decorated) {
+            Point loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
 
-        // Decorations (using composite)
-        Composite oldComposite = g.getComposite();
-        g.setComposite(decoComposite);
-        MusicFont.paint(g, p.layout, loc, TOP_RIGHT);
-        g.setComposite(oldComposite);
+            // Decorations (using composite)
+            Composite oldComposite = g.getComposite();
+            g.setComposite(decoComposite);
+            MusicFont.paint(g, p.quarterLayout, loc, TOP_RIGHT);
+            g.setComposite(oldComposite);
 
-        // Stem
-        MusicFont.paint(g, p.stemLayout, loc, TOP_RIGHT);
+            // Stem
+            MusicFont.paint(g, p.layout, loc, TOP_RIGHT);
+        } else {
+            // Stem alone
+            Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
+            MusicFont.paint(g, p.layout, loc, AREA_CENTER);
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -130,9 +145,11 @@ public class StemSymbol
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        // layout for quarter layout
-        // rect for global image
-        // layout for stem
-        TextLayout stemLayout;
+        // offset: if decorated, offset of symbol center vs decorated image center
+        // layout: stem layout
+        // rect:   global image (head + stem if decorated, stem if not)
+        //
+        // Layout for quarter
+        TextLayout quarterLayout;
     }
 }

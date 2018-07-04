@@ -24,6 +24,10 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sig.inter.AugmentationDotInter;
+import org.audiveris.omr.sig.inter.Inter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,20 +56,66 @@ public class AugmentationRelation
     };
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final AugmentationDotInter dot = (AugmentationDotInter) e.getEdgeSource();
+        dot.checkAbnormal();
+    }
+
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
     {
-        return constants.xOutGapMax;
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
+    }
+
+    //-------------------//
+    // getXOutGapMinimum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMinimum (boolean manual)
+    {
+        return manual ? constants.xOutGapMinManual : constants.xOutGapMin;
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum ()
+    public static Scale.Fraction getYGapMaximum (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final AugmentationDotInter dot = (AugmentationDotInter) e.getEdgeSource();
+        dot.checkAbnormal();
     }
 
     //---------------//
@@ -90,15 +140,15 @@ public class AugmentationRelation
     }
 
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return getXOutGapMaximum();
+        return getXOutGapMaximum(manual);
     }
 
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
-        return getYGapMaximum();
+        return getYGapMaximum(manual);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -115,12 +165,28 @@ public class AugmentationRelation
                 "Supporting coeff for (source) dot");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                2.0,
+                1.3,
                 "Maximum horizontal gap between dot center & note/rest reference point");
+
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                2.0,
+                "Maximum manual horizontal gap between dot center & note/rest reference point");
+
+        private final Scale.Fraction xOutGapMin = new Scale.Fraction(
+                0.25,
+                "Minimum horizontal gap between dot center & note/rest reference point");
+
+        private final Scale.Fraction xOutGapMinManual = new Scale.Fraction(
+                0.1,
+                "Minimum manual horizontal gap between dot center & note/rest reference point");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,
                 "Maximum vertical gap between dot center & note/rest reference point");
+
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                1.2,
+                "Maximum manual vertical gap between dot center & note/rest reference point");
 
         private final Constant.Ratio xOutWeight = new Constant.Ratio(
                 0,

@@ -36,7 +36,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffBarline;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -64,6 +63,7 @@ import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallChordInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
@@ -72,7 +72,6 @@ import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
-import org.audiveris.omr.sig.relation.EndingSentenceRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
@@ -273,8 +272,8 @@ public class PartwiseBuilder
      * Create a new PartwiseBuilder object, on a related score instance.
      *
      * @param score the underlying score
-     * @throws InterruptedException
-     * @throws ExecutionException
+     * @throws InterruptedException if the thread has been interrupted
+     * @throws ExecutionException   if a checked exception was thrown
      */
     private PartwiseBuilder (Score score)
             throws InterruptedException, ExecutionException
@@ -294,8 +293,8 @@ public class PartwiseBuilder
      *
      * @param score the score to export (cannot be null)
      * @return the populated ScorePartwise
-     * @throws InterruptedException
-     * @throws ExecutionException
+     * @throws InterruptedException if the thread has been interrupted
+     * @throws ExecutionException   if a checked exception was thrown
      */
     public static ScorePartwise build (Score score)
             throws InterruptedException, ExecutionException
@@ -610,16 +609,16 @@ public class PartwiseBuilder
      */
     private PartBarline getBarlineOnLeft (Measure measure)
     {
-        if (measure.getLeftBarline() != null) {
-            return measure.getLeftBarline();
+        if (measure.getLeftPartBarline() != null) {
+            return measure.getLeftPartBarline();
         } else if (isFirst.measure) {
-            return measure.getPart().getLeftBarline();
+            return measure.getPart().getLeftPartBarline();
         } else {
             final Measure prevMeasure = measure.getPrecedingInSystem();
 
             if (prevMeasure != null) {
                 if (!prevMeasure.isDummy()) {
-                    return prevMeasure.getRightBarline();
+                    return prevMeasure.getRightPartBarline();
                 }
             }
         }
@@ -893,7 +892,6 @@ public class PartwiseBuilder
      * This can be a left, mid or right barline WRT the current measure.
      * <p>
      * Related entities: repeat, ending, fermata, segno, coda.
-     * (TODO: still to be implemented: ending)
      *
      * @param partBarline the PartBarline to process
      * @param location    barline location WRT current measure
@@ -909,21 +907,40 @@ public class PartwiseBuilder
             final MeasureStack stack = current.measure.getStack();
             final PartBarline.Style style = partBarline.getStyle();
             final List<FermataInter> fermatas = partBarline.getFermatas(); // Top down list
-            final EndingInter ending = (location == RightLeftMiddle.MIDDLE) ? null
-                    : partBarline.getEnding(
-                            (location == RightLeftMiddle.LEFT) ? LEFT : RIGHT);
+            final EndingInter ending = partBarline.getEnding(
+                    (location == RightLeftMiddle.RIGHT) ? RIGHT : LEFT);
+            final String endingValue = (ending != null) ? ending.getValue() : null;
+            String endingNumber = (ending != null) ? ending.getExportedNumber()
+                    : null;
 
-            if ((partBarline == current.measure.getLeftBarline())
-                || (location == RightLeftMiddle.MIDDLE)
-                || ((location == RightLeftMiddle.RIGHT)
-                    && (stack.isRepeat(RIGHT) || !fermatas.isEmpty() || (ending != null)
-                        || (style != PartBarline.Style.REGULAR)))
-                || ((location == RightLeftMiddle.LEFT) && (stack.isRepeat(LEFT) || (ending != null)))) {
+            if (endingNumber == null) {
+                endingNumber = "99"; // Dummy integer value to mean: unknown
+            }
+
+            // Is export of barline element really needed? MusicXML says that if we just have a
+            // regular barline on right side of measure, and nothing else, answer is no.
+            boolean needed = false;
+
+            // Specific barline on left side:
+            needed |= (partBarline == current.measure.getLeftPartBarline());
+            // On left side, with stuff (left repeat, left ending):
+            needed |= ((location == RightLeftMiddle.LEFT)
+                       && (stack.isRepeat(LEFT) || (ending != null)));
+            // Specific barline on middle location:
+            needed |= (location == RightLeftMiddle.MIDDLE);
+            // On right side, but with stuff (right repeat, right ending, fermata) or non regular:
+            needed |= ((location == RightLeftMiddle.RIGHT)
+                       && (stack.isRepeat(RIGHT) || (ending != null) || !fermatas.isEmpty()
+                           || (style != PartBarline.Style.REGULAR)));
+
+            if (needed) {
                 try {
                     logger.debug("Visiting {} on {}", partBarline, location);
 
                     final Barline pmBarline = factory.createBarline();
-                    pmBarline.setLocation(location);
+                    pmBarline.setLocation(
+                            (location == RightLeftMiddle.RIGHT) ? RightLeftMiddle.RIGHT
+                                    : RightLeftMiddle.LEFT);
 
                     BarStyleColor barStyleColor = factory.createBarStyleColor();
                     barStyleColor.setValue(barStyleOf(style));
@@ -931,6 +948,7 @@ public class PartwiseBuilder
 
                     switch (location) {
                     case LEFT:
+                    case MIDDLE:
 
                         // (Left) repeat?
                         if (stack.isRepeat(LEFT)) {
@@ -952,26 +970,17 @@ public class PartwiseBuilder
 
                             pmEnding.setType(StartStopDiscontinue.START);
 
-                            //TODO: number/text?
-                            SIGraph sig = ending.getSig();
+                            // Number (mandatory)
+                            pmEnding.setNumber(endingNumber);
 
-                            for (Relation r : sig.getRelations(
-                                    ending,
-                                    EndingSentenceRelation.class)) {
-                                SentenceInter sentence = (SentenceInter) sig.getOppositeInter(
-                                        ending,
-                                        r);
-                                pmEnding.setValue(sentence.getValue());
+                            // Value (optional)
+                            if (endingValue != null) {
+                                pmEnding.setValue(endingValue);
                             }
 
                             pmBarline.setEnding(pmEnding);
                         }
 
-                        break;
-
-                    case MIDDLE:
-
-                        // Ending? TODO: Can an ending start or stop at a middle barline????
                         break;
 
                     case RIGHT:
@@ -1015,10 +1024,18 @@ public class PartwiseBuilder
                             Staff staff = current.measure.getPart().getFirstStaff();
                             pmEnding.setDefaultY(yOf(pt, staff));
 
-                            pmEnding.setType(
-                                    (ending.getRightLeg() != null) ? StartStopDiscontinue.STOP
-                                    : StartStopDiscontinue.DISCONTINUE);
-                            //TODO: number?
+                            Line2D leg = ending.getRightLeg();
+
+                            if (leg != null) {
+                                pmEnding.setEndLength(toTenths(leg.getY2() - pt.getY()));
+                                pmEnding.setType(StartStopDiscontinue.STOP);
+                            } else {
+                                pmEnding.setType(StartStopDiscontinue.DISCONTINUE);
+                            }
+
+                            // Number (mandatory)
+                            pmEnding.setNumber(endingNumber);
+
                             pmBarline.setEnding(pmEnding);
                         }
                     }
@@ -1030,13 +1047,15 @@ public class PartwiseBuilder
                 }
             }
 
-            if (location == RightLeftMiddle.LEFT) {
-                // Marker(Coda,Segno)? (TODO: add daCapo & dalSegno?)
+            // Markers(Coda,Segno)? (TODO: add daCapo & dalSegno?)
+            if (location != RightLeftMiddle.RIGHT) {
                 // Check staffBarline of top staff of top part in current stack
                 Part part = current.measure.getPart();
                 Measure topMeasure = current.measure.getStack().getFirstMeasure();
                 PartBarline topPartBarline = getBarlineOnLeft(topMeasure);
-                StaffBarline topBarline = topPartBarline.getBarline(part, part.getFirstStaff());
+                StaffBarlineInter topBarline = topPartBarline.getStaffBarline(
+                        part,
+                        part.getFirstStaff());
 
                 for (Inter marker : topBarline.getRelatedInters(MarkerBarRelation.class)) {
                     processMarker((MarkerInter) marker);
@@ -1380,6 +1399,46 @@ public class PartwiseBuilder
         }
     }
 
+    //----------------//
+    // processKeyVoid //
+    //----------------//
+    /**
+     * Process a lack of key signature at system start.
+     */
+    private void processKeyVoid ()
+    {
+        try {
+            logger.debug("processKeyVoid");
+
+            final Key key = factory.createKey();
+            key.setFifths(new BigInteger("0"));
+
+            // Is this new?
+            final int staffCount = current.measure.getPart().getStaves().size();
+            boolean isNew = false;
+
+            for (int index = 0; index < staffCount; index++) {
+                Key currentKey = current.keys.get(index);
+
+                if ((currentKey != null) && !areEqual(currentKey, key)) {
+                    isNew = true;
+
+                    break;
+                }
+            }
+
+            if (isNew) {
+                getAttributes().getKey().add(key);
+
+                for (int index = 0; index < staffCount; index++) {
+                    current.keys.put(index, key);
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in processKeyVoid", ex);
+        }
+    }
+
     //-------------//
     // processKeys //
     //-------------//
@@ -1391,20 +1450,23 @@ public class PartwiseBuilder
     private void processKeys ()
     {
         // Something to process?
-        if (!current.measure.hasKeys()) {
-            return;
-        }
+        if (current.measure.hasKeys()) {
+            // Check if all keys are the same across all staves in measure
+            if (current.measure.hasSameKeys()) {
+                processKey(current.measure.getKey(0), true); // global: true
+            } else {
+                // Work staff by staff
+                final int staffCount = current.measure.getPart().getStaves().size();
 
-        // Check if all keys are the same across all staves in measure
-        if (current.measure.hasSameKeys()) {
-            processKey(current.measure.getKey(0), true);
+                for (int index = 0; index < staffCount; index++) {
+                    KeyInter key = current.measure.getKey(index);
+                    processKey(key, false); // global: false
+                }
+            }
         } else {
-            // Work staff by staff
-            final int staffCount = current.measure.getPart().getStaves().size();
-
-            for (int index = 0; index < staffCount; index++) {
-                KeyInter key = current.measure.getKey(index);
-                processKey(key, false);
+            // No key signature in measure: this is meaningful only at beginning of staff
+            if (isFirst.measure) {
+                processKeyVoid();
             }
         }
     }
@@ -1523,14 +1585,15 @@ public class PartwiseBuilder
             // Print?
             new MeasurePrint(measure).process();
 
-            // Left barline ?
-            processBarline(getBarlineOnLeft(measure), RightLeftMiddle.LEFT);
+            // Left/mid barline ?
+            PartBarline mid = measure.getMidPartBarline();
 
-            //
-            //            // Mid barline?
-            //            // TODO: insert this in proper location between notes???
-            //            process(measure.getMidBarline(), RightLeftMiddle.MIDDLE);
-            //
+            if (mid != null) {
+                processBarline(mid, RightLeftMiddle.MIDDLE);
+            } else {
+                processBarline(getBarlineOnLeft(measure), RightLeftMiddle.LEFT);
+            }
+
             // Divisions?
             if (isPageFirstMeasure) {
                 try {
@@ -1567,7 +1630,7 @@ public class PartwiseBuilder
                 pmWords.setValue("");
 
                 Sound sound = factory.createSound();
-                sound.setTempo(new BigDecimal(score.getTempoParam().getTarget()));
+                sound.setTempo(new BigDecimal(score.getTempoParam().getValue()));
                 direction.setSound(sound);
             }
 
@@ -1612,7 +1675,10 @@ public class PartwiseBuilder
                     AbstractChordInter chord = voice.getWholeChord();
                     clefIters.push(measure.getWidth(), chord.getTopStaff());
                     processChord(chord);
-                    timeCounter = stack.getActualDuration();
+
+                    if (stack.getActualDuration() != null) {
+                        timeCounter = stack.getActualDuration();
+                    }
                 } else {
                     for (Slot slot : stack.getSlots()) {
                         Voice.SlotVoice info = voice.getSlotInfo(slot);
@@ -1666,7 +1732,7 @@ public class PartwiseBuilder
 
             // Right Barline
             if (!measure.isDummy()) {
-                processBarline(measure.getRightBarline(), RightLeftMiddle.RIGHT);
+                processBarline(measure.getRightPartBarline(), RightLeftMiddle.RIGHT);
             }
         } catch (Exception ex) {
             logger.warn("Error visiting " + measure + " in " + current.page, ex);
@@ -1699,7 +1765,7 @@ public class PartwiseBuilder
             // For first note in chord
             if (!current.measure.isDummy()) {
                 if (isFirstInChord) {
-                    // Chord direction events (statement, pedal, dynamics, TODO: others?)
+                    // Chord events (direction, pedal, dynamics, TODO: others?)
                     for (Relation rel : sig.edgesOf(chord)) {
                         if (rel instanceof ChordSentenceRelation) {
                             processDirection((SentenceInter) sig.getOppositeInter(chord, rel));
@@ -1732,9 +1798,11 @@ public class PartwiseBuilder
                 //                    ///node.accept(this);
                 //                    process(node);
                 //                }
-                for (Relation rel : sig.edgesOf(chord)) {
-                    if (rel instanceof FermataChordRelation) {
-                        processFermata((FermataInter) sig.getOppositeInter(chord, rel), null);
+                if (sig != null) {
+                    for (Relation rel : sig.edgesOf(chord)) {
+                        if (rel instanceof FermataChordRelation) {
+                            processFermata((FermataInter) sig.getOppositeInter(chord, rel), null);
+                        }
                     }
                 }
             } else {
@@ -1772,13 +1840,15 @@ public class PartwiseBuilder
 
                 current.pmNote.setRest(rest);
             } else {
+                HeadChordInter headChord = (HeadChordInter) chord;
+
                 // Grace?
                 if (isFirstInChord && note.getShape().isSmall()) {
                     Grace grace = factory.createGrace();
                     current.pmNote.setGrace(grace);
 
                     // Slash? (check the flag)
-                    StemInter stem = chord.getStem();
+                    StemInter stem = headChord.getStem();
 
                     if (stem != null) {
                         for (Relation rel : sig.getRelations(stem, FlagStemRelation.class)) {
@@ -1849,7 +1919,8 @@ public class PartwiseBuilder
                     final Rational dur;
 
                     if (chord.isWholeRest()) {
-                        dur = current.measure.getStack().getActualDuration();
+                        Rational measureDur = current.measure.getStack().getActualDuration();
+                        dur = (measureDur != null) ? measureDur : Rational.ONE; // Not too bad...
                     } else {
                         dur = chord.getDuration();
                     }
@@ -1926,9 +1997,11 @@ public class PartwiseBuilder
                 }
 
                 // Beams ?
+                int beamCounter = 0;
+
                 for (AbstractBeamInter beam : chord.getBeams()) {
                     Beam pmBeam = factory.createBeam();
-                    pmBeam.setNumber(1 + chord.getBeams().indexOf(beam));
+                    pmBeam.setNumber(1 + beamCounter++);
 
                     if (beam.isHook()) {
                         if (beam.getCenter().x > chord.getStem().getCenter().x) {
@@ -2111,7 +2184,8 @@ public class PartwiseBuilder
 
                 // [Encoding]/Software
                 encoding.getEncodingDateOrEncoderOrSoftware().add(
-                        factory.createEncodingSoftware("Audiveris" + " " + WellKnowns.TOOL_REF));
+                        factory.createEncodingSoftware(
+                                WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF));
 
                 // [Encoding]/EncodingDate
                 // Let the Marshalling class handle it
@@ -2839,11 +2913,10 @@ public class PartwiseBuilder
             }
 
             // Populate iterators
-            iters = new HashMap<Staff, ListIterator<ClefInter>>();
+            iters = new LinkedHashMap<Staff, ListIterator<ClefInter>>();
 
             for (Map.Entry<Staff, List<ClefInter>> entry : map.entrySet()) {
-                List<ClefInter> list = entry.getValue();
-                Collections.sort(list, Inter.byCenterAbscissa); // not needed? (already sorted)
+                List<ClefInter> list = entry.getValue(); // Already sorted by full center abscissa
                 iters.put(entry.getKey(), list.listIterator());
             }
         }

@@ -84,7 +84,7 @@ public class KeySlice
     public void deleteAlter ()
     {
         if (alter != null) {
-            alter.delete();
+            alter.remove();
             alter = null;
         }
     }

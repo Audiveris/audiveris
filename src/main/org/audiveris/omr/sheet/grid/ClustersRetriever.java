@@ -23,11 +23,12 @@ package org.audiveris.omr.sheet.grid;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.glyph.dynamic.Compounds;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.run.Orientation;
+
 import static org.audiveris.omr.run.Orientation.*;
+
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
@@ -580,8 +581,6 @@ public class ClustersRetriever
             if (fil.getCluster() == null) {
                 it.remove();
                 discardedFilaments.add(fil);
-            } else {
-                fil.addGroup(Group.STAFF_LINE); // Useless in fact
             }
         }
     }
@@ -1169,7 +1168,7 @@ public class ClustersRetriever
                 "Maximum dy to aggregate a filament to a cluster");
 
         private final Scale.Fraction maxMergeDx = new Scale.Fraction(
-                20,
+                6,
                 "Maximum dx to merge two clusters");
 
         private final Scale.Fraction maxMergeDy = new Scale.Fraction(

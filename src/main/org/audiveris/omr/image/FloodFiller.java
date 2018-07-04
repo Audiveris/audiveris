@@ -53,14 +53,14 @@ public class FloodFiller
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Flood fill the area from provided (x,y) location by converting
-     * from oldColor to newColor.
+     * Flood fill the area from provided (x,y) location by recursively converting
+     * pixels from oldColor to newColor.
      * Simplistic implementation, but sufficient for the time being.
      *
-     * @param x
-     * @param y
-     * @param oldColor
-     * @param newColor
+     * @param x        the abscissa of the pixel to process
+     * @param y        the ordinate of the pixel to process
+     * @param oldColor the color to be replaced
+     * @param newColor the color to replace with
      */
     public void fill (int x,
                       int y,

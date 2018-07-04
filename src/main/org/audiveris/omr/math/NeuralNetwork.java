@@ -328,9 +328,9 @@ public class NeuralNetwork
      * Marshal the NeuralNetwork to its XML file
      *
      * @param os the XML output stream, which is not closed by this method
-     * @throws JAXBException
-     * @throws XMLStreamException
-     * @throws IOException
+     * @throws JAXBException if a XML serialization error occurred
+     * @throws XMLStreamException if there are any problems writing to the stream
+     * @throws IOException if something goes wrong during IO operations
      */
     public void marshal (OutputStream os)
             throws JAXBException, XMLStreamException, IOException

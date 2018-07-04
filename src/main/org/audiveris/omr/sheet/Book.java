@@ -22,10 +22,11 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.classifier.SampleRepository;
-import org.audiveris.omr.image.FilterDescriptor;
+import org.audiveris.omr.image.FilterParam;
+import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.step.Step;
-import org.audiveris.omr.util.Param;
+import org.audiveris.omr.util.param.Param;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -90,8 +91,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * <dt>Parameters</dt>
  * <dd><ul>
- * <li>{@link #getFilterParam}</li>
- * <li>{@link #getLanguageParam}</li>
+ * <li>{@link #getBinarizationFilter}</li>
+ * <li>{@link #getOcrLanguages}</li>
  * </ul></dd>
  *
  * <dt>Transcription</dt>
@@ -105,8 +106,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getScores}</li>
  * </ul></dd>
  *
- * <dt>Samples</dt>
+ * <dt>Symbols</dt>
  * <dd><ul>
+ * <li>{@link #annotate}</li>
  * <li>{@link #getSampleRepository}</li>
  * <li>{@link #getSpecificSampleRepository}</li>
  * <li>{@link #hasAllocatedRepository}</li>
@@ -130,7 +132,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * </ul></dd>
  * </dl>
  * <p>
- * <img src="doc-files/Book-Detail.png">
+ * <img src="doc-files/Book-Detail.png" alt="Book detals UML">
  *
  * @author Hervé Bitteur
  */
@@ -143,6 +145,11 @@ public interface Book
     static final String BOOK_INTERNALS = "book.xml";
 
     //~ Methods ------------------------------------------------------------------------------------
+    /**
+     * Write the book symbol annotations.
+     */
+    void annotate ();
+
     /**
      * Delete this book instance, as well as its related resources.
      */
@@ -187,6 +194,13 @@ public interface Book
     String getAlias ();
 
     /**
+     * Report the binarization filter defined at book level.
+     *
+     * @return the filter parameter
+     */
+    FilterParam getBinarizationFilter ();
+
+    /**
      * Report where the book is kept.
      *
      * @return the book path
@@ -208,13 +222,6 @@ public interface Book
     Path getExportPathSansExt ();
 
     /**
-     * Report the binarization filter defined at book level.
-     *
-     * @return the filter parameter
-     */
-    Param<FilterDescriptor> getFilterParam ();
-
-    /**
      * Report the first non-discarded stub in this book
      *
      * @return the first non-discarded stub, or null
@@ -229,18 +236,18 @@ public interface Book
     Path getInputPath ();
 
     /**
-     * Report the OCR language(s) specification defined at book level
-     *
-     * @return the OCR language(s) spec
-     */
-    Param<String> getLanguageParam ();
-
-    /**
      * Report the lock that protects book project file.
      *
      * @return book project lock
      */
     Lock getLock ();
+
+    /**
+     * Report the OCR language(s) specification defined at book level, if any.
+     *
+     * @return the OCR language(s) spec
+     */
+    Param<String> getOcrLanguages ();
 
     /**
      * Report the offset of this book, with respect to a containing super-book.
@@ -257,6 +264,13 @@ public interface Book
     Path getPrintPath ();
 
     /**
+     * Report the processing switches defined at bookk level, if any.
+     *
+     * @return the processing switches
+     */
+    ProcessingSwitches getProcessingSwitches ();
+
+    /**
      * Report the radix of the file that corresponds to the book.
      * It is based on the simple file name of the book, with no path and no extension.
      *
@@ -270,6 +284,14 @@ public interface Book
      * @return a specific book repository if possible, otherwise the global one
      */
     SampleRepository getSampleRepository ();
+
+    /**
+     * Report the score which contains the provided page.
+     *
+     * @param page provided page
+     * @return containing score (can it be null?)
+     */
+    Score getScore (Page page);
 
     /**
      * Report the scores (movements) detected in this book.
@@ -374,7 +396,7 @@ public interface Book
      *
      * @param number sheet number (1-based) within the book
      * @return the path to sheet folder
-     * @throws java.io.IOException
+     * @throws IOException if anything goes wrong
      */
     Path openSheetFolder (int number)
             throws IOException;
@@ -497,7 +519,7 @@ public interface Book
      * Store the book information (global info + stub steps) into book file system.
      *
      * @param root root path of book file system
-     * @throws Exception
+     * @throws Exception if anything goes wrong
      */
     void storeBookInfo (Path root)
             throws Exception;

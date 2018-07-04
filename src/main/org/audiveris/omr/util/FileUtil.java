@@ -284,9 +284,9 @@ public abstract class FileUtil
      * <p>
      * <b>Nota</b>: the dot character is part of the extension, since we
      * could have the following cases: <ul>
-     * <li> "path/name.ext" -> ".ext"
-     * <li> "path/name." -> "." (just the dot)
-     * <li> "path/name" -> "" (the empty string) </ul>
+     * <li> "path/name.ext" &rarr; ".ext"
+     * <li> "path/name." &rarr; "." (just the dot)
+     * <li> "path/name" &rarr; "" (the empty string) </ul>
      *
      * @param file the File to process
      *
@@ -305,9 +305,9 @@ public abstract class FileUtil
      * <p>
      * <b>Nota</b>: the dot character is part of the extension, since we
      * could have the following cases: <ul>
-     * <li> "path/name.ext" -> ".ext"
-     * <li> "path/name." -> "." (just the dot)
-     * <li> "path/name" -> "" (the empty string) </ul>
+     * <li> "path/name.ext" &rarr; ".ext"
+     * <li> "path/name." &rarr; "." (just the dot)
+     * <li> "path/name" &rarr; "" (the empty string) </ul>
      *
      * @param path the File to process
      *
@@ -376,7 +376,7 @@ public abstract class FileUtil
      * @param dir  the directory to read from
      * @param glob the glob matching
      * @return the opened DirectoryStream (remaining to be closed)
-     * @throws IOException
+     * @throws IOException if anything goes wrong
      */
     public static DirectoryStream newDirectoryStream (Path dir,
                                                       String glob)

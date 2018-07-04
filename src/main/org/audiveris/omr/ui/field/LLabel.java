@@ -66,7 +66,7 @@ public class LLabel
     /**
      * Modify the content of the field
      *
-     * @param text
+     * @param text new field content to set
      */
     public void setText (String text)
     {

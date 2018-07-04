@@ -5,15 +5,10 @@
  */
 package org.audiveris.omr.glyph;
 
-import org.audiveris.omr.glyph.GlyphFactory;
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.awt.Dimension;
@@ -38,26 +33,6 @@ public class GlyphFactoryTest
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @BeforeClass
-    public static void setUpClass ()
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass ()
-    {
-    }
-
-    @Before
-    public void setUp ()
-    {
-    }
-
-    @After
-    public void tearDown ()
-    {
-    }
-
     /**
      * Test of createGlyphs method, of class GlyphFactory.
      */

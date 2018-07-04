@@ -21,7 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.util.HorizontalSide;
@@ -47,20 +50,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class WedgeInter
         extends AbstractDirectionInter
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    //
-    //    private final SegmentInter s1;
-    //
-    //    private final SegmentInter s2;
-    //
+    private static final Constants constants = new Constants();
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Top line. */
     @XmlElement
-    private final Line2D l1;
+    private Line2D l1;
 
     /** Bottom line. */
     @XmlElement
-    private final Line2D l2;
+    private Line2D l2;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -81,6 +82,24 @@ public class WedgeInter
         super(null, bounds, shape, impacts);
         this.l1 = l1;
         this.l2 = l2;
+    }
+
+    /**
+     * Creates a new {@code WedgeInter} object, meant for manual assignment.
+     *
+     * @param glyph underlying glyph, if any
+     * @param shape CRESCENDO or DIMINUENDO
+     * @param grade assigned grade
+     */
+    public WedgeInter (Glyph glyph,
+                       Shape shape,
+                       double grade)
+    {
+        super(glyph, (glyph != null) ? glyph.getBounds() : null, shape, grade);
+
+        if (glyph != null) {
+            setGlyph(glyph);
+        }
     }
 
     /**
@@ -146,6 +165,45 @@ public class WedgeInter
         }
     }
 
+    //------------------------//
+    // getStackAbscissaMargin //
+    //------------------------//
+    public static Scale.Fraction getStackAbscissaMargin ()
+    {
+        return constants.stackAbscissaMargin;
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if (glyph == null) {
+            return;
+        }
+
+        Rectangle b = glyph.getBounds();
+
+        if ((l1 == null) || (l2 == null)) {
+            switch (shape) {
+            case CRESCENDO:
+                l1 = new Line2D.Double(b.x, b.y + (b.height / 2), b.x + b.width, b.y);
+                l2 = new Line2D.Double(b.x, b.y + (b.height / 2), b.x + b.width, b.y + b.height);
+
+                break;
+
+            case DIMINUENDO:
+                l1 = new Line2D.Double(b.x, b.y, b.x + b.width, b.y + (b.height / 2));
+                l2 = new Line2D.Double(b.x, b.y + b.height, b.x + b.width, b.y + (b.height / 2));
+
+                break;
+            }
+        }
+    }
+
     //-----------//
     // internals //
     //-----------//
@@ -184,5 +242,18 @@ public class WedgeInter
             setImpact(3, openDy);
             setImpact(4, openBias);
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction stackAbscissaMargin = new Scale.Fraction(
+                1.0,
+                "Margin beyond stack abscissa limits");
     }
 }

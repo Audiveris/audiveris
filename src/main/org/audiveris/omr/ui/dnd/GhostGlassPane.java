@@ -36,7 +36,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 /**
- * Class {@code GhostGlassPane} is a special glasspane, meant for displaying a shape
+ * Class {@code GhostGlassPane} is a special glasspane, meant for displaying an image
  * being dragged and finally dropped.
  *
  * @author Hervé Bitteur (from Romain Guy's demo)
@@ -48,12 +48,12 @@ public class GhostGlassPane
 
     private static final Logger logger = LoggerFactory.getLogger(GhostGlassPane.class);
 
-    /** Composite to be used over a droppable target */
+    /** Composite to be used over a droppable target. */
     private static final AlphaComposite targetComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.5f);
 
-    /** Composite to be used over a non-droppable target */
+    /** Composite to be used over a non-droppable target. */
     private static final AlphaComposite nonTargetComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.2f);
@@ -183,12 +183,13 @@ public class GhostGlassPane
     /**
      * Report the bounds of just the image.
      *
-     * @param center image center
-     * @return image bounds
+     * @param localPoint provided local point
+     * @return bounds of image such as its refPoint is set on the local point.
+     *         If refPoint is null, image center is used instead.
      */
-    protected Rectangle getImageBounds (Point center)
+    protected Rectangle getImageBounds (Point localPoint)
     {
-        Rectangle rect = new Rectangle(center);
+        Rectangle rect = new Rectangle(localPoint);
         rect.grow(draggedImage.getWidth() / 2, draggedImage.getHeight() / 2);
 
         if (draggedImage instanceof SymbolImage) {

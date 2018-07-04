@@ -22,7 +22,6 @@
 package org.audiveris.omr.ui.selection;
 
 import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_INIT;
-import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.Entity;
 import org.audiveris.omr.util.EntityIndex;
 
@@ -33,10 +32,9 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class {@code EntityService} handles user selection on top of a given
@@ -67,6 +65,9 @@ public class EntityService<E extends Entity>
     /** The related location service, if any. */
     protected final SelectionService locationService;
 
+    /** Basket of entities selected via location (rectangle/point). */
+    protected final List<E> basket = new ArrayList<E>();
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code EntityService} object with no underlying index.
@@ -96,7 +97,7 @@ public class EntityService<E extends Entity>
                           SelectionService locationService,
                           Class[] eventsAllowed)
     {
-        super(index.getName(), eventsAllowed);
+        super(index.getName() + "Service", eventsAllowed);
 
         this.index = index;
         this.locationService = locationService;
@@ -158,20 +159,16 @@ public class EntityService<E extends Entity>
     // getSelectedEntity //
     //-------------------//
     /**
-     * Report the currently selected entity if any
+     * Report the currently selected entity if any, <b>but mind the case where several
+     * entities have been selected</b>.
      *
      * @return the current entity or null
+     * @see EntityListEvent#getEntity()
      */
     @SuppressWarnings("unchecked")
     public E getSelectedEntity ()
     {
-        List<E> list = getSelectedEntityList();
-
-        if ((list == null) || list.isEmpty()) {
-            return null;
-        }
-
-        return list.get(list.size() - 1);
+        return getMostRelevant(getSelectedEntityList());
     }
 
     //-----------------------//
@@ -185,7 +182,13 @@ public class EntityService<E extends Entity>
     @SuppressWarnings("unchecked")
     public List<E> getSelectedEntityList ()
     {
-        return (List<E>) getSelection(EntityListEvent.class);
+        final Object obj = getSelection(EntityListEvent.class);
+
+        if (obj != null) {
+            return (List<E>) obj;
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     //---------//
@@ -202,11 +205,11 @@ public class EntityService<E extends Entity>
 
             ///logger.info("{} {}", this.getClass().getSimpleName(), event);
             if (event instanceof LocationEvent) {
-                handleEvent((LocationEvent) event); // Location => enclosed/enclosing entities(s)
+                handleLocationEvent((LocationEvent) event); // Location => enclosed/enclosing entities(s)
             } else if (event instanceof IdEvent) {
                 handleEvent((IdEvent) event); // Id => indexed entity
             } else if (event instanceof EntityListEvent) {
-                handleEvent((EntityListEvent) event); // List => display contour of last entity
+                handleEntityListEvent((EntityListEvent) event); // List => display contour of (first) entity
             }
         } catch (ConcurrentModificationException cme) {
             // This can happen because of processing being done on EntityIndex...
@@ -217,79 +220,134 @@ public class EntityService<E extends Entity>
         }
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
+    //-----------------//
+    // getMostRelevant //
+    //-----------------//
+    protected E getMostRelevant (List<E> list)
+    {
+        if (!list.isEmpty()) {
+            return list.get(0); // Use first
+        } else {
+            return null;
+        }
+    }
+
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
     /**
-     * Interest in location => entity list
+     * Interest in EntityList &rArr; location contour of "selected" entity
      *
-     * @param locationEvent
+     * @param listEvent the list event
      */
-    private void handleEvent (LocationEvent locationEvent)
+    protected void handleEntityListEvent (EntityListEvent<E> listEvent)
+    {
+        final SelectionHint hint = listEvent.hint;
+
+        if (hint == ENTITY_INIT) {
+            final E entity = listEvent.getEntity();
+
+            if (entity != null) {
+                if (locationService != null) {
+                    locationService.publish(
+                            new LocationEvent(this, hint, listEvent.movement, entity.getBounds()));
+                }
+
+                // Use this entity to start a basket
+                basket.clear();
+                basket.add(entity);
+            }
+        }
+    }
+
+    //---------------//
+    // handleIdEvent //
+    //---------------//
+    /**
+     * Interest in Id &rArr; entity
+     *
+     * @param idEvent the id event
+     */
+    protected void handleEvent (IdEvent idEvent)
+    {
+        final E entity = index.getEntity(idEvent.getData());
+        publish(new EntityListEvent<E>(this, idEvent.hint, idEvent.movement, entity));
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Interest in location &rArr; entity basket
+     *
+     * @param locationEvent the location event
+     */
+    protected void handleLocationEvent (LocationEvent locationEvent)
     {
         SelectionHint hint = locationEvent.hint;
         MouseMovement movement = locationEvent.movement;
         Rectangle rect = locationEvent.getData();
 
-        if (!hint.isLocation() && !hint.isContext()) {
-            return;
-        }
-
         if (rect == null) {
             return;
         }
 
-        final Set<E> found;
+        final List<E> selection = getSelectedEntityList();
 
-        if ((rect.width > 0) && (rect.height > 0)) {
-            // Non-degenerated rectangle: look for contained entities
-            found = Entities.containedEntities(index.iterator(), rect);
-        } else {
-            // Just a point: look for containing entities
-            found = Entities.containingEntities(index.iterator(), rect.getLocation());
-        }
+        if (hint.isLocation() || (hint.isContext() && selection.isEmpty())) {
+            if ((rect.width > 0) && (rect.height > 0)) {
+                // Non-degenerated rectangle: look for contained entities
+                basket.clear();
+                basket.addAll(index.getContainedEntities(rect));
+                publish(new EntityListEvent<E>(this, hint, movement, basket));
+            } else {
+                // Just a point: look for most relevant entity
+                E entity = getMostRelevant(index.getContainingEntities(rect.getLocation()));
 
-        // Publish EntityList
-        publish(new EntityListEvent<E>(this, hint, movement, new ArrayList<E>(found)));
-    }
+                // Update basket
+                switch (hint) {
+                case LOCATION_INIT:
 
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in Id => entity
-     *
-     * @param idEvent
-     */
-    private void handleEvent (IdEvent idEvent)
-    {
-        final E entity = index.getEntity(idEvent.getData());
-        publish(
-                new EntityListEvent<E>(
-                        this,
-                        idEvent.hint,
-                        idEvent.movement,
-                        (entity != null) ? Arrays.asList(entity) : null));
-    }
+                    if (entity != null) {
+                        basket.clear();
+                        basket.add(entity);
+                    } else {
+                        basket.clear();
+                    }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in EntityList => location contour of last entity
-     *
-     * @param EntityListEvent
-     */
-    private void handleEvent (EntityListEvent<E> listEvent)
-    {
-        final SelectionHint hint = listEvent.hint;
+                    break;
 
-        if ((hint == ENTITY_INIT) && (locationService != null)) {
-            final E entity = listEvent.getEntity();
+                case LOCATION_ADD:
 
-            if (entity != null) {
-                locationService.publish(
-                        new LocationEvent(this, hint, listEvent.movement, entity.getBounds()));
+                    if (entity != null) {
+                        if (basket.contains(entity)) {
+                            basket.remove(entity);
+                        } else {
+                            basket.add(entity);
+                        }
+                    }
+
+                    break;
+
+                case CONTEXT_INIT:
+
+                    if (entity != null) {
+                        if (!basket.contains(entity)) {
+                            basket.clear();
+                            basket.add(entity);
+                        }
+                    } else {
+                        basket.clear();
+                    }
+
+                    break;
+
+                case CONTEXT_ADD:
+                default:
+                }
+
+                // Publish basket
+                publish(new EntityListEvent<E>(this, null, movement, basket));
             }
         }
     }

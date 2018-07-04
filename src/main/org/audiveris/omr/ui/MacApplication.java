@@ -24,14 +24,18 @@ package org.audiveris.omr.ui;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.sheet.Book;
+import org.audiveris.omr.util.UriUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Image;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.URI;
 import java.nio.file.Paths;
+import javax.swing.ImageIcon;
 
 /**
  * Class {@code MacApplication} provides dynamic hooks into the
@@ -66,7 +70,7 @@ public class MacApplication
      * This method should not be manually called;
      * it is used by the proxy to forward calls.
      *
-     * @throws Throwable
+     * @throws Throwable if something goes wrong
      */
     @Override
     public Object invoke (Object proxy,
@@ -153,6 +157,16 @@ public class MacApplication
             //Add the generated class as a hook
             Method addListener = appClass.getMethod("addApplicationListener", listenerClass);
             addListener.invoke(app, listenerProxy);
+
+            // display audiveris icon in the dock instead of default java one
+            Method getApplication = appClass.getMethod("getApplication");
+            Object application = getApplication.invoke(app);
+
+            URI uri = UriUtil.toURI(WellKnowns.RES_URI, "icon-256.png");
+            Image icon = new ImageIcon(uri.toURL()).getImage();
+
+            Method setDockImage = application.getClass().getMethod("setDockIconImage", Image.class);
+            setDockImage.invoke(application, icon);
 
             return true;
         } catch (Exception ex) {

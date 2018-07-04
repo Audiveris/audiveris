@@ -45,6 +45,8 @@ public class NonDraggableSymbol
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an NonDraggableSymbol
+     *
+     * @param codes the codes for MusicFont characters
      */
     public NonDraggableSymbol (int... codes)
     {
@@ -55,6 +57,7 @@ public class NonDraggableSymbol
      * Create an NonDraggableSymbol
      *
      * @param isIcon true for an icon
+     * @param codes the codes for MusicFont characters
      */
     protected NonDraggableSymbol (boolean isIcon,
                                   int... codes)

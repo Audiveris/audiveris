@@ -81,7 +81,7 @@ public class BracketInter
      */
     private BracketInter ()
     {
-        super(null, null, null, null, 0);
+        super(null, null, null, null, null);
         this.kind = null;
     }
 

@@ -56,8 +56,31 @@ public class BeamInter
         super(Shape.BEAM, impacts, median, height);
     }
 
+    /**
+     * Creates manually a new BeamInter ghost object.
+     *
+     * @param grade quality grade
+     */
+    public BeamInter (double grade)
+    {
+        super(Shape.BEAM, grade);
+    }
+
+    /**
+     * Meant for JAXB.
+     */
     private BeamInter ()
     {
         super(null, null, null, 0);
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
     }
 }

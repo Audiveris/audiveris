@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code ChordSentenceRelation} represents a support relation between a chord
- * and a sentence (direction, chordName).
+ * and a sentence.
  *
  * @author Hervé Bitteur
  */
@@ -49,6 +49,24 @@ public class ChordSentenceRelation
         return constants.xGapMax;
     }
 
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -60,6 +78,6 @@ public class ChordSentenceRelation
 
         private final Scale.Fraction xGapMax = new Scale.Fraction(
                 1.0,
-                "Maximum horizontal gap between sentence & chord");
+                "Maximum horizontal gap between chord & sentence");
     }
 }

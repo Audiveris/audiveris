@@ -72,7 +72,7 @@ public class TimeSignatureFixer
     {
         try {
             SystemInfo firstSystem = page.getFirstSystem();
-            MeasureStack stack = firstSystem.getMeasureStacks().get(0);
+            MeasureStack stack = firstSystem.getFirstStack();
 
             // MeasureStack that starts a range of measures with an explicit time sig
             MeasureStack startStack = null;
@@ -110,8 +110,8 @@ public class TimeSignatureFixer
             } else {
                 // Whole page without explicit time signature
                 checkTimeSigs(
-                        firstSystem.getFirstMeasureStack(),
-                        page.getLastSystem().getLastMeasureStack());
+                        firstSystem.getFirstStack(),
+                        page.getLastSystem().getLastStack());
             }
         } catch (Exception ex) {
             logger.warn("TimeSignatureFixer. Error processing " + page, ex);

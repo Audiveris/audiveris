@@ -21,12 +21,26 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.IdEvent;
+import org.audiveris.omr.ui.selection.LocationEvent;
+import org.audiveris.omr.ui.selection.SelectionHint;
+import static org.audiveris.omr.ui.selection.SelectionHint.ENTITY_INIT;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.EntityIndex;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Class {@code InterService} is an EntityService for inters.
@@ -37,6 +51,8 @@ public class InterService
         extends EntityService<Inter>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(InterService.class);
 
     /** Events that can be published on inter service. */
     private static final Class<?>[] eventsAllowed = new Class<?>[]{
@@ -54,5 +70,76 @@ public class InterService
                          SelectionService locationService)
     {
         super(index, locationService, eventsAllowed);
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // getMostRelevant //
+    //-----------------//
+    @Override
+    protected Inter getMostRelevant (List<Inter> list)
+    {
+        switch (list.size()) {
+        case 0:
+            return null;
+
+        case 1:
+            return list.get(0);
+
+        default:
+
+            List<Inter> copy = new ArrayList<Inter>(list);
+            Collections.sort(copy, Inters.membersFirst);
+
+            return copy.get(0);
+        }
+    }
+
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
+    /**
+     * Interest in EntityList
+     *
+     * @param listEvent list of inters
+     */
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Inter> listEvent)
+    {
+        final SelectionHint hint = listEvent.hint;
+
+        if (hint == ENTITY_INIT) {
+            final Inter inter = listEvent.getEntity();
+
+            if (inter != null) {
+                final SIGraph sig = inter.getSig();
+
+                if (sig != null) {
+                    // Publish underlying glyph, perhaps null
+                    final Glyph glyph = inter.getGlyph();
+                    sig.getSystem().getSheet().getGlyphIndex().publish(glyph);
+                }
+            }
+        }
+
+        // Publish selected inter last, so that display of its bounds remains visible
+        super.handleEntityListEvent(listEvent);
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Interest in location &rArr; list
+     *
+     * @param locationEvent the location event
+     */
+    @Override
+    protected void handleLocationEvent (LocationEvent locationEvent)
+    {
+        // Search only when in MODE_INTER or MODE_GLYPH
+        if (ViewParameters.getInstance().getSelectionMode() != ViewParameters.SelectionMode.MODE_SECTION) {
+            super.handleLocationEvent(locationEvent);
+        }
     }
 }

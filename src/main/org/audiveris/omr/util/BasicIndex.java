@@ -28,6 +28,8 @@ import org.audiveris.omr.ui.symbol.BasicSymbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -114,6 +116,24 @@ public class BasicIndex<E extends Entity>
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------------//
+    // getContainedEntities //
+    //----------------------//
+    @Override
+    public List<E> getContainedEntities (Rectangle rectangle)
+    {
+        return Entities.containedEntities(iterator(), rectangle);
+    }
+
+    //-----------------------//
+    // getContainingEntities //
+    //-----------------------//
+    @Override
+    public List<E> getContainingEntities (Point point)
+    {
+        return Entities.containingEntities(iterator(), point);
+    }
+
     //-------------//
     // getEntities //
     //-------------//
@@ -272,7 +292,7 @@ public class BasicIndex<E extends Entity>
 
         if (isVipId(id)) {
             entity.setVip(true);
-            logger.info("VIP entity {} registered", entity);
+            logger.info("VIP registered {}", entity);
         }
 
         return id;
@@ -471,8 +491,8 @@ public class BasicIndex<E extends Entity>
         //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElementRefs({
-            @XmlElementRef(type = BasicGlyph.class),
-            @XmlElementRef(type = BasicSymbol.class)
+            @XmlElementRef(type = BasicGlyph.class)
+            , @XmlElementRef(type = BasicSymbol.class)
         })
         ArrayList<E> list; // Flat list of entities (each with its embedded id)
     }

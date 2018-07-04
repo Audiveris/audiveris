@@ -74,7 +74,7 @@ public class LSpinner
     /**
      * Add a change listener to the spinner
      *
-     * @param listener
+     * @param listener the change listener to add
      */
     public void addChangeListener (ChangeListener listener)
     {

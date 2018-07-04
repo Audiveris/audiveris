@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code BinaryStep} implements <b>BINARY</b> step, which binarizes the initial
- * sheet image, using proper filter, to come up with a black & white image.
+ * sheet image, using proper filter, to come up with a black-and-white image.
  *
  * @author Hervé Bitteur
  */
@@ -93,9 +93,8 @@ public class BinaryStep
         //        boolean hasGray = hasGray(initial);
         //        logger.info("hasGray: {}", hasGray);
         //
-        FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
+        FilterDescriptor desc = sheet.getStub().getBinarizationFilter().getValue();
         logger.debug("{}", "Binarization");
-        sheet.getStub().getFilterParam().setActual(desc);
 
         PixelFilter filter = desc.getFilter(initial);
         watch.start("Binarize source");

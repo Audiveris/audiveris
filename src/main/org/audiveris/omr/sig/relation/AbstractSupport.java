@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "support")
-public class AbstractSupport
+public abstract class AbstractSupport
         extends AbstractRelation
         implements Support
 {

@@ -108,7 +108,7 @@ public class RunService
             logger.debug("RunsTable {}: {}", getName(), locationEvent);
 
             if (locationEvent instanceof LocationEvent) {
-                handleEvent(locationEvent); // Location => Run
+                handleLocationEvent(locationEvent); // Location => Run
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -130,15 +130,15 @@ public class RunService
         }
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
     /**
-     * Interest in location => Run
+     * Interest in location &rArr; Run
      *
-     * @param location
+     * @param locationEvent the location event
      */
-    private void handleEvent (LocationEvent locationEvent)
+    protected void handleLocationEvent (LocationEvent locationEvent)
     {
         ///logger.info("RunTable location: {}", locationEvent);
         Rectangle rect = locationEvent.getData();

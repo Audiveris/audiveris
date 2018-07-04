@@ -24,12 +24,8 @@ package org.audiveris.omr.run;
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.image.GlobalFilter;
-import org.audiveris.omr.run.Orientation;
 import static org.audiveris.omr.run.Orientation.*;
-import org.audiveris.omr.run.Run;
-import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTable.RunSequence;
-import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.util.Predicate;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -246,7 +242,7 @@ public class RunTableTest
 
         int index = 1;
         RunTable instance = createHorizontalInstance();
-        RunSequence expResult = new RunSequence(new short[]{1, 3, 2});
+        RunSequence expResult = new RunSequence(new int[]{1, 3, 2});
         System.out.println("expResult: " + expResult);
 
         RunSequence result = instance.getSequence(index);
@@ -440,7 +436,7 @@ public class RunTableTest
         System.out.println("\n+++ setSequence");
 
         int index = 1;
-        RunSequence seq = new RunSequence(new short[]{0, 3, 7});
+        RunSequence seq = new RunSequence(new int[]{0, 3, 7});
         RunTable instance = createHorizontalInstance();
         System.out.println("table before:" + instance.dumpOf());
         instance.setSequence(index, seq);

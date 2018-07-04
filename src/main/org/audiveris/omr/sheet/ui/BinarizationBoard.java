@@ -27,7 +27,7 @@ import com.jgoodies.forms.layout.FormLayout;
 
 import ij.process.ByteProcessor;
 
-import org.audiveris.omr.image.AdaptiveFilter;
+import org.audiveris.omr.image.AdaptiveDescriptor;
 import org.audiveris.omr.image.AdaptiveFilter.AdaptiveContext;
 import org.audiveris.omr.image.FilterDescriptor;
 import org.audiveris.omr.image.PixelFilter;
@@ -122,48 +122,64 @@ public class BinarizationBoard
             logger.debug("BinarizationBoard: {}", event);
 
             if (event instanceof LocationEvent) {
-                // Display rectangle attributes
-                LocationEvent sheetLocation = (LocationEvent) event;
-                Rectangle rect = sheetLocation.getData();
-
-                if (rect != null) {
-                    FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
-                    ByteProcessor source = sheet.getPicture().getSource(
-                            Picture.SourceKey.INITIAL);
-                    PixelFilter filter = desc.getFilter(source);
-
-                    if (filter == null) {
-                        filter = new RandomFilter(
-                                source,
-                                AdaptiveFilter.getDefaultMeanCoeff(),
-                                AdaptiveFilter.getDefaultStdDevCoeff());
-                    }
-
-                    PixelFilter.Context context = filter.getContext(rect.x, rect.y);
-
-                    if (context != null) {
-                        if (context instanceof AdaptiveContext) {
-                            AdaptiveContext ctx = (AdaptiveContext) context;
-                            mean.setValue(ctx.mean);
-                            stdDev.setValue(ctx.standardDeviation);
-                        } else {
-                            mean.setText("");
-                            stdDev.setText("");
-                        }
-
-                        threshold.setValue(context.threshold);
-
-                        return;
-                    }
-                }
-
-                mean.setText("");
-                stdDev.setText("");
-                threshold.setText("");
+                handleLocationEvent((LocationEvent) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Interest in LocationEvent
+     *
+     * @param sheetLocation location
+     */
+    protected void handleLocationEvent (LocationEvent sheetLocation)
+    {
+        // Display rectangle attributes
+        Rectangle rect = sheetLocation.getData();
+
+        if (rect != null) {
+            FilterDescriptor desc = sheet.getStub().getBinarizationFilter().getValue();
+            ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.INITIAL);
+
+            if (source != null) {
+                PixelFilter filter = desc.getFilter(source);
+
+                if (filter == null) {
+                    filter = new RandomFilter(
+                            source,
+                            AdaptiveDescriptor.getDefaultMeanCoeff(),
+                            AdaptiveDescriptor.getDefaultStdDevCoeff());
+                }
+
+                PixelFilter.Context context = filter.getContext(rect.x, rect.y);
+
+                if (context != null) {
+                    if (context instanceof AdaptiveContext) {
+                        AdaptiveContext ctx = (AdaptiveContext) context;
+                        mean.setValue(ctx.mean);
+                        stdDev.setValue(ctx.standardDeviation);
+                    } else {
+                        mean.setText("");
+                        stdDev.setText("");
+                    }
+
+                    threshold.setValue(context.threshold);
+
+                    return;
+                }
+            } else {
+                logger.info("No INITIAL source available");
+            }
+        }
+
+        mean.setText("");
+        stdDev.setText("");
+        threshold.setText("");
     }
 
     //--------------//

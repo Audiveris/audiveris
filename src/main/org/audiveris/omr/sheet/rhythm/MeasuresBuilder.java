@@ -24,17 +24,20 @@ package org.audiveris.omr.sheet.rhythm;
 import net.jcip.annotations.NotThreadSafe;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffBarline;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.BarlineInter;
+import org.audiveris.omr.sig.inter.HeadInter;
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.Inters;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -98,9 +101,10 @@ public class MeasuresBuilder
      * Parts and physical BarlineInter's have been identified within the system.
      * Each staff has its BarlineInter's attached.
      * <p>
-     * To build the logical StaffBarline's, PartBarline's and Measures, the strategy is: <ol>
-     * <li>Staff by staff, gather barlines into groups of closely located barlines.</li>
-     * <li>Check & adjust consistency across all staves within the system</li>
+     * To build the logical StaffBarlineInter's, PartBarline's and Measures, the strategy is: <ol>
+     * <li>Staff by staff, gather barlines into groups of closely located barlines
+     * (StaffBarlineInter's).</li>
+     * <li>Check and adjust consistency across all staves within the system</li>
      * <li>In each part, browsing the sequence of groups in first staff which is now the reference,
      * allocate the corresponding PartBarline's and measures.</li>
      * </ol>
@@ -119,7 +123,7 @@ public class MeasuresBuilder
     {
         // Determine groups of BarlineInter's for each staff within system
         for (Staff staff : system.getStaves()) {
-            staffMap.put(staff, buildGroups(staff.getBars()));
+            staffMap.put(staff, buildGroups(staff.getBarlines()));
         }
 
         // Enforce consistency within system
@@ -129,6 +133,9 @@ public class MeasuresBuilder
         for (Part part : system.getParts()) {
             buildPartMeasures(part);
         }
+
+        // Empty courtesy measure if any
+        emptyCourtesyMeasure();
     }
 
     //-------------//
@@ -170,7 +177,7 @@ public class MeasuresBuilder
     // buildPartMeasures //
     //-------------------//
     /**
-     * Here, we build the sequence of PartBarlines in parallel with the StaffBarline
+     * Here, we build the sequence of PartBarlines in parallel with the StaffBarlineInter
      * sequence of each staff within part.
      *
      * @param part the containing part
@@ -195,62 +202,101 @@ public class MeasuresBuilder
 
                 final int im = part.getMeasures().size() - 1;
 
-                while (system.getMeasureStacks().size() <= im) {
-                    system.getMeasureStacks().add(new MeasureStack(system));
+                while (system.getStacks().size() <= im) {
+                    system.addStack(new MeasureStack(system));
                 }
             }
 
             if ((measure != null) && (leftBarPending != null)) {
-                measure.setLeftBarline(leftBarPending);
+                measure.setLeftPartBarline(leftBarPending);
                 leftBarPending = null;
             }
 
             if (topGroup != null) {
-                // Logical barline with at most first 2 bars of the group
+                // Logical barline
                 PartBarline partBar = new PartBarline();
 
                 for (Staff s : part.getStaves()) {
-                    StaffBarline staffBar = new StaffBarline();
-                    partBar.addStaffBarline(staffBar);
-
                     Group group = staffMap.get(s).get(ig);
-
-                    for (int i = 0; i < Math.min(2, topGroup.size()); i++) {
-                        staffBar.addBar(group.get(i));
-                    }
+                    partBar.addStaffBarline(new StaffBarlineInter(group));
                 }
 
                 if (measure == null) {
-                    part.setLeftBarline(partBar);
+                    part.setLeftPartBarline(partBar);
                 } else {
-                    measure.setRightBarline(partBar);
+                    measure.setRightPartBarline(partBar);
                 }
 
                 if (topGroup.size() > 2) {
-                    // We have a second logical barline with last 2 bars of group
-                    // And it starts a new measure
-                    partBar = new PartBarline();
-
-                    for (Staff s : part.getStaves()) {
-                        StaffBarline staffBar = new StaffBarline();
-                        partBar.addStaffBarline(staffBar);
-
-                        Group group = staffMap.get(s).get(ig);
-
-                        for (int i = topGroup.size() - 2; i < topGroup.size(); i++) {
-                            staffBar.addBar(group.get(i));
-                        }
-                    }
-
+                    // We have a back to back group, and it starts a new measure
                     leftBarPending = partBar;
                 }
             }
 
             if (measure != null) {
                 final int im = part.getMeasures().size() - 1;
-                MeasureStack stack = system.getMeasureStacks().get(im);
+                MeasureStack stack = system.getStacks().get(im);
                 measure.setStack(stack);
                 stack.addMeasure(measure);
+            }
+        }
+    }
+
+    //----------------------//
+    // emptyCourtesyMeasure //
+    //----------------------//
+    /**
+     * Remove head notes in very short ending measure (courtesy measure) if any.
+     */
+    private void emptyCourtesyMeasure ()
+    {
+        MeasureStack lastStack = system.getLastStack();
+
+        Measure topMeasure = lastStack.getFirstMeasure();
+
+        // Check it is a short measure with no ending barline
+        if (topMeasure.getRightPartBarline() != null) {
+            return;
+        }
+
+        int minStandardWidth = system.getSheet().getScale().toPixels(constants.minStandardWidth);
+
+        if (topMeasure.getWidth() >= minStandardWidth) {
+            return;
+        }
+
+        // Check stack has one measure per part, otherwise simply remove this pseudo stack
+        if (lastStack.getMeasures().size() < system.getParts().size()) {
+            logger.info("Partial courtesy stack removed {}", lastStack);
+            system.removeStack(lastStack);
+
+            return;
+        }
+
+        // Min abscissa value for the stack
+        int minX = Integer.MAX_VALUE;
+
+        for (Staff staff : system.getStaves()) {
+            Measure measure = lastStack.getMeasureAt(staff);
+            minX = Math.min(minX, measure.getAbscissa(LEFT, staff));
+        }
+
+        // Look for heads in courtesy stack
+        for (Inter inter : system.getSig().inters(HeadInter.class)) {
+            if (inter.getCenter().x < minX) {
+                continue;
+            }
+
+            HeadInter head = (HeadInter) inter;
+            Part part = head.getPart();
+            Measure measure = part.getMeasureAt(head.getCenter());
+
+            if (measure.getStack() == lastStack) {
+                if (logger.isDebugEnabled() || head.isVip()) {
+                    logger.info("Courtesy {} purging {}", lastStack, head);
+                }
+
+                head.remove();
             }
         }
     }
@@ -416,7 +462,7 @@ public class MeasuresBuilder
                 staffMap.get(staff).remove(group);
 
                 for (BarlineInter barline : group) {
-                    barline.delete();
+                    barline.remove();
                 }
             }
         }
@@ -471,6 +517,8 @@ public class MeasuresBuilder
                     double y2 = staff.getLastLine().yAt(x);
                     Line2D median = new Line2D.Double(x, y1, x, y2);
                     BarlineInter barline = new BarlineInter(null, shape, null, median, width);
+                    system.getSig().addVertex(barline);
+                    barline.setGrade(Grades.intrinsicRatio);
                     barline.freeze();
 
                     List<Group> staffGroups = staffMap.get(staff);
@@ -510,6 +558,10 @@ public class MeasuresBuilder
         private final Scale.Fraction maxShift = new Scale.Fraction(
                 1.0,
                 "Maximum deskewed abscissa difference within a column");
+
+        private final Scale.Fraction minStandardWidth = new Scale.Fraction(
+                4.0,
+                "Minimum measure width for not being a courtesy measure");
     }
 
     //-------//

@@ -25,14 +25,31 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.omr.sig.CrossDetector;
+import org.audiveris.omr.sheet.rhythm.MeasureFiller;
+import org.audiveris.omr.sig.BeamHeadCleaner;
 import org.audiveris.omr.sig.SigReducer;
+import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricItemInter;
+import org.audiveris.omr.sig.inter.SentenceInter;
+import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.ui.AdditionTask;
+import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.SentenceRoleTask;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.sig.ui.UITask.OpKind;
+import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
 import org.audiveris.omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class {@code LinksStep} implements <b>LINKS</b> step, which assigns relations between
@@ -48,6 +65,23 @@ public class LinksStep
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(LinksStep.class);
+
+    /** Classes that may impact texts. */
+    private static final Set<Class> forTexts;
+
+    static {
+        forTexts = new HashSet<Class>();
+        forTexts.add(WordInter.class);
+        forTexts.add(SentenceInter.class);
+    }
+
+    /** All impacting classes. */
+    private static final Set<Class> impactingClasses;
+
+    static {
+        impactingClasses = new HashSet<Class>();
+        impactingClasses.addAll(forTexts);
+    }
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -75,8 +109,14 @@ public class LinksStep
         watch.start("reduceLinks");
         new SigReducer(system, false).reduceLinks();
 
+        // Complete each measure with clef(s) and key if any
+        new MeasureFiller(system).process();
+
         // Purge deleted lyrics from containing part
         new InterCleaner(system).purgeContainers();
+
+        // Remove all Beam-Head relations, now useless
+        new BeamHeadCleaner(system).process();
 
         // Remove all free glyphs?
         if (constants.removeFreeGlyphs.isSet()) {
@@ -88,6 +128,58 @@ public class LinksStep
         }
     }
 
+    //--------//
+    // impact //
+    //--------//
+    @Override
+    public void impact (UITaskList seq,
+                        OpKind opKind)
+    {
+        logger.debug("LINKS impact {} {}", opKind, seq);
+
+        for (UITask task : seq.getTasks()) {
+            if (task instanceof InterTask) {
+                InterTask interTask = (InterTask) task;
+                Inter inter = interTask.getInter();
+                SystemInfo system = inter.getSig().getSystem();
+                Class interClass = (Class) inter.getClass();
+
+                if (isImpactedBy(interClass, forTexts)) {
+                    if (inter instanceof LyricItemInter) {
+                        LyricItemInter item = (LyricItemInter) inter;
+
+                        if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
+                            item.mapToChord();
+                        }
+                    } else if (inter instanceof SentenceInter) {
+                        SentenceInter sentence = (SentenceInter) inter;
+                        SymbolsLinker linker = new SymbolsLinker(system);
+
+                        if ((opKind != OpKind.UNDO) && task instanceof AdditionTask) {
+                            linker.linkOneSentence(sentence);
+                        } else if (task instanceof SentenceRoleTask) {
+                            SentenceRoleTask roleTask = (SentenceRoleTask) interTask;
+                            linker.unlinkOneSentence(
+                                    sentence,
+                                    (opKind == OpKind.UNDO) ? roleTask.getNewRole()
+                                            : roleTask.getOldRole());
+                            linker.linkOneSentence(sentence);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //--------------//
+    // isImpactedBy //
+    //--------------//
+    @Override
+    public boolean isImpactedBy (Class classe)
+    {
+        return isImpactedBy(classe, impactingClasses);
+    }
+
     //----------//
     // doEpilog //
     //----------//
@@ -96,10 +188,15 @@ public class LinksStep
                              Void context)
             throws StepException
     {
-        super.doEpilog(sheet, context);
+        // Check for ties in same staff, now that head alterations and clef changes are available
+        for (SystemInfo system : sheet.getSystems()) {
+            List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
 
-        // Handle inters conflicts across systems
-        new CrossDetector(sheet).process();
+            for (Inter inter : system.getSig().inters(SlurInter.class)) {
+                SlurInter slur = (SlurInter) inter;
+                slur.checkStaffTie(systemHeadChords);
+            }
+        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -109,8 +206,8 @@ public class LinksStep
     private static final class Constants
             extends ConstantSet
     {
-
         //~ Instance fields ------------------------------------------------------------------------
+
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");

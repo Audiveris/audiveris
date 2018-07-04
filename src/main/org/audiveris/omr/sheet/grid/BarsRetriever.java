@@ -25,6 +25,7 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory.CompoundConstructor;
@@ -309,7 +310,7 @@ public class BarsRetriever
         recordBars(); // Record barlines in staff
 
         watch.start("createGroups");
-        createGroups(); // Build groups
+        createGroups(); // Build groups of staves
 
         watch.start("createParts");
         createParts(); // Build parts
@@ -551,7 +552,7 @@ public class BarsRetriever
                         // Retrieve the full brace filament
                         Filament braceFilament = buildBraceFilament(portions);
                         Glyph glyph = glyphIndex.registerOriginal(braceFilament.toGlyph(null));
-                        BraceInter braceInter = new BraceInter(glyph, Inter.intrinsicRatio * 1);
+                        BraceInter braceInter = new BraceInter(glyph, Grades.intrinsicRatio * 1);
                         SIGraph sig = staff.getSystem().getSig();
                         sig.addVertex(braceInter);
                     }
@@ -745,12 +746,14 @@ public class BarsRetriever
                 }
 
                 try {
+                    BarConnectorInter connector = null;
+
                     if (topPeak.isBracket()) {
                         sig.addVertex(
                                 new BracketConnectorInter(connection, connection.getImpacts()));
                     } else {
                         sig.addVertex(
-                                new BarConnectorInter(
+                                connector = new BarConnectorInter(
                                         connection,
                                         topPeak.isSet(THICK) ? Shape.THICK_CONNECTOR : Shape.THIN_CONNECTOR,
                                         connection.getImpacts()));
@@ -764,6 +767,12 @@ public class BarsRetriever
                     if ((topInter != null) && (bottomInter != null)) {
                         Relation bcRel = new BarConnectionRelation(connection.getImpacts());
                         sig.addEdge(topInter, bottomInter, bcRel);
+
+                        // Extend this information to sibling barlines in system height
+                        if ((connector != null) && connector.isGood()) {
+                            connector.freeze();
+                            extendConnection(connection);
+                        }
                     } else {
                         logger.info("Cannot create connection for {}", align);
                     }
@@ -963,7 +972,7 @@ public class BarsRetriever
                                 peak.isSet(THICK) ? Shape.THICK_BARLINE : Shape.THIN_BARLINE,
                                 peak.getImpacts(),
                                 median,
-                                peak.getWidth());
+                                (double) peak.getWidth());
 
                         for (HorizontalSide side : HorizontalSide.values()) {
                             if (peak.isStaffEnd(side)) {
@@ -1388,6 +1397,47 @@ public class BarsRetriever
 
         for (PartGroup group : groups) {
             logger.info("   {}", group);
+        }
+    }
+
+    //------------------//
+    // extendConnection //
+    //------------------//
+    /**
+     * Process the provided concrete connection by freezing its barlines as well as
+     * the corresponding barlines in all the other staves of the system.
+     *
+     * @param connection the concrete connection (between barlines, not brackets)
+     */
+    private void extendConnection (BarConnection connection)
+    {
+        final StaffPeak topPeak = connection.topPeak;
+
+        if (topPeak.isBracket()) {
+            return;
+        }
+
+        // Build the column of peaks, recursively
+        final List<StaffPeak> list = new ArrayList<StaffPeak>();
+        list.add(topPeak);
+
+        for (int i = 0; i < list.size(); i++) {
+            StaffPeak peak = list.get(i);
+
+            for (BarAlignment align : peakGraph.edgesOf(peak)) {
+                for (VerticalSide side : VerticalSide.values()) {
+                    StaffPeak p = align.getPeak(side);
+
+                    if (!list.contains(p)) {
+                        list.add(p);
+                    }
+                }
+            }
+        }
+
+        // Freeze the corresponding inters
+        for (StaffPeak peak : list) {
+            peak.getInter().freeze();
         }
     }
 
@@ -2379,7 +2429,7 @@ public class BarsRetriever
                     }
                 }
 
-                staff.setBars(bars);
+                staff.setBarlines(bars);
             }
         }
     }

@@ -47,6 +47,10 @@ public interface Anchored
          */
         MIDDLE_LEFT,
         /**
+         * X at symbol right abscissa, Y at middle.
+         */
+        MIDDLE_RIGHT,
+        /**
          * X at symbol left stem, Y at high stem ordinate.
          */
         TOP_LEFT_STEM,
@@ -70,6 +74,41 @@ public interface Anchored
          * X at symbol right stem, Y at low stem ordinate.
          */
         BOTTOM_RIGHT_STEM;
+        //~ Methods --------------------------------------------------------------------------------
+
+        public String abbreviation ()
+        {
+            switch (this) {
+            case CENTER:
+                return "C";
+
+            case MIDDLE_LEFT:
+                return "ML";
+
+            case MIDDLE_RIGHT:
+                return "MR";
+
+            case TOP_LEFT_STEM:
+                return "TLS";
+
+            case LEFT_STEM:
+                return "LS";
+
+            case BOTTOM_LEFT_STEM:
+                return "BLS";
+
+            case TOP_RIGHT_STEM:
+                return "TRS";
+
+            case RIGHT_STEM:
+                return "RS";
+
+            case BOTTOM_RIGHT_STEM:
+                return "BRS";
+            }
+
+            return null;
+        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -77,14 +116,12 @@ public interface Anchored
      * Assign a relative offset for an anchor type.
      *
      * @param anchor the anchor type
-     * @param xRatio the abscissa offset from upper left corner, specified as
-     *               ratio of rectangle width
-     * @param yRatio the ordinate offset from upper left corner, specified as
-     *               ratio of rectangle height
+     * @param dx     the abscissa offset from upper left corner in pixels
+     * @param dy     the ordinate offset from upper left corner in pixels
      */
     void addAnchor (Anchor anchor,
-                    double xRatio,
-                    double yRatio);
+                    int dx,
+                    int dy);
 
     /**
      * Report the rectangular bounds when positioning anchor at location (x,y).

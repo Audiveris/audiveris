@@ -83,13 +83,25 @@ public class PixelBoard
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Create a PixelBoard.
+     * Create a PixelBoard, pre-selected by default
      *
      * @param sheet the related sheet
      */
     public PixelBoard (Sheet sheet)
     {
-        super(Board.PIXEL, sheet.getLocationService(), eventsRead, true, false, false, false);
+        this(sheet, true);
+    }
+
+    /**
+     * Create a PixelBoard.
+     *
+     * @param sheet    the related sheet
+     * @param selected true for pre-selected, false for collapsed
+     */
+    public PixelBoard (Sheet sheet,
+                       boolean selected)
+    {
+        super(Board.PIXEL, sheet.getLocationService(), eventsRead, selected, false, false, false);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
@@ -121,12 +133,56 @@ public class PixelBoard
             logger.debug("PixelBoard: {}", event);
 
             if (event instanceof LocationEvent) {
-                handleEvent((LocationEvent) event); // Display rectangle attributes
+                handleLocationEvent((LocationEvent) event); // Display rectangle attributes
             } else if (event instanceof PixelEvent) {
-                handleEvent((PixelEvent) event); // Display pixel gray level
+                handlePixelEvent((PixelEvent) event); // Display pixel gray level
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Display rectangle attributes
+     *
+     * @param locEvent the location event
+     */
+    protected void handleLocationEvent (LocationEvent locEvent)
+    {
+        Rectangle rect = locEvent.getData();
+
+        if (rect != null) {
+            x.setValue(rect.x);
+            y.setValue(rect.y);
+            width.setValue(rect.width);
+            height.setValue(rect.height);
+        } else {
+            x.setText("");
+            y.setText("");
+            width.setText("");
+            height.setText("");
+        }
+    }
+
+    //------------------//
+    // handlePixelEvent //
+    //------------------//
+    /**
+     * Display pixel gray level
+     *
+     * @param pixelEvent the pixel event
+     */
+    protected void handlePixelEvent (PixelEvent pixelEvent)
+    {
+        final Integer pixelLevel = pixelEvent.getData();
+
+        if (pixelLevel != null) {
+            level.setValue(pixelLevel);
+        } else {
+            level.setText("");
         }
     }
 
@@ -165,50 +221,6 @@ public class PixelBoard
 
         builder.add(height.getLabel(), cst.xy(9, r));
         builder.add(height.getField(), cst.xy(11, r));
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Display rectangle attributes
-     *
-     * @param locEvent
-     */
-    private void handleEvent (LocationEvent locEvent)
-    {
-        Rectangle rect = locEvent.getData();
-
-        if (rect != null) {
-            x.setValue(rect.x);
-            y.setValue(rect.y);
-            width.setValue(rect.width);
-            height.setValue(rect.height);
-        } else {
-            x.setText("");
-            y.setText("");
-            width.setText("");
-            height.setText("");
-        }
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Display pixel gray level
-     *
-     * @param pixelEvent
-     */
-    private void handleEvent (PixelEvent pixelEvent)
-    {
-        final Integer pixelLevel = pixelEvent.getData();
-
-        if (pixelLevel != null) {
-            level.setValue(pixelLevel);
-        } else {
-            level.setText("");
-        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -81,13 +81,6 @@ public abstract class AbstractNoteInter
         G;
     }
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Note step. */
-    protected Step step;
-
-    /** Octave. */
-    protected Integer octave;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractNoteInter object.
@@ -200,23 +193,23 @@ public abstract class AbstractNoteInter
         return shapeDurations.get(shape);
     }
 
-    //--------//
-    // delete //
-    //--------//
+    //-------//
+    // added //
+    //-------//
     /**
      * Since a note instance is held by its containing staff, make sure staff
      * notes collection is updated.
      *
-     * @see #undelete()
+     * @see #remove()
      */
     @Override
-    public void delete ()
+    public void added ()
     {
-        if (staff != null) {
-            staff.removeNote(this);
-        }
+        super.added();
 
-        super.delete();
+        if (staff != null) {
+            staff.addNote(this);
+        }
     }
 
     //-----------//
@@ -230,34 +223,28 @@ public abstract class AbstractNoteInter
      */
     public int getOctave ()
     {
-        if (octave == null) {
-            AbstractChordInter chord = (AbstractChordInter) getEnsemble();
-            Measure measure = chord.getMeasure();
-            octave = ClefInter.octaveOf(measure.getClefBefore(getCenter(), getStaff()), pitch);
-        }
+        AbstractChordInter chord = getChord();
+        Measure measure = chord.getMeasure();
+        ClefInter clef = measure.getClefBefore(getCenter(), getStaff());
 
-        return octave;
+        return ClefInter.octaveOf(clef, pitch);
     }
 
     //---------//
     // getStep //
     //---------//
     /**
-     * Report the note step (within the octave)
+     * Report the note step (within the octave).
      *
      * @return the note step
      */
     public Step getStep ()
     {
-        if (step == null) {
-            AbstractChordInter chord = (AbstractChordInter) getEnsemble();
-            Measure measure = chord.getMeasure();
-            step = ClefInter.noteStepOf(
-                    measure.getClefBefore(getCenter(), staff),
-                    (int) Math.rint(pitch));
-        }
+        AbstractChordInter chord = getChord();
+        Measure measure = chord.getMeasure();
+        ClefInter clef = measure.getClefBefore(getCenter(), staff);
 
-        return step;
+        return ClefInter.noteStepOf(clef, (int) Math.rint(pitch));
     }
 
     //----------//
@@ -275,23 +262,24 @@ public abstract class AbstractNoteInter
         return null;
     }
 
-    //----------//
-    // undelete //
-    //----------//
+    //--------//
+    // remove //
+    //--------//
     /**
      * Since a note instance is held by its containing staff, make sure staff
      * notes collection is updated.
      *
-     * @see #delete()
+     * @param extensive true for non-manual removals only
+     * @see #added()
      */
     @Override
-    public void undelete ()
+    public void remove (boolean extensive)
     {
-        super.undelete();
-
         if (staff != null) {
-            staff.addNote(this);
+            staff.removeNote(this);
         }
+
+        super.remove(extensive);
     }
 
     //---------------------//

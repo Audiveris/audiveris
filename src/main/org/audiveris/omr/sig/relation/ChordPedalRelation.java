@@ -33,4 +33,23 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ChordPedalRelation
         extends AbstractSupport
 {
+    //~ Methods ------------------------------------------------------------------------------------
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
 }

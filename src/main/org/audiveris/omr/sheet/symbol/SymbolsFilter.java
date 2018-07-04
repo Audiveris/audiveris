@@ -29,7 +29,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
 import org.audiveris.omr.glyph.GlyphIndex;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
@@ -167,7 +167,7 @@ public class SymbolsFilter
         RunTable runTable = runFactory.createTable(buffer);
 
         // Glyphs
-        List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable, new Point(0, 0), Group.SYMBOL);
+        List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable, new Point(0, 0), GlyphGroup.SYMBOL);
         logger.debug("Symbol glyphs: {}", glyphs.size());
 
         // Dispatch each glyph to its relevant system(s)
@@ -190,7 +190,7 @@ public class SymbolsFilter
 
         for (Glyph glyph : glyphs) {
             glyph = glyphIndex.registerOriginal(glyph);
-            glyph.addGroup(Group.SYMBOL);
+            glyph.addGroup(GlyphGroup.SYMBOL);
 
             Point center = glyph.getCentroid();
             systemManager.getSystemsOf(center, relevants);
@@ -353,7 +353,7 @@ public class SymbolsFilter
                 systemWeaks = null;
 
                 for (Inter inter : sig.vertexSet()) {
-                    if (inter.isDeleted()) {
+                    if (inter.isRemoved()) {
                         continue;
                     }
 
@@ -485,10 +485,9 @@ public class SymbolsFilter
             // Save the glyph?
             if (systemWeaks != null) {
                 // The glyph may be made of several parts, so it's safer to restart from pixels
-                List<Glyph> glyphs = GlyphFactory.buildGlyphs(
-                        glyph.getRunTable(),
+                List<Glyph> glyphs = GlyphFactory.buildGlyphs(glyph.getRunTable(),
                         glyph.getTopLeft(),
-                        Group.SYMBOL);
+                        GlyphGroup.SYMBOL);
                 systemWeaks.addAll(glyphs);
             }
         }
@@ -517,10 +516,9 @@ public class SymbolsFilter
             RunTable runTable = factory.createTable(buf);
 
             // Glyphs
-            List<Glyph> glyphs = GlyphFactory.buildGlyphs(
-                    runTable,
+            List<Glyph> glyphs = GlyphFactory.buildGlyphs(runTable,
                     new Point(0, 0),
-                    Group.SYMBOL);
+                    GlyphGroup.SYMBOL);
 
             systemWeaks.addAll(glyphs);
         }

@@ -21,6 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.sig;
 
+import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
+import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
@@ -54,6 +58,7 @@ import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.PluckingInter;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
@@ -77,15 +82,17 @@ import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
-import org.audiveris.omr.sig.relation.BasicExclusion;
+import org.audiveris.omr.sig.relation.BasicContainment;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
 import org.audiveris.omr.sig.relation.ChordNameRelation;
+import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
+import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
 import org.audiveris.omr.sig.relation.ChordWedgeRelation;
@@ -94,9 +101,9 @@ import org.audiveris.omr.sig.relation.DotFermataRelation;
 import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.EndingBarRelation;
 import org.audiveris.omr.sig.relation.EndingSentenceRelation;
+import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.FermataBarRelation;
 import org.audiveris.omr.sig.relation.FermataChordRelation;
-import org.audiveris.omr.sig.relation.FermataNoteRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -109,8 +116,6 @@ import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.relation.StemAlignmentRelation;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
-
-import org.jgrapht.Graphs;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,18 +130,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * Class {@code SigValue} represents the content of a SIG for use by JAXB.
  * <p>
- * There is a trick to handle separately the Inter instances that appear within the containing
- * system structure (and within the SIG) from the other Inter instances that exist only within the
- * SIG. The former ones are handled as XmlIDREF's in interRefs, the latter ones as XmlElement's in
- * interDefs.
+ * All Inter instances are defined within their containing SIG.
+ * If referred from outside SIG, they are handled via XmlIDREF's.
  *
  * @author Hervé Bitteur
  */
@@ -150,17 +151,11 @@ public class SigValue
             SigValue.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Inters already defined in system structure, hence gathered here as mere refs. */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "inter-refs")
-    private final ArrayList<AbstractInter> interRefs = new ArrayList<AbstractInter>();
-
     /**
      * All CONCRETE inters found in sig, gathered here as true defs. No abstract!
      * For easier review, class names are listed alphabetically.
      */
-    @XmlElementWrapper(name = "inter-defs")
+    @XmlElementWrapper(name = "inters")
     @XmlElementRefs({
         @XmlElementRef(type = AlterInter.class)
         , @XmlElementRef(type = AugmentationDotInter.class)
@@ -190,10 +185,10 @@ public class SigValue
         , @XmlElementRef(type = KeyAlterInter.class)
         , @XmlElementRef(type = KeyInter.class)
         , @XmlElementRef(type = LedgerInter.class)
-        , // Cannot occur ???
-        @XmlElementRef(type = LyricItemInter.class)
+        , @XmlElementRef(type = LyricItemInter.class)
         , @XmlElementRef(type = LyricLineInter.class)
         , @XmlElementRef(type = MarkerInter.class)
+        , @XmlElementRef(type = OrnamentInter.class)
         , @XmlElementRef(type = PedalInter.class)
         , @XmlElementRef(type = PluckingInter.class)
         , @XmlElementRef(type = RepeatDotInter.class)
@@ -205,6 +200,7 @@ public class SigValue
         , @XmlElementRef(type = SmallBeamInter.class)
         , @XmlElementRef(type = SmallChordInter.class)
         , @XmlElementRef(type = SmallFlagInter.class)
+        , @XmlElementRef(type = StaffBarlineInter.class)
         , @XmlElementRef(type = StemInter.class)
         , @XmlElementRef(type = TimeNumberInter.class)
         , @XmlElementRef(type = TimePairInter.class)
@@ -213,7 +209,7 @@ public class SigValue
         , @XmlElementRef(type = WedgeInter.class)
         , @XmlElementRef(type = WordInter.class)
     })
-    private final ArrayList<AbstractInter> interDefs = new ArrayList<AbstractInter>();
+    private final ArrayList<AbstractInter> inters = new ArrayList<AbstractInter>();
 
     /** Sig edges: relations between inters. */
     @XmlElementWrapper(name = "relations")
@@ -237,18 +233,19 @@ public class SigValue
      */
     public void populateSig (SIGraph sig)
     {
-        final InterIndex index = sig.getSystem().getSheet().getInterIndex();
+        final Sheet sheet = sig.getSystem().getSheet();
+        final StaffManager mgr = sheet.getStaffManager();
+        final InterIndex index = sheet.getInterIndex();
 
-        // Allocate vertices
-        Graphs.addAllVertices(sig, interRefs);
-        Graphs.addAllVertices(sig, interDefs);
+        // Populate inters
+        sig.populateAllInters(inters);
 
         for (Inter inter : sig.vertexSet()) {
             inter.setSig(sig);
             index.insert(inter);
         }
 
-        // Allocate edges
+        // Populate relations
         for (RelationValue rel : relations) {
             try {
                 Inter source = index.getEntity(rel.sourceId);
@@ -257,6 +254,11 @@ public class SigValue
             } catch (Throwable ex) {
                 logger.error("Error unmarshalling relation " + rel + " ex:" + ex, ex);
             }
+        }
+
+        // Replace StaffHolder instances with real Staff instances
+        for (Inter inter : inters) {
+            Staff.StaffHolder.checkStaffHolder(inter, mgr);
         }
     }
 
@@ -274,12 +276,10 @@ public class SigValue
 
         /**
          * Generate a SigValue out of the existing SIG.
-         * We separate Inter instances already marshalled (the 'interRefs') from the other
-         * instances (the 'interDefs') that are used only in SIG.
          *
          * @param sig the existing SIG whose content is to be stored into a SigValue
          * @return the generated SigValue instance
-         * @throws Exception
+         * @throws Exception if something goes wrong
          */
         @Override
         public SigValue marshal (SIGraph sig)
@@ -287,19 +287,9 @@ public class SigValue
         {
             SigValue sigValue = new SigValue();
 
-            // Dispose of interSet: from now on, any marshalling will go directly to interDefs
-            InterSet interSet = sig.getSystem().getInterSet();
-            LinkedHashSet<AbstractInter> defined = interSet.getInters();
-            sig.getSystem().setInterSet(null);
-
             for (Inter inter : sig.vertexSet()) {
                 AbstractInter abstractInter = (AbstractInter) inter;
-
-                if (!defined.contains(abstractInter)) {
-                    sigValue.interDefs.add(abstractInter);
-                } else {
-                    sigValue.interRefs.add(abstractInter);
-                }
+                sigValue.inters.add(abstractInter);
             }
 
             for (Relation edge : sig.edgeSet()) {
@@ -315,7 +305,7 @@ public class SigValue
          *
          * @param sigValue the value to be converted
          * @return a new SIG instance, to be later populated via {@link #populateSig}
-         * @throws Exception
+         * @throws Exception if something goes wrong
          */
         @Override
         public SIGraph unmarshal (SigValue sigValue)
@@ -372,22 +362,24 @@ public class SigValue
          * The relation instance.
          * <p>
          * Here we list alphabetically all CONCRETE relation types. No abstract!
-         * CrossExclusion is not listed here, because it must be handled outside any specific sig.
          */
         @XmlElementRefs({
             @XmlElementRef(type = AlterHeadRelation.class)
             , @XmlElementRef(type = AugmentationRelation.class)
             , @XmlElementRef(type = BarConnectionRelation.class)
             , @XmlElementRef(type = BarGroupRelation.class)
-            , @XmlElementRef(type = BasicExclusion.class)
+            , @XmlElementRef(type = BasicContainment.class)
+            , @XmlElementRef(type = Exclusion.class)
             , @XmlElementRef(type = BeamHeadRelation.class)
             , @XmlElementRef(type = BeamStemRelation.class)
             , @XmlElementRef(type = ChordArpeggiatoRelation.class)
             , @XmlElementRef(type = ChordArticulationRelation.class)
             , @XmlElementRef(type = ChordDynamicsRelation.class)
             , @XmlElementRef(type = ChordNameRelation.class)
+            , @XmlElementRef(type = ChordOrnamentRelation.class)
             , @XmlElementRef(type = ChordPedalRelation.class)
             , @XmlElementRef(type = ChordSentenceRelation.class)
+            , @XmlElementRef(type = ChordStemRelation.class)
             , @XmlElementRef(type = ChordSyllableRelation.class)
             , @XmlElementRef(type = ChordTupletRelation.class)
             , @XmlElementRef(type = ChordWedgeRelation.class)
@@ -398,7 +390,6 @@ public class SigValue
             , @XmlElementRef(type = EndingSentenceRelation.class)
             , @XmlElementRef(type = FermataBarRelation.class)
             , @XmlElementRef(type = FermataChordRelation.class)
-            , @XmlElementRef(type = FermataNoteRelation.class)
             , @XmlElementRef(type = FlagStemRelation.class)
             , @XmlElementRef(type = HeadHeadRelation.class)
             , @XmlElementRef(type = HeadStemRelation.class)

@@ -32,17 +32,27 @@ public interface InterVisitor
 {
     //~ Methods ------------------------------------------------------------------------------------
 
-    void visit (AbstractBeamInter inter);
+    void visit (AbstractBeamInter inter); // BeamHook, Beam, SmallBeam
 
-    void visit (AbstractChordInter inter);
+    void visit (AbstractChordInter inter); // HeadChord, SmallChord, RestChord
 
-    void visit (AbstractFlagInter inter);
+    void visit (AbstractFlagInter inter); // Flag, SmallFlag
+
+    void visit (AlterInter inter);
 
     void visit (ArpeggiatoInter inter);
+
+    void visit (ArticulationInter inter);
+
+    void visit (AugmentationDotInter inter);
 
     void visit (BarConnectorInter inter);
 
     void visit (BarlineInter inter);
+
+    void visit (BeamHookInter inter);
+
+    void visit (BeamInter inter);
 
     void visit (BraceInter inter);
 
@@ -50,13 +60,38 @@ public interface InterVisitor
 
     void visit (BracketInter inter);
 
+    void visit (BreathMarkInter inter);
+
+    void visit (CaesuraInter inter);
+
+    void visit (ChordNameInter inter);
+
     void visit (ClefInter inter);
+
+    void visit (DynamicsInter inter);
 
     void visit (EndingInter inter);
 
+    void visit (FermataArcInter inter);
+
+    void visit (FermataDotInter inter);
+
+    void visit (FermataInter inter);
+
+    void visit (FingeringInter inter);
+
+    void visit (FlagInter inter);
+
+    void visit (FretInter inter);
+
+    void visit (HeadChordInter inter);
+
     void visit (HeadInter inter);
 
-    void visit (Inter inter);
+    void visit (Inter inter); // Pedal, TimeNumber, Rest, Alter, RepeatDot, Articulation
+    // AugmentationDot, BreathMark, Caesura, Dynamics
+    // FermataArc, FermataDot, Fermata, Fingering, Fret, Marker, Ornament, Plucking, Segment
+    // Tuplet
 
     void visit (KeyAlterInter inter);
 
@@ -64,17 +99,49 @@ public interface InterVisitor
 
     void visit (LedgerInter inter);
 
-    void visit (SentenceInter inter);
+    void visit (LyricItemInter inter);
+
+    void visit (LyricLineInter inter);
+
+    void visit (MarkerInter inter);
+
+    void visit (OrnamentInter inter);
+
+    void visit (PedalInter inter);
+
+    void visit (RepeatDotInter inter);
+
+    void visit (PluckingInter inter);
+
+    void visit (RestChordInter inter);
+
+    void visit (RestInter inter);
+
+    void visit (SegmentInter inter);
+
+    void visit (SentenceInter inter); // Sentence, LyricLine
 
     void visit (SlurInter inter);
 
+    void visit (SmallBeamInter inter);
+
+    void visit (SmallChordInter inter);
+
+    void visit (SmallFlagInter inter);
+
+    void visit (StaffBarlineInter inter);
+
     void visit (StemInter inter);
+
+    void visit (TimeNumberInter inter);
 
     void visit (TimePairInter inter);
 
     void visit (TimeWholeInter inter);
 
+    void visit (TupletInter inter);
+
     void visit (WedgeInter inter);
 
-    void visit (WordInter inter);
+    void visit (WordInter inter); // Word, ChordName, LyricItem
 }

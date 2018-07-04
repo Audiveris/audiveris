@@ -97,7 +97,8 @@ public class TurnSlashSymbol
 
         Stroke oldStroke = g.getStroke();
         g.setStroke(p.stroke);
-        g.drawLine(loc.x, location.y, loc.x, location.y + p.rect.height);
+        Point top = alignment.translatedPoint(TOP_CENTER, p.rect, location);
+        g.drawLine(loc.x, top.y, loc.x, top.y + p.rect.height);
         g.setStroke(oldStroke);
     }
 

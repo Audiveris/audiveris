@@ -35,9 +35,9 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * (composed of a numerator and a denominator).
  * <p>
  * Invariants:<ol>
- * <li>The rational data is always kept in reduced form : gcd(num,den)==1</li>
- * <li>The denominator value is always kept positive : den >= 1</li>
- * </ol></p>
+ * <li>The rational data is always kept in reduced form : gcd(num,den) == 1</li>
+ * <li>The denominator value is always kept positive : den &ge; 1</li>
+ * </ol>
  * <p>
  * It is (un)marshallable through JAXB.</p>
  *

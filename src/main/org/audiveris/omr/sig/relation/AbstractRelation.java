@@ -23,16 +23,43 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.util.Jaxb;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code AbstractRelation} is the abstract basis for any Relation implementation.
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public abstract class AbstractRelation
         implements Relation, Cloneable
 {
+    //~ Instance fields ----------------------------------------------------------------------------
+
+    // Persistent data
+    //----------------
+    //
+    /** Indicates that this relation was set manually. */
+    @XmlAttribute(name = "manual")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean manual;
+
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        // No-op by default
+    }
 
     //-----------//
     // duplicate //
@@ -62,7 +89,28 @@ public abstract class AbstractRelation
     @Override
     public String getName ()
     {
-        return getClass().getSimpleName().replaceFirst("Relation", "");
+        return Relations.nameOf(getClass());
+    }
+
+    //----------//
+    // isManual //
+    //----------//
+    /**
+     * @return the manual
+     */
+    @Override
+    public boolean isManual ()
+    {
+        return manual;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        // No-op by default
     }
 
     //----------//
@@ -89,6 +137,18 @@ public abstract class AbstractRelation
         }
 
         return sb.toString();
+    }
+
+    //-----------//
+    // setManual //
+    //-----------//
+    /**
+     * @param manual the manual to set
+     */
+    @Override
+    public void setManual (boolean manual)
+    {
+        this.manual = manual;
     }
 
     //--------------//
@@ -126,6 +186,6 @@ public abstract class AbstractRelation
     //-----------//
     protected String internals ()
     {
-        return "";
+        return isManual() ? "MANUAL" : "";
     }
 }

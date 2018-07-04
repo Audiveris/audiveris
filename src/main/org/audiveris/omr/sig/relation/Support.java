@@ -46,14 +46,14 @@ public interface Support
     /**
      * Report the support ratio for source inter
      *
-     * @return support ratio for source (value is always >= 1)
+     * @return support ratio for source (value is always &ge; 1)
      */
     double getSourceRatio ();
 
     /**
      * Report the support ratio for target inter
      *
-     * @return support ratio for target (value is always >= 1)
+     * @return support ratio for target (value is always &ge; 1)
      */
     double getTargetRatio ();
 

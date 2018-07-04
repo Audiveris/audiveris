@@ -21,9 +21,10 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import javax.xml.bind.annotation.XmlRootElement;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code HeadHeadRelation} represents the relation support between two heads
@@ -40,6 +41,24 @@ public class HeadHeadRelation
     private static final Constants constants = new Constants();
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
+    }
+
     //----------------//
     // getSourceCoeff //
     //----------------//
@@ -68,7 +87,7 @@ public class HeadHeadRelation
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
-                2,
+                1,
                 "Value for (source or target) head coeff in head-head support formula");
     }
 }

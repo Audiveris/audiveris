@@ -27,7 +27,7 @@ import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.util.Navigable;
-import org.audiveris.omr.util.Param;
+import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,7 +96,7 @@ public class Score
     private final Param<List<PartData>> partsParam = new PartsParam();
 
     /** Handling of tempo parameter. */
-    private final Param<Integer> tempoParam = new Param<Integer>(Tempo.defaultTempo);
+    private final Param<Integer> tempoParam = new Param<Integer>();
 
     /** The specified sound volume, if any. */
     private Integer volume;
@@ -107,6 +107,7 @@ public class Score
      */
     public Score ()
     {
+        tempoParam.setParent(Tempo.defaultTempo);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -208,6 +209,26 @@ public class Score
         }
 
         return pageRefs.get(0);
+    }
+
+    //------------------//
+    // getFollowingPage //
+    //------------------//
+    /**
+     * Report the page, if any, that follows the provided page within containing score.
+     *
+     * @param page the provided page
+     * @return the following page or null
+     */
+    public Page getFollowingPage (Page page)
+    {
+        int index = getPageIndex(page);
+
+        if (index < (pageRefs.size() - 1)) {
+            return getPage(pageRefs.get(index + 1));
+        }
+
+        return null;
     }
 
     //-------//

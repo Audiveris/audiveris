@@ -70,7 +70,7 @@ import javax.swing.event.ChangeListener;
  * It gathers: <ul>
  * <li>a {@link Zoom} with its dedicated graphical {@link LogSlider}</li>
  * <li>a mouse adapter {@link Rubber}</li>
- * <li>a tabbed pane of {@link Scrollpane}'s for all views of this sheet</li>
+ * <li>a tabbed pane of {@link JScrollPane}'s for all views of this sheet</li>
  * </ul>
  * <p>
  * Although not part of the same Swing container, the SheetAssembly also refers to a sequence of
@@ -280,7 +280,7 @@ public class SheetAssembly
         displayBoards();
 
         // Display the errors pane of this assembly?
-        if (GuiActions.getInstance().isErrorsDisplayed()) {
+        if (GuiActions.getInstance().isErrorsWindowDisplayed()) {
             OMR.gui.setErrorsPane(stub.getSheet().getErrorsEditor().getComponent());
         }
     }

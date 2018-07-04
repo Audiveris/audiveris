@@ -35,7 +35,7 @@ import java.io.IOException;
  * related {@link Shape}.
  * A ShapeSymbol thus adds several features:<ul>
  *
- * <li>It can be used for Drag & Drop operations, since it implements the {@link Transferable}
+ * <li>It can be used for Drag &amp; Drop operations, since it implements the {@link Transferable}
  * interface.</li>
  *
  * <li>It can be used to <b>train</b> the glyph classifier when we don't have enough "real" glyphs
@@ -51,7 +51,7 @@ public class ShapeSymbol
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The symbol meta data */
-    public static DataFlavor DATA_FLAVOR = new DataFlavor(Symbol.class, "shape-symbol");
+    public static DataFlavor DATA_FLAVOR = new DataFlavor(SymbolIcon.class, "shape-symbol");
 
     /** Composite used for decoration */
     protected static AlphaComposite decoComposite = AlphaComposite.getInstance(

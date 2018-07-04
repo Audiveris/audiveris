@@ -30,7 +30,6 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.util.HorizontalSide;
 import org.audiveris.omr.util.Predicate;
 
@@ -79,9 +78,9 @@ public class RestInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-arg constructor meant for JAXB (and dummy measure).
      */
-    private RestInter ()
+    protected RestInter ()
     {
     }
 
@@ -95,9 +94,9 @@ public class RestInter
         visitor.visit(this);
     }
 
-    //--------//
-    // create //
-    //--------//
+    //-------------//
+    // createValid //
+    //-------------//
     /**
      * (Try to) create a Rest inter.
      * <p>
@@ -115,11 +114,11 @@ public class RestInter
      * @param systemHeadChords abscissa-ordered list of head-chords in this system
      * @return the created instance or null if failed
      */
-    public static RestInter create (Glyph glyph,
-                                    Shape shape,
-                                    double grade,
-                                    SystemInfo system,
-                                    List<Inter> systemHeadChords)
+    public static RestInter createValid (Glyph glyph,
+                                         Shape shape,
+                                         double grade,
+                                         SystemInfo system,
+                                         List<Inter> systemHeadChords)
     {
         // Determine pitch according to glyph centroid
         final Point centroid = glyph.getCentroid();
@@ -142,7 +141,7 @@ public class RestInter
             // All head-chords in measure
             final int left = measure.getAbscissa(HorizontalSide.LEFT, staff);
             final int right = measure.getAbscissa(HorizontalSide.RIGHT, staff);
-            measureChords = SIGraph.inters(
+            measureChords = Inters.inters(
                     systemHeadChords,
                     new Predicate<Inter>()
             {

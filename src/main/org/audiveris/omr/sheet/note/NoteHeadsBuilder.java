@@ -26,15 +26,16 @@ import ij.process.ByteProcessor;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import org.audiveris.omr.glyph.Symbol;
 import org.audiveris.omr.image.Anchored.Anchor;
 import static org.audiveris.omr.image.Anchored.Anchor.*;
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.ShapeDescriptor;
+import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.image.TemplateFactory.Catalog;
 import org.audiveris.omr.math.GeoOrder;
@@ -54,8 +55,11 @@ import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractInter;
 import org.audiveris.omr.sig.inter.AbstractVerticalInter;
+import org.audiveris.omr.sig.inter.BarConnectorInter;
+import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.util.Dumping;
@@ -77,7 +81,9 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -153,11 +159,14 @@ public class NoteHeadsBuilder
     /** Minimum width of templates. */
     private int minTemplateWidth = 0; // TODO
 
-    /** The <b>properly scaled</b> templates to use. */
+    /** The <b>properly scaled</b> templates to use, based on <b>current</b> staff. */
     private Catalog catalog;
 
     /** The competing interpretations for the system. */
     private List<Inter> systemCompetitors;
+
+    /** The forbidden rectangles around connectors and frozen barlines. */
+    private List<Rectangle> systemBarRectangles;
 
     /** The vertical (stem) seeds for the system. */
     private List<Glyph> systemSeeds;
@@ -167,6 +176,15 @@ public class NoteHeadsBuilder
 
     /** Offsets tried around a given (stem-based) abscissa. */
     private final int[] xOffsets;
+
+    /** All note templates for this sheet. */
+    private final EnumSet<Shape> sheetTemplateNotes;
+
+    /** All stem note templates for this sheet. */
+    private final EnumSet<Shape> sheetStemTemplateNotes;
+
+    /** All void note templates for this sheet. */
+    private final EnumSet<Shape> sheetVoidTemplateNotes;
 
     // Debug
     private final Perf seedsPerf = new Perf();
@@ -193,6 +211,10 @@ public class NoteHeadsBuilder
         sheet = system.getSheet();
         scale = sheet.getScale();
 
+        sheetTemplateNotes = ShapeSet.getTemplateNotes(sheet);
+        sheetStemTemplateNotes = ShapeSet.getStemTemplateNotes(sheet);
+        sheetVoidTemplateNotes = ShapeSet.getVoidTemplateNotes(sheet);
+
         params = new Parameters(scale);
 
         if ((system.getId() == 1) && constants.printParameters.isSet()) {
@@ -214,17 +236,19 @@ public class NoteHeadsBuilder
     public void buildHeads ()
     {
         StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
+        systemBarRectangles = getSystemBarRectangles();
         systemCompetitors = getSystemCompetitors(); // Competitors
-        systemSeeds = system.getGroupedGlyphs(Symbol.Group.VERTICAL_SEED); // Vertical seeds
+        systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED); // Vertical seeds
         Collections.sort(systemSeeds, Glyphs.byOrdinate);
         Collections.sort(systemSpots, Glyphs.byOrdinate);
-
         image = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
 
         for (Staff staff : system.getStaves()) {
             logger.debug("Staff #{}", staff.getId());
 
-            catalog = TemplateFactory.getInstance().getCatalog(staff.getSpecificInterline());
+            // Determine the proper catalog, based on staff size
+            final int pointSize = staff.getHeadPointSize();
+            catalog = TemplateFactory.getInstance().getCatalog(pointSize);
 
             List<Inter> ch = new ArrayList<Inter>(); // Created Heads for this staff
 
@@ -234,14 +258,14 @@ public class NoteHeadsBuilder
 
             // Consider seed-based heads as special competitors for x-based notes
             systemCompetitors.addAll(ch);
-            Collections.sort(systemCompetitors, Inter.byOrdinate);
+            Collections.sort(systemCompetitors, Inters.byOrdinate);
 
             // Second, process x-based notes for the staff
             watch.start("Staff #" + staff.getId() + " range");
             ch.addAll(processStaff(staff, false));
 
             // Finally, detect notes overlaps for current staff
-            Collections.sort(ch, Inter.byFullAbscissa);
+            Collections.sort(ch, Inters.byFullAbscissa);
             watch.start("Staff #" + staff.getId() + " duplicates");
 
             int duplicates = purgeDuplicates(ch);
@@ -269,27 +293,13 @@ public class NoteHeadsBuilder
         logger.debug("    range {}", rangePerf);
     }
 
-    //------------//
-    // dist2grade //
-    //------------//
-    /**
-     * Convenient method (used in debug)
-     *
-     * @param distance matching distance
-     * @return resulting grade
-     */
-    public static double dist2grade (double distance)
-    {
-        return Inter.intrinsicRatio * (1 - (distance / constants.maxMatchingDistance.getValue()));
-    }
-
     //------------------//
     // aggregateMatches //
     //------------------//
     private List<HeadInter> aggregateMatches (List<HeadInter> inters)
     {
         // Sort by decreasing grade
-        Collections.sort(inters, Inter.byReverseGrade);
+        Collections.sort(inters, Inters.byReverseGrade);
 
         // Gather matches per close locations
         // Avoid duplicate locations
@@ -378,7 +388,7 @@ public class NoteHeadsBuilder
                                    Staff staff,
                                    double pitch)
     {
-        final double distImpact = 1 - (loc.d / params.maxMatchingDistance);
+        final double distImpact = Template.impactOf(loc.d);
         final GradeImpacts impacts = new HeadInter.Impacts(distImpact);
         final double grade = impacts.getGrade();
 
@@ -430,7 +440,7 @@ public class NoteHeadsBuilder
      */
     private List<Inter> getCompetitorsSlice (Area area)
     {
-        List<Inter> rawComps = SIGraph.intersectedInters(
+        List<Inter> rawComps = Inters.intersectedInters(
                 systemCompetitors,
                 GeoOrder.BY_ORDINATE,
                 area);
@@ -445,7 +455,7 @@ public class NoteHeadsBuilder
         }
 
         // Sort by abscissa for more efficient lookup
-        Collections.sort(kept, Inter.byAbscissa);
+        Collections.sort(kept, Inters.byAbscissa);
 
         return kept;
     }
@@ -516,6 +526,36 @@ public class NoteHeadsBuilder
         return list;
     }
 
+    //------------------------//
+    // getSystemBarRectangles //
+    //------------------------//
+    private List<Rectangle> getSystemBarRectangles ()
+    {
+        List<Rectangle> rects = new ArrayList<Rectangle>();
+        List<Inter> inters = sig.inters(
+                new Predicate<Inter>()
+        {
+            @Override
+            public boolean check (Inter inter)
+            {
+                return inter.isFrozen()
+                       && (inter instanceof BarlineInter
+                           || inter instanceof BarConnectorInter);
+            }
+        });
+
+        Collections.sort(inters, Inters.byOrdinate);
+
+        for (Inter inter : inters) {
+            // Add margin around bar bounds
+            Rectangle box = inter.getBounds();
+            box.grow(params.hBarMargin, params.vBarMargin);
+            rects.add(box);
+        }
+
+        return rects;
+    }
+
     //----------------------//
     // getSystemCompetitors //
     //----------------------//
@@ -559,7 +599,7 @@ public class NoteHeadsBuilder
             }
         });
 
-        Collections.sort(comps, Inter.byOrdinate);
+        Collections.sort(comps, Inters.byOrdinate);
 
         return comps;
     }
@@ -646,14 +686,14 @@ public class NoteHeadsBuilder
      * Retrieve notes along the provided staff.
      * <p>
      * Pay attention to adjust ordinate as precisely as possible in the middle
-     * of staff or ledger lines.
+     * of staff lines or ledger lines.
      *
-     * @param staff the staff to process
-     * @param seeds should we stick to stem seeds or not?
+     * @param staff    the staff to process
+     * @param useSeeds should we stick to stem seeds or not?
      * @return the list of created notes
      */
     private List<Inter> processStaff (Staff staff,
-                                      boolean seeds)
+                                      boolean useSeeds)
     {
         List<Inter> ch = new ArrayList<Inter>(); // Created heads
 
@@ -665,14 +705,14 @@ public class NoteHeadsBuilder
             LineAdapter adapter = new StaffLineAdapter(staff, line);
 
             // Look above line
-            ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, seeds).lookup());
+            ch.addAll(new Scanner(adapter, prevAdapter, -1, pitch++, useSeeds).lookup());
 
             // Look exactly on line
-            ch.addAll(new Scanner(adapter, null, 0, pitch++, seeds).lookup());
+            ch.addAll(new Scanner(adapter, null, 0, pitch++, useSeeds).lookup());
 
             // For the last line only, look just below line
             if (pitch == 5) {
-                ch.addAll(new Scanner(adapter, null, 1, pitch++, seeds).lookup());
+                ch.addAll(new Scanner(adapter, null, 1, pitch++, useSeeds).lookup());
             }
 
             prevAdapter = adapter;
@@ -697,11 +737,11 @@ public class NoteHeadsBuilder
                     Glyph glyph = ledger.getGlyph();
                     LineAdapter adapter = new LedgerAdapter(staff, p, glyph);
                     // Look right on ledger
-                    ch.addAll(new Scanner(adapter, null, 0, pitch, seeds).lookup());
+                    ch.addAll(new Scanner(adapter, null, 0, pitch, useSeeds).lookup());
 
                     // Look just further from staff
                     int pitch2 = pitch + dir;
-                    ch.addAll(new Scanner(adapter, null, dir, pitch2, seeds).lookup());
+                    ch.addAll(new Scanner(adapter, null, dir, pitch2, useSeeds).lookup());
                 }
             }
         }
@@ -714,19 +754,45 @@ public class NoteHeadsBuilder
     //-----------------//
     private int purgeDuplicates (List<Inter> inters)
     {
-        List<Inter> toRemove = new ArrayList<Inter>();
+        List<Inter> removed = new ArrayList<Inter>();
 
+        LeftLoop:
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
             Inter left = inters.get(i);
+
+            if (left.isRemoved()) {
+                continue;
+            }
+
             Rectangle leftBox = left.getBounds();
             int xMax = (leftBox.x + leftBox.width) - 1;
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
+                if (right.isRemoved()) {
+                    continue;
+                }
+
                 Rectangle rightBox = right.getBounds();
 
                 if (leftBox.intersects(rightBox)) {
                     if (left.isSameAs(right)) {
-                        toRemove.add(right);
+                        if (left.getGrade() < right.getGrade()) {
+                            if (left.isVip()) {
+                                logger.info("VIP purging {} at {}", left, left.getBounds());
+                            }
+
+                            left.remove();
+                            removed.add(left);
+
+                            continue LeftLoop;
+                        } else {
+                            if (right.isVip()) {
+                                logger.info("VIP purging {} at {}", right, right.getBounds());
+                            }
+
+                            right.remove();
+                            removed.add(right);
+                        }
                     }
                 } else if (rightBox.x > xMax) {
                     break;
@@ -734,19 +800,9 @@ public class NoteHeadsBuilder
             }
         }
 
-        if (!toRemove.isEmpty()) {
-            inters.removeAll(toRemove);
+        inters.removeAll(removed);
 
-            for (Inter inter : toRemove) {
-                if (inter.isVip()) {
-                    logger.info("VIP purging {} at {}", inter, inter.getBounds());
-                }
-
-                inter.delete();
-            }
-        }
-
-        return toRemove.size();
+        return removed.size();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -776,8 +832,7 @@ public class NoteHeadsBuilder
         //~ Methods --------------------------------------------------------------------------------
         /**
          * Report the competitors lookup area, according to limits above
-         * and below, defined as ordinate shifts relative to the
-         * reference line.
+         * and below, defined as ordinate shifts relative to the reference line.
          *
          * @param above offset (positive or negative) from line to top limit.
          * @param below offset (positive or negative) from line to bottom limit.
@@ -829,16 +884,6 @@ public class NoteHeadsBuilder
                 false,
                 "Should we allow staff attachments for created areas?");
 
-        private final Constant.Double maxMatchingDistance = new Constant.Double(
-                "distance",
-                1.75, // 1.5,
-                "Maximum matching distance");
-
-        private final Constant.Double reallyBadDistance = new Constant.Double(
-                "distance",
-                3.0,
-                "Really bad matching distance");
-
         private final Scale.Fraction maxTemplateDx = new Scale.Fraction(
                 0.375,
                 "Maximum dx between similar template instances");
@@ -856,12 +901,24 @@ public class NoteHeadsBuilder
                 "Vertical margin for intercepting stem seed around a target pitch");
 
         private final Constant.Ratio wholeBoost = new Constant.Ratio(
-                0.35,
+                0.4,
                 "How much do we boost whole notes (always isolated)");
 
         private final Scale.Fraction minBeamWidth = new Scale.Fraction(
                 2.5,
                 "Minimum good beam width to exclude heads");
+
+        private final Scale.Fraction barHorizontalMargin = new Scale.Fraction(
+                0.35,
+                "Horizontal margin around frozen barline or connector");
+
+        private final Scale.Fraction barVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Vertical margin around frozen barline or connector");
+
+        private final Constant.Ratio minHoleWhiteRatio = new Constant.Ratio(
+                0.2,
+                "Minimum ratio of hole white pixel to reassign Black to Void");
     }
 
     //-----------//
@@ -925,17 +982,21 @@ public class NoteHeadsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        final double maxMatchingDistance;
+        final double maxDistanceLow;
+
+        final double maxDistanceHigh;
 
         final double reallyBadDistance;
 
         final int maxTemplateDx;
 
-        //
-        //        final int maxClosedDy;
         final int maxOpenDy;
 
         final int minBeamWidth;
+
+        final int hBarMargin;
+
+        final int vBarMargin;
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -945,12 +1006,16 @@ public class NoteHeadsBuilder
          */
         public Parameters (Scale scale)
         {
-            maxMatchingDistance = constants.maxMatchingDistance.getValue();
-            reallyBadDistance = constants.reallyBadDistance.getValue();
+            maxDistanceLow = Template.maxDistanceLow();
+            maxDistanceHigh = Template.maxDistanceHigh();
+            reallyBadDistance = Template.reallyBadDistance();
+
             maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
-            //            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
             maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
             minBeamWidth = scale.toPixels(constants.minBeamWidth);
+
+            hBarMargin = scale.toPixels(constants.barHorizontalMargin);
+            vBarMargin = scale.toPixels(constants.barVerticalMargin);
         }
     }
 
@@ -1029,6 +1094,8 @@ public class NoteHeadsBuilder
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        int bars;
+
         int overlaps;
 
         int evals;
@@ -1040,7 +1107,8 @@ public class NoteHeadsBuilder
         public String toString ()
         {
             return String.format(
-                    "%7d overlaps, %7d evals, %7d abandons",
+                    "%7d bars, %7d overlaps, %7d evals, %7d abandons",
+                    bars,
                     overlaps,
                     evals,
                     abandons);
@@ -1050,6 +1118,9 @@ public class NoteHeadsBuilder
     //---------//
     // Scanner //
     //---------//
+    /**
+     * Head scanner dedicated to a staff line or ledger.
+     */
     private class Scanner
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -1072,6 +1143,8 @@ public class NoteHeadsBuilder
 
         private final List<Inter> competitors;
 
+        private final List<Rectangle> barRectangles;
+
         private final List<LedgerAdapter> ledgers;
 
         private List<HeadInter> inters = new ArrayList<HeadInter>();
@@ -1081,11 +1154,11 @@ public class NoteHeadsBuilder
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
-         * Create a Scanner, dedicated to a staff line or ledger.
+         * Create a Scanner.
          *
          * @param line     adapter to the main line
          * @param line2    adapter to secondary line, if any, otherwise null
-         * @param dir      direction WRT main line
+         * @param dir      direction WRT main line (-1, 0, +1)
          * @param pitch    pitch position value
          * @param useSeeds true for seed-based notes, false for x-based notes
          */
@@ -1111,7 +1184,7 @@ public class NoteHeadsBuilder
 
             {
                 // Horizontal slice to detect stem seeds
-                final double maxGap = scale.toPixelsDouble(HeadStemRelation.getYGapMaximum());
+                final double maxGap = scale.toPixelsDouble(HeadStemRelation.getYGapMaximum(false));
                 final double ratio = constants.pitchMargin.getValue();
                 final double above = ((interline * (dir - ratio)) / 2) - maxGap;
                 final double below = ((interline * (dir + ratio)) / 2) + maxGap;
@@ -1126,6 +1199,15 @@ public class NoteHeadsBuilder
                 competitorsArea = line.getArea(above, below);
             }
 
+            {
+                // Horizontal slice to detect bars/connectors
+                final double vMargin = scale.toPixelsDouble(constants.barVerticalMargin);
+                final double above = ((interline * dir) / 2) - vMargin;
+                final double below = ((interline * dir) / 2) + vMargin;
+                Area barsArea = line.getArea(above, below);
+                barRectangles = getBarRectangles(barsArea);
+            }
+
             if (constants.allowAttachments.isSet()) {
                 staff.addAttachment(line.getPrefix() + "#s" + pitch, seedsArea);
                 staff.addAttachment(line.getPrefix() + "#c" + pitch, competitorsArea);
@@ -1138,6 +1220,33 @@ public class NoteHeadsBuilder
         public List<HeadInter> lookup ()
         {
             return useSeeds ? lookupSeeds() : lookupRange();
+        }
+
+        //-------------//
+        // barInvolved //
+        //-------------//
+        /**
+         * Check whether the provided rectangle would intersect neighborhood of frozen
+         * barline/connector.
+         *
+         * @param rect provided rectangle
+         * @return true if neighborhood hit
+         */
+        private boolean barInvolved (Rectangle rect)
+        {
+            int xBreak = rect.x + rect.width;
+
+            for (Rectangle r : barRectangles) {
+                if (r.intersects(rect)) {
+                    return true;
+                }
+
+                if (r.x >= xBreak) {
+                    break; // Since barRectangles are ordered by abscissa
+                }
+            }
+
+            return false;
         }
 
         //-----------------//
@@ -1199,8 +1308,18 @@ public class NoteHeadsBuilder
             final ShapeDescriptor desc = catalog.getDescriptor(shape);
             final Rectangle symBox = desc.getSymbolBoundsAt(x, y, anchor);
 
+            // Skip if frozen barline/connector is too close
+            if (barInvolved(symBox)) {
+                if (useSeeds) {
+                    seedsPerf.bars++;
+                } else {
+                    rangePerf.bars++;
+                }
+
+                return null;
+            }
+
             // Skip if location already used by really good object (beam, etc)
-            //TODO: perhaps use a slightly fattened box?
             if (overlap(symBox, competitors)) {
                 if (useSeeds) {
                     seedsPerf.overlaps++;
@@ -1223,19 +1342,108 @@ public class NoteHeadsBuilder
             return new PixelDistance(x, y, dist);
         }
 
-        //----------------------//
-        // getRelevantAbscissae //
-        //----------------------//
+        //-----------------//
+        // evalBlackAsVoid //
+        //-----------------//
+        /**
+         * Evaluate the provided location (of a black candidate) for white pixels
+         * expected in the hole part of a void candidate.
+         *
+         * @param x      pivot abscissa
+         * @param y      pivot ordinate
+         * @param anchor precise anchor
+         * @return either NOTEHEAD_VOID (positive test) or null (negative test)
+         */
+        private Shape evalBlackAsVoid (int x,
+                                       int y,
+                                       Anchor anchor)
+        {
+            final ShapeDescriptor desc = catalog.getDescriptor(Shape.NOTEHEAD_VOID);
+            final double holeWhiteRatio = desc.evaluateHole(x, y, anchor, distances);
+
+            if (holeWhiteRatio >= constants.minHoleWhiteRatio.getValue()) {
+                return Shape.NOTEHEAD_VOID;
+            } else {
+                return null;
+            }
+        }
+
+        //------------------//
+        // getBarRectangles //
+        //------------------//
+        /**
+         * Build the list of rectangles around connectors and frozen barlines.
+         *
+         * @return the bar-centered rectangles
+         */
+        private List<Rectangle> getBarRectangles (Area area)
+        {
+            List<Rectangle> kept = new ArrayList<Rectangle>();
+
+            for (Rectangle r : systemBarRectangles) {
+                if (area.intersects(r)) {
+                    kept.add(r);
+                }
+            }
+
+            // Sort by abscissa for more efficient lookup
+            Collections.sort(
+                    kept,
+                    new Comparator<Rectangle>()
+            {
+                @Override
+                public int compare (Rectangle r1,
+                                    Rectangle r2)
+                {
+                    return Integer.compare(r1.x, r2.x);
+                }
+            });
+
+            return kept;
+        }
+
+        //---------------------//
+        // getBarSafeAbscissae //
+        //---------------------//
+        /**
+         * Select the x values sufficiently away from frozen barlines and connectors.
+         *
+         * @param scanLeft  range starting abscissa
+         * @param scanRight range stopping abscissa
+         * @return an array of booleans, telling which x values are allowed
+         */
+        private boolean[] getBarSafeAbscissae (int scanLeft,
+                                               int scanRight)
+        {
+            final boolean[] allowed = new boolean[scanRight - scanLeft + 1];
+            Arrays.fill(allowed, true);
+
+            for (Rectangle rect : barRectangles) {
+                for (int x = rect.x; x < (rect.x + rect.width); x++) {
+                    int ix = x - scanLeft;
+
+                    if ((ix >= 0) && (ix < allowed.length)) {
+                        allowed[ix] = false;
+                    }
+                }
+            }
+
+            return allowed;
+        }
+
+        //---------------------------//
+        // getRelevantBlackAbscissae //
+        //---------------------------//
         /**
          * Select the x values that are intersected by note spots and thus could
-         * correspond to notes.
+         * correspond to black heads.
          *
          * @param scanLeft  range starting abscissa
          * @param scanRight range stopping abscissa
          * @return an array of booleans, telling which x values are relevant
          */
-        private boolean[] getRelevantAbscissae (int scanLeft,
-                                                int scanRight)
+        private boolean[] getRelevantBlackAbscissae (int scanLeft,
+                                                     int scanRight)
         {
             List<Glyph> spots = getGlyphsSlice(systemSpots, competitorsArea);
             boolean[] relevants = new boolean[scanRight - scanLeft + 1];
@@ -1332,33 +1540,32 @@ public class NoteHeadsBuilder
                 return inters;
             }
 
-            // Use the note spots to limit the abscissae to be checked
-            // OK for blacks, not for voids
-            boolean[] relevants = getRelevantAbscissae(scanLeft, scanRight);
+            // Use the note spots to limit the abscissae to be checked for blacks
+            boolean[] blackRelevants = getRelevantBlackAbscissae(scanLeft, scanRight);
 
             // Scan from left to right
             for (int x0 = scanLeft; x0 <= scanRight; x0++) {
                 final int y0 = getTheoreticalOrdinate(x0);
 
                 // Shapes to try depend on whether location belongs to a black spot
-                EnumSet<Shape> shapeSet = relevants[x0 - scanLeft] ? ShapeSet.TemplateNotes
-                        : ShapeSet.VoidTemplateNotes;
+                EnumSet<Shape> shapeSet = blackRelevants[x0 - scanLeft] ? sheetTemplateNotes
+                        : sheetVoidTemplateNotes;
                 ShapeLoop:
                 for (Shape shape : shapeSet) {
-                    PixelDistance bestDist = null;
+                    PixelDistance bestLoc = null;
 
                     for (int yOffset : yOffsets) {
                         final int y = y0 + yOffset;
-                        PixelDistance dist = eval(shape, x0, y, MIDDLE_LEFT);
+                        PixelDistance loc = eval(shape, x0, y, MIDDLE_LEFT);
 
-                        if ((dist != null) && (dist.d <= params.maxMatchingDistance)) {
-                            if ((bestDist == null) || (bestDist.d > dist.d)) {
-                                bestDist = dist;
+                        if ((loc != null) && (loc.d <= params.maxDistanceLow)) {
+                            if ((bestLoc == null) || (bestLoc.d > loc.d)) {
+                                bestLoc = loc;
                             }
                         } else if (y == y0) {
                             // This is the very first (best guess) location tried.
                             // If eval is really bad, stop immediately
-                            if ((dist == null) || (dist.d >= params.reallyBadDistance)) {
+                            if ((loc == null) || (loc.d >= params.reallyBadDistance)) {
                                 rangePerf.abandons++;
 
                                 continue ShapeLoop;
@@ -1366,9 +1573,18 @@ public class NoteHeadsBuilder
                         }
                     }
 
-                    if (bestDist != null) {
+                    if (bestLoc != null) {
+                        // Special case: NOTEHEAD_VOID mistaken for NOTEHEAD_BLACK
+                        if (shape == Shape.NOTEHEAD_BLACK) {
+                            Shape newShape = evalBlackAsVoid(bestLoc.x, bestLoc.y, MIDDLE_LEFT);
+
+                            if (newShape != null) {
+                                shape = newShape;
+                            }
+                        }
+
                         HeadInter inter = createInter(
-                                bestDist,
+                                bestLoc,
                                 MIDDLE_LEFT,
                                 shape,
                                 line.getStaff(),
@@ -1387,9 +1603,15 @@ public class NoteHeadsBuilder
             // Check conflict with seed-based instances
             inters = filterSeedConflicts(inters, competitors);
 
-            for (HeadInter inter : inters) {
-                inter.retrieveGlyph(image, sheet.getInterline(), sheet.getGlyphIndex());
-                sig.addVertex(inter);
+            for (Iterator<HeadInter> it = inters.iterator(); it.hasNext();) {
+                HeadInter inter = it.next();
+                Glyph glyph = inter.retrieveGlyph(image);
+
+                if (glyph != null) {
+                    sig.addVertex(inter);
+                } else {
+                    it.remove();
+                }
             }
 
             return inters;
@@ -1425,7 +1647,7 @@ public class NoteHeadsBuilder
                     // For each stem side and for each possible shape,
                     // keep the best match (if acceptable) among all locations tried.
                     ShapeLoop:
-                    for (Shape shape : ShapeSet.StemTemplateNotes) {
+                    for (Shape shape : sheetStemTemplateNotes) {
                         PixelDistance bestLoc = null;
 
                         // Brute force: explore the whole rectangle around (x0, y0)
@@ -1436,7 +1658,7 @@ public class NoteHeadsBuilder
                                 final int x = x0 + xOffset;
                                 PixelDistance loc = eval(shape, x, y, anchor);
 
-                                if ((loc != null) && (loc.d <= params.maxMatchingDistance)) {
+                                if ((loc != null) && (loc.d <= params.maxDistanceLow)) {
                                     if ((bestLoc == null) || (bestLoc.d > loc.d)) {
                                         bestLoc = loc;
                                     }
@@ -1453,6 +1675,15 @@ public class NoteHeadsBuilder
                         }
 
                         if (bestLoc != null) {
+                            // Special case: NOTEHEAD_VOID mistaken for NOTEHEAD_BLACK
+                            if (shape == Shape.NOTEHEAD_BLACK) {
+                                Shape newShape = evalBlackAsVoid(bestLoc.x, bestLoc.y, anchor);
+
+                                if (newShape != null) {
+                                    shape = newShape;
+                                }
+                            }
+
                             HeadInter inter = createInter(
                                     bestLoc,
                                     anchor,
@@ -1461,12 +1692,12 @@ public class NoteHeadsBuilder
                                     pitch);
 
                             if (inter != null) {
-                                inter.retrieveGlyph(
-                                        image,
-                                        sheet.getInterline(),
-                                        sheet.getGlyphIndex());
-                                sig.addVertex(inter);
-                                inters.add(inter);
+                                Glyph glyph = inter.retrieveGlyph(image);
+
+                                if (glyph != null) {
+                                    sig.addVertex(inter);
+                                    inters.add(inter);
+                                }
                             }
                         }
                     }

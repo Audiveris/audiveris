@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="13.3">
+<diagram program="umlet" version="14.2">
   <help_text>//Uncomment the following line to change the fontsize:
         //fontsize=14
 
@@ -18,22 +18,12 @@
     <type>com.baselet.element.old.element.Database</type>
     <coordinates>
       <x>600</x>
-      <y>200</y>
+      <y>220</y>
       <w>120</w>
-      <h>50</h>
+      <h>60</h>
     </coordinates>
-    <panel_attributes>User Properties</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.baselet.element.old.element.Database</type>
-    <coordinates>
-      <x>600</x>
-      <y>270</y>
-      <w>120</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>Default Properties</panel_attributes>
+    <panel_attributes>User Properties
+"run.properties"</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -53,9 +43,10 @@
       <x>600</x>
       <y>340</y>
       <w>120</w>
-      <h>50</h>
+      <h>60</h>
     </coordinates>
-    <panel_attributes>Source Code</panel_attributes>
+    <panel_attributes>Source Code
+"unit.java"</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -63,17 +54,6 @@
     <coordinates>
       <x>520</x>
       <y>230</y>
-      <w>100</w>
-      <h>90</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;[&lt;] -</panel_attributes>
-    <additional_attributes>30;30;80;70</additional_attributes>
-  </element>
-  <element>
-    <type>com.baselet.element.old.element.Relation</type>
-    <coordinates>
-      <x>520</x>
-      <y>200</y>
       <w>100</w>
       <h>50</h>
     </coordinates>
@@ -150,24 +130,27 @@
   <element>
     <type>com.baselet.element.old.element.Class</type>
     <coordinates>
-      <x>330</x>
+      <x>280</x>
       <y>320</y>
-      <w>140</w>
-      <h>190</h>
+      <w>190</w>
+      <h>220</h>
     </coordinates>
     <panel_attributes>Constant
 --
-String quantityUnit
-String defaultString
-String description
 --
-String unit
-String name
-String qualifiedName
+/+setValue(String)/
+/+setValue(value)/
+/+getValue()::Object/
 --
-String initialString
-String currentString
-Object cachedValue</panel_attributes>
++getName()::String
++getQualifiedName()::String
++getDescription()::String
++getQuantityUnit::String
++getSourceString()::String
++getCurrentString()::String
++isSourceValue()::boolean
++resetToSource()
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>

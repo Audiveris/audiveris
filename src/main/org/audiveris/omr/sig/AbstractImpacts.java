@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig;
 
-import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.glyph.Grades;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
@@ -50,7 +50,7 @@ public abstract class AbstractImpacts
     @Override
     public double getIntrinsicRatio ()
     {
-        return Inter.intrinsicRatio;
+        return Grades.intrinsicRatio;
     }
 
     //----------//

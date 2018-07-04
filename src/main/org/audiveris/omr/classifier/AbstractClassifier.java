@@ -25,19 +25,23 @@ import org.apache.commons.io.FileUtils;
 
 import org.audiveris.omr.WellKnowns;
 import static org.audiveris.omr.classifier.Classifier.SHAPE_COUNT;
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeChecker;
+import org.audiveris.omr.math.PoorManAlgebra.DataSet;
+import org.audiveris.omr.math.PoorManAlgebra.INDArray;
+import org.audiveris.omr.math.PoorManAlgebra.Nd4j;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.UriUtil;
 import org.audiveris.omr.util.ZipFileSystem;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.factory.Nd4j;
-
+//import org.nd4j.linalg.api.ndarray.INDArray;
+//import org.nd4j.linalg.dataset.DataSet;
+//import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,8 +80,9 @@ import javax.xml.bind.JAXBException;
  * <li>If not found, it falls back reading the default definition from the application resource,
  * reading the 'res' folder in the application program area.
  * </ol>
+ * <p>
  * After any user training, the data is stored as the custom definition in the user local area,
- * which will be picked up first when the application is run again.</p>
+ * which will be picked up first when the application is run again.
  *
  * @param <M> precise model class to be used
  *
@@ -95,8 +100,14 @@ public abstract class AbstractClassifier<M extends Object>
     /** Entry name for mean values. */
     public static final String MEANS_ENTRY_NAME = "means.bin";
 
+    /** Entry name for mean XML values. */
+    public static final String MEANS_XML_ENTRY_NAME = "means.xml";
+
     /** Entry name for standard deviation values. */
     public static final String STDS_ENTRY_NAME = "stds.bin";
+
+    /** Entry name for standard deviation XML values. */
+    public static final String STDS_XML_ENTRY_NAME = "stds.xml";
 
     /** A special evaluation array, used to report NOISE. */
     protected static final Evaluation[] noiseEvaluations = {
@@ -164,9 +175,14 @@ public abstract class AbstractClassifier<M extends Object>
      */
     public DataSet getRawDataSet (Collection<Sample> samples)
     {
+        StopWatch watch = new StopWatch("getRawDataSet");
+        watch.start("allocate doubles");
+
         final double[][] inputs = new double[samples.size()][];
         final double[][] desiredOutputs = new double[samples.size()][];
         int ig = 0;
+
+        watch.start("browse samples");
 
         for (Sample sample : samples) {
             double[] ins = descriptor.getFeatures(sample, sample.getInterline());
@@ -174,7 +190,6 @@ public abstract class AbstractClassifier<M extends Object>
 
             double[] des = new double[SHAPE_COUNT];
             Arrays.fill(des, 0);
-
             des[sample.getShape().getPhysicalShape().ordinal()] = 1;
             desiredOutputs[ig] = des;
 
@@ -182,8 +197,16 @@ public abstract class AbstractClassifier<M extends Object>
         }
 
         // Build the collection of features from the glyph data
+        watch.start("features");
+
         final INDArray features = Nd4j.create(inputs);
+        watch.start("labels");
+
         final INDArray labels = Nd4j.create(desiredOutputs);
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
 
         return new DataSet(features, labels, null, null);
     }
@@ -351,7 +374,7 @@ public abstract class AbstractClassifier<M extends Object>
      *
      * @param root non-null root path of file system
      * @return the loaded model
-     * @throws Exception
+     * @throws Exception if something goes wrong
      */
     protected abstract M loadModel (Path root)
             throws Exception;
@@ -363,7 +386,7 @@ public abstract class AbstractClassifier<M extends Object>
      * Store the model to disk.
      *
      * @param modelPath path to model file
-     * @throws Exception
+     * @throws Exception if something goes wrong
      */
     protected abstract void storeModel (Path modelPath)
             throws Exception;
@@ -376,11 +399,11 @@ public abstract class AbstractClassifier<M extends Object>
      *
      * @param root the root path to file system
      * @return the loaded Norms instance, or exception is thrown
-     * @throws IOException
-     * @throws JAXBException
+     * @throws IOException   if something goes wrong during IO operations
+     * @throws JAXBException if something goes wrong with XML deserialization
      */
     protected Norms loadNorms (Path root)
-            throws IOException, JAXBException
+            throws Exception
     {
         INDArray means = null;
         INDArray stds = null;
@@ -391,6 +414,7 @@ public abstract class AbstractClassifier<M extends Object>
             InputStream is = Files.newInputStream(meansEntry); // READ by default
             DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
             means = Nd4j.read(dis);
+            logger.info("means:{}", means);
             dis.close();
         }
 
@@ -400,6 +424,7 @@ public abstract class AbstractClassifier<M extends Object>
             InputStream is = Files.newInputStream(stdsEntry); // READ by default
             DataInputStream dis = new DataInputStream(new BufferedInputStream(is));
             stds = Nd4j.read(dis);
+            logger.info("stds:{}", stds);
             dis.close();
         }
 
@@ -416,7 +441,7 @@ public abstract class AbstractClassifier<M extends Object>
     /**
      * Store the engine internals, always as user files.
      *
-     * @param fileName file name for classifier data (model & norms)
+     * @param fileName file name for classifier data (model &amp; norms)
      */
     protected void store (String fileName)
     {
@@ -448,10 +473,10 @@ public abstract class AbstractClassifier<M extends Object>
      * Store the norms based on training samples.
      *
      * @param root path to root of file system
-     * @throws IOException
+     * @throws IOException if something goes wrong during IO operations
      */
     protected void storeNorms (Path root)
-            throws IOException
+            throws Exception
     {
         {
             Path means = root.resolve(MEANS_ENTRY_NAME);
@@ -550,6 +575,10 @@ public abstract class AbstractClassifier<M extends Object>
             extends ConstantSet
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
         private final Scale.AreaFraction minWeight = new Scale.AreaFraction(
                 0.04,

@@ -97,7 +97,7 @@ public class OpusExporter
      * @param os       the output stream where XML data is written (cannot be null)
      * @param signed   should we inject ProxyMusic signature?
      * @param rootName simple root path name, without extension
-     * @throws Exception
+     * @throws Exception if something goes wrong
      */
     public void export (OutputStream os,
                         boolean signed,

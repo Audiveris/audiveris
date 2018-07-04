@@ -46,6 +46,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 
@@ -105,6 +106,19 @@ public abstract class ImageLoading
      */
     public static Loader getLoader (Path imgPath)
     {
+        // Avoid stupid errors
+        if (!Files.exists(imgPath)) {
+            logger.warn("File {} does not exist", imgPath);
+
+            return null;
+        }
+
+        if (Files.isDirectory(imgPath)) {
+            logger.warn("{} is a directory!", imgPath);
+
+            return null;
+        }
+
         String extension = FileUtil.getExtension(imgPath);
         Loader loader;
 

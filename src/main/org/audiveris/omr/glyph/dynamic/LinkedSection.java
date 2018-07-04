@@ -487,4 +487,11 @@ public class LinkedSection
     {
         return section.touches(that);
     }
+
+    @Override
+    public void translateAbsolute (int dx,
+                                   int dy)
+    {
+        section.translateAbsolute(dx, dy);
+    }
 }

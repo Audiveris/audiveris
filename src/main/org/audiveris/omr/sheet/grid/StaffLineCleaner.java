@@ -39,7 +39,7 @@ import java.util.List;
  * Class {@code StaffLineCleaner} handles the "removal" of staff line pixels.
  * <ol>
  * <li>It removes from global {@link Lags#HLAG} lag the (horizontal) sections used by staff lines.
- * <li>It dispatches vertical & remaining horizontal sections into their containing system(s).
+ * <li>It dispatches vertical and remaining horizontal sections into their containing system(s).
  * </ol>
  *
  * @author Hervé Bitteur

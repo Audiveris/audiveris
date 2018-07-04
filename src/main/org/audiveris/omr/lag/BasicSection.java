@@ -24,10 +24,12 @@ package org.audiveris.omr.lag;
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.math.Barycenter;
+import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Line;
 import org.audiveris.omr.math.PointsCollector;
 import org.audiveris.omr.run.Orientation;
+import static org.audiveris.omr.run.Orientation.*;
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.util.UIUtil;
@@ -198,7 +200,7 @@ public class BasicSection
                 double coord = run.getStart() + (run.getLength() / 2d);
                 pos++;
 
-                if (orientation == Orientation.HORIZONTAL) {
+                if (orientation == HORIZONTAL) {
                     barycenter.include(run.getLength(), coord, pos);
                 } else {
                     barycenter.include(run.getLength(), pos, coord);
@@ -227,7 +229,7 @@ public class BasicSection
                 final int roiStop = Math.min(run.getStop(), coordMax);
 
                 for (int coord = roiStart; coord <= roiStop; coord++) {
-                    if (orientation == Orientation.HORIZONTAL) {
+                    if (orientation == HORIZONTAL) {
                         barycenter.include(coord, pos);
                     } else {
                         barycenter.include(pos, coord);
@@ -252,7 +254,7 @@ public class BasicSection
                 final int start = run.getStart();
 
                 for (int ic = run.getLength() - 1; ic >= 0; ic--) {
-                    if (orientation == Orientation.HORIZONTAL) {
+                    if (orientation == HORIZONTAL) {
                         collector.include(start + ic, p);
                     } else {
                         collector.include(p, start + ic);
@@ -287,7 +289,7 @@ public class BasicSection
 
                 if (length > 0) {
                     for (int c = roiStart; c <= roiStop; c++) {
-                        if (orientation == Orientation.HORIZONTAL) {
+                        if (orientation == HORIZONTAL) {
                             collector.include(c, p);
                         } else {
                             collector.include(p, c);
@@ -566,7 +568,7 @@ public class BasicSection
     @Override
     public int getLength (Orientation orientation)
     {
-        if (orientation == Orientation.HORIZONTAL) {
+        if (orientation == HORIZONTAL) {
             return getBounds().width;
         } else {
             return getBounds().height;
@@ -720,7 +722,7 @@ public class BasicSection
     @Override
     public int getThickness (Orientation orientation)
     {
-        if (orientation == Orientation.HORIZONTAL) {
+        if (orientation == HORIZONTAL) {
             return getBounds().height;
         } else {
             return getBounds().width;
@@ -768,7 +770,7 @@ public class BasicSection
 
         for (Run run : runs) {
             final int start = run.getStart();
-            final Rectangle runBox = (orientation == Orientation.HORIZONTAL)
+            final Rectangle runBox = (orientation == HORIZONTAL)
                     ? new Rectangle(start, pos, run.getLength(), 1)
                     : new Rectangle(pos, start, 1, run.getLength());
 
@@ -797,7 +799,7 @@ public class BasicSection
     @Override
     public boolean isVertical ()
     {
-        return orientation == Orientation.VERTICAL;
+        return orientation == VERTICAL;
     }
 
     //--------//
@@ -910,7 +912,7 @@ public class BasicSection
 
         for (Run run : runs) {
             final int start = run.getStart();
-            final Rectangle r1 = (orientation == Orientation.HORIZONTAL)
+            final Rectangle r1 = (orientation == HORIZONTAL)
                     ? new Rectangle(start, pos, run.getLength(), 1)
                     : new Rectangle(pos, start, 1, run.getLength());
 
@@ -921,7 +923,7 @@ public class BasicSection
                 for (Run thatRun : that.getRuns()) {
                     final int thatStart = thatRun.getStart();
                     final int thatLength = thatRun.getLength();
-                    final Rectangle r2 = (that.getOrientation() == Orientation.HORIZONTAL)
+                    final Rectangle r2 = (that.getOrientation() == HORIZONTAL)
                             ? new Rectangle(thatStart, thatPos, thatLength, 1)
                             : new Rectangle(thatPos, thatStart, 1, thatLength);
 
@@ -937,6 +939,58 @@ public class BasicSection
         }
 
         return false;
+    }
+
+    //-------------------//
+    // translateAbsolute //
+    //-------------------//
+    @Override
+    public void translateAbsolute (int dx,
+                                   int dy)
+    {
+        final int dp = (orientation == HORIZONTAL) ? dy : dx;
+        final int dc = (orientation == HORIZONTAL) ? dx : dy;
+
+        firstPos += dp;
+
+        for (Run run : runs) {
+            run.translate(dc);
+        }
+
+        if (centroid != null) {
+            centroid.translate(dx, dy);
+        }
+
+        if (polygon != null) {
+            polygon.translate(dx, dy);
+        }
+
+        if (orientedLine != null) {
+            orientedLine = computeOrientedLine();
+        }
+    }
+
+    //---------------------//
+    // computeOrientedLine //
+    //---------------------//
+    protected Line computeOrientedLine ()
+    {
+        // Compute the section line
+        Line oLine = new BasicLine();
+
+        int y = getFirstPos();
+
+        for (Run run : runs) {
+            int stop = run.getStop();
+
+            for (int x = run.getStart(); x <= stop; x++) {
+                oLine.includePoint(x, y);
+            }
+
+            y++;
+        }
+
+        return oLine;
     }
 
     //-----------//

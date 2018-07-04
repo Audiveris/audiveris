@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextWord;
@@ -52,7 +54,7 @@ public class WordInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Word text content. */
     @XmlAttribute
-    protected final String value;
+    protected String value;
 
     /** Detected font attributes. */
     @XmlAttribute(name = "font")
@@ -61,24 +63,49 @@ public class WordInter
 
     /** Precise word starting point. */
     @XmlElement
-    protected final Point location;
+    protected Point location;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new {@code WordInter} object.
+     * Creates a new {@code WordInter} object, with TEXT shape.
      *
      * @param textWord the OCR'ed text word
      */
     public WordInter (TextWord textWord)
     {
+        this(textWord, Shape.TEXT);
+    }
+
+    /**
+     * Creates a new {@code WordInter} object, with provided shape.
+     *
+     * @param textWord the OCR'ed text word
+     * @param shape    specific shape (TEXT or LYRICS)
+     */
+    public WordInter (TextWord textWord,
+                      Shape shape)
+    {
         super(
                 textWord.getGlyph(),
                 textWord.getBounds(),
-                Shape.TEXT,
-                textWord.getConfidence() * Inter.intrinsicRatio);
+                shape,
+                textWord.getConfidence() * Grades.intrinsicRatio);
         value = textWord.getValue();
         fontInfo = textWord.getFontInfo();
         location = textWord.getLocation();
+    }
+
+    /**
+     * Creates a new {@code WordInter} object meant for manual assignment.
+     *
+     * @param grade inter grade
+     */
+    public WordInter (double grade)
+    {
+        super(null, null, Shape.TEXT, grade);
+
+        this.value = "";
+        this.fontInfo = null;
     }
 
     /**
@@ -87,9 +114,8 @@ public class WordInter
     protected WordInter ()
     {
         super(null, null, null, null);
-        this.value = null;
+
         this.fontInfo = null;
-        this.location = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -100,20 +126,6 @@ public class WordInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //-------------//
-    // getEnsemble //
-    //-------------//
-    /**
-     * Report the sentence that contains this word.
-     *
-     * @return the containing sentence
-     */
-    @Override
-    public SentenceInter getEnsemble ()
-    {
-        return (SentenceInter) ensemble;
     }
 
     //-------------//
@@ -151,12 +163,29 @@ public class WordInter
         return value;
     }
 
-    //-------------//
-    // setEnsemble //
-    //-------------//
-    public void setEnsemble (SentenceInter sentence)
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
     {
-        this.ensemble = sentence;
+        super.setGlyph(glyph);
+
+        // Location?
+        // FontInfo?
+    }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Assign a new text value.
+     *
+     * @param value the new value
+     */
+    public void setValue (String value)
+    {
+        this.value = value;
     }
 
     //-------------//
@@ -165,7 +194,7 @@ public class WordInter
     @Override
     public String shapeString ()
     {
-        return "WORD_\"" + value + "\"";
+        return "WORD";
     }
 
     //-----------//

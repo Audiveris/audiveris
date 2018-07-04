@@ -103,9 +103,9 @@ public class GlyphsModel
 //        sheet.getStub().setModified(true);
 //
 //        // Edges? this depends on ghost class...
-//        Collection<Partnership> partnerships = ghost.searchPartnerships(system, true);
+//        Collection<Link> links = ghost.searchLinks(system, true);
 //
-//        if (partnerships.isEmpty()) {
+//        if (links.isEmpty()) {
 //            logger.info("No partners for {}", ghost);
 //        }
 //

@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import org.audiveris.omr.image.Mask;
 import static org.junit.Assert.*;
 import org.junit.Test;
 

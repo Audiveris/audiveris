@@ -24,6 +24,8 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 
+import org.jgrapht.event.GraphEdgeChangeEvent;
+
 /**
  * Interface {@code Relation} describes a relation between two Interpretation instances.
  *
@@ -32,6 +34,13 @@ import org.audiveris.omr.sig.inter.Inter;
 public interface Relation
 {
     //~ Methods ------------------------------------------------------------------------------------
+
+    /**
+     * Notifies that this relation has been added to the sig.
+     *
+     * @param e the relation event.
+     */
+    void added (GraphEdgeChangeEvent<Inter, Relation> e);
 
     /**
      * Clone a relation.
@@ -55,12 +64,47 @@ public interface Relation
     String getName ();
 
     /**
+     * Report whether this relation has been set manually.
+     *
+     * @return true if manual
+     */
+    boolean isManual ();
+
+    /**
+     * Tell if, seen from a given target, there can be at most one source.
+     *
+     * @return true if source number is limited to 1, false by default
+     */
+    boolean isSingleSource ();
+
+    /**
+     * Tell if, seen from a given source, there can be at most one target.
+     *
+     * @return true if target number is limited to 1, false by default
+     */
+    boolean isSingleTarget ();
+
+    /**
+     * Notifies that this relation has been removed from the sig.
+     *
+     * @param e the relation event.
+     */
+    void removed (GraphEdgeChangeEvent<Inter, Relation> e);
+
+    /**
      * Relation description when seen from one of its involved inters
      *
      * @param inter the interpretation point of view
      * @return the inter-based description
      */
     String seenFrom (Inter inter);
+
+    /**
+     * Set this relation as a manual one.
+     *
+     * @param manual new value
+     */
+    void setManual (boolean manual);
 
     /**
      * Report a long description of the relation

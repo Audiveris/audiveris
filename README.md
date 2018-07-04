@@ -27,7 +27,6 @@ the command line:
   **Please ensure you're running a 64-bit JVM. Audiveris doesn't support a 32-bit
   JVM because deeplearning4j is 64-bit only.**
 + [Git](https://git-scm.com) version control system.
-+ [Gradle command line tool](https://gradle.org) for building Audiveris from source
 
 Besides the above mentioned tools you'll need to have Tesseract language files for
 [Tesseract OCR][2] to work properly. Please keep in mind that Tesseract is mandatory
@@ -56,15 +55,19 @@ Once in this "audiveris" project directory, you can:
 
 * Build the software via the command:
 
-    `gradle build`
+    `./gradlew build` (Linux & Mac)
+
+    `gradlew.bat build` (Windows)
 
 * Run the software, as GUI tool, via the command:
 
-    `gradle run`
+    `./gradlew run` (Linux & Mac)
+
+    `gradlew.bat run` (Windows)
 
 ## Further Information
 
-Users and Developers are encouraged to read our [wiki][5].
+Users and Developers are encouraged to read our [Wiki][5].
 
 [1]: http://www.oracle.com/technetwork/java/javase/downloads/index.html
 [2]: https://github.com/tesseract-ocr/tesseract

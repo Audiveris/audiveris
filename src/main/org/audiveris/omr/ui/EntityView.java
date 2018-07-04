@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.ui;
 
-import org.audiveris.omr.score.ui.PaintingParameters;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.LocationEvent;
@@ -79,7 +78,6 @@ public class EntityView<E extends Entity>
         // (Weakly) listening on ViewParameters and PaintingParameters
         PropertyChangeListener listener = new WeakPropertyChangeListener(this);
         ViewParameters.getInstance().addPropertyChangeListener(listener);
-        PaintingParameters.getInstance().addPropertyChangeListener(listener);
 
         // Subscribe to entity
         entityService.subscribeStrongly(EntityListEvent.class, this);
@@ -101,7 +99,7 @@ public class EntityView<E extends Entity>
             super.onEvent(event); // Default view behavior (locationEvent -> focus)
 
             if (event instanceof EntityListEvent) {
-                handleEvent((EntityListEvent<E>) event);
+                handleEntityListEvent((EntityListEvent<E>) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -117,18 +115,23 @@ public class EntityView<E extends Entity>
         repaint(); // For any property change, we simply repaint the view
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
-    private void handleEvent (EntityListEvent<E> event)
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
+    /**
+     * Interest in EntityList
+     *
+     * @param listEVent list of entities
+     */
+    protected void handleEntityListEvent (EntityListEvent<E> listEVent)
     {
-        if (event.hint == ENTITY_INIT) {
-            List<E> list = event.getData();
+        if (listEVent.hint == ENTITY_INIT) {
+            List<E> list = listEVent.getData();
 
-            if ((list != null) && !list.isEmpty()) {
+            if (!list.isEmpty()) {
                 // Display entities contour
                 locationService.publish(
-                        new LocationEvent(this, event.hint, null, Entities.getBounds(list)));
+                        new LocationEvent(this, listEVent.hint, null, Entities.getBounds(list)));
             }
         }
     }

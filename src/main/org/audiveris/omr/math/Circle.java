@@ -87,44 +87,9 @@ public class Circle
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Clone a circle
+     * Creates a new instance of Circle, defined by a sequence of points.
      *
-     * @param that the original circle
-     */
-    public Circle (Circle that)
-    {
-        if (that.center != null) {
-            center = new Point2D.Double(that.center.getX(), that.center.getY());
-        }
-
-        radius = that.radius;
-        distance = that.distance;
-        firstAngle = that.firstAngle;
-        lastAngle = that.lastAngle;
-        ccw = that.ccw;
-        above = that.above;
-        curve = that.curve;
-    }
-
-    /**
-     * Creates a new instance of Circle, defined by a set of points.
-     *
-     * @param xx array of abscissae
-     * @param yy array of ordinates
-     */
-    @Deprecated
-    public Circle (double[] xx,
-                   double[] yy)
-    {
-        fit(xx, yy);
-        computeAngles(xx, yy);
-        distance = computeDistance(xx, yy);
-    }
-
-    /**
-     * Creates a new instance of Circle, defined by a set of points.
-     *
-     * @param points the collection of points
+     * @param points the sequence of points
      */
     public Circle (List<? extends Point2D> points)
     {
@@ -149,28 +114,9 @@ public class Circle
 
     /**
      * Creates a new instance of Circle, fitted to 3 defining points.
-     * The provided collection of coordinates is used only to compute the resulting distance.
-     *
-     * @param left   left defining point
-     * @param middle middle defining point
-     * @param right  right defining point
-     * @param xx     array of abscissae (including the defining points)
-     * @param yy     array of ordinates (including the defining points)
-     */
-    @Deprecated
-    public Circle (Point2D left,
-                   Point2D middle,
-                   Point2D right,
-                   double[] xx,
-                   double[] yy)
-    {
-        defineCircle(left, middle, right);
-        computeAngles(xx, yy);
-        distance = computeDistance(xx, yy);
-    }
-
-    /**
-     * Creates a new instance of Circle, fitted to 3 defining points.
+     * <p>
+     * This method, limited to 3 defining points, is much more efficient than the general
+     * {@link #Circle(java.util.List)} method.
      *
      * @param first  first defining point
      * @param middle middle defining point
@@ -226,6 +172,8 @@ public class Circle
     /**
      * Report the angle at desired end of the circle arc.
      *
+     * @param reverse if True return the starting angle of circle arc,
+     *                otherwise, return its stopping angle
      * @return the angle, in radians within -PI..PI
      */
     public Double getAngle (boolean reverse)
@@ -548,8 +496,9 @@ public class Circle
     // computeCurve //
     //--------------//
     /**
-     * Compute the bézier points for the circle arc.
-     * The Bézier curves always goes from left to right.
+     * Compute the bezier points for the circle arc.
+     * <p>
+     * The Bézier curve is defined as always going from left to right.
      */
     private void computeCurve ()
     {

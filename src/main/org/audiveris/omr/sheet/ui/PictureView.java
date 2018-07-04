@@ -23,12 +23,14 @@ package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
-import org.audiveris.omr.score.ui.PaintingParameters;
 import org.audiveris.omr.score.ui.SheetPopupMenu;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Colors;
+import org.audiveris.omr.ui.ViewParameters;
+import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
+import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.view.RubberPanel;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.WeakPropertyChangeListener;
@@ -40,6 +42,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_OFF;
 import java.awt.image.BufferedImage;
@@ -87,9 +90,9 @@ public class PictureView
         // Inject dependency of pixel location
         view.setLocationService(sheet.getLocationService());
 
-        // Listen to all painting parameters
-        PaintingParameters.getInstance()
-                .addPropertyChangeListener(new WeakPropertyChangeListener(this));
+        // Listen to all view parameters
+        ViewParameters.getInstance().addPropertyChangeListener(
+                new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);
@@ -125,9 +128,12 @@ public class PictureView
                                      MouseMovement movement)
         {
             if (movement == MouseMovement.RELEASING) {
-                if (pageMenu.updateMenu(getRubberRectangle())) {
+                SelectionService locService = sheet.getLocationService();
+                Rectangle rect = (Rectangle) locService.getSelection(LocationEvent.class);
+
+                if (pageMenu.updateMenu(rect)) {
                     JPopupMenu popup = pageMenu.getPopup();
-                    popup.show(this, getZoom().scaled(pt.x) + 20, getZoom().scaled(pt.y) + 30);
+                    popup.show(this, getZoom().scaled(pt.x), getZoom().scaled(pt.y));
                 }
             }
         }
@@ -140,10 +146,10 @@ public class PictureView
         {
             // Check we have all needed data
             // If not, use SwingWorker to spawn a task to retrieve the data and then do the painting
-            final PaintingParameters painting = PaintingParameters.getInstance();
-            final boolean input = painting.isInputPainting();
-            final boolean output = painting.isOutputPainting();
-            final boolean voice = painting.isVoicePainting();
+            final ViewParameters viewParams = ViewParameters.getInstance();
+            final boolean input = viewParams.isInputPainting();
+            final boolean output = viewParams.isOutputPainting();
+            final boolean voice = viewParams.isVoicePainting();
 
             boolean ok = true;
 

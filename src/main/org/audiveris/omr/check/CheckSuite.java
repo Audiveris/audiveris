@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.check;
 
-import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.glyph.Grades;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,7 +86,7 @@ public class CheckSuite<C>
      */
     public CheckSuite (String name)
     {
-        this(name, Inter.minGrade, Inter.goodGrade);
+        this(name, Grades.minInterGrade, Grades.goodInterGrade);
     }
 
     //------------//
@@ -320,7 +320,7 @@ public class CheckSuite<C>
         }
 
         // Final grade
-        grade = Math.pow(grade, 1 / totalWeight) * Inter.intrinsicRatio;
+        grade = Math.pow(grade, 1 / totalWeight) * Grades.intrinsicRatio;
 
         if (impacts != null) {
             impacts.setGrade(grade);

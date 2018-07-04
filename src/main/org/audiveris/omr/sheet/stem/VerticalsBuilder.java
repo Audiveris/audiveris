@@ -32,18 +32,21 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.NearLine;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.dynamic.StickFactory;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
+
 import static org.audiveris.omr.run.Orientation.*;
+
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.SystemManager;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.step.StepException;
@@ -155,7 +158,7 @@ public class VerticalsBuilder
     /**
      * Build the verticals seeds out of the dedicated system.
      *
-     * @throws org.audiveris.omr.step.StepException
+     * @throws StepException if processing failed at this step
      */
     public void buildVerticals ()
             throws StepException
@@ -235,7 +238,7 @@ public class VerticalsBuilder
             Point center = stick.getCenter();
             Staff staff = system.getClosestStaff(center);
 
-            if (staff == null || center.x < staff.getHeaderStop()) {
+            if ((staff == null) || (center.x < staff.getHeaderStop())) {
                 continue;
             }
 
@@ -245,7 +248,7 @@ public class VerticalsBuilder
             ///logger.debug("suite=> {} for {}", res, stick);
             if (res >= suite.getMinThreshold()) {
                 final Glyph glyph = glyphIndex.registerOriginal(stick.toGlyph(null));
-                glyph.addGroup(Group.VERTICAL_SEED); // Needed
+                glyph.addGroup(GlyphGroup.VERTICAL_SEED); // Needed
                 system.addFreeGlyph(glyph);
                 seedNb++;
             }
@@ -554,6 +557,11 @@ public class VerticalsBuilder
         private final Scale.Fraction straightHigh = new Scale.Fraction(
                 0.2,
                 "High maximum distance to average stem line");
+
+        private final Constant.Double maxCoTangentForCheck = new Constant.Double(
+                "cotangent",
+                0.1,
+                "Maximum cotangent for visual check");
     }
 
     //----------//
@@ -764,27 +772,28 @@ public class VerticalsBuilder
                     return;
                 }
 
-                //                if (event instanceof EntityListEvent) {
-                //                    EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
-                //                    final Glyph glyph = listEvent.getEntity();
-                //
-                //                    if (glyph != null) {
-                //                        // Make sure this is a rather vertical stick
-                //                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
-                //                            // Apply the check suite
-                //                            SystemManager systemManager = sheet.getSystemManager();
-                //
-                //                            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                //                                applySuite(new VerticalsBuilder(system).getSuite(),
-                //                                        new StickContext(glyph));
-                //
-                //                                return;
-                //                            }
-                //                        }
-                //                    }
-                //
-                //                    tellObject(null);
-                //                }
+                if (event instanceof EntityListEvent) {
+                    EntityListEvent<Glyph> listEvent = (EntityListEvent<Glyph>) event;
+                    final Glyph glyph = listEvent.getEntity();
+
+                    if (glyph != null) {
+                        // Make sure this is a rather vertical stick
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                            // Apply the check suite
+                            SystemManager systemManager = sheet.getSystemManager();
+
+                            for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                                applySuite(
+                                        new VerticalsBuilder(system).getSuite(),
+                                        new StickContext(glyph));
+
+                                return;
+                            }
+                        }
+                    }
+
+                    tellObject(null);
+                }
             } catch (Exception ex) {
                 logger.warn(getClass().getName() + " onEvent error", ex);
             }

@@ -33,7 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code IntegerFunction} represents a function y = f(x), where x & y are
+ * Class {@code IntegerFunction} represents a function y = f(x), where x &amp; y are
  * integers.
  * <p>
  * For any x value between xMin and xMax, y is defined as value(x).
@@ -174,7 +174,7 @@ public class IntegerFunction
     /**
      * Report the XY series for function derivatives between x1 and x2.
      *
-     * @param x1 lower value for x (x1 must be > xMin)
+     * @param x1 lower value for x (x1 must be &gt; xMin)
      * @param x2 upper value for x
      * @return the XY derivatives ready to plot
      */

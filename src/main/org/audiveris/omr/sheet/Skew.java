@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
+import java.util.Objects;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -110,6 +111,8 @@ public class Skew
      */
     public Point2D deskewed (Point2D point)
     {
+        Objects.requireNonNull(point, "Null point argument");
+
         return at.transform(point, null);
     }
 

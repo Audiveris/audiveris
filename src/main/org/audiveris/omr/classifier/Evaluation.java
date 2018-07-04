@@ -152,7 +152,7 @@ public class Evaluation
         //~ Constructors ---------------------------------------------------------------------------
 
         /**
-         * Specific constructor, where unit & name are assigned later.
+         * Specific constructor, where unit &amp; name are assigned later.
          *
          * @param defaultValue the (double) default value
          * @param description  the semantic of the constant

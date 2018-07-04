@@ -24,18 +24,25 @@ package org.audiveris.omr.sig.inter;
 import java.util.List;
 
 /**
- * Interface {@code InterEnsemble} refers to an inter that is composed of other inters.
- * This class is not mutable.
+ * Interface {@code InterEnsemble} refers to an inter that is composed of other inters,
+ * with the ability to add or remove members.
  * <p>
  * Examples are:<ul>
- * <li>Sentence vs words</li>
- * <li>TimePairInter vs num & den</li>
+ * <li>Sentence vs words (and LyricLine vs LyricItems)</li>
+ * <li>TimePairInter vs num and den</li>
  * <li>KeyInter vs its alterations</li>
- * <li>ChordInter vs its notes and stem</li>
+ * <li>ChordInter vs its notes</li>
  * <li>FermataInter vs its arc and dot</li>
  * </ul>
- *
- * @see InterMutableEnsemble
+ * <p>
+ * Such ensembles cannot durably exist and be fully defined without their members: for example, a
+ * {@link SentenceInter} instance cannot exist without at least one member {@link WordInter}
+ * instance.
+ * <p>
+ * Hence, care must be taken to avoid such "empty ensembles":<ul>
+ * <li>Sentence creation must be followed by inclusion of a word.
+ * <li>Deletion of sole word of a sentence must be followed by sentence deletion.
+ * </ul>
  *
  * @author Hervé Bitteur
  */
@@ -45,9 +52,39 @@ public interface InterEnsemble
     //~ Methods ------------------------------------------------------------------------------------
 
     /**
-     * Report the list of ensemble members.
+     * Add a member to the ensemble.
+     * <p>
+     * Both the ensemble and the member instances must already exist in the SIG.
+     * <p>
+     * Setting this containment relationship will, via the SIG listener, trigger
+     * {@link #invalidateCache()} in the ensemble.
+     *
+     * @param member the member to add
+     */
+    void addMember (Inter member);
+
+    /**
+     * Report the list of members of the ensemble.
+     * <p>
+     * The ensemble instance (and its members if any) must already exist in the SIG.
      *
      * @return the members
      */
-    List<? extends Inter> getMembers ();
+    List<Inter> getMembers ();
+
+    /**
+     * Remove a member from the ensemble.
+     * <p>
+     * This does not delete the member instance, but simply deletes the containment relationship
+     * between the ensemble instance and the member instance.
+     * <p>
+     * On the opposite, directly deleting a (member) instance, automatically triggers the removal of
+     * this member from any containing ensemble.
+     * <p>
+     * Deleting this containment relationship will, via the SIG listener, trigger
+     * {@link #invalidateCache()} in the ensemble.
+     *
+     * @param member the member to remove
+     */
+    void removeMember (Inter member);
 }

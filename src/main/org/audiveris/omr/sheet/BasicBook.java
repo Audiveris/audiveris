@@ -23,14 +23,18 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.ProgramId;
+import org.audiveris.omr.WellKnowns;
+import static org.audiveris.omr.classifier.Annotations.BOOK_ANNOTATIONS_SUFFIX;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.FilterDescriptor;
+import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.image.ImageLoading;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.OpusExporter;
+import org.audiveris.omr.score.Page;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.score.Score;
 import org.audiveris.omr.score.ScoreExporter;
@@ -49,9 +53,10 @@ import org.audiveris.omr.util.FileUtil;
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Memory;
 import org.audiveris.omr.util.OmrExecutors;
-import org.audiveris.omr.util.Param;
 import org.audiveris.omr.util.StopWatch;
 import org.audiveris.omr.util.ZipFileSystem;
+import org.audiveris.omr.util.param.Param;
+import org.audiveris.omr.util.param.StringParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +88,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -90,6 +96,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code BasicBook} is a basic implementation of Book interface.
@@ -140,6 +147,26 @@ public class BasicBook
     @XmlAttribute(name = "offset")
     private Integer offset;
 
+    /** Indicate if the book scores must be updated. */
+    @XmlAttribute(name = "dirty")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean dirty = false;
+
+    /** Handling of binarization filter parameter. */
+    @XmlElement(name = "binarization")
+    @XmlJavaTypeAdapter(FilterParam.Adapter.class)
+    private FilterParam binarizationFilter;
+
+    /** Handling of dominant language(s) for this book. */
+    @XmlElement(name = "ocr-languages")
+    @XmlJavaTypeAdapter(StringParam.Adapter.class)
+    private StringParam ocrLanguages;
+
+    /** Handling of processing switches for this book. */
+    @XmlElement(name = "processing")
+    @XmlJavaTypeAdapter(ProcessingSwitches.Adapter.class)
+    private ProcessingSwitches switches;
+
     /** Sequence of all sheets stubs got from image file. */
     @XmlElement(name = "sheet")
     private final List<SheetStub> stubs = new ArrayList<SheetStub>();
@@ -166,13 +193,6 @@ public class BasicBook
     /** File path (without extension) where the MusicXML output is stored. */
     private Path exportPathSansExt;
 
-    /** Handling of binarization filter parameter. */
-    private final Param<FilterDescriptor> filterParam = new Param<FilterDescriptor>(
-            FilterDescriptor.defaultFilter);
-
-    /** Handling of dominant language(s) parameter. */
-    private final Param<String> languageParam = new Param<String>(Language.defaultSpecification);
-
     /** Browser on this book. */
     private BookBrowser bookBrowser;
 
@@ -181,9 +201,6 @@ public class BasicBook
 
     /** Set if the book itself has been modified. */
     private boolean modified = false;
-
-    /** Indicate if the book scores must be updated. */
-    private boolean dirty = false;
 
     /** Book-level sample repository. */
     private SampleRepository repository;
@@ -231,6 +248,52 @@ public class BasicBook
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // annotate //
+    //----------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Generate a whole zip file, in which each valid sheet is represented by a pair
+     * composed of sheet image (.png) and sheet annotations (.xml).
+     */
+    @Override
+    public void annotate ()
+    {
+        Path root = null;
+
+        try {
+            final Path bookFolder = BookManager.getDefaultBookFolder(this);
+            final Path path = bookFolder.resolve(getRadix() + BOOK_ANNOTATIONS_SUFFIX);
+            root = ZipFileSystem.create(path);
+
+            for (SheetStub stub : getValidStubs()) {
+                try {
+                    LogUtil.start(stub);
+
+                    final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
+                    final Sheet sheet = stub.getSheet();
+                    sheet.annotate(sheetFolder);
+                } catch (Exception ex) {
+                    logger.warn("Error annotating {} {}", stub, ex.toString(), ex);
+                } finally {
+                    LogUtil.stopStub();
+                }
+            }
+
+            logger.info("Book annotated as {}", path);
+        } catch (Exception ex) {
+            logger.warn("Error annotating book {} {}", this, ex.toString(), ex);
+        } finally {
+            if (root != null) {
+                try {
+                    root.getFileSystem().close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+
     //-------//
     // close //
     //-------//
@@ -341,7 +404,7 @@ public class BasicBook
         BasicBook book = null;
 
         try {
-            logger.info("Loading book {} ...", bookPath);
+            logger.info("Loading book {}", bookPath);
             watch.start("book");
 
             // Open book file
@@ -355,9 +418,17 @@ public class BasicBook
             book = (BasicBook) um.unmarshal(is);
             book.getLock().lock();
             LogUtil.start(book);
-            book.initTransients(null, bookPath);
-            is.close();
+
+            boolean ok = book.initTransients(null, bookPath);
+
+            is.close(); // Close input stream
             rootPath.getFileSystem().close(); // Close book file
+
+            if (!ok) {
+                logger.info("Discarded {}", bookPath);
+
+                return null;
+            }
 
             book.checkScore(); // TODO: remove ASAP
 
@@ -606,6 +677,20 @@ public class BasicBook
         return alias;
     }
 
+    //-----------------------//
+    // getBinarizationFilter //
+    //-----------------------//
+    @Override
+    public FilterParam getBinarizationFilter ()
+    {
+        if (binarizationFilter == null) {
+            binarizationFilter = new FilterParam();
+            binarizationFilter.setParent(FilterDescriptor.defaultFilter);
+        }
+
+        return binarizationFilter;
+    }
+
     //-------------//
     // getBookPath //
     //-------------//
@@ -638,15 +723,6 @@ public class BasicBook
         return exportPathSansExt;
     }
 
-    //----------------//
-    // getFilterParam //
-    //----------------//
-    @Override
-    public Param<FilterDescriptor> getFilterParam ()
-    {
-        return filterParam;
-    }
-
     //-------------------//
     // getFirstValidStub //
     //-------------------//
@@ -671,15 +747,6 @@ public class BasicBook
         return path;
     }
 
-    //------------------//
-    // getLanguageParam //
-    //------------------//
-    @Override
-    public Param<String> getLanguageParam ()
-    {
-        return languageParam;
-    }
-
     //---------//
     // getLock //
     //---------//
@@ -687,6 +754,20 @@ public class BasicBook
     public Lock getLock ()
     {
         return lock;
+    }
+
+    //-----------------//
+    // getOcrLanguages //
+    //-----------------//
+    @Override
+    public Param<String> getOcrLanguages ()
+    {
+        if (ocrLanguages == null) {
+            ocrLanguages = new StringParam();
+            ocrLanguages.setParent(Language.ocrDefaultLanguages);
+        }
+
+        return ocrLanguages;
     }
 
     //-----------//
@@ -705,6 +786,20 @@ public class BasicBook
     public Path getPrintPath ()
     {
         return printPath;
+    }
+
+    //-----------------------//
+    // getProcessingSwitches //
+    //-----------------------//
+    @Override
+    public ProcessingSwitches getProcessingSwitches ()
+    {
+        if (switches == null) {
+            switches = new ProcessingSwitches();
+            switches.setParent(ProcessingSwitches.getDefaultSwitches());
+        }
+
+        return switches;
     }
 
     //----------//
@@ -730,6 +825,28 @@ public class BasicBook
 
         // No specific repository is possible, so use global
         return SampleRepository.getGlobalInstance();
+    }
+
+    //----------//
+    // getScore //
+    //----------//
+    /**
+     * Report the score which contains the provided page.
+     *
+     * @param page provided page
+     * @return containing score (can it be null?)
+     */
+    public Score getScore (Page page)
+    {
+        for (Score score : scores) {
+            int pageIndex = score.getPageIndex(page);
+
+            if (pageIndex != -1) {
+                return score;
+            }
+        }
+
+        return null;
     }
 
     //-----------//
@@ -931,7 +1048,7 @@ public class BasicBook
      * {@link #closeFileSystem(java.nio.file.FileSystem)}
      *
      * @return the root path of the (zipped) book file system
-     * @throws java.io.IOException
+     * @throws java.io.IOException if anything goes wrong
      */
     public Path openBookFile ()
             throws IOException
@@ -1005,7 +1122,7 @@ public class BasicBook
 
                 if (isMultiSheet()
                     && constants.processAllStubsInParallel.isSet()
-                    && (OmrExecutors.defaultParallelism.getTarget() == true)) {
+                    && (OmrExecutors.defaultParallelism.getValue() == true)) {
                     // Process all stubs in parallel
                     List<Callable<Boolean>> tasks = new ArrayList<Callable<Boolean>>();
 
@@ -1107,24 +1224,8 @@ public class BasicBook
             for (Score score : scores) {
                 // (re) build the score logical parts
                 modifs += new ScoreReduction(score).reduce();
-                //
-                //            for (Page page : score.getPages()) {
-                //                //                // - Retrieve the actual duration of every measure
-                //                //                page.accept(new DurationRetriever());
-                //                //
-                //                //                // - Check all voices timing, assign forward items if needed.
-                //                //                // - Detect special measures and assign proper measure ids
-                //                //                // If needed, we can trigger a reprocessing of this page
-                //                //                page.accept(new MeasureFixer());
-                //                //
-                //                // Check whether time signatures are consistent across all pages in score
-                //                // TODO: to be implemented
-                //                //
-                //                // Connect slurs across pages
-                //                page.getFirstSystem().connectPageInitialSlurs(score);
-                //            }
 
-                // Voices connection
+                // Slurs and voices connection across pages in score
                 modifs += Voices.refineScore(score);
             }
 
@@ -1157,6 +1258,8 @@ public class BasicBook
         for (SheetStub stub : getValidStubs()) {
             stub.reset();
         }
+
+        scores.clear();
     }
 
     //---------------//
@@ -1168,6 +1271,8 @@ public class BasicBook
         for (SheetStub stub : getValidStubs()) {
             stub.resetToBinary();
         }
+
+        scores.clear();
     }
 
     //--------//
@@ -1326,21 +1431,23 @@ public class BasicBook
                 root = createBookFile(bookPath);
                 diskWritten = true;
 
-                if (modified) {
-                    storeBookInfo(root); // Book info (book.xml)
-                }
+                storeBookInfo(root); // Book info (book.xml)
 
                 // Contained sheets
                 final Path oldRoot = openBookFile(this.bookPath);
 
                 for (SheetStub stub : stubs) {
-                    final Path oldSheetPath = oldRoot.resolve(INTERNALS_RADIX + stub.getNumber());
-                    final Path sheetPath = root.resolve(INTERNALS_RADIX + stub.getNumber());
+                    final Path oldSheetFolder = oldRoot.resolve(INTERNALS_RADIX + stub.getNumber());
+                    final Path sheetFolder = root.resolve(INTERNALS_RADIX + stub.getNumber());
 
+                    // By default, copy existing sheet files
+                    if (Files.exists(oldSheetFolder)) {
+                        FileUtil.copyTree(oldSheetFolder, sheetFolder);
+                    }
+
+                    // Update modified sheet files
                     if (stub.isModified()) {
-                        stub.getSheet().store(sheetPath, oldSheetPath);
-                    } else if (Files.exists(oldSheetPath)) {
-                        FileUtil.copyTree(oldSheetPath, sheetPath);
+                        stub.getSheet().store(sheetFolder, oldSheetFolder);
                     }
                 }
 
@@ -1554,6 +1661,70 @@ public class BasicBook
         }
     }
 
+    //-----------------------//
+    // areVersionsCompatible //
+    //-----------------------//
+    /**
+     * Check whether the program version can operate on the file version.
+     * <p>
+     * All version strings are expected to be formatted like "5.0" or "5.0.1"
+     * and we don't take the 3rd number, if any, into account for compatibility checking.
+     *
+     * @param programVersion version of software
+     * @param fileVersion    version of book file
+     * @return true if OK
+     */
+    private boolean areVersionsCompatible (String programVersion,
+                                           String fileVersion)
+    {
+        try {
+            logger.debug("Book file version: {}", fileVersion);
+
+            final String[] programTokens = programVersion.split("\\.");
+
+            if (programTokens.length < 2) {
+                throw new IllegalArgumentException("Illegal Audiveris version " + programVersion);
+            }
+
+            final String[] fileTokens = fileVersion.split("\\.");
+
+            if (fileTokens.length < 2) {
+                throw new IllegalArgumentException("Illegal Book file version " + fileVersion);
+            }
+
+            for (int i = 0; i < 2; i++) {
+                if (Integer.decode(fileTokens[i]) < Integer.decode(programTokens[i])) {
+                    return false;
+                }
+            }
+
+            return true;
+        } catch (Throwable ex) {
+            logger.error("Error while checking versions " + ex, ex);
+
+            return false; // Safer
+        }
+    }
+
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        if ((binarizationFilter != null) && !binarizationFilter.isSpecific()) {
+            binarizationFilter = null;
+        }
+
+        if ((ocrLanguages != null) && !ocrLanguages.isSpecific()) {
+            ocrLanguages = null;
+        }
+
+        if ((switches != null) && switches.isEmpty()) {
+            switches = null;
+        }
+    }
+
     //------------//
     // checkAlias //
     //------------//
@@ -1661,6 +1832,20 @@ public class BasicBook
         return ZipFileSystem.open(bookPath);
     }
 
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
+        }
+
+        return jaxbContext;
+    }
+
     //--------------//
     // createScores //
     //--------------//
@@ -1705,20 +1890,6 @@ public class BasicBook
         }
 
         return list;
-    }
-
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(BasicBook.class, RunTable.class);
-        }
-
-        return jaxbContext;
     }
 
     //--------------//
@@ -1773,15 +1944,26 @@ public class BasicBook
     //----------------//
     // initTransients //
     //----------------//
-    private void initTransients (String nameSansExt,
-                                 Path bookPath)
+    /**
+     * Initialize transient data.
+     *
+     * @param nameSansExt book name without extension, if any
+     * @param bookPath    full path to book .omr file, if any
+     * @return true if OK
+     */
+    private boolean initTransients (String nameSansExt,
+                                    Path bookPath)
     {
-        if (version == null) {
-            version = ProgramId.PROGRAM_VERSION;
+        if (binarizationFilter != null) {
+            binarizationFilter.setParent(FilterDescriptor.defaultFilter);
         }
 
-        if (build == null) {
-            build = ProgramId.PROGRAM_BUILD;
+        if (ocrLanguages != null) {
+            ocrLanguages.setParent(Language.ocrDefaultLanguages);
+        }
+
+        if (switches != null) {
+            switches.setParent(ProcessingSwitches.getDefaultSwitches());
         }
 
         if (alias == null) {
@@ -1793,16 +1975,53 @@ public class BasicBook
         }
 
         if (nameSansExt != null) {
-            this.radix = nameSansExt;
+            radix = nameSansExt;
         }
 
         if (bookPath != null) {
             this.bookPath = bookPath;
 
             if (nameSansExt == null) {
-                this.radix = FileUtil.getNameSansExtension(bookPath);
+                radix = FileUtil.getNameSansExtension(bookPath);
             }
         }
+
+        if (build == null) {
+            build = WellKnowns.TOOL_BUILD;
+        }
+
+        if (version == null) {
+            version = WellKnowns.TOOL_REF;
+        } else {
+            if (constants.checkBookVersion.isSet()) {
+                // Check compatibility between file version and program version
+                if (!areVersionsCompatible(ProgramId.PROGRAM_VERSION, version)) {
+                    if (constants.resetOldBooks.isSet()) {
+                        final String msg = bookPath + " version " + version;
+                        logger.warn(msg);
+
+                        // Prompt user for resetting project sheets?
+                        if ((OMR.gui == null)
+                            || OMR.gui.displayConfirmation(
+                                        msg + "\nConfirm reset to binary?",
+                                        "Non compatible book version")) {
+                            resetToBinary();
+                            logger.info("Book {} reset to binary.", radix);
+                            version = WellKnowns.TOOL_REF;
+                            build = WellKnowns.TOOL_BUILD;
+
+                            return true;
+                        }
+                    } else {
+                        logger.info("Incompatible book version, but not reset.");
+                    }
+
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     //--------------//
@@ -1927,5 +2146,63 @@ public class BasicBook
         private final Constant.Boolean processAllStubsInParallel = new Constant.Boolean(
                 false,
                 "Should we process all stubs of a book in parallel? (beware of many stubs)");
+
+        private final Constant.Boolean checkBookVersion = new Constant.Boolean(
+                true,
+                "Should we check version of loaded book files?");
+
+        private final Constant.Boolean resetOldBooks = new Constant.Boolean(
+                true,
+                "Should we reset to binary the too old book files?");
+    }
+
+    //------------------//
+    // OcrBookLanguages //
+    //------------------//
+    private static final class OcrBookLanguages
+            extends Param<String>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public boolean setSpecific (String specific)
+        {
+            if ((specific != null) && specific.isEmpty()) {
+                specific = null;
+            }
+
+            return super.setSpecific(specific);
+        }
+
+        //~ Inner Classes --------------------------------------------------------------------------
+        /**
+         * JAXB adapter to mimic XmlValue.
+         */
+        public static class Adapter
+                extends XmlAdapter<String, OcrBookLanguages>
+        {
+            //~ Methods ----------------------------------------------------------------------------
+
+            @Override
+            public String marshal (OcrBookLanguages val)
+                    throws Exception
+            {
+                if (val == null) {
+                    return null;
+                }
+
+                return val.getSpecific();
+            }
+
+            @Override
+            public OcrBookLanguages unmarshal (String str)
+                    throws Exception
+            {
+                OcrBookLanguages ol = new OcrBookLanguages();
+                ol.setSpecific(str);
+
+                return ol;
+            }
+        }
     }
 }

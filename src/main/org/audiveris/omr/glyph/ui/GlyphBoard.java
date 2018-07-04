@@ -25,13 +25,11 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.EntityBoard;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
-import org.audiveris.omr.ui.selection.MouseMovement;
-import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
@@ -104,57 +102,6 @@ public class GlyphBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when Glyph Selection has been modified
-     *
-     * @param event of current glyph or glyph set
-     */
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        logger.debug("GlyphBoard event:{}", event);
-
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            super.onEvent(event); // count, vip, dump, id
-
-            if (event instanceof EntityListEvent) {
-                // Display additional entity parameters
-                handleEvent((EntityListEvent<Glyph>) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
-    //    //--------------//
-    //    // stateChanged //
-    //    //--------------//
-    //    /**
-    //     * CallBack triggered by a change in one of the spinners.
-    //     *
-    //     * @param e the change event, this allows to retrieve the originating spinner
-    //     */
-    //    @Override
-    //    public void stateChanged (ChangeEvent e)
-    //    {
-    //        JSpinner spinner = (JSpinner) e.getSource();
-    //
-    //        if (spinner == groupSpinner) {
-    //            //            getSelectionService().publish(
-    //            //                    new GroupEvent(this, SelectionHint.ENTITY_INIT, null, (Group) spinner.getValue()));
-    //        } else {
-    //            super.stateChanged(e);
-    //        }
-    //    }
-    //
     //---------------//
     // getFormLayout //
     //---------------//
@@ -168,7 +115,7 @@ public class GlyphBoard
     // defineLayout //
     //--------------//
     /**
-     * Define the layout for common fields of all GlyphBoard classes
+     * Define the layout for common fields of all GlyphBoard classes.
      */
     private void defineLayout ()
     {
@@ -181,26 +128,29 @@ public class GlyphBoard
         r += 2; // --------------------------------
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
     /**
-     * Interest in EntityList
+     * Interest in EntityList for Group field
      *
-     * @param EntityListEvent
+     * @param listEvent EntityListEvent
      */
-    private void handleEvent (EntityListEvent<Glyph> listEvent)
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Glyph> listEvent)
     {
+        super.handleEntityListEvent(listEvent);
+
         final Glyph entity = listEvent.getEntity();
 
         if (entity != null) {
             // Group
-            EnumSet<Group> groups = entity.getGroups();
+            EnumSet<GlyphGroup> groups = entity.getGroups();
 
             if (groups.isEmpty()) {
                 groupField.setText("");
             } else {
-                Group firstFroup = groups.iterator().next();
+                GlyphGroup firstFroup = groups.iterator().next();
                 groupField.setText(firstFroup.toString());
             }
         } else {

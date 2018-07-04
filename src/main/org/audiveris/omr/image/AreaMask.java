@@ -128,6 +128,10 @@ public class AreaMask
 
         private final ByteProcessor filter;
 
+        private final int filterWidth;
+
+        private final int filterHeight;
+
         private final Wrapper<Integer> fore;
 
         //~ Constructors ---------------------------------------------------------------------------
@@ -136,6 +140,8 @@ public class AreaMask
         {
             this.filter = filter;
             this.fore = fore;
+            filterWidth = filter.getWidth();
+            filterHeight = filter.getHeight();
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -143,7 +149,11 @@ public class AreaMask
         public void process (int x,
                              int y)
         {
-            if (filter.get(x, y) == 0) {
+            if ((x >= 0)
+                && (x < filterWidth)
+                && (y >= 0)
+                && (y < filterHeight)
+                && (filter.get(x, y) == 0)) {
                 fore.value++;
             }
         }

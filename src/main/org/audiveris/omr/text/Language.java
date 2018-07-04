@@ -24,8 +24,10 @@ package org.audiveris.omr.text;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.util.Param;
 import org.audiveris.omr.util.UriUtil;
+import org.audiveris.omr.util.param.ConstantBasedParam;
+import org.audiveris.omr.util.param.Param;
+import org.audiveris.omr.util.param.StringParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +51,9 @@ import javax.swing.AbstractListModel;
  * <p>
  * A language specification specifies a list of languages.
  * It is a string formatted as LAN[+LAN]
- *
  * <p>
- * Note: languages are implemented as a (sorted) map, since a compiled enum would not provide the
- * ability to add new items at run time.
+ * Note: Supported languages are implemented as a (sorted) map, since a compiled enum would not
+ * provide the ability to add new items at run time.
  *
  * @author Hervé Bitteur
  */
@@ -70,8 +71,9 @@ public class Language
     /** Separator in a specification. */
     public static final String SEP_CHAR = "+";
 
-    /** Default language specification (such as ENG+DEU+ITA). */
-    public static final Param<String> defaultSpecification = new Default();
+    /** Default language specification (such as deu+eng+fra). */
+    public static final Param<String> ocrDefaultLanguages = new ConstantBasedParam<String, Constant.String>(
+            constants.defaultSpecification);
 
     /** Language used when specification is empty. */
     private static final String NO_SPEC = "eng";
@@ -80,11 +82,7 @@ public class Language
     private static SupportedLanguages supportedLanguages;
 
     //~ Constructors -------------------------------------------------------------------------------
-    //
-    //----------//
-    // Language //
-    //----------//
-    /** Not meant to be instantiated */
+    /** Not meant to be instantiated. */
     private Language ()
     {
     }
@@ -107,18 +105,13 @@ public class Language
     // ListModel //
     //-----------//
     /**
-     * A JList model to support manual handling of language codes.
+     * A JList model to support manual handling of language codes).
      */
     public static class ListModel
             extends AbstractListModel<String>
     {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public ListModel ()
-        {
-        }
-
         //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public String getElementAt (int index)
         {
@@ -156,7 +149,6 @@ public class Language
         }
     }
 
-    //
     //-----------//
     // Constants //
     //-----------//
@@ -166,30 +158,62 @@ public class Language
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.String defaultSpecification = new Constant.String(
-                "fra+eng+deu",
-                "List of 3-letter codes, separated by '+'");
+                "deu+eng+fra",
+                "OCR language(s)");
     }
 
-    //---------//
-    // Default //
-    //---------//
-    private static class Default
-            extends Param<String>
+    //---------------------//
+    // OcrDefaultLanguages //
+    //---------------------//
+    private static class OcrDefaultLanguages
+            extends StringParam
     {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.String constant = constants.defaultSpecification;
+
         //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String getSourceValue ()
+        {
+            return constant.getSourceValue();
+        }
 
         @Override
         public String getSpecific ()
         {
-            return constants.defaultSpecification.getValue();
+            if (constant.isSourceValue()) {
+                return null;
+            } else {
+                return constant.getValue();
+            }
+        }
+
+        @Override
+        public String getValue ()
+        {
+            return constant.getValue();
+        }
+
+        @Override
+        public boolean isSpecific ()
+        {
+            return !constant.isSourceValue();
         }
 
         @Override
         public boolean setSpecific (String specific)
         {
-            if (!getSpecific().equals(specific)) {
-                constants.defaultSpecification.setValue(specific);
-                logger.info("Default language specification is now ''{}''", specific);
+            if (!getValue().equals(specific)) {
+                if (specific == null) {
+                    constant.resetToSource();
+                    logger.info(
+                            "Default OCR language specification is reset to \"{}\"",
+                            constant.getSourceValue());
+                } else {
+                    constant.setStringValue(specific);
+                    logger.info("Default OCR language specification is now \"{}\"", specific);
+                }
 
                 return true;
             }
@@ -242,7 +266,7 @@ public class Language
 
             // Now, keep only the supported codes
             // TODO: Protect against no OCR!
-            Set<String> supported = TextBuilder.getOcr().getLanguages();
+            Set<String> supported = OcrUtil.getOcr().getLanguages();
             codes.keySet().retainAll(supported);
 
             // Create parallel list of codes
@@ -313,10 +337,10 @@ public class Language
                 sb.append(codeOf(item));
             }
 
-            if (sb.length() > 0) {
-                return sb.toString();
+            if (sb.length() == 0) {
+                return null;
             } else {
-                return NO_SPEC;
+                return sb.toString();
             }
         }
 

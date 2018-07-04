@@ -78,7 +78,7 @@ public class HeadsSymbol
         p.layout = layout(font);
 
         Rectangle2D r = p.layout.getBounds();
-        p.dy = (int) Math.rint(font.getFontInterline());
+        p.dy = (int) Math.rint(font.getStaffInterline());
         p.rect = new Rectangle(
                 (int) Math.ceil(r.getWidth()),
                 ((count * p.dy) + (int) Math.rint(r.getHeight())) - p.dy);

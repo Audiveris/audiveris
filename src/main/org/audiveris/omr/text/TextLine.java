@@ -367,8 +367,8 @@ public class TextLine
                         smallcapsCount >= quorum, // isSmallcaps,
                         (int) Math.rint((double) sizeTotal / charCount),
                         "DummyFont");
-            } else // We have no representative data, let's use the first word
-            {
+            } else {
+                // We have no representative data, let's use the first word
                 if (getFirstWord() != null) {
                     meanFont = getFirstWord().getFontInfo();
                 } else {

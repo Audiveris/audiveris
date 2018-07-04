@@ -22,42 +22,20 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.score.PartConnection.Candidate;
-import org.audiveris.omr.score.PartConnection.Result;
+import org.audiveris.omr.score.PartConnection.ResultEntry;
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
- * Class {@code ScoreReduction} is the "reduce" part of a MapReduce job for a score,
+ * Class {@code ScoreReduction} reduces the logical parts for a score,
  * based on the merge of Audiveris Page instances.
- * <ol>
- * <li>Any Map task processes a score page and produces the related XML fragment as its output.</li>
- * <li>The Reduce task takes all the XML fragments as input and consolidates them in a global Score
- * output.</li></ol>
  * <p>
- * Typical calling of the feature is as follows:
- * <code>
- * <pre>
- *      Map&lt;Integer, String&gt; fragments = ...;
- *      ScoreReduction reduction = new ScoreReduction(fragments);
- *      String output = reduction.reduce();
- *      Map&lt;Integer, Status&gt; statuses = reduction.getStatuses();
- * </pre>
- * </code>
- * </p>
- *
  * <b>Features not yet implemented:</b> <ul>
  * <li>Connection of slurs between pages</li>
  * <li>In part-list, handling of part-group beside score-part</li>
@@ -75,12 +53,6 @@ public class ScoreReduction
     /** Related score. */
     private final Score score;
 
-    /** Pages to process. */
-    private final SortedMap<Integer, Page> pages = new TreeMap<Integer, Page>();
-
-    /** Global connection of parts. */
-    private PartConnection connection;
-
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ScoreReduction object.
@@ -90,10 +62,6 @@ public class ScoreReduction
     public ScoreReduction (Score score)
     {
         this.score = score;
-
-        for (Page page : score.getPages()) {
-            pages.put(page.getSheet().getStub().getNumber(), page);
-        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -101,124 +69,163 @@ public class ScoreReduction
     // reduce //
     //--------//
     /**
-     * Process a score by merging information from the score pages.
+     * Build the score LogicalPart instances by connecting the pages logical parts.
      *
      * @return the count of modifications done
      */
     public int reduce ()
     {
-        int modifs = 0;
-        /* Connect parts across the pages */
-        connection = PartConnection.connectScorePages(pages);
+        final List<List<Candidate>> sequences = buildSequences(score.getPages());
 
-        // Force the ids of all LogicalPart's
-        numberResults();
+        // Connect the parts across all pages of the score
+        PartConnection connection = new PartConnection(sequences);
 
-        // Create score part-list and connect to pages and systems parts
-        modifs += addPartList();
+        List<ResultEntry> resultEntries = connection.getResults();
 
-        // Debug: List all candidates per result
         if (logger.isDebugEnabled()) {
-            dumpResultMapping();
+            connection.dumpResults();
         }
 
-        return modifs;
+        // Store the list of LogicalPart instances into score
+        return storeResults(resultEntries) ? 1 : 0;
     }
 
-    //-------------//
-    // addPartList //
-    //-------------//
+    //----------------//
+    // buildSequences //
+    //----------------//
     /**
-     * Build the part-list as the sequence of Result/LogicalPart instances, and map each
-     * of them to a Part.
+     * Build the sequences of part candidates
      *
-     * @return the count of modifications done
+     * @param pages the sequence of pages
+     * @return the sequences of page LogicalPart candidates
      */
-    private int addPartList ()
+    private List<List<Candidate>> buildSequences (List<Page> pages)
     {
-        // Map (page) LogicalPart -> (score) LogicalPart data
+        // Build candidates (here a candidate is a LogicalPart, with affiliated system parts)
+        List<List<Candidate>> sequences = new ArrayList<List<Candidate>>();
+
+        for (Page page : pages) {
+            List<Candidate> candidates = new ArrayList<Candidate>();
+            List<LogicalPart> partList = page.getLogicalParts();
+
+            if (partList != null) {
+                for (LogicalPart logicalPart : partList) {
+                    Candidate candidate = new LogicalPartCandidate(
+                            logicalPart,
+                            page,
+                            page.getSystemPartsById(logicalPart.getId()));
+                    candidates.add(candidate);
+                }
+            }
+
+            sequences.add(candidates);
+        }
+
+        return sequences;
+    }
+
+    //--------------//
+    // storeResults //
+    //--------------//
+    /**
+     * Store the results as the score list of LogicalPart instances
+     *
+     * @param resultEntries results from part connection
+     * @retrun true if score part list has really been modified
+     */
+    private boolean storeResults (List<ResultEntry> resultEntries)
+    {
         List<LogicalPart> partList = new ArrayList<LogicalPart>();
 
-        for (Result result : connection.getResultMap().keySet()) {
-            LogicalPart logicalPart = (LogicalPart) result.getUnderlyingObject();
+        for (ResultEntry entry : resultEntries) {
+            LogicalPart logicalPart = entry.result;
             partList.add(logicalPart);
         }
 
-        // Need map: pagePart instance -> set of related systemPart instances
-        // (Since we only have the reverse link)
-        Map<LogicalPart, List<Part>> page2syst = new LinkedHashMap<LogicalPart, List<Part>>();
+        if (!Objects.deepEquals(score.getLogicalParts(), partList)) {
+            score.setLogicalParts(partList);
 
-        for (Page page : score.getPages()) {
-            for (SystemInfo system : page.getSystems()) {
-                for (Part systPart : system.getParts()) {
-                    LogicalPart pagePart = systPart.getLogicalPart();
-                    List<Part> cousins = page2syst.get(pagePart);
-
-                    if (cousins == null) {
-                        page2syst.put(pagePart, cousins = new ArrayList<Part>());
-                    }
-
-                    cousins.add(systPart);
-                }
-            }
+            return true;
         }
 
-        // Align each candidate to its related result (System -> Page -> Score)
-        for (Result result : connection.getResultMap().keySet()) {
-            LogicalPart logicalPart = (LogicalPart) result.getUnderlyingObject();
-            int newId = logicalPart.getId();
-
-            for (Candidate candidate : connection.getResultMap().get(result)) {
-                LogicalPart pagePart = (LogicalPart) candidate.getUnderlyingObject();
-                // Update (page) part id
-                pagePart.setId(newId);
-
-                // Update all related (system) part id
-                for (Part systPart : page2syst.get(pagePart)) {
-                    systPart.setId(newId);
-                }
-            }
-        }
-
-        if (Objects.deepEquals(score.getLogicalParts(), partList)) {
-            return 0;
-        }
-
-        score.setLogicalParts(partList);
-
-        return 1;
+        return false;
     }
 
-    //-------------------//
-    // dumpResultMapping //
-    //-------------------//
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------------//
+    // LogicalPartCandidate //
+    //----------------------//
     /**
-     * Debug: List details of all candidates per result.
+     * Wrapping class meant for a (Page) LogicalPart instance candidate.
      */
-    private void dumpResultMapping ()
+    private static class LogicalPartCandidate
+            implements Candidate
     {
-        for (Entry<Result, Set<Candidate>> entry : connection.getResultMap().entrySet()) {
-            logger.debug("Result: {}", entry.getKey());
+        //~ Instance fields ------------------------------------------------------------------------
 
-            for (Candidate candidate : entry.getValue()) {
-                logger.debug("* candidate: {}", candidate);
+        private final LogicalPart logicalPart;
+
+        private final Page page;
+
+        private final List<Part> systemParts;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public LogicalPartCandidate (LogicalPart logicalPart,
+                                     Page page,
+                                     List<Part> systemParts)
+        {
+            this.logicalPart = logicalPart;
+            this.page = page;
+            this.systemParts = systemParts;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String getAbbreviation ()
+        {
+            return logicalPart.getAbbreviation();
+        }
+
+        @Override
+        public String getName ()
+        {
+            return logicalPart.getName();
+        }
+
+        @Override
+        public int getStaffCount ()
+        {
+            return logicalPart.getStaffCount();
+        }
+
+        @Override
+        public void setId (int id)
+        {
+            logicalPart.setId(id);
+
+            for (Part part : systemParts) {
+                part.setId(id);
             }
         }
-    }
 
-    //---------------//
-    // numberResults //
-    //---------------//
-    /**
-     * Force the id of each result (logical-part) as 1, 2, ...
-     */
-    private void numberResults ()
-    {
-        int partIndex = 0;
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
 
-        for (Result result : connection.getResultMap().keySet()) {
-            LogicalPart logicalPart = (LogicalPart) result.getUnderlyingObject();
-            logicalPart.setId(++partIndex);
+            sb.append("{");
+
+            sb.append(page);
+
+            sb.append(logicalPart);
+
+            sb.append("}");
+
+            for (Part part : systemParts) {
+                sb.append("\n      ").append(part).append(" in ").append(part.getSystem());
+            }
+
+            return sb.toString();
         }
     }
 }

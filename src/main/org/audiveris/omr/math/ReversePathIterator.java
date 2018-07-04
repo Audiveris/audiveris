@@ -334,8 +334,8 @@ public class ReversePathIterator
      * Get a reverse transformed path iterator for a shape, keeping the shape's
      * winding rule.
      *
-     * @param shape shape for which a reverse transformed path iterator is
-     *              needed
+     * @param shape shape for which a reverse transformed path iterator is needed
+     * @param at the affine transform
      * @return reverse transformed path iterator
      */
     public static PathIterator getReversePathIterator (Shape shape,
@@ -350,6 +350,7 @@ public class ReversePathIterator
      *
      * @param shape    shape for which a reverse transformed flattened path
      *                 iterator is needed
+     * @param at the affine transform
      * @param flatness flatness epsilon
      * @return reverse transformed flattened path iterator
      */
@@ -394,6 +395,7 @@ public class ReversePathIterator
      *
      * @param shape       shape for which a reverse transformed path iterator is
      *                    needed
+     * @param at the affine transform
      * @param windingRule winding rule of newly created iterator
      * @return reverse transformed path iterator
      */
@@ -409,6 +411,7 @@ public class ReversePathIterator
      *
      * @param shape       shape for which a reverse transformed flattened path
      *                    iterator is needed
+     * @param at the affine transform
      * @param flatness    flatness epsilon
      * @param windingRule winding rule of newly created iterator
      * @return reverse transformed flattened path iterator

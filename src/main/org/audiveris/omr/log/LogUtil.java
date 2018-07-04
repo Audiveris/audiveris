@@ -32,6 +32,7 @@ import ch.qos.logback.core.util.StatusPrinter;
 
 import org.apache.commons.io.FileUtils;
 
+import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.util.UriUtil;
@@ -46,10 +47,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.SwingUtilities;
-import org.audiveris.omr.WellKnowns;
 
 /**
  * Class {@code LogUtil} handles logging features based on underlying LogBack binding.
@@ -71,6 +73,9 @@ public abstract class LogUtil
 
     /** File name for LogBack configuration. */
     private static final String LOGBACK_FILE_NAME = "logback.xml";
+
+    /** Initial messages before logging is fully set. */
+    private static final List<String> initialMessages = new ArrayList<String>();
 
     //~ Methods ------------------------------------------------------------------------------------
     //-------------//
@@ -105,6 +110,37 @@ public abstract class LogUtil
         root.addAppender(fileAppender);
     }
 
+    //-----------------//
+    // addFileAppender //
+    //-----------------//
+    /**
+     * Add a specific appender meant for FILE.
+     */
+    public static void addFileAppender ()
+    {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+                Logger.ROOT_LOGGER_NAME);
+        FileAppender fileAppender = new FileAppender();
+        PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
+        fileAppender.setName("FILE");
+        fileAppender.setContext(loggerContext);
+        fileAppender.setAppend(false);
+
+        String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(new Date());
+        Path logPath = WellKnowns.LOG_FOLDER.resolve(now + ".log").toAbsolutePath();
+        fileAppender.setFile(logPath.toString());
+        fileEncoder.setContext(loggerContext);
+        fileEncoder.setPattern(
+                "%date %-5level [%X{BOOK}%X{SHEET}] %25replace(%file){'\\.java$',''} %-4line | %msg%n%ex");
+        fileEncoder.start();
+        fileAppender.setEncoder(fileEncoder);
+        fileAppender.start();
+        root.addAppender(fileAppender);
+
+        initMessage("LogUtil. Logging to " + logPath);
+    }
+
     //----------------//
     // addGuiAppender //
     //----------------//
@@ -125,34 +161,23 @@ public abstract class LogUtil
         root.addAppender(guiAppender);
     }
 
-    //----------------//
-    // addFileAppender //
-    //----------------//
+    //--------------------//
+    // allInitialMessages //
+    //--------------------//
     /**
-     * Add a specific appender meant for FILE.
+     * Report messages recorded before logging was fully set.
+     *
+     * @return initial messages concatenated into one string
      */
-    public static void addFileAppender ()
+    public static String allInitialMessages ()
     {
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
-                Logger.ROOT_LOGGER_NAME);
-        FileAppender fileAppender = new FileAppender();
-        PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
-        fileAppender.setName("FILE");
-        fileAppender.setContext(loggerContext);
-        fileAppender.setAppend(false);
+        StringBuilder sb = new StringBuilder();
 
-        String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(new Date());
-        Path logPath = WellKnowns.LOG_FOLDER.resolve(now + ".log").toAbsolutePath();
-        fileAppender.setFile(logPath.toString());
-        fileEncoder.setContext(loggerContext);
-        fileEncoder.setPattern("%date %-5level [%X{BOOK}%X{SHEET}] %25replace(%file){'\\.java$',''} %-4line | %msg%n%ex");
-        fileEncoder.start();
-        fileAppender.setEncoder(fileEncoder);
-        fileAppender.start();
-        root.addAppender(fileAppender);
+        for (String str : initialMessages) {
+            sb.append(str).append("\n");
+        }
 
-        System.out.println("LogUtil. Logging to " + logPath);
+        return sb.toString();
     }
 
     //------------//
@@ -178,26 +203,26 @@ public abstract class LogUtil
 
             if (Files.exists(configPath)) {
                 // Everything seems OK, let LogBack use the config file
-                System.out.println("LogUtil. Config " + configPath);
+                initMessage("LogUtil. Configuration found " + configPath);
 
                 return;
             } else {
-                System.out.println("LogUtil. File " + configPath + " does not exist.");
+                initMessage("LogUtil. File " + configPath + " does not exist.");
             }
         } else {
-            System.out.println("LogUtil. Property " + LOGBACK_LOGGING_KEY + " not defined.");
+            initMessage("LogUtil. Property " + LOGBACK_LOGGING_KEY + " not defined, skipped.");
         }
 
         // 2/ Look for well-known location (user Audiveris config folder)
         Path configPath = CONFIG_FOLDER.resolve(LOGBACK_FILE_NAME).toAbsolutePath();
 
         if (Files.exists(configPath)) {
-            System.out.println("LogUtil. Config " + configPath);
+            initMessage("LogUtil. Configuration found " + configPath);
             System.setProperty(LOGBACK_LOGGING_KEY, configPath.toString());
 
             return;
         } else {
-            System.out.println("LogUtil. No " + configPath);
+            initMessage("LogUtil. No " + configPath + ", skipped.");
         }
 
         // 3/ Look for suitable file within 'res' folder or resource
@@ -219,19 +244,19 @@ public abstract class LogUtil
             }
 
             if (Files.exists(localPath)) {
-                System.out.println("LogUtil. Config " + configUri);
+                initMessage("LogUtil. Configuration found " + configUri);
                 System.setProperty(LOGBACK_LOGGING_KEY, localPath.toString());
 
                 return;
             } else {
-                System.out.println("LogUtil. No " + localPath);
+                initMessage("LogUtil. No " + localPath + ", skipped.");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
 
         // 4/ We need a default configuration
-        System.out.println("LogUtil. Building a minimal Logging configuration");
+        initMessage("LogUtil. Building a minimal Logging configuration");
 
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
@@ -365,5 +390,18 @@ public abstract class LogUtil
         case "OFF":
             return Level.OFF;
         }
+    }
+
+    //-------------//
+    // initMessage //
+    //-------------//
+    /**
+     * Record a message before logging is fully set.
+     *
+     * @param str the message to record
+     */
+    private static void initMessage (String str)
+    {
+        initialMessages.add(str);
     }
 }

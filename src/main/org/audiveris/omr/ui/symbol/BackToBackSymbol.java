@@ -115,7 +115,8 @@ public class BackToBackSymbol
         loc.x += p.dx;
         MusicFont.paint(g, p.thinLayout, loc, AREA_CENTER);
 
-        loc.x = location.x + p.rect.width;
+        loc.x -= p.dx;
+        loc.x += p.rect.width;
         MusicFont.paint(g, p.dotsLayout, loc, MIDDLE_RIGHT);
     }
 

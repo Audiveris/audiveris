@@ -25,9 +25,9 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import org.audiveris.omr.util.NamedDouble;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.ui.util.Panel;
+import org.audiveris.omr.util.NamedDouble;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -222,7 +222,7 @@ public class CheckPanel<C>
         }
 
         final int checkNb = suite.getChecks().size();
-        PanelBuilder b = new PanelBuilder(createLayout(checkNb), component);
+        PanelBuilder b = new PanelBuilder(createLayout(checkNb + 1), component);
 
         ///b.setDefaultDialogBorder();
         CellConstraints c = new CellConstraints();
@@ -274,7 +274,7 @@ public class CheckPanel<C>
                     sb.append("Unit=").append(unit);
                 } else {
                     // Otherwise, simply tell the data type
-                    sb.append("Type=").append(check.getHighDouble().getShortTypeName());
+                    sb.append("Type=").append(check.getHighDouble().getClass().getSimpleName());
                 }
 
                 sb.append("</html>");
@@ -344,24 +344,15 @@ public class CheckPanel<C>
         sbc.append(" right:pref").append(", ").append(COLUMN_GAP).append(", "); // High Limit
         sbc.append(" right:pref");
 
-        // Build proper row specification
-        StringBuilder sbr = new StringBuilder();
-
-        for (int n = 0; n <= checkNb; n++) {
-            if (n != 0) {
-                sbr.append(", ").append(LINE_GAP).append(", ");
-            }
-
-            sbr.append("pref");
-        }
+        sbc.append(", right:pref");
+        sbc.append(", right:pref");
 
         logger.debug("sb cols={}", sbc);
-        logger.debug("sb rows={}", sbr);
 
         // Create proper form layout
         return new FormLayout(
                 sbc.toString(), //cols
-                sbr.toString()); //rows
+                Panel.makeRows(checkNb, LINE_GAP)); //rows
     }
 
     //-------------------//

@@ -23,6 +23,7 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.Population;
@@ -36,9 +37,12 @@ import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.util.AttachmentHolder;
 import org.audiveris.omr.ui.util.BasicAttachmentHolder;
 import org.audiveris.omr.util.HorizontalSide;
@@ -75,13 +79,15 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlList;
+import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -155,6 +161,7 @@ public class Staff
     private boolean isSmall;
 
     /** Sequence of staff lines. (from top to bottom) */
+    @XmlElementWrapper(name = "lines")
     @XmlElement(name = "line")
     private final List<LineInfo> lines;
 
@@ -163,25 +170,32 @@ public class Staff
     private StaffHeader header;
 
     /** Sequence of bar lines. */
-    @XmlElement(name = "bar")
-    private List<BarlineInter> bars;
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "barlines")
+    private List<BarlineInter> barlines = new ArrayList<BarlineInter>();
 
-    /** Map of ledgers nearby. */
-    @XmlElement(name = "ledgers")
-    @XmlJavaTypeAdapter(Staff.LedgerAdapter.class)
-    private final TreeMap<Integer, List<LedgerInter>> ledgerMap = new TreeMap<Integer, List<LedgerInter>>();
+    /** Ledgers nearby, organized by position index WRT staff. Temporary for persistency */
+    @XmlElementWrapper(name = "ledgers")
+    @XmlElement(name = "ledgers-entry")
+    private List<LedgersEntry> ledgersValue;
 
     /** Notes (heads & rests) assigned to this staff. */
-    @XmlElementRef
-    private LinkedHashSet<AbstractNoteInter> notes = new LinkedHashSet<AbstractNoteInter>();
+    @XmlList
+    @XmlIDREF
+    @XmlElement(name = "notes")
+    private LinkedHashSet<AbstractNoteInter> notes;
 
     // Transient data
     //---------------
     //
+    /** Ledgers nearby, organized in a map. */
+    private final TreeMap<Integer, List<LedgerInter>> ledgerMap = new TreeMap<Integer, List<LedgerInter>>();
+
     /** To flag a dummy staff. */
     private boolean dummy;
 
-    /** Side bars, if any. */
+    /** Side barlines, if any. */
     private final Map<HorizontalSide, BarlineInter> sideBars = new EnumMap<HorizontalSide, BarlineInter>(
             HorizontalSide.class);
 
@@ -210,6 +224,10 @@ public class Staff
     /** Containing system. */
     @Navigable(false)
     private SystemInfo system;
+
+    /** Containing part. */
+    @Navigable(false)
+    private Part part;
 
     /** Potential attachments. */
     private final AttachmentHolder attachments = new BasicAttachmentHolder();
@@ -258,6 +276,56 @@ public class Staff
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------------------//
+    // getCompetingClefs //
+    //-------------------//
+    /**
+     * Report the competing clef candidates active at provided abscissa.
+     *
+     * @param x provided abscissa
+     * @return the collection of competing clefs
+     */
+    public List<ClefInter> getCompetingClefs (int x)
+    {
+        // Look for clef on left side in staff (together with its competing clefs)
+        SIGraph sig = getSystem().getSig();
+        List<Inter> staffClefs = sig.inters(this, ClefInter.class);
+        Collections.sort(staffClefs, Inters.byAbscissa);
+
+        Inter lastClef = null;
+
+        for (Inter inter : staffClefs) {
+            int xClef = inter.getBounds().x;
+
+            if (xClef < x) {
+                lastClef = inter;
+            }
+        }
+
+        if (lastClef == null) {
+            return Collections.emptyList();
+        }
+
+        // Pick up this clef together with all competing clefs
+        Set<Relation> excs = sig.getExclusions(lastClef);
+        List<ClefInter> clefs = new ArrayList<ClefInter>();
+        clefs.add((ClefInter) lastClef);
+
+        for (Relation rel : excs) {
+            Inter inter = Graphs.getOppositeVertex(sig, rel, lastClef);
+
+            if (inter instanceof ClefInter) {
+                ClefInter clef = (ClefInter) inter;
+
+                if ((clef.getStaff() == this) && !clefs.contains(clef)) {
+                    clefs.add(clef);
+                }
+            }
+        }
+
+        return clefs;
+    }
+
     //----------------------//
     // getDefiningPointSize //
     //----------------------//
@@ -287,8 +355,8 @@ public class Staff
      */
     public void addBarline (BarlineInter barline)
     {
-        bars.add(barline);
-        Collections.sort(bars, Inter.byCenterAbscissa);
+        barlines.add(barline);
+        Collections.sort(barlines, Inters.byCenterAbscissa);
         retrieveSideBars();
     }
 
@@ -320,15 +388,17 @@ public class Staff
     // addLedger //
     //-----------//
     /**
-     * Add a ledger glyph to the collection, computing line index from
-     * glyph pitch position.
+     * Add a ledger glyph to the collection, computing line index from pitch position.
      *
      * @param ledger the ledger glyph to add
      */
     public void addLedger (LedgerInter ledger)
     {
         Objects.requireNonNull(ledger, "Cannot add a null ledger");
-        addLedger(ledger, getLedgerLineIndex(pitchPositionOf(ledger.getGlyph().getCentroid())));
+
+        Glyph glyph = ledger.getGlyph();
+        Point center = (glyph != null) ? glyph.getCentroid() : ledger.getCenter();
+        addLedger(ledger, getLedgerLineIndex(pitchPositionOf(center)));
     }
 
     //---------//
@@ -341,6 +411,10 @@ public class Staff
      */
     public void addNote (AbstractNoteInter note)
     {
+        if (notes == null) {
+            notes = new LinkedHashSet<AbstractNoteInter>();
+        }
+
         notes.add(note);
     }
 
@@ -353,6 +427,20 @@ public class Staff
             // Specific interline for this staff
             Scale scale = system.getSheet().getScale();
             specificInterline = isSmall() ? scale.getSmallInterline() : scale.getInterline();
+
+            // Populate sideBars
+            retrieveSideBars();
+
+            // Populate ledgerMap from ledgersValue if any
+            ledgerMap.clear();
+
+            if (ledgersValue != null) {
+                for (LedgersEntry entry : ledgersValue) {
+                    ledgerMap.put(entry.index, entry.ledgers);
+                }
+
+                ledgersValue = null;
+            }
         } catch (Exception ex) {
             logger.warn("Error in " + getClass() + " afterReload() " + ex, ex);
         }
@@ -486,15 +574,15 @@ public class Staff
         return attachments.getAttachments();
     }
 
-    //---------//
-    // getBars //
-    //---------//
+    //-------------//
+    // getBarlines //
+    //-------------//
     /**
-     * @return the bars
+     * @return the barlines
      */
-    public List<BarlineInter> getBars ()
+    public List<BarlineInter> getBarlines ()
     {
-        return Collections.unmodifiableList(bars);
+        return Collections.unmodifiableList(barlines);
     }
 
     //-------------//
@@ -516,7 +604,7 @@ public class Staff
                 sig.computeContextualGrade(clef);
             }
 
-            Collections.sort(clefs, Inter.byReverseBestGrade);
+            Collections.sort(clefs, Inters.byReverseBestGrade);
         }
 
         return clefs.get(0);
@@ -537,7 +625,7 @@ public class Staff
     {
         final SIGraph sig = system.getSig();
 
-        for (BarlineInter bar : bars) {
+        for (BarlineInter bar : barlines) {
             // Exclude poor barline
             if (!bar.isGood()) {
                 continue;
@@ -678,54 +766,35 @@ public class Staff
         return lines.get(idx);
     }
 
-    //-------------------//
-    // getCompetingClefs //
-    //-------------------//
+    //----------------//
+    // getEndingSlope //
+    //----------------//
     /**
-     * Report the competing clef candidates active at provided abscissa.
+     * Report mean ending slope, on the provided side.
+     * We discard highest and lowest absolute slopes, and return the average
+     * values for the remaining ones.
      *
-     * @param x provided abscissa
-     * @return the collection of competing clefs
+     * @param side which side to select (left or right)
+     * @return a "mean" value
      */
-    public List<ClefInter> getCompetingClefs (int x)
+    public double getEndingSlope (HorizontalSide side)
     {
-        // Look for clef on left side in staff (together with its competing clefs)
-        SIGraph sig = getSystem().getSig();
-        List<Inter> staffClefs = sig.inters(this, ClefInter.class);
-        Collections.sort(staffClefs, Inter.byAbscissa);
+        List<Double> slopes = new ArrayList<Double>(lines.size());
 
-        Inter lastClef = null;
-
-        for (Inter inter : staffClefs) {
-            int xClef = inter.getBounds().x;
-
-            if (xClef < x) {
-                lastClef = inter;
-            }
+        for (LineInfo l : lines) {
+            StaffFilament line = (StaffFilament) l;
+            slopes.add(line.getSlopeAt(line.getEndPoint(side).getX(), Orientation.HORIZONTAL));
         }
 
-        if (lastClef == null) {
-            return Collections.emptyList();
+        Collections.sort(slopes);
+
+        double sum = 0;
+
+        for (Double slope : slopes.subList(1, slopes.size() - 1)) {
+            sum += slope;
         }
 
-        // Pick up this clef together with all competing clefs
-        Set<Relation> excs = sig.getExclusions(lastClef);
-        List<ClefInter> clefs = new ArrayList<ClefInter>();
-        clefs.add((ClefInter) lastClef);
-
-        for (Relation rel : excs) {
-            Inter inter = Graphs.getOppositeVertex(sig, rel, lastClef);
-
-            if (inter instanceof ClefInter) {
-                ClefInter clef = (ClefInter) inter;
-
-                if ((clef.getStaff() == this) && !clefs.contains(clef)) {
-                    clefs.add(clef);
-                }
-            }
-        }
-
-        return clefs;
+        return sum / (slopes.size() - 2);
     }
 
     //--------------------//
@@ -773,37 +842,6 @@ public class Staff
         }
     }
 
-    //----------------//
-    // getEndingSlope //
-    //----------------//
-    /**
-     * Report mean ending slope, on the provided side.
-     * We discard highest and lowest absolute slopes, and return the average
-     * values for the remaining ones.
-     *
-     * @param side which side to select (left or right)
-     * @return a "mean" value
-     */
-    public double getEndingSlope (HorizontalSide side)
-    {
-        List<Double> slopes = new ArrayList<Double>(lines.size());
-
-        for (LineInfo l : lines) {
-            StaffFilament line = (StaffFilament) l;
-            slopes.add(line.getSlopeAt(line.getEndPoint(side).getX(), Orientation.HORIZONTAL));
-        }
-
-        Collections.sort(slopes);
-
-        double sum = 0;
-
-        for (Double slope : slopes.subList(1, slopes.size() - 1)) {
-            sum += slope;
-        }
-
-        return sum / (slopes.size() - 2);
-    }
-
     //--------------//
     // getFirstLine //
     //--------------//
@@ -815,6 +853,19 @@ public class Staff
     public LineInfo getFirstLine ()
     {
         return lines.get(0);
+    }
+
+    //------------------//
+    // getHeadPointSize //
+    //------------------//
+    /**
+     * Report the proper point size for heads in this staff
+     *
+     * @return proper head point size
+     */
+    public int getHeadPointSize ()
+    {
+        return MusicFont.getHeadPointSize(system.getSheet().getScale(), specificInterline);
     }
 
     //-----------//
@@ -1130,7 +1181,16 @@ public class Staff
      */
     public Part getPart ()
     {
-        return system.getPartOf(this);
+        if (part == null) {
+            // This should not occur
+            for (Part p : system.getParts()) {
+                if (p.getStaves().contains(this)) {
+                    return part = p;
+                }
+            }
+        }
+
+        return part;
     }
 
     //----------------//
@@ -1159,6 +1219,39 @@ public class Staff
     public int getSpecificInterline ()
     {
         return specificInterline;
+    }
+
+    //------------------//
+    // getStaffBarlines //
+    //------------------//
+    /**
+     * @return the barlines
+     */
+    public List<StaffBarlineInter> getStaffBarlines ()
+    {
+        SIGraph sig = getSystem().getSig();
+
+        if (sig == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<StaffBarlineInter> found = null;
+
+        for (Inter inter : sig.inters(StaffBarlineInter.class)) {
+            if (inter.getStaff() == this) {
+                if (found == null) {
+                    found = new ArrayList<StaffBarlineInter>();
+                }
+
+                found.add((StaffBarlineInter) inter);
+            }
+        }
+
+        if (found == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return found;
     }
 
     //-----------//
@@ -1314,8 +1407,8 @@ public class Staff
             }
         }
 
-        // Purge bars
-        boolean res = bars.remove(barline);
+        // Purge barlines
+        boolean res = barlines.remove(barline);
 
         retrieveSideBars();
 
@@ -1370,7 +1463,17 @@ public class Staff
      */
     public boolean removeNote (AbstractNoteInter note)
     {
-        return notes.remove(note);
+        boolean result = false;
+
+        if (notes != null) {
+            result = notes.remove(note);
+
+            if (notes.isEmpty()) {
+                notes = null;
+            }
+        }
+
+        return result;
     }
 
     //--------//
@@ -1457,15 +1560,15 @@ public class Staff
         ///addAttachment("staff-area-" + id, area);
     }
 
-    //---------//
-    // setBars //
-    //---------//
+    //-------------//
+    // setBarlines //
+    //-------------//
     /**
-     * @param bars the bars to set
+     * @param barlines the barlines to set
      */
-    public void setBars (List<BarlineInter> bars)
+    public void setBarlines (List<BarlineInter> barlines)
     {
-        this.bars = bars;
+        this.barlines = barlines;
         retrieveSideBars();
     }
 
@@ -1523,6 +1626,17 @@ public class Staff
     {
         header.keyRange.setStop(keyStop);
         header.keyRange.valid = true;
+    }
+
+    //---------//
+    // setPart //
+    //---------//
+    /**
+     * @param part the part to set
+     */
+    public void setPart (Part part)
+    {
+        this.part = part;
     }
 
     //----------//
@@ -1676,19 +1790,19 @@ public class Staff
         return commonBottom > commonTop;
     }
 
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled for this object,
-     * but before this object is set to the parent object.
-     */
+    //---------------//
+    // beforeMarshal //
+    //---------------//
     @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
+    private void beforeMarshal (Marshaller m)
     {
-        if (bars != null) {
-            retrieveSideBars();
+        if (!ledgerMap.isEmpty()) {
+            // Populate ledgersValue from ledgerMap
+            ledgersValue = new ArrayList<LedgersEntry>();
+
+            for (Entry<Integer, List<LedgerInter>> entry : ledgerMap.entrySet()) {
+                ledgersValue.add(new LedgersEntry(entry.getKey(), entry.getValue()));
+            }
         }
     }
 
@@ -1696,16 +1810,16 @@ public class Staff
     // retrieveSideBars //
     //------------------//
     /**
-     * Remember bars on left and right sides, if any.
+     * Remember barlines on left and right sides, if any.
      */
     private void retrieveSideBars ()
     {
         sideBars.clear();
 
-        if (!bars.isEmpty()) {
+        if (!barlines.isEmpty()) {
             for (HorizontalSide side : HorizontalSide.values()) {
                 final int end = getAbscissa(side);
-                final BarlineInter bar = bars.get((side == LEFT) ? 0 : (bars.size() - 1));
+                final BarlineInter bar = barlines.get((side == LEFT) ? 0 : (barlines.size() - 1));
                 final Rectangle barBox = bar.getBounds();
 
                 if ((barBox.x <= end) && (end <= ((barBox.x + barBox.width) - 1))) {
@@ -1713,6 +1827,8 @@ public class Staff
                 }
             }
         }
+
+        logger.debug("Staff#{} sideBars:{}", id, sideBars);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1801,10 +1917,12 @@ public class Staff
         public static void checkStaffHolder (Inter inter,
                                              StaffManager mgr)
         {
-            Staff staff = inter.getStaff();
+            if (inter.hasStaff()) {
+                Staff staff = inter.getStaff();
 
-            if (staff instanceof StaffHolder) {
-                inter.setStaff(mgr.getStaff(staff.getId() - 1));
+                if (staff instanceof StaffHolder) {
+                    inter.setStaff(mgr.getStaff(staff.getId() - 1));
+                }
             }
         }
 
@@ -1849,64 +1967,13 @@ public class Staff
                 "Display width of a defining point");
     }
 
-    //---------------//
-    // LedgerAdapter //
-    //---------------//
-    private static class LedgerAdapter
-            extends XmlAdapter<LedgersValue, TreeMap<Integer, List<LedgerInter>>>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        @Override
-        public LedgersValue marshal (TreeMap<Integer, List<LedgerInter>> map)
-                throws Exception
-        {
-            if (map.isEmpty()) {
-                return null;
-            }
-
-            LedgersValue value = new LedgersValue();
-
-            for (Entry<Integer, List<LedgerInter>> entry : map.entrySet()) {
-                value.entries.add(
-                        new LedgersEntry(entry.getKey(), new ArrayList<LedgerInter>(entry.getValue())));
-            }
-
-            return value;
-        }
-
-        @Override
-        public TreeMap<Integer, List<LedgerInter>> unmarshal (LedgersValue value)
-                throws Exception
-        {
-            if (value == null) {
-                return null;
-            }
-
-            TreeMap<Integer, List<LedgerInter>> map = new TreeMap<Integer, List<LedgerInter>>();
-
-            for (LedgersEntry entry : value.entries) {
-                try {
-                    List<LedgerInter> ledgerSet = new ArrayList<LedgerInter>();
-
-                    // Safer
-                    if (entry.ledgers != null) {
-                        ledgerSet.addAll(entry.ledgers);
-                        map.put(entry.index, ledgerSet);
-                    }
-                } catch (Throwable ex) {
-                    logger.error("Error unmarshalling " + entry.ledgers, ex);
-                }
-            }
-
-            return map;
-        }
-    }
-
     //--------------//
     // LedgersEntry //
     //--------------//
-    @XmlRootElement(name = "ledgers-line")
+    /**
+     * This temporary structure is needed to marshall / unmarshall the ledgerMap,
+     * because of its use of IDREF's.
+     */
     private static class LedgersEntry
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -1914,10 +1981,13 @@ public class Staff
         @XmlAttribute
         private final int index;
 
-        @XmlElement(name = "ledger")
-        private final ArrayList<LedgerInter> ledgers;
+        @XmlList
+        @XmlIDREF
+        @XmlValue
+        private final List<LedgerInter> ledgers;
 
         //~ Constructors ---------------------------------------------------------------------------
+        // Needed for JAXB
         public LedgersEntry ()
         {
             this.index = 0;
@@ -1925,26 +1995,10 @@ public class Staff
         }
 
         public LedgersEntry (int index,
-                             ArrayList<LedgerInter> ledgers)
+                             List<LedgerInter> ledgers)
         {
             this.index = index;
             this.ledgers = ledgers;
-        }
-    }
-
-    //--------------//
-    // LedgersValue //
-    //--------------//
-    private static class LedgersValue
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlElement(name = "ledgers-entry")
-        ArrayList<LedgersEntry> entries = new ArrayList<LedgersEntry>();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public LedgersValue ()
-        {
         }
     }
 }

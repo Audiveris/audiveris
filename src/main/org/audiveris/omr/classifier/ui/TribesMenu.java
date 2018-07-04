@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.Collection;
 
 import javax.swing.JMenuItem;
@@ -123,7 +122,7 @@ public class TribesMenu
                             this,
                             SelectionHint.ENTITY_INIT,
                             MouseMovement.PRESSING,
-                            Arrays.asList(glyph)));
+                            glyph));
         }
     }
 }

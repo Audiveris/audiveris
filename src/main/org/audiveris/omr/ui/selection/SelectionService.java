@@ -91,7 +91,14 @@ public class SelectionService
                         (last != null) ? (" " + last) : "");
 
                 for (Object obj : subscribers) {
-                    logger.info(String.format("      @%8h %s", obj, obj));
+                    String size = "";
+
+                    if (obj instanceof EntityService) {
+                        EntityService service = (EntityService) obj;
+                        size = "size:" + service.getIndex().getEntities().size();
+                    }
+
+                    logger.info(String.format("      @%8h %s %s", obj, obj, size));
                 }
             }
         }
@@ -201,13 +208,6 @@ public class SelectionService
     public String toString ()
     {
         return name;
-
-        //        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        //        sb.append("{");
-        //        sb.append(name);
-        //        sb.append("}");
-        //
-        //        return sb.toString();
     }
 
     //-------------//

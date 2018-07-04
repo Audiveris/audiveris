@@ -288,7 +288,7 @@ class SelectionPanel
     //-------------//
     private void inputParams ()
     {
-        ///constants.maxSimilar.setValue(similar.getValue());
+        ///constants.maxSimilar.setStringValue(similar.getValue());
     }
 
     //-----------------//

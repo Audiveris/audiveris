@@ -23,10 +23,21 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sig.SIGraph;
+import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.SlurInter;
+import org.audiveris.omr.step.Step;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -34,11 +45,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code SlurHeadRelation} represents a link between a slur and one of the two
  * embraced note heads.
- * <p>
- * Distance from slur end to embraced note head is quite complex. For the time being, we simply
- * record the detected relation without further evaluation detail.
- * <p>
- * TODO: Actually, perhaps we should deal with embraced chord instead of embraced head?
  *
  * @author Hervé Bitteur
  */
@@ -54,9 +60,19 @@ public class SlurHeadRelation
             SlurHeadRelation.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
+    //
+    // Persistent data
+    //----------------
+    //
     /** Left or right side of the slur. */
     @XmlAttribute(name = "side")
-    private final HorizontalSide side;
+    private HorizontalSide side;
+
+    // Transient data
+    //---------------
+    //
+    /** Euclidean distance from slur end to chord middle vertical. */
+    private double euclidean;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -70,14 +86,56 @@ public class SlurHeadRelation
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-arg constructor meant for JAXB and user allocation.
      */
-    private SlurHeadRelation ()
+    public SlurHeadRelation ()
     {
-        this.side = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Populate side if needed.
+     *
+     * @param e edge change event
+     */
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final SlurInter slur = (SlurInter) e.getEdgeSource();
+
+        if (side == null) {
+            final Inter head = e.getEdgeTarget();
+            side = (slur.getCenter().x < head.getCenter().x) ? RIGHT : LEFT;
+        }
+
+        if (isManual() || slur.isManual()) {
+            final SIGraph sig = slur.getSig();
+            final Step latestStep = sig.getSystem().getSheet().getStub().getLatestStep();
+
+            if (latestStep.compareTo(Step.LINKS) >= 0) {
+                // Check for a tie
+                List<Inter> systemHeadChords = sig.inters(HeadChordInter.class); // Costly...
+                slur.checkStaffTie(systemHeadChords);
+            }
+        }
+
+        slur.checkAbnormal();
+    }
+
+    //--------------//
+    // getEuclidean //
+    //--------------//
+    /**
+     * @return the euclidean distance
+     */
+    public double getEuclidean ()
+    {
+        return euclidean;
+    }
+
     //---------//
     // getSide //
     //---------//
@@ -87,6 +145,45 @@ public class SlurHeadRelation
     public HorizontalSide getSide ()
     {
         return side;
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return false;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final SlurInter slur = (SlurInter) e.getEdgeSource();
+        slur.checkAbnormal();
+    }
+
+    //--------------//
+    // setEuclidean //
+    //--------------//
+    /**
+     * @param euclidean the euclidean distance to set
+     */
+    public void setEuclidean (double euclidean)
+    {
+        this.euclidean = euclidean;
     }
 
     //----------//
@@ -108,81 +205,6 @@ public class SlurHeadRelation
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //    //-------------------//
-    //    // getXOutGapMaximum //
-    //    //-------------------//
-    //    public static Scale.Fraction getXOutGapMaximum ()
-    //    {
-    //        return constants.xOutGapMax;
-    //    }
-    //
-    //    //----------------//
-    //    // getYGapMaximum //
-    //    //----------------//
-    //    public static Scale.Fraction getYGapMaximum ()
-    //    {
-    //        return constants.yGapMax;
-    //    }
-    //
-    //    //------------------//
-    //    // getXInGapMaximum //
-    //    //------------------//
-    //    public static Scale.Fraction getXInGapMaximum ()
-    //    {
-    //        return constants.xInGapMax;
-    //    }
-    //
-    //    //--------------//
-    //    // getInWeights //
-    //    //--------------//
-    //    @Override
-    //    protected double[] getInWeights ()
-    //    {
-    //        return IN_WEIGHTS;
-    //    }
-    //
-    //    //---------------//
-    //    // getOutWeights //
-    //    //---------------//
-    //    @Override
-    //    protected double[] getOutWeights ()
-    //    {
-    //        return OUT_WEIGHTS;
-    //    }
-    //
-    //    //----------------//
-    //    // getTargetCoeff //
-    //    //----------------//
-    //    /**
-    //     * StaccatoNoteRelation brings no support on target (Note) side.
-    //     *
-    //     * @return 0
-    //     */
-    //    @Override
-    //    protected double getTargetCoeff ()
-    //    {
-    //        return 0.0;
-    //    }
-    //
-    //    @Override
-    //    protected Scale.Fraction getXInGapMax ()
-    //    {
-    //        return getXInGapMaximum();
-    //    }
-    //
-    //    @Override
-    //    protected Scale.Fraction getXOutGapMax ()
-    //    {
-    //        return getXOutGapMaximum();
-    //    }
-    //
-    //    @Override
-    //    protected Scale.Fraction getYGapMax ()
-    //    {
-    //        return getYGapMaximum();
-    //    }
-    //
-    //    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
@@ -194,26 +216,5 @@ public class SlurHeadRelation
         private final Constant.Ratio slurSupportCoeff = new Constant.Ratio(
                 5,
                 "Value for (source) slur coeff in support formula");
-
-        //
-        //            private final Scale.Fraction xInGapMax = new Scale.Fraction(
-        //                    0.5,
-        //                    "Maximum horizontal overlap between slur end & note reference point");
-        //
-        //            private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-        //                    0.75,
-        //                    "Maximum horizontal gap between slur end & note reference point");
-        //
-        //            private final Scale.Fraction yGapMax = new Scale.Fraction(
-        //                    6.0,
-        //                    "Maximum vertical gap between slur end & note reference point");
-        //
-        //            private final Constant.Ratio xInWeight = new Constant.Ratio(3, "Relative impact weight for xInGap");
-        //
-        //            private final Constant.Ratio xOutWeight = new Constant.Ratio(
-        //                    3,
-        //                    "Relative impact weight for xOutGap");
-        //
-        //            private final Constant.Ratio yWeight = new Constant.Ratio(1, "Relative impact weight for yGap");
     }
 }

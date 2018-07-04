@@ -60,7 +60,7 @@ public class CurvedFilament
     /** Typical length between points. */
     protected final int segmentLength;
 
-    /** Absolute defining points (including start & stop points). */
+    /** Absolute defining points (including start &amp; stop points). */
     protected List<Point2D> points;
 
     /** Curved line across all defining points. */

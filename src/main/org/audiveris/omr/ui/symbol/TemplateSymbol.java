@@ -86,7 +86,7 @@ public class TemplateSymbol
     protected MyParams getParams (MusicFont font)
     {
         final MyParams p = new MyParams();
-        final int interline = font.getFontInterline();
+        final int interline = font.getStaffInterline();
 
         final TextLayout fullLayout = layout(font);
         final Rectangle2D fullRect2d = fullLayout.getBounds();
@@ -104,15 +104,17 @@ public class TemplateSymbol
         final int symHeight = r.height;
 
         // Choose carefully the template rectangle, with origin at (0,0), around the symbol
-        // For full size symbol, add a 1-pixel margin on each side of the symbol
+        // For full size symbol, add some margin on each direction of the symbol
+        int dx = 2;
+        int dy = 2;
         p.rect = new Rectangle(
-                isSmall ? fullRect.width : (symWidth + 2),
-                isSmall ? interline : (symHeight + 2));
+                isSmall ? fullRect.width : (symWidth + dx),
+                isSmall ? interline : (symHeight + dy));
 
         // Bounds of symbol within template rectangle
         p.symbolRect = new Rectangle(
-                (int) Math.rint((fullRect2d.getWidth() + 2 - r2d.getWidth()) / 2),
-                (int) Math.rint((fullRect2d.getHeight() + 2 - r2d.getHeight()) / 2),
+                (p.rect.width - symWidth) / 2,
+                (p.rect.height - symHeight) / 2,
                 symWidth,
                 symHeight);
 

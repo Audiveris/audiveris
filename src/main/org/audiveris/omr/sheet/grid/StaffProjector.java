@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.grid;
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.math.AreaUtil;
 import org.audiveris.omr.math.AreaUtil.CoreData;
 import org.audiveris.omr.math.GeoPath;
@@ -36,7 +37,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.grid.StaffPeak.Attribute;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.inter.BarlineInter;
-import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
@@ -900,7 +900,7 @@ public class StaffProjector
                 newStop.grade);
         double grade = impacts.getGrade();
 
-        if (grade >= Inter.minGrade) {
+        if (grade >= Grades.minInterGrade) {
             StaffPeak bar = new StaffPeak(staff, yTop, yBottom, start, stop, impacts);
             bar.computeDeskewedCenter(sheet.getSkew());
             logger.debug("Staff#{} {}", staff.getId(), bar);

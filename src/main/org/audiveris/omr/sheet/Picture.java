@@ -94,9 +94,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  * TODO: When an alpha channel is involved, perform the alpha multiplication if the components are
  * not yet premultiplied.
  *
- * <h4>Overview of transforms:<br>
- * <img src="../image/doc-files/transforms.png">
- * </h4>
+ * <h1>Overview of transforms:<br>
+ * <img src="../image/doc-files/transforms.png" alt="Image Transforms UML">
+ * </h1>
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
@@ -122,7 +122,7 @@ public class Picture
 
         /** The initial gray-level source. */
         INITIAL,
-        /** The binarized (black & white) source. */
+        /** The binarized (black &amp; white) source. */
         BINARY,
         /** The Gaussian-filtered source. */
         GAUSSIAN,
@@ -175,7 +175,7 @@ public class Picture
      * Service object where gray level of pixel is to be written to when so asked for
      * by the onEvent() method.
      */
-    private final SelectionService levelService;
+    final SelectionService pixelService;
 
     /** The initial (gray-level) image, if any. */
     private BufferedImage initialImage;
@@ -191,7 +191,7 @@ public class Picture
                     RunTable binaryTable)
     {
         initTransients(sheet);
-        levelService = null;
+        pixelService = null;
 
         width = binaryTable.getWidth();
         height = binaryTable.getHeight();
@@ -208,16 +208,16 @@ public class Picture
      *
      * @param sheet        the related sheet
      * @param image        the provided original image
-     * @param levelService service where pixel events are to be written
-     * @throws ImageFormatException
+     * @param pixelService service where pixel events are to be written
+     * @throws ImageFormatException if the image format is unsupported
      */
     public Picture (Sheet sheet,
                     BufferedImage image,
-                    SelectionService levelService)
+                    SelectionService pixelService)
             throws ImageFormatException
     {
         initTransients(sheet);
-        this.levelService = levelService;
+        this.pixelService = pixelService;
 
         // Make sure format, colors, etc are OK for us
         ///ImageUtil.printInfo(image, "Original image");
@@ -238,7 +238,7 @@ public class Picture
         this.sheet = null;
         this.width = 0;
         this.height = 0;
-        this.levelService = null;
+        this.pixelService = null;
         logger.debug("Picture unmarshalled by JAXB");
     }
 
@@ -299,7 +299,7 @@ public class Picture
     public void disposeSource (SourceKey key)
     {
         // Nullify cached data, if needed
-        if (key == SourceKey.INITIAL) {
+        if ((key == SourceKey.INITIAL) && constants.disposeOfInitialSource.isSet()) {
             initialImage = null;
         }
 
@@ -509,6 +509,17 @@ public class Picture
         return "Picture";
     }
 
+    //-----------------//
+    // getLevelService //
+    //-----------------//
+    /**
+     * @return the pixelService
+     */
+    public SelectionService getPixelService ()
+    {
+        return pixelService;
+    }
+
     //-----------//
     // getSource //
     //-----------//
@@ -710,7 +721,7 @@ public class Picture
                 }
             }
 
-            levelService.publish(new PixelEvent(this, event.hint, event.movement, level));
+            pixelService.publish(new PixelEvent(this, event.hint, event.movement, level));
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
@@ -756,20 +767,20 @@ public class Picture
     //-------//
     // store //
     //-------//
-    public void store (Path sheetPath,
-                       Path oldSheetPath)
+    public void store (Path sheetFolder,
+                       Path oldSheetFolder)
     {
         // Each handled table
         for (Entry<TableKey, RunTableHolder> entry : tables.entrySet()) {
             final TableKey key = entry.getKey();
             final RunTableHolder holder = entry.getValue();
-            final Path tablepath = sheetPath.resolve(key + ".xml");
+            final Path tablepath = sheetFolder.resolve(key + ".xml");
 
             if (!holder.hasData()) {
-                if (oldSheetPath != null) {
+                if (oldSheetFolder != null) {
                     try {
                         // Copy from old book file to new
-                        Path oldTablePath = oldSheetPath.resolve(key + ".xml");
+                        Path oldTablePath = oldSheetFolder.resolve(key + ".xml");
                         Files.copy(oldTablePath, tablepath);
                         logger.info("Copied {}", tablepath);
                     } catch (IOException ex) {
@@ -859,9 +870,8 @@ public class Picture
     //-----------//
     private ByteProcessor binarized (ByteProcessor src)
     {
-        FilterDescriptor desc = sheet.getStub().getFilterParam().getTarget();
+        FilterDescriptor desc = sheet.getStub().getBinarizationFilter().getValue();
         logger.info("{} {}", "Binarization", desc);
-        sheet.getStub().getFilterParam().setActual(desc);
 
         PixelFilter filter = desc.getFilter(src);
 
@@ -971,6 +981,10 @@ public class Picture
         private final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch(es)?");
+
+        private final Constant.Boolean disposeOfInitialSource = new Constant.Boolean(
+                true,
+                "Should we dispose of initial source once binarized?");
 
         private final Constant.Integer gaussianRadius = new Constant.Integer(
                 "pixels",

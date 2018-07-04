@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
-import java.awt.geom.Area;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -36,6 +35,10 @@ import java.util.List;
 
 /**
  * Class {@code SlursInfo} gathers physical description of a slur.
+ * <p>
+ * It is not meant to be persistent.
+ * During slur building in SLURS step, it allows to check and implement the connection of smaller
+ * slurs into larger slurs.
  * <p>
  * Short and medium slurs generally fit a global circle rather well.
  * But a long slur may be closer to an ellipsis, hence the use of local osculating circles, one at
@@ -52,37 +55,27 @@ public class SlurInfo
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Approximating first side model. */
-    private Model firstModel;
+    protected Model firstModel;
 
     /** Approximating last side model. */
-    private Model lastModel;
+    protected Model lastModel;
 
     /** Number of points for side circles. */
-    private final int sideLength;
+    protected final int sideLength;
 
-    /** Is the slur: above heads, below heads or flat. */
-    private int above;
+    /** Is the slur: above heads, below heads or flat.
+     * 1 for above, -1 for below, 0 for flat
+     */
+    protected int above;
 
     /** Unity vector from segment middle to circle center. */
-    private Point2D bisUnit;
+    protected Point2D bisUnit;
 
     /** True for slur rather horizontal. */
-    private Boolean horizontal;
-
-    /** Area for first chords. */
-    private Area firstChordArea;
-
-    /** Area for last chords. */
-    private Area lastChordArea;
-
-    /** Target point for first chords. */
-    private Point firstTarget;
-
-    /** Target point for last chords. */
-    private Point lastTarget;
+    protected Boolean horizontal;
 
     /** Global Bézier curve for the slur. */
-    private CubicCurve2D curve;
+    protected CubicCurve2D curve;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -176,22 +169,14 @@ public class SlurInfo
         return bisUnit;
     }
 
-    //--------------//
-    // getChordArea //
-    //--------------//
-    public Area getChordArea (boolean reverse)
-    {
-        return reverse ? firstChordArea : lastChordArea;
-    }
-
     //----------//
     // getCurve //
     //----------//
     /**
      * Report the left-to-right Bézier curve which best approximates the slur.
      * <p>
-     * It is built by combining the left half (point & control point) of left circle curve and the
-     * right half (control point & point) of right circle curve.
+     * It is built by combining the left half (point &amp; control point) of left circle curve and
+     * the right half (control point &amp; point) of right circle curve.
      * Vectors from point to related control point are applied a ratio extension so that curve
      * middle point (M) fits on slur middle point (M').
      * We apply the same ratio on both vectors, which may not be the best choice but that's enough
@@ -255,31 +240,20 @@ public class SlurInfo
         }
 
         return curve;
+    }
 
-        //        if (curve == null) {
-        //            // Pickup the 4 points at t = 0, 1/3, 2/3 & 1
-        //            double r = 0.28;
-        //            List<Point> points = pointsOf(arcs);
-        //            int         n = points.size();
-        //            int ir = (int) Math.rint(r*n);
-        //            Point       s0 = points.get(0);
-        //            //Point       s1 = points.get(n / 3); // Wrong!
-        //            Point       s1 = points.get(ir); // bof!
-        //            //Point       s2 = points.get((2 * n) / 3); // Wrong!
-        //            Point       s2 = points.get(n-1-ir); // bof!
-        //            Point       s3 = points.get(n - 1);
-        //            curve = new CubicCurve2D.Double(
-        //                s0.x,
-        //                s0.y,
-        //                (-5 * s0.x + 18 * s1.x - 9 * s2.x + 2 * s3.x) / 6,
-        //                (-5 * s0.y + 18 * s1.y - 9 * s2.y + 2 * s3.y) / 6,
-        //                (2 * s0.x - 9 * s1.x + 18 * s2.x - 5 * s3.x) / 6,
-        //                (2 * s0.y - 9 * s1.y + 18 * s2.y - 5 * s3.y) / 6,
-        //                s3.x,
-        //                s3.y);
-        //        }
-        //
-        //        return curve;
+    //--------------//
+    // getEndVector //
+    //--------------//
+    /**
+     * Report the unit tangent vector at the item end designated by 'reverse' value.
+     *
+     * @param reverse true for first end, false for last
+     * @return the tangent unit vector
+     */
+    public Point2D getEndVector (boolean reverse)
+    {
+        return getSideModel(reverse).getEndVector(reverse);
     }
 
     //-------------//
@@ -362,14 +336,6 @@ public class SlurInfo
         }
     }
 
-    //----------------//
-    // getTargetPoint //
-    //----------------//
-    public Point getTargetPoint (boolean reverse)
-    {
-        return reverse ? firstTarget : lastTarget;
-    }
-
     //--------------//
     // hasSideModel //
     //--------------//
@@ -401,23 +367,6 @@ public class SlurInfo
         return horizontal;
     }
 
-    //---------//
-    // setArea //
-    //---------//
-    /**
-     * @param area    the Area to set
-     * @param reverse desired end
-     */
-    public void setArea (Area area,
-                         boolean reverse)
-    {
-        if (reverse) {
-            firstChordArea = area;
-        } else {
-            lastChordArea = area;
-        }
-    }
-
     //---------------//
     // setHorizontal //
     //---------------//
@@ -438,7 +387,7 @@ public class SlurInfo
         if (model != null) {
             super.setModel(model);
             above = model.above();
-            bisUnit = computeBisector();
+            bisUnit = computeBisector(above > 0);
         }
     }
 
@@ -455,21 +404,23 @@ public class SlurInfo
         }
     }
 
-    //----------------//
-    // setTargetPoint //
-    //----------------//
+    //-----------------//
+    // computeBisector //
+    //-----------------//
     /**
-     * @param reverse desired end
-     * @param target  the target point to set
+     * Compute bisector vector.
+     *
+     * @param above is the slur above (or below)
+     * @return the unit bisector
      */
-    public void setTargetPoint (boolean reverse,
-                                Point target)
+    protected Point2D.Double computeBisector (boolean above)
     {
-        if (reverse) {
-            firstTarget = target;
-        } else {
-            lastTarget = target;
-        }
+        Line2D bisector = LineUtil.bisector(getEnd(above), getEnd(!above));
+        double length = bisector.getP1().distance(bisector.getP2());
+
+        return new Point2D.Double(
+                (bisector.getX2() - bisector.getX1()) / length,
+                (bisector.getY2() - bisector.getY1()) / length);
     }
 
     //-----------//
@@ -485,22 +436,5 @@ public class SlurInfo
         }
 
         return sb.toString();
-    }
-
-    //-----------------//
-    // computeBisector //
-    //-----------------//
-    /**
-     * Compute bisector vector.
-     */
-    private Point2D.Double computeBisector ()
-    {
-        boolean ccw = model.ccw() == 1;
-        Line2D bisector = LineUtil.bisector(getEnd(!ccw), getEnd(ccw));
-        double length = bisector.getP1().distance(bisector.getP2());
-
-        return new Point2D.Double(
-                (bisector.getX2() - bisector.getX1()) / length,
-                (bisector.getY2() - bisector.getY1()) / length);
     }
 }

@@ -26,7 +26,9 @@ import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
+
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
+
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.util.ClassUtil;
@@ -119,45 +121,6 @@ public class RubberPanel
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // setRubber //
-    //-----------//
-    /**
-     * Allows to provide the rubber instance, only after this RubberPanel has been built.
-     * This can be used to solve circular elaboration problems.
-     *
-     * @param rubber the rubber instance to be used
-     */
-    public final void setRubber (Rubber rubber)
-    {
-        this.rubber = rubber;
-
-        rubber.setZoom(zoom);
-        rubber.connectComponent(this);
-        rubber.setMouseMonitor(this);
-    }
-
-    //---------//
-    // setZoom //
-    //---------//
-    /**
-     * Assign a zoom to this panel
-     *
-     * @param zoom the zoom assigned
-     */
-    public final void setZoom (final Zoom zoom)
-    {
-        // Clean up if needed
-        unsetZoom(this.zoom);
-
-        this.zoom = zoom;
-
-        if (zoom != null) {
-            // Add a listener on this zoom
-            zoom.addChangeListener(this);
-        }
-    }
-
     //--------------//
     // contextAdded //
     //--------------//
@@ -302,9 +265,7 @@ public class RubberPanel
             logger.debug("{} onEvent {}", getClass().getName(), event);
 
             if (event instanceof LocationEvent) {
-                // Location => move view focus on this location w/ markers
-                LocationEvent locationEvent = (LocationEvent) event;
-                showFocusLocation(locationEvent.getData(), false);
+                handleLocationEvent((LocationEvent) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -434,6 +395,45 @@ public class RubberPanel
     public void setModelSize (Dimension modelSize)
     {
         this.modelSize = new Dimension(modelSize);
+    }
+
+    //-----------//
+    // setRubber //
+    //-----------//
+    /**
+     * Allows to provide the rubber instance, only after this RubberPanel has been built.
+     * This can be used to solve circular elaboration problems.
+     *
+     * @param rubber the rubber instance to be used
+     */
+    public final void setRubber (Rubber rubber)
+    {
+        this.rubber = rubber;
+
+        rubber.setZoom(zoom);
+        rubber.connectComponent(this);
+        rubber.setMouseMonitor(this);
+    }
+
+    //---------//
+    // setZoom //
+    //---------//
+    /**
+     * Assign a zoom to this panel
+     *
+     * @param zoom the zoom assigned
+     */
+    public final void setZoom (final Zoom zoom)
+    {
+        // Clean up if needed
+        unsetZoom(this.zoom);
+
+        this.zoom = zoom;
+
+        if (zoom != null) {
+            // Add a listener on this zoom
+            zoom.addChangeListener(this);
+        }
     }
 
     //-------------------//
@@ -625,6 +625,15 @@ public class RubberPanel
         }
     }
 
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    protected void handleLocationEvent (LocationEvent locationEvent)
+    {
+        // Location => move view focus on this location w/ markers
+        showFocusLocation(locationEvent.getData(), false); // Centered: false
+    }
+
     //--------//
     // render //
     //--------//
@@ -665,7 +674,6 @@ public class RubberPanel
     /**
      * Room for rendering additional items, typically some user-selected items if any,
      * on top of the global ones already rendered by the {@link #render} method.
-     * This is just a place holder, the real items rendering must be provided by a subclass.
      *
      * @param g the graphic context
      */

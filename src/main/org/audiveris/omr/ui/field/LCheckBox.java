@@ -55,7 +55,7 @@ public class LCheckBox
     /**
      * Add an action listener to the box.
      *
-     * @param listener
+     * @param listener the action listener to add
      */
     public void addActionListener (ActionListener listener)
     {

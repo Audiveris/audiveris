@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.ui.symbol;
 
+import com.itextpdf.awt.PdfGraphics2D;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
@@ -64,13 +65,16 @@ public class MusicFontTest
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Printout of each MusicFont character
+     * Printout of each MusicFont character.
      */
     @Test
     public void textPrintout ()
             throws Exception
     {
-        File file = new File("data/temp/" + MusicFont.FONT_NAME + ".pdf");
+        File dir = new File("data/temp");
+        dir.mkdirs();
+
+        File file = new File(dir, MusicFont.FONT_NAME + ".pdf");
 
         try (FileOutputStream fos = new FileOutputStream(file)) {
             Rectangle rect = new Rectangle(pageWidth, pageHeight);
@@ -82,8 +86,8 @@ public class MusicFontTest
             document.open();
 
             PdfContentByte cb = writer.getDirectContent();
-            Graphics2D g = cb.createGraphics(pageWidth, pageHeight);
-            MusicFont musicFont = new MusicFont(64, 0);
+            Graphics2D g = new PdfGraphics2D(cb, pageWidth, pageHeight);
+            MusicFont musicFont = MusicFont.getPointFont(64, 0);
             Font stringFont = g.getFont().deriveFont(24f);
             Font infoFont = stringFont.deriveFont(15f);
             String frm = "x:%4.1f y:%4.1f w:%4.1f h:%4.1f";
@@ -105,7 +109,7 @@ public class MusicFontTest
                             document.setPageSize(rect);
                             document.newPage();
                             cb = writer.getDirectContent();
-                            g = cb.createGraphics(pageWidth, pageHeight);
+                            g = new PdfGraphics2D(cb, pageWidth, pageHeight);
                             x = xMargin;
                             y = yMargin;
                             line = 0;

@@ -22,25 +22,20 @@
 package org.audiveris.omr.run;
 
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
-
 import org.audiveris.omr.util.BaseTestCase;
 import org.audiveris.omr.util.Jaxb;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.awt.Dimension;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.PropertyException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -63,18 +58,17 @@ public class RunTableBindingTest
     private JAXBContext jaxbContext;
 
     //~ Methods ------------------------------------------------------------------------------------
-    @BeforeClass
-    public static void createTempFolder ()
-    {
-        dir.mkdirs();
-    }
-
     @Test
     public void testMarshalTable ()
             throws PropertyException, JAXBException, FileNotFoundException, IOException,
                    XMLStreamException
     {
+        // Make sure target folder exists but target file does not exist
+        dir.mkdirs();
         Files.deleteIfExists(fileTable.toPath());
+
+        // Generate JAXB context
+        jaxbContext = JAXBContext.newInstance(RunTable.class);
 
         RunTable table = createHorizontalInstance();
         table.dumpSequences();
@@ -82,11 +76,11 @@ public class RunTableBindingTest
         Jaxb.marshal(table, fileTable.toPath(), jaxbContext);
         System.out.println("Marshalled to " + fileTable);
         System.out.println("===========================================");
-        Jaxb.marshal(table, System.out, jaxbContext);
 
-        Unmarshaller um = jaxbContext.createUnmarshaller();
-        InputStream is = new FileInputStream(fileTable);
-        RunTable newTable = (RunTable) um.unmarshal(is);
+        Jaxb.marshal(table, System.out, jaxbContext);
+        System.out.println();
+
+        RunTable newTable = (RunTable) Jaxb.unmarshal(fileTable.toPath(), jaxbContext);
         System.out.println("===========================================");
         System.out.println("Unmarshalled from " + fileTable);
 
@@ -98,13 +92,6 @@ public class RunTableBindingTest
 
         assertEquals(table.dumpOf(), newTable.dumpOf());
         assertEquals(table, newTable);
-    }
-
-    @Override
-    protected void setUp ()
-            throws JAXBException
-    {
-        jaxbContext = JAXBContext.newInstance(RunTable.class);
     }
 
     //--------------------------//

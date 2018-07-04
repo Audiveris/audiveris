@@ -41,12 +41,13 @@ import javax.swing.JPanel;
  * <P>
  * <B>note</B> : To actually display the cell limits as a debugging aid to refine the panel layout,
  * you have to edit this class and make it extend FormDebugPanel, instead of JPanel. There is also a
- * line to uncomment in both methods : the constructor and the paintComponent method.
+ * line to uncomment in the paintComponent method.
  *
  * @author Hervé Bitteur
  */
 public class Panel
-        extends JPanel
+        extends JPanel ///FormDebugPanel
+
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -67,8 +68,6 @@ public class Panel
      */
     public Panel ()
     {
-        // Note: Uncomment following line for FormDebugPanel
-        //setPaintInBackground(true);
         setBorder(null);
     }
 
@@ -162,16 +161,15 @@ public class Panel
         final String labelInterval = Panel.getLabelInterval();
         final String fieldInterval = Panel.getFieldInterval();
 
-        // Columns
         StringBuilder sbc = new StringBuilder();
 
-        for (int i = cols - 1; i >= 0; i--) {
-            sbc.append(labelAlignment).append(labelWidth).append(",").append(labelInterval)
-                    .append(",").append(fieldWidth);
-
+        for (int i = 0; i < cols; i++) {
             if (i != 0) {
                 sbc.append(",").append(fieldInterval).append(",");
             }
+
+            sbc.append(labelAlignment).append(labelWidth).append(",").append(labelInterval)
+                    .append(",").append(fieldWidth);
         }
 
         return sbc.toString();
@@ -215,25 +213,9 @@ public class Panel
                                              String labelWidth,
                                              String fieldWidth)
     {
-        // Columns
-        final String colSpec = makeColumns(cols, labelAlignment, labelWidth, fieldWidth);
-
-        // Rows
-        final String fieldInterline = Panel.getFieldInterline();
-        StringBuilder sbr = new StringBuilder();
-
-        for (int i = rows - 1; i >= 0; i--) {
-            sbr.append("pref");
-
-            if (i != 0) {
-                sbr.append(",").append(fieldInterline).append(",");
-            }
-        }
-
-        logger.debug("sbc={}", colSpec);
-        logger.debug("sbr={}", sbr);
-
-        return new FormLayout(colSpec, sbr.toString());
+        return new FormLayout(
+                makeColumns(cols, labelAlignment, labelWidth, fieldWidth),
+                makeRows(rows));
     }
 
     //-------------------//
@@ -243,15 +225,14 @@ public class Panel
                                             String labelInterval,
                                             String labelWidth)
     {
-        // Columns
         StringBuilder sbc = new StringBuilder();
 
-        for (int i = cols - 1; i >= 0; i--) {
-            sbc.append(labelWidth);
-
+        for (int i = 0; i < cols; i++) {
             if (i != 0) {
                 sbc.append(",").append(labelInterval).append(",");
             }
+
+            sbc.append(labelWidth);
         }
 
         return sbc.toString();
@@ -274,25 +255,47 @@ public class Panel
                                                String labelInterval,
                                                String labelWidth)
     {
-        // Columns
-        final String colSpec = makeLabelsColumns(cols, labelInterval, labelWidth);
+        return new FormLayout(makeLabelsColumns(cols, labelInterval, labelWidth), makeRows(rows));
+    }
 
-        // Rows
-        final String fieldInterline = Panel.getFieldInterline();
-        StringBuilder sbr = new StringBuilder();
+    //----------//
+    // makeRows //
+    //----------//
+    /**
+     * Build the row spec for 'rows' separated by standard field interline.
+     *
+     * @param rows number of rows
+     * @return row spec
+     */
+    public static String makeRows (int rows)
+    {
+        return makeRows(rows, getFieldInterline());
+    }
 
-        for (int i = rows - 1; i >= 0; i--) {
-            sbr.append("pref");
+    //----------//
+    // makeRows //
+    //----------//
+    /**
+     * Build the row spec for 'rows' separated by 'interline' spec.
+     *
+     * @param rows      number of rows
+     * @param interline interline value
+     * @return row spec
+     */
+    public static String makeRows (int rows,
+                                   String interline)
+    {
+        final StringBuilder sbr = new StringBuilder();
 
+        for (int i = 0; i < rows; i++) {
             if (i != 0) {
-                sbr.append(",").append(fieldInterline).append(",");
+                sbr.append(",").append(interline).append(",");
             }
+
+            sbr.append("pref");
         }
 
-        logger.debug("sbc={}", colSpec);
-        logger.debug("sbr={}", sbr);
-
-        return new FormLayout(colSpec, sbr.toString());
+        return sbr.toString();
     }
 
     //-----------//
@@ -355,7 +358,8 @@ public class Panel
     @Override
     protected void paintComponent (Graphics g)
     {
-        //setPaintInBackground(true);
+        // Note: Uncomment following line for FormDebugPanel
+        ///setPaintInBackground(true);
         super.paintComponent(g);
     }
 

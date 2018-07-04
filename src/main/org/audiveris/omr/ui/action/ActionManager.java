@@ -21,8 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.ui.action;
 
-import org.audiveris.omr.OMR;
 import org.audiveris.omr.WellKnowns;
+import org.audiveris.omr.ui.OmrGui;
 import org.audiveris.omr.ui.util.SeparableMenu;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.UriUtil;
@@ -119,7 +119,7 @@ public class ActionManager
     public ApplicationAction getActionInstance (Object instance,
                                                 String methodName)
     {
-        ActionMap actionMap = OMR.gui.getApplication().getContext().getActionMap(instance);
+        ActionMap actionMap = OmrGui.getApplication().getContext().getActionMap(instance);
 
         return (ApplicationAction) actionMap.get(methodName);
     }
@@ -253,8 +253,8 @@ public class ActionManager
             }
 
             // Proper menu decoration
-            ResourceMap resource = OMR.gui.getApplication().getContext()
-                    .getResourceMap(Actions.class);
+            ResourceMap resource = OmrGui.getApplication().getContext().getResourceMap(
+                    Actions.class);
             menu.setText(domain); // As default
             menu.setName(domain);
 
@@ -356,6 +356,11 @@ public class ActionManager
 
             for (ActionDescriptor desc : Actions.getAllDescriptors()) {
                 if (desc.domain.equalsIgnoreCase(domain) && (desc.section == section)) {
+                    // Skip advanced topics, unless explicitly set
+                    if ((desc.topic != null) && !desc.topic.isSet()) {
+                        continue;
+                    }
+
                     logger.debug("Registering {}", desc);
 
                     try {

@@ -23,6 +23,7 @@ package org.audiveris.omr.math;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.Comparator;
@@ -129,7 +130,7 @@ public abstract class PointUtil
     // extension //
     //-----------//
     /**
-     * Compute extension point, on line p1 -> p2, at 'dist' distance beyond p2.
+     * Compute extension point, on line p1 &rarr; p2, at 'dist' distance beyond p2.
      *
      * @param p1   first point
      * @param p2   second point
@@ -159,6 +160,38 @@ public abstract class PointUtil
     public static double length (Point2D p)
     {
         return Math.hypot(p.getX(), p.getY());
+    }
+
+    //--------//
+    // middle //
+    //--------//
+    /**
+     * Report the middle point between the two provided points.
+     *
+     * @param p1 a point
+     * @param p2 another point
+     * @return the middle point between p1 and p2
+     */
+    public static Point2D middle (Point2D p1,
+                                  Point2D p2)
+    {
+        return new Point2D.Double((p1.getX() + p2.getX()) / 2.0, (p1.getY() + p2.getY()) / 2.0);
+    }
+
+    //--------//
+    // middle //
+    //--------//
+    /**
+     * Report the middle point of a Line2D.
+     *
+     * @param line provided line2D
+     * @return the middle point between p1 and p2
+     */
+    public static Point2D middle (Line2D line)
+    {
+        return new Point2D.Double(
+                (line.getX1() + line.getX2()) / 2.0,
+                (line.getY1() + line.getY2()) / 2.0);
     }
 
     //---------//
@@ -212,6 +245,10 @@ public abstract class PointUtil
     //----------//
     public static String toString (Point p)
     {
+        if (p == null) {
+            return "nullPoint";
+        }
+
         StringBuilder sb = new StringBuilder("[");
         sb.append(p.x).append(",").append(p.y).append("]");
 

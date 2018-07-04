@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.image;
 
-import org.audiveris.omr.image.MedianGrayFilter;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 

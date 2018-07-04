@@ -26,7 +26,6 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.RunEvent;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.SelectionService;
-import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.view.RubberPanel;
 
 import org.slf4j.Logger;
@@ -76,37 +75,6 @@ public class RunTableView
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Notification about selection objects.
-     * We catch:
-     * SheetLocation (-&gt; Run)
-     *
-     * @param event the notified event
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void onEvent (UserEvent event)
-    {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            // Default behavior: making point visible & drawing the markers
-            super.onEvent(event);
-
-            if (event instanceof LocationEvent) { // Location => Run
-                handleEvent((LocationEvent) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
     //--------//
     // render //
     //--------//
@@ -117,17 +85,18 @@ public class RunTableView
         table.render(g, new Point(0, 0));
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
     /**
-     * Interest in Location => Run
+     * Interest in Location &rArr; Run
      *
-     * @param locationEvent
+     * @param locationEvent the location event
      */
-    private void handleEvent (LocationEvent locationEvent)
+    @Override
+    protected void handleLocationEvent (LocationEvent locationEvent)
     {
-        ///logger.info("RunTableView location: {}", locationEvent);
+        super.handleLocationEvent(locationEvent);
 
         // Lookup for Run pointed by this pixel location
         Rectangle rect = locationEvent.getData();

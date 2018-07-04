@@ -57,7 +57,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlJavaTypeAdapter(BasicGlyph.Adapter.class)
 public interface Glyph
-        extends Symbol, NearLine
+        extends WeightedEntity, NearLine
 {
     //~ Methods ------------------------------------------------------------------------------------
 
@@ -82,7 +82,7 @@ public interface Glyph
     /**
      * Report a buffer of the glyph (which can be handed to the OCR)
      *
-     * @return a black & white buffer (contour box size )
+     * @return a black &amp; white buffer (contour box size)
      */
     ByteProcessor getBuffer ();
 

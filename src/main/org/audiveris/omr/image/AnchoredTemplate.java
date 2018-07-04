@@ -58,7 +58,7 @@ public class AnchoredTemplate
         sb.append("{");
 
         sb.append(template.getShape());
-        sb.append(" ").append(template.getInterline());
+        sb.append(" ").append(template.getPointSize());
 
         if (anchor != null) {
             sb.append(" ").append(anchor);

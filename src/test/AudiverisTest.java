@@ -20,10 +20,6 @@
 //------------------------------------------------------------------------------------------------//
 // </editor-fold>
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.slf4j.Logger;
@@ -49,28 +45,6 @@ public class AudiverisTest
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    @Before
-    public void setUp ()
-    {
-    }
-
-    @BeforeClass
-    public static void setUpClass ()
-            throws Exception
-    {
-    }
-
-    @After
-    public void tearDown ()
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass ()
-            throws Exception
-    {
-    }
-
     /**
      * Test of main method, of class Audiveris.
      */
@@ -86,12 +60,13 @@ public class AudiverisTest
             "-batch", "-step", "EXPORT", "-input", "data/examples/batuque.png",
             "data/examples/allegretto.png"
         };
-//        System.out.println("firstCall to Audiveris.main()");
-//        logger.info("firstCall to Audiveris.main()");
-//        Audiveris.main(args1);
-//        System.out.println("secondCall to Audiveris.main()");
-//        logger.info("secondCall to Audiveris.main()");
-//        Audiveris.main(args2);
-//        System.out.println("finished");
+
+        //        System.out.println("firstCall to Audiveris.main()");
+        //        logger.info("firstCall to Audiveris.main()");
+        //        Audiveris.main(args1);
+        //        System.out.println("secondCall to Audiveris.main()");
+        //        logger.info("secondCall to Audiveris.main()");
+        //        Audiveris.main(args2);
+        //        System.out.println("finished");
     }
 }

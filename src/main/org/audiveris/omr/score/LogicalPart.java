@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code LogicalPart} describes a part at score or page level.
- * It is "instantiated" in each SystemInfo by a {@link org.audiveris.omr.sheet.Part}.
+ * It can be "instantiated" in one or several SystemInfo by a {@link org.audiveris.omr.sheet.Part}.
  * <p>
  * There is an intermediate LogicalPart instance at Page level, which abstracts the system parts at
  * page level, and which is then used when abstracting the part information from pages to score.</p>
@@ -104,6 +104,9 @@ public class LogicalPart
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // equals //
+    //--------//
     @Override
     public boolean equals (Object obj)
     {
@@ -127,16 +130,18 @@ public class LogicalPart
     }
 
     //-------//
-    // getId //
+    // setId //
     //-------//
     /**
-     * Set the id of this part
+     * Set the id of this part.
      *
-     * @param id the distinguished part id
+     * @param id the new part id
      */
     public final void setId (int id)
     {
-        this.id = id;
+        if (this.id != id) {
+            this.id = id;
+        }
     }
 
     //-----------------//

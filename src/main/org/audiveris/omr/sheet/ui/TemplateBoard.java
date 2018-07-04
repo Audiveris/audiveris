@@ -25,6 +25,7 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored;
@@ -35,7 +36,6 @@ import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
 import org.audiveris.omr.sheet.Sheet;
-import org.audiveris.omr.sheet.note.NoteHeadsBuilder;
 import org.audiveris.omr.ui.Board;
 import org.audiveris.omr.ui.field.LDoubleField;
 import org.audiveris.omr.ui.selection.AnchoredTemplateEvent;
@@ -58,6 +58,8 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerListModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.ui.symbol.MusicFont;
 
 /**
  * Class {@code TemplateBoard} allows to select a template (shape, anchor) and present
@@ -124,7 +126,7 @@ public class TemplateBoard
 
         // Shape spinner
         shapeSpinner = new JSpinner(
-                new SpinnerListModel(new ArrayList<Shape>(ShapeSet.TemplateNotes)));
+                new SpinnerListModel(new ArrayList<Shape>(ShapeSet.getTemplateNotes(sheet))));
         shapeSpinner.addChangeListener(this);
         shapeSpinner.setName("shapeSpinner");
         shapeSpinner.setToolTipText("Selection of template shape");
@@ -154,47 +156,7 @@ public class TemplateBoard
     {
         try {
             if (event instanceof LocationEvent) {
-                AnchoredTemplate anchoredTemplate = (AnchoredTemplate) templateService.getSelection(
-                        AnchoredTemplateEvent.class);
-
-                if (anchoredTemplate == null) {
-                    return;
-                }
-
-                Rectangle rect = (Rectangle) event.getData();
-
-                if ((rect == null) || (rect.width != 0) || (rect.height != 0)) {
-                    return;
-                }
-
-                Point pt = rect.getLocation();
-
-                if (event.hint == SelectionHint.CONTEXT_INIT) {
-                    // Template reference point has been changed, re-eval template at this location
-                    refPoint = pt;
-                    tryEvaluate(refPoint, anchoredTemplate);
-                } else if (event.hint == SelectionHint.LOCATION_INIT) {
-                    // User inspects location, display template key point value if any
-                    if (refPoint != null) {
-                        Template template = anchoredTemplate.template;
-                        Anchored.Anchor anchor = anchoredTemplate.anchor;
-                        Rectangle tplRect = template.getBoundsAt(
-                                refPoint.x,
-                                refPoint.y,
-                                anchor);
-                        pt.translate(-tplRect.x, -tplRect.y);
-
-                        for (PixelDistance pix : template.getKeyPoints()) {
-                            if ((pix.x == pt.x) && (pix.y == pt.y)) {
-                                keyPointField.setValue(pix.d / table.getNormalizer());
-
-                                return;
-                            }
-                        }
-
-                        keyPointField.setText("");
-                    }
-                }
+                handleLocationEvent((LocationEvent) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -218,8 +180,9 @@ public class TemplateBoard
         AnchoredTemplate at = null;
 
         if (areCompatible(shape, anchor)) {
+            Scale scale = sheet.getScale();
             Template template = TemplateFactory.getInstance()
-                    .getCatalog(sheet.getScale().getInterline())
+                    .getCatalog(MusicFont.getHeadPointSize(scale, scale.getInterline()))
                     .getTemplate(shape);
             at = new AnchoredTemplate(anchor, template);
         }
@@ -227,6 +190,56 @@ public class TemplateBoard
         templateService.publish(
                 new AnchoredTemplateEvent(this, SelectionHint.ENTITY_INIT, null, at));
         tryEvaluate(refPoint, at);
+    }
+
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Display rectangle attributes
+     *
+     * @param locEvent the location event
+     */
+    protected void handleLocationEvent (LocationEvent locEvent)
+    {
+        AnchoredTemplate anchoredTemplate = (AnchoredTemplate) templateService.getSelection(
+                AnchoredTemplateEvent.class);
+
+        if (anchoredTemplate == null) {
+            return;
+        }
+
+        Rectangle rect = locEvent.getData();
+
+        if ((rect == null) || (rect.width != 0) || (rect.height != 0)) {
+            return;
+        }
+
+        Point pt = rect.getLocation();
+
+        if (locEvent.hint == SelectionHint.CONTEXT_INIT) {
+            // Template reference point has been changed, re-eval template at this location
+            refPoint = pt;
+            tryEvaluate(refPoint, anchoredTemplate);
+        } else if (locEvent.hint == SelectionHint.LOCATION_INIT) {
+            // User inspects location, display template key point value if any
+            if (refPoint != null) {
+                Template template = anchoredTemplate.template;
+                Anchored.Anchor anchor = anchoredTemplate.anchor;
+                Rectangle tplRect = template.getBoundsAt(refPoint.x, refPoint.y, anchor);
+                pt.translate(-tplRect.x, -tplRect.y);
+
+                for (PixelDistance pix : template.getKeyPoints()) {
+                    if ((pix.x == pt.x) && (pix.y == pt.y)) {
+                        keyPointField.setValue(pix.d / table.getNormalizer());
+
+                        return;
+                    }
+                }
+
+                keyPointField.setText("");
+            }
+        }
     }
 
     //---------------//
@@ -289,7 +302,7 @@ public class TemplateBoard
                 final Anchor anchor = anchoredTemplate.anchor;
                 final Template template = anchoredTemplate.template;
                 double dist = template.evaluate(p.x, p.y, anchor, table);
-                double grade = NoteHeadsBuilder.dist2grade(dist);
+                double grade = Grades.intrinsicRatio * Template.impactOf(dist);
                 evalField.setText(String.format("%.3f", grade));
             } else {
                 evalField.setText("");

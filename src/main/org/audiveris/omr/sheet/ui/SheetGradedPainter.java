@@ -25,9 +25,11 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.SigPainter;
+import org.audiveris.omr.ui.ViewParameters;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import org.audiveris.omr.sheet.rhythm.Voice;
 
 /**
  * Class {@code SheetGradedPainter} paints a sheet using shape-based colors and
@@ -69,8 +71,12 @@ public class SheetGradedPainter
     private class GradedSigPainter
             extends SigPainter
     {
-        //~ Constructors ---------------------------------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
+        /** View parameters. */
+        private final ViewParameters viewParams = ViewParameters.getInstance();
+
+        //~ Constructors ---------------------------------------------------------------------------
         public GradedSigPainter (Graphics g,
                                  Scale scale)
         {
@@ -90,16 +96,33 @@ public class SheetGradedPainter
         @Override
         protected void setColor (Inter inter)
         {
-            // Shape base color
-            final Color base = inter.getShape().getColor();
+            // Shape-based color (or red if abnormal)
+            Color base = inter.getColor();
 
-            // Prefer contextual grade over intrinsic grade when available
-            final double grade = inter.getBestGrade();
+            // Voice-based color?
+            if (!inter.isAbnormal() && viewParams.isVoicePainting()) {
+                final Voice voice = inter.getVoice();
 
-            // Alpha value [0 .. 255] is derived from grade [0.0 .. 1.0]
-            final int alpha = Math.min(255, Math.max(0, (int) Math.rint(255 * grade)));
+                if (voice != null) {
+                    base = colorOf(voice);
+                }
+            }
 
-            final Color color = new Color(base.getRed(), base.getGreen(), base.getBlue(), alpha);
+            final Color color;
+
+            // Should we use translucency?
+            if (viewParams.isTranslucentPainting()) {
+                // Prefer contextual grade over intrinsic grade when available
+                final double grade = inter.getBestGrade();
+
+                // Alpha value [0 .. 255] is derived from grade [0.0 .. 1.0]
+                final int alpha = Math.min(255, Math.max(0, (int) Math.rint(255 * grade)));
+
+                color = new Color(base.getRed(), base.getGreen(), base.getBlue(), alpha);
+            } else {
+                color = base;
+            }
+
             g.setColor(color);
         }
     }

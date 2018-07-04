@@ -21,43 +21,51 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TaskHistory} handles a history of InterTasks, with the ability to add,
- * undo and redo.
+ * Class {@code TaskHistory} handles a history of UITaskList instances, with the
+ * ability to add, undo and redo.
+ * <p>
+ * Within an UITaskList, all tasks are handled as a whole, to cope with dependent tasks.
  *
  * @author Hervé Bitteur
  */
 class TaskHistory
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(TaskHistory.class);
+
     //~ Instance fields ----------------------------------------------------------------------------
+    /** History of action sequences. */
+    private final List<UITaskList> sequences = new ArrayList<UITaskList>();
 
-    /** History of actions. */
-    private final List<InterTask> tasks = new ArrayList<InterTask>();
-
-    /** Current position in history, always pointing to action just done. */
+    /** Current position in history, always pointing to sequence just done. */
     private int cursor = -1;
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * Register an action.
+     * Register an action sequence.
      *
-     * @param task the task at hand
-     * @return the task to do
+     * @param tasks one (or several related) task(s)
+     * @return the action sequence
      */
-    public InterTask add (InterTask task)
+    public UITaskList add (UITaskList seq)
     {
-        tasks.add(cursor + 1, task);
+        sequences.add(cursor + 1, seq);
         cursor++;
 
-        // Delete trailing tasks if any
-        for (int i = cursor + 1; i < tasks.size(); i++) {
-            tasks.remove(i);
+        // Delete trailing sequences if any
+        for (int i = cursor + 1; i < sequences.size(); i++) {
+            sequences.remove(i);
         }
 
-        return task;
+        return seq;
     }
 
     /**
@@ -67,7 +75,7 @@ class TaskHistory
      */
     public boolean canRedo ()
     {
-        return cursor < (tasks.size() - 1);
+        return cursor < (sequences.size() - 1);
     }
 
     /**
@@ -81,28 +89,50 @@ class TaskHistory
     }
 
     /**
-     * Redo the cancelled action.
-     *
-     * @return the task to redo
+     * Clear history.
      */
-    public InterTask redo ()
+    public void clear ()
     {
-        InterTask task = tasks.get(cursor + 1);
-        cursor++;
-
-        return task;
+        sequences.clear();
+        cursor = -1;
     }
 
     /**
-     * Cancel the previous action.
+     * Report the cancelled action sequence.
      *
-     * @return the task to undo
+     * @return the task sequence to redo
      */
-    public InterTask undo ()
+    public UITaskList toRedo ()
     {
-        InterTask task = tasks.get(cursor);
+        UITaskList seq = sequences.get(cursor + 1);
+        cursor++;
+
+        return seq;
+    }
+
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder("TaskHistory{");
+        sb.append("c:").append(cursor);
+
+        sb.append(" ").append(sequences);
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    /**
+     * Report the action sequence to cancel.
+     *
+     * @return the task sequence to undo
+     */
+    public UITaskList toUndo ()
+    {
+        UITaskList seq = sequences.get(cursor);
         cursor--;
 
-        return task;
+        return seq;
     }
 }

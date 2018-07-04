@@ -22,6 +22,7 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.ui.symbol.Symbols;
 
@@ -85,7 +86,7 @@ public enum Shape
     //
     // Sets --------------------------------------------------------------------
     //
-    DOT_set("Dot set", new Color(0x0cccc)),
+    DOT_set("Dot set"),
     HW_REST_set("Half & Whole Rest set"),
 
     //
@@ -117,11 +118,12 @@ public enum Shape
     //
     // Accidentals -------------------------------------------------------------
     //
-    FLAT("Minus one half step", new Color(0x00aaaa)),
-    NATURAL("Natural value", new Color(0x0066ff)),
-    SHARP("Plus one half step", new Color(0x3399ff)),
+    FLAT("Minus one half step"),
+    NATURAL("Natural value"),
+    SHARP("Plus one half step"),
     DOUBLE_SHARP("Double Sharp"),
     DOUBLE_FLAT("Double Flat"),
+
     //
     // Time --------------------------------------------------------------------
     //
@@ -139,9 +141,8 @@ public enum Shape
     TIME_SIXTEEN("Time number 16"),
 
     // Whole time sigs
-    COMMON_TIME("Alpha = 4/4", new Color(0xcc6600)),
+    COMMON_TIME("Alpha = 4/4"),
     CUT_TIME("Semi-Alpha = 2/2"),
-
     // Predefined time combos
     TIME_FOUR_FOUR("Rational 4/4"),
     TIME_TWO_TWO("Rational 2/2"),
@@ -152,9 +153,8 @@ public enum Shape
     TIME_SIX_EIGHT("Rational 6/8"),
 
     // Octave shifts
-    OTTAVA_ALTA("8 va", new Color(0xcc66ff)),
-    OTTAVA_BASSA("8 vb", new Color(0xcc66ff)),
-
+    OTTAVA_ALTA("8 va"),
+    OTTAVA_BASSA("8 vb"),
     //
     // Rests -------------------------------------------------------------------
     //
@@ -222,7 +222,7 @@ public enum Shape
     DYNAMICS_FF("Fortissimo"),
     DYNAMICS_MF("Mezzo forte"),
     DYNAMICS_FP("FortePiano"),
-    DYNAMICS_SF,
+    DYNAMICS_SF("Subito forte"),
     DYNAMICS_SFZ("Sforzando"),
 
     //
@@ -239,10 +239,11 @@ public enum Shape
     //
     // Tuplets -----------------------------------------------------------------
     //
-    TUPLET_THREE("3", new Color(0xcc00cc)),
-    TUPLET_SIX("6", new Color(0xcc00cc)),
-    PEDAL_MARK("Pedal down", new Color(0x009999)),
-    PEDAL_UP_MARK("Pedal downup", new Color(0x009999)),
+    TUPLET_THREE("3"),
+    TUPLET_SIX("6"),
+    PEDAL_MARK("Pedal down"),
+    PEDAL_UP_MARK("Pedal downup"),
+
     //
     // Small digits ------------------------------------------------------------
     //
@@ -251,8 +252,8 @@ public enum Shape
     DIGIT_2("Digit 2"),
     DIGIT_3("Digit 3"),
     DIGIT_4("Digit 4"),
+    DIGIT_5("Digit 5"),
 
-    //    DIGIT_5("Digit 5"),
     //    DIGIT_6("Digit 6"),
     //    DIGIT_7("Digit 7"),
     //    DIGIT_8("Digit 8"),
@@ -284,23 +285,23 @@ public enum Shape
     //
     // Miscellaneous -----------------------------------------------------------
     //
-    CLUTTER("Pure clutter", new Color(0x999900)),
-
+    CLUTTER("Pure clutter", Colors.SHAPE_UNKNOWN),
     /**
      * =================================================================================
      * End of physical shapes, beginning of logical shapes.
      * =============================================================================================
      */
-    TEXT("Sequence of letters & spaces", new Color(0x9999ff)),
+    TEXT("Sequence of letters & spaces"),
     CHARACTER("Any letter"),
 
     //
     // Shapes from shape sets --------------------------------------------------
     //
-    REPEAT_DOT("Repeat dot", DOT_set, new Color(0x0000ff)),
+    REPEAT_DOT("Repeat dot", DOT_set),
     AUGMENTATION_DOT("Augmentation Dot", DOT_set),
     FERMATA_DOT("Fermata Dot", DOT_set),
     STACCATO("Staccato dot", DOT_set),
+
     //
     WHOLE_REST("Rest for whole measure", HW_REST_set),
     HALF_REST("Rest for a 1/2", HW_REST_set),
@@ -308,10 +309,10 @@ public enum Shape
     //
     // Noteheads ---------------------------------------------------------------
     //
-    NOTEHEAD_BLACK("Filled node head for quarters and less", new Color(0xffcc00)),
-    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue", new Color(0xff4400)),
-    NOTEHEAD_VOID("Hollow node head for halves", new Color(0xff9966)),
-    NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue", new Color(0xff4400)),
+    NOTEHEAD_BLACK("Filled node head for quarters and less"),
+    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue"),
+    NOTEHEAD_VOID("Hollow node head for halves"),
+    NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue"),
 
     //
     // StemLessHeads -----------------------------------------------------------
@@ -326,7 +327,8 @@ public enum Shape
     BEAM_SMALL("Small beam for cue notes"),
     BEAM_HOOK("Hook of a beam attached on one stem"),
     BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
-    SLUR("Slur tying notes", new Color(0xff4444)),
+    SLUR("Slur tying notes"),
+
     //
     // Key signatures ----------------------------------------------------------
     //
@@ -349,17 +351,17 @@ public enum Shape
     // Bars --------------------------------------------------------------------
     //
     THIN_BARLINE("Thin bar line"),
-    THIN_CONNECTOR("Connector between thin barlines"),
+    THIN_CONNECTOR("Connector between thin barlines", Colors.SCORE_FRAME),
     THICK_BARLINE("Thick bar line"),
-    THICK_CONNECTOR("Connector between thick barlines"),
-    BRACKET_CONNECTOR("Connector between bracket items"),
+    THICK_CONNECTOR("Connector between thick barlines", Colors.SCORE_FRAME),
+    BRACKET_CONNECTOR("Connector between bracket items", Colors.SCORE_FRAME),
     DOUBLE_BARLINE("Double thin bar line"),
     FINAL_BARLINE("Thin / Thick bar line"),
     REVERSE_FINAL_BARLINE("Thick / Thin bar line"),
     LEFT_REPEAT_SIGN("Thick / Thin bar line + Repeat dots"),
     RIGHT_REPEAT_SIGN("Repeat dots + Thin / Thick bar line"),
     BACK_TO_BACK_REPEAT_SIGN("Repeat dots + Thin / Thick / Thin + REPEAT_DOTS"),
-    ENDING("Alternate ending", new Color(0x993300)),
+    ENDING("Alternate ending"),
     //
     // Wedges ------------------------------------------------------------------
     //
@@ -371,16 +373,17 @@ public enum Shape
     BRACE("Brace"),
     BRACKET("Bracket"),
     REPEAT_DOT_PAIR("Pair of repeat dots"),
-    NOISE("Too small stuff", new Color(0xcccccc)),
-    LEDGER("Ledger", new Color(0xaaaaaa)),
+    NOISE("Too small stuff", Colors.SHAPE_UNKNOWN),
+    LEDGER("Ledger"),
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
     SEGMENT("Wedge or ending segment"),
+    LYRICS("Lyrics", Colors.SCORE_LYRICS),
 
     //
     // Stems
     //
-    STEM("Stem", new Color(0xccff66)),
+    STEM("Stem"),
     //
     // Ornaments ---------------------------------------------------------------
     //
@@ -518,6 +521,19 @@ public enum Shape
     }
 
     //--------//
+    // isHead //
+    //--------//
+    /**
+     * Check whether the shape is a head.
+     *
+     * @return true if head
+     */
+    public boolean isHead ()
+    {
+        return ShapeSet.Heads.contains(this);
+    }
+
+    //--------//
     // isRest //
     //--------//
     /**
@@ -610,19 +626,6 @@ public enum Shape
     public boolean isTrainable ()
     {
         return ordinal() <= LAST_PHYSICAL_SHAPE.ordinal();
-    }
-
-    //-------------//
-    // isWellKnown //
-    //-------------//
-    /**
-     * Report whether this shape is well known, that is a non-garbage symbol.
-     *
-     * @return true if non-garbage, false otherwise
-     */
-    public boolean isWellKnown ()
-    {
-        return (this != NO_LEGAL_TIME) && (this != GLYPH_PART) && (this != NOISE);
     }
 
     //----------------//

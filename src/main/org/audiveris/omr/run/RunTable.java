@@ -83,7 +83,7 @@ import javax.xml.bind.annotation.XmlValue;
  * <pre>
  * null    (for an empty sequence)
  * []      (for an empty sequence as well)
- * [F]     (>0)
+ * [F]     (&gt;0)
  * [FBF]   (perhaps 0BF)
  * [FBFBF] (perhaps 0BFBF)
  * etc...
@@ -214,7 +214,7 @@ public class RunTable
             sequences[index] = sequence = new RunSequence();
         }
 
-        short[] rle = sequence.rle;
+        int[] rle = sequence.rle;
         Itr it = new Itr(index);
 
         while (it.hasNext()) {
@@ -235,27 +235,27 @@ public class RunTable
                 if ((b1 == 0) && (b2 == 0)) {
                     // ...F(B)F... -> ...F(0F0)F... -> ...F++...
                     // .......^
-                    short[] newRle = new short[rle.length - 2];
+                    int[] newRle = new int[rle.length - 2];
                     System.arraycopy(rle, 0, newRle, 0, c - 2);
-                    newRle[c - 2] = (short) (rle[c - 2] + f + rle[c]);
+                    newRle[c - 2] = rle[c - 2] + f + rle[c];
                     System.arraycopy(rle, c + 1, newRle, c - 1, rle.length - c - 1);
                     sequence.rle = newRle;
                 } else if (b1 == 0) {
                     // ...F(B)F... -> ...F(0FB2)F... -> ...F+(B2)F...
                     // .......^
-                    rle[c - 2] += (short) f;
-                    rle[c - 1] = (short) b2;
+                    rle[c - 2] += f;
+                    rle[c - 1] = b2;
                 } else if (b2 == 0) {
                     // ...F(B)F... -> ...F(B1F0)F... -> ...F(B1)F+...
                     // .......^
-                    rle[c - 1] += (short) b1;
-                    rle[c] += (short) f;
+                    rle[c - 1] += b1;
+                    rle[c] += f;
                 } else {
-                    short[] newRle = new short[rle.length + 2];
+                    int[] newRle = new int[rle.length + 2];
                     System.arraycopy(rle, 0, newRle, 0, c - 1);
-                    newRle[c - 1] = (short) b1;
-                    newRle[c] = (short) f;
-                    newRle[c + 1] = (short) b2;
+                    newRle[c - 1] = b1;
+                    newRle[c] = f;
+                    newRle[c + 1] = b2;
                     System.arraycopy(rle, c, newRle, c + 2, rle.length - c);
                     sequence.rle = newRle;
                 }
@@ -272,28 +272,28 @@ public class RunTable
         } else if (b == 0) {
             if (rle != null) {
                 // ...F -> ...F+
-                rle[rle.length - 1] += (short) length;
+                rle[rle.length - 1] += length;
             } else {
                 // null -> F+
-                final short[] newRle = new short[1];
-                newRle[0] = (short) length;
+                final int[] newRle = new int[1];
+                newRle[0] = length;
                 sequence.rle = newRle;
             }
         } else {
-            final short[] newRle;
+            final int[] newRle;
 
             if (rle != null) {
                 // ...F -> ...F(BF')
-                newRle = new short[rle.length + 2];
+                newRle = new int[rle.length + 2];
                 System.arraycopy(rle, 0, newRle, 0, rle.length);
-                newRle[rle.length] = (short) b;
-                newRle[rle.length + 1] = (short) length;
+                newRle[rle.length] = b;
+                newRle[rle.length + 1] = length;
             } else {
                 // null -> 0(BF')
-                newRle = new short[3];
+                newRle = new int[3];
                 newRle[0] = 0;
-                newRle[1] = (short) b;
-                newRle[2] = (short) length;
+                newRle[1] = b;
+                newRle[2] = length;
             }
 
             sequence.rle = newRle;
@@ -415,7 +415,7 @@ public class RunTable
             RunSequence seq = sequences[i];
 
             if (seq != null) {
-                short[] rle = new short[seq.rle.length];
+                int[] rle = new int[seq.rle.length];
                 System.arraycopy(seq.rle, 0, rle, 0, seq.rle.length);
                 clone.sequences[i] = new RunSequence(rle);
             }
@@ -1465,24 +1465,24 @@ public class RunTable
             i++;
 
             if ((seq != null) && (seq.rle != null)) {
-                final short[] seqRle = seq.rle;
-                final short[] rle;
+                final int[] seqRle = seq.rle;
+                final int[] rle;
 
                 if (coordMin == 0) {
                     // Simply copy the rle
-                    rle = new short[seqRle.length];
+                    rle = new int[seqRle.length];
                     System.arraycopy(seqRle, 0, rle, 0, seqRle.length);
                 } else {
                     int backLg = seqRle[1] & 0xFFFF; // backLg >= coordMin by definition of coordMin
 
                     if (backLg > coordMin) {
                         // Shorten the background length
-                        rle = new short[seqRle.length];
+                        rle = new int[seqRle.length];
                         System.arraycopy(seqRle, 0, rle, 0, seqRle.length);
-                        rle[1] = (short) (backLg - coordMin);
+                        rle[1] = backLg - coordMin;
                     } else {
                         // backLg == coordMin, hence skip the initial 0B pair of cells
-                        rle = new short[seqRle.length - 2];
+                        rle = new int[seqRle.length - 2];
                         System.arraycopy(seqRle, 2, rle, 0, seqRle.length - 2);
                     }
                 }
@@ -1543,7 +1543,7 @@ public class RunTable
             return null;
         }
 
-        short[] rle;
+        int[] rle;
         int size = (2 * list.size()) - 1;
         int start = list.get(0).getStart();
         int cursor = 0;
@@ -1553,23 +1553,23 @@ public class RunTable
         if (start != 0) {
             // Insert an empty foreground length
             size += 2;
-            rle = new short[size];
+            rle = new int[size];
             rle[0] = 0;
             cursor = 1;
             injectBackground = true;
         } else {
-            rle = new short[size];
+            rle = new int[size];
         }
 
         for (Run run : list) {
             if (injectBackground) {
                 // Inject background
-                rle[cursor++] = (short) (run.getStart() - length);
+                rle[cursor++] = run.getStart() - length;
                 length = run.getStart();
             }
 
             // Inject foreground
-            rle[cursor++] = (short) run.getLength();
+            rle[cursor++] = run.getLength();
             length += run.getLength();
 
             injectBackground = true;
@@ -1654,7 +1654,7 @@ public class RunTable
             RunSequence seq = sequences[i];
 
             if (seq == null) {
-                sequences[i] = new RunSequence(new short[0]);
+                sequences[i] = new RunSequence(new int[0]);
             }
         }
     }
@@ -1673,10 +1673,10 @@ public class RunTable
         //~ Instance fields ------------------------------------------------------------------------
 
         @XmlValue
-        private short[] rle;
+        private int[] rle;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public RunSequence (short[] rle)
+        public RunSequence (int[] rle)
         {
             this.rle = rle;
         }
@@ -1774,7 +1774,7 @@ public class RunTable
             final RunSequence seq = sequences[index];
 
             if (seq != null) {
-                final short[] rle = seq.rle;
+                final int[] rle = seq.rle;
 
                 if ((rle != null) && (rle.length > 0)) {
                     if (rle[cursor] == 0) {
@@ -1803,7 +1803,7 @@ public class RunTable
                 return false;
             }
 
-            final short[] rle = seq.rle;
+            final int[] rle = seq.rle;
 
             if (rle == null) {
                 return false;
@@ -1825,7 +1825,7 @@ public class RunTable
                 throw new NoSuchElementException();
             }
 
-            final short[] rle = sequences[index].rle;
+            final int[] rle = sequences[index].rle;
 
             // ...v.. cursor before next()
             // ...FBF
@@ -1852,7 +1852,7 @@ public class RunTable
         @Override
         public void remove ()
         {
-            final short[] rle = sequences[index].rle;
+            final int[] rle = sequences[index].rle;
             int c = cursor - 2;
 
             if (c == 0) {
@@ -1861,11 +1861,11 @@ public class RunTable
                     sequences[index] = null;
                 } else {
                     // (FB)F... -> 0(B')F...
-                    rle[1] = (short) (rle[0] + rle[1]);
+                    rle[1] = rle[0] + rle[1];
                     rle[0] = 0;
                 }
             } else {
-                final short[] newRle = new short[rle.length - 2];
+                final int[] newRle = new int[rle.length - 2];
 
                 if (c == (rle.length - 1)) {
                     // ...F(BF) -> ...F
@@ -1873,7 +1873,7 @@ public class RunTable
                 } else {
                     // ...F(BFB)F... -> ...F(B')F...
                     System.arraycopy(rle, 0, newRle, 0, c - 1);
-                    newRle[c - 1] = (short) (rle[c - 1] + rle[c] + rle[c + 1]);
+                    newRle[c - 1] = rle[c - 1] + rle[c] + rle[c + 1];
                     System.arraycopy(rle, c + 2, newRle, c, rle.length - c - 2);
                 }
 

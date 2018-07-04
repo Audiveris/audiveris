@@ -22,15 +22,16 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.score.PartConnection.Candidate;
-import org.audiveris.omr.score.PartConnection.Result;
+import org.audiveris.omr.score.PartConnection.ResultEntry;
 import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 /**
  * Class {@code PageReduction} reduces the parts of each system to a list of parts
@@ -64,38 +65,124 @@ public class PageReduction
     // reduce //
     //--------//
     /**
-     * Process a page by merging information from the page systems.
+     * Build the page LogicalPart instances by connecting the page systems (physical)
+     * Part instances.
      */
     public void reduce ()
     {
-        // Connect parts across the page systems
-        PartConnection connection = PartConnection.connectPageSystems(page);
+        final List<List<Candidate>> sequences = buildSequences(page);
 
-        // Build logical part list and store it in page
-        List<LogicalPart> logicalParts = new ArrayList<LogicalPart>();
+        // Connect the parts across all systems of the page
+        final PartConnection connection = new PartConnection(sequences);
+        final List<PartConnection.ResultEntry> resultEntries = connection.getResults();
 
-        for (Result result : connection.getResultMap().keySet()) {
-            logicalParts.add((LogicalPart) result.getUnderlyingObject());
+        if (logger.isDebugEnabled()) {
+            connection.dumpResults();
         }
 
-        page.setLogicalParts(logicalParts);
+        // Store the list of LogicalPart instances into page
+        storeResults(resultEntries);
+    }
 
-        // Make the connections: (system) Part -> (page) LogicalPart
-        Map<Candidate, Result> candidateMap = connection.getCandidateMap();
-        logger.debug("Candidates:{}", candidateMap.size());
+    //----------------//
+    // buildSequences //
+    //----------------//
+    /**
+     * Build the sequences of part candidates
+     *
+     * @param page the containing (Audiveris) page
+     * @return the sequences of system part candidates
+     */
+    private List<List<Candidate>> buildSequences (Page page)
+    {
+        // Build candidates (here, a candidate is a Part)
+        List<List<Candidate>> sequences = new ArrayList<List<Candidate>>();
 
-        for (Map.Entry<Candidate, Result> entry : candidateMap.entrySet()) {
-            Candidate candidate = entry.getKey();
-            Part systemPart = (Part) candidate.getUnderlyingObject();
+        for (SystemInfo system : page.getSystems()) {
+            List<Candidate> parts = new ArrayList<Candidate>();
 
-            Result result = entry.getValue();
-            LogicalPart logicalPart = (LogicalPart) result.getUnderlyingObject();
+            for (Part systemPart : system.getParts()) {
+                parts.add(new PartCandidate(systemPart));
+            }
 
-            // Connect (system) part -> (page) LogicalPart
-            systemPart.setLogicalPart(logicalPart);
+            sequences.add(parts);
+        }
 
-            // Use same ID
-            systemPart.setId(logicalPart.getId());
+        return sequences;
+    }
+
+    //--------------//
+    // storeResults //
+    //--------------//
+    /**
+     * Store the results as the page list of LogicalPart instances
+     *
+     * @param resultEntries results from part connection
+     */
+    private void storeResults (List<ResultEntry> resultEntries)
+    {
+        List<LogicalPart> logicalParts = new ArrayList<LogicalPart>();
+
+        for (ResultEntry entry : resultEntries) {
+            LogicalPart logicalPart = entry.result;
+            logicalParts.add(logicalPart);
+        }
+
+        if (!Objects.deepEquals(page.getLogicalParts(), logicalParts)) {
+            page.setLogicalParts(logicalParts);
+            page.getSheet().getStub().setModified(true);
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //---------------//
+    // PartCandidate //
+    //---------------//
+    /**
+     * Wrapping class meant for a (System) physical Part instance.
+     */
+    private static class PartCandidate
+            implements Candidate
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Part systemPart;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PartCandidate (Part part)
+        {
+            this.systemPart = part;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String getAbbreviation ()
+        {
+            return null;
+        }
+
+        @Override
+        public String getName ()
+        {
+            return systemPart.getName();
+        }
+
+        @Override
+        public int getStaffCount ()
+        {
+            return systemPart.getStaves().size();
+        }
+
+        @Override
+        public void setId (int id)
+        {
+            systemPart.setId(id);
+        }
+
+        @Override
+        public String toString ()
+        {
+            return systemPart + " in " + systemPart.getSystem();
         }
     }
 }

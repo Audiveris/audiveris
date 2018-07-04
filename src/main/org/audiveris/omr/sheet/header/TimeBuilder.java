@@ -36,11 +36,8 @@ import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.math.IntegerFunction;
-
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.score.TimeRational;
@@ -51,9 +48,7 @@ import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
-
 import static org.audiveris.omr.sheet.header.TimeBuilder.TimeKind.*;
-
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
@@ -98,7 +93,7 @@ import java.util.TreeMap;
  * Subclass {@link HeaderTimeBuilder} is used at the beginning of a staff (in staff header) while
  * subclass {@link BasicTimeBuilder} is used farther down the staff.
  * <p>
- * <img src="doc-files/TimeBuilder.png">
+ * <img src="doc-files/TimeBuilder.png" alt="TimeBuilder UML">
  *
  * @author Hervé Bitteur
  */
@@ -227,11 +222,7 @@ public abstract class TimeBuilder
 
             final GlyphIndex index = system.getSheet().getGlyphIndex();
 
-            // If best time is a whole signature (common, cut, combo) it is already in SIG.
-            // If it is a pair, only the halves (num & den) are already in SIG, so save the pair.
             if (bestTimeInter instanceof TimePairInter) {
-                sig.addVertex(bestTimeInter);
-
                 TimePairInter pair = (TimePairInter) bestTimeInter;
 
                 for (Inter inter : pair.getMembers()) {
@@ -268,7 +259,7 @@ public abstract class TimeBuilder
             // Check wholes
             for (Inter inter : wholes) {
                 if (inter.getShape() != timeInter.getShape()) {
-                    inter.delete();
+                    inter.remove();
                 }
             }
 
@@ -279,7 +270,7 @@ public abstract class TimeBuilder
                     final List<Inter> members = (side == VerticalSide.TOP) ? nums : dens;
 
                     for (Inter inter : members) {
-                        inter.delete();
+                        inter.remove();
                     }
                 }
             } else {
@@ -296,7 +287,7 @@ public abstract class TimeBuilder
                             compatibles.put(number.getShape(), inter.getGlyph()); // Compatible member
                         }
 
-                        inter.delete();
+                        inter.remove();
                     }
                 }
             }
@@ -313,7 +304,7 @@ public abstract class TimeBuilder
                     compatibles.put(inter.getShape(), inter.getGlyph()); // Compatible whole
                 }
 
-                inter.delete();
+                inter.remove();
             }
 
             // Check numbers
@@ -324,7 +315,15 @@ public abstract class TimeBuilder
 
                 for (Inter inter : members) {
                     if (inter != chosenNumber) {
-                        inter.delete();
+                        // Remove the pair this number is part of, if any
+                        for (Inter ensemble : inter.getAllEnsembles()) {
+                            ensemble.remove();
+                        }
+
+                        // Remove this member as well, if not yet done
+                        if (!inter.isRemoved()) {
+                            inter.remove();
+                        }
                     }
                 }
             }
@@ -377,7 +376,7 @@ public abstract class TimeBuilder
                 Inter inter = it.next();
 
                 if (!sig.hasRelation(inter, TimeTopBottomRelation.class)) {
-                    inter.delete();
+                    inter.remove();
                     it.remove();
                 }
             }
@@ -443,7 +442,7 @@ public abstract class TimeBuilder
         protected void cleanup ()
         {
             for (Inter inter : timeSet) {
-                inter.delete();
+                inter.remove();
             }
         }
 
@@ -559,7 +558,7 @@ public abstract class TimeBuilder
                         Inter inter = it.next();
 
                         if (!kept.contains(inter)) {
-                            inter.delete();
+                            inter.remove();
                             it.remove();
                         }
                     }
@@ -826,7 +825,7 @@ public abstract class TimeBuilder
 
             // Expend header info
             if (bestTimeInter != null) {
-                Rectangle timeBox = bestTimeInter.getSymbolBounds(scale.getInterline());
+                Rectangle timeBox = bestTimeInter.getSymbolBounds(staff.getSpecificInterline());
                 int end = timeBox.x + timeBox.width;
                 staff.setTimeStop(end);
 
@@ -917,7 +916,6 @@ public abstract class TimeBuilder
             for (ListIterator<Glyph> li = parts.listIterator(); li.hasNext();) {
                 final Glyph part = li.next();
                 Glyph glyph = glyphIndex.registerOriginal(part);
-                glyph.addGroup(Group.TIME_PART); // For debug?
                 system.addFreeGlyph(glyph);
                 li.set(glyph);
             }
@@ -1058,7 +1056,7 @@ public abstract class TimeBuilder
                 for (Entry<Shape, Inter> entry : adapter.bestMap.entrySet()) {
                     Inter inter = entry.getValue();
 
-                    Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
+                    Rectangle timeBox = inter.getSymbolBounds(staff.getSpecificInterline());
                     inter.setBounds(timeBox);
                     inter.setStaff(staff);
                     sig.addVertex(inter);
@@ -1103,7 +1101,7 @@ public abstract class TimeBuilder
             if (!wholeAdapter.bestMap.isEmpty()) {
                 for (Entry<Shape, Inter> entry : wholeAdapter.bestMap.entrySet()) {
                     Inter inter = entry.getValue();
-                    Rectangle timeBox = inter.getSymbolBounds(scale.getInterline());
+                    Rectangle timeBox = inter.getSymbolBounds(staff.getSpecificInterline());
                     inter.setBounds(timeBox);
                     inter.setStaff(staff);
                     sig.addVertex(inter);
@@ -1186,7 +1184,7 @@ public abstract class TimeBuilder
         /**
          * Report the time inter instance for each staff in the column.
          *
-         * @return the map: staff -> time inter
+         * @return the map: staff &rarr; time inter
          */
         public Map<Staff, AbstractTimeInter> getTimeInters ()
         {
@@ -1252,8 +1250,8 @@ public abstract class TimeBuilder
          * <p>
          * The selection is driven from the whole system column point of view, as follows:
          * <ol>
-         * <li>For each staff, identify all the possible & supported AbstractTimeInter instances,
-         * each with its own grade.</li>
+         * <li>For each staff, identify all the possible and supported AbstractTimeInter
+         * instances, each with its own grade.</li>
          * <li>Then for each possible AbstractTimeInter value (called TimeValue), make sure it
          * appears in each staff as a AbstractTimeInter instance and assign a global grade (as
          * average of staff-based AbstractTimeInter instances for the same TimeValue).</li>
@@ -1380,7 +1378,7 @@ public abstract class TimeBuilder
                         TimeNumberInter den = (TimeNumberInter) sig.getOppositeInter(
                                 nInter,
                                 rel);
-                        TimePairInter pair = TimePairInter.create(num, den);
+                        TimePairInter pair = TimePairInter.createAdded(num, den);
                         TimeValue time = pair.getValue();
                         AbstractTimeInter[] vector = values.get(time);
 
@@ -1619,24 +1617,20 @@ public abstract class TimeBuilder
                     glyph,
                     staff.getSpecificInterline(),
                     params.maxEvalRank,
-                    Grades.timeMinGrade / Inter.intrinsicRatio,
+                    Grades.timeMinGrade / Grades.intrinsicRatio,
                     null);
 
             for (Evaluation eval : evals) {
                 final Shape shape = eval.shape;
 
                 if (halfShapes.contains(shape)) {
-                    final double grade = Inter.intrinsicRatio * eval.grade;
+                    final double grade = Grades.intrinsicRatio * eval.grade;
                     logger.debug("   {} eval {} for glyph#{}", half, eval, glyph.getId());
 
                     Inter bestInter = bestMap.get(shape);
 
                     if ((bestInter == null) || (bestInter.getGrade() < grade)) {
-                        TimeNumberInter inter = TimeNumberInter.create(
-                                glyph,
-                                shape,
-                                grade,
-                                staff);
+                        TimeNumberInter inter = TimeNumberInter.create(glyph, shape, grade, staff);
 
                         if (inter != null) {
                             bestMap.put(shape, inter);
@@ -1674,14 +1668,14 @@ public abstract class TimeBuilder
         public void cleanup ()
         {
             for (Inter inter : bestMap.values()) {
-                inter.delete();
+                inter.remove();
             }
         }
 
         public Inter getSingleInter ()
         {
             for (Inter inter : bestMap.values()) {
-                if (!inter.isDeleted()) {
+                if (!inter.isRemoved()) {
                     return inter;
                 }
             }
@@ -1732,14 +1726,14 @@ public abstract class TimeBuilder
                     glyph,
                     staff.getSpecificInterline(),
                     params.maxEvalRank,
-                    Grades.timeMinGrade / Inter.intrinsicRatio,
+                    Grades.timeMinGrade / Grades.intrinsicRatio,
                     null);
 
             for (Evaluation eval : evals) {
                 final Shape shape = eval.shape;
 
                 if (wholeShapes.contains(shape)) {
-                    final double grade = Inter.intrinsicRatio * eval.grade;
+                    final double grade = Grades.intrinsicRatio * eval.grade;
                     logger.debug("   WHOLE eval {} for glyph#{}", eval, glyph.getId());
 
                     Inter bestInter = bestMap.get(shape);

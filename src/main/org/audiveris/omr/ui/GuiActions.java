@@ -34,6 +34,8 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.ui.ShapeColorChooser;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.text.tesseract.TesseractOCR;
+import org.audiveris.omr.ui.action.AdvancedTopics;
 import org.audiveris.omr.ui.symbol.SymbolRipper;
 import org.audiveris.omr.ui.util.CursorController;
 import org.audiveris.omr.ui.util.OmrFileFilter;
@@ -102,14 +104,14 @@ public class GuiActions
     /** Create this action just once */
     private static volatile AboutAction aboutAction;
 
-    /** Should the errors window be displayed */
-    public static final String ERRORS_DISPLAYED = "errorsDisplayed";
+    /** Should the errors window be displayed. */
+    public static final String ERRORS_WINDOW_DISPLAYED = "errorsWindowDisplayed";
 
-    /** Should the log window be displayed */
-    public static final String LOG_DISPLAYED = "logDisplayed";
+    /** Should the log window be displayed. */
+    public static final String LOG_WINDOW_DISPLAYED = "logWindowDisplayed";
 
-    /** Should the boards window be displayed */
-    public static final String BOARDS_DISPLAYED = "boardsDisplayed";
+    /** Should the boards window be displayed. */
+    public static final String BOARDS_WINDOW_DISPLAYED = "boardsWindowDisplayed";
 
     //~ Methods ------------------------------------------------------------------------------------
     //-------------//
@@ -237,6 +239,20 @@ public class GuiActions
         ShapeColorChooser.showFrame();
     }
 
+    //--------------//
+    // defineTopics //
+    //--------------//
+    /**
+     * Action that opens the dialog where topics can be enabled/disabled.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action
+    public void defineTopics (ActionEvent e)
+    {
+        OmrGui.getApplication().show(AdvancedTopics.getComponent());
+    }
+
     //------//
     // exit //
     //------//
@@ -248,15 +264,15 @@ public class GuiActions
     @Action
     public void exit (ActionEvent e)
     {
-        OMR.gui.getApplication().exit();
+        OmrGui.getApplication().exit();
     }
 
-    //-------------------//
-    // isBoardsDisplayed //
-    //-------------------//
-    public boolean isBoardsDisplayed ()
+    //-------------------------//
+    // isBoardsWindowDisplayed //
+    //-------------------------//
+    public boolean isBoardsWindowDisplayed ()
     {
-        return constants.boardsDisplayed.getValue();
+        return constants.boardsWindowDisplayed.getValue();
     }
 
     //--------------------//
@@ -272,20 +288,20 @@ public class GuiActions
         return WebBrowser.getBrowser().isSupported();
     }
 
-    //-------------------//
-    // isErrorsDisplayed //
-    //-------------------//
-    public boolean isErrorsDisplayed ()
+    //-------------------------//
+    // isErrorsWindowDisplayed //
+    //-------------------------//
+    public boolean isErrorsWindowDisplayed ()
     {
-        return constants.errorsDisplayed.getValue();
+        return constants.errorsWindowDisplayed.getValue();
     }
 
-    //----------------//
-    // isLogDisplayed //
-    //----------------//
-    public boolean isLogDisplayed ()
+    //----------------------//
+    // isLogWindowDisplayed //
+    //----------------------//
+    public boolean isLogWindowDisplayed ()
     {
-        return constants.logDisplayed.getValue();
+        return constants.logWindowDisplayed.getValue();
     }
 
     //--------------------//
@@ -337,34 +353,34 @@ public class GuiActions
         SampleRepository.getGlobalInstance().checkForSave();
     }
 
-    //--------------------//
-    // setBoardsDisplayed //
-    //--------------------//
-    public void setBoardsDisplayed (boolean value)
+    //--------------------------//
+    // setBoardsWindowDisplayed //
+    //--------------------------//
+    public void setBoardsWindowDisplayed (boolean value)
     {
-        boolean oldValue = constants.boardsDisplayed.getValue();
-        constants.boardsDisplayed.setValue(value);
-        firePropertyChange(BOARDS_DISPLAYED, oldValue, value);
+        boolean oldValue = constants.boardsWindowDisplayed.getValue();
+        constants.boardsWindowDisplayed.setValue(value);
+        firePropertyChange(BOARDS_WINDOW_DISPLAYED, oldValue, value);
     }
 
-    //--------------------//
-    // setErrorsDisplayed //
-    //--------------------//
-    public void setErrorsDisplayed (boolean value)
+    //--------------------------//
+    // setErrorsWindowDisplayed //
+    //--------------------------//
+    public void setErrorsWindowDisplayed (boolean value)
     {
-        boolean oldValue = constants.errorsDisplayed.getValue();
-        constants.errorsDisplayed.setValue(value);
-        firePropertyChange(ERRORS_DISPLAYED, oldValue, value);
+        boolean oldValue = constants.errorsWindowDisplayed.getValue();
+        constants.errorsWindowDisplayed.setValue(value);
+        firePropertyChange(ERRORS_WINDOW_DISPLAYED, oldValue, value);
     }
 
-    //-----------------//
-    // setLogDisplayed //
-    //-----------------//
-    public void setLogDisplayed (boolean value)
+    //-----------------------//
+    // setLogWindowDisplayed //
+    //-----------------------//
+    public void setLogWindowDisplayed (boolean value)
     {
-        boolean oldValue = constants.logDisplayed.getValue();
-        constants.logDisplayed.setValue(value);
-        firePropertyChange(LOG_DISPLAYED, oldValue, value);
+        boolean oldValue = constants.logWindowDisplayed.getValue();
+        constants.logWindowDisplayed.setValue(value);
+        firePropertyChange(LOG_WINDOW_DISPLAYED, oldValue, value);
     }
 
     //-----------//
@@ -384,32 +400,39 @@ public class GuiActions
 
         aboutAction.actionPerformed(e);
     }
-//
-//    //------------//
-//    // showManual //
-//    //------------//
-//    /**
-//     * Action to launch a browser on (local) Audiveris handbook
-//     *
-//     * @param e the event which triggered this action
-//     */
-//    @Action(enabledProperty = "browserSupported")
-//    public void showManual (ActionEvent e)
-//    {
-//        Path path = WellKnowns.DOC_FOLDER.resolve(constants.manualUrl.getValue());
-//
-//        if (!Files.exists(path)) {
-//            logger.warn("Cannot find file {}", path);
-//        } else {
-//            URI uri = path.toUri();
-//            WebBrowser.getBrowser().launch(uri);
-//        }
-//    }
-//
+
+    //------------//
+    // showManual //
+    //------------//
+    /**
+     * Action to launch a browser on Audiveris manual
+     *
+     * @param e the event which triggered this action
+     */
+    @Action(enabledProperty = "browserSupported")
+    public void showManual (ActionEvent e)
+    {
+        //        Path path = WellKnowns.DOC_FOLDER.resolve(constants.manualUrl.getValue());
+        //
+        //        if (!Files.exists(path)) {
+        //            logger.warn("Cannot find file {}", path);
+        //        } else {
+        //            URI uri = path.toUri();
+        //            WebBrowser.getBrowser().launch(uri);
+        //        }
+        String str = constants.manualUrl.getValue();
+
+        try {
+            URI uri = new URI(str);
+            WebBrowser.getBrowser().launch(uri);
+        } catch (URISyntaxException ex) {
+            logger.warn("Illegal manual uri " + str, ex);
+        }
+    }
+
     //------------//
     // showMemory //
     //------------//
-
     /**
      * Action to display the current value of occupied memory
      *
@@ -418,7 +441,7 @@ public class GuiActions
     @Action
     public void showMemory (ActionEvent e)
     {
-        logger.info("Occupied memory is {} bytes", Memory.getValue());
+        logger.info("\n----- Occupied memory is {} bytes -----\n", Memory.getValue());
     }
 
     //--------------//
@@ -429,7 +452,7 @@ public class GuiActions
      *
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = BOARDS_DISPLAYED)
+    @Action(selectedProperty = BOARDS_WINDOW_DISPLAYED)
     public void toggleBoards (ActionEvent e)
     {
     }
@@ -442,7 +465,7 @@ public class GuiActions
      *
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = ERRORS_DISPLAYED)
+    @Action(selectedProperty = ERRORS_WINDOW_DISPLAYED)
     public void toggleErrors (ActionEvent e)
     {
     }
@@ -455,7 +478,7 @@ public class GuiActions
      *
      * @param e the event that triggered this action
      */
-    @Action(selectedProperty = LOG_DISPLAYED)
+    @Action(selectedProperty = LOG_WINDOW_DISPLAYED)
     public void toggleLog (ActionEvent e)
     {
     }
@@ -531,6 +554,8 @@ public class GuiActions
             book(new JEditorPane("text/html", "")),
             /** License */
             license(new JTextField()),
+            /** OCR version */
+            ocr(new JTextField()),
             /** Java vendor */
             javaVendor(new JTextField()),
             /** Java version */
@@ -567,7 +592,7 @@ public class GuiActions
                 aboutBox = createAboutBox();
             }
 
-            OMR.gui.getApplication().show(aboutBox);
+            OmrGui.getApplication().show(aboutBox);
         }
 
         private JDialog createAboutBox ()
@@ -636,6 +661,8 @@ public class GuiActions
             Topic.version.comp.setText(WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD);
             Topic.classes.comp.setText(WellKnowns.CLASS_CONTAINER.toString());
             Topic.license.comp.setText("GNU Affero GPL v3");
+
+            Topic.ocr.comp.setText(TesseractOCR.getInstance().identify());
 
             Topic.javaVendor.comp.setText(System.getProperty("java.vendor"));
             Topic.javaVersion.comp.setText(System.getProperty("java.version"));
@@ -730,21 +757,21 @@ public class GuiActions
         private final Constant.String wikiUrl = new Constant.String(
                 "https://github.com/Audiveris/audiveris/wiki",
                 "URL of Audiveris wiki");
-//
-//        private final Constant.String manualUrl = new Constant.String(
-//                "docs/manual/handbook.html",
-//                "URL of local Audiveris manual");
-//
 
-        private final Constant.Boolean boardsDisplayed = new Constant.Boolean(
+        private final Constant.String manualUrl = new Constant.String(
+                //"docs/manual/handbook.html",
+                "https://bacchushlg.gitbooks.io/audiveris-5-1/content/",
+                "URL of local Audiveris manual");
+
+        private final Constant.Boolean boardsWindowDisplayed = new Constant.Boolean(
                 true,
                 "Should the boards window be displayed");
 
-        private final Constant.Boolean logDisplayed = new Constant.Boolean(
+        private final Constant.Boolean logWindowDisplayed = new Constant.Boolean(
                 true,
                 "Should the log window be displayed");
 
-        private final Constant.Boolean errorsDisplayed = new Constant.Boolean(
+        private final Constant.Boolean errorsWindowDisplayed = new Constant.Boolean(
                 false,
                 "Should the errors window be displayed");
     }
@@ -762,7 +789,7 @@ public class GuiActions
         //~ Constructors ---------------------------------------------------------------------------
         public OptionsTask ()
         {
-            super(OMR.gui.getApplication());
+            super(OmrGui.getApplication());
 
             timer.schedule(
                     new TimerTask()
@@ -798,7 +825,7 @@ public class GuiActions
         protected void succeeded (Options options)
         {
             if (options != null) {
-                OMR.gui.getApplication().show(options.getComponent());
+                OmrGui.getApplication().show(options.getComponent());
             }
         }
     }

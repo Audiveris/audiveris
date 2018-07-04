@@ -21,17 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sig.ui;
 
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
-import org.audiveris.omr.sig.relation.Relation;
-
-import org.jdesktop.application.Task;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import org.audiveris.omr.sig.relation.Link;
 
 /**
  * Class {@code RemovalTask} removes an inter (with its relations).
@@ -50,82 +41,31 @@ public class RemovalTask
      */
     public RemovalTask (Inter inter)
     {
-        super(inter.getSig(), inter, partnershipsOf(inter));
+        super(inter.getSig(), inter, inter.getBounds(), null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public Task<Void, Void> performDo ()
+    public void performDo ()
     {
-        getInter().delete();
-
-        return null;
+        links = linksOf(inter);
+        inter.remove(false);
     }
 
     @Override
-    public Task<Void, Void> performRedo ()
+    public void performUndo ()
     {
-        return performDo();
+        inter.setBounds(initialBounds);
+        sig.addVertex(inter);
+
+        for (Link link : links) {
+            link.applyTo(inter);
+        }
     }
 
     @Override
-    public Task<Void, Void> performUndo ()
+    protected String actionName ()
     {
-        getInter().undelete();
-        sig.addVertex(getInter());
-
-        for (Partnership partnership : partnerships) {
-            partnership.applyTo(getInter());
-        }
-
-        return null;
-    }
-
-    /**
-     * Retrieve the current partnerships around the provided inter.
-     *
-     * @param inter the provided inter
-     * @return its partnerships, perhaps empty
-     */
-    private static Collection<Partnership> partnershipsOf (Inter inter)
-    {
-        final SIGraph sig = inter.getSig();
-        Set<Partnership> partnerships = null;
-
-        for (Relation rel : sig.edgesOf(inter)) {
-            if (partnerships == null) {
-                partnerships = new LinkedHashSet<Partnership>();
-            }
-
-            Inter partner = sig.getOppositeInter(inter, rel);
-
-            partnerships.add(
-                    new Partnership(
-                            sig.getOppositeInter(inter, rel),
-                            rel,
-                            sig.getEdgeTarget(rel) == partner));
-        }
-
-        //        // Incomings
-        //        for (Relation rel : sig.incomingEdgesOf(inter)) {
-        //            if (partnerships == null) {
-        //                partnerships = new LinkedHashSet<Partnership>();
-        //            }
-        //
-        //            partnerships.add(new Partnership(sig.getOppositeInter(inter, rel), rel, false));
-        //        }
-        //
-        //        // Outgoings
-        //        for (Relation rel : sig.outgoingEdgesOf(inter)) {
-        //            if (partnerships == null) {
-        //                partnerships = new LinkedHashSet<Partnership>();
-        //            }
-        //
-        //        }
-        if (partnerships == null) {
-            return Collections.emptySet();
-        }
-
-        return partnerships;
+        return "del";
     }
 }

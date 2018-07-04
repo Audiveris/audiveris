@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.util.Dumping;
@@ -231,15 +232,11 @@ public class SegmentsBuilder
             Glyph glyph = segment.retrieveGlyph(sheet, params.maxRunDistance);
 
             if (glyph != null) {
+                inter.setGlyph(glyph);
                 inters.add(inter);
                 segments.add(inter);
             }
         }
-    }
-
-    @Override
-    protected void filterInters (Set<Inter> inters)
-    {
     }
 
     @Override
@@ -252,6 +249,11 @@ public class SegmentsBuilder
     protected Point2D getEndVector (Curve curve)
     {
         return curve.getModel().getEndVector(reverse);
+    }
+
+    @Override
+    protected void pruneClump (Set<Inter> clump)
+    {
     }
 
     @Override
@@ -325,7 +327,7 @@ public class SegmentsBuilder
     //-----------------//
     private void purgeDuplicates ()
     {
-        Collections.sort(segments, Inter.byAbscissa);
+        Collections.sort(segments, Inters.byAbscissa);
 
         for (int i = 0; i < segments.size(); i++) {
             SegmentInfo seg = segments.get(i).getInfo();

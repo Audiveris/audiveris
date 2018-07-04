@@ -22,13 +22,29 @@
 package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.score.Page;
+import org.audiveris.omr.sheet.Part;
+import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
+import org.audiveris.omr.sig.ui.AdditionTask;
+import org.audiveris.omr.sig.ui.InterTask;
+import org.audiveris.omr.sig.ui.UITask;
+import org.audiveris.omr.sig.ui.UITaskList;
+import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.AbstractSystemStep;
 import org.audiveris.omr.step.StepException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class {@code MeasuresStep} allocates the measures from the relevant bar lines.
@@ -41,6 +57,14 @@ public class MeasuresStep
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(MeasuresStep.class);
+
+    /** All impacting classes. */
+    private static final Set<Class> impactingClasses;
+
+    static {
+        impactingClasses = new HashSet<Class>();
+        impactingClasses.add(StaffBarlineInter.class);
+    }
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -62,6 +86,73 @@ public class MeasuresStep
         new MeasuresBuilder(system).buildMeasures();
     }
 
+    //--------//
+    // impact //
+    //--------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * For MEASURES step, in seq argument, we can have either: <ul>
+     * <li>BarlineInter instances
+     * <li>StaffBarlineInter instances
+     * </ul>
+     *
+     * @param seq    the sequence of UI tasks
+     * @param opKind which operation is done on seq
+     */
+    @Override
+    public void impact (UITaskList seq,
+                        UITask.OpKind opKind)
+    {
+        logger.debug("MEASURES impact {} {}", opKind, seq);
+
+        final List<Inter> staffBarlines = seq.getInters(StaffBarlineInter.class);
+
+        if (!staffBarlines.isEmpty() && seq.isOptionSet(Option.UPDATE_MEASURES)) {
+            final StaffBarlineInter oneBar = (StaffBarlineInter) staffBarlines.get(0);
+            final SystemInfo system = oneBar.getStaff().getSystem();
+
+            // Determine impacted measure stack
+            Point centerLeft = oneBar.getCenterLeft();
+            MeasureStack stack = system.getStackAt(centerLeft);
+            final boolean isAddition = isAddition(seq);
+
+            if ((!isAddition && (opKind != UITask.OpKind.UNDO))
+                || (isAddition && (opKind == UITask.OpKind.UNDO))) {
+                // Remove barlines
+                MeasureStack rightStack = stack.getNextSibling();
+
+                if (rightStack != null) {
+                    logger.info("Merging {} with right", stack);
+                    stack.mergeWithRight(rightStack);
+                    system.removeStack(rightStack);
+                }
+            } else {
+                // Insert barlines
+                logger.info("Splitting stack at {}", oneBar);
+
+                // Retrieve all involved barlines
+                List<PartBarline> systemBarline = buildFromStaffBarlines(staffBarlines);
+                MeasureStack leftStack = stack.splitAtBarline(systemBarline);
+                leftStack.setExpectedDuration(stack.getExpectedDuration());
+            }
+
+            // Renumber measures
+            for (Page page : system.getSheet().getPages()) {
+                page.numberMeasures();
+            }
+        }
+    }
+
+    //--------------//
+    // isImpactedBy //
+    //--------------//
+    @Override
+    public boolean isImpactedBy (Class classe)
+    {
+        return isImpactedBy(classe, impactingClasses);
+    }
+
     //----------//
     // doEpilog //
     //----------//
@@ -75,5 +166,62 @@ public class MeasuresStep
             page.numberMeasures();
             page.dumpMeasureCounts();
         }
+    }
+
+    //------------------------//
+    // buildFromStaffBarlines //
+    //------------------------//
+    /**
+     * Build the proper list of PartBarline that corresponds to the StaffBarlines in seq.
+     * <p>
+     * Assumption: all staffBarlines must be present and in proper order!
+     *
+     * @param staffBarlines list of staffBarline instances
+     * @return the "system" barline construction
+     */
+    private List<PartBarline> buildFromStaffBarlines (List<Inter> staffBarlines)
+    {
+        final List<PartBarline> systemBarline = new ArrayList<PartBarline>();
+
+        Part lastPart = null;
+        PartBarline partBarline = null;
+        Staff lastStaff = null;
+
+        for (Inter inter : staffBarlines) {
+            StaffBarlineInter staffBarline = (StaffBarlineInter) inter;
+            Staff staff = staffBarline.getStaff();
+            Part part = staff.getPart();
+
+            if (part != lastPart) {
+                partBarline = new PartBarline();
+                systemBarline.add(partBarline);
+                lastPart = part;
+            }
+
+            if (staff != lastStaff) {
+                partBarline.addStaffBarline(staffBarline);
+                lastStaff = staff;
+            }
+        }
+
+        return systemBarline;
+    }
+
+    //------------//
+    // isAddition //
+    //------------//
+    private boolean isAddition (UITaskList seq)
+    {
+        for (UITask task : seq.getTasks()) {
+            if (task instanceof InterTask) {
+                final Inter inter = ((InterTask) task).getInter();
+
+                if (inter instanceof StaffBarlineInter && task instanceof AdditionTask) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

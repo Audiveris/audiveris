@@ -100,6 +100,7 @@ public class BaseTestCase
     //---------//
     // runTest //
     //---------//
+
     @Override
     protected void runTest ()
             throws Throwable

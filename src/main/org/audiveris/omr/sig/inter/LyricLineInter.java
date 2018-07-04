@@ -21,19 +21,17 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
-import org.audiveris.omr.text.TextWord;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
@@ -70,10 +68,9 @@ public class LyricLineInter
      */
     private LyricLineInter (Rectangle bounds,
                             double grade,
-                            FontInfo meanFont,
-                            List<WordInter> words)
+                            FontInfo meanFont)
     {
-        super(bounds, grade, meanFont, TextRole.Lyrics, words);
+        super(bounds, grade, meanFont, TextRole.Lyrics);
     }
 
     /**
@@ -85,6 +82,28 @@ public class LyricLineInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        if (staff != null) {
+            staff.getPart().addLyric(this);
+        }
+    }
+
+    //--------//
     // create //
     //--------//
     /**
@@ -95,18 +114,10 @@ public class LyricLineInter
      */
     public static LyricLineInter create (TextLine line)
     {
-        List<WordInter> wordInters = new ArrayList<WordInter>();
-
-        for (TextWord word : line.getWords()) {
-            LyricItemInter item = new LyricItemInter(word);
-            wordInters.add(item);
-        }
-
         LyricLineInter lyricLine = new LyricLineInter(
                 line.getBounds(),
-                line.getConfidence() * Inter.intrinsicRatio,
-                line.getMeanFont(),
-                wordInters);
+                line.getConfidence() * Grades.intrinsicRatio,
+                line.getMeanFont());
 
         return lyricLine;
     }
@@ -125,8 +136,7 @@ public class LyricLineInter
 
         // Check existence of similar line in following system part (within the same page)
         SystemInfo system = sig.getSystem();
-        Staff staffAbove = system.getStaffAtOrAbove(this.getFirstWord().getLocation());
-        Part nextPart = staffAbove.getPart().getFollowingInPage();
+        Part nextPart = staff.getPart().getFollowingInPage();
 
         if (nextPart != null) {
             // Retrieve the same lyrics line in the next (system) part
@@ -163,8 +173,7 @@ public class LyricLineInter
     {
         // Check existence of similar line in preceding system part
         SystemInfo system = sig.getSystem();
-        Staff staffAbove = system.getStaffAtOrAbove(this.getFirstWord().getLocation());
-        Part prevPart = staffAbove.getPart().getPrecedingInPage();
+        Part prevPart = staff.getPart().getPrecedingInPage();
 
         if ((prevPart != null) && (prevPart.getLyrics().size() >= number)) {
             return (LyricLineInter) prevPart.getLyrics().get(number - 1);
@@ -186,6 +195,24 @@ public class LyricLineInter
         return sb.toString();
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    /**
+     * Invalidate cached information. (following the addition or removal of a word)
+     */
+    @Override
+    public void invalidateCache ()
+    {
+        super.invalidateCache();
+
+        if (getMembers().size() == 1) {
+            // First item in lyric line, now we can sort lyrics within part
+            Part part = getPart();
+            part.sortLyricLines();
+        }
+    }
+
     //----------------------//
     // refineLyricSyllables //
     //----------------------//
@@ -200,6 +227,8 @@ public class LyricLineInter
         }
 
         // Now browse sequentially all our line items
+        final List<? extends Inter> words = getMembers();
+
         for (int i = 0; i < words.size(); i++) {
             LyricItemInter item = (LyricItemInter) words.get(i);
 
@@ -225,6 +254,19 @@ public class LyricLineInter
         }
     }
 
+    //--------//
+    // remove //
+    //--------//
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (staff != null) {
+            staff.getPart().removeLyric(this);
+        }
+
+        super.remove(extensive);
+    }
+
     //-----------//
     // setNumber //
     //-----------//
@@ -239,6 +281,6 @@ public class LyricLineInter
     @Override
     public String shapeString ()
     {
-        return "LYRICS_\"" + getValue() + "\"";
+        return "LYRICS";
     }
 }

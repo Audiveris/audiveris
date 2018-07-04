@@ -22,8 +22,8 @@
 package org.audiveris.omr.check;
 
 import org.audiveris.omr.constant.Constant;
-import org.audiveris.omr.util.NamedDouble;
 import org.audiveris.omr.sig.GradeUtil;
+import org.audiveris.omr.util.NamedDouble;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +99,26 @@ public abstract class Check<C>
         this.failure = redResult;
 
         verifyRange();
+    }
+
+    /**
+     * Creates a new Check object.
+     *
+     * @param name        short name for this check
+     * @param description longer description
+     * @param low         lower bound of orange zone
+     * @param high        upper bound of orange zone
+     * @param covariant   true if higher is better, false otherwise
+     * @param redResult   result code to be assigned when result is RED
+     */
+    protected Check (String name,
+                     String description,
+                     Constant.Double low,
+                     Constant.Double high,
+                     boolean covariant,
+                     Failure redResult)
+    {
+        this(name, description, new NamedDouble(low), new NamedDouble(high), covariant, redResult);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

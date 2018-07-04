@@ -21,25 +21,27 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.note;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.beam.BeamGroup;
+import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
-import org.audiveris.omr.sig.inter.HeadInter;
+import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.StemInter;
+import org.audiveris.omr.sig.relation.BeamPortion;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
-import org.audiveris.omr.sig.relation.HeadStemRelation;
-import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class {@code ChordsLinker} works at system level to handle relations between chords
@@ -53,6 +55,8 @@ public class ChordsLinker
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(ChordsLinker.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
@@ -60,7 +64,8 @@ public class ChordsLinker
     @Navigable(false)
     private final SystemInfo system;
 
-    /** System SIG. */
+    /** System sig. */
+    @Navigable(false)
     private final SIGraph sig;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -76,45 +81,105 @@ public class ChordsLinker
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // checkBeamChords //
+    //-----------------//
+    /**
+     * Now that chords are known, re-check the connections between beams and chords.
+     * <p>
+     * This is meant to detect false beam-stem connections.
+     * Conflicting chords are detected via their overlapping ratio in abscissa.
+     * <p>
+     * Which conflicting chord must be disconnected from the beam?
+     * Not a beam side chord.
+     * The one with weaker connection.
+     * <p>
+     * TODO: Perhaps choose the one in opposite direction WRT chord majority?
+     */
+    public void checkBeamChords ()
+    {
+        final double maxRatio = constants.maxAbscissaOverlapRatio.getValue();
+
+        for (Inter inter : system.getSig().inters(BeamInter.class)) {
+            if (inter.isVip()) {
+                logger.info("VIP checkBeamChords for {}", inter);
+            }
+
+            final BeamInter beam = (BeamInter) inter;
+            final List<AbstractChordInter> chords = beam.getChords(); // Sorted by center abscissa
+
+            AbstractChordInter prevChord = null;
+
+            for (AbstractChordInter chord : chords) {
+                final Rectangle bounds = chord.getBounds();
+
+                if (prevChord != null) {
+                    final int overlap = GeoUtil.xOverlap(prevChord.getBounds(), bounds);
+                    final double ratio = (double) overlap / bounds.width;
+
+                    if (ratio > maxRatio) {
+                        logger.info("{} Overlapping {} {} vs {}", beam, ratio, prevChord, chord);
+
+                        StemInter prevStem = prevChord.getStem();
+                        BeamStemRelation prevRel = (BeamStemRelation) sig.getEdge(
+                                beam,
+                                prevStem);
+
+                        StemInter stem = chord.getStem();
+                        BeamStemRelation rel = (BeamStemRelation) sig.getEdge(beam, stem);
+
+                        final BeamStemRelation guiltyRel;
+
+                        if (prevRel.getBeamPortion() == BeamPortion.LEFT) {
+                            guiltyRel = rel; // Keep beam side chord
+                        } else if (rel.getBeamPortion() == BeamPortion.RIGHT) {
+                            guiltyRel = prevRel; // Keep beam side chord
+                        } else {
+                            // Use connection grade
+                            guiltyRel = (prevRel.getGrade() < rel.getGrade()) ? prevRel : rel;
+                        }
+
+                        sig.removeEdge(guiltyRel);
+
+                        AbstractChordInter guiltyChord = (guiltyRel == prevRel) ? prevChord : chord;
+                        logger.info("{} disconnected from {}", guiltyChord, beam);
+
+                        // Adjust which is the "current" chord
+                        if (guiltyRel == rel) {
+                            chord = prevChord;
+                        }
+                    }
+                }
+
+                prevChord = chord;
+            }
+        }
+    }
+
     //------------//
     // linkChords //
     //------------//
     public void linkChords ()
     {
-        // Handle beam - chords relationships
-        linkBeams();
-
         // Allocate beam groups per stack
-        for (MeasureStack stack : system.getMeasureStacks()) {
-            BeamGroup.populate(stack);
+        for (MeasureStack stack : system.getStacks()) {
+            for (Measure measure : stack.getMeasures()) {
+                BeamGroup.populate(measure, true); // True for checkGroupSplit
+            }
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
-    // linkBeams //
+    // Constants //
     //-----------//
-    /**
-     * Set up links between beams and chords, both ways.
-     */
-    private void linkBeams ()
+    private static final class Constants
+            extends ConstantSet
     {
-        List<Inter> beams = sig.inters(AbstractBeamInter.class);
+        //~ Instance fields ------------------------------------------------------------------------
 
-        for (Inter inter : beams) {
-            AbstractBeamInter beam = (AbstractBeamInter) inter;
-            Set<Relation> bsRels = sig.getRelations(beam, BeamStemRelation.class);
-
-            for (Relation bs : bsRels) {
-                StemInter stem = (StemInter) sig.getOppositeInter(beam, bs);
-                Set<Relation> hsRels = sig.getRelations(stem, HeadStemRelation.class);
-
-                for (Relation hs : hsRels) {
-                    HeadInter head = (HeadInter) sig.getOppositeInter(stem, hs);
-                    AbstractChordInter chord = head.getChord();
-                    chord.addBeam(beam);
-                    beam.addChord(chord);
-                }
-            }
-        }
+        private final Constant.Ratio maxAbscissaOverlapRatio = new Constant.Ratio(
+                0.25,
+                "Maximum abscissa relative overlap ratio between chords of a beam");
     }
 }

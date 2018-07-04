@@ -35,7 +35,6 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sheet.rhythm.SystemBackup;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
@@ -46,13 +45,18 @@ import org.audiveris.omr.sig.inter.BarlineInter;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.DeletedInterException;
+import org.audiveris.omr.sig.inter.EnsembleHelper;
+import org.audiveris.omr.sig.inter.HeadChordInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.InterEnsemble;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.KeyAlterInter;
 import org.audiveris.omr.sig.inter.LedgerInter;
+import org.audiveris.omr.sig.inter.RestInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.StringSymbolInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
@@ -70,10 +74,13 @@ import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
-import static org.audiveris.omr.sig.relation.StemPortion.*;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_BOTTOM;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_MIDDLE;
+import static org.audiveris.omr.sig.relation.StemPortion.STEM_TOP;
 import org.audiveris.omr.sig.relation.TimeTopBottomRelation;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 
@@ -214,27 +221,6 @@ public class SigReducer
     }
 
     //---------------//
-    // reduceRhythms //
-    //---------------//
-    /**
-     * NOT USED!
-     * Reduce interpretations while saving reduced rhythm data.
-     * This is meant for the RHYTHMS step.
-     *
-     * @param systemPoorFrats (output) where selected inters must be backed up
-     * @param classes         FRAT classes
-     */
-    @Deprecated
-    public void reduceRhythms (SystemBackup systemPoorFrats,
-                               Class<?>... classes)
-    {
-        AdapterForRhythms adapter = new AdapterForRhythms(systemPoorFrats, classes);
-        Set<Inter> allRemoved = reduce(adapter);
-        allRemoved.retainAll(adapter.selected);
-        systemPoorFrats.setSeeds(allRemoved);
-    }
-
-    //---------------//
     // analyzeChords //
     //---------------//
     /**
@@ -248,8 +234,11 @@ public class SigReducer
      */
     private void analyzeChords ()
     {
+        logger.debug("S#{} analyzeChords", system.getId());
+
         // All stems of the sig
         List<Inter> stems = sig.inters(Shape.STEM);
+        Collections.sort(stems, Inters.byReverseGrade);
 
         // Heads organized by shape (black, void, and small versions)
         Map<Shape, Set<Inter>> heads = new HashMap<Shape, Set<Inter>>();
@@ -264,7 +253,7 @@ public class SigReducer
 
             // Consider only good stems
             if (!stem.isGood()) {
-                continue;
+                break; // Since stems collection is ordered by decreasing grade
             }
 
             heads.clear();
@@ -432,6 +421,8 @@ public class SigReducer
      */
     private void analyzeFrozenInters ()
     {
+        logger.debug("S#{} analyzeFrozenInters", system.getId());
+
         Set<Inter> toDelete = new LinkedHashSet<Inter>();
 
         for (Inter inter : sig.vertexSet()) {
@@ -464,6 +455,8 @@ public class SigReducer
      */
     private void analyzeHeadStems ()
     {
+        logger.debug("S#{} analyzeHeadStems", system.getId());
+
         final List<Inter> heads = sig.inters(ShapeSet.StemHeads);
 
         for (Inter hi : heads) {
@@ -486,34 +479,6 @@ public class SigReducer
         }
     }
 
-    //------------------//
-    // beamHasBothStems //
-    //------------------//
-    private boolean beamHasBothStems (BeamInter beam)
-    {
-        boolean hasLeft = false;
-        boolean hasRight = false;
-
-        //        if (beam.isVip()) {
-        //            logger.info("VIP beamHasBothStems for {}", beam);
-        //        }
-        //
-        for (Relation rel : sig.edgesOf(beam)) {
-            if (rel instanceof BeamStemRelation) {
-                BeamStemRelation bsRel = (BeamStemRelation) rel;
-                BeamPortion portion = bsRel.getBeamPortion();
-
-                if (portion == BeamPortion.LEFT) {
-                    hasLeft = true;
-                } else if (portion == BeamPortion.RIGHT) {
-                    hasRight = true;
-                }
-            }
-        }
-
-        return hasLeft && hasRight;
-    }
-
     //-----------------------//
     // checkAugmentationDots //
     //-----------------------//
@@ -526,6 +491,8 @@ public class SigReducer
      */
     private int checkAugmentationDots ()
     {
+        logger.debug("S#{} checkAugmentationDots", system.getId());
+
         int modifs = 0;
         final List<Inter> dots = sig.inters(AugmentationDotInter.class);
 
@@ -549,36 +516,102 @@ public class SigReducer
                 }
             }
 
-            if (dot.isVip() || logger.isDebugEnabled()) {
-                logger.info("Deleting {} lacking target", dot);
+            if (dot.isVip()) {
+                logger.info("VIP deleting {} lacking target", dot);
             }
 
-            dot.delete();
+            dot.remove();
             modifs++;
         }
 
         return modifs;
     }
 
-    //----------------//
-    // checkAugmented //
-    //----------------//
+    //--------------------//
+    // checkAugmentedDots //
+    //--------------------//
     /**
-     * Perform checks on augmented entities.
-     * <p>
-     * An entity (note, rest or augmentation dot) can have at most one augmentation dot.
-     * <p>
-     * NOTA: This is OK for rests but not always for heads.
-     * TODO: We could address head-chords rather than individual heads and handle the chord
-     * augmentation dots as a whole (in parallel with chord heads) and link each chord head with its
-     * 'facing' dot.
+     * Perform checks on augmented dots (double dots).
      *
      * @return the count of modifications done
      */
-    private int checkAugmented ()
+    private int checkAugmentedDots ()
     {
+        logger.debug("S#{} checkAugmentedDots", system.getId());
+
         int modifs = 0;
-        List<Inter> entities = sig.inters(AbstractNoteInter.class);
+        List<Inter> entities = sig.inters(AugmentationDotInter.class);
+
+        for (Inter entity : entities) {
+            Set<Relation> rels = sig.getRelations(entity, DoubleDotRelation.class);
+
+            if (rels.size() > 1) {
+                modifs += reduceAugmentations(rels);
+
+                if (entity.isVip()) {
+                    logger.info("VIP reduced augmentations for {}", entity);
+                }
+            }
+        }
+
+        return modifs;
+    }
+
+    //---------------------//
+    // checkAugmentedHeads //
+    //---------------------//
+    /**
+     * Perform checks on augmented heads.
+     * <p>
+     * Here we work headChord by headChord.
+     *
+     * @return the count of modifications done
+     */
+    private int checkAugmentedHeads ()
+    {
+        logger.debug("S#{} checkAugmentedHeads", system.getId());
+
+        int modifs = 0;
+        final List<Inter> headChords = sig.inters(HeadChordInter.class);
+
+        for (Inter hc : headChords) {
+            final HeadChordInter chord = (HeadChordInter) hc;
+
+            // Heads, ordered top down
+            final List<? extends Inter> heads = EnsembleHelper.getMembers(
+                    chord,
+                    Inters.byCenterOrdinate);
+
+            for (Inter entity : heads) {
+                final Set<Relation> rels = sig.getRelations(entity, AugmentationRelation.class);
+
+                if (rels.size() > 1) {
+                    modifs += reduceHeadAugmentations((HeadInter) entity, rels);
+
+                    if (entity.isVip()) {
+                        logger.info("VIP reduced augmentations for {}", entity);
+                    }
+                }
+            }
+        }
+
+        return modifs;
+    }
+
+    //---------------------//
+    // checkAugmentedRests //
+    //---------------------//
+    /**
+     * Perform checks on augmented rests.
+     *
+     * @return the count of modifications done
+     */
+    private int checkAugmentedRests ()
+    {
+        logger.debug("S#{} checkAugmentedRests", system.getId());
+
+        int modifs = 0;
+        List<Inter> entities = sig.inters(RestInter.class);
 
         for (Inter entity : entities) {
             Set<Relation> rels = sig.getRelations(entity, AugmentationRelation.class);
@@ -586,8 +619,8 @@ public class SigReducer
             if (rels.size() > 1) {
                 modifs += reduceAugmentations(rels);
 
-                if (entity.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Reduced augmentations for {}", entity);
+                if (entity.isVip()) {
+                    logger.info("VIP reduced augmentations for {}", entity);
                 }
             }
         }
@@ -595,29 +628,35 @@ public class SigReducer
         return modifs;
     }
 
-    //------------//
-    // checkBeams //
-    //------------//
+    //-------------------------//
+    // checkBeamsHaveBothStems //
+    //-------------------------//
     /**
      * Perform checks on beams.
      *
      * @return the count of modifications done
      */
-    private int checkBeams ()
+    private int checkBeamsHaveBothStems ()
     {
+        logger.debug("S#{} checkBeamsHaveBothStems", system.getId());
+
         int modifs = 0;
         final List<Inter> beams = sig.inters(BeamInter.class);
 
         for (Inter inter : beams) {
             final BeamInter beam = (BeamInter) inter;
 
-            if (!beamHasBothStems(beam)) {
-                if (beam.isVip() || logger.isDebugEnabled()) {
-                    logger.info("VIP deleting beam lacking stem {}", beam);
-                }
+            for (BeamPortion portion : new BeamPortion[]{BeamPortion.LEFT, BeamPortion.RIGHT}) {
+                if (beam.getStemOn(portion) == null) {
+                    if (beam.isVip()) {
+                        logger.info("VIP deleting beam lacking stem {} on {}", beam, portion);
+                    }
 
-                beam.delete();
-                modifs++;
+                    beam.remove();
+                    modifs++;
+
+                    break;
+                }
             }
         }
 
@@ -635,6 +674,8 @@ public class SigReducer
      */
     private int checkDoubleAlters ()
     {
+        logger.debug("S#{} checkDoubleAlters", system.getId());
+
         int modifs = 0;
         final List<Inter> doubles = sig.inters(
                 Arrays.asList(Shape.DOUBLE_FLAT, Shape.DOUBLE_SHARP));
@@ -644,11 +685,11 @@ public class SigReducer
 
             // Check whether the double-alter is connected to a note head
             if (!sig.hasRelation(alter, AlterHeadRelation.class)) {
-                if (alter.isVip() || logger.isDebugEnabled()) {
+                if (alter.isVip()) {
                     logger.info("VIP deleting {} lacking note head", alter);
                 }
 
-                alter.delete();
+                alter.remove();
                 modifs++;
             }
         }
@@ -664,7 +705,8 @@ public class SigReducer
      * side, located one or two step(s) further.
      * <p>
      * If the side is wrong and there is no head on the other side, simply remove this head-stem
-     * relation and insert exclusion instead.
+     * relation.
+     * TODO: If head and stem really overlap, insert exclusion between them.
      *
      * @param head the head inter (black or void)
      * @return the number of modifications done
@@ -693,7 +735,7 @@ public class SigReducer
                     logger.info("VIP deleting {} with no correct head on either end", stem);
                 }
 
-                stem.delete();
+                stem.remove();
                 modifs++;
 
                 continue;
@@ -720,12 +762,21 @@ public class SigReducer
             }
 
             // We have a bad head+stem couple, so let's remove the relationship
-            if (head.isVip() || logger.isDebugEnabled()) {
+            if (head.isVip()) {
                 logger.info("VIP wrong side for {} on {}", head, stem);
             }
 
             sig.removeEdge(rel);
-            sig.insertExclusion(head, stem, Exclusion.Cause.INCOMPATIBLE);
+
+            // Should we insert an exclusion between head inter and stem inter?
+            if (rel.isInvading()) {
+                if (stem.isVip() || head.isVip()) {
+                    logger.info("VIP invasion between {} & {}", head, stem);
+                }
+
+                sig.insertExclusion(head, stem, Exclusion.Cause.OVERLAP);
+            }
+
             modifs++;
         }
 
@@ -742,6 +793,8 @@ public class SigReducer
      */
     private int checkHeads ()
     {
+        logger.debug("S#{} checkHeads (headHasStem + checkHeadSide)", system.getId());
+
         int modifs = 0;
         final List<Inter> heads = sig.inters(ShapeSet.StemHeads);
 
@@ -751,12 +804,8 @@ public class SigReducer
             }
 
             // Check if the head has a stem relation
-            if (!sig.hasRelation(head, HeadStemRelation.class)) {
-                if (head.isVip() || logger.isDebugEnabled()) {
-                    logger.info("VIP no stem for {}", head);
-                }
-
-                head.delete();
+            if (!headHasStem(head)) {
+                head.remove();
                 modifs++;
 
                 continue;
@@ -769,27 +818,29 @@ public class SigReducer
         return modifs;
     }
 
-    //------------//
-    // checkHooks //
-    //------------//
+    //--------------------//
+    // checkHooksHaveStem //
+    //--------------------//
     /**
      * Perform checks on hooks.
      *
      * @return the count of modifications done
      */
-    private int checkHooks ()
+    private int checkHooksHaveStem ()
     {
+        logger.debug("S#{} checkHooksHaveStem", system.getId());
+
         int modifs = 0;
         final List<Inter> inters = sig.inters(BeamHookInter.class);
 
         for (Inter inter : inters) {
             // Check if the hook has a stem relation
             if (!sig.hasRelation(inter, BeamStemRelation.class)) {
-                if (inter.isVip() || logger.isDebugEnabled()) {
+                if (inter.isVip()) {
                     logger.info("VIP no stem for {}", inter);
                 }
 
-                inter.delete();
+                inter.remove();
             }
         }
 
@@ -815,6 +866,8 @@ public class SigReducer
      */
     private int checkIsolatedAlters ()
     {
+        logger.debug("S#{} checkIsolatedAlters", system.getId());
+
         int modifs = 0;
         final List<Inter> alters = sig.inters(ShapeSet.Accidentals.getShapes());
 
@@ -844,17 +897,17 @@ public class SigReducer
 
             if ((measure != null)
                 && (measure == part.getLastMeasure())
-                && (measure.getBarline(HorizontalSide.RIGHT) == null)) {
+                && (measure.getPartBarlineOn(HorizontalSide.RIGHT) == null)) {
                 // Empty measure?
                 // Measure width?
                 continue;
             }
 
-            if (alter.isVip() || logger.isDebugEnabled()) {
+            if (alter.isVip()) {
                 logger.info("VIP deleting isolated {}", alter);
             }
 
-            alter.delete();
+            alter.remove();
             modifs++;
         }
 
@@ -871,9 +924,11 @@ public class SigReducer
      */
     private int checkLedgers ()
     {
+        logger.debug("S#{} checkLedgers", system.getId());
+
         // All system note heads, sorted by abscissa
         List<Inter> allHeads = sig.inters(ShapeSet.Heads);
-        Collections.sort(allHeads, Inter.byAbscissa);
+        Collections.sort(allHeads, Inters.byAbscissa);
 
         final List<LedgerInter> toDelete = new ArrayList<LedgerInter>();
         boolean modified;
@@ -896,11 +951,11 @@ public class SigReducer
 
                     for (LedgerInter ledger : ledgersCopy) {
                         if (!ledgerHasHeadOrLedger(staff, index, ledger, allHeads)) {
-                            if (ledger.isVip() || logger.isDebugEnabled()) {
+                            if (ledger.isVip()) {
                                 logger.info("VIP deleting orphan ledger {}", ledger);
                             }
 
-                            ledger.delete();
+                            ledger.remove();
                             modified = true;
                         }
                     }
@@ -910,7 +965,7 @@ public class SigReducer
 
         if (!toDelete.isEmpty()) {
             for (LedgerInter ledger : toDelete) {
-                ledger.delete(); // This updates the ledgerMap in relevant staves
+                ledger.remove(); // This updates the ledgerMap in relevant staves
             }
         }
 
@@ -927,6 +982,8 @@ public class SigReducer
      */
     private Set<Inter> checkSlurOnTuplet ()
     {
+        logger.debug("S#{} checkSlurOnTuplet", system.getId());
+
         Set<Inter> deleted = new LinkedHashSet<Inter>();
         final int maxSlurWidth = scale.toPixels(constants.maxTupletSlurWidth);
         final List<Inter> slurs = sig.inters(
@@ -935,7 +992,7 @@ public class SigReducer
             @Override
             public boolean check (Inter inter)
             {
-                return !inter.isDeleted() && (inter instanceof SlurInter)
+                return !inter.isRemoved() && (inter instanceof SlurInter)
                        && (inter.getBounds().width <= maxSlurWidth);
             }
         });
@@ -946,7 +1003,7 @@ public class SigReducer
             @Override
             public boolean check (Inter inter)
             {
-                return !inter.isDeleted() && (inter instanceof TupletInter)
+                return !inter.isRemoved() && (inter instanceof TupletInter)
                        && (inter.isContextuallyGood());
             }
         });
@@ -961,11 +1018,11 @@ public class SigReducer
 
             for (Inter tuplet : tuplets) {
                 if (box.intersects(tuplet.getBounds())) {
-                    if (slur.isVip() || logger.isDebugEnabled()) {
+                    if (slur.isVip()) {
                         logger.info("VIP deleting tuplet-slur {}", slur);
                     }
 
-                    slur.delete();
+                    slur.remove();
                     deleted.add(slur);
 
                     break;
@@ -986,6 +1043,8 @@ public class SigReducer
      */
     private int checkStemEndingHeads ()
     {
+        logger.debug("S#{} checkStemEndingHeads (pruneStemHeads)", system.getId());
+
         int modifs = 0;
         final List<Inter> stems = sig.inters(Shape.STEM);
 
@@ -995,54 +1054,6 @@ public class SigReducer
             // Cut links to ending heads on wrong stem side
             if (pruneStemHeads(stem)) {
                 modifs++;
-            }
-        }
-
-        return modifs;
-    }
-
-    //------------------//
-    // checkStemLengths //
-    //------------------//
-    /**
-     * Perform checks on stem length from tail to closest head anchor.
-     *
-     * @return the count of modifications done
-     */
-    private int checkStemLengths ()
-    {
-        final int minStemExtension = scale.toPixels(constants.minStemExtension);
-        final List<Inter> stems = sig.inters(Shape.STEM);
-        int modifs = 0;
-
-        for (Inter inter : stems) {
-            final StemInter stem = (StemInter) inter;
-            final Rectangle stemBox = stem.getBounds();
-            Rectangle headsBox = null;
-
-            for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
-                final HeadInter head = (HeadInter) sig.getOppositeInter(stem, rel);
-                final Rectangle headBox = head.getBounds();
-
-                if (headsBox == null) {
-                    headsBox = headBox;
-                } else {
-                    headsBox.add(headBox);
-                }
-            }
-
-            if (headsBox == null) {
-                stem.delete();
-                modifs++;
-            } else {
-                final int above = headsBox.y - stemBox.y;
-                final int below = (stemBox.y + stemBox.height) - (headsBox.y + headsBox.height);
-                final int extension = Math.max(above, below);
-
-                if (extension < minStemExtension) {
-                    stem.delete();
-                    modifs++;
-                }
             }
         }
 
@@ -1059,6 +1070,8 @@ public class SigReducer
      */
     private int checkStems ()
     {
+        logger.debug("S#{} checkStems (stemHasHeadAtEnd + stemHasSingleHeadEnd)", system.getId());
+
         int modifs = 0;
         final List<Inter> stems = sig.inters(Shape.STEM);
 
@@ -1066,11 +1079,11 @@ public class SigReducer
             final StemInter stem = (StemInter) inter;
 
             if (!stemHasHeadAtEnd(stem)) {
-                if (stem.isVip() || logger.isDebugEnabled()) {
+                if (stem.isVip()) {
                     logger.info("VIP deleting stem lacking starting head {}", stem);
                 }
 
-                stem.delete();
+                stem.remove();
                 modifs++;
 
                 continue;
@@ -1078,6 +1091,69 @@ public class SigReducer
 
             if (!stemHasSingleHeadEnd(stem)) {
                 modifs++;
+            }
+        }
+
+        return modifs;
+    }
+
+    //-------------------//
+    // checkStemsLengths //
+    //-------------------//
+    /**
+     * Perform checks on stems length from tail to closest head anchor.
+     *
+     * @return the count of modifications done
+     */
+    private int checkStemsLengths ()
+    {
+        logger.debug("S#{} checkStemsLengths", system.getId());
+
+        final int minStemExtension = scale.toPixels(constants.minStemExtension);
+        final List<Inter> stems = sig.inters(Shape.STEM);
+        int modifs = 0;
+
+        for (Inter inter : stems) {
+            final StemInter stem = (StemInter) inter;
+
+            if (stem.isVip()) {
+                logger.info("VIP checkStemsLengths on {}", stem);
+            }
+
+            final Rectangle stemBox = stem.getBounds();
+            Rectangle headsBox = null;
+
+            for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
+                final HeadInter head = (HeadInter) sig.getOppositeInter(stem, rel);
+                final Rectangle headBox = head.getBounds();
+
+                if (headsBox == null) {
+                    headsBox = headBox;
+                } else {
+                    headsBox.add(headBox);
+                }
+            }
+
+            if (headsBox == null) {
+                if (stem.isVip()) {
+                    logger.info("VIP no headsBox for {}", stem);
+                }
+
+                stem.remove();
+                modifs++;
+            } else {
+                final int above = headsBox.y - stemBox.y;
+                final int below = (stemBox.y + stemBox.height) - (headsBox.y + headsBox.height);
+                final int extension = Math.max(above, below);
+
+                if (extension < minStemExtension) {
+                    if (stem.isVip()) {
+                        logger.info("VIP too small tail for {}", stem);
+                    }
+
+                    stem.remove();
+                    modifs++;
+                }
             }
         }
 
@@ -1094,6 +1170,8 @@ public class SigReducer
      */
     private int checkTimeNumbers ()
     {
+        logger.debug("S#{} checkTimeNumbers", system.getId());
+
         int modifs = 0;
         final List<Inter> numbers = sig.inters(TimeNumberInter.class);
 
@@ -1102,11 +1180,11 @@ public class SigReducer
 
             // Check this number has a sibling number
             if (!sig.hasRelation(number, TimeTopBottomRelation.class)) {
-                if (number.isVip() || logger.isDebugEnabled()) {
+                if (number.isVip()) {
                     logger.info("VIP deleting time number lacking sibling {}", number);
                 }
 
-                number.delete();
+                number.remove();
                 modifs++;
             }
         }
@@ -1124,6 +1202,8 @@ public class SigReducer
      */
     private void checkTimeSignatures ()
     {
+        logger.debug("S#{} checkTimeSignatures", system.getId());
+
         List<Inter> systemNotes = sig.inters(AbstractNoteInter.class);
 
         if (systemNotes.isEmpty()) {
@@ -1131,31 +1211,31 @@ public class SigReducer
         }
 
         final List<Inter> systemTimes = sig.inters(AbstractTimeInter.class);
-        Collections.sort(systemNotes, Inter.byAbscissa);
+        Collections.sort(systemNotes, Inters.byAbscissa);
 
         for (Staff staff : system.getStaves()) {
-            List<Inter> staffTimes = SIGraph.inters(staff, systemTimes);
+            List<Inter> staffTimes = Inters.inters(staff, systemTimes);
 
             if (staffTimes.isEmpty()) {
                 continue;
             }
 
-            List<Inter> notes = SIGraph.inters(staff, systemNotes);
+            List<Inter> notes = Inters.inters(staff, systemNotes);
 
             for (Inter inter : staffTimes) {
                 AbstractTimeInter timeSig = (AbstractTimeInter) inter;
 
                 // Position WRT Notes in staff
-                int notePrev = -2 - Collections.binarySearch(notes, timeSig, Inter.byAbscissa);
+                int notePrev = -2 - Collections.binarySearch(notes, timeSig, Inters.byAbscissa);
 
                 if (notePrev != -1) {
                     // Position WRT Bars in staff
-                    List<BarlineInter> bars = staff.getBars();
+                    List<BarlineInter> bars = staff.getBarlines();
                     int barPrev = -2
                                   - Collections.binarySearch(
                                     bars,
                                     timeSig,
-                                    Inter.byAbscissa);
+                                    Inters.byAbscissa);
                     int xMin = (barPrev != -1) ? bars.get(barPrev).getCenter().x : 0;
 
                     for (int i = notePrev; i >= 0; i--) {
@@ -1165,7 +1245,7 @@ public class SigReducer
                             break;
                         }
 
-                        if (timeSig.isVip() || note.isVip() || logger.isDebugEnabled()) {
+                        if (timeSig.isVip() || note.isVip()) {
                             logger.info("VIP {} preceding {}", note, timeSig);
                         }
 
@@ -1188,23 +1268,29 @@ public class SigReducer
     private static boolean compatible (Inter[] inters)
     {
         for (int i = 0; i <= 1; i++) {
-            Inter inter = inters[i];
-            Inter other = inters[1 - i];
+            final Inter inter = inters[i];
+            final Inter other = inters[1 - i];
+            final Shape otherShape = other.getShape();
 
             if (inter instanceof AbstractBeamInter) {
                 if (other instanceof AbstractBeamInter) {
                     return true;
                 }
 
-                if (beamCompShapes.contains(other.getShape())) {
+                if (beamCompShapes.contains(otherShape)) {
                     return true;
                 }
             } else if (inter instanceof SlurInter) {
-                if (slurCompShapes.contains(other.getShape())) {
+                // Test StaffBarlineInter class, for which shape is always null
+                if (other instanceof StaffBarlineInter) {
+                    return true;
+                }
+
+                if (slurCompShapes.contains(otherShape)) {
                     return true;
                 }
             } else if (inter instanceof StemInter) {
-                if (stemCompShapes.contains(other.getShape())) {
+                if (stemCompShapes.contains(otherShape)) {
                     return true;
                 }
             }
@@ -1213,30 +1299,24 @@ public class SigReducer
         return false;
     }
 
-    //-------------------//
-    // wordMatchesSymbol //
-    //-------------------//
+    //-----------------------//
+    // contextualizeAndPurge //
+    //-----------------------//
     /**
-     * Check whether the word and the symbol might represent the same thing, after all.
+     * Update the contextual grade of each Inter in SIG, and remove the weak ones if so
+     * desired.
      *
-     * @param wordInter text word
-     * @param symbol    symbol
+     * @return the set of inters removed
      */
-    private static boolean wordMatchesSymbol (WordInter wordInter,
-                                              StringSymbolInter symbol)
+    private Set<Inter> contextualizeAndPurge ()
     {
-        logger.debug("Comparing {} and {}", wordInter, symbol);
+        sig.contextualize();
 
-        final String symbolString = symbol.getSymbolString();
-
-        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
-            logger.debug("Math found");
-
-            //TODO: Perhaps more checks on word/sentence?
-            return true;
+        if (purgeWeaks) {
+            return sig.deleteWeakInters();
         }
 
-        return false;
+        return Collections.emptySet();
     }
 
     //----------------//
@@ -1253,13 +1333,14 @@ public class SigReducer
     private void detectOverlaps (List<Inter> inters,
                                  Adapter adapter)
     {
-        Collections.sort(inters, Inter.byAbscissa);
+        logger.debug("S#{} detectOverlaps", system.getId());
+        Collections.sort(inters, Inters.byAbscissa);
 
         NextLeft:
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
             Inter left = inters.get(i);
 
-            if (left.isDeleted()) {
+            if (left.isRemoved()) {
                 continue;
             }
 
@@ -1272,8 +1353,9 @@ public class SigReducer
                 mirrors = new LinkedHashSet<Inter>();
                 mirrors.add(leftMirror);
 
-                if (left.getEnsemble() != null) {
-                    AbstractChordInter leftChord = (AbstractChordInter) left.getEnsemble();
+                final AbstractChordInter leftChord = (AbstractChordInter) left.getEnsemble();
+
+                if (leftChord != null) {
                     Inter leftChordMirror = leftChord.getMirror();
 
                     if (leftChordMirror != null) {
@@ -1288,7 +1370,7 @@ public class SigReducer
             final double xMax = leftBox.getMaxX();
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
-                if (right.isDeleted()) {
+                if (right.isRemoved()) {
                     continue;
                 }
 
@@ -1411,9 +1493,36 @@ public class SigReducer
             }
         }
 
-        logger.debug("S#{} headers inters: {}", system.getId(), inters);
+        logger.trace("S#{} headers inters: {}", system.getId(), inters);
 
         return inters;
+    }
+
+    //-------------//
+    // headHasStem //
+    //-------------//
+    /**
+     * Check the (stem) head has a link to a stem
+     *
+     * @param head the head to check
+     * @return true if OK
+     */
+    private boolean headHasStem (Inter head)
+    {
+        if (head.isVip()) {
+            logger.info("VIP checkHeadHasStem for {}", head);
+        }
+
+        // Check if the head has a stem relation
+        if (!sig.hasRelation(head, HeadStemRelation.class)) {
+            if (head.isVip()) {
+                logger.info("VIP no stem for {}", head);
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     //-----------------------//
@@ -1454,7 +1563,10 @@ public class SigReducer
         final int ledgerPitch = Staff.getLedgerPitchPosition(index);
         final int nextPitch = ledgerPitch + Integer.signum(index);
 
-        final List<Inter> heads = sig.intersectedInters(allHeads, GeoOrder.BY_ABSCISSA, ledgerBox);
+        final List<Inter> heads = Inters.intersectedInters(
+                allHeads,
+                GeoOrder.BY_ABSCISSA,
+                ledgerBox);
 
         for (Inter inter : heads) {
             final HeadInter head = (HeadInter) inter;
@@ -1480,7 +1592,7 @@ public class SigReducer
     private boolean pruneStemHeads (StemInter stem)
     {
         if (stem.isVip()) {
-            //            logger.info("VIP pruneStemHeads for {}", stem);
+            logger.info("VIP pruneStemHeads for {}", stem);
         }
 
         final Set<Relation> links = sig.getRelations(stem, HeadStemRelation.class);
@@ -1507,8 +1619,16 @@ public class SigReducer
                     modifs++;
                     modified = true;
 
-                    if (stem.isVip() || head.isVip() || logger.isDebugEnabled()) {
+                    if (stem.isVip() || head.isVip()) {
                         logger.info("VIP pruned {} from {}", head, stem);
+                    }
+
+                    if (link.isInvading()) {
+                        if (stem.isVip() || head.isVip()) {
+                            logger.info("VIP invasion between {} & {}", head, stem);
+                        }
+
+                        sig.insertExclusion(head, stem, Exclusion.Cause.OVERLAP);
                     }
 
                     continue StemGeometryScan;
@@ -1549,12 +1669,17 @@ public class SigReducer
         Set<Inter> reduced = new LinkedHashSet<Inter>(); // Reduced inters
         Set<Inter> deleted = new LinkedHashSet<Inter>(); // Deleted inters
 
+        int epoch = 0;
+
         do {
+            logger.debug("S#{} epoch: {}", system.getId(), ++epoch);
+
             reduced.clear();
             deleted.clear();
 
             // First, remove all inters with too low contextual grade
-            deleted.addAll(updateAndPurge());
+            deleted.addAll(contextualizeAndPurge());
+            allRemoved.addAll(deleted);
 
             deleted.addAll(adapter.checkSlurs());
             allRemoved.addAll(deleted);
@@ -1562,7 +1687,7 @@ public class SigReducer
             int modifs; // modifications done in current iteration
 
             while ((modifs = adapter.checkConsistencies()) > 0) {
-                logger.debug("S#{} modifs: {}", system.getId(), modifs);
+                logger.trace("S#{} modifs: {}", system.getId(), modifs);
             }
 
             // Remaining exclusions
@@ -1570,10 +1695,10 @@ public class SigReducer
             allRemoved.addAll(reduced);
 
             while ((modifs = adapter.checkLateConsistencies()) > 0) {
-                logger.debug("S#{} late modifs: {}", system.getId(), modifs);
+                logger.trace("S#{} late modifs: {}", system.getId(), modifs);
             }
 
-            logger.debug("S#{} reductions: {}", system.getId(), reduced);
+            logger.trace("S#{} reductions: {}", system.getId(), reduced);
         } while (!reduced.isEmpty() || !deleted.isEmpty());
 
         return allRemoved;
@@ -1583,7 +1708,7 @@ public class SigReducer
     // reduceAugmentations //
     //---------------------//
     /**
-     * Reduce the number of augmentation relations to one.
+     * Reduce the number of augmentation relations to one, by keeping the best relation.
      *
      * @param rels the augmentation links for the same entity
      * @return the number of relation deleted
@@ -1592,7 +1717,6 @@ public class SigReducer
     {
         int modifs = 0;
 
-        // Simply select the relation with best grade
         double bestGrade = 0;
         AbstractConnection bestLink = null;
 
@@ -1616,6 +1740,87 @@ public class SigReducer
         return modifs;
     }
 
+    //-------------------------//
+    // reduceHeadAugmentations //
+    //-------------------------//
+    /**
+     * Reduce the number of augmentation relations to one, by keeping the augmentation
+     * dot located higher in sheet.
+     *
+     * @param head the related head
+     * @param rels the augmentation links for the same head
+     * @return the number of relation deleted
+     */
+    private int reduceHeadAugmentations (HeadInter head,
+                                         Set<Relation> rels)
+    {
+        if (head.isVip()) {
+            logger.info(" VIP S#{} reduceHeadAugmentations for {}", system.getId(), head);
+        }
+
+        // Sort related dots by ordinate
+        final List<Inter> dots = new ArrayList<Inter>();
+
+        for (Relation rel : rels) {
+            dots.add(sig.getEdgeSource(rel));
+        }
+
+        Collections.sort(dots, Inters.byCenterOrdinate);
+
+        // Select the "best" dot
+        AugmentationDotInter selected = null;
+
+        {
+            // Try dot above
+            final AugmentationDotInter dotAbove = (AugmentationDotInter) dots.get(0);
+            final List<AbstractNoteInter> notes = dotAbove.getAugmentedNotes();
+            boolean taken = false;
+
+            for (AbstractNoteInter note : notes) {
+                if (note instanceof HeadInter && ((note.getIntegerPitch() % 2) == 1)) {
+                    taken = true;
+
+                    break;
+                }
+            }
+
+            if (!taken) {
+                selected = dotAbove;
+            }
+        }
+
+        if (selected == null) {
+            // Try dot below
+            final AugmentationDotInter dotBelow = (AugmentationDotInter) dots.get(
+                    dots.size() - 1);
+            final List<AbstractNoteInter> notes = dotBelow.getAugmentedNotes();
+            boolean taken = false;
+
+            for (AbstractNoteInter note : notes) {
+                if (note instanceof HeadInter && ((note.getIntegerPitch() % 2) == 1)) {
+                    taken = true;
+
+                    break;
+                }
+            }
+
+            if (!taken) {
+                selected = dotBelow;
+            }
+        }
+
+        int modifs = 0;
+
+        for (Relation rel : rels) {
+            if (sig.getEdgeSource(rel) != selected) {
+                sig.removeEdge(rel);
+                modifs++;
+            }
+        }
+
+        return modifs;
+    }
+
     //------------------//
     // stemHasHeadAtEnd //
     //------------------//
@@ -1628,7 +1833,7 @@ public class SigReducer
     private boolean stemHasHeadAtEnd (StemInter stem)
     {
         if (stem.isVip()) {
-            //            logger.info("VIP stemHasHeadAtEnd for {}", stem);
+            logger.info("VIP stemHasHeadAtEnd for {}", stem);
         }
 
         final Line2D stemLine = stem.computeExtendedLine();
@@ -1668,50 +1873,67 @@ public class SigReducer
 
         final StemPortion forbidden = (stemDir > 0) ? STEM_BOTTOM : STEM_TOP;
         final List<Relation> toRemove = new ArrayList<Relation>();
+        final List<Inter> toExclude = new ArrayList<Inter>();
 
         for (Relation rel : sig.getRelations(stem, HeadStemRelation.class)) {
-            // Check stem portion
             HeadStemRelation hsRel = (HeadStemRelation) rel;
-            Inter head = sig.getOppositeInter(stem, rel);
+
+            // Check stem portion
+            Inter head = sig.getEdgeSource(hsRel);
             StemPortion portion = hsRel.getStemPortion(head, stemLine, scale);
 
             if (portion == forbidden) {
-                if (stem.isVip() || logger.isDebugEnabled()) {
-                    logger.info(
-                            "VIP cutting relation between {} and {}",
-                            stem,
-                            sig.getEdgeSource(rel));
+                if (stem.isVip()) {
+                    logger.info("VIP cutting relation between {} and {}", stem, head);
                 }
 
-                toRemove.add(rel);
+                toRemove.add(hsRel);
+
+                if (hsRel.isInvading()) {
+                    if (stem.isVip() || head.isVip()) {
+                        logger.info("VIP invasion between {} & {}", head, stem);
+                    }
+
+                    toExclude.add(head);
+                }
             }
         }
 
         if (!toRemove.isEmpty()) {
             sig.removeAllEdges(toRemove);
+
+            for (Inter head : toExclude) {
+                sig.insertExclusion(head, stem, Exclusion.Cause.OVERLAP);
+            }
         }
 
         return toRemove.isEmpty();
     }
 
-    //----------------//
-    // updateAndPurge //
-    //----------------//
+    //-------------------//
+    // wordMatchesSymbol //
+    //-------------------//
     /**
-     * Update the contextual grade of each Inter in SIG, and remove the weak ones if so
-     * desired.
+     * Check whether the word and the symbol might represent the same thing, after all.
      *
-     * @return the set of inters removed
+     * @param wordInter text word
+     * @param symbol    symbol
      */
-    private Set<Inter> updateAndPurge ()
+    private static boolean wordMatchesSymbol (WordInter wordInter,
+                                              StringSymbolInter symbol)
     {
-        sig.contextualize();
+        logger.debug("Comparing {} and {}", wordInter, symbol);
 
-        if (purgeWeaks) {
-            return sig.deleteWeakInters();
+        final String symbolString = symbol.getSymbolString();
+
+        if (wordInter.getValue().equalsIgnoreCase(symbolString)) {
+            logger.trace("Match found");
+
+            //TODO: Perhaps more checks on word/sentence?
+            return true;
         }
 
-        return Collections.emptySet();
+        return false;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -1764,25 +1986,27 @@ public class SigReducer
         @Override
         public int checkConsistencies ()
         {
+            logger.debug("S#{} checkConsistencies", system.getId());
+
             int modifs = 0;
 
             modifs += checkStemEndingHeads();
-            deleted.addAll(updateAndPurge());
+            deleted.addAll(contextualizeAndPurge());
 
             modifs += checkHeads();
-            deleted.addAll(updateAndPurge());
+            deleted.addAll(contextualizeAndPurge());
 
-            modifs += checkHooks();
-            deleted.addAll(updateAndPurge());
+            modifs += checkHooksHaveStem();
+            deleted.addAll(contextualizeAndPurge());
 
-            modifs += checkBeams();
-            deleted.addAll(updateAndPurge());
+            modifs += checkBeamsHaveBothStems();
+            deleted.addAll(contextualizeAndPurge());
 
             modifs += checkLedgers();
-            deleted.addAll(updateAndPurge());
+            deleted.addAll(contextualizeAndPurge());
 
             modifs += checkStems();
-            deleted.addAll(updateAndPurge());
+            deleted.addAll(contextualizeAndPurge());
 
             return modifs;
         }
@@ -1790,10 +2014,16 @@ public class SigReducer
         @Override
         public int checkLateConsistencies ()
         {
+            logger.debug("S#{} checkLateConsistencies", system.getId());
+
             int modifs = 0;
 
-            modifs += checkStemLengths();
-            deleted.addAll(updateAndPurge());
+            analyzeChords(); // Heads size compatibility & beams size compatibility
+            reduced.addAll(sig.reduceExclusions());
+            deleted.addAll(contextualizeAndPurge());
+
+            modifs += checkStemsLengths();
+            deleted.addAll(contextualizeAndPurge());
 
             return modifs;
         }
@@ -1801,9 +2031,20 @@ public class SigReducer
         @Override
         public void prolog ()
         {
-            analyzeHeadStems(); // Check there is at most one stem on each side of any head
+            logger.debug("S#{} prolog", system.getId());
 
+            // Perform descent from best beams and stems
+            descendStems();
+
+            ///analyzeHeadStems(); // Check there is at most one stem on each side of any head
             analyzeChords(); // Heads & beams compatibility
+        }
+
+        private void descendStems ()
+        {
+            // Use good beams with their side stems
+            // Use good stems
+            // Descend through their needed heads
         }
     }
 
@@ -1821,24 +2062,26 @@ public class SigReducer
             int modifs = 0;
 
             modifs += checkStemEndingHeads();
-            deleted.addAll(updateAndPurge());
+            deleted.addAll(contextualizeAndPurge());
 
             modifs += checkHeads();
-            deleted.addAll(updateAndPurge());
+            deleted.addAll(contextualizeAndPurge());
 
             modifs += checkDoubleAlters();
-            deleted.addAll(updateAndPurge());
+            deleted.addAll(contextualizeAndPurge());
 
             modifs += checkTimeNumbers();
             checkTimeSignatures();
-            deleted.addAll(updateAndPurge());
+            deleted.addAll(contextualizeAndPurge());
 
             modifs += checkAugmentationDots();
-            modifs += checkAugmented();
-            deleted.addAll(updateAndPurge());
+            modifs += checkAugmentedHeads();
+            modifs += checkAugmentedRests();
+            modifs += checkAugmentedDots();
+            deleted.addAll(contextualizeAndPurge());
 
             modifs += checkIsolatedAlters();
-            deleted.addAll(updateAndPurge());
+            deleted.addAll(contextualizeAndPurge());
 
             return modifs;
         }
@@ -1860,73 +2103,6 @@ public class SigReducer
         {
             // Still needed because of cue beams
             analyzeChords();
-        }
-    }
-
-    //-------------------//
-    // AdapterForRhythms //
-    //-------------------//
-    /**
-     * NOT USED.
-     * Adapter meant for RHYTHMS step.
-     *
-     * @deprecated no longer used
-     */
-    @Deprecated
-    private class AdapterForRhythms
-            extends Adapter
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final SystemBackup systemPoorFrats;
-
-        private final Class[] classes;
-
-        public List<Inter> selected;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public AdapterForRhythms (SystemBackup systemPoorFrats,
-                                  Class[] classes)
-        {
-            this.systemPoorFrats = systemPoorFrats;
-            this.classes = classes;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int checkConsistencies ()
-        {
-            int modifs = 0;
-
-            modifs += checkDoubleAlters();
-            deleted.addAll(updateAndPurge());
-
-            modifs += checkTimeNumbers();
-            checkTimeSignatures();
-            deleted.addAll(updateAndPurge());
-
-            modifs += checkAugmentationDots();
-            modifs += checkAugmented();
-            deleted.addAll(updateAndPurge());
-
-            return modifs;
-        }
-
-        @Override
-        public Set<Inter> checkSlurs ()
-        {
-            return checkSlurOnTuplet();
-        }
-
-        @Override
-        public void prolog ()
-        {
-            // Still needed because of cue beams
-            analyzeChords();
-
-            // All inters of selected classes (with all their relations)
-            selected = sig.inters(classes);
-            systemPoorFrats.save(selected);
         }
     }
 

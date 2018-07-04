@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "breath-mark")
 public class BreathMarkInter
-        extends AbstractNotationInter
+        extends AbstractInter
 {
     //~ Constructors -------------------------------------------------------------------------------
 
@@ -61,6 +61,15 @@ public class BreathMarkInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     //--------//
     // create //
     //--------//

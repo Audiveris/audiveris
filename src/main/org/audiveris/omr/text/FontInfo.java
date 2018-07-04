@@ -70,14 +70,14 @@ public class FontInfo
     /**
      * Creates a new FontInfo object.
      *
-     * @param isBold
-     * @param isItalic
-     * @param isUnderlined
-     * @param isMonospace
-     * @param isSerif
-     * @param isSmallcaps
-     * @param pointsize
-     * @param fontName
+     * @param isBold       True if the font is bold
+     * @param isItalic     True if the font is italic
+     * @param isUnderlined True if the font is underlined
+     * @param isMonospace  True if the font has a fixed width
+     * @param isSerif      True for fonts with serifs
+     * @param isSmallcaps  True for small caps fonts
+     * @param pointsize    font size in points
+     * @param fontName     font name
      */
     public FontInfo (boolean isBold,
                      boolean isItalic,

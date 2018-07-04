@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet.symbol;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.LineUtil;
@@ -32,7 +33,6 @@ import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
-import org.audiveris.omr.sheet.StaffBarline;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
@@ -45,15 +45,17 @@ import org.audiveris.omr.sig.inter.FermataArcInter;
 import org.audiveris.omr.sig.inter.FermataDotInter;
 import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.RepeatDotInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.DotFermataRelation;
-import org.audiveris.omr.sig.relation.DoubleDotRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.util.HorizontalSide;
-import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +64,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -70,7 +71,7 @@ import java.util.Set;
  * Class {@code DotFactory} is a companion of {@link SymbolFactory}, dedicated to the
  * interpretation of dot-shaped symbols.
  * <p>
- * Some processing can be done instantly while the symbol is being built, other dot processing
+ * Some dot processing can be done instantly while the symbol is being built, other dot processing
  * may require symbols nearby and thus can take place only when all other symbols have been built.
  * Hence implementing methods are named "instant*()" or "late*()" respectively.
  * <p>
@@ -103,7 +104,7 @@ public class DotFactory
 
     private final Scale scale;
 
-    /** Dot candidates. */
+    /** Dot candidates. Sorted bottom up */
     private final List<Dot> dots = new ArrayList<Dot>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -111,11 +112,13 @@ public class DotFactory
      * Creates a new DotFactory object.
      *
      * @param symbolFactory the mother factory
+     * @param system        underlying system
      */
-    public DotFactory (SymbolFactory symbolFactory)
+    public DotFactory (SymbolFactory symbolFactory,
+                       SystemInfo system)
     {
         this.symbolFactory = symbolFactory;
-        system = symbolFactory.getSystem();
+        this.system = system;
         sig = system.getSig();
         scale = system.getSheet().getScale();
     }
@@ -146,8 +149,7 @@ public class DotFactory
         instantCheckRepeat(dot); // Repeat dot (relation between the two repeat dots is postponed)
         instantCheckStaccato(dot); // Staccato dot
 
-        // We cannot run augmentation repeat check since rest inters may not have been created yet
-        // and, in any case, no rest inter will be validated before RHYTHMS step.
+        // We cannot run augmentation check since rest inters may not have been created yet
     }
 
     //---------------//
@@ -159,97 +161,13 @@ public class DotFactory
      */
     public void lateDotChecks ()
     {
-        // Sort dots by abscissa
+        // Sort dots by reverse ordinate
         Collections.sort(dots);
 
         // Run all late checks
         lateAugmentationChecks(); // Note-Dot and Note-Dot-Dot configurations
         lateFermataChecks(); // Dot as part of a fermata sign
         lateRepeatChecks(); // Dot as part of stack repeat (to say the last word)
-    }
-
-    //--------------------//
-    // assignStackRepeats //
-    //--------------------//
-    /**
-     * Check left and right sides of every stack for (dot-based) repeat indication.
-     * If quorum reached, discard all other dot interpretations (such as augmentation dots).
-     */
-    private void assignStackRepeats ()
-    {
-        for (MeasureStack stack : system.getMeasureStacks()) {
-            for (HorizontalSide side : HorizontalSide.values()) {
-                final List<RepeatDotInter> repeatDots = new ArrayList<RepeatDotInter>();
-                int barCount = 0;
-
-                for (Measure measure : stack.getMeasures()) {
-                    final Part part = measure.getPart();
-                    final PartBarline partBarline = measure.getBarline(side);
-
-                    if (partBarline == null) {
-                        continue;
-                    }
-
-                    for (Staff staff : part.getStaves()) {
-                        StaffBarline staffBarline = partBarline.getBarline(part, staff);
-                        BarlineInter bar = (side == LEFT) ? staffBarline.getRightBar()
-                                : staffBarline.getLeftBar();
-
-                        if (bar == null) {
-                            continue;
-                        }
-
-                        barCount++;
-
-                        Set<Relation> dRels = sig.getRelations(bar, RepeatDotBarRelation.class);
-
-                        if (dRels.isEmpty()) {
-                            continue;
-                        }
-
-                        for (Relation rel : dRels) {
-                            RepeatDotInter dot = (RepeatDotInter) sig.getOppositeInter(bar, rel);
-                            repeatDots.add(dot);
-                            logger.debug("Repeat dot for {}", dot);
-                        }
-                    }
-                }
-
-                int dotCount = repeatDots.size();
-                logger.trace("{} {} bars:{} dots:{}", stack, side, barCount, dotCount);
-
-                if ((dotCount != 0) && (dotCount >= barCount)) {
-                    // It's a repeat side, enforce it!
-                    stack.addRepeat(side);
-
-                    // Delete inters that conflict with repeat dots
-                    List<Inter> toDelete = new ArrayList<Inter>();
-
-                    for (RepeatDotInter dot : repeatDots) {
-                        Rectangle dotBox = dot.getBounds();
-
-                        for (Inter inter : sig.vertexSet()) {
-                            if (inter == dot) {
-                                continue;
-                            }
-
-                            try {
-                                if (dotBox.intersects(inter.getBounds()) && dot.overlaps(inter)) {
-                                    toDelete.add(inter);
-                                }
-                            } catch (DeletedInterException ignored) {
-                            }
-                        }
-                    }
-
-                    if (!toDelete.isEmpty()) {
-                        for (Inter inter : toDelete) {
-                            inter.delete();
-                        }
-                    }
-                }
-            }
-        }
     }
 
     //------------------//
@@ -262,7 +180,7 @@ public class DotFactory
     private void buildRepeatPairs ()
     {
         List<Inter> repeatDots = sig.inters(Shape.REPEAT_DOT);
-        Collections.sort(repeatDots, Inter.byAbscissa);
+        Collections.sort(repeatDots, Inters.byAbscissa);
 
         for (int i = 0; i < repeatDots.size(); i++) {
             RepeatDotInter dot = (RepeatDotInter) repeatDots.get(i);
@@ -305,7 +223,104 @@ public class DotFactory
                     logger.info("Deleting repeat dot lacking sibling {}", dot);
                 }
 
-                dot.delete();
+                dot.remove();
+            }
+        }
+    }
+
+    //-------------------//
+    // checkStackRepeats //
+    //-------------------//
+    /**
+     * Check left and right sides of every stack for (dot-based) repeat indication.
+     * If quorum reached, discard all overlapping interpretations (such as augmentation dots).
+     */
+    private void checkStackRepeats ()
+    {
+        for (MeasureStack stack : system.getStacks()) {
+            for (HorizontalSide side : HorizontalSide.values()) {
+                final List<RepeatDotInter> repeatDots = new ArrayList<RepeatDotInter>();
+                int virtualDotCount = 0; // Virtual dots inferred from StaffBarline shape
+
+                for (Measure measure : stack.getMeasures()) {
+                    final Part part = measure.getPart();
+                    final PartBarline partBarline = measure.getPartBarlineOn(side);
+
+                    if (partBarline == null) {
+                        continue;
+                    }
+
+                    for (Staff staff : part.getStaves()) {
+                        StaffBarlineInter staffBarline = partBarline.getStaffBarline(part, staff);
+                        BarlineInter bar = (side == LEFT) ? staffBarline.getRightBar()
+                                : staffBarline.getLeftBar();
+
+                        if (bar != null) {
+                            // Use bar members
+                            Set<Relation> dRels = sig.getRelations(bar, RepeatDotBarRelation.class);
+
+                            if (dRels.isEmpty()) {
+                                continue;
+                            }
+
+                            for (Relation rel : dRels) {
+                                RepeatDotInter dot = (RepeatDotInter) sig.getOppositeInter(
+                                        bar,
+                                        rel);
+                                repeatDots.add(dot);
+                                logger.debug("Repeat dot for {}", dot);
+                            }
+                        } else {
+                            // Use StaffBarline shape
+                            Shape shape = staffBarline.getShape();
+
+                            if (side == LEFT) {
+                                if ((shape == Shape.LEFT_REPEAT_SIGN)
+                                    || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                    virtualDotCount += 2;
+                                }
+                            } else {
+                                if ((shape == Shape.RIGHT_REPEAT_SIGN)
+                                    || (shape == Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+                                    virtualDotCount += 2;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                int dotCount = repeatDots.size() + virtualDotCount;
+                int staffCount = system.getStaves().size();
+                logger.trace("{} {} staves:{} dots:{}", stack, side, staffCount, dotCount);
+
+                if (dotCount >= staffCount) {
+                    // It's a repeat side, delete inters that conflict with repeat dots
+                    // This works for real dots only, not for virtual ones
+                    List<Inter> toDelete = new ArrayList<Inter>();
+
+                    for (RepeatDotInter dot : repeatDots) {
+                        Rectangle dotBox = dot.getBounds();
+
+                        for (Inter inter : sig.vertexSet()) {
+                            if (inter == dot) {
+                                continue;
+                            }
+
+                            try {
+                                if (dotBox.intersects(inter.getBounds()) && dot.overlaps(inter)) {
+                                    toDelete.add(inter);
+                                }
+                            } catch (DeletedInterException ignored) {
+                            }
+                        }
+                    }
+
+                    if (!toDelete.isEmpty()) {
+                        for (Inter inter : toDelete) {
+                            inter.remove();
+                        }
+                    }
+                }
             }
         }
     }
@@ -314,6 +329,7 @@ public class DotFactory
     // filterMirrorHeads //
     //-------------------//
     /**
+     * NO LONGER USED.
      * If the collection of (dot-related) heads contains mirrored heads, keep only the
      * head with longer duration
      *
@@ -325,7 +341,7 @@ public class DotFactory
             return;
         }
 
-        Collections.sort(heads, Inter.byId);
+        Collections.sort(heads, Inters.byId);
 
         boolean modified;
 
@@ -368,19 +384,6 @@ public class DotFactory
         } while (modified);
     }
 
-    //---------------//
-    // filterOnStack //
-    //---------------//
-    private void filterOnStack (List<Inter> inters,
-                                MeasureStack dotStack)
-    {
-        for (Iterator<Inter> it = inters.iterator(); it.hasNext();) {
-            if (!dotStack.contains(it.next().getCenter())) {
-                it.remove();
-            }
-        }
-    }
-
     //--------------------//
     // instantCheckRepeat //
     //--------------------//
@@ -399,20 +402,20 @@ public class DotFactory
         final Point center = dot.glyph.getCenter();
         final double pp = system.estimatedPitch(center);
         double pitchDif = Math.abs(Math.abs(pp) - 1);
-        double maxDif = RepeatDotBarRelation.getYGapMaximum().getValue();
+        double maxDif = RepeatDotBarRelation.getYGapMaximum(false).getValue();
 
         // Rough sanity check
         if (pitchDif > (2 * maxDif)) {
             return;
         }
 
-        final int maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum());
+        final int maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum(false));
+        final int maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum(false));
         final Point dotPt = dot.glyph.getCenter();
         final Rectangle luBox = new Rectangle(dotPt);
         luBox.grow(maxDx, maxDy);
 
-        final List<Inter> bars = SIGraph.intersectedInters(
+        final List<Inter> bars = Inters.intersectedInters(
                 symbolFactory.getSystemBars(),
                 GeoOrder.BY_ABSCISSA,
                 luBox);
@@ -440,7 +443,7 @@ public class DotFactory
             double xGap = Math.abs(barX - dotPt.x);
             double yGap = Math.abs(barY - dotPt.y);
             RepeatDotBarRelation rel = new RepeatDotBarRelation();
-            rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+            rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
 
             if (rel.getGrade() >= rel.getMinGrade()) {
                 if ((bestRel == null) || (bestXGap > xGap)) {
@@ -453,7 +456,7 @@ public class DotFactory
 
         if (bestRel != null) {
             final Staff staff = system.getClosestStaff(center); // Staff is OK
-            double grade = Inter.intrinsicRatio * dot.eval.grade;
+            double grade = Grades.intrinsicRatio * dot.eval.grade;
             double pitch = (pp > 0) ? 1 : (-1);
             RepeatDotInter repeat = new RepeatDotInter(dot.glyph, grade, staff, pitch);
             sig.addVertex(repeat);
@@ -477,10 +480,10 @@ public class DotFactory
      */
     private void instantCheckStaccato (Dot dot)
     {
-        ArticulationInter.create(
+        ArticulationInter.createValidAdded(
                 dot.glyph,
                 Shape.STACCATO,
-                Inter.intrinsicRatio * dot.eval.grade,
+                Grades.intrinsicRatio * dot.eval.grade,
                 system,
                 symbolFactory.getSystemHeadChords());
     }
@@ -493,18 +496,48 @@ public class DotFactory
      */
     private void lateAugmentationChecks ()
     {
-        // Phase #1: Tests for first augmentation dots
+        // Phase #1: Tests for note augmentation dots
         for (Dot dot : dots) {
-            lateFirstAugmentationCheck(dot);
+            lateNoteAugmentationCheck(dot);
         }
 
         // Collect all (first) augmentation dots found so far in this system
         List<Inter> systemFirsts = sig.inters(Shape.AUGMENTATION_DOT);
-        Collections.sort(systemFirsts, Inter.byAbscissa);
+        Collections.sort(systemFirsts, Inters.byAbscissa);
 
-        // Phase #2: Tests for second augmentation dots (double dots)
+        // Phase #2: Tests for dot augmentation dots (double dots)
         for (Dot dot : dots) {
-            lateSecondAugmentationCheck(dot, systemFirsts);
+            lateDotAugmentationCheck(dot, systemFirsts);
+        }
+    }
+
+    //--------------------------//
+    // lateDotAugmentationCheck //
+    //--------------------------//
+    /**
+     * Try to interpret the glyph as a second augmentation dot, composing a double dot.
+     * <p>
+     * Candidates are dots left over (too far from note/rest) as well as some dots already
+     * recognized as (single) dots.
+     *
+     * @param dot          a candidate for augmentation dot
+     * @param systemFirsts all (first) augmentation dots recognized during phase #1
+     */
+    private void lateDotAugmentationCheck (Dot dot,
+                                           List<Inter> systemFirsts)
+    {
+        if (dot.glyph.isVip()) {
+            logger.info("VIP lateDotAugmentationCheck for {}", dot);
+        }
+
+        double grade = Grades.intrinsicRatio * dot.eval.grade;
+        AugmentationDotInter second = new AugmentationDotInter(dot.glyph, grade);
+        Link bestDotLink = Link.bestOf(second.lookupDotLinks(systemFirsts, system));
+
+        if (bestDotLink != null) {
+            sig.addVertex(second);
+            sig.removeAllEdges(sig.getRelations(second, AugmentationRelation.class));
+            bestDotLink.applyTo(second);
         }
     }
 
@@ -545,11 +578,11 @@ public class DotFactory
                             : (halfBox.y + (halfBox.height * 0.75));
                     double yGap = Math.abs(dotCenter.y - yTarget);
                     DotFermataRelation rel = new DotFermataRelation();
-                    rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                    rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), false);
 
                     if (rel.getGrade() >= rel.getMinGrade()) {
                         if (dotInter == null) {
-                            double grade = Inter.intrinsicRatio * dot.eval.grade;
+                            double grade = Grades.intrinsicRatio * dot.eval.grade;
                             dotInter = new FermataDotInter(dot.glyph, grade);
                             sig.addVertex(dotInter);
                             logger.debug("Created {}", dotInter);
@@ -563,9 +596,9 @@ public class DotFactory
         }
     }
 
-    //----------------------------//
-    // lateFirstAugmentationCheck //
-    //----------------------------//
+    //---------------------------//
+    // lateNoteAugmentationCheck //
+    //---------------------------//
     /**
      * Try to interpret the glyph as an augmentation dot.
      * <p>
@@ -575,66 +608,32 @@ public class DotFactory
      *
      * @param dot a candidate for augmentation dot
      */
-    private void lateFirstAugmentationCheck (Dot dot)
+    private void lateNoteAugmentationCheck (Dot dot)
     {
-        // Look for entities (heads and rests) reachable from this glyph
-        final Point dotCenter = dot.glyph.getCenter();
-        final MeasureStack dotStack = system.getMeasureStackAt(dotCenter);
-        final int maxDx = scale.toPixels(AugmentationRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(AugmentationRelation.getYGapMaximum());
-        final Rectangle luBox = new Rectangle(dotCenter);
-        luBox.grow(0, maxDy);
-        luBox.x -= maxDx;
-        luBox.width += maxDx;
-
-        // Relevant heads?
-        final List<Inter> heads = SIGraph.intersectedInters(
-                symbolFactory.getSystemHeads(),
-                GeoOrder.BY_ABSCISSA,
-                luBox);
-        filterOnStack(heads, dotStack);
-
-        // Beware of mirrored heads: link only to the head with longer duration
-        filterMirrorHeads(heads);
-
-        // Relevant rests?
-        final List<Inter> rests = SIGraph.intersectedInters(
-                symbolFactory.getSystemRests(),
-                GeoOrder.BY_ABSCISSA,
-                luBox);
-        filterOnStack(rests, dotStack);
-        heads.addAll(rests);
-
-        if (heads.isEmpty()) {
-            return;
+        if (dot.glyph.isVip()) {
+            logger.info("VIP lateNoteAugmentationCheck for {}", dot);
         }
 
-        // Heads have already been reduced, but not the rests (created as symbols)
-        // So we have to set a relation with all acceptable entities
-        // This will be later solved by the sig reducer.
-        AugmentationDotInter augInter = null;
+        double grade = Grades.intrinsicRatio * dot.eval.grade;
+        AugmentationDotInter aug = new AugmentationDotInter(dot.glyph, grade);
 
-        for (Inter note : heads) {
-            // Select proper note reference point (center right)
-            Point refPt = note.getCenterRight();
-            double xGap = dotCenter.x - refPt.x;
+        List<Link> links = new ArrayList<Link>();
+        Link headLink = aug.lookupHeadLink(
+                symbolFactory.getSystemHeadChords(),
+                system);
 
-            if (xGap > 0) {
-                double yGap = Math.abs(refPt.y - dotCenter.y);
-                AugmentationRelation rel = new AugmentationRelation();
-                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+        if (headLink != null) {
+            links.add(headLink);
+        }
 
-                if (rel.getGrade() >= rel.getMinGrade()) {
-                    if (augInter == null) {
-                        double grade = Inter.intrinsicRatio * dot.eval.grade;
-                        augInter = new AugmentationDotInter(dot.glyph, grade);
-                        sig.addVertex(augInter);
-                        augInter.setStaff(note.getStaff());
-                        logger.debug("Created {}", augInter);
-                    }
+        links.addAll(aug.lookupRestLinks(symbolFactory.getSystemRests(), system));
 
-                    sig.addEdge(augInter, note, rel);
-                }
+        if (!links.isEmpty()) {
+            sig.addVertex(aug);
+            aug.setStaff(links.get(0).partner.getStaff());
+
+            for (Link link : links) {
+                link.applyTo(aug);
             }
         }
     }
@@ -651,99 +650,7 @@ public class DotFactory
         checkRepeatPairs();
 
         // Assign repeats per stack
-        assignStackRepeats();
-    }
-
-    //-----------------------------//
-    // lateSecondAugmentationCheck //
-    //-----------------------------//
-    /**
-     * Try to interpret the glyph as a second augmentation dot, composing a double dot.
-     * <p>
-     * Candidates are dots left over (too far from note/rest) as well as some dots already
-     * recognized as (single) dots.
-     *
-     * @param dot          a candidate for augmentation dot
-     * @param systemFirsts all (first) augmentation dots recognized during phase #1
-     */
-    private void lateSecondAugmentationCheck (Dot dot,
-                                              List<Inter> systemFirsts)
-    {
-        if (dot.glyph.isVip()) {
-            logger.info("VIP lateSecondAugmentationCheck for {}", dot);
-        }
-
-        // Look for augmentation dots reachable from this glyph
-        final int maxDx = scale.toPixels(DoubleDotRelation.getXOutGapMaximum());
-        final int maxDy = scale.toPixels(DoubleDotRelation.getYGapMaximum());
-        final Point dotCenter = dot.glyph.getCenter();
-        final Rectangle luBox = new Rectangle(dotCenter);
-        luBox.grow(0, maxDy);
-        luBox.x -= maxDx;
-        luBox.width += maxDx;
-
-        final List<Inter> firsts = SIGraph.intersectedInters(
-                systemFirsts,
-                GeoOrder.BY_ABSCISSA,
-                luBox);
-
-        // Remove the augmentation dot, if any, that corresponds to the glyph at hand
-        AugmentationDotInter second = null;
-
-        for (Inter first : firsts) {
-            if (first.getGlyph() == dot.glyph) {
-                second = (AugmentationDotInter) first;
-                firsts.remove(first);
-
-                break;
-            }
-        }
-
-        if (firsts.isEmpty()) {
-            return;
-        }
-
-        DoubleDotRelation bestRel = null;
-        Inter bestFirst = null;
-        double bestYGap = Double.MAX_VALUE;
-
-        for (Inter first : firsts) {
-            // Select proper entity reference point (center right)
-            Point refPt = first.getCenterRight();
-            double xGap = dotCenter.x - refPt.x;
-
-            if (xGap > 0) {
-                double yGap = Math.abs(refPt.y - dotCenter.y);
-                DoubleDotRelation rel = new DoubleDotRelation();
-                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
-
-                if (rel.getGrade() >= rel.getMinGrade()) {
-                    if ((bestRel == null) || (bestYGap > yGap)) {
-                        bestRel = rel;
-                        bestFirst = first;
-                        bestYGap = yGap;
-                    }
-                }
-            }
-        }
-
-        if (bestRel != null) {
-            if (second == null) {
-                double grade = Inter.intrinsicRatio * dot.eval.grade;
-                second = new AugmentationDotInter(dot.glyph, grade);
-                sig.addVertex(second);
-                logger.debug("Created {}", second);
-            } else {
-                // Here, we have a second dot with two relations:
-                // - First dot is linked to some note/rest entities
-                // - Second dot is linked to some note/rest entities and also to first dot
-                // Since yGap between dots is very strict, just make second dot focus on double dots
-                sig.removeAllEdges(sig.getRelations(second, AugmentationRelation.class));
-            }
-
-            sig.addEdge(second, bestFirst, bestRel);
-            logger.debug("DoubleDot relation {} over {}", second, bestFirst);
-        }
+        checkStackRepeats();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -774,7 +681,7 @@ public class DotFactory
         @Override
         public int compareTo (Dot that)
         {
-            return Glyphs.byAbscissa.compare(glyph, that.glyph);
+            return Glyphs.byReverseBottom.compare(glyph, that.glyph);
         }
 
         @Override

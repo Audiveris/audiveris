@@ -26,40 +26,50 @@ import ij.process.ByteProcessor;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.BasicGlyph;
-import org.audiveris.omr.glyph.GlyphIndex;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
 import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.image.TemplateFactory;
-import org.audiveris.omr.image.TemplateFactory.Catalog;
+import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.PointUtil;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
+import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
-import org.audiveris.omr.sheet.rhythm.MeasureStack;
-import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.ByteUtil;
+import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.*;
+import static org.audiveris.omr.util.VerticalSide.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -132,6 +142,17 @@ public class HeadInter
         this.anchor = anchor;
     }
 
+    /**
+     * Creates a new {@code HeadInter} object.
+     *
+     * @param pivot  the template pivot
+     * @param anchor relative pivot configuration
+     * @param bounds the object bounds
+     * @param shape  the underlying shape
+     * @param grade  quality grade
+     * @param staff  the related staff
+     * @param pitch  the note pitch
+     */
     public HeadInter (Point pivot,
                       Anchor anchor,
                       Rectangle bounds,
@@ -160,6 +181,33 @@ public class HeadInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        if (ShapeSet.StemHeads.contains(shape)) {
+            setAbnormal(true); // No stem linked yet
+        }
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        if (ShapeSet.StemHeads.contains(shape)) {
+            // Check if a stem is connected
+            setAbnormal(!sig.hasRelation(this, HeadStemRelation.class));
+        }
+
+        return isAbnormal();
     }
 
     //-----------//
@@ -219,90 +267,16 @@ public class HeadInter
      */
     public int getAlter (Integer fifths)
     {
-        // Look for local accidental
-        AlterInter accidental = getAccidental();
-
-        if (accidental != null) {
-            return alterationOf(accidental);
-        }
-
-        // Look for previous accidental with same note step in the measure
-        Measure measure = getChord().getMeasure();
-        MeasureStack stack = measure.getStack();
-        List<Slot> slots = stack.getSlots();
-
-        boolean started = false;
-
-        for (ListIterator<Slot> it = slots.listIterator(slots.size()); it.hasPrevious();) {
-            Slot slot = it.previous();
-
-            // Inspect all notes of all chords
-            for (AbstractChordInter chord : slot.getChords()) {
-                if (chord.isRest() || (chord.getMeasure() != measure)) {
-                    continue;
-                }
-
-                for (Inter inter : chord.getNotes()) {
-                    HeadInter note = (HeadInter) inter;
-
-                    if (note == this) {
-                        started = true;
-                    } else if (started && (note.getStep() == getStep())) {
-                        AlterInter accid = note.getAccidental();
-
-                        if (accid != null) {
-                            return alterationOf(accid);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Look for tie from previous measure (same system or previous system)
-        for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
-            SlurInter slur = (SlurInter) sig.getOppositeInter(this, rel);
-
-            if (slur.isTie() && (slur.getHead(HorizontalSide.RIGHT) == this)) {
-                // Is the starting head in same system?
-                HeadInter startHead = slur.getHead(HorizontalSide.LEFT);
-
-                if (startHead != null) {
-                    // Use start head alter
-                    return startHead.getAlter(fifths);
-                }
-
-                // Use slur extension to look into previous system
-                SlurInter prevSlur = slur.getExtension(HorizontalSide.LEFT);
-
-                if (prevSlur != null) {
-                    startHead = prevSlur.getHead(HorizontalSide.LEFT);
-
-                    if (startHead != null) {
-                        // Use start head alter
-                        return startHead.getAlter(fifths);
-                    }
-                }
-
-                // TODO: Here we should look in previous sheet/page...
-            }
-        }
-
-        // Finally, use the current key signature
-        if (fifths != null) {
-            return KeyInter.getAlterFor(getStep(), fifths);
-        }
-
-        // Nothing found, so...
-        return 0;
+        return getAlter(fifths, true);
     }
 
     //----------//
     // getChord //
     //----------//
     @Override
-    public AbstractChordInter getChord ()
+    public HeadChordInter getChord ()
     {
-        return (AbstractChordInter) getEnsemble();
+        return (HeadChordInter) getEnsemble();
     }
 
     //---------------//
@@ -317,25 +291,11 @@ public class HeadInter
     //---------------//
     // getDescriptor //
     //---------------//
-    public ShapeDescriptor getDescriptor (int interline)
-    {
-        if (descriptor == null) {
-            final Catalog catalog = TemplateFactory.getInstance().getCatalog(interline);
-            descriptor = catalog.getDescriptor(shape);
-        }
-
-        return descriptor;
-    }
-
-    //---------------//
-    // getDescriptor //
-    //---------------//
     public ShapeDescriptor getDescriptor ()
     {
         if (descriptor == null) {
-            final int interline = sig.getSystem().getSheet().getInterline();
-
-            return getDescriptor(interline);
+            final int pointSize = staff.getHeadPointSize();
+            descriptor = TemplateFactory.getInstance().getCatalog(pointSize).getDescriptor(shape);
         }
 
         return descriptor;
@@ -357,6 +317,128 @@ public class HeadInter
         return constants.shrinkVertRatio.getValue();
     }
 
+    //--------------//
+    // getSideStems //
+    //--------------//
+    /**
+     * Report the stems linked to this head, organized by head side.
+     *
+     * @return the map of linked stems, organized by head side
+     * @see #getStems()
+     */
+    public Map<HorizontalSide, Set<StemInter>> getSideStems ()
+    {
+        // Split connected stems into left and right sides
+        final Map<HorizontalSide, Set<StemInter>> map = new EnumMap<HorizontalSide, Set<StemInter>>(
+                HorizontalSide.class);
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            HeadStemRelation rel = (HeadStemRelation) relation;
+            HorizontalSide side = rel.getHeadSide();
+            Set<StemInter> set = map.get(side);
+
+            if (set == null) {
+                map.put(side, set = new LinkedHashSet<StemInter>());
+            }
+
+            set.add((StemInter) sig.getEdgeTarget(rel));
+        }
+
+        return map;
+    }
+
+    //-----------------------//
+    // getStemReferencePoint //
+    //-----------------------//
+    /**
+     * Report the reference point for a stem connection.
+     *
+     * @param anchor    desired side for stem (typically TOP_RIGHT_STEM or BOTTOM_LEFT_STEM)
+     * @param interline relevant interline value
+     * @return the reference point
+     */
+    public Point2D getStemReferencePoint (Anchor anchor,
+                                          int interline)
+    {
+        ShapeDescriptor desc = getDescriptor();
+        Rectangle templateBox = desc.getBounds(this.getBounds());
+        Point ref = templateBox.getLocation();
+        Point offset = desc.getOffset(anchor);
+        ref.translate(offset.x, offset.y);
+
+        return ref;
+    }
+
+    //----------//
+    // getStems //
+    //----------//
+    /**
+     * Report the stems linked to this head, whatever the side.
+     *
+     * @return set of linked stems
+     * @see #getSideStems()
+     */
+    public Set<StemInter> getStems ()
+    {
+        final Set<StemInter> set = new LinkedHashSet<StemInter>();
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            set.add((StemInter) sig.getEdgeTarget(relation));
+        }
+
+        return set;
+    }
+
+    //----------------//
+    // haveSameHeight //
+    //----------------//
+    /**
+     * Check whether two heads represent the same height
+     * (same octave, same step, same alteration).
+     *
+     * @param h1 first head
+     * @param h2 second head, down the score
+     * @return true if the heads are equivalent.
+     */
+    public static boolean haveSameHeight (HeadInter h1,
+                                          HeadInter h2)
+    {
+        if ((h1 == null) || (h2 == null)) {
+            return false;
+        }
+
+        // Step
+        if (h1.getStep() != h2.getStep()) {
+            return false;
+        }
+
+        // Octave
+        if (h1.getOctave() != h2.getOctave()) {
+            return false;
+        }
+
+        // Alteration
+        Staff s1 = h1.getStaff();
+        Measure m1 = s1.getPart().getMeasureAt(h1.getCenter());
+        KeyInter k1 = m1.getKeyBefore(s1);
+        int f1 = (k1 != null) ? k1.getFifths() : 0;
+
+        Staff s2 = h2.getStaff();
+        Measure m2 = s2.getPart().getMeasureAt(h2.getCenter());
+        KeyInter k2 = m2.getKeyBefore(s2);
+        int f2 = (k2 != null) ? k2.getFifths() : 0;
+
+        if (m1 == m2) {
+            // Both heads are in same measure
+            return (f1 == f2) && (h1.getStaff() == h2.staff);
+        } else {
+            int a1 = h1.getAlter(f1, false);
+            int a2 = h2.getAlter(f2, false);
+
+            return a1 == a2;
+        }
+    }
+
     //----------//
     // overlaps //
     //----------//
@@ -368,7 +450,7 @@ public class HeadInter
      *
      * @param that another inter (perhaps a note)
      * @return true if overlap is detected
-     * @throws org.audiveris.omr.sig.inter.DeletedInterException
+     * @throws DeletedInterException when an Inter instance no longer exists in its SIG
      */
     @Override
     public boolean overlaps (Inter that)
@@ -442,20 +524,27 @@ public class HeadInter
     /**
      * Use descriptor to build an underlying glyph.
      *
-     * @param image      the image to read pixels from
-     * @param interline  scaling info
-     * @param glyphIndex the index to hold the created glyph
+     * @param image the image to read pixels from
+     * @return the underlying glyph or null if failed
      */
-    public void retrieveGlyph (ByteProcessor image,
-                               int interline,
-                               GlyphIndex glyphIndex)
+    public Glyph retrieveGlyph (ByteProcessor image)
     {
-        final Template tpl = getDescriptor(interline).getTemplate();
+        getDescriptor();
+
+        final Sheet sheet = staff.getSystem().getSheet();
+        final Template tpl = descriptor.getTemplate();
         final Rectangle interBox = getBounds();
-        final Rectangle descBox = getDescriptor().getBounds(interBox);
+        final Rectangle descBox = descriptor.getBounds(interBox);
 
         // Foreground points (coordinates WRT descBox)
         final List<Point> fores = tpl.getForegroundPixels(descBox, image);
+
+        if (fores.isEmpty()) {
+            logger.info("No foreground pixels for {}", this);
+
+            return null;
+        }
+
         final Rectangle foreBox = PointUtil.boundsOf(fores);
 
         final ByteProcessor buf = new ByteProcessor(foreBox.width, foreBox.height);
@@ -469,11 +558,46 @@ public class HeadInter
         RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
 
         // Glyph
-        glyph = glyphIndex.registerOriginal(
+        glyph = sheet.getGlyphIndex().registerOriginal(
                 new BasicGlyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable));
 
         // Use glyph bounds as inter bounds
         bounds = glyph.getBounds();
+
+        return glyph;
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Specifically, look for stem to allow head attachment.
+     *
+     * @return stem link, perhaps empty
+     */
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        if (ShapeSet.StemHeads.contains(shape)) {
+            // Not very optimized!
+            List<Inter> systemStems = system.getSig().inters(StemInter.class);
+            Collections.sort(systemStems, Inters.byAbscissa);
+
+            Link link = lookupLink(systemStems);
+
+            if (link != null) {
+                if (doit) {
+                    link.applyTo(this);
+                }
+
+                return Collections.singleton(link);
+            }
+        }
+
+        return Collections.emptyList();
     }
 
     //--------//
@@ -568,7 +692,7 @@ public class HeadInter
                     ? this : that;
 
             logger.debug("Deleting duplicated {}", dupli);
-            dupli.delete();
+            dupli.remove();
             throw new DeletedInterException(dupli);
         }
 
@@ -576,54 +700,165 @@ public class HeadInter
         // Perhaps check for a weak ledger, tangent to the note towards staff
     }
 
-    //--------------//
-    // getSideStems //
-    //--------------//
+    //----------//
+    // getAlter //
+    //----------//
     /**
-     * Report the stems linked to this head, organized by head side.
+     * Report the actual alteration of this note, taking into account the accidental of
+     * this note if any, the accidental of previous note with same step within the same
+     * measure, a tie from previous measure and finally the current key signature.
      *
-     * @return the map of linked stems, organized by head side
-     * @see #getStems()
+     * @param fifths fifths value for current key signature
+     * @param useTie true to use tie for check
+     * @return the actual alteration
      */
-    public Map<HorizontalSide, Set<StemInter>> getSideStems ()
+    private int getAlter (Integer fifths,
+                          boolean useTie)
     {
-        // Split connected stems into left and right sides
-        final Map<HorizontalSide, Set<StemInter>> map = new EnumMap<HorizontalSide, Set<StemInter>>(
-                HorizontalSide.class);
+        // Look for local accidental
+        AlterInter accidental = getAccidental();
 
-        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
-            HeadStemRelation rel = (HeadStemRelation) relation;
-            HorizontalSide side = rel.getHeadSide();
-            Set<StemInter> set = map.get(side);
-
-            if (set == null) {
-                map.put(side, set = new LinkedHashSet<StemInter>());
-            }
-
-            set.add((StemInter) sig.getEdgeTarget(rel));
+        if (accidental != null) {
+            return alterationOf(accidental);
         }
 
-        return map;
+        // Look for previous accidental with same note step in the same measure
+        // Let's avoid the use of time slots (which would require RHYTHMS step to be done!)
+        Measure measure = getChord().getMeasure();
+        List<Inter> heads = new ArrayList<Inter>();
+
+        for (HeadChordInter headChord : measure.getHeadChords()) {
+            heads.addAll(headChord.getMembers());
+        }
+
+        boolean started = false;
+        Collections.sort(heads, Inters.byReverseCenterAbscissa);
+
+        for (Inter inter : heads) {
+            HeadInter head = (HeadInter) inter;
+
+            if (head == this) {
+                started = true;
+            } else if (started
+                       && (head.getStep() == getStep())
+                       && (head.getOctave() == getOctave())
+                       && (head.getStaff() == getStaff())) {
+                AlterInter accid = head.getAccidental();
+
+                if (accid != null) {
+                    return alterationOf(accid);
+                }
+            }
+        }
+
+        if (useTie) {
+            // Look for tie from previous measure (same system or previous system)
+            for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
+                SlurInter slur = (SlurInter) sig.getOppositeInter(this, rel);
+
+                if (slur.isTie() && (slur.getHead(HorizontalSide.RIGHT) == this)) {
+                    // Is the starting head in same system?
+                    HeadInter startHead = slur.getHead(HorizontalSide.LEFT);
+
+                    if (startHead != null) {
+                        // Use start head alter
+                        return startHead.getAlter(fifths);
+                    }
+
+                    // Use slur extension to look into previous system
+                    SlurInter prevSlur = slur.getExtension(HorizontalSide.LEFT);
+
+                    if (prevSlur != null) {
+                        startHead = prevSlur.getHead(HorizontalSide.LEFT);
+
+                        if (startHead != null) {
+                            // Use start head alter
+                            return startHead.getAlter(fifths);
+                        }
+                    }
+
+                    // TODO: Here we should look in previous sheet/page...
+                }
+            }
+        }
+
+        // Finally, use the current key signature
+        if (fifths != null) {
+            return KeyInter.getAlterFor(getStep(), fifths);
+        }
+
+        // Nothing found, so...
+        return 0;
     }
 
-    //----------//
-    // getStems //
-    //----------//
+    //------------//
+    // lookupLink //
+    //------------//
     /**
-     * Report the stems linked to this head, whatever the side.
+     * Try to detect a link between this Head instance and a stem nearby.
+     * <p>
+     * 1/ Use a lookup area on each horizontal side of the head to filter candidate stems.
+     * 2/ Select the best connection among the compatible candidates.
      *
-     * @return set of linked stems
-     * @see #getSideStems()
+     * @param systemStems abscissa-ordered collection of stems in system
+     * @return the link found or null
      */
-    public Set<StemInter> getStems ()
+    private Link lookupLink (List<Inter> systemStems)
     {
-        final Set<StemInter> set = new LinkedHashSet<StemInter>();
-
-        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
-            set.add((StemInter) sig.getEdgeTarget(relation));
+        if (systemStems.isEmpty()) {
+            return null;
         }
 
-        return set;
+        final SystemInfo system = systemStems.get(0).getSig().getSystem();
+        final Scale scale = system.getSheet().getScale();
+        final int interline = scale.getInterline();
+        final int maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum(manual));
+        final int maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum(manual));
+        final int maxYGap = scale.toPixels(HeadStemRelation.getYGapMaximum(manual));
+
+        Link bestLink = null;
+        double bestGrade = 0;
+
+        for (Corner corner : Corner.values) {
+            Point refPt = PointUtil.rounded(
+                    getStemReferencePoint(corner.stemAnchor(), interline));
+            int xMin = refPt.x - ((corner.hSide == RIGHT) ? maxHeadInDx : maxHeadOutDx);
+            int yMin = refPt.y - ((corner.vSide == TOP) ? maxYGap : 0);
+            Rectangle luBox = new Rectangle(xMin, yMin, maxHeadInDx + maxHeadOutDx, maxYGap);
+            List<Inter> stems = Inters.intersectedInters(systemStems, GeoOrder.BY_ABSCISSA, luBox);
+            int xDir = (corner.hSide == RIGHT) ? 1 : (-1);
+
+            for (Inter inter : stems) {
+                StemInter stem = (StemInter) inter;
+                final Point2D start = stem.getTop();
+                final Point2D stop = stem.getBottom();
+
+                double crossX = LineUtil.xAtY(start, stop, refPt.getY());
+                final double xGap = xDir * (crossX - refPt.getX());
+                final double yGap;
+
+                if (refPt.getY() < start.getY()) {
+                    yGap = start.getY() - refPt.getY();
+                } else if (refPt.getY() > stop.getY()) {
+                    yGap = refPt.getY() - stop.getY();
+                } else {
+                    yGap = 0;
+                }
+
+                HeadStemRelation rel = new HeadStemRelation();
+                rel.setInOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
+
+                if (rel.getGrade() >= rel.getMinGrade()) {
+                    if ((bestLink == null) || (rel.getGrade() > bestGrade)) {
+                        rel.setExtensionPoint(refPt); // Approximately
+                        bestLink = new Link(stem, rel, true);
+                        bestGrade = rel.getGrade();
+                    }
+                }
+            }
+        }
+
+        return bestLink;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

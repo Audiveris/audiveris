@@ -22,7 +22,8 @@
 package org.audiveris.omr.util;
 
 /**
- * Annotation {@code Navigable} is used to drive the browsing done by ScoreTree.
+ * Annotation {@code Navigable} is used to drive the browsing done by
+ * {@code BookBrowser}.
  */
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

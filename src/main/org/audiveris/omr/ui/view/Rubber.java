@@ -26,11 +26,13 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.ui.Colors;
 import static org.audiveris.omr.ui.selection.MouseMovement.*;
 import static org.audiveris.omr.ui.util.UIPredicates.*;
+import org.audiveris.omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -41,6 +43,7 @@ import java.awt.Stroke;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.Line2D;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JComponent;
@@ -127,6 +130,9 @@ public class Rubber
     // The normalized unzoomed rubber rectangle, inside the component, with
     // x & y at the top left and positive width & height.
     private Rectangle rect;
+
+    // Normalized unzoomed vector
+    private Line2D vector;
 
     // To ease debugging
     private final int id;
@@ -335,31 +341,35 @@ public class Rubber
             return;
         }
 
-        if (isRezoomWanted(e)) {
-            updateSize(e);
-            mouseMonitor.rectangleZoomed(rect, RELEASING);
-        } else if (isDragWanted(e)) {
-            Rectangle vr = component.getVisibleRect();
-            rawRect.setBounds(vr.x + (vr.width / 2), vr.y + (vr.height / 2), 0, 0);
-            normalize();
-        } else if (isAdditionWanted(e)) {
-            if (isContextWanted(e)) {
-                mouseMonitor.contextAdded(getCenter(), RELEASING);
-            } else {
-                mouseMonitor.pointAdded(getCenter(), RELEASING);
-            }
-        } else if (rect != null) {
-            if (isContextWanted(e)) {
-                mouseMonitor.contextSelected(getCenter(), RELEASING);
-            } else if ((rect.width != 0) && (rect.height != 0)) {
+        try {
+            if (isRezoomWanted(e)) {
                 updateSize(e);
-                mouseMonitor.rectangleSelected(rect, RELEASING);
-            } else {
-                mouseMonitor.pointSelected(getCenter(), RELEASING);
+                mouseMonitor.rectangleZoomed(rect, RELEASING);
+            } else if (isDragWanted(e)) {
+                Rectangle vr = component.getVisibleRect();
+                rawRect.setBounds(vr.x + (vr.width / 2), vr.y + (vr.height / 2), 0, 0);
+                normalize();
+            } else if (isAdditionWanted(e)) {
+                if (isContextWanted(e)) {
+                    mouseMonitor.contextAdded(getCenter(), RELEASING);
+                } else {
+                    mouseMonitor.pointAdded(getCenter(), RELEASING);
+                }
+            } else if (rect != null) {
+                if (isContextWanted(e)) {
+                    mouseMonitor.contextSelected(getCenter(), RELEASING);
+                } else if ((rect.width != 0) && (rect.height != 0)) {
+                    updateSize(e);
+                    mouseMonitor.rectangleSelected(rect, RELEASING);
+                } else {
+                    mouseMonitor.pointSelected(getCenter(), RELEASING);
+                }
             }
-        }
 
-        e.getComponent().setCursor(Cursor.getDefaultCursor());
+            e.getComponent().setCursor(Cursor.getDefaultCursor());
+        } catch (Exception ex) {
+            logger.warn("Error in mouseReleased " + ex, ex);
+        }
     }
 
     //-----------------//
@@ -465,6 +475,23 @@ public class Rubber
                 Rectangle bounds = component.getBounds(null);
                 g.drawLine(x, 0, x, bounds.height); // Vertical
                 g.drawLine(0, y, bounds.width, y); // Horizontal
+            }
+
+            // Vector
+            if (vector != null) {
+                Line2D v = new Line2D.Double(
+                        vector.getX1(),
+                        vector.getY1(),
+                        vector.getX2(),
+                        vector.getY2());
+
+                if (zoom != null) {
+                    zoom.scale(v);
+                }
+
+                final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+                g.setColor(Color.BLACK);
+                g.draw(v);
             }
 
             g.dispose();
@@ -691,7 +718,7 @@ public class Rubber
     private int unscaled (int val)
     {
         if (zoom != null) {
-            return zoom.unscaled(val);
+            return zoom.truncUnscaled(val);
         } else {
             return val;
         }

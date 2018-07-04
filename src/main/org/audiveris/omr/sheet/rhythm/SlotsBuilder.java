@@ -78,10 +78,10 @@ import java.util.Set;
  * </ul>
  * <p>
  * Example:<br>
- * <img src="doc-files/AdjacentChords.png">
+ * <img src="doc-files/AdjacentChords.png" alt="Adjanced chords example">
  * <p>
  * More examples:<br>
- * <img src="doc-files/AdjacentChords4.png">
+ * <img src="doc-files/AdjacentChords4.png" alt="Another example of adjanced chords">
  *
  * @author Hervé Bitteur
  */
@@ -161,8 +161,8 @@ public class SlotsBuilder
     private final Parameters params;
 
     /** Inter-chord relationships for the current measure stack. */
-    private SimpleDirectedGraph<AbstractChordInter, Link> graph = new SimpleDirectedGraph<AbstractChordInter, Link>(
-            Link.class);
+    private SimpleDirectedGraph<AbstractChordInter, Edge> graph = new SimpleDirectedGraph<AbstractChordInter, Edge>(
+            Edge.class);
 
     /** Current earliest term for each staff in stack. */
     private final Map<Staff, Rational> stackTerms = new LinkedHashMap<Staff, Rational>();
@@ -192,7 +192,7 @@ public class SlotsBuilder
 
                 default:
 
-                    // Use time offsett difference when known
+                    // Use time offset difference when known
                     if ((c1.getTimeOffset() != null) && (c2.getTimeOffset() != null)) {
                         return c1.getTimeOffset().compareTo(c2.getTimeOffset());
                     } else {
@@ -265,8 +265,8 @@ public class SlotsBuilder
             return false;
         }
 
-        final Rectangle box1 = ch1.getBounds();
-        final Rectangle box2 = ch2.getBounds();
+        final Rectangle box1 = ch1.getBoundsWithDots();
+        final Rectangle box2 = ch2.getBoundsWithDots();
 
         // Check horizontal void gap
         final int xGap = GeoUtil.xGap(box1, box2);
@@ -337,7 +337,7 @@ public class SlotsBuilder
         // Sort measure standard chords by abscissa
         List<AbstractChordInter> stdChords = new ArrayList<AbstractChordInter>(
                 stack.getStandardChords());
-        Collections.sort(stdChords, Inter.byAbscissa);
+        Collections.sort(stdChords, Inters.byAbscissa);
 
         // Populate graph with chords
         Graphs.addAllVertices(graph, stdChords);
@@ -370,13 +370,15 @@ public class SlotsBuilder
      */
     private boolean buildSlots ()
     {
+        logger.debug("buildSlots for {}", stack);
+
         // The 'actives' collection gathers the chords that are not terminated at the
         // time slot being considered. Initially, it contains just the whole chords.
         List<AbstractChordInter> actives = new ArrayList<AbstractChordInter>(
                 stack.getWholeRestChords());
-        Collections.sort(actives, AbstractChordInter.byAbscissa);
+        Collections.sort(actives, Inters.byAbscissa);
 
-        // Create voices for whole chords
+        // Create voices for whole rest chords
         handleWholeVoices(actives);
 
         // List of chords assignable, but not yet assigned to a slot
@@ -399,6 +401,8 @@ public class SlotsBuilder
                     logger.info("Stack#{} suspicious {}", stack.getIdValue(), lastSlot);
 
                     return false;
+                } else {
+                    stack.setAbnormal(true);
                 }
             }
 
@@ -424,6 +428,7 @@ public class SlotsBuilder
                     } else {
                         String prefix = stack.getSystem().getLogPrefix();
                         slot.setSuspicious(true);
+                        stack.setAbnormal(true);
                         logger.info("{}{} {}", prefix, stack, slot);
                     }
                 }
@@ -432,7 +437,7 @@ public class SlotsBuilder
                 slot.buildVoices(freeEndings);
             } else if (term.equals(prevTerm)) {
                 logger.info("Stack#{} endless loop detected", stack.getIdValue());
-                stack.setAbnormal();
+                stack.setAbnormal(true);
 
                 break;
             }
@@ -580,7 +585,7 @@ public class SlotsBuilder
         }
 
         for (AbstractChordInter chord : actives) {
-            // Skip the "whole" chords, since they don't expire before measure end
+            // Skip the "whole" rest chords, since they don't expire before measure end
             if (!chord.isWholeRest()) {
                 Rational endTime = chord.getEndTime();
 
@@ -780,10 +785,10 @@ public class SlotsBuilder
     private Rel getRel (AbstractChordInter from,
                         AbstractChordInter to)
     {
-        Link link = graph.getEdge(from, to);
+        Edge edge = graph.getEdge(from, to);
 
-        if (link != null) {
-            return link.rel;
+        if (edge != null) {
+            return edge.rel;
         }
 
         return null;
@@ -857,7 +862,7 @@ public class SlotsBuilder
 
                 final List<AbstractChordInter> groupChords = new ArrayList<AbstractChordInter>(
                         chordSet);
-                Collections.sort(groupChords, AbstractChordInter.byAbscissa);
+                Collections.sort(groupChords, Inters.byAbscissa);
 
                 for (int i = 0; i < groupChords.size(); i++) {
                     AbstractChordInter ch1 = groupChords.get(i);
@@ -1154,30 +1159,30 @@ public class SlotsBuilder
                          AbstractChordInter to,
                          Rel rel)
     {
-        Link link = graph.getEdge(from, to);
+        Edge edge = graph.getEdge(from, to);
 
-        if (link != null) {
-            link.rel = rel;
+        if (edge != null) {
+            edge.rel = rel;
         } else {
-            graph.addEdge(from, to, new Link(rel));
+            graph.addEdge(from, to, new Edge(rel));
         }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
     //------//
-    // Link //
+    // Edge //
     //------//
     /**
      * Meant to store a relation instance (edge) between two chords (vertices).
      */
-    protected static class Link
+    protected static class Edge
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        Rel rel;
+        Rel rel; // Relationship carried by the concrete edge
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Link (Rel rel)
+        public Edge (Rel rel)
         {
             this.rel = rel;
         }
@@ -1192,7 +1197,7 @@ public class SlotsBuilder
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxSlotDx = new Scale.Fraction(
-                1,
+                1.05,
                 "Maximum horizontal delta between a slot and a chord");
 
         private final Scale.Fraction minInterSlotDx = new Scale.Fraction(

@@ -23,60 +23,109 @@ package org.audiveris.omr.sig.ui;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
+import org.audiveris.omr.sig.relation.Relation;
 
-import org.jdesktop.application.Task;
-
+import java.awt.Rectangle;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Class {@code InterTask} is the elementary task (focused on an Inter) that can be
- * done, undone and redone by the IntersController.
+ * done, undone and redone by the {@link InterController}.
  *
  * @author Hervé Bitteur
  */
 public abstract class InterTask
+        extends UITask
 {
     //~ Instance fields ----------------------------------------------------------------------------
 
-    /** Underlying SIG. */
-    protected final SIGraph sig;
-
     /** Task focus. */
-    private final Inter inter;
+    protected final Inter inter;
+
+    /** Initial bounds of inter. */
+    protected final Rectangle initialBounds;
 
     /** Relations inter is involved in. */
-    protected final Collection<Partnership> partnerships;
+    protected Collection<Link> links;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code InterTask} object.
      *
-     * @param sig          the underlying sig
-     * @param inter        the inter task is focused upon
-     * @param partnerships the relations around inter
+     * @param sig           the underlying sig
+     * @param inter         the inter task is focused upon
+     * @param initialBounds the inter initial bounds
+     * @param links         the relations around inter
      */
     protected InterTask (SIGraph sig,
                          Inter inter,
-                         Collection<Partnership> partnerships)
+                         Rectangle initialBounds,
+                         Collection<Link> links)
     {
-        this.sig = sig;
+        super(sig);
         this.inter = inter;
-        this.partnerships = partnerships;
+        this.initialBounds = (initialBounds != null) ? new Rectangle(initialBounds) : null;
+        this.links = links;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    public abstract Task<Void, Void> performDo ();
-
-    public abstract Task<Void, Void> performRedo ();
-
-    public abstract Task<Void, Void> performUndo ();
-
     /**
-     * @return the inter
+     * Getter for involved inter.
+     *
+     * @return the inter involved
      */
     public Inter getInter ()
     {
         return inter;
+    }
+
+    public Collection<Link> getLinks ()
+    {
+        return links;
+    }
+
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder(actionName());
+        sb.append(" ").append(inter);
+
+        return sb.toString();
+    }
+
+    //---------//
+    // linksOf //
+    //---------//
+    /**
+     * Retrieve the current links around the provided inter.
+     *
+     * @param inter the provided inter
+     * @return its links, perhaps empty
+     */
+    protected static Collection<Link> linksOf (Inter inter)
+    {
+        final SIGraph sig = inter.getSig();
+        Set<Link> links = null;
+
+        for (Relation rel : sig.edgesOf(inter)) {
+            if (links == null) {
+                links = new LinkedHashSet<Link>();
+            }
+
+            Inter partner = sig.getOppositeInter(inter, rel);
+
+            links.add(
+                    new Link(sig.getOppositeInter(inter, rel), rel, sig.getEdgeTarget(rel) == partner));
+        }
+
+        if (links == null) {
+            return Collections.emptySet();
+        }
+
+        return links;
     }
 }

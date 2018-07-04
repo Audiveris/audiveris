@@ -84,6 +84,15 @@ public class TimeNumberInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     /**
      * (Try to) create a top or bottom number for time signature.
      *
@@ -124,15 +133,6 @@ public class TimeNumberInter
         return side;
     }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
-    }
-
     //---------//
     // setSide //
     //---------//
@@ -142,6 +142,15 @@ public class TimeNumberInter
     public void setSide (VerticalSide side)
     {
         this.side = side;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -29,6 +29,7 @@ import org.audiveris.omr.image.ChamferDistance;
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.Template;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.selection.AnchoredTemplateEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -169,7 +170,8 @@ public class TemplateView
 
                 ShapeSymbol symbol = Symbols.getSymbol(template.getShape());
                 Rectangle symRect = template.getSymbolBoundsAt(refPoint.x, refPoint.y, anchor);
-                MusicFont musicFont = MusicFont.getFont(template.getInterline());
+                Scale scale = sheet.getScale();
+                MusicFont musicFont = MusicFont.getHeadFont(scale, scale.getInterline());
                 symbol.paintSymbol(g, musicFont, symRect.getLocation(), Alignment.TOP_LEFT);
                 g.setComposite(oldComposite);
 

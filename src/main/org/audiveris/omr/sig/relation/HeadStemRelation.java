@@ -23,15 +23,26 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.image.Anchored.Anchor;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.beam.BeamGroup;
+import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sig.inter.AbstractBeamInter;
+import org.audiveris.omr.sig.inter.HeadChordInter;
+import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.StemInter;
 import static org.audiveris.omr.sig.relation.StemPortion.*;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.*;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -67,28 +78,75 @@ public class HeadStemRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Populate headSide and extensionPoint if needed.
+     *
+     * @param e edge change event
+     */
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final HeadInter head = (HeadInter) e.getEdgeSource();
+        final StemInter stem = (StemInter) e.getEdgeTarget();
+
+        if (headSide == null) {
+            headSide = (stem.getCenter().x < head.getCenter().x) ? LEFT : RIGHT;
+        }
+
+        if (extensionPoint == null) {
+            Anchor anchor = (headSide == LEFT) ? Anchor.LEFT_STEM : Anchor.RIGHT_STEM;
+            int interline = head.getStaff().getSpecificInterline();
+            Point2D refPt = head.getStemReferencePoint(anchor, interline);
+            extensionPoint = refPt;
+        }
+
+        if (isManual() || head.isManual() || stem.isManual()) {
+            // Update head chord with stem
+            HeadChordInter ch = head.getChord();
+
+            if (ch != null) {
+                ch.setStem(stem);
+
+                // Propagate to beam if any
+                Measure measure = ch.getMeasure();
+
+                for (AbstractBeamInter beam : stem.getBeams()) {
+                    if (beam.getGroup() == null) {
+                        BeamGroup.includeBeam(beam, measure);
+                    }
+                }
+            }
+        }
+
+        head.checkAbnormal();
+        stem.checkAbnormal();
+    }
+
     //------------------//
     // getXInGapMaximum //
     //------------------//
-    public static Scale.Fraction getXInGapMaximum ()
+    public static Scale.Fraction getXInGapMaximum (boolean manual)
     {
-        return constants.xInGapMax;
+        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
     }
 
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
     {
-        return constants.xOutGapMax;
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum ()
+    public static Scale.Fraction getYGapMaximum (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
     /**
@@ -118,6 +176,55 @@ public class HeadStemRelation
         }
     }
 
+    //------------//
+    // isInvading //
+    //------------//
+    /**
+     * Report whether this relation (assumed to be false) is invading because head and
+     * stem instances are too close to co-exist separately.
+     *
+     * @return true if invading
+     */
+    public boolean isInvading ()
+    {
+        return (dy <= constants.maxInvadingDy.getValue())
+               && (dx <= constants.maxInvadingDx.getValue());
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final HeadInter head = (HeadInter) e.getEdgeSource();
+        final StemInter stem = (StemInter) e.getEdgeTarget();
+
+        head.checkAbnormal();
+        stem.checkAbnormal();
+    }
+
+    //-------------//
+    // setHeadSide //
+    //-------------//
     /**
      * @param headSide the headSide to set
      */
@@ -148,27 +255,27 @@ public class HeadStemRelation
     // getXInGapMax //
     //--------------//
     @Override
-    protected Scale.Fraction getXInGapMax ()
+    protected Scale.Fraction getXInGapMax (boolean manual)
     {
-        return getXInGapMaximum();
+        return getXInGapMaximum(manual);
     }
 
     //---------------//
     // getXOutGapMax //
     //---------------//
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return getXOutGapMaximum();
+        return getXOutGapMaximum(manual);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
-        return getYGapMaximum();
+        return getYGapMaximum(manual);
     }
 
     @Override
@@ -190,27 +297,47 @@ public class HeadStemRelation
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Ratio headSupportCoeff = new Constant.Ratio(
-                2,
+                1,
                 "Value for (source) head coeff in support formula");
 
         private final Constant.Ratio stemSupportCoeff = new Constant.Ratio(
-                2,
+                1,
                 "Value for (target) stem coeff in support formula");
-
-        private final Scale.Fraction yGapMax = new Scale.Fraction(
-                0.8,
-                "Maximum vertical gap between stem & head");
 
         private final Scale.Fraction xInGapMax = new Scale.Fraction(
                 0.3,
                 "Maximum horizontal overlap between stem & head");
 
+        private final Scale.Fraction xInGapMaxManual = new Scale.Fraction(
+                0.45,
+                "Maximum manual horizontal overlap between stem & head");
+
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.25,
                 "Maximum horizontal gap between stem & head");
 
+        private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
+                0.35,
+                "Maximum manualhorizontal gap between stem & head");
+
+        private final Scale.Fraction yGapMax = new Scale.Fraction(
+                0.8,
+                "Maximum vertical gap between stem & head");
+
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                1.2,
+                "Maximum manual vertical gap between stem & head");
+
         private final Constant.Ratio anchorHeightRatio = new Constant.Ratio(
                 0.25,
                 "Vertical margin for stem anchor portion (as ratio of head height)");
+
+        private final Scale.Fraction maxInvadingDx = new Scale.Fraction(
+                0.05,
+                "Maximum invading horizontal gap between stem & head");
+
+        private final Scale.Fraction maxInvadingDy = new Scale.Fraction(
+                0.0,
+                "Maximum invading vertical gap between stem & head");
     }
 }

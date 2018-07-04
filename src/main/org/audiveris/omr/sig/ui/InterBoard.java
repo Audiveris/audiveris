@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.LyricLineInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.text.TextRole;
@@ -37,8 +38,6 @@ import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.field.LComboBox;
 import org.audiveris.omr.ui.field.LTextField;
 import org.audiveris.omr.ui.selection.EntityListEvent;
-import org.audiveris.omr.ui.selection.MouseMovement;
-import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.slf4j.Logger;
@@ -46,12 +45,15 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.Arrays;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 /**
@@ -94,22 +96,40 @@ public class InterBoard
     //    /** Denominator of time signature */
     //    private final LIntegerField timeDen;
     //
-    /** ComboBox for text role */
+    /** ComboBox for text role. */
     private final LComboBox<TextRole> roleCombo = new LComboBox<TextRole>(
             "Role",
             "Role of the Text",
             TextRole.values());
 
-    /** Input/Output : textual content */
+    /** Input/Output : textual content. */
     private final LTextField textField = new LTextField(true, "Text", "Content of textual item");
+
+    /** Handling of entered / selected values. */
+    private final Action paramAction;
+
+    /** To avoid unwanted events. */
+    private boolean selfUpdatingText;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new InterBoard object.
+     * Creates a new InterBoard object, pre-selected by default.
      *
      * @param sheet the related sheet
      */
     public InterBoard (Sheet sheet)
+    {
+        this(sheet, true);
+    }
+
+    /**
+     * Creates a new InterBoard object.
+     *
+     * @param sheet    the related sheet
+     * @param selected true for pre-selected, false for collapsed
+     */
+    public InterBoard (Sheet sheet,
+                       boolean selected)
     {
         super(Board.INTER, sheet.getInterIndex().getEntityService(), true);
         this.sheet = sheet;
@@ -125,6 +145,8 @@ public class InterBoard
         details.setToolTipText("Grade details");
         details.setHorizontalAlignment(SwingConstants.CENTER);
 
+        paramAction = new ParamAction();
+
         // Initial status
         grade.setEnabled(false);
         details.setEnabled(false);
@@ -133,35 +155,6 @@ public class InterBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when Inter Selection has been modified
-     *
-     * @param event of current inter list
-     */
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        logger.debug("InterBoard event:{}", event);
-
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            super.onEvent(event);
-
-            if (event instanceof EntityListEvent) {
-                handleEvent((EntityListEvent<Inter>) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
     //---------------------//
     // dumpActionPerformed //
     //---------------------//
@@ -171,7 +164,7 @@ public class InterBoard
         final Inter inter = getSelectedEntity();
 
         // Compute contextual grade
-        if ((inter.getSig() != null) && !inter.isDeleted()) {
+        if ((inter.getSig() != null) && !inter.isRemoved()) {
             inter.getSig().computeContextualGrade(inter);
         }
 
@@ -185,6 +178,89 @@ public class InterBoard
     protected FormLayout getFormLayout ()
     {
         return Panel.makeFormLayout(4, 3);
+    }
+
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
+    /**
+     * Interest in InterList for shape, icon, text, role, etc... fields
+     *
+     * @param interListEvent the inter list event
+     */
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Inter> interListEvent)
+    {
+        super.handleEntityListEvent(interListEvent);
+
+        final Inter inter = interListEvent.getEntity();
+
+        // Shape text and icon
+        Shape shape = (inter != null) ? inter.getShape() : null;
+
+        if (shape != null) {
+            shapeField.setText(shape.toString());
+            shapeIcon.setIcon(shape.getDecoratedSymbol());
+        } else {
+            shapeField.setText((inter != null) ? inter.shapeString() : "");
+            shapeIcon.setIcon(null);
+        }
+
+        // Inter characteristics
+        textField.setVisible(false);
+        textField.setEnabled(false);
+        roleCombo.setVisible(false);
+
+        if (inter != null) {
+            vip.getLabel().setEnabled(true);
+            vip.getField().setEnabled(!inter.isVip());
+            vip.getField().setSelected(inter.isVip());
+
+            Double cp = inter.getContextualGrade();
+
+            if (cp != null) {
+                grade.setText(String.format("%.2f/%.2f", inter.getGrade(), cp));
+            } else {
+                grade.setText(String.format("%.2f", inter.getGrade()));
+            }
+
+            details.setText((inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
+            deassignAction.putValue(Action.NAME, inter.isRemoved() ? "deleted" : "Deassign");
+
+            if (inter instanceof WordInter) {
+                selfUpdatingText = true;
+
+                WordInter word = (WordInter) inter;
+                textField.setText(word.getValue());
+                textField.setEnabled(true);
+                textField.setVisible(true);
+                selfUpdatingText = false;
+            } else if (inter instanceof SentenceInter) {
+                selfUpdatingText = true;
+
+                SentenceInter sentence = (SentenceInter) inter;
+                textField.setText(sentence.getValue());
+                textField.setVisible(true);
+                roleCombo.setSelectedItem(sentence.getRole());
+                roleCombo.setVisible(true);
+                roleCombo.setEnabled(!(sentence instanceof LyricLineInter));
+
+                selfUpdatingText = false;
+            } else {
+            }
+        } else {
+            vip.setEnabled(false);
+            vip.getField().setSelected(false);
+
+            grade.setText("");
+            details.setText("");
+            deassignAction.putValue(Action.NAME, " ");
+        }
+
+        deassignAction.setEnabled((inter != null) && !inter.isRemoved());
+        grade.setEnabled(inter != null);
+        shapeField.setEnabled(inter != null);
+        details.setEnabled(inter != null);
     }
 
     //--------------//
@@ -219,8 +295,7 @@ public class InterBoard
         r += 2; // --------------------------------
 
         roleCombo.getField().setMaximumRowCount(TextRole.values().length);
-        ///paramAction = new ParamAction();
-        ///roleCombo.addActionListener(paramAction);
+        roleCombo.addActionListener(paramAction);
         roleCombo.setVisible(false);
         builder.add(roleCombo.getField(), cst.xyw(3, r, 4));
 
@@ -232,79 +307,12 @@ public class InterBoard
         r += 2; // --------------------------------
 
         builder.add(details, cst.xyw(1, r, 11));
-    }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in InterList
-     *
-     * @param interListEvent
-     */
-    private void handleEvent (EntityListEvent<Inter> interListEvent)
-    {
-        final Inter inter = interListEvent.getEntity();
-
-        // Shape text and icon
-        Shape shape = (inter != null) ? inter.getShape() : null;
-
-        if (shape != null) {
-            shapeField.setText(shape.toString());
-            shapeIcon.setIcon(shape.getDecoratedSymbol());
-        } else {
-            shapeField.setText((inter != null) ? inter.shapeString() : "");
-            shapeIcon.setIcon(null);
-        }
-
-        // Inter characteristics
-        textField.setVisible(false);
-        textField.setEnabled(false); // TEMPORARY
-        roleCombo.setVisible(false);
-        roleCombo.setEnabled(false); // TEMPORARY
-
-        if (inter != null) {
-            vip.getLabel().setEnabled(true);
-            vip.getField().setEnabled(!inter.isVip());
-            vip.getField().setSelected(inter.isVip());
-
-            Double cp = inter.getContextualGrade();
-
-            if (cp != null) {
-                grade.setText(String.format("%.2f/%.2f", inter.getGrade(), cp));
-            } else {
-                grade.setText(String.format("%.2f", inter.getGrade()));
-            }
-
-            details.setText((inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
-            deassignAction.putValue(Action.NAME, inter.isDeleted() ? "deleted" : "Deassign");
-
-            if (inter instanceof WordInter) {
-                WordInter word = (WordInter) inter;
-                textField.setText(word.getValue());
-                textField.setVisible(true);
-            } else if (inter instanceof SentenceInter) {
-                SentenceInter sentence = (SentenceInter) inter;
-                textField.setText(sentence.getValue());
-                textField.setVisible(true);
-                roleCombo.setSelectedItem(sentence.getRole());
-                roleCombo.setVisible(true);
-            } else {
-            }
-        } else {
-            vip.setEnabled(false);
-            vip.getField().setSelected(false);
-
-            grade.setText("");
-            details.setText("");
-            deassignAction.putValue(Action.NAME, " ");
-        }
-
-        ///TEMPORARY deassignAction.setEnabled((inter != null) && !inter.isDeleted());
-        ///
-        grade.setEnabled(inter != null);
-        shapeField.setEnabled(inter != null);
-        details.setEnabled(inter != null);
+        // Needed to process user input when RETURN/ENTER is pressed
+        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke("ENTER"),
+                "TextAction");
+        getComponent().getActionMap().put("TextAction", paramAction);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -328,7 +336,7 @@ public class InterBoard
     //----------------//
     // DeassignAction //
     //----------------//
-    private static class DeassignAction
+    private class DeassignAction
             extends AbstractAction
     {
         //~ Constructors ---------------------------------------------------------------------------
@@ -343,7 +351,70 @@ public class InterBoard
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            logger.info("Not yet implemented");
+            // Delete the inter
+            final Inter inter = InterBoard.this.getSelectedEntity();
+            logger.debug("Deleting {}", inter);
+
+            sheet.getInterController().removeInters(Arrays.asList(inter));
+        }
+    }
+
+    //-------------//
+    // ParamAction //
+    //-------------//
+    private class ParamAction
+            extends AbstractAction
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        /**
+         * Method run whenever user presses Return/Enter in one of the parameter fields
+         *
+         * @param e unused?
+         */
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Discard irrelevant action events
+            if (selfUpdatingText) {
+                return;
+            }
+
+            // Current inter
+            final Inter inter = getSelectedEntity();
+
+            if (inter != null) {
+                // Word or Sentence
+                if (inter instanceof WordInter) {
+                    WordInter word = (WordInter) inter;
+
+                    // Change text value?
+                    final String newValue = textField.getText().trim();
+
+                    if (!newValue.equals(word.getValue())) {
+                        logger.debug("Word=\"{}\"", newValue);
+                        sheet.getInterController().changeWord(word, newValue);
+                    }
+                } else if (inter instanceof SentenceInter) {
+                    SentenceInter sentence = (SentenceInter) inter;
+
+                    // Change sentence role?
+                    final TextRole newRole = roleCombo.getSelectedItem();
+
+                    if (newRole != sentence.getRole()) {
+                        logger.debug(
+                                "Sentence=\"{}\" Role={}",
+                                textField.getText().trim(),
+                                newRole);
+
+                        if (newRole == TextRole.Lyrics) {
+                            logger.info("You cannot change role to lyrics");
+                        } else {
+                            sheet.getInterController().changeSentence(sentence, newRole);
+                        }
+                    }
+                }
+            }
         }
     }
 }

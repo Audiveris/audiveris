@@ -31,9 +31,10 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sheet.rhythm.TupletsBuilder;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordTupletRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -41,8 +42,10 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -56,7 +59,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "tuplet")
 public class TupletInter
-        extends AbstractNotationInter
+        extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -67,9 +70,6 @@ public class TupletInter
     //~ Instance fields ----------------------------------------------------------------------------
     // Factor lazily computed
     private DurationFactor durationFactor;
-
-    /** Sequence of embraced chords. Lazily computed. */
-    private List<AbstractChordInter> chords;
 
     /** Base duration. Lazily computed. */
     private Rational baseDuration;
@@ -98,8 +98,53 @@ public class TupletInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
-    // create //
+    // accept //
     //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Add it from containing stack and/or measure.
+     *
+     * @see #remove(boolean)
+     */
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
+        }
+
+        setAbnormal(true); // No chord linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        SortedSet<AbstractChordInter> embraced = TupletsBuilder.getEmbracedChords(
+                this,
+                getChords());
+        setAbnormal(embraced == null);
+
+        return isAbnormal();
+    }
+
+    //-------------//
+    // createValid //
+    //-------------//
     /**
      * (Try to) create a tuplet inter, checking that there is at least one (head) chord
      * nearby.
@@ -111,11 +156,11 @@ public class TupletInter
      * @param systemChords abscissa-ordered list of chords in this system
      * @return the create TupletInter or null
      */
-    public static TupletInter create (Glyph glyph,
-                                      Shape shape,
-                                      double grade,
-                                      SystemInfo system,
-                                      List<Inter> systemChords)
+    public static TupletInter createValid (Glyph glyph,
+                                           Shape shape,
+                                           double grade,
+                                           SystemInfo system,
+                                           List<Inter> systemChords)
     {
         Rectangle luBox = glyph.getBounds();
         Scale scale = system.getSheet().getScale();
@@ -123,7 +168,7 @@ public class TupletInter
                 scale.toPixels(constants.maxTupletChordDx),
                 scale.toPixels(constants.maxTupletChordDy));
 
-        List<Inter> nearby = SIGraph.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
+        List<Inter> nearby = Inters.intersectedInters(systemChords, GeoOrder.BY_ABSCISSA, luBox);
 
         if (nearby.isEmpty()) {
             logger.debug("Discarding isolated tuplet candidate glyph#{}", glyph.getId());
@@ -132,22 +177,6 @@ public class TupletInter
         }
 
         return new TupletInter(glyph, shape, grade);
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    @Override
-    public void delete ()
-    {
-        // Remove it from containing stack and/or measure
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
-
-        if (stack != null) {
-            stack.removeInter(this);
-        }
-
-        super.delete();
     }
 
     //-----------------//
@@ -179,18 +208,15 @@ public class TupletInter
      */
     public List<AbstractChordInter> getChords ()
     {
-        if (chords == null) {
-            List<AbstractChordInter> list = new ArrayList<AbstractChordInter>();
+        List<AbstractChordInter> list = new ArrayList<AbstractChordInter>();
 
-            for (Relation tcRel : sig.getRelations(this, ChordTupletRelation.class)) {
-                list.add((AbstractChordInter) sig.getOppositeInter(this, tcRel));
-            }
-
-            Collections.sort(list, Inter.byAbscissa);
-            chords = Collections.unmodifiableList(list);
+        for (Relation tcRel : sig.getRelations(this, ChordTupletRelation.class)) {
+            list.add((AbstractChordInter) sig.getOppositeInter(this, tcRel));
         }
 
-        return chords;
+        Collections.sort(list, Inters.byAbscissa);
+
+        return Collections.unmodifiableList(list);
     }
 
     //-------------------//
@@ -240,6 +266,53 @@ public class TupletInter
         }
 
         return null;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove it from containing stack and/or measure.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+
+        if (stack != null) {
+            stack.removeInter(this);
+        }
+
+        super.remove(extensive);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Specifically, look for chords to link with this tuplet.
+     *
+     * @return chords link, perhaps empty
+     */
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        MeasureStack stack = system.getStackAt(getCenter());
+        Collection<Link> links = new TupletsBuilder(stack).lookupLinks(this);
+
+        if (doit) {
+            for (Link link : links) {
+                link.applyTo(this);
+            }
+        }
+
+        return links;
     }
 
     //-----------//

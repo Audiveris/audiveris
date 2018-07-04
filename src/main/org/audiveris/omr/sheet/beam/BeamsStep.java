@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.beam;
 
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.lag.BasicLag;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.lag.Lags;
@@ -92,10 +92,10 @@ public class BeamsStep
                     .setBeamDistance(distances.getMeanValue(), distances.getStandardDeviation());
         }
 
-        // Dispose of BEAM_SPOT glyphs
+        // Dispose of BEAM_SPOT glyphs, a glyph may be split into several beams
         // (NOTA: the weak references may survive as long as a related SpotsController exists)
         for (SystemInfo system : sheet.getSystems()) {
-            system.removeGroupedGlyphs(Group.BEAM_SPOT);
+            system.removeGroupedGlyphs(GlyphGroup.BEAM_SPOT);
         }
     }
 

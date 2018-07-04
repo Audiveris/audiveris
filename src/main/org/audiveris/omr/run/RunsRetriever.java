@@ -171,7 +171,7 @@ public class RunsRetriever
                                     final int cMin,
                                     final int cMax)
     {
-        if ((OmrExecutors.defaultParallelism.getSpecific() == false) || !adapter.isThreadSafe()) {
+        if ((OmrExecutors.defaultParallelism.getValue() == false) || !adapter.isThreadSafe()) {
             // Sequential
             for (int p = pMin; p <= pMax; p++) {
                 processPosition(p, cMin, cMax);

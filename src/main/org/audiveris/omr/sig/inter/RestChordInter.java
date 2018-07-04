@@ -45,13 +45,22 @@ public class RestChordInter
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-arg constructor meant for JAXB (and for DummyWholeRestChordInter subclass).
      */
-    private RestChordInter ()
+    protected RestChordInter ()
     {
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     //-------------//
     // shapeString //
     //-------------//

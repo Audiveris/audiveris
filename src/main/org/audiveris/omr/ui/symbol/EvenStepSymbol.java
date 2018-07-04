@@ -67,7 +67,7 @@ public class EvenStepSymbol
 
         p.rect = new Rectangle((int) Math.ceil(rect.getWidth()), (int) Math.ceil(rect.getHeight()));
 
-        int interline = font.getFontInterline();
+        int interline = font.getStaffInterline();
         p.line = Math.max(1, (int) Math.rint(interline * 0.17));
 
         return p;

@@ -33,7 +33,7 @@ import java.util.Map;
 
 /**
  * Class {@code TemplateFactory} builds needed instances of {@link Template} class
- * and keeps a catalog per desired size and shape.
+ * and keeps a catalog per desired point size and shape.
  *
  * @author Hervé Bitteur
  */
@@ -48,7 +48,7 @@ public class TemplateFactory
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
-    /** Catalog of all templates already allocated. */
+    /** Catalog of all templates already allocated, mapped by point size. */
     private final Map<Integer, Catalog> allSizes;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -75,21 +75,19 @@ public class TemplateFactory
     /**
      * Report the template catalog dedicated to the provided interline.
      *
-     * @param interline provided interline
-     * @return the catalog of all templates for the interline value
+     * @param pointSize provided point size
+     * @return the catalog of all templates for the point size value
      */
-    public Catalog getCatalog (int interline)
+    public Catalog getCatalog (int pointSize)
     {
-        ///interline += 1; // HORRIBLE TRICK TO BE REMOVED ASAP!!!!!!!!!!!!!!!!!!!!!!!!!
-        Catalog catalog = allSizes.get(interline);
+        Catalog catalog = allSizes.get(pointSize);
 
         if (catalog == null) {
             synchronized (allSizes) {
-                catalog = allSizes.get(interline);
+                catalog = allSizes.get(pointSize);
 
                 if (catalog == null) {
-                    catalog = new Catalog(interline);
-                    allSizes.put(interline, catalog);
+                    allSizes.put(pointSize, catalog = new Catalog(pointSize));
                 }
             }
         }
@@ -108,17 +106,17 @@ public class TemplateFactory
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        /** Interline value for this catalog. */
-        final int interline;
+        /** Point size value for this catalog. */
+        final int pointSize;
 
         /** Map of all descriptors for this catalog. */
         final Map<Shape, ShapeDescriptor> descriptors = new EnumMap<Shape, ShapeDescriptor>(
                 Shape.class);
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Catalog (int interline)
+        public Catalog (int pointSize)
         {
-            this.interline = interline;
+            this.pointSize = pointSize;
             buildAllTemplates();
         }
 
@@ -146,8 +144,8 @@ public class TemplateFactory
         //-------------------//
         private void buildAllTemplates ()
         {
-            for (Shape shape : ShapeSet.TemplateNotes) {
-                descriptors.put(shape, new ShapeDescriptor(shape, interline));
+            for (Shape shape : ShapeSet.getTemplateNotes(null)) {
+                descriptors.put(shape, new ShapeDescriptor(shape, pointSize));
             }
         }
     }

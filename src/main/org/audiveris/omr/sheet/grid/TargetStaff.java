@@ -56,6 +56,7 @@ public class TargetStaff
      *
      * @param info initial raw information
      * @param top  Ordinate of top in containing page
+     * @param system the containing system
      */
     public TargetStaff (Staff info,
                         double top,

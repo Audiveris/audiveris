@@ -62,6 +62,29 @@ public abstract class OmrGui
     public abstract boolean displayConfirmation (String message);
 
     /**
+     * Allow to display a modal confirmation dialog with a message and specific title
+     *
+     * @param message the message asking for confirmation
+     * @param title   dialog title
+     * @return true if confirmed, false otherwise
+     */
+    public abstract boolean displayConfirmation (String message,
+                                                 String title);
+
+    /**
+     * Allow to display a modal confirmation dialog with a message, specific title,
+     * and specific option type
+     *
+     * @param message    the message asking for confirmation
+     * @param title      dialog title
+     * @param optionType YES_NO_OPTION, YES_NO_CANCEL_OPTION or OK_CANCEL_OPTION
+     * @return precise answer (YES_OPTION, NO_OPTION, CANCEL_OPTION, OK_OPTION or CLOSED_OPTION)
+     */
+    public abstract int displayConfirmation (String message,
+                                             String title,
+                                             int optionType);
+
+    /**
      * Allow to display a modal dialog with an error message.
      *
      * @param message the error message
@@ -89,6 +112,15 @@ public abstract class OmrGui
      * @param message the warning message
      */
     public abstract void displayWarning (String message);
+
+    /**
+     * Allow to display a modal dialog with a warning message and specific title
+     *
+     * @param message the warning message
+     * @param title   dialog title
+     */
+    public abstract void displayWarning (String message,
+                                         String title);
 
     /**
      * Report the concrete Swing frame.

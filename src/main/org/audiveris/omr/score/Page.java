@@ -28,6 +28,11 @@ import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
+import org.audiveris.omr.sig.inter.SlurInter;
+
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
 import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 
@@ -35,8 +40,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -141,19 +148,6 @@ public class Page
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // initTransients //
-    //----------------//
-    /**
-     * Initialize transient data after construction or unmarshalling.
-     *
-     * @param sheet the containing sheet
-     */
-    public final void initTransients (Sheet sheet)
-    {
-        this.sheet = sheet;
-    }
-
     //---------------------//
     // computeMeasureCount //
     //---------------------//
@@ -167,7 +161,7 @@ public class Page
         for (SystemInfo system : systems) {
             count += system.getFirstPart().getMeasures().size();
 
-            if (system.getLastMeasureStack().isCautionary()) {
+            if (system.getLastStack().isCautionary()) {
                 count--;
             }
         }
@@ -175,11 +169,67 @@ public class Page
         measureCount = count;
     }
 
+    //--------------------//
+    // connectOrphanSlurs //
+    //--------------------//
+    /**
+     * Within the systems of this page, retrieve the connections between the orphan
+     * slurs at the beginning of each system and the orphan slurs at the end of the
+     * previous system if any.
+     * <p>
+     * Orphan slurs that don't connect (and are not manual) are removed from their SIG.
+     *
+     * @param checkTie true for tie checking
+     */
+    public void connectOrphanSlurs (boolean checkTie)
+    {
+        for (SystemInfo system : getSystems()) {
+            SystemInfo prevSystem = system.getPrecedingInPage();
+
+            if (prevSystem != null) {
+                // Examine every part in sequence
+                for (Part part : system.getParts()) {
+                    List<SlurInter> orphans = part.getSlurs(SlurInter.isBeginningOrphan);
+
+                    // Connect to ending orphans in preceding system/part (if such part exists)
+                    Part precPart = part.getPrecedingInPage();
+
+                    if (precPart != null) {
+                        List<SlurInter> precOrphans = precPart.getSlurs(
+                                SlurInter.isEndingOrphan);
+
+                        // Links: Slur -> prevSlur
+                        Map<SlurInter, SlurInter> links = part.getCrossSlurLinks(precPart);
+
+                        // Apply the links possibilities
+                        for (Map.Entry<SlurInter, SlurInter> entry : links.entrySet()) {
+                            final SlurInter slur = entry.getKey();
+                            final SlurInter prevSlur = entry.getValue();
+
+                            slur.setExtension(LEFT, prevSlur);
+                            prevSlur.setExtension(RIGHT, slur);
+
+                            if (checkTie) {
+                                slur.checkCrossTie(prevSlur);
+                            }
+                        }
+
+                        orphans.removeAll(links.keySet());
+                        precOrphans.removeAll(links.values());
+                        SlurInter.discardOrphans(precOrphans, RIGHT);
+                    }
+
+                    SlurInter.discardOrphans(orphans, LEFT);
+                }
+            }
+        }
+    }
+
     //-------------------//
     // dumpMeasureCounts //
     //-------------------//
     /**
-     * Log the detailed number of measures in the score.
+     * Log the detailed number of measures in the page.
      */
     public void dumpMeasureCounts ()
     {
@@ -278,6 +328,24 @@ public class Page
     public Integer getFirstSystemId ()
     {
         return firstSystemId;
+    }
+
+    //---------------------//
+    // getFollowingInScore //
+    //---------------------//
+    /**
+     * Report the following page of this one within the score.
+     *
+     * @param score the containing score
+     * @return the following page, or null if none
+     */
+    public Page getFollowingInScore (Score score)
+    {
+        if (score != null) {
+            return score.getFollowingPage(this);
+        }
+
+        return null;
     }
 
     /**
@@ -383,6 +451,10 @@ public class Page
      */
     public Score getScore ()
     {
+        if (score == null) {
+            score = sheet.getStub().getBook().getScore(this);
+        }
+
         return score;
     }
 
@@ -399,6 +471,32 @@ public class Page
         return sheet;
     }
 
+    //--------------------//
+    // getSystemPartsById //
+    //--------------------//
+    /**
+     * Report the list of (system physical) parts that exhibit the desired ID.
+     *
+     * @param id the desired ID
+     * @return the parts with this ID
+     */
+    public List<Part> getSystemPartsById (int id)
+    {
+        List<Part> parts = new ArrayList<Part>();
+
+        for (SystemInfo system : getSystems()) {
+            for (Part part : system.getParts()) {
+                if (part.getId() == id) {
+                    parts.add(part);
+
+                    break;
+                }
+            }
+        }
+
+        return parts;
+    }
+
     //------------//
     // getSystems //
     //------------//
@@ -410,6 +508,19 @@ public class Page
     public List<SystemInfo> getSystems ()
     {
         return systems;
+    }
+
+    //----------------//
+    // initTransients //
+    //----------------//
+    /**
+     * Initialize transient data after construction or unmarshalling.
+     *
+     * @param sheet the containing sheet
+     */
+    public final void initTransients (Sheet sheet)
+    {
+        this.sheet = sheet;
     }
 
     //-----------------//
@@ -434,7 +545,7 @@ public class Page
         int systemOffset = 0;
 
         for (SystemInfo system : systems) {
-            List<MeasureStack> stacks = system.getMeasureStacks();
+            List<MeasureStack> stacks = system.getStacks();
 
             for (int im = 0; im < stacks.size(); im++) {
                 int mid = systemOffset + im + 1;
@@ -442,7 +553,7 @@ public class Page
                 stack.setIdValue(mid);
             }
 
-            systemOffset += system.getMeasureStacks().size();
+            systemOffset += stacks.size();
         }
 
         // Very temporary raw values
@@ -592,7 +703,7 @@ public class Page
 
             // Collect duration values for each standard chord in this page
             for (SystemInfo system : getSystems()) {
-                for (MeasureStack stack : system.getMeasureStacks()) {
+                for (MeasureStack stack : system.getStacks()) {
                     for (AbstractChordInter chord : stack.getStandardChords()) {
                         try {
                             final Rational duration = chord.isWholeRest()

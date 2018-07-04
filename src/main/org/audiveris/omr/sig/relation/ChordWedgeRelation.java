@@ -21,7 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
+import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.util.HorizontalSide;
+import static org.audiveris.omr.util.HorizontalSide.LEFT;
+import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -43,7 +48,7 @@ public class ChordWedgeRelation
 
     /** Left or right side of the wedge. */
     @XmlAttribute
-    private final HorizontalSide side;
+    private HorizontalSide side;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -57,14 +62,31 @@ public class ChordWedgeRelation
     }
 
     /**
-     * No-arg constructor meant for JAXB.
+     * No-arg constructor meant for JAXB and user allocation.
      */
-    private ChordWedgeRelation ()
+    public ChordWedgeRelation ()
     {
-        this.side = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Populate side if needed.
+     *
+     * @param e edge change event
+     */
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        if (side == null) {
+            final Inter chord = e.getEdgeSource();
+            final Inter wedge = e.getEdgeTarget();
+            side = (wedge.getCenter().x < chord.getCenter().x) ? RIGHT : LEFT;
+        }
+    }
+
     //---------//
     // getSide //
     //---------//
@@ -74,6 +96,24 @@ public class ChordWedgeRelation
     public HorizontalSide getSide ()
     {
         return side;
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return false;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
     }
 
     //----------//

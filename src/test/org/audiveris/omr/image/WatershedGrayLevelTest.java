@@ -23,10 +23,6 @@ package org.audiveris.omr.image;
 
 import ij.process.ByteProcessor;
 
-import org.audiveris.omr.image.ChamferDistance;
-import org.audiveris.omr.image.PixelSource;
-import org.audiveris.omr.image.Table;
-import org.audiveris.omr.image.WatershedGrayLevel;
 import org.audiveris.omr.math.TableUtil;
 
 import org.junit.Test;

@@ -21,9 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.lag;
 
+import org.audiveris.omr.ui.ViewParameters;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.IdEvent;
+import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.EntityIndex;
 
@@ -53,5 +55,23 @@ public class SectionService
                            SelectionService locationService)
     {
         super(index, locationService, eventsAllowed);
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //---------------------//
+    // handleLocationEvent //
+    //---------------------//
+    /**
+     * Interest in location &rArr; list
+     *
+     * @param locationEvent the location event
+     */
+    @Override
+    protected void handleLocationEvent (LocationEvent locationEvent)
+    {
+        // Search only when in MODE_SECTION
+        if (ViewParameters.getInstance().getSelectionMode() == ViewParameters.SelectionMode.MODE_SECTION) {
+            super.handleLocationEvent(locationEvent);
+        }
     }
 }

@@ -66,19 +66,46 @@ public class FlagInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
-    // delete //
+    // accept //
     //--------//
     @Override
-    public void delete ()
+    public void accept (InterVisitor visitor)
     {
-        // Remove it from containing measure
-        MeasureStack stack = sig.getSystem().getMeasureStackAt(getCenter());
+        visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Make sure containing stack is updated.
+     *
+     * @see #remove(boolean)
+     */
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
 
         if (stack != null) {
-            stack.removeInter(this);
+            stack.addInter(this);
         }
 
-        super.delete();
+        setAbnormal(true); // No stem linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if flag is connected to a stem
+        setAbnormal(!sig.hasRelation(this, FlagStemRelation.class));
+
+        return isAbnormal();
     }
 
     //---------//
@@ -125,6 +152,27 @@ public class FlagInter
         }
 
         return staff;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove it from containing stack.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+
+        if (stack != null) {
+            stack.removeInter(this);
+        }
+
+        super.remove(extensive);
     }
 
     //-----------//

@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.rhythm;
 
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -39,7 +40,7 @@ public class Profile
     //~ Instance fields ----------------------------------------------------------------------------
 
     /** The sorted map of rhythm items. (typically within a stack) */
-    private final SortedMap<Inter, Attrs> map = new TreeMap<Inter, Attrs>(Inter.byFullAbscissa);
+    private final SortedMap<Inter, Attrs> map = new TreeMap<Inter, Attrs>(Inters.byFullAbscissa);
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//

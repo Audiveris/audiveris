@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FileDialog;
@@ -84,6 +85,20 @@ public abstract class UIUtil
     };
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------------//
+    // complementaryColor //
+    //--------------------//
+    /**
+     * Report the complementary of provided color.
+     *
+     * @param color provided color
+     * @return the reverse color
+     */
+    public static Color complementaryColor (Color color)
+    {
+        return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
+    }
+
     //------------------//
     // directoryChooser //
     //------------------//
@@ -249,17 +264,17 @@ public abstract class UIUtil
                 logger.warn("no ancestor is Frame");
             }
         } else {
-            ///final JFileChooser fc = new JFileChooser();
+            final JFileChooser fc = new JFileChooser();
             // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6317789
-            final JFileChooser fc = new JFileChooser()
-            {
-                @Override
-                public void updateUI ()
-                {
-                    putClientProperty("FileChooser.useShellFolder", false);
-                    super.updateUI();
-                }
-            };
+//            final JFileChooser fc = new JFileChooser()
+//            {
+//                @Override
+//                public void updateUI ()
+//                {
+//                    putClientProperty("FileChooser.useShellFolder", false);
+//                    super.updateUI();
+//                }
+//            };
 
             fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
@@ -391,6 +406,36 @@ public abstract class UIUtil
         }
 
         return null;
+    }
+
+    //-------------------------//
+    // setAbsoluteDashedStroke //
+    //-------------------------//
+    /**
+     * Similar to {@link #setAbsoluteStroke(java.awt.Graphics, float)} but for a dashed
+     * stroke.
+     *
+     * @param g     the current graphics context
+     * @param width the absolute stroke width desired
+     * @return the previous stroke
+     */
+    public static Stroke setAbsoluteDashedStroke (Graphics g,
+                                                  float width)
+    {
+        Graphics2D g2 = (Graphics2D) g;
+        AffineTransform AT = g2.getTransform();
+        double ratio = AT.getScaleX();
+        Stroke oldStroke = g2.getStroke();
+        Stroke stroke = new BasicStroke(
+                width / (float) ratio,
+                BasicStroke.CAP_SQUARE,
+                BasicStroke.JOIN_MITER,
+                10.0f,
+                new float[]{3.0f},
+                0.0f);
+        g2.setStroke(stroke);
+
+        return oldStroke;
     }
 
     //-------------------//

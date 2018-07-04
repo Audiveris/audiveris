@@ -107,7 +107,12 @@ public class EntityAction
     // OmrAction //
     //-----------//
     /**
-     * Wraps an existing action, used as a delegate
+     * Wraps an existing action, used as a delegate.
+     *
+     * @param entityActions collection of actions
+     * @param menu the menu where the related item is to be inserted
+     * @param toolBar the toolBar for icon insertion
+     * @param delegate the existing action
      */
     protected EntityAction (Collection<Action> entityActions,
                             JMenu menu,
@@ -129,7 +134,14 @@ public class EntityAction
     // OmrAction //
     //-----------//
     /**
-     * Convenient constructor with no delegate and no accelerator
+     * Convenient constructor with no delegate and no accelerator.
+     *
+     * @param entityActions collection of actions
+     * @param menu          the menu where the related item is to be inserted
+     * @param toolBar       the toolBar for icon insertion or null
+     * @param label         label for the menu item
+     * @param tip           tooltip text
+     * @param icon          icon for menu and toolbar, or null
      */
     protected EntityAction (Collection<Action> entityActions,
                             JMenu menu,

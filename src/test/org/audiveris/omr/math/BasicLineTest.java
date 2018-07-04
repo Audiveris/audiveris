@@ -23,7 +23,6 @@ package org.audiveris.omr.math;
 
 import static junit.framework.Assert.*;
 
-import org.audiveris.omr.math.BasicLine;
 import org.audiveris.omr.util.BaseTestCase;
 
 /**
@@ -41,11 +40,11 @@ public class BasicLineTest
     protected static final double[] yy = new double[]{4d, 9d, 14d, 19d, 24d};
 
     //~ Instance fields ----------------------------------------------------------------------------
-    BasicLine l = new BasicLine();
+    BasicLine l;
 
-    BasicLine l2 = new BasicLine();
+    BasicLine l2;
 
-    BasicLine lxy = new BasicLine(xx, yy);
+    BasicLine lxy;
 
     //~ Methods ------------------------------------------------------------------------------------
     //@Test (expected = IllegalArgumentException.class)
@@ -267,5 +266,16 @@ public class BasicLineTest
     public void testYAtInt ()
     {
         BasicLineCheck.checkYAtInt(l);
+    }
+
+    @Override
+    protected void setUp ()
+            throws Exception
+    {
+        System.out.println("BasicLineTest setUp() called.");
+
+        l = new BasicLine();
+        l2 = new BasicLine();
+        lxy = new BasicLine(xx, yy);
     }
 }

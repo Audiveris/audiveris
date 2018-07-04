@@ -27,7 +27,6 @@ import static org.audiveris.omr.ui.symbol.Alignment.*;
 import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
@@ -94,24 +93,21 @@ public class RestSymbol
     {
         MyParams p = new MyParams();
 
-        // Rest layout
+        // Rest symbol layout
         p.layout = getRestLayout(font);
 
         Rectangle2D rs = p.layout.getBounds();
-        Rectangle2D r;
 
         if (decorated) {
-            // Lines layout
-            p.linesLayout = font.layout(linesSymbol.getString());
-            r = p.linesLayout.getBounds();
-
             // Define specific offset
             p.offset = new Point(0, (int) Math.rint(rs.getY() + (rs.getHeight() / 2)));
-        } else {
-            r = rs;
-        }
 
-        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
+            // Lines layout
+            p.linesLayout = font.layout(linesSymbol.getString());
+            p.rect = p.linesLayout.getBounds().getBounds();
+        } else {
+            p.rect = rs.getBounds();
+        }
 
         return p;
     }
@@ -121,6 +117,9 @@ public class RestSymbol
     //---------------//
     /**
      * Retrieve the layout of just the rest symbol part, w/o the lines.
+     *
+     * @param font the font to extract the layout from
+     * @return text layout for rest symbols
      */
     protected TextLayout getRestLayout (MusicFont font)
     {
@@ -160,8 +159,11 @@ public class RestSymbol
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        // layout for just rest layout
-        // rect for global image (=lines if decorated, rest if not)
-        TextLayout linesLayout; // For lines
+        // offset: if decorated, offset of symbol center vs decorated image center
+        // layout: rest layout
+        // rect:   global image (=lines if decorated, rest if not)
+        //
+        // Layout for lines
+        TextLayout linesLayout;
     }
 }

@@ -37,6 +37,8 @@ import org.audiveris.omr.sheet.stem.StemsStep;
 import org.audiveris.omr.sheet.symbol.LinksStep;
 import org.audiveris.omr.sheet.symbol.SymbolsStep;
 import org.audiveris.omr.sheet.ui.SheetTab;
+import org.audiveris.omr.sig.ui.UITask.OpKind;
+import org.audiveris.omr.sig.ui.UITaskList;
 import org.audiveris.omr.text.TextsStep;
 
 /**
@@ -127,6 +129,20 @@ public enum Step
         helper.clearErrors(this, sheet);
     }
 
+    //--------------//
+    // isImpactedBy //
+    //--------------//
+    /**
+     * Report whether this step is impact by an action on the provided class
+     *
+     * @param classe the class to examine
+     * @return true if impacted
+     */
+    public boolean isImpactedBy (Class classe)
+    {
+        return helper.isImpactedBy(classe);
+    }
+
     //------------//
     // isParallel //
     //------------//
@@ -194,47 +210,18 @@ public enum Step
         return helper.getSheetTab();
     }
 
-    //----------//
-    // Constant //
-    //----------//
+    //--------//
+    // impact //
+    //--------//
     /**
-     * Class {@code Constant} is a {@link org.audiveris.omr.constant.Constant} meant to store a {@link
-     * Step} value.
+     * Process the impact of the UI task sequence on this step.
+     *
+     * @param seq    the provided UI task sequence
+     * @param opKind which operation is done on seq
      */
-    public static class Constant
-            extends org.audiveris.omr.constant.Constant
+    public void impact (UITaskList seq,
+                        OpKind opKind)
     {
-
-        public Constant (Step defaultValue,
-                         java.lang.String description)
-        {
-            super(null, (defaultValue != null) ? defaultValue.toString() : "", description);
-        }
-
-        public Step getValue ()
-        {
-            return (Step) getCachedValue();
-        }
-
-        public void setValue (Step step)
-        {
-            setTuple((step != null) ? step.toString() : "", step);
-        }
-
-        @Override
-        public void setValue (java.lang.String str)
-        {
-            setValue(decode(str));
-        }
-
-        @Override
-        protected Step decode (java.lang.String str)
-        {
-            if ((str == null) || str.trim().isEmpty()) {
-                return null;
-            }
-
-            return Step.valueOf(str);
-        }
+        helper.impact(seq, opKind);
     }
 }

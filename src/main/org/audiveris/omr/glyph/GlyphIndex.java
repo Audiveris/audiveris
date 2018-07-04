@@ -24,7 +24,6 @@ package org.audiveris.omr.glyph;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.glyph.ui.GlyphService;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.selection.EntityListEvent;
@@ -33,6 +32,7 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.util.BasicIndex;
+import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.EntityIndex;
 import org.audiveris.omr.util.IntUtil;
 
@@ -42,13 +42,11 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -59,8 +57,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code GlyphIndex} implements an index of (weak references to) Glyph instances.
- * <p>
- * TODO: investigate whether the notion of Group could be dropped.
  *
  * @author Hervé Bitteur
  */
@@ -81,8 +77,9 @@ public class GlyphIndex
     // Persistent data
     //----------------
     /**
-     * See annotated get/set methods:
-     * {@link #getEntities()}
+     * See getEntities()/setEntities() methods which are called by
+     * BasicSheet#getGlyphIndexContent() and BasicSheet#setGlyphIndexContent()
+     * triggered by JAXB (un)marshalling.
      */
     //
     // Transient data
@@ -106,66 +103,22 @@ public class GlyphIndex
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //----------------//
-    // initTransients //
-    //----------------//
-    public final void initTransients (Sheet sheet)
+    //----------------------//
+    // getContainedEntities //
+    //----------------------//
+    @Override
+    public List<Glyph> getContainedEntities (Rectangle rectangle)
     {
-        // ID generator
-        weakIndex.setIdGenerator(sheet.getPersistentIdGenerator());
-
-        // Declared VIP IDs?
-        List<Integer> vipIds = IntUtil.parseInts(constants.vipGlyphs.getValue());
-
-        if (!vipIds.isEmpty()) {
-            logger.info("VIP glyphs: {}", vipIds);
-            weakIndex.setVipIds(vipIds);
-        }
-
-        for (Iterator<Glyph> it = iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            if (glyph != null) {
-                glyph.setIndex(this);
-
-                if (isVipId(glyph.getId())) {
-                    glyph.setVip(true);
-                }
-            }
-        }
-
-        // User glyph service?
-        if (OMR.gui != null) {
-            SelectionService locationService = sheet.getLocationService();
-            setEntityService(new GlyphService(this, locationService));
-        }
+        return Entities.containedEntities(iterator(), rectangle);
     }
 
-    //-----------------//
-    // containedGlyphs //
-    //-----------------//
-    /**
-     * Look up for <b>all</b> glyph instances in the provided group that are contained
-     * in a provided rectangle.
-     *
-     * @param rect  the coordinates rectangle
-     * @param group the containing glyph group
-     * @return the list of glyph instances found, perhaps empty but not null
-     */
-    public Set<Glyph> containedGlyphs (Rectangle rect,
-                                       Group group)
+    //-----------------------//
+    // getContainingEntities //
+    //-----------------------//
+    @Override
+    public List<Glyph> getContainingEntities (Point point)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
-
-        for (Iterator<Glyph> it = iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            if (glyph.hasGroup(group) && rect.contains(glyph.getBounds())) {
-                set.add(glyph);
-            }
-        }
-
-        return set;
+        return Entities.containingEntities(iterator(), point);
     }
 
     //-------------//
@@ -230,7 +183,7 @@ public class GlyphIndex
     @Override
     public String getName ()
     {
-        return "weakGlyphs";
+        return "glyphIndex";
     }
 
     //------------------//
@@ -249,7 +202,7 @@ public class GlyphIndex
             return null;
         }
 
-        return list.get(list.size() - 1);
+        return list.get(list.size() - 1); // Last one
     }
 
     //----------------------//
@@ -263,34 +216,48 @@ public class GlyphIndex
     @SuppressWarnings("unchecked")
     public List<Glyph> getSelectedGlyphList ()
     {
-        return (List<Glyph>) glyphService.getSelection(EntityListEvent.class);
+        List<Glyph> list = (List<Glyph>) glyphService.getSelection(EntityListEvent.class);
+
+        if (list != null) {
+            return list;
+        } else {
+            return Collections.emptyList();
+        }
     }
 
-    //-------------------//
-    // intersectedGlyphs //
-    //-------------------//
-    /**
-     * Look up for <b>all</b> glyph instances from provided group and that are
-     * intersected by the provided rectangle.
-     *
-     * @param rect  the coordinates rectangle
-     * @param group the containing glyph group
-     * @return the glyph instances found, which may be an empty list
-     */
-    public Set<Glyph> intersectedGlyphs (Rectangle rect,
-                                         Group group)
+    //----------------//
+    // initTransients //
+    //----------------//
+    public final void initTransients (Sheet sheet)
     {
-        Set<Glyph> set = new LinkedHashSet<Glyph>();
+        // ID generator
+        weakIndex.setIdGenerator(sheet.getPersistentIdGenerator());
+
+        // Declared VIP IDs?
+        List<Integer> vipIds = IntUtil.parseInts(constants.vipGlyphs.getValue());
+
+        if (!vipIds.isEmpty()) {
+            logger.info("VIP glyphs: {}", vipIds);
+            weakIndex.setVipIds(vipIds);
+        }
 
         for (Iterator<Glyph> it = iterator(); it.hasNext();) {
             Glyph glyph = it.next();
 
-            if (glyph.hasGroup(group) && rect.intersects(glyph.getBounds())) {
-                set.add(glyph);
+            if (glyph != null) {
+                glyph.setIndex(this);
+
+                if (isVipId(glyph.getId())) {
+                    glyph.setVip(true);
+                }
             }
         }
 
-        return set;
+        // User glyph service?
+        if (OMR.gui != null) {
+            SelectionService locationService = sheet.getLocationService();
+            setEntityService(new GlyphService(this, locationService));
+        }
     }
 
     //---------//
@@ -309,28 +276,6 @@ public class GlyphIndex
     public Iterator<Glyph> iterator ()
     {
         return new SkippingIterator(weakIndex.iterator());
-    }
-
-    //--------------------//
-    // lookupVirtualGlyph //
-    //--------------------//
-    /**
-     * Look for a glyph whose box contains the designated point for the drop group.
-     *
-     * @param point the designated point
-     * @return the virtual glyph found, or null
-     */
-    public Glyph lookupVirtualGlyph (Point point)
-    {
-        for (Iterator<Glyph> it = iterator(); it.hasNext();) {
-            Glyph glyph = it.next();
-
-            if (glyph.hasGroup(Group.DROP) && glyph.getBounds().contains(point)) {
-                return glyph;
-            }
-        }
-
-        return null;
     }
 
     //---------//
@@ -355,7 +300,7 @@ public class GlyphIndex
                                     this,
                                     SelectionHint.ENTITY_INIT,
                                     MouseMovement.PRESSING,
-                                    (glyph != null) ? Arrays.asList(glyph) : null));
+                                    glyph));
                 }
             });
         }
@@ -368,7 +313,7 @@ public class GlyphIndex
      * This public method <b>must not be called</b> on GlyphIndex.
      * Use {@link #registerOriginal(org.audiveris.omr.glyph.Glyph)} instead.
      *
-     * @param glyph
+     * @param glyph the glyph to process
      */
     @Override
     public int register (Glyph glyph)

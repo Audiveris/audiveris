@@ -28,10 +28,10 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphCluster;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
-import org.audiveris.omr.glyph.Symbol.Group;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -86,9 +86,10 @@ public class SymbolsBuilder
     /** Shape classifier to use. */
     private final Classifier classifier = ShapeClassifier.getInstance();
 
-    /** Shape second classifier to use. */
-    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
-
+    //
+    //    /** Shape second classifier to use. */
+    //    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
+    //
     /** Companion factory for symbols inters. */
     private final SymbolFactory factory;
 
@@ -202,13 +203,14 @@ public class SymbolsBuilder
                 2,
                 Grades.symbolMinGrade,
                 EnumSet.of(Classifier.Condition.CHECKED));
-        Evaluation[] evals2 = classifier2.evaluate(
-                glyph,
-                system,
-                2,
-                Grades.symbolMinGrade, // Not OK for deep classifier!
-                EnumSet.of(Classifier.Condition.CHECKED));
 
+        //        Evaluation[] evals2 = classifier2.evaluate(
+        //                glyph,
+        //                system,
+        //                2,
+        //                Grades.symbolMinGrade, // Not OK for deep classifier!
+        //                EnumSet.of(Classifier.Condition.CHECKED));
+        //
         if (evals.length > 0) {
             //            // Create one interpretation for each acceptable evaluation
             //            for (Evaluation eval : evals) {
@@ -221,15 +223,14 @@ public class SymbolsBuilder
             //
             Evaluation eval = evals[0];
 
-            if (evals2.length > 0) {
-                if (eval.shape == evals2[0].shape) {
-                    try {
-                        factory.create(eval, glyph, closestStaff);
-                    } catch (Exception ex) {
-                        logger.warn("Error in glyph evaluation " + ex, ex);
-                    }
-                }
+            ///if (evals2.length > 0 && eval.shape == evals2[0].shape) {
+            try {
+                factory.create(eval, glyph, closestStaff);
+            } catch (Exception ex) {
+                logger.warn("Error in glyph evaluation " + ex, ex);
             }
+
+            ///}
         }
     }
 
@@ -254,7 +255,7 @@ public class SymbolsBuilder
         // Sorted by abscissa, ordinate, id
         List<Glyph> glyphs = new ArrayList<Glyph>();
 
-        for (Glyph glyph : system.getGroupedGlyphs(Group.SYMBOL)) {
+        for (Glyph glyph : system.getGroupedGlyphs(GlyphGroup.SYMBOL)) {
             final int weight = glyph.getWeight();
 
             if (weight >= params.minWeight) {
@@ -343,7 +344,7 @@ public class SymbolsBuilder
                 // Use just the subgraph for this (sub)set
                 final SimpleGraph<Glyph, GlyphLink> subGraph;
                 subGraph = GlyphCluster.getSubGraph(subSet, systemGraph, true);
-                new GlyphCluster(new SymbolAdapter(subGraph), Group.SYMBOL).decompose();
+                new GlyphCluster(new SymbolAdapter(subGraph), GlyphGroup.SYMBOL).decompose();
             } else {
                 // The set is just an isolated glyph, to be evaluated directly
                 final Glyph glyph = set.iterator().next();

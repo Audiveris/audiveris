@@ -31,9 +31,8 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
-import org.audiveris.omr.sig.relation.Partnership;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
@@ -125,25 +124,16 @@ public class AlterInter
 
     //~ Methods ------------------------------------------------------------------------------------
     //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    //--------//
     // create //
     //--------//
     /**
-     * Create an Alter inter, with a grade value,determining pitch WRT provided staff.
+     * Create an Alter inter, with a grade value, determining pitch WRT provided staff.
      *
      * @param glyph underlying glyph
      * @param shape precise shape
      * @param grade evaluation value
      * @param staff closest staff (questionable)
-     * @return the created instance or null if failed
+     * @return the created instance
      */
     public static AlterInter create (Glyph glyph,
                                      Shape shape,
@@ -165,7 +155,7 @@ public class AlterInter
      * @param shape   precise shape
      * @param impacts assignment details
      * @param staff   related staff
-     * @return the created instance or null if failed
+     * @return the created instance
      */
     public static AlterInter create (Glyph glyph,
                                      Shape shape,
@@ -175,37 +165,6 @@ public class AlterInter
         Pitches pitches = computePitch(glyph, shape, staff);
 
         return new AlterInter(glyph, shape, impacts, staff, pitches.pitch, pitches.measuredPitch);
-    }
-
-    //--------------------//
-    // detectHeadRelation //
-    //--------------------//
-    /**
-     * Try to detect a relation between this Alter instance and a head nearby (perhaps
-     * with its mirror).
-     *
-     * @param systemHeads ordered collection of notes in system
-     */
-    public void detectHeadRelation (List<Inter> systemHeads)
-    {
-        Collection<Partnership> partnerships = searchPartnerships(systemHeads);
-
-        for (Partnership partnership : partnerships) {
-            partnership.applyTo(this);
-        }
-    }
-
-    //------------//
-    // getDetails //
-    //------------//
-    @Override
-    public String getDetails ()
-    {
-        if (measuredPitch != null) {
-            return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
-        }
-
-        return super.getDetails();
     }
 
     //-------------------//
@@ -232,6 +191,51 @@ public class AlterInter
     public static double getFlatPitchOffset ()
     {
         return constants.flatPitchOffset.getValue();
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No head linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if a head is connected
+        setAbnormal(!sig.hasRelation(this, AlterHeadRelation.class));
+
+        return isAbnormal();
+    }
+
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        if (measuredPitch != null) {
+            return super.getDetails() + String.format(" mPitch:%.1f", measuredPitch);
+        }
+
+        return super.getDetails();
     }
 
     /**
@@ -275,26 +279,43 @@ public class AlterInter
         return null;
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // searchLinks //
+    //-------------//
     @Override
-    public Collection<Partnership> searchPartnerships (SystemInfo system,
-                                                       boolean doit)
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
     {
         // Not very optimized!
         List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
-        Collections.sort(systemHeads, Inter.byAbscissa);
+        Collections.sort(systemHeads, Inters.byAbscissa);
 
-        Collection<Partnership> partnerships = searchPartnerships(systemHeads);
+        Collection<Link> links = lookupLinks(systemHeads);
 
         if (doit) {
-            for (Partnership partnership : partnerships) {
-                partnership.applyTo(this);
+            for (Link link : links) {
+                link.applyTo(this);
             }
         }
 
-        return partnerships;
+        return links;
+    }
+
+    //----------//
+    // setLinks //
+    //----------//
+    /**
+     * Try to detect relation with heads nearby (perhaps with their mirror).
+     *
+     * @param systemHeads ordered collection of heads in system
+     */
+    public void setLinks (List<Inter> systemHeads)
+    {
+        Collection<Link> links = lookupLinks(systemHeads);
+
+        for (Link link : links) {
+            link.applyTo(this);
+        }
     }
 
     //--------------//
@@ -359,31 +380,31 @@ public class AlterInter
         return super.internals() + " " + shape;
     }
 
-    //--------------------//
-    // searchPartnerships //
-    //--------------------//
+    //-------------//
+    // lookupLinks //
+    //-------------//
     /**
-     * Try to detect partnership between this Alter instance and a head nearby (and its
+     * Try to detect link between this Alter instance and a head nearby (and its
      * mirror head if any)
      *
-     * @param systemHeads ordered collection of notes in system
-     * @return the collection of partnerships found, perhaps null
+     * @param systemHeads ordered collection of heads in system
+     * @return the collection of links found, perhaps null
      */
-    private Collection<Partnership> searchPartnerships (List<Inter> systemHeads)
+    private Collection<Link> lookupLinks (List<Inter> systemHeads)
     {
         if (systemHeads.isEmpty()) {
             return Collections.emptySet();
         }
 
         if (isVip()) {
-            logger.info("VIP searchPartnerships for {}", this);
+            logger.info("VIP searchLinks for {}", this);
         }
 
         // Look for notes nearby on the right side of accidental
         final SystemInfo system = systemHeads.get(0).getSig().getSystem();
         final Scale scale = system.getSheet().getScale();
-        final int xGapMax = scale.toPixels(AlterHeadRelation.getXOutGapMaximum());
-        final int yGapMax = scale.toPixels(AlterHeadRelation.getYGapMaximum());
+        final int xGapMax = scale.toPixels(AlterHeadRelation.getXOutGapMaximum(manual));
+        final int yGapMax = scale.toPixels(AlterHeadRelation.getYGapMaximum(manual));
 
         // Accid ref point is on accid right side and precise y depends on accid shape
         Rectangle accidBox = getBounds();
@@ -393,7 +414,7 @@ public class AlterInter
                         ? (accidBox.y + (accidBox.height / 2))
                         : (accidBox.y + ((3 * accidBox.height) / 4)));
         Rectangle luBox = new Rectangle(accidPt.x, accidPt.y - yGapMax, xGapMax, 2 * yGapMax);
-        List<Inter> notes = SIGraph.intersectedInters(systemHeads, GeoOrder.BY_ABSCISSA, luBox);
+        List<Inter> notes = Inters.intersectedInters(systemHeads, GeoOrder.BY_ABSCISSA, luBox);
 
         if (!notes.isEmpty()) {
             if ((getGlyph() != null) && getGlyph().isVip()) {
@@ -411,7 +432,7 @@ public class AlterInter
                 double xGap = notePt.x - accidPt.x;
                 double yGap = Math.abs(notePt.y - accidPt.y);
                 AlterHeadRelation rel = new AlterHeadRelation();
-                rel.setDistances(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap));
+                rel.setOutGaps(scale.pixelsToFrac(xGap), scale.pixelsToFrac(yGap), manual);
 
                 if (rel.getGrade() >= rel.getMinGrade()) {
                     if ((bestRel == null) || (bestYGap > yGap)) {
@@ -423,12 +444,12 @@ public class AlterInter
             }
 
             if (bestRel != null) {
-                Set<Partnership> set = new LinkedHashSet<Partnership>();
-                set.add(new Partnership(bestHead, bestRel, true));
+                Set<Link> set = new LinkedHashSet<Link>();
+                set.add(new Link(bestHead, bestRel, true));
 
                 // If any, include head mirror as well
                 if (bestHead.getMirror() != null) {
-                    set.add(new Partnership(bestHead.getMirror(), bestRel.duplicate(), true));
+                    set.add(new Link(bestHead.getMirror(), bestRel.duplicate(), true));
                 }
 
                 return set;

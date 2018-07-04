@@ -23,7 +23,6 @@ package org.audiveris.omr.classifier.ui;
 
 import org.audiveris.omr.classifier.BasicClassifier;
 import org.audiveris.omr.classifier.Classifier;
-import org.audiveris.omr.classifier.DeepClassifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.GlyphDescriptor;
 import org.audiveris.omr.classifier.Sample;
@@ -70,7 +69,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -93,8 +91,10 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+
 import static javax.swing.JSplitPane.HORIZONTAL_SPLIT;
 import static javax.swing.JSplitPane.VERTICAL_SPLIT;
+
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -178,7 +178,7 @@ public class SampleBrowser
         this.repository = repository;
         sampleContext = new SampleContext(repository);
 
-        sampleService = new EntityService<Sample>("sample service", null, eventsAllowed);
+        sampleService = new EntityService<Sample>("sampleService", null, eventsAllowed);
         sampleContext.connect(sampleService);
         sampleModel = new SampleModel(repository, sampleService);
         sampleController = new SampleController(sampleModel);
@@ -779,7 +779,7 @@ public class SampleBrowser
                         this,
                         SelectionHint.ENTITY_INIT,
                         MouseMovement.PRESSING,
-                        Arrays.asList(sample)));
+                        sample));
     }
 
     //--------------//
@@ -911,9 +911,9 @@ public class SampleBrowser
         boardsPane.addBoard(new SampleBoard(sampleController));
         boardsPane.addBoard(
                 new SampleEvaluationBoard(sampleController, BasicClassifier.getInstance()));
-        boardsPane.addBoard(
-                new SampleEvaluationBoard(sampleController, DeepClassifier.getInstance()));
-
+//        boardsPane.addBoard(
+//                new SampleEvaluationBoard(sampleController, DeepClassifier.getInstance()));
+//
         JSplitPane centerPane = new JSplitPane(
                 VERTICAL_SPLIT,
                 sheetSelector,

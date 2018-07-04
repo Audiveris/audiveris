@@ -35,6 +35,7 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.AbstractStemConnection;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadHeadRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -54,6 +55,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -84,11 +86,11 @@ public class StemInter
     //
     /** Top point. */
     @XmlElement
-    private final Point2D top;
+    private Point2D top;
 
     /** Bottom point. */
     @XmlElement
-    private final Point2D bottom;
+    private Point2D bottom;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -115,8 +117,11 @@ public class StemInter
                       double grade)
     {
         super(glyph, null, Shape.STEM, grade);
-        top = glyph.getStartPoint(VERTICAL);
-        bottom = glyph.getStopPoint(VERTICAL);
+
+        if (glyph != null) {
+            top = glyph.getStartPoint(VERTICAL);
+            bottom = glyph.getStopPoint(VERTICAL);
+        }
     }
 
     /**
@@ -125,18 +130,9 @@ public class StemInter
     private StemInter ()
     {
         super(null, null, null, null);
-        top = bottom = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
-    {
-        return AbstractInter.getMinGrade();
-    }
-
     //--------//
     // accept //
     //--------//
@@ -144,6 +140,29 @@ public class StemInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No head linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if a head is connected
+        setAbnormal(!sig.hasRelation(this, HeadStemRelation.class));
+
+        return isAbnormal();
     }
 
     //---------------------//
@@ -282,56 +301,18 @@ public class StemInter
             AbstractStemConnection link = (AbstractStemConnection) rel;
             Point2D ext = link.getExtensionPoint();
 
-            if (ext.getY() < extTop.getY()) {
-                extTop = ext;
-            }
+            if (ext != null) {
+                if (ext.getY() < extTop.getY()) {
+                    extTop = ext;
+                }
 
-            if (ext.getY() > extBottom.getY()) {
-                extBottom = ext;
-            }
-        }
-
-        return new Line2D.Double(extTop, extBottom);
-    }
-
-    //--------//
-    // delete //
-    //--------//
-    @Override
-    public void delete ()
-    {
-        if (deleted) {
-            return;
-        }
-
-        if (isGood()) {
-            // Discard head-head relations that are based only on this stem instance
-            Set<HeadInter> stemHeads = getHeads(); // Heads linked to this stem
-
-            for (HeadInter head : stemHeads) {
-                // Other stems this head is linked to
-                Set<StemInter> otherStems = head.getStems();
-                otherStems.remove(this);
-
-                for (Relation rel : sig.getRelations(head, HeadHeadRelation.class)) {
-                    HeadInter similarHead = (HeadInter) sig.getOppositeInter(head, rel);
-
-                    if (stemHeads.contains(similarHead)) {
-                        // Head - otherHead are both on this stem
-                        // Keep HH support only if they are on same good stem (different of this)
-                        Set<StemInter> similarStems = similarHead.getStems();
-                        similarStems.retainAll(otherStems);
-
-                        if (!Inters.hasGoodMember(similarStems)) {
-                            logger.debug("Removing head-head within {} & {}", head, similarHead);
-                            sig.removeEdge(rel);
-                        }
-                    }
+                if (ext.getY() > extBottom.getY()) {
+                    extBottom = ext;
                 }
             }
         }
 
-        super.delete();
+        return new Line2D.Double(extTop, extBottom);
     }
 
     //-----------//
@@ -397,6 +378,25 @@ public class StemInter
         return subStem;
     }
 
+    //----------//
+    // getBeams //
+    //----------//
+    /**
+     * Report the beams linked to this stem.
+     *
+     * @return set of linked beams
+     */
+    public Set<AbstractBeamInter> getBeams ()
+    {
+        final Set<AbstractBeamInter> set = new LinkedHashSet<AbstractBeamInter>();
+
+        for (Relation relation : sig.getRelations(this, BeamStemRelation.class)) {
+            set.add((AbstractBeamInter) sig.getEdgeSource(relation));
+        }
+
+        return set;
+    }
+
     //-----------//
     // getBottom //
     //-----------//
@@ -406,6 +406,80 @@ public class StemInter
     public Point2D getBottom ()
     {
         return bottom;
+    }
+
+    //-----------//
+    // getChords //
+    //-----------//
+    /**
+     * Report the chord(s) currently attached to the provided stem.
+     * <p>
+     * We can have: <ul>
+     * <li>No chord found, simply because this stem has not yet been processed.</li>
+     * <li>One chord found, this is the normal case.</li>
+     * <li>Two chords found, when the same stem is "shared" by two chords (as in complex structures
+     * like in Dichterliebe example, part 2, page 2, measure 14).</li>
+     * </ul>
+     *
+     * @return the perhaps empty collection of chords found for this stem
+     */
+    public List<HeadChordInter> getChords ()
+    {
+        List<HeadChordInter> chords = null;
+
+        for (Relation rel : sig.getRelations(this, ChordStemRelation.class)) {
+            if (chords == null) {
+                chords = new ArrayList<HeadChordInter>();
+            }
+
+            chords.add((HeadChordInter) sig.getOppositeInter(this, rel));
+        }
+
+        if (chords == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return chords;
+    }
+
+    //----------//
+    // getHeads //
+    //----------//
+    /**
+     * Report the heads linked to this stem, whatever the side.
+     *
+     * @return set of linked heads
+     */
+    public Set<HeadInter> getHeads ()
+    {
+        final Set<HeadInter> set = new LinkedHashSet<HeadInter>();
+
+        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
+            set.add((HeadInter) sig.getEdgeSource(relation));
+        }
+
+        return set;
+    }
+
+    //-----------//
+    // getMedian //
+    //-----------//
+    /**
+     * Report the stem median line which goes from stem top to stem bottom.
+     *
+     * @return the stem median line
+     */
+    public Line2D getMedian ()
+    {
+        return new Line2D.Double(top, bottom);
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    public static double getMinGrade ()
+    {
+        return AbstractInter.getMinGrade();
     }
 
     //--------//
@@ -484,22 +558,80 @@ public class StemInter
         return null;
     }
 
-    //----------//
-    // getHeads //
-    //----------//
+    //--------//
+    // remove //
+    //--------//
     /**
-     * Report the heads linked to this stem, whatever the side.
+     * Remove head-head relations that were based on this stem.
      *
-     * @return set of linked heads
+     * @param extensive true for non-manual removals only
+     * @see #added()
      */
-    public Set<HeadInter> getHeads ()
+    @Override
+    public void remove (boolean extensive)
     {
-        final Set<HeadInter> set = new LinkedHashSet<HeadInter>();
-
-        for (Relation relation : sig.getRelations(this, HeadStemRelation.class)) {
-            set.add((HeadInter) sig.getEdgeSource(relation));
+        if (isRemoved()) {
+            return;
         }
 
-        return set;
+        if (isGood()) {
+            // Discard head-head relations that are based only on this stem instance
+            Set<HeadInter> stemHeads = getHeads(); // Heads linked to this stem
+
+            for (HeadInter head : stemHeads) {
+                // Other stems this head is linked to
+                Set<StemInter> otherStems = head.getStems();
+                otherStems.remove(this);
+
+                for (Relation rel : sig.getRelations(head, HeadHeadRelation.class)) {
+                    HeadInter similarHead = (HeadInter) sig.getOppositeInter(head, rel);
+
+                    if (stemHeads.contains(similarHead)) {
+                        // Head - otherHead are both on this stem
+                        // Keep HH support only if they are on same good stem (different of this)
+                        Set<StemInter> similarStems = similarHead.getStems();
+                        similarStems.retainAll(otherStems);
+
+                        if (!Inters.hasGoodMember(similarStems)) {
+                            logger.debug("Removing head-head within {} & {}", head, similarHead);
+                            sig.removeEdge(rel);
+                        }
+                    }
+                }
+            }
+        }
+
+        super.remove(extensive);
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle bounds)
+    {
+        super.setBounds(bounds);
+
+        if (top == null) {
+            top = new Point2D.Double(bounds.x + (0.5 * bounds.width), bounds.y);
+        }
+
+        if (bottom == null) {
+            bottom = new Point2D.Double(
+                    bounds.x + (0.5 * bounds.width),
+                    (bounds.y + bounds.height) - 1);
+        }
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        top = glyph.getStartPoint(VERTICAL);
+        bottom = glyph.getStopPoint(VERTICAL);
     }
 }

@@ -25,10 +25,12 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Glyphs;
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.glyph.Symbol.Group;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.image.AreaMask;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.math.AreaUtil;
@@ -37,6 +39,11 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
+
+import static org.audiveris.omr.run.Orientation.VERTICAL;
+
+import org.audiveris.omr.run.RunTable;
+import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -48,18 +55,24 @@ import org.audiveris.omr.sig.inter.AbstractBeamInter.Impacts;
 import org.audiveris.omr.sig.inter.BeamHookInter;
 import org.audiveris.omr.sig.inter.BeamInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
 import org.audiveris.omr.sig.relation.Exclusion;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
+import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.VerticalSide;
+
 import static org.audiveris.omr.util.VerticalSide.*;
+
 import org.audiveris.omr.util.WrappedInteger;
 
 import org.slf4j.Logger;
@@ -179,7 +192,7 @@ public class BeamsBuilder
         pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
 
         // First, retrieve beam candidates from spots
-        sortedBeamSpots = system.getGroupedGlyphs(Group.BEAM_SPOT);
+        sortedBeamSpots = system.getGroupedGlyphs(GlyphGroup.BEAM_SPOT);
 
         // Create initial beams by checking spots individually
         createBeams();
@@ -259,10 +272,14 @@ public class BeamsBuilder
     private void browseHooks (BeamInter beam,
                               VerticalSide side)
     {
+        if (beam.isVip()) {
+            logger.info("VIP browseHooks on {} of {}", side, beam);
+        }
+
         // Look for a parallel beam just above or below
         final Line2D median = beam.getMedian();
         final double height = beam.getHeight();
-        final double dy = (side == TOP) ? (-height) : height;
+        final double dy = 1.5 * ((side == TOP) ? (-height) : height);
 
         Area luArea = AreaUtil.horizontalParallelogram(
                 new Point2D.Double(median.getX1(), median.getY1() + dy),
@@ -460,7 +477,7 @@ public class BeamsBuilder
                 hook.setVip(true);
             }
 
-            sig.addVertex(hook);
+            registerBeam(hook);
             rawSystemBeams.add(hook);
             assignedSpots.add(glyph);
 
@@ -640,7 +657,7 @@ public class BeamsBuilder
                             hook.setVip(true);
                         }
 
-                        sig.addVertex(hook);
+                        registerBeam(hook);
                     }
                 }
 
@@ -661,7 +678,7 @@ public class BeamsBuilder
                             beam.setVip(true);
                         }
 
-                        sig.addVertex(beam);
+                        registerBeam(beam);
 
                         // Exclusion between beam and hook, if any
                         if (hook != null) {
@@ -731,7 +748,7 @@ public class BeamsBuilder
                         beam.setVip(true);
                     }
 
-                    sig.addVertex(beam);
+                    registerBeam(beam);
                     beams.add(beam);
                 }
             }
@@ -752,7 +769,7 @@ public class BeamsBuilder
     private void extendBeams ()
     {
         // All stem seeds for this system, sorted by abscissa
-        sortedSystemSeeds = system.getGroupedGlyphs(Group.VERTICAL_SEED);
+        sortedSystemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED);
 
         // The beam & hook inters for this system, NOT sorted by abscissa.
         // We may add to this list, but not remove elements (they are simply logically 'deleted').
@@ -761,7 +778,7 @@ public class BeamsBuilder
 
         // Extend each orphan beam as much as possible
         for (Inter inter : new ArrayList<Inter>(rawSystemBeams)) {
-            if (inter.isDeleted()) {
+            if (inter.isRemoved()) {
                 continue;
             }
 
@@ -832,7 +849,7 @@ public class BeamsBuilder
                 3 * height);
         beam.addAttachment("=", luArea);
 
-        List<Inter> others = SIGraph.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
+        List<Inter> others = Inters.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
 
         others.remove(beam); // Safer
 
@@ -953,15 +970,15 @@ public class BeamsBuilder
             return false;
         }
 
-        sig.addVertex(newBeam);
+        registerBeam(newBeam);
         rawSystemBeams.add(newBeam);
 
         if (beam.isVip() || other.isVip()) {
             newBeam.setVip(true);
         }
 
-        beam.delete();
-        other.delete();
+        beam.remove();
+        other.remove();
 
         if (newBeam.isVip() || logger.isDebugEnabled()) {
             logger.info("VIP Merged {} & {} into {}", beam, other, newBeam);
@@ -1045,9 +1062,9 @@ public class BeamsBuilder
                 newBeam.setVip(true);
             }
 
-            sig.addVertex(newBeam);
+            registerBeam(newBeam);
             rawSystemBeams.add(newBeam);
-            beam.delete();
+            beam.remove();
 
             if (logging) {
                 logger.info("VIP {} extended as {} {}", beam, newBeam, newBeam.getImpacts());
@@ -1177,7 +1194,7 @@ public class BeamsBuilder
             @Override
             public boolean check (Inter inter)
             {
-                if (inter.isDeleted() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
+                if (inter.isRemoved() || (inter.getShape() != Shape.NOTEHEAD_BLACK_SMALL)) {
                     return false;
                 }
 
@@ -1185,7 +1202,7 @@ public class BeamsBuilder
                     sig.computeContextualGrade(inter);
                 }
 
-                return inter.getContextualGrade() >= Inter.minContextualGrade;
+                return inter.getContextualGrade() >= Grades.minContextualGrade;
             }
         });
 
@@ -1193,7 +1210,7 @@ public class BeamsBuilder
             return aggregates;
         }
 
-        Collections.sort(smallBlacks, Inter.byAbscissa);
+        Collections.sort(smallBlacks, Inters.byAbscissa);
         logger.debug("S#{} cues:{}", system.getId(), smallBlacks);
 
         // Look for aggregates of close instances
@@ -1260,7 +1277,7 @@ public class BeamsBuilder
         Area luArea = (maxGapDx != null) ? sideAreaOf(null, beam, side, 0, maxGapDx, 0)
                 : sideAreaOf("-", beam, side, 0, params.maxSideBeamDx, 0);
 
-        List<Inter> others = sig.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
+        List<Inter> others = Inters.intersectedInters(rawSystemBeams, GeoOrder.NONE, luArea);
         others.remove(beam); // Safer
 
         if (!others.isEmpty()) {
@@ -1350,8 +1367,8 @@ public class BeamsBuilder
     // mergeOf //
     //---------//
     /**
-     * (Try to) create a new FullAbstractBeamInter instance that
-     * represents a merge of the provided beams.
+     * (Try to) create a new BeamInter instance that represents a merge of the provided
+     * beams.
      *
      * @param one a beam
      * @param two another beam
@@ -1448,7 +1465,7 @@ public class BeamsBuilder
     {
         // First filtering using rough intersection (area / rectangle)
         Area itemCore = item.getCoreArea();
-        List<Inter> beams = sig.intersectedInters(rawSystemBeams, GeoOrder.NONE, itemCore);
+        List<Inter> beams = Inters.intersectedInters(rawSystemBeams, GeoOrder.NONE, itemCore);
 
         if (beams.isEmpty()) {
             return false;
@@ -1466,6 +1483,74 @@ public class BeamsBuilder
         }
 
         return false;
+    }
+
+    //--------------//
+    // registerBeam //
+    //--------------//
+    /**
+     * Add the provided beam to sig and link it with its underlying glyph.
+     *
+     * @param beam the provided beam
+     */
+    private void registerBeam (AbstractBeamInter beam)
+    {
+        sig.addVertex(beam);
+
+        Glyph glyph = retrieveGlyph(beam);
+        beam.setGlyph(glyph);
+
+        // Make this glyph survive the beam removal if any
+        system.addFreeGlyph(glyph);
+    }
+
+    //---------------//
+    // retrieveGlyph //
+    //---------------//
+    /**
+     * Given a beam (with its area), build the underlying glyph.
+     *
+     * @param beam the provided beam
+     * @return the glyph built
+     */
+    private Glyph retrieveGlyph (AbstractBeamInter beam)
+    {
+        final Rectangle box = beam.getBounds();
+        final ByteProcessor buf = new ByteProcessor(box.width, box.height);
+        final int filterWidth = pixelFilter.getWidth();
+        final int filterHeight = pixelFilter.getHeight();
+        ByteUtil.raz(buf);
+
+        final Point p = new Point(0, 0);
+
+        for (int dy = 0; dy < box.height; dy++) {
+            p.y = box.y + dy;
+
+            for (int dx = 0; dx < box.width; dx++) {
+                p.x = box.x + dx;
+
+                if (p.x < filterWidth && p.y < filterHeight) {
+                    final int val = pixelFilter.get(p.x, p.y);
+
+                    if ((val == 0) && beam.contains(p)) {
+                        buf.set(dx, dy, 0);
+                    }
+                }
+            }
+        }
+
+        // Runs
+        RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
+
+        // Glyph
+        Glyph glyph = sheet.getGlyphIndex().registerOriginal(
+                new BasicGlyph(box.x, box.y, runTable));
+
+        if (glyph.getWeight() == 0) {
+            logger.warn("No pixels for {}", beam);
+        }
+
+        return glyph;
     }
 
     //------------//
@@ -1556,9 +1641,9 @@ public class BeamsBuilder
         public ItemParameters (Scale scale,
                                double ratio)
         {
-            minBeamWidthLow = scale.toPixelsDouble(constants.minBeamWidthLow) * ratio; // ?
+            minBeamWidthLow = scale.toPixelsDouble(constants.minBeamWidthLow);
             minBeamWidthHigh = scale.toPixelsDouble(constants.minBeamWidthHigh);
-            minHookWidthLow = scale.toPixelsDouble(constants.minHookWidthLow) * ratio; // ?
+            minHookWidthLow = scale.toPixelsDouble(constants.minHookWidthLow);
             minHookWidthHigh = scale.toPixelsDouble(constants.minHookWidthHigh);
             maxHookWidth = scale.toPixelsDouble(constants.maxHookWidth);
 
@@ -1572,7 +1657,6 @@ public class BeamsBuilder
         }
     }
 
-    //
     //-----------//
     // Constants //
     //-----------//
@@ -1584,7 +1668,7 @@ public class BeamsBuilder
         // Item parameters
         //----------------
         private final Scale.Fraction minBeamWidthLow = new Scale.Fraction(
-                1.5,
+                1.0, // 1.5,
                 "Low minimum width for a beam");
 
         private final Scale.Fraction minBeamWidthHigh = new Scale.Fraction(
@@ -2021,7 +2105,7 @@ public class BeamsBuilder
             List<Inter> beams = new ArrayList<Inter>();
 
             for (Glyph glyph : glyphs) {
-                glyph = system.registerGlyph(glyph, Group.BEAM_SPOT);
+                glyph = system.registerGlyph(glyph, GlyphGroup.BEAM_SPOT);
                 spots.add(glyph);
 
                 List<Inter> glyphBeams = new ArrayList<Inter>();

@@ -356,7 +356,7 @@ public class BeamStructure
     }
 
     //----------//
-    // getCompound //
+    // getGlyph //
     //----------//
     /**
      * @return the glyph

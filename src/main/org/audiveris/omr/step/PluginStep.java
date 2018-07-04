@@ -51,6 +51,8 @@ public class PluginStep
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PluginStep object.
+     *
+     * @param plugin the default plugin
      */
     public PluginStep (Plugin plugin)
     {

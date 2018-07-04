@@ -32,7 +32,6 @@ import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.image.ShapeDescriptor;
 import org.audiveris.omr.image.Template;
 import org.audiveris.omr.run.Orientation;
-import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.PageCleaner;
@@ -50,8 +49,8 @@ import org.audiveris.omr.sig.inter.HeadInter;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.ui.BoardsPane;
-import org.audiveris.omr.util.LiveParam;
 import org.audiveris.omr.util.StopWatch;
+import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +68,9 @@ import java.util.List;
 /**
  * Class {@code SheetScanner} runs OCR on the whole sheet, where good inters and
  * staves core areas have been blanked.
+ * <p>
+ * Tesseract is used in MULTI_BLOCK layout mode, meaning that the sheet main contain several blocks
+ * of text.
  * <p>
  * The raw OCR output will later be processed at system level by dedicated TextBuilder instances.
  *
@@ -128,23 +130,21 @@ public class SheetScanner
             // Get clean page image
             watch.start("getCleanImage");
 
-            BufferedImage image = getCleanImage(); // This also sets buffer member
-
-            // Proper text params
-            final LiveParam<String> textParam = sheet.getStub().getLanguageParam();
-            final String language = textParam.getTarget();
-            logger.debug("scanSheet lan:{} on {}", language, sheet);
-            textParam.setActual(language);
+            final BufferedImage image = getCleanImage(); // This also sets buffer member
 
             // Perform OCR on whole image
             watch.start("OCR recognize");
 
-            return TextBuilder.getOcr().recognize(
-                    sheet.getScale().getInterline(),
+            final Param<String> textParam = sheet.getStub().getOcrLanguages();
+            final String language = textParam.getValue();
+            logger.debug("scanSheet lan:{} on {}", language, sheet);
+
+            return OcrUtil.scan(
                     image,
-                    null,
-                    language,
+                    constants.whiteMarginAdded.getValue(),
                     OCR.LayoutMode.MULTI_BLOCK,
+                    language,
+                    sheet.getScale().getInterline(),
                     sheet.getId());
         } finally {
             if (constants.printWatch.isSet()) {
@@ -220,6 +220,11 @@ public class SheetScanner
         private final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
                 0.25,
                 "Vertical margin around staff core area");
+
+        private final Constant.Integer whiteMarginAdded = new Constant.Integer(
+                "pixels",
+                10,
+                "Margin of white pixels added around sheet image");
     }
 
     //--------------//
@@ -268,7 +273,7 @@ public class SheetScanner
                 final List<Inter> erased = new ArrayList<Inter>();
 
                 for (Inter inter : sig.vertexSet()) {
-                    if (!inter.isDeleted()) {
+                    if (!inter.isRemoved()) {
                         if (canHide(inter)) {
                             erased.add(inter);
                         }
@@ -293,7 +298,7 @@ public class SheetScanner
             buffer.threshold(127);
 
             // Build all glyphs out of buffer and erase those that intersect a staff core area
-            RunTable table = new RunTableFactory(VERTICAL).createTable(buffer);
+            RunTable table = new RunTableFactory(Orientation.VERTICAL).createTable(buffer);
             List<Glyph> glyphs = GlyphFactory.buildGlyphs(table, null);
             eraseBorderGlyphs(glyphs, cores);
         }

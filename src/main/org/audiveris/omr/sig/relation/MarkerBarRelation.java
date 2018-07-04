@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code MarkerBarRelation} represents the geographical relation between a marker
- * and a barline.
+ * and a StaffBarline.
  *
  * @author Hervé Bitteur
  */
@@ -41,6 +41,24 @@ public class MarkerBarRelation
     private static final Constants constants = new Constants();
 
     //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
     //----------------//
     // getSourceCoeff //
     //----------------//

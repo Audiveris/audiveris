@@ -155,7 +155,7 @@ public class StepMenu
                                     "About to re-perform step " + step + " from scratch."
                                     + "\nDo you confirm?",
                                     "Redo confirmation",
-                                    JOptionPane.YES_NO_CANCEL_OPTION,
+                                    JOptionPane.YES_NO_OPTION,
                                     JOptionPane.WARNING_MESSAGE);
 
                             if (answer != JOptionPane.YES_OPTION) {

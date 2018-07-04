@@ -298,7 +298,7 @@ public class UnitModel
 
                     return cb.getCachedValue();
                 } else {
-                    return constant.getCurrentString();
+                    return constant.getStringValue();
                 }
             } else {
                 return "";
@@ -309,7 +309,7 @@ public class UnitModel
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
 
-                return constant.getShortTypeName();
+                return constant.getClass().getSimpleName();
             } else {
                 return "";
             }
@@ -455,7 +455,7 @@ public class UnitModel
             case VALUE:
 
                 try {
-                    constant.setValue(value.toString());
+                    constant.setStringValue(value.toString());
 
                     // Forward modif to the modif status column and to the pixel
                     // column (brute force!)
@@ -469,7 +469,7 @@ public class UnitModel
             case MODIF:
 
                 if (!((Boolean) value).booleanValue()) {
-                    constant.reset();
+                    constant.resetToSource();
                     fireTreeNodesChanged(this, new Object[]{getRoot()}, null, null);
                 }
 

@@ -22,19 +22,15 @@
 package org.audiveris.omr.score;
 
 import org.audiveris.omr.math.Rational;
-import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Voice;
+import org.audiveris.omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Class {@code MeasureFixer} visits the score hierarchy to fix measures:.
@@ -98,11 +94,11 @@ public class MeasureFixer
         page.computeMeasureCount();
 
         // Remember the delta of measure ids in this page
-        page.setDeltaMeasureId(page.getLastSystem().getLastMeasureStack().getIdValue());
+        page.setDeltaMeasureId(page.getLastSystem().getLastStack().getIdValue());
     }
 
     //---------------//
-    // process Score //
+    // process Score // Currently not used
     //---------------//
     public void process (Score score)
     {
@@ -145,9 +141,11 @@ public class MeasureFixer
      *
      * @return true if so
      */
-    private boolean isEmpty ()
+    private boolean isEmpty (MeasureStack stack)
     {
-        return stack.getCurrentDuration().equals(Rational.ZERO);
+        final Rational actualDuration = stack.getActualDuration();
+
+        return (actualDuration != null) ? actualDuration.equals(Rational.ZERO) : false;
     }
 
     //----------//
@@ -156,14 +154,15 @@ public class MeasureFixer
     /**
      * Check for an implicit pickup stack at the beginning of a system
      *
-     * @param system the containing system
+     * @param stack the stack to check
      * @return true if so
      */
-    private boolean isPickup (int im,
-                              SystemInfo system)
+    private boolean isPickup (MeasureStack stack)
     {
-        return (system.getIndexInPage() == 0) && (im == 0) && (stackTermination != null)
-               && (stackTermination.compareTo(Rational.ZERO) < 0);
+        final SystemInfo system = stack.getSystem();
+
+        return (system.getIndexInPage() == 0) && (stack == system.getFirstStack())
+               && (stackTermination != null) && (stackTermination.compareTo(Rational.ZERO) < 0);
     }
 
     //-------------//
@@ -172,13 +171,14 @@ public class MeasureFixer
     /**
      * Check for a stack in second position, while following an empty stack
      *
+     * @param stack the stack to check
      * @return true if so
      */
-    private boolean isRealStart (int im)
+    private boolean isRealStart (MeasureStack stack)
     {
-        return (im == 1) && (prevStack.getCurrentDuration().equals(Rational.ZERO));
+        final int im = stack.getSystem().getStacks().indexOf(stack);
 
-        ///&& (stackTermination != null); // Too strict!
+        return (im == 1) && isEmpty(prevStack);
     }
 
     //--------------------//
@@ -203,7 +203,7 @@ public class MeasureFixer
 
         // Check for a suitable repeat barline in between
         Measure prevMeasure = prevStack.getFirstMeasure();
-        PartBarline barline = prevMeasure.getRightBarline();
+        PartBarline barline = prevMeasure.getRightPartBarline();
 
         if ((barline == null) || !barline.isRightRepeat()) {
             return false;
@@ -224,15 +224,10 @@ public class MeasureFixer
     {
         logger.debug("{} processing {}", getClass().getSimpleName(), system);
 
-        // Stack indices to remove
-        List<Integer> toRemove = new ArrayList<Integer>();
-
-        // Use a loop on stacks, across all system parts
-        final int idxMax = system.getMeasureStacks().size() - 1;
-
-        for (int idx = 0; idx <= idxMax; idx++) {
-            logger.debug("idx:{}", idx);
-            stack = system.getMeasureStacks().get(idx);
+        // Loop on stacks in system (the list of stacks being modified on the fly)
+        for (int idx = 0; idx < system.getStacks().size(); idx++) {
+            boolean computeRepeats = true;
+            stack = system.getStacks().get(idx);
             // First, compute voices terminations
             stack.checkDuration();
 
@@ -244,12 +239,12 @@ public class MeasureFixer
                     stackTermination,
                     (stackTermination != null) ? ("=" + stackTermination) : "");
 
-            if (isEmpty()) {
+            if (isEmpty(stack)) {
                 logger.debug("empty");
 
                 // This whole stack is empty (no notes/rests, hence no voices)
                 // We will merge with the following stack, if any
-                if (idx < idxMax) {
+                if (stack != system.getLastStack()) {
                     setId(
                             (lastId != null) ? (lastId + 1)
                                     : ((prevSystemLastId != null)
@@ -264,7 +259,7 @@ public class MeasureFixer
                         setId(lastId);
                     }
                 }
-            } else if (isPickup(idx, system)) {
+            } else if (isPickup(stack)) {
                 logger.debug("pickup");
                 stack.setPickup();
                 setId(
@@ -279,10 +274,17 @@ public class MeasureFixer
 
                 stack.setSecondHalf();
                 setId((lastId != null) ? lastId : prevSystemLastId);
-            } else if (isRealStart(idx)) {
+            } else if (isRealStart(stack)) {
                 logger.debug("realStart");
                 prevStack.mergeWithRight(stack);
-                toRemove.add(idx);
+
+                if (stack.isRepeat(HorizontalSide.LEFT)) {
+                    prevStack.addRepeat(HorizontalSide.LEFT);
+                }
+
+                system.removeStack(stack);
+                idx--;
+                stack = prevStack;
             } else {
                 logger.debug("normal");
 
@@ -292,59 +294,19 @@ public class MeasureFixer
                                 : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1));
             }
 
+            // Inspect stack for repeat signs
+            if (computeRepeats) {
+                stack.computeRepeats();
+            }
+
             // For next measure stack
             prevStack = stack;
             prevStackTermination = stackTermination;
         }
 
-        removeStacks(toRemove, system); // Remove stacks if needed
-
         // For next system
         prevSystemLastId = lastId;
         lastId = null;
-    }
-
-    //--------------//
-    // removeStacks //
-    //--------------//
-    /**
-     * Remove the stacks that correspond to the provided indices
-     *
-     * @param toRemove sequence of indices to remove, perhaps empty
-     * @param system   the containing system
-     */
-    private void removeStacks (List<Integer> toRemove,
-                               SystemInfo system)
-    {
-        if (toRemove.isEmpty()) {
-            return;
-        }
-
-        // Remove measures from their containing part
-        for (Part part : system.getParts()) {
-            int index = -1;
-
-            for (Iterator<Measure> it = part.getMeasures().iterator(); it.hasNext();) {
-                index++;
-                it.next();
-
-                if (toRemove.contains(index)) {
-                    it.remove();
-                }
-            }
-        }
-
-        // Remove stacks from system
-        int index = -1;
-
-        for (Iterator<MeasureStack> it = system.getMeasureStacks().iterator(); it.hasNext();) {
-            index++;
-            it.next();
-
-            if (toRemove.contains(index)) {
-                it.remove();
-            }
-        }
     }
 
     //-------//
@@ -352,7 +314,7 @@ public class MeasureFixer
     //-------//
     private void setId (int id)
     {
-        logger.debug("-> id={}", id);
+        logger.debug("-> id={} left:{} right:{}", id, stack.getLeft(), stack.getRight());
 
         stack.setIdValue(id);
 

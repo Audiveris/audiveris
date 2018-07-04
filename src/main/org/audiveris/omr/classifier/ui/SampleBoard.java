@@ -36,8 +36,6 @@ import org.audiveris.omr.ui.PixelCount;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
-import org.audiveris.omr.ui.selection.MouseMovement;
-import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 
 import org.jdesktop.application.ApplicationAction;
@@ -140,30 +138,6 @@ public class SampleBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // onEvent //
-    //---------//
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        logger.debug("SampleBoard event:{}", event);
-
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            super.onEvent(event);
-
-            if (event instanceof EntityListEvent) {
-                handleEvent((EntityListEvent<Sample>) event);
-            }
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
     //---------------//
     // getFormLayout //
     //---------------//
@@ -233,16 +207,19 @@ public class SampleBoard
         builder.add(pitch.getField(), cst.xy(11, r));
     }
 
-    //-------------//
-    // handleEvent //
-    //-------------//
+    //-----------------------//
+    // handleEntityListEvent //
+    //-----------------------//
     /**
      * Interest in InterList
      *
-     * @param interListEvent
+     * @param sampleListEvent sample event list
      */
-    private void handleEvent (EntityListEvent<Sample> sampleListEvent)
+    @Override
+    protected void handleEntityListEvent (EntityListEvent<Sample> sampleListEvent)
     {
+        super.handleEntityListEvent(sampleListEvent);
+
         final Sample sample = sampleListEvent.getEntity();
 
         // Shape text and icon

@@ -31,6 +31,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
+import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -40,8 +41,8 @@ import javax.media.jai.JAI;
  * Class {@code ImageUtil} gathers convenient static methods working on images.
  * <p>
  * TODO: Perhaps chaining JAI commands into a single operation would be more efficient (memory-wise
- * & performance-wise) that performing each bulk operation one after the other. It would also save
- * multiple calls to "getAsBufferedImage()".
+ * and performance-wise) that performing each bulk operation one after the other. It would also
+ * save multiple calls to "getAsBufferedImage()".
  *
  * @author Hervé Bitteur
  */
@@ -71,7 +72,7 @@ public abstract class ImageUtil
     // maxRgbToGray //
     //--------------//
     /**
-     * Take an RGB image and always select the maximum pixel value among R,G & B bands
+     * Take an RGB image and always select the maximum pixel value among R,G and B bands
      * to provide the output gray value.
      *
      * @param image input image with 3 bands RGB
@@ -113,7 +114,7 @@ public abstract class ImageUtil
     //---------------//
     /**
      * Take an RGBA image and, ignoring the alpha value, always select the maximum pixel
-     * value among R,G & B bands to provide the output gray value.
+     * value among R,G and B bands to provide the output gray value.
      *
      * @param rgba input image with 3 bands RGB and 1 Alpha channel
      * @return a gray image
@@ -149,7 +150,7 @@ public abstract class ImageUtil
     // rgbToGray //
     //-----------//
     /**
-     * Take an RGB image and combine the R,G & B bands according to standard luminance
+     * Take an RGB image and combine the R,G and B bands according to standard luminance
      * value to provide the output gray value.
      *
      * @param rgb input image with 3 bands RGB
@@ -213,9 +214,11 @@ public abstract class ImageUtil
                                    String name)
     {
         try {
-            ImageIO.write(image, "png", WellKnowns.TEMP_FOLDER.resolve(name + ".png").toFile());
+            final File file = WellKnowns.TEMP_FOLDER.resolve(name + ".png").toFile();
+            ImageIO.write(image, "png", file);
+            logger.info("Saved {}", file);
         } catch (IOException ex) {
-            logger.warn("Error storing " + name, ex);
+            logger.warn("Error saving " + name, ex);
         }
     }
 

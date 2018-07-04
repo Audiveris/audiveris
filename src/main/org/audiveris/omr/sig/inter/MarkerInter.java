@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sig.relation.MarkerBarRelation;
 
 import java.awt.Point;
@@ -74,22 +75,45 @@ public class MarkerInter
         visitor.visit(this);
     }
 
-    //-----------------//
-    // linkWithBarline //
-    //-----------------//
+    //--------//
+    // create //
+    //--------//
     /**
-     * (Try to) connect this marker with a suitable barline.
+     * Create a MarkerInter.
+     *
+     * @param glyph underlying glyph
+     * @param shape precise shape
+     * @param grade evaluation value
+     * @param staff related staff
+     * @return the created instance
+     */
+    public static MarkerInter create (Glyph glyph,
+                                      Shape shape,
+                                      double grade,
+                                      Staff staff)
+    {
+        MarkerInter marker = new MarkerInter(glyph, shape, grade);
+        marker.setStaff(staff);
+
+        return marker;
+    }
+
+    //----------------------//
+    // linkWithStaffBarline //
+    //----------------------//
+    /**
+     * (Try to) connect this marker with a suitable StaffBarline.
      *
      * @return true if successful
      */
-    public boolean linkWithBarline ()
+    public boolean linkWithStaffBarline ()
     {
         Point center = getCenter();
-        List<BarlineInter> bars = getStaff().getBars();
-        BarlineInter bar = BarlineInter.getClosestBarline(bars, center);
+        List<StaffBarlineInter> staffBars = getStaff().getStaffBarlines();
+        StaffBarlineInter staffBar = StaffBarlineInter.getClosestStaffBarline(staffBars, center);
 
-        if ((bar != null) && (GeoUtil.xOverlap(getBounds(), bar.getBounds()) > 0)) {
-            sig.addEdge(this, bar, new MarkerBarRelation());
+        if ((staffBar != null) && (GeoUtil.xOverlap(getBounds(), staffBar.getBounds()) > 0)) {
+            sig.addEdge(this, staffBar, new MarkerBarRelation());
 
             return true;
         }

@@ -21,30 +21,28 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.glyph.Grades;
+import org.audiveris.omr.sheet.Skew;
+import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
-import org.audiveris.omr.text.TextWord;
 import org.audiveris.omr.ui.symbol.TextFont;
+import org.audiveris.omr.util.Entities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlIDREF;
-import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.audiveris.omr.glyph.Shape;
 
 /**
  * Class {@code SentenceInter} represents a full sentence of words.
@@ -52,14 +50,14 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * This class is used for any text role other than Lyrics (Title, Direction, Number, PartName,
  * Creator et al, Rights, ChordName, UnknownRole).
  * <p>
- * For Lyrics role , the specific subclass {@link LyricLineInter} is used.
+ * For Lyrics role, the specific subclass {@link LyricLineInter} is used.
  *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "sentence")
 public class SentenceInter
         extends AbstractInter
-        implements InterMutableEnsemble
+        implements InterEnsemble
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -73,10 +71,11 @@ public class SentenceInter
         public int compare (SentenceInter s1,
                             SentenceInter s2)
         {
-            Point2D dsk1 = s1.getSig().getSystem().getSkew().deskewed(s1.getLocation());
-            Point2D dsk2 = s2.getSig().getSystem().getSkew().deskewed(s2.getLocation());
+            final Skew skew = s1.getSig().getSystem().getSkew();
 
-            return Double.compare(dsk1.getY(), dsk2.getY());
+            return Double.compare(
+                    skew.deskewed(s1.getLocation()).getY(),
+                    skew.deskewed(s2.getLocation()).getY());
         }
     };
 
@@ -85,12 +84,6 @@ public class SentenceInter
     // Persistent data
     //----------------
     //
-    /** Sequence of sentence words. */
-    @XmlList
-    @XmlIDREF
-    @XmlElement(name = "words")
-    protected final List<WordInter> words = new ArrayList<WordInter>();
-
     /** Average font for the sentence. */
     @XmlAttribute(name = "font")
     @XmlJavaTypeAdapter(FontInfo.Adapter.class)
@@ -98,7 +91,7 @@ public class SentenceInter
 
     /** Role of this sentence. */
     @XmlAttribute
-    protected final TextRole role;
+    protected TextRole role;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -108,23 +101,29 @@ public class SentenceInter
      * @param grade    the interpretation quality
      * @param meanFont the font averaged on whole text line
      * @param role     text role for the line
-     * @param words    the sequence of words
      */
-    protected SentenceInter (Rectangle bounds,
-                             double grade,
-                             FontInfo meanFont,
-                             TextRole role,
-                             List<WordInter> words)
+    public SentenceInter (Rectangle bounds,
+                          double grade,
+                          FontInfo meanFont,
+                          TextRole role)
     {
-        super(null, bounds, Shape.TEXT, grade);
+        super(null, bounds, null, grade);
 
         this.meanFont = meanFont;
         this.role = role;
-        this.words.addAll(words);
+    }
 
-        for (WordInter word : words) {
-            word.setEnsemble(this);
-        }
+    /**
+     * Creates a new {@code SentenceInter} object, meant for user handling of glyph.
+     *
+     * @param grade the interpretation quality
+     */
+    public SentenceInter (double grade)
+    {
+        super(null, null, Shape.LYRICS, grade);
+
+        this.meanFont = null;
+        this.role = TextRole.Lyrics;
     }
 
     /**
@@ -138,34 +137,6 @@ public class SentenceInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------//
-    // create //
-    //--------//
-    /**
-     * Create a {@code SentenceInter} from a TextLine.
-     *
-     * @param line the OCR'ed text line
-     * @return the sentence inter
-     */
-    public static SentenceInter create (TextLine line)
-    {
-        List<WordInter> wordInters = new ArrayList<WordInter>();
-
-        for (TextWord word : line.getWords()) {
-            WordInter wordInter = new WordInter(word);
-            wordInters.add(wordInter);
-        }
-
-        SentenceInter sentence = new SentenceInter(
-                line.getBounds(),
-                line.getConfidence() * Inter.intrinsicRatio,
-                line.getMeanFont(),
-                line.getRole(),
-                wordInters);
-
-        return sentence;
-    }
-
     //--------//
     // accept //
     //--------//
@@ -181,58 +152,68 @@ public class SentenceInter
     @Override
     public void addMember (Inter member)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (!(member instanceof WordInter)) {
+            throw new IllegalArgumentException("Only WordInter can be added to Sentence");
+        }
+
+        EnsembleHelper.addMember(this, member);
     }
 
     //-------------//
     // assignStaff //
     //-------------//
-    public void assignStaff (SystemInfo system)
+    /**
+     * Determine the related staff for this sentence.
+     *
+     * @param system   containing system
+     * @param location sentence location
+     * @return the related staff if found, null otherwise
+     */
+    public Staff assignStaff (SystemInfo system,
+                              Point location)
     {
-        if (staff != null) {
-            return;
-        }
-
-        final Point loc = getLocation();
-
-        if (role != TextRole.ChordName) {
-            staff = system.getStaffAtOrAbove(loc);
+        if ((staff == null) && (role != TextRole.ChordName)) {
+            staff = system.getStaffAtOrAbove(location);
         }
 
         if (staff == null) {
-            staff = system.getStaffAtOrBelow(loc);
+            staff = system.getStaffAtOrBelow(location);
         }
 
-        if (staff != null) {
-            for (Inter wInter : getMembers()) {
-                WordInter wordInter = (WordInter) wInter;
-                wordInter.setStaff(staff);
-            }
-        }
+        return staff;
+    }
+
+    //--------//
+    // create //
+    //--------//
+    /**
+     * Create a {@code SentenceInter} from a TextLine.
+     *
+     * @param line the OCR'ed text line
+     * @return the sentence inter
+     */
+    public static SentenceInter create (TextLine line)
+    {
+        SentenceInter sentence = new SentenceInter(
+                line.getBounds(),
+                line.getConfidence() * Grades.intrinsicRatio,
+                line.getMeanFont(),
+                line.getRole());
+
+        return sentence;
     }
 
     //-----------//
     // getBounds //
     //-----------//
-    /**
-     * Overridden to recompute the bounds from contained words.
-     *
-     * @return the line bounds
-     */
     @Override
     public Rectangle getBounds ()
     {
-        Rectangle bounds = null;
-
-        for (WordInter word : words) {
-            if (bounds == null) {
-                bounds = word.getBounds();
-            } else {
-                bounds.add(word.getBounds());
-            }
+        if (bounds == null) {
+            bounds = Entities.getBounds(getMembers());
         }
 
-        return bounds;
+        return new Rectangle(bounds);
     }
 
     //---------------------//
@@ -253,11 +234,13 @@ public class SentenceInter
     //--------------//
     public WordInter getFirstWord ()
     {
+        final List<? extends Inter> words = getMembers();
+
         if (words.isEmpty()) {
             return null;
         }
 
-        return words.get(0);
+        return (WordInter) words.get(0);
     }
 
     //-------------//
@@ -265,11 +248,13 @@ public class SentenceInter
     //-------------//
     public WordInter getLastWord ()
     {
+        final List<? extends Inter> words = getMembers();
+
         if (words.isEmpty()) {
             return null;
         }
 
-        return words.get(words.size() - 1);
+        return (WordInter) words.get(words.size() - 1);
     }
 
     //-------------//
@@ -277,7 +262,13 @@ public class SentenceInter
     //-------------//
     public Point getLocation ()
     {
-        return words.get(0).getLocation();
+        final Inter first = getFirstWord();
+
+        if (first == null) {
+            return null;
+        }
+
+        return ((WordInter) first).getLocation();
     }
 
     //-------------//
@@ -297,18 +288,18 @@ public class SentenceInter
     // getMembers //
     //------------//
     @Override
-    public List<? extends Inter> getMembers ()
+    public List<Inter> getMembers ()
     {
-        return words;
+        return EnsembleHelper.getMembers(this, Inters.byAbscissa);
     }
 
     //---------//
     // getRole //
     //---------//
     /**
-     * Report the line role.
+     * Report the sentence role.
      *
-     * @return the roleInfo
+     * @return the sentence role
      */
     public TextRole getRole ()
     {
@@ -323,8 +314,8 @@ public class SentenceInter
         StringBuilder sb = null;
 
         // Use each word value
-        for (WordInter word : words) {
-            String str = word.getValue();
+        for (Inter word : getMembers()) {
+            String str = ((WordInter) word).getValue();
 
             if (sb == null) {
                 sb = new StringBuilder(str);
@@ -340,24 +331,42 @@ public class SentenceInter
         }
     }
 
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    /**
+     * Invalidate cached information. (following the addition or removal of a word)
+     */
+    @Override
+    public void invalidateCache ()
+    {
+        bounds = null;
+    }
+
     //--------------//
     // removeMember //
     //--------------//
     @Override
     public void removeMember (Inter member)
     {
-        if (member instanceof WordInter) {
-            WordInter word = (WordInter) member;
-            logger.debug("{} about to remove {}", this, word);
-            words.remove(word);
-
-            if (words.isEmpty()) {
-                logger.debug("Deleting empty {}", this);
-                delete();
-            }
-        } else {
+        if (!(member instanceof WordInter)) {
             throw new IllegalArgumentException("Only WordInter can be removed from Sentence");
         }
+
+        EnsembleHelper.removeMember(this, member);
+    }
+
+    //---------//
+    // setRole //
+    //---------//
+    /**
+     * Assign a new role.
+     *
+     * @param role the new role
+     */
+    public void setRole (TextRole role)
+    {
+        this.role = role;
     }
 
     //-------------//
@@ -366,7 +375,7 @@ public class SentenceInter
     @Override
     public String shapeString ()
     {
-        return "SENTENCE_\"" + getValue() + "\"";
+        return "SENTENCE";
     }
 
     //-----------//

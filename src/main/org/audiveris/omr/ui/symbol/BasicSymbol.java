@@ -44,7 +44,7 @@ import java.util.Arrays;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BasicSymbol} is the base for implementing instances of {@link Symbol}
+ * Class {@code BasicSymbol} is the base for implementing instances of {@link SymbolIcon}
  * interface.
  * It does not handle a specific Shape as its subclass ShapeSymbol, but only handles a sequence of
  * MusicFont codes.
@@ -53,7 +53,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "symbol")
 public class BasicSymbol
-        implements Symbol
+        implements SymbolIcon
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -240,20 +240,6 @@ public class BasicSymbol
     public final String getString ()
     {
         return new String(codes, 0, codes.length);
-    }
-
-    //-----------------//
-    // getSymbolHeight //
-    //-----------------//
-    /**
-     * Report the symbol height (which is by default the image height)
-     * for a standard interline.
-     *
-     * @return the symbol height
-     */
-    public int getSymbolHeight ()
-    {
-        return getHeight();
     }
 
     //-----------//

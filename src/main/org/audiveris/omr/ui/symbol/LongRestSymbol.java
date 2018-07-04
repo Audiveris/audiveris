@@ -27,7 +27,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 
 /**
- * Class {@code LongRestSymbol} is a basis for WHOLE_REST and HALF_REST symbols.
+ * Class {@code LongRestSymbol} is an implementation for a LONG_REST symbol.
  *
  * @author Hervé Bitteur
  */
@@ -55,6 +55,7 @@ public class LongRestSymbol
     private LongRestSymbol (boolean isIcon,
                             boolean decorated)
     {
+        // NOTA: 227 is the code for a BREVE_REST, not for a LONG_REST.
         super(isIcon, Shape.LONG_REST, decorated, 227);
     }
 
@@ -72,8 +73,12 @@ public class LongRestSymbol
     // getRestLayout //
     //---------------//
     /**
-     * Retrieve the layout of just the rest symbol part, w/o the lines
-     * For this symbol, we need to integrate the AffineTransform effect
+     * Retrieve the layout of just the rest symbol part, w/o the lines.
+     * <p>
+     * For this symbol, we need to use an AffineTransform effect to extend the BREVE_REST
+     * (1 interline high) to a LONG_REST (2 interline high + line height).
+     *
+     * @return layout of just the rest symbol (no lines)
      */
     @Override
     protected TextLayout getRestLayout (MusicFont font)

@@ -62,15 +62,14 @@ public class ActionDescriptor
     @XmlAttribute(name = "method")
     public String methodName;
 
-    /**
-     * Which kind of menu item should be generated for this action, default is JMenuItem.
-     */
+    @XmlAttribute(name = "topic")
+    public AdvancedTopics.Topic topic;
+
+    /** Class of menu item to be generated for this action, default is JMenuItem. */
     @XmlAttribute(name = "item")
     public String itemClassName;
 
-    /**
-     * Which kind of (toolbar) button should be generated for this action, default is null.
-     */
+    /** Class of (toolbar) button to be generated for this action, default is null. */
     @XmlAttribute(name = "button")
     public String buttonClassName;
 
@@ -101,6 +100,10 @@ public class ActionDescriptor
 
         if (methodName != null) {
             sb.append(" method:").append(methodName);
+        }
+
+        if (topic != null) {
+            sb.append(" topic:").append(topic);
         }
 
         if (menuName != null) {

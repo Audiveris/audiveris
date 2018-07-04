@@ -97,16 +97,6 @@ public class VerticalFilter
                 true);
     }
 
-    //~ Methods ------------------------------------------------------------------------------------
-    //
-    //----------------------//
-    // getDefaultDescriptor //
-    //----------------------//
-    public static FilterDescriptor getDefaultDescriptor ()
-    {
-        return AdaptiveDescriptor.getDefault();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
     //
     //--------//

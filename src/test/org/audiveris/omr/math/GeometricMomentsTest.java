@@ -25,6 +25,8 @@ package org.audiveris.omr.math;
 import org.audiveris.omr.moments.GeometricMoments;
 import org.audiveris.omr.util.BaseTestCase;
 
+import org.junit.Test;
+
 /**
  * Class <code>GeometricMomentsTest</code> performs unit tests on
  * GeometricMoments class.
@@ -41,7 +43,7 @@ public class GeometricMomentsTest
     private static final int[] yy = new int[]{4, 5, 24, 9, 0};
 
     //~ Methods ------------------------------------------------------------------------------------
-    //@Test
+    @Test
     public void testConstructor ()
     {
         GeometricMoments m = new GeometricMoments(xx, yy, xx.length, 1);
@@ -75,7 +77,7 @@ public class GeometricMomentsTest
         }
     }
 
-    //@Test
+    @Test
     public void testDefaultConstructor ()
     {
         GeometricMoments m = new GeometricMoments();

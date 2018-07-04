@@ -21,28 +21,11 @@
 // </editor-fold>
 package org.audiveris.omr.score;
 
-import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.SystemInfo;
-import org.audiveris.proxymusic.PartList;
-import org.audiveris.proxymusic.PartName;
-import org.audiveris.proxymusic.ScorePartwise;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * Class {@code PartConnection} is in charge of finding the connections of parts across
@@ -53,10 +36,9 @@ import java.util.TreeMap;
  * <ul>
  * <li>The various systems of a page using Audiveris SystemInfo instances.</li>
  * <li>The various pages of a score using Audiveris Page instances.</li>
- * <li>The various pages of a score using Proxymusic ScorePartwise instances.</li>
  * </ul>
- * All together, this sums up to three different cases to handle, so we have taken a generic
- * approach, abstracting the different types into Candidates and Results.</p>
+ * <p>
+ * We have taken a generic approach, abstracting the different types of Candidates.
  * <p>
  * The strategy used to build Results out of Candidates is based on the following assumptions:
  * <ul>
@@ -64,10 +46,11 @@ import java.util.TreeMap;
  * same count of staves.</li>
  * <li>Parts cannot be swapped from one system to the other. In other words, we cannot have say
  * partA followed by partB in a system, and partB followed by partA in another system.</li>
- * <li>Additional parts appear at the top of a system, rather than at the bottom. So we process part
- * connections bottom up.</li>
+ * <li>A part with 2 staves, if any, is used to align connections.</li>
+ * <li>Otherwise, since additional parts appear at the top of a system, rather than at the bottom,
+ * we process part connections bottom up.</li>
  * <li>When possible, we use the part names (or abbreviations) to help the connection algorithm.
- * (this is not yet fully implemented).
+ * (this is not yet implemented).
  * </ul>
  *
  * @author Hervé Bitteur
@@ -76,164 +59,108 @@ public class PartConnection
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            PartConnection.class);
+    private static final Logger logger = LoggerFactory.getLogger(PartConnection.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Input data. */
-    private final Set<List<Candidate>> sequences;
-
-    /** Record the set of candidates per result. */
-    private final SortedMap<Result, Set<Candidate>> resultMap = new TreeMap<Result, Set<Candidate>>();
-
-    /** Record which result is mapped to which candidate. */
-    private final Map<Candidate, Result> candidateMap = new LinkedHashMap<Candidate, Result>();
+    private List<ResultEntry> resultEntries;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new PartConnection object.
-     * Not meant to be called directly, use proper static methods instead:
-     * {@link #connectPageSystems},
-     * {@link #connectScorePages} or
-     * {@link #connectProxyPages}.
+     * Creates a new {@code PartConnection} object.
      *
-     * @param sequences a set of sequences of parts
+     * @param sequences the list of sequences of part candidates
      */
-    private PartConnection (Set<List<Candidate>> sequences)
+    public PartConnection (List<List<Candidate>> sequences)
     {
-        this.sequences = sequences;
-
-        connect();
+        resultEntries = connect(sequences);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //--------------------//
-    // connectPageSystems //
-    //--------------------//
+    //-------------//
+    // dumpResults //
+    //-------------//
     /**
-     * Convenient method to connect parts across systems of a page.
-     * <p>
-     * This method is to be used when processing one page, and simply connecting the parts of the
-     * systems that appear on this page. Here we work with Audiveris SystemInfo entities.
-     *
-     * @param page the containing page
-     * @return the mapping found
+     * Dump content of connection results.
      */
-    public static PartConnection connectPageSystems (Page page)
+    public void dumpResults ()
     {
-        // Build candidates (here, a candidate is a Part)
-        Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
+        StringBuilder sb = new StringBuilder();
 
-        for (SystemInfo system : page.getSystems()) {
-            List<Candidate> parts = new ArrayList<Candidate>();
+        for (ResultEntry entry : resultEntries) {
+            sb.append("\n").append(entry.result);
 
-            for (Part systemPart : system.getParts()) {
-                parts.add(new PartCandidate(systemPart));
+            for (Candidate candidate : entry.candidates) {
+                sb.append("\n   ").append(candidate);
             }
-
-            sequences.add(parts);
         }
 
-        return new PartConnection(sequences);
+        logger.info("PartConnection results:{}", sb);
     }
 
-    //-------------------//
-    // connectProxyPages //
-    //-------------------//
+    //------------//
+    // getResults //
+    //------------//
     /**
-     * Convenient method to connect parts across pages.
-     * <p>
-     * This method is to be used when merging the results of several pages.
-     * Here we work with ProxyMusic ScorePartwise entities, since we expect each page result to be
-     * provided via MusicXML.
+     * Report the connections results.
      *
-     * @param pages the sequence of pages, as (proxymusic) ScorePartwise instances
-     * @return the mapping found
+     * @return the connection results
      */
-    public static PartConnection connectProxyPages (SortedMap<Integer, ScorePartwise> pages)
+    public List<ResultEntry> getResults ()
     {
-        // Build candidates (here a candidate is a LogicalPart)
-        Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
+        return resultEntries;
+    }
 
-        for (Entry<Integer, ScorePartwise> entry : pages.entrySet()) {
-            int index = entry.getKey();
-            ScorePartwise page = entry.getValue();
-            PartList partList = page.getPartList();
-            List<Candidate> parts = new ArrayList<Candidate>();
+    //----------------//
+    // addResultEntry //
+    //----------------//
+    /**
+     * Build a new ResultEntry based on provided Candidate and insert it at the desired
+     * resultIndex in the list of resultEntries.
+     *
+     * @param resultIndex
+     * @param candidate
+     * @param resultEntries
+     * @return the entry created
+     */
+    private ResultEntry addResultEntry (int resultIndex,
+                                        Candidate candidate,
+                                        List<ResultEntry> resultEntries)
+    {
+        // Create a brand new logical part for this candidate
+        // Id is irrelevant for the time being
+        LogicalPart result = new LogicalPart(0, candidate.getStaffCount());
+        result.setName(candidate.getName());
+        result.setAbbreviation(candidate.getAbbreviation());
+        logger.debug("Created {} from {}", result, candidate);
 
-            for (Object obj : partList.getPartGroupOrScorePart()) {
-                // TODO: For the time being, we ignore part-group elements.
-                if (obj instanceof org.audiveris.proxymusic.ScorePart) {
-                    org.audiveris.proxymusic.ScorePart logicalPart = (org.audiveris.proxymusic.ScorePart) obj;
-                    parts.add(new PMScorePartCandidate(logicalPart, page, index));
-                }
+        ResultEntry entry = new ResultEntry();
+        List<Candidate> candidates = new ArrayList<Candidate>();
+        candidates.add(candidate);
+        entry.result = result;
+        entry.candidates = candidates;
+        resultEntries.add(resultIndex, entry);
+
+        return entry;
+    }
+
+    //---------//
+    // biIndex //
+    //---------//
+    /**
+     * Report the index in provided candidate sequence of the (first) 2-staff part.
+     *
+     * @param sequence sequence of parts
+     * @return index of bi-staff part in sequence, or -1 if not found
+     */
+    private int biIndex (List<Candidate> sequence)
+    {
+        for (Candidate candidate : sequence) {
+            if (candidate.getStaffCount() == 2) {
+                return sequence.indexOf(candidate);
             }
-
-            sequences.add(parts);
         }
 
-        return new PartConnection(sequences);
-    }
-
-    //-------------------//
-    // connectScorePages //
-    //-------------------//
-    /**
-     * Convenient method to connect parts across pages.
-     * <p>
-     * This method is to be used when merging the results of several pages.
-     * Here we work directly with Audiveris Page entities
-     *
-     * @param pages the sequence of pages, as (audiveris) Page instances
-     * @return the mapping found
-     */
-    public static PartConnection connectScorePages (SortedMap<Integer, Page> pages)
-    {
-        // Build candidates (here a candidate is a LogicalPart)
-        Set<List<Candidate>> sequences = new LinkedHashSet<List<Candidate>>();
-
-        for (Entry<Integer, Page> entry : pages.entrySet()) {
-            Page page = entry.getValue();
-            List<Candidate> parts = new ArrayList<Candidate>();
-            List<LogicalPart> partList = page.getLogicalParts();
-
-            if (partList != null) {
-                for (LogicalPart logicalPart : partList) {
-                    parts.add(new LogicalPartCandidate(logicalPart, page));
-                }
-            }
-
-            sequences.add(parts);
-        }
-
-        return new PartConnection(sequences);
-    }
-
-    //-----------------//
-    // getCandidateMap //
-    //-----------------//
-    /**
-     * Report an unmodifiable view of which resulting part has been assigned to any
-     * given candidate
-     *
-     * @return the candidateMap (candidate -> assigned result)
-     */
-    public Map<Candidate, Result> getCandidateMap ()
-    {
-        return Collections.unmodifiableMap(candidateMap);
-    }
-
-    //--------------//
-    // getResultMap //
-    //--------------//
-    /**
-     * Report which candidate parts have been mapped to any given result
-     *
-     * @return the resultMap ((sorted) result -> (unsorted) set of candidates)
-     */
-    public SortedMap<Result, Set<Candidate>> getResultMap ()
-    {
-        return resultMap;
+        return -1;
     }
 
     //---------//
@@ -243,123 +170,128 @@ public class PartConnection
      * The heart of the part connection algorithm, organized to work through interfaces
      * in order to use the same piece of code, when we connect parts across systems of
      * one page, or when we connect parts across several pages.
+     *
+     * @param sequences a list of sequences of candidate parts
+     * @return the sorted list of resulting parts, each with its affiliated candidates
      */
-    private void connect ()
+    private List<ResultEntry> connect (List<List<Candidate>> sequences)
     {
-        /** Resulting sequence of ScorePart's */
-        final List<Result> results = new ArrayList<Result>();
+        /** Resulting sequence of logical parts. */
+        resultEntries = new ArrayList<ResultEntry>();
 
-        /** Temporary map, to record the set of candidates per result */
-        final Map<Result, Set<Candidate>> rawMap = new HashMap<Result, Set<Candidate>>();
+        // Two-staff entry found, if any
+        ResultEntry biEntry = null;
 
-        // Process each sequence of parts in turn (typically a sequence of parts is a system)
-        for (List<Candidate> sequence : sequences) {
-            // Current index in results sequence (built in reverse order)
-            int resultIndex = -1;
+        // Process each sequence of candidate parts in turn
+        for (int iSeq = 0; iSeq < sequences.size(); iSeq++) {
+            final List<Candidate> sequence = sequences.get(iSeq);
+            final int biIndex = biIndex(sequence);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("Processing new sequence ...");
+            if (iSeq == 0) {
+                dispatch(sequence, resultEntries, +1);
 
-                for (Candidate candidate : sequence) {
-                    logger.debug("- {}", candidate);
+                if (biIndex != -1) {
+                    biEntry = resultEntries.get(biIndex);
                 }
-            }
+            } else {
+                if ((biEntry != null) && (biIndex != -1)) {
+                    // Align on the biEntry
+                    biEntry.candidates.add(sequence.get(biIndex));
 
-            // Process the sequence in reverse order (bottom up)
-            for (ListIterator<Candidate> it = sequence.listIterator(sequence.size());
-                    it.hasPrevious();) {
-                Candidate candidate = it.previous();
-                logger.debug(
-                        "Processing candidate {} count:{}",
-                        candidate,
-                        candidate.getStaffCount());
+                    // Process parts above bi
+                    dispatch(
+                            sequence.subList(0, biIndex),
+                            resultEntries.subList(0, resultEntries.indexOf(biEntry)),
+                            -1);
 
-                // Check with scoreParts currently defined
-                resultIndex++;
-                logger.debug("scorePartIndex:{}", resultIndex);
-
-                if (resultIndex >= results.size()) {
-                    logger.debug("No more scoreParts available");
-
-                    // Create a brand new score part for this candidate
-                    createResult(resultIndex, candidate, results, rawMap);
+                    // Process parts below bi
+                    dispatch(
+                            sequence.subList(biIndex + 1, sequence.size()),
+                            resultEntries.subList(
+                                    resultEntries.indexOf(biEntry) + 1,
+                                    resultEntries.size()),
+                            +1);
                 } else {
-                    Result result = results.get(resultIndex);
-                    logger.debug("Part:{}", result);
-
-                    // Check we are connectable in terms of staves
-                    if (result.getStaffCount() != candidate.getStaffCount()) {
-                        logger.debug("Count incompatibility");
-
-                        // Create a brand new score part for this candidate
-                        createResult(resultIndex, candidate, results, rawMap);
-                    } else {
-                        // Can we use names? Just for fun for the time being
-                        if ((candidate.getName() != null) && (result.getName() != null)) {
-                            boolean namesOk = candidate.getName().equalsIgnoreCase(
-                                    result.getName());
-
-                            logger.debug("Names OK: {}", namesOk);
-
-                            if (!namesOk) {
-                                logger.debug(
-                                        "\"{}\" vs \"{}\"",
-                                        candidate.getName(),
-                                        result.getName());
-                            }
-                        }
-
-                        // We are compatible
-                        candidateMap.put(candidate, result);
-                        logger.debug(
-                                "Compatible." + " Mapped candidate {} to result {}",
-                                candidate,
-                                result);
-
-                        rawMap.get(result).add(candidate);
-                    }
+                    dispatch(sequence, resultEntries, -1);
                 }
             }
         }
 
-        // Reverse and number LogicalPart instances
-        Collections.reverse(results);
+        // Assign numbers to logical parts
+        renumberResults();
 
-        for (int i = 0; i < results.size(); i++) {
-            Result result = results.get(i);
+        return resultEntries;
+    }
+
+    /**
+     * Dispatch the list of candidate parts (perhaps a sublist of a system) to the
+     * current sublist of logical parts.
+     *
+     * @param sequence the candidate parts to dispatch
+     * @param results  (input/output) the current sublist of logicals
+     * @param dir      -1 or +1 for browsing up or down
+     */
+    private void dispatch (List<Candidate> sequence,
+                           List<ResultEntry> results,
+                           int dir)
+    {
+        final int ic1 = (dir > 0) ? 0 : (sequence.size() - 1);
+        final int ic2 = (dir > 0) ? sequence.size() : (-1);
+        int resultIndex = (dir > 0) ? (-1) : results.size();
+
+        for (int ic = ic1; ic != ic2; ic += dir) {
+            Candidate candidate = sequence.get(ic);
+            logger.debug("Processing {}", candidate);
+
+            // Check with logical parts currently defined
+            resultIndex += dir;
+            logger.debug("resultIndex:{}", resultIndex);
+
+            if (((dir > 0) && (resultIndex >= results.size())) || ((dir < 0) && (resultIndex < 0))) {
+                logger.debug("No more entries available");
+
+                // Create a brand new logical part for this candidate
+                addResultEntry((dir < 0) ? 0 : resultIndex, candidate, results);
+            } else {
+                ResultEntry resultEntry = results.get(resultIndex);
+                LogicalPart result = resultEntry.result;
+                logger.debug("Part:{}", result);
+
+                // Check we are compatible in terms of staves
+                if (result.getStaffCount() != candidate.getStaffCount()) {
+                    logger.debug("Count incompatibility");
+
+                    // Create a brand new logical part for this candidate
+                    addResultEntry(resultIndex, candidate, results);
+                } else {
+                    // We are compatible
+                    resultEntry.candidates.add(candidate);
+                }
+            }
+        }
+    }
+
+    //-----------------//
+    // renumberResults //
+    //-----------------//
+    /**
+     * Reverse and renumber the result entries.
+     */
+    private void renumberResults ()
+    {
+        ///Collections.reverse(resultEntries);
+        for (int i = 0; i < resultEntries.size(); i++) {
+            ResultEntry resultEntry = resultEntries.get(i);
+            LogicalPart result = resultEntry.result;
             int id = i + 1;
             result.setId(id);
 
-            // Forge a LogicalPart name if none has been assigned
-            if (result.getName() == null) {
-                result.setName("Part_" + id);
+            for (Candidate candidate : resultEntry.candidates) {
+                candidate.setId(id);
             }
 
             logger.debug("Final {}", result);
         }
-
-        // Now that results are ordered, we can deliver the sorted map
-        resultMap.putAll(rawMap);
-    }
-
-    //--------------//
-    // createResult //
-    //--------------//
-    private Result createResult (int resultIndex,
-                                 Candidate candidate,
-                                 List<Result> results,
-                                 Map<Result, Set<Candidate>> rawMap)
-    {
-        Set<Candidate> candidates = new LinkedHashSet<Candidate>();
-        Result result = candidate.createResult();
-        candidateMap.put(candidate, result);
-        logger.debug("Creation. Mapped candidate {} to result {}", candidate, result);
-
-        candidates.add(candidate);
-        rawMap.put(result, candidates);
-        results.add(resultIndex, result);
-
-        return result;
     }
 
     //~ Inner Interfaces ---------------------------------------------------------------------------
@@ -368,37 +300,23 @@ public class PartConnection
     //-----------//
     /**
      * Interface {@code Candidate} is used to process part candidates, regardless whether they are
-     * provided:
+     * provided as:
      * <ul>
-     * <li>as Audiveris {@link org.audiveris.omr.sheet.Part} instances
-     * (produced by the scanning of just one page)</li>
-     * <li>as Audiveris {@link org.audiveris.omr.score.LogicalPart}
-     * (when merging Audiveris pages)</li>
-     * <li>as ProxyMusic {@link org.audiveris.proxymusic.ScorePart} instances
-     * (used when merging MusicXML files).</li>
+     * <li>System physical {@link org.audiveris.omr.sheet.Part} instances when merging system parts
+     * into the logical parts of one page.</li>
+     * <li>Page {@link org.audiveris.omr.score.LogicalPart} instances when merging pages logical
+     * parts into the logical parts of one score.</li>
      * </ul>
      */
     public static interface Candidate
     {
         //~ Methods --------------------------------------------------------------------------------
 
-        /** Create a related result instance consistent with this type
-         *
-         * @return the result
-         */
-        Result createResult ();
-
         /** Report the abbreviation, if any, that relates to this part
          *
          * @return the abbreviation if any
          */
         String getAbbreviation ();
-
-        /** Index of the input: System # for Part, Page # for LogicalPart
-         *
-         * @return the input index
-         */
-        int getInputIndex ();
 
         /** Report the name of the part, if any
          *
@@ -412,605 +330,25 @@ public class PartConnection
          */
         int getStaffCount ();
 
-        /** Report the underlying object
+        /** Assign an id to the candidate (and recursively to its affiliates if any).
          *
-         * @return the object
-         */
-        Object getUnderlyingObject ();
-    }
-
-    //--------//
-    // Result //
-    //--------//
-    /**
-     * Interface {@code Result} is used to process resulting LogicalPart instances,
-     * regardless whether they are instances of standard Audiveris {@link LogicalPart}
-     * or instances of ProxyMusic {@link org.audiveris.proxymusic.ScorePart}.
-     */
-    public static interface Result
-            extends Comparable<Result>
-    {
-        //~ Methods --------------------------------------------------------------------------------
-
-        /** Report the part abbreviation, if any
-         *
-         * @return the abbreviation string assigned to the part, or null
-         */
-        String getAbbreviation ();
-
-        /** Report the candidate object used to build this result
-         *
-         * @return the candidate
-         */
-        Candidate getCandidate ();
-
-        /** Report the part id
-         *
-         * @return the part ID
-         */
-        int getId ();
-
-        /** Report the part name
-         *
-         * @return the part name
-         */
-        String getName ();
-
-        /** Report the number of staves in that part
-         *
-         * @return the number of staves in part
-         */
-        int getStaffCount ();
-
-        /** Report the actual underlying instance
-         *
-         * @return the underlying object
-         */
-        Object getUnderlyingObject ();
-
-        /** Assign an abbreviation to the part
-         *
-         * @param abbreviation
-         */
-        void setAbbreviation (String abbreviation);
-
-        /** Assign an unique id to the part
-         *
-         * @param id
+         * @param id the assigned id value
          */
         void setId (int id);
-
-        /** Assign a name to the part
-         *
-         * @param name
-         */
-        void setName (String name);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //----------------//
-    // AbstractResult //
-    //----------------//
-    private abstract static class AbstractResult
-            implements Result
+    //-------------//
+    // ResultEntry //
+    //-------------//
+    public static class ResultEntry
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        protected final Candidate candidate;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public AbstractResult (Candidate candidate)
-        {
-            this.candidate = candidate;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int compareTo (Result other)
-        {
-            return Integer.signum(getId() - other.getId());
-        }
-
-        @Override
-        public Candidate getCandidate ()
-        {
-            return candidate;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-            sb.append("{");
-
-            sb.append(" id:").append(getId());
-
-            sb.append(" name:\"").append(getName()).append("\"");
-
-            if (getAbbreviation() != null) {
-                sb.append(" abbr:\"").append(getAbbreviation()).append("\"");
-            }
-
-            sb.append(" staffCount:").append(getStaffCount());
-
-            sb.append("}");
-
-            return sb.toString();
-        }
-    }
-
-    //----------------------//
-    // LogicalPartCandidate //
-    //----------------------//
-    /**
-     * Wrapping class meant for a LogicalPart instance candidate.
-     */
-    private static class LogicalPartCandidate
-            implements Candidate
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final LogicalPart logicalPart;
-
-        private final Page page;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public LogicalPartCandidate (LogicalPart logicalPart,
-                                     Page page)
-        {
-            this.logicalPart = logicalPart;
-            this.page = page;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public LogicalPartResult createResult ()
-        {
-            // Create a brand new score part for this candidate
-            // Id is irrelevant for the time being
-            LogicalPartResult result = new LogicalPartResult(
-                    this,
-                    new LogicalPart(0, getStaffCount()));
-            result.setName(getName());
-            result.setAbbreviation(getAbbreviation());
-            logger.debug("Created {} from {}", result, this);
-
-            return result;
-        }
-
-        @Override
-        public String getAbbreviation ()
-        {
-            return logicalPart.getAbbreviation();
-        }
-
-        @Override
-        public int getInputIndex ()
-        {
-            return page.getSheet().getStub().getNumber();
-        }
-
-        @Override
-        public String getName ()
-        {
-            return logicalPart.getName();
-        }
-
-        @Override
-        public int getStaffCount ()
-        {
-            return logicalPart.getStaffCount();
-        }
-
-        @Override
-        public Object getUnderlyingObject ()
-        {
-            return logicalPart;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-
-            sb.append("{");
-
-            sb.append(" page#").append(getInputIndex());
-
-            sb.append(" \"").append(getName()).append("\"");
-
-            sb.append(" staffCount:").append(getStaffCount());
-
-            sb.append("}");
-
-            return sb.toString();
-        }
-    }
-
-    //-------------------//
-    // LogicalPartResult //
-    //-------------------//
-    /**
-     * Wrapping class meant for a LogicalPart instance result.
-     */
-    private static class LogicalPartResult
-            extends AbstractResult
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final LogicalPart logicalPart;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public LogicalPartResult (Candidate candidate,
-                                  LogicalPart logicalPart)
-        {
-            super(candidate);
-            this.logicalPart = logicalPart;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String getAbbreviation ()
-        {
-            return logicalPart.getAbbreviation();
-        }
-
-        @Override
-        public int getId ()
-        {
-            return logicalPart.getId();
-        }
-
-        @Override
-        public String getName ()
-        {
-            return logicalPart.getName();
-        }
-
-        @Override
-        public int getStaffCount ()
-        {
-            return logicalPart.getStaffCount();
-        }
-
-        @Override
-        public LogicalPart getUnderlyingObject ()
-        {
-            return logicalPart;
-        }
-
-        @Override
-        public void setAbbreviation (String abbreviation)
-        {
-            logicalPart.setAbbreviation(abbreviation);
-        }
-
-        @Override
-        public void setId (int id)
-        {
-            logicalPart.setId(id);
-        }
-
-        @Override
-        public void setName (String name)
-        {
-            logicalPart.setName(name);
-        }
-    }
-
-    //----------------------//
-    // PMScorePartCandidate //
-    //----------------------//
-    /**
-     * Wrapping class meant for a proxymusic LogicalPart instance candidate.
-     */
-    private static class PMScorePartCandidate
-            implements Candidate
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final org.audiveris.proxymusic.ScorePart logicalPart;
-
-        private final ScorePartwise scorePartwise;
-
-        private final int inputIndex;
-
-        private Integer staffCount;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public PMScorePartCandidate (org.audiveris.proxymusic.ScorePart logicalPart,
-                                     ScorePartwise scorePartwise,
-                                     int inputIndex)
-        {
-            this.logicalPart = logicalPart;
-            this.scorePartwise = scorePartwise;
-            this.inputIndex = inputIndex;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public PMScorePartResult createResult ()
-        {
-            // Create a brand new score part for this candidate
-            // Id is irrelevant for the time being
-
-            /** Factory for proxymusic entities */
-            org.audiveris.proxymusic.ObjectFactory factory = new org.audiveris.proxymusic.ObjectFactory();
-
-            PMScorePartResult result = new PMScorePartResult(
-                    this,
-                    getStaffCount(),
-                    factory.createScorePart());
-
-            result.setName(getName());
-            result.setAbbreviation(getAbbreviation());
-            logger.debug("Created {} from {}", result, this);
-
-            return result;
-        }
-
-        @Override
-        public String getAbbreviation ()
-        {
-            PartName partName = logicalPart.getPartAbbreviation();
-
-            if (partName != null) {
-                return partName.getValue();
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public int getInputIndex ()
-        {
-            return inputIndex;
-        }
-
-        @Override
-        public String getName ()
-        {
-            PartName partName = logicalPart.getPartName();
-
-            if (partName != null) {
-                return partName.getValue();
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public int getStaffCount ()
-        {
-            if (staffCount == null) {
-                // Determine the corresponding staff count
-                // We have to dig into the first measure of the part itself
-                staffCount = 1; // Default value
-
-                String id = logicalPart.getId();
-
-                ///logger.debug("logicalPart id:" + id);
-                for (ScorePartwise.Part part : scorePartwise.getPart()) {
-                    if (part.getId() != logicalPart) {
-                        continue;
-                    }
-
-                    // Get first measure of this part
-                    ScorePartwise.Part.Measure firstMeasure = part.getMeasure().get(0);
-
-                    // Look for Attributes element
-                    for (Object obj : firstMeasure.getNoteOrBackupOrForward()) {
-                        if (!(obj instanceof org.audiveris.proxymusic.Attributes)) {
-                            continue;
-                        }
-
-                        org.audiveris.proxymusic.Attributes attributes = (org.audiveris.proxymusic.Attributes) obj;
-                        BigInteger staves = attributes.getStaves();
-
-                        if (staves != null) {
-                            staffCount = staves.intValue();
-
-                            break;
-                        }
-                    }
-
-                    break;
-                }
-            }
-
-            return staffCount;
-        }
-
-        @Override
-        public Object getUnderlyingObject ()
-        {
-            return logicalPart;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-
-            sb.append("{");
-
-            sb.append(" page#").append(inputIndex);
-
-            sb.append(" \"").append(getName()).append("\"");
-
-            sb.append(" staffCount:").append(getStaffCount());
-
-            sb.append("}");
-
-            return sb.toString();
-        }
-    }
-
-    //-------------------//
-    // PMScorePartResult //
-    //-------------------//
-    /**
-     * Wrapping class meant for a proxymusic LogicalPart instance result.
-     */
-    private static class PMScorePartResult
-            extends AbstractResult
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final int staffCount;
-
-        private final org.audiveris.proxymusic.ScorePart logicalPart;
-
-        private int id;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public PMScorePartResult (Candidate candidate,
-                                  int staffCount,
-                                  org.audiveris.proxymusic.ScorePart logicalPart)
-        {
-            super(candidate);
-            this.staffCount = staffCount;
-            this.logicalPart = logicalPart;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public String getAbbreviation ()
-        {
-            PartName partName = logicalPart.getPartAbbreviation();
-
-            if (partName != null) {
-                return partName.getValue();
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public int getId ()
-        {
-            return id;
-        }
-
-        @Override
-        public String getName ()
-        {
-            PartName partName = logicalPart.getPartName();
-
-            if (partName != null) {
-                return partName.getValue();
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public int getStaffCount ()
-        {
-            return staffCount;
-        }
-
-        @Override
-        public org.audiveris.proxymusic.ScorePart getUnderlyingObject ()
-        {
-            return logicalPart;
-        }
-
-        @Override
-        public void setAbbreviation (String abbreviation)
-        {
-            org.audiveris.proxymusic.ObjectFactory factory = new org.audiveris.proxymusic.ObjectFactory();
-            PartName partName = factory.createPartName();
-            logicalPart.setPartAbbreviation(partName);
-            partName.setValue(abbreviation);
-        }
-
-        @Override
-        public void setId (int id)
-        {
-            this.id = id;
-            logicalPart.setId("P" + id);
-        }
-
-        @Override
-        public void setName (String name)
-        {
-            org.audiveris.proxymusic.ObjectFactory factory = new org.audiveris.proxymusic.ObjectFactory();
-            org.audiveris.proxymusic.PartName partName = factory.createPartName();
-            logicalPart.setPartName(partName);
-            partName.setValue(name);
-        }
-    }
-
-    //---------------//
-    // PartCandidate //
-    //---------------//
-    /**
-     * Wrapping class meant for a Part instance.
-     */
-    private static class PartCandidate
-            implements Candidate
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Part systemPart;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public PartCandidate (Part part)
-        {
-            this.systemPart = part;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public LogicalPartResult createResult ()
-        {
-            // Create a brand new score part for this candidate
-            // Id is irrelevant for the time being
-            LogicalPartResult result = new LogicalPartResult(
-                    this,
-                    new LogicalPart(0, getStaffCount()));
-            result.setName(getName());
-            result.setAbbreviation(getAbbreviation());
-            logger.debug("Created {} from {}", result, this);
-
-            return result;
-        }
-
-        @Override
-        public String getAbbreviation ()
-        {
-            return null;
-        }
-
-        @Override
-        public int getInputIndex ()
-        {
-            return systemPart.getSystem().getId();
-        }
-
-        @Override
-        public String getName ()
-        {
-            return systemPart.getName();
-        }
-
-        @Override
-        public int getStaffCount ()
-        {
-            return systemPart.getStaves().size();
-        }
-
-        @Override
-        public Object getUnderlyingObject ()
-        {
-            return systemPart;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "S" + getInputIndex() + "-" + systemPart.toString();
-        }
+        /** Resulting logical part. */
+        LogicalPart result;
+
+        /** Affiliated candidates. */
+        List<Candidate> candidates;
     }
 }

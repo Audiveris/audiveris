@@ -21,17 +21,28 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.math.CubicUtil;
+import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.PointUtil;
+import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.beam.BeamGroup;
+import org.audiveris.omr.sheet.curve.GlyphSlurInfo;
+import org.audiveris.omr.sheet.curve.SlurHeadLink;
 import org.audiveris.omr.sheet.curve.SlurInfo;
+import org.audiveris.omr.sheet.curve.SlurLinker;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
+import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.util.HorizontalSide;
@@ -43,9 +54,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
@@ -109,13 +129,13 @@ public class SlurInter
         @Override
         public boolean check (SlurInter slur)
         {
-            if (slur.getHead(RIGHT) == null) {
+            if ((slur.getHead(RIGHT) == null) && (slur.getExtension(RIGHT) == null)) {
                 // Check we are in last measure
                 Point2D end = slur.getCurve().getP2();
                 SystemInfo system = slur.getSig().getSystem();
-                MeasureStack stack = system.getMeasureStackAt(end);
+                MeasureStack stack = system.getStackAt(end);
 
-                if (stack == system.getLastMeasureStack()) {
+                if (stack == system.getLastStack()) {
                     // Check slur ends in last measure half
                     Staff staff = system.getClosestStaff(end);
                     Measure measure = stack.getMeasureAt(staff);
@@ -137,13 +157,13 @@ public class SlurInter
         @Override
         public boolean check (SlurInter slur)
         {
-            if (slur.getHead(LEFT) == null) {
+            if ((slur.getHead(LEFT) == null) && (slur.getExtension(LEFT) == null)) {
                 // Check we are in first measure
                 Point2D end = slur.getCurve().getP1();
                 SystemInfo system = slur.getSig().getSystem();
-                MeasureStack stack = system.getMeasureStackAt(end);
+                MeasureStack stack = system.getStackAt(end);
 
-                if (stack == system.getFirstMeasureStack()) {
+                if (stack == system.getFirstStack()) {
                     // Check slur ends in first measure half (excluding header area)
                     Staff staff = system.getClosestStaff(end);
                     Measure measure = stack.getMeasureAt(staff);
@@ -193,11 +213,11 @@ public class SlurInter
     //---------------
     //
     /** Physical characteristics. */
-    private final SlurInfo info;
+    private SlurInfo info;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
-     * Creates a new SlurInter object.
+     * Creates a new {@code SlurInter} object.
      *
      * @param info    the underlying slur information
      * @param impacts the assignment details
@@ -218,6 +238,18 @@ public class SlurInter
     }
 
     /**
+     * Creates a new {@code SlurInter} object (meant for manual assignment).
+     *
+     * @param grade inter grade
+     */
+    public SlurInter (double grade)
+    {
+        super(null, null, Shape.SLUR, grade);
+
+        info = null;
+    }
+
+    /**
      * No-arg constructor meant for JAXB.
      */
     private SlurInter ()
@@ -235,59 +267,175 @@ public class SlurInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    /**
+     * Since a slur instance is held by its containing part, make sure part
+     * slurs collection is updated.
+     *
+     * @see #remove(boolean)
+     */
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        if (getPart() != null) {
+            getPart().addSlur(this);
+        }
+
+        setAbnormal(true); // No head linked yet
+    }
+
     //-----------//
     // canExtend //
     //-----------//
     /**
-     * Check whether this slur can extend the prevSlur of the preceding system.
+     * Check whether two slurs to-be-connected between two systems in sequence are
+     * roughly compatible with each other. (same staff id, and similar pitch positions).
      *
-     * @param prevSlur the slur candidate in the preceding system
-     * @return true if connection is possible
+     * @param prevSlur the previous slur
+     * @return true if found compatible
      */
     public boolean canExtend (SlurInter prevSlur)
     {
-        return (this.getExtension(LEFT) == null) && (prevSlur.getExtension(RIGHT) == null)
-               && this.isCompatibleWith(prevSlur);
+        // Retrieve prev staff, using the left note head of the prev slur
+        HeadInter prevHead = prevSlur.getHead(LEFT);
+
+        if (prevHead == null) {
+            return false;
+        }
+
+        Staff prevStaff = prevHead.getStaff();
+
+        // Retrieve this staff, using the right note head of this slur
+        HeadInter head = getHead(RIGHT);
+
+        if (head == null) {
+            return false;
+        }
+
+        Staff thisStaff = head.getStaff();
+
+        // Check that part-based staff indices are the same
+        if (prevStaff.getIndexInPart() != thisStaff.getIndexInPart()) {
+            logger.debug(
+                    "{} prevStaff:{} {} staff:{} different part-based staff indices",
+                    prevSlur,
+                    prevStaff.getId(),
+                    this,
+                    thisStaff.getId());
+
+            return false;
+        }
+
+        // Retrieve prev position, using the right point of the prev slur
+        double prevPp = prevStaff.pitchPositionOf(PointUtil.rounded(prevSlur.getCurve().getP2()));
+
+        // Retrieve position, using the left point of the slur
+        double pp = thisStaff.pitchPositionOf(PointUtil.rounded(getCurve().getP1()));
+
+        // Compare pitch positions (very roughly)
+        double deltaPitch = pp - prevPp;
+
+        // Beware: maxDeltaY is specified in interlines, and 1 interline = 2 pitches
+        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
+        logger.debug("{} --- {} deltaPitch:{} res:{}", prevSlur, this, deltaPitch, res);
+
+        return res;
     }
 
-    //----------//
-    // checkTie //
-    //----------//
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        boolean abnormal = false;
+
+        // Check if slur is connected (or extended) on both ends
+        for (HorizontalSide side : HorizontalSide.values()) {
+            if ((this.getHead(side) == null) && (this.getExtension(side) == null)) {
+                abnormal = true;
+
+                break;
+            }
+        }
+
+        setAbnormal(abnormal);
+
+        return isAbnormal();
+    }
+
+    //---------------//
+    // checkCrossTie //
+    //---------------//
     /**
      * Check whether the cross-system slur connection is a tie.
      *
      * @param prevSlur slur at the end of previous system (perhaps in previous sheet)
      */
-    public void checkTie (SlurInter prevSlur)
+    public void checkCrossTie (SlurInter prevSlur)
     {
-        // Tie?
-        boolean isATie = haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
+        boolean result = HeadInter.haveSameHeight(prevSlur.getHead(LEFT), this.getHead(RIGHT));
 
-        if (isATie) {
-            prevSlur.setTie();
-            setTie();
+        prevSlur.setTie(result);
+        this.setTie(result);
+
+        if (isVip() || prevSlur.isVip()) {
+            logger.info("VIP {} connection {} -> {}", result ? "Tie" : "Slur", prevSlur, this);
         }
-
-        logger.debug("{} connection {} -> {}", isATie ? "Tie" : "Slur", prevSlur, this);
     }
 
-    //--------//
-    // delete //
-    //--------//
+    //---------------//
+    // checkStaffTie //
+    //---------------//
     /**
-     * Since a slur instance is held by its containing part, make sure part
-     * slurs collection is updated.
+     * Check whether this slur is a tie within the same staff,
+     * with no check for mirror heads potential mirrors.
      *
-     * @see #undelete()
+     * @param systemHeadChords system head chords, not null
      */
-    @Override
-    public void delete ()
+    public void checkStaffTie (List<Inter> systemHeadChords)
     {
-        if (part != null) {
-            part.removeSlur(this);
+        if (isVip()) {
+            logger.info("VIP checkStaffTie? for {}", this);
         }
 
-        super.delete();
+        HeadInter h1 = getHead(LEFT);
+        HeadInter h2 = getHead(RIGHT);
+        boolean result = (h1 != null) && (h2 != null) && (h1.getStaff() == h2.getStaff())
+                         && HeadInter.haveSameHeight(h1, h2)
+                         && isSpaceClear(h1, h2, systemHeadChords);
+        setTie(result);
+
+        if (isVip()) {
+            logger.info("VIP {} {}", result ? "Tie" : "Slur", this);
+        }
+    }
+
+    //----------------//
+    // discardOrphans //
+    //----------------//
+    /**
+     * Discard every orphan left over, unless it's a manual one.
+     *
+     * @param orphans the orphan slurs left over
+     * @param side    side of missing connection
+     */
+    public static void discardOrphans (List<SlurInter> orphans,
+                                       HorizontalSide side)
+    {
+        for (SlurInter slur : orphans) {
+            if (slur.isVip()) {
+                logger.info("VIP could not {}-connect {}", side, slur);
+            }
+
+            if (!slur.isManual()) {
+                slur.remove();
+            }
+        }
     }
 
     //----------//
@@ -317,6 +465,14 @@ public class SlurInter
 
         if (info != null) {
             sb.append(" ").append(info);
+        }
+
+        for (HorizontalSide side : HorizontalSide.values()) {
+            SlurInter ext = getExtension(side);
+
+            if (ext != null) {
+                sb.append(" ").append(side).append("-extension:").append(ext);
+            }
         }
 
         return sb.toString();
@@ -350,11 +506,31 @@ public class SlurInter
      */
     public HeadInter getHead (HorizontalSide side)
     {
+        SlurHeadRelation shRel = getHeadRelation(side);
+
+        if (shRel != null) {
+            return (HeadInter) sig.getOppositeInter(this, shRel);
+        }
+
+        return null;
+    }
+
+    //----------------//
+    //getHeadRelation //
+    //----------------//
+    /**
+     * Report the relation to note head, if any, on the specified side.
+     *
+     * @param side the desired side
+     * @return the relation found or null
+     */
+    public SlurHeadRelation getHeadRelation (HorizontalSide side)
+    {
         for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
             SlurHeadRelation shRel = (SlurHeadRelation) rel;
 
             if (shRel.getSide() == side) {
-                return (HeadInter) sig.getOppositeInter(this, rel);
+                return shRel;
             }
         }
 
@@ -369,28 +545,58 @@ public class SlurInter
         return info;
     }
 
+    //---------//
+    // getPart //
+    //---------//
+    @Override
+    public Part getPart ()
+    {
+        Part p = super.getPart();
+
+        if (p != null) {
+            return p;
+        }
+
+        if (sig != null) {
+            for (HorizontalSide side : HorizontalSide.values()) {
+                HeadInter head = getHead(side);
+
+                if ((head != null) && (head.getPart() != null)) {
+                    return part = head.getPart();
+                }
+            }
+        }
+
+        return null;
+    }
+
     //-------------------//
     // getRelationCenter //
     //-------------------//
     /**
      * We use curve middle point rather than bounds center.
-     * P: middle of segment P1..P2
-     * C: middle of segment CP1..CP2
-     * M: middle of curve
-     * PM = 3/4 * PC
      *
      * @return curve middle point
      */
     @Override
     public Point getRelationCenter ()
     {
-        final Point2D m = new Point2D.Double(
-                (0.125 * curve.getX1()) + (0.125 * curve.getX2()) + (0.375 * curve.getCtrlX1())
-                + (0.375 * curve.getCtrlX2()),
-                ((0.125 * curve.getY1()) + (0.125 * curve.getY2()))
-                + ((0.375 * curve.getCtrlY1()) + (0.375 * curve.getCtrlY2())));
+        return PointUtil.rounded(CubicUtil.getMidPoint(curve));
+    }
 
-        return PointUtil.rounded(m);
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
+    {
+        if (isTie()) {
+            for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
+                return sig.getOppositeInter(this, rel).getVoice();
+            }
+        }
+
+        return null;
     }
 
     //---------//
@@ -404,6 +610,82 @@ public class SlurInter
         return above;
     }
 
+    //--------------//
+    // isSpaceClear //
+    //--------------//
+    /**
+     * Check if the space between leftHead and rightHead is clear of other heads or too
+     * many measures.
+     * <p>
+     * This is meant to allow a tie.
+     *
+     * @param leftHead         left side head
+     * @param rightHead        right side head
+     * @param systemHeadChords the set of head chords in system
+     * @return true if clear
+     */
+    public boolean isSpaceClear (HeadInter leftHead,
+                                 HeadInter rightHead,
+                                 List<Inter> systemHeadChords)
+    {
+        if ((leftHead == null) || (rightHead == null)) {
+            return false;
+        }
+
+        // Check number of measures limits crossed?
+        final Part prt = leftHead.getPart();
+        final MeasureStack leftStack = prt.getMeasureAt(leftHead.getCenter()).getStack();
+        final MeasureStack rightStack = prt.getMeasureAt(rightHead.getCenter()).getStack();
+        final int maxDeltaId = constants.maxTieDeltaMeasureID.getValue();
+
+        if ((rightStack.getIdValue() - leftStack.getIdValue()) > maxDeltaId) {
+            return false;
+        }
+
+        final AbstractChordInter leftChord = leftHead.getChord();
+        final AbstractChordInter rightChord = rightHead.getChord();
+
+        final BeamGroup leftGroup = leftChord.getBeamGroup();
+        final BeamGroup rightGroup = rightChord.getBeamGroup();
+
+        // Define a lookup box limited to heads and stems tail ends
+        Rectangle box = leftHead.getCoreBounds().getBounds();
+        box.add(rightHead.getCoreBounds().getBounds());
+        box.add(leftChord.getTailLocation());
+        box.add(rightChord.getTailLocation());
+
+        List<Inter> found = Inters.intersectedInters(systemHeadChords, null, box);
+
+        // Exclude left & right chords
+        found.remove(leftChord);
+        found.remove(rightChord);
+
+        // Exclude mirrors if any
+        if (leftHead.getMirror() != null) {
+            found.remove(leftHead.getMirror().getEnsemble());
+        }
+
+        if (rightHead.getMirror() != null) {
+            found.remove(rightHead.getMirror().getEnsemble());
+        }
+
+        ChordLoop:
+        for (Iterator it = found.iterator(); it.hasNext();) {
+            AbstractChordInter chord = (AbstractChordInter) it.next();
+
+            // This intersected chord cannot be in the same beam group as left or right chords
+            final BeamGroup group = chord.getBeamGroup();
+
+            if ((group != null) && ((group == leftGroup) || (group == rightGroup))) {
+                logger.debug("Tie forbidden across {}", chord);
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     //-------//
     // isTie //
     //-------//
@@ -415,6 +697,60 @@ public class SlurInter
     public boolean isTie ()
     {
         return tie;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Since a slur instance is held by its containing part, make sure part
+     * slurs collection is updated.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (part != null) {
+            part.removeSlur(this);
+        } else {
+            logger.info("{} no part to remove from.", this);
+        }
+
+        // Cut cross-system slur extension if any
+        for (HorizontalSide side : HorizontalSide.values()) {
+            SlurInter extension = getExtension(side);
+
+            if (extension != null) {
+                extension.setExtension(side.opposite(), null);
+                setExtension(side, null);
+            }
+        }
+
+        super.remove(extensive);
+    }
+
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemHeads = system.getSig().inters(HeadInter.class);
+        Collections.sort(systemHeads, Inters.byAbscissa);
+
+        Collection<Link> links = lookupLinks(systemHeads, system);
+
+        if (doit) {
+            for (Link link : links) {
+                link.applyTo(this);
+            }
+        }
+
+        return links;
     }
 
     //--------------//
@@ -436,6 +772,24 @@ public class SlurInter
         } else {
             rightExtension = other;
         }
+
+        checkAbnormal();
+    }
+
+    //----------//
+    // setGlyph //
+    //----------//
+    @Override
+    public void setGlyph (Glyph glyph)
+    {
+        super.setGlyph(glyph);
+
+        if (info == null) {
+            // Slur manually created out of a glyph
+            info = GlyphSlurInfo.create(glyph);
+            above = info.above() > 0;
+            curve = info.getCurve();
+        }
     }
 
     //--------//
@@ -443,101 +797,78 @@ public class SlurInter
     //--------//
     /**
      * Set this slur as being a tie.
-     */
-    public void setTie ()
-    {
-        tie = Boolean.TRUE;
-    }
-
-    //------------------//
-    // switchMirrorHead //
-    //------------------//
-    /**
-     * Switch the slur link from head to its mirror on the provided side.
      *
-     * @param side the desired side
+     * @param tie new tie value
      */
-    public void switchMirrorHead (HorizontalSide side)
+    public void setTie (boolean tie)
     {
-        for (Relation rel : sig.getRelations(this, SlurHeadRelation.class)) {
-            SlurHeadRelation shRel = (SlurHeadRelation) rel;
+        if (this.tie != tie) {
+            this.tie = tie;
 
-            if (shRel.getSide() == side) {
-                HeadInter head = (HeadInter) sig.getOppositeInter(this, rel);
-                HeadInter mirrorHead = (HeadInter) head.getMirror();
-
-                if (mirrorHead != null) {
-                    sig.removeEdge(rel);
-                    sig.addEdge(this, mirrorHead, rel);
-                } else {
-                    logger.error("No mirror head for {}", head);
-                }
+            if (sig != null) {
+                sig.getSystem().getSheet().getStub().setModified(true);
             }
         }
     }
 
-    //----------------//
-    // haveSameHeight //
-    //----------------//
+    //-------------//
+    // lookupLinks //
+    //-------------//
     /**
-     * Check whether two notes represent the same pitch (same octave, same step).
-     * This is needed to detects tie slurs.
+     * Try to detect link between this Slur instance and head on left side
+     * plus head on right side.
      *
-     * @param n1 one note
-     * @param n2 the other note
-     * @return true if the notes are equivalent.
+     * @param systemHeads ordered collection of heads in system
+     * @param system      the containing system
+     * @return the collection of links found, perhaps null
      */
-    private static boolean haveSameHeight (HeadInter n1,
-                                           HeadInter n2)
+    private Collection<Link> lookupLinks (List<Inter> systemHeads,
+                                          SystemInfo system)
     {
-        return (n1 != null) && (n2 != null) && (n1.getStep() == n2.getStep())
-               && (n1.getOctave() == n2.getOctave());
-
-        // TODO: what about alteration, if we have not processed them yet ???
-    }
-
-    //------------------//
-    // isCompatibleWith //
-    //------------------//
-    /**
-     * Check whether two slurs to-be-connected between two systems in sequence are
-     * roughly compatible with each other. (same staff id, and similar pitch positions).
-     *
-     * @param prevSlur the previous slur
-     * @return true if found compatible
-     */
-    private boolean isCompatibleWith (SlurInter prevSlur)
-    {
-        // Retrieve prev staff, using the left note head of the prev slur
-        Staff prevStaff = prevSlur.getHead(LEFT).getStaff();
-
-        // Retrieve this staff, using the right note head of this slur
-        Staff thisStaff = getHead(RIGHT).getStaff();
-
-        // Check that part-based staff indices are the same
-        if (prevStaff.getIndexInPart() != thisStaff.getIndexInPart()) {
-            logger.debug(
-                    "{} prevStaff:{} {} staff:{} different part-based staff indices",
-                    prevSlur,
-                    prevStaff.getId(),
-                    this,
-                    thisStaff.getId());
-
-            return false;
+        if (systemHeads.isEmpty()) {
+            return Collections.emptySet();
         }
 
-        // Retrieve prev position, using the right point of the prev slur
-        double prevPp = prevStaff.pitchPositionOf(PointUtil.rounded(prevSlur.getCurve().getP2()));
+        if (isVip()) {
+            logger.info("VIP lookupLinks for {}", this);
+        }
 
-        // Retrieve position, using the left point of the slur
-        double pp = thisStaff.pitchPositionOf(PointUtil.rounded(getCurve().getP1()));
+        SlurLinker slurLinker = new SlurLinker(system.getSheet());
 
-        // Compare pitch positions (very roughly)
-        double deltaPitch = pp - prevPp;
-        boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
-        logger.debug("{} --- {} deltaPitch:{} res:{}", prevSlur, this, deltaPitch, res);
+        // Define slur side areas
+        Map<HorizontalSide, Area> sideAreas = slurLinker.defineAreaPair(this);
 
-        return res;
+        // Retrieve candidate chords
+        Map<HorizontalSide, List<Inter>> chords = new EnumMap<HorizontalSide, List<Inter>>(
+                HorizontalSide.class);
+        List<Inter> systemChords = system.getSig().inters(
+                HeadChordInter.class);
+
+        for (HorizontalSide side : HorizontalSide.values()) {
+            Rectangle box = sideAreas.get(side).getBounds();
+            chords.put(side, Inters.intersectedInters(systemChords, GeoOrder.NONE, box));
+        }
+
+        // Select the best link pair, if any
+        Map<HorizontalSide, SlurHeadLink> linkPair = slurLinker.lookupLinkPair(
+                this,
+                sideAreas,
+                system,
+                chords);
+
+        if (linkPair == null) {
+            return Collections.emptySet();
+        }
+
+        List<Link> links = new ArrayList<Link>();
+
+        for (Link link : linkPair.values()) {
+            if (link != null) {
+                links.add(link);
+            }
+        }
+
+        return links;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -582,5 +913,10 @@ public class SlurInter
         private final Scale.Fraction maxDeltaY = new Scale.Fraction(
                 4,
                 "Maximum vertical difference in interlines between connecting slurs");
+
+        private final Constant.Integer maxTieDeltaMeasureID = new Constant.Integer(
+                "none",
+                1,
+                "Maximum delta in measure ID when setting a tie");
     }
 }

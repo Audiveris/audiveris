@@ -69,7 +69,7 @@ public class MeasureFiller
         final List<Inter> systemInters = system.getSig().inters(FILLING_CLASSES);
 
         // Dispatch system inters per stack & measure
-        for (MeasureStack stack : system.getMeasureStacks()) {
+        for (MeasureStack stack : system.getStacks()) {
             final List<Inter> stackInters = stack.filter(systemInters);
 
             for (Inter inter : stackInters) {

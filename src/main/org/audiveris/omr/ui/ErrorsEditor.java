@@ -40,10 +40,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Class {@code ErrorsEditor} handles the set of error messages
- * recorded during the translation from sheet to score, allowing the
- * user to interactively browse the errors and go to the related
- * location in the sheet view.
+ * Class {@code ErrorsEditor} handles the set of error messages recorded during the
+ * translation from sheet to score, allowing the user to interactively browse the errors
+ * and go to the related location in the sheet view.
  *
  * @author Hervé Bitteur
  */
@@ -273,8 +272,7 @@ public class ErrorsEditor
     // MyListener //
     //------------//
     /**
-     * A specific listener to handle user selection in the list of
-     * errors.
+     * A specific listener to handle user selection in the list of errors.
      */
     private class MyListener
             implements ListSelectionListener

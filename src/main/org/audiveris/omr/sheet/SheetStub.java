@@ -21,12 +21,12 @@
 // </editor-fold>
 package org.audiveris.omr.sheet;
 
-import org.audiveris.omr.image.FilterDescriptor;
+import org.audiveris.omr.image.FilterParam;
 import org.audiveris.omr.score.PageRef;
 import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.step.StepException;
-import org.audiveris.omr.util.LiveParam;
+import org.audiveris.omr.util.param.Param;
 
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -67,8 +67,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *
  * <dt>Parameters</dt>
  * <dd><ul>
- * <li>{@link #getFilterParam}</li>
- * <li>{@link #getLanguageParam}</li>
+ * <li>{@link #getBinarizationFilter}</li>
+ * <li>{@link #getOcrLanguages}</li>
+ * <li>{@link #getProcessingSwitches}</li>
  * </ul></dd>
  *
  * <dt>Transcription</dt>
@@ -139,6 +140,13 @@ public interface SheetStub
     SheetAssembly getAssembly ();
 
     /**
+     * Report the binarization filter defined at sheet level.
+     *
+     * @return the filter parameter
+     */
+    FilterParam getBinarizationFilter ();
+
+    /**
      * Report the containing book.
      *
      * @return containing book
@@ -153,13 +161,6 @@ public interface SheetStub
     Step getCurrentStep ();
 
     /**
-     * Report the binarization filter defined at sheet level.
-     *
-     * @return the filter parameter
-     */
-    LiveParam<FilterDescriptor> getFilterParam ();
-
-    /**
      * Report the first page ref in stub
      *
      * @return first page ref or null
@@ -172,13 +173,6 @@ public interface SheetStub
      * @return sheet (stub) name
      */
     String getId ();
-
-    /**
-     * Report the OCR language(s) specification defined at sheet level.
-     *
-     * @return the OCR language(s) spec
-     */
-    LiveParam<String> getLanguageParam ();
 
     /**
      * Report the last page ref in stub
@@ -216,11 +210,25 @@ public interface SheetStub
     int getNumber ();
 
     /**
+     * Report the OCR language(s) specification defined at sheet level if any.
+     *
+     * @return the OCR language(s) spec
+     */
+    Param<String> getOcrLanguages ();
+
+    /**
      * Report the stub sequence of page references.
      *
      * @return the page ref 's
      */
     List<PageRef> getPageRefs ();
+
+    /**
+     * Report the processing switches defined at sheet level if any.
+     *
+     * @return sheet switches
+     */
+    ProcessingSwitches getProcessingSwitches ();
 
     /**
      * Make sure the sheet material is in memory.

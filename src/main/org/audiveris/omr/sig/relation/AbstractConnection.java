@@ -24,9 +24,16 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
  * Class {@code AbstractConnection} serves as a basis for support based on precise
@@ -34,6 +41,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Hervé Bitteur
  */
+@XmlAccessorType(XmlAccessType.NONE)
+@XmlRootElement(name = "connection")
 public abstract class AbstractConnection
         extends AbstractSupport
 {
@@ -41,67 +50,94 @@ public abstract class AbstractConnection
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractConnection.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            AbstractConnection.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /**
-     * Horizontal distance at connection (in interline).
-     * Positive value for an 'out' distance (gap).
+     * Horizontal gap at connection (specified in interline fraction).
+     * Positive value for an 'out' distance (true gap).
      * Negative value for an 'in' distance (overlap).
      */
-    protected Double xDistance;
+    @XmlAttribute
+    @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
+    protected Double dx;
 
     /**
-     * Vertical distance at connection (in interline).
+     * Vertical gap at connection (specified in interline fraction).
      * Absolute value.
      */
-    protected Double yDistance;
+    @XmlAttribute
+    @XmlJavaTypeAdapter(Jaxb.Double3Adapter.class)
+    protected Double dy;
 
     //~ Methods ------------------------------------------------------------------------------------
     /**
-     * @return the horizontal distance
-     */
-    public double getXDistance ()
-    {
-        return xDistance;
-    }
-
-    /**
-     * @return the vertical distance
-     */
-    public double getYDistance ()
-    {
-        return yDistance;
-    }
-
-    /**
-     * Set the gaps for this connection.
+     * Report the horizontal gap (positive or negative) in interline fraction
      *
-     * @param xDistance the horizontal distance (positive for gap and negative for overlap)
-     * @param yDistance the vertical distance (absolute)
+     * @return the horizontal gap
      */
-    public void setDistances (double xDistance,
-                              double yDistance)
+    public double getDx ()
     {
-        this.xDistance = xDistance;
-        this.yDistance = yDistance;
+        return dx;
+    }
+
+    /**
+     * Report the vertical gap (positive) in interline fraction
+     *
+     * @return the vertical gap
+     */
+    public double getDy ()
+    {
+        return dy;
+    }
+
+    /**
+     * Set the gaps for this connection, with different handling for xIn and xOut gaps.
+     * <p>
+     * Beware, if dx is positive or null, it's an xOut gap, otherwise it's an xIn gap
+     *
+     * @param dx     the horizontal distance (positive for gap and negative for overlap)
+     * @param dy     the vertical distance (absolute)
+     * @param manual true if computed for manual assignment
+     */
+    public void setInOutGaps (double dx,
+                              double dy,
+                              boolean manual)
+    {
+        this.dx = dx;
+        this.dy = dy;
 
         // Infer impact data
-        double yMax = getYGapMax().getValue();
-        double yImpact = (yMax - yDistance) / yMax;
+        double yMax = getYGapMax(manual).getValue();
+        double yImpact = (yMax - dy) / yMax;
 
-        if (xDistance >= 0) {
-            double xMax = getXOutGapMax().getValue();
-            double xImpact = (xMax - xDistance) / xMax;
+        if (dx >= 0) {
+            double xMax = getXOutGapMax(manual).getValue();
+            double xImpact = (xMax - dx) / xMax;
             setImpacts(new OutImpacts(xImpact, yImpact, getOutWeights()));
         } else {
-            double xMax = getXInGapMax().getValue();
-            double xImpact = (xMax + xDistance) / xMax;
+            double xMax = getXInGapMax(manual).getValue();
+            double xImpact = (xMax + dx) / xMax;
             setImpacts(new InImpacts(xImpact, yImpact, getInWeights()));
         }
 
         // Compute grade
         setGrade(impacts.getGrade());
+    }
+
+    /**
+     * Set the gaps for this connection, with no difference between xIn and xOut gaps.
+     *
+     * @param dx     the horizontal distance (only its absolute value is considered)
+     * @param dy     the vertical distance (absolute)
+     * @param manual true if computed for manual assignment
+     */
+    public void setOutGaps (double dx,
+                            double dy,
+                            boolean manual)
+    {
+        setInOutGaps(Math.abs(dx), dy, manual);
     }
 
     /**
@@ -124,17 +160,18 @@ public abstract class AbstractConnection
         return OutImpacts.WEIGHTS;
     }
 
-    protected abstract Scale.Fraction getXOutGapMax ();
+    protected abstract Scale.Fraction getXOutGapMax (boolean manual);
 
-    protected abstract Scale.Fraction getYGapMax ();
+    protected abstract Scale.Fraction getYGapMax (boolean manual);
 
     /**
      * Report maximum acceptable overlap.
      * This method is disabled by default, to be overridden if overlap is possible
      *
+     * @param manual true for user-driven action
      * @return the maximum overlap acceptable
      */
-    protected Scale.Fraction getXInGapMax ()
+    protected Scale.Fraction getXInGapMax (boolean manual)
     {
         throw new UnsupportedOperationException();
     }
@@ -147,9 +184,9 @@ public abstract class AbstractConnection
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
-        if ((xDistance != null) && (yDistance != null)) {
-            sb.append("@(").append(String.format("%.2f", xDistance)).append(",").append(
-                    String.format("%.2f", yDistance)).append(")");
+        if ((dx != null) && (dy != null)) {
+            sb.append("@(").append(String.format("%.2f", dx)).append(",")
+                    .append(String.format("%.2f", dy)).append(")");
         }
 
         return sb.toString();

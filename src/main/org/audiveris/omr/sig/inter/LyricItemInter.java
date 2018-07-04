@@ -22,12 +22,15 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.text.TextWord;
 import static org.audiveris.omr.util.HorizontalSide.*;
 
@@ -114,7 +117,7 @@ public class LyricItemInter
      */
     public LyricItemInter (TextWord textWord)
     {
-        super(textWord);
+        super(textWord, Shape.LYRICS);
 
         if (value.equals(ELISION_STRING)) {
             itemKind = ItemKind.Elision;
@@ -135,6 +138,15 @@ public class LyricItemInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     //--------------------//
     // defineSyllabicType //
     //--------------------//
@@ -178,6 +190,19 @@ public class LyricItemInter
         return syllabicType;
     }
 
+    //----------//
+    // getVoice //
+    //----------//
+    @Override
+    public Voice getVoice ()
+    {
+        for (Relation rel : sig.getRelations(this, ChordSyllableRelation.class)) {
+            return sig.getOppositeInter(this, rel).getVoice();
+        }
+
+        return null;
+    }
+
     //-------------//
     // isSeparator //
     //-------------//
@@ -199,19 +224,37 @@ public class LyricItemInter
     //------------//
     public void mapToChord ()
     {
-        // We connect only syllables
+        // We map only syllables
         if (itemKind != ItemKind.Syllable) {
+            return;
+        }
+
+        // Already mapped?
+        if (sig.hasRelation(this, ChordSyllableRelation.class)) {
             return;
         }
 
         // Left is too far on left, middle is too far on right, we use width/4 (???)
         int centerX = getLocation().x + (getBounds().width / 4);
         SystemInfo system = getSig().getSystem();
-        Staff staffAbove = system.getStaffAtOrAbove(location);
-        setStaff(staffAbove);
+        boolean lookAbove = true;
+        Staff relatedStaff = system.getStaffAtOrAbove(location);
 
-        Part part = staffAbove.getPart();
-        int maxDx = part.getSystem().getSheet().getScale().toPixels(constants.maxItemDx);
+        if (relatedStaff == null) {
+            relatedStaff = system.getStaffAtOrBelow(location);
+            lookAbove = false;
+        }
+
+        setStaff(relatedStaff);
+
+        Part part = relatedStaff.getPart();
+        int maxDx = part.getSystem().getSheet().getScale()
+                .toPixels(constants.maxItemDx);
+
+        // A word can start in a measure and finish in the next measure
+        // Look for best aligned head-chord in proper staff
+        int bestDx = Integer.MAX_VALUE;
+        AbstractChordInter bestChord = null;
 
         for (Measure measure : part.getMeasures()) {
             // Select only possible measures
@@ -223,29 +266,39 @@ public class LyricItemInter
                 continue;
             }
 
-            // Look for best aligned head-chord in proper staff
-            int bestDx = Integer.MAX_VALUE;
-            AbstractChordInter bestChord = null;
+            if (lookAbove) {
+                for (AbstractChordInter chord : measure.getHeadChordsAbove(getLocation())) {
+                    if (chord instanceof HeadChordInter
+                        && (chord.getBottomStaff() == relatedStaff)) {
+                        int dx = Math.abs(chord.getHeadLocation().x - centerX);
 
-            for (AbstractChordInter chord : measure.getHeadChordsAbove(getLocation())) {
-                if (chord instanceof HeadChordInter && (chord.getBottomStaff() == staffAbove)) {
-                    int dx = Math.abs(chord.getHeadLocation().x - centerX);
+                        if (bestDx > dx) {
+                            bestDx = dx;
+                            bestChord = chord;
+                        }
+                    }
+                }
+            } else {
+                for (AbstractChordInter chord : measure.getHeadChordsBelow(getLocation())) {
+                    if (chord instanceof HeadChordInter && (chord.getTopStaff() == relatedStaff)) {
+                        int dx = Math.abs(chord.getHeadLocation().x - centerX);
 
-                    if (bestDx > dx) {
-                        bestDx = dx;
-                        bestChord = chord;
+                        if (bestDx > dx) {
+                            bestDx = dx;
+                            bestChord = chord;
+                        }
                     }
                 }
             }
-
-            if (bestDx <= maxDx) {
-                sig.addEdge(bestChord, this, new ChordSyllableRelation());
-
-                return;
-            }
         }
 
-        logger.info("No head-chord above lyric {}", this);
+        if (bestDx <= maxDx) {
+            sig.addEdge(bestChord, this, new ChordSyllableRelation());
+
+            return;
+        }
+
+        logger.info("No head-chord for {}", this);
     }
 
     //-------------//
@@ -293,7 +346,7 @@ public class LyricItemInter
         //~ Instance fields ------------------------------------------------------------------------
 
         private final Scale.Fraction maxItemDx = new Scale.Fraction(
-                4,
+                5,
                 "Maximum horizontal distance between a note and its lyric item");
     }
 }

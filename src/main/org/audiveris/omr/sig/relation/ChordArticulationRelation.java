@@ -21,13 +21,18 @@
 // </editor-fold>
 package org.audiveris.omr.sig.relation;
 
-import javax.xml.bind.annotation.XmlRootElement;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sig.inter.ArticulationInter;
+import org.audiveris.omr.sig.inter.Inter;
+
+import org.jgrapht.event.GraphEdgeChangeEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code ChordArticulationRelation} is a connection between a head-based chord
@@ -43,7 +48,8 @@ public class ChordArticulationRelation
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(ChordArticulationRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ChordArticulationRelation.class);
 
     private static final double[] WEIGHTS = new double[]{
         constants.xWeight.getValue(),
@@ -51,37 +57,66 @@ public class ChordArticulationRelation
     };
 
     //~ Methods ------------------------------------------------------------------------------------
-    //------------------//
-    // getXInGapMaximum //
-    //------------------//
-    public static Scale.Fraction getInGapMaximum ()
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
     {
-        return constants.xGapMax;
+        final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
+        articulation.checkAbnormal();
     }
 
     //-------------------//
     // getXOutGapMaximum //
     //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
     {
-        return constants.xGapMax;
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
     }
 
     //----------------//
     // getYGapMaximum //
     //----------------//
-    public static Scale.Fraction getYGapMaximum ()
+    public static Scale.Fraction getYGapMaximum (boolean manual)
     {
-        return constants.yGapMax;
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
     }
 
-    //--------------//
-    // getInWeights //
-    //--------------//
-    @Override
-    protected double[] getInWeights ()
+    //----------------//
+    // getYGapMinimum //
+    //----------------//
+    public static Scale.Fraction getYGapMinimum (boolean manual)
     {
-        return WEIGHTS;
+        return manual ? constants.yGapMinManual : constants.yGapMin;
+    }
+
+    //----------------//
+    // isSingleSource //
+    //----------------//
+    @Override
+    public boolean isSingleSource ()
+    {
+        return true;
+    }
+
+    //----------------//
+    // isSingleTarget //
+    //----------------//
+    @Override
+    public boolean isSingleTarget ()
+    {
+        return true;
+    }
+
+    //---------//
+    // removed //
+    //---------//
+    @Override
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
+        articulation.checkAbnormal();
     }
 
     //---------------//
@@ -109,18 +144,18 @@ public class ChordArticulationRelation
     // getXOutGapMax //
     //---------------//
     @Override
-    protected Scale.Fraction getXOutGapMax ()
+    protected Scale.Fraction getXOutGapMax (boolean manual)
     {
-        return getXOutGapMaximum();
+        return getXOutGapMaximum(manual);
     }
 
     //------------//
     // getYGapMax //
     //------------//
     @Override
-    protected Scale.Fraction getYGapMax ()
+    protected Scale.Fraction getYGapMax (boolean manual)
     {
-        return getYGapMaximum();
+        return getYGapMaximum(manual);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -140,9 +175,25 @@ public class ChordArticulationRelation
                 0.75,
                 "Maximum horizontal gap between articulation center & chord");
 
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+                1.0,
+                "Maximum manual horizontal gap between articulation center & chord");
+
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 2.0,
                 "Maximum vertical gap between articulation center & chord");
+
+        private final Scale.Fraction yGapMaxManual = new Scale.Fraction(
+                3.0,
+                "Maximum manual vertical gap between articulation center & chord");
+
+        private final Scale.Fraction yGapMin = new Scale.Fraction(
+                0.1,
+                "Minimum vertical gap between articulation center & chord");
+
+        private final Scale.Fraction yGapMinManual = new Scale.Fraction(
+                0.05,
+                "Minimum manual vertical gap between articulation center & chord");
 
         private final Constant.Ratio xWeight = new Constant.Ratio(
                 3,

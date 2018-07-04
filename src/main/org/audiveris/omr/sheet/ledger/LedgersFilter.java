@@ -110,7 +110,7 @@ public class LedgersFilter
      * <p>
      * Then runs are packed into rectangular sections (no shift between runs of same section).
      *
-     * @return the map: system -> relevant sections for ledgers in system
+     * @return the map: system &rarr; relevant sections for ledgers in system
      */
     public Map<SystemInfo, List<Section>> process ()
     {

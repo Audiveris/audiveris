@@ -114,6 +114,15 @@ public class Main
      */
     public static void main (String[] args)
     {
+        // Log files
+        LogUtil.addFileAppender();
+
+        // Locale to be used in the whole application?
+        checkLocale();
+
+        // Environment
+        showEnvironment();
+
         // Process CLI parameters
         processCli(args);
 
@@ -124,17 +133,8 @@ public class Main
             return;
         }
 
-        // Log files
-        LogUtil.addFileAppender();
-
         // Initialize tool parameters
         initialize();
-
-        // Locale to be used in the whole application?
-        checkLocale();
-
-        // Environment
-        showEnvironment();
 
         // Engine
         OMR.engine = BookManager.getInstance();
@@ -264,7 +264,7 @@ public class Main
         try {
             // First get the provided parameters if any
             cli = new CLI(WellKnowns.TOOL_NAME);
-            cli.getParameters(args);
+            cli.parseParameters(args);
         } catch (CmdLineException ex) {
             logger.warn("Error in command line: {}", ex.getLocalizedMessage(), ex);
             logger.warn("Exiting ...");

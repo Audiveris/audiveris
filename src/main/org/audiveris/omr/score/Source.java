@@ -51,7 +51,7 @@ import java.util.List;
  * same sheet #3, but from system 2.
  * <p>
  * In MusicXML, such Source data is encoded using the miscellaneous element.
- * <br/>
+ * <br>
  * Using file:
  * <pre>
  * &lt;miscellaneous&gt;

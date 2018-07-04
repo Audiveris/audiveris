@@ -79,11 +79,7 @@ public abstract class UIPredicates
      */
     public static boolean isContextWanted (MouseEvent e)
     {
-        if (WellKnowns.MAC_OS_X) {
-            return e.isPopupTrigger();
-        } else {
-            return SwingUtilities.isRightMouseButton(e) && !SwingUtilities.isLeftMouseButton(e);
-        }
+        return SwingUtilities.isRightMouseButton(e) && !SwingUtilities.isLeftMouseButton(e);
     }
 
     //--------------//
@@ -143,10 +139,10 @@ public abstract class UIPredicates
      */
     public static boolean isRubberWanted (MouseEvent e)
     {
-        //        int onmask = BUTTON1_DOWN_MASK | SHIFT_DOWN_MASK;
-        //        int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
-        int onmask = SHIFT_DOWN_MASK;
-        int offmask = BUTTON2_DOWN_MASK; // middle button = wheel
+        int onmask = BUTTON1_DOWN_MASK | SHIFT_DOWN_MASK;
+        int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
+//        int onmask = SHIFT_DOWN_MASK;
+//        int offmask = BUTTON2_DOWN_MASK; // middle button = wheel
 
         return (e.getModifiersEx() & (onmask | offmask)) == onmask;
     }

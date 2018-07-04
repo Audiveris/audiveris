@@ -63,7 +63,7 @@ public class TextsStep
             throws StepException
     {
         // Process texts at system level
-        new TextBuilder(system).retrieveLines(context.buffer, context.textLines);
+        new TextBuilder(system).retrieveSystemLines(context.buffer, context.textLines);
     }
 
     //----------//

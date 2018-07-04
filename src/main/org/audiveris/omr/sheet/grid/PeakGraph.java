@@ -135,7 +135,7 @@ public class PeakGraph
      * Retrieve all bar peaks found in staves projection, organize them in a graph
      * of peaks linked by alignment/connection relations, and infer the systems.
      *
-     * @throws StepException
+     * @throws StepException if processing failed at this step
      */
     public void buildSystems ()
             throws StepException
@@ -436,7 +436,7 @@ public class PeakGraph
 
         if ((data.gap <= params.maxConnectionGap)
             && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
-            double gapImpact = 1 - (data.gap / params.maxConnectionGap);
+            double gapImpact = 1 - (data.gap / (double) params.maxConnectionGap);
             double whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
             BarConnection connection = new BarConnection(alignment, gapImpact, whiteImpact);
 
@@ -1400,7 +1400,7 @@ public class PeakGraph
                 "Should we print out the stop watch?");
 
         private final Constant.Ratio maxAlignmentSlope = new Constant.Ratio(
-                0.06, //0.04,
+                0.06,
                 "Max slope for bar alignment");
 
         private final Scale.Fraction maxAlignmentDeltaWidth = new Scale.Fraction(

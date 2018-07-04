@@ -32,6 +32,7 @@ import java.awt.Point;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 
 /**
  * Class {@code ClefInter} handles a Clef interpretation.
@@ -40,7 +41,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * (Treble, Alto, Tenor and Bass) and for each presents where the "Middle C" note (C4) would take
  * place.
  * <p>
- * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png">
+ * <img src="http://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Middle_C_in_four_clefs.svg/600px-Middle_C_in_four_clefs.svg.png"
+ * alt="Middle C in four clefs">
  * <p>
  * Step line of the clef : -4 for top line (Baritone), -2 for Bass and Tenor,
  * 0 for Alto, +2 for Treble and Mezzo-Soprano, +4 for bottom line (Soprano).
@@ -98,6 +100,18 @@ public class ClefInter
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
+     * Creates a <b>ghost</b> ClefInter object.
+     *
+     * @param shape the possible shape
+     * @param grade the interpretation quality
+     */
+    public ClefInter (Shape shape,
+                      double grade)
+    {
+        this(null, shape, grade, null, null, null);
+    }
+
+    /**
      * Creates a new ClefInter object.
      *
      * @param glyph the glyph to interpret
@@ -107,12 +121,12 @@ public class ClefInter
      * @param pitch pitch position
      * @param kind  clef kind
      */
-    public ClefInter (Glyph glyph,
-                      Shape shape,
-                      double grade,
-                      Staff staff,
-                      Double pitch,
-                      ClefKind kind)
+    private ClefInter (Glyph glyph,
+                       Shape shape,
+                       double grade,
+                       Staff staff,
+                       Double pitch,
+                       ClefKind kind)
     {
         super(glyph, null, shape, grade, staff, pitch);
         this.kind = kind;
@@ -264,12 +278,36 @@ public class ClefInter
         visitor.visit(this);
     }
 
+    //---------//
+    // getKind //
+    //---------//
     /**
      * @return the kind
      */
     public ClefKind getKind ()
     {
         return kind;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Remove it from containing measure.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+
+        if (stack != null) {
+            stack.removeInter(this);
+        }
+
+        super.remove(extensive);
     }
 
     //-----------//
@@ -343,39 +381,39 @@ public class ClefInter
      * Report the octave corresponding to a note at the provided pitch position,
      * assuming we are governed by this clef
      *
-     * @param pitch the pitch position of the note
+     * @param pitchPosition the pitch position of the note
      * @return the corresponding octave
      */
     private int octaveOf (double pitchPosition)
     {
-        int pitch = (int) Math.rint(pitchPosition);
+        int intPitch = (int) Math.rint(pitchPosition);
 
         switch (shape) {
         case G_CLEF:
         case G_CLEF_SMALL:
-            return (34 - pitch) / 7;
+            return (34 - intPitch) / 7;
 
         case G_CLEF_8VA:
-            return ((34 - pitch) / 7) + 1;
+            return ((34 - intPitch) / 7) + 1;
 
         case G_CLEF_8VB:
-            return ((34 - pitch) / 7) - 1;
+            return ((34 - intPitch) / 7) - 1;
 
         case C_CLEF:
 
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=-2) [or other stuff]
-            return (28 - (int) Math.rint(this.pitch) - pitch) / 7;
+            return (28 - (int) Math.rint(this.pitch) - intPitch) / 7;
 
         case F_CLEF:
         case F_CLEF_SMALL:
-            return (22 - pitch) / 7;
+            return (22 - intPitch) / 7;
 
         case F_CLEF_8VA:
-            return ((22 - pitch) / 7) + 1;
+            return ((22 - intPitch) / 7) + 1;
 
         case F_CLEF_8VB:
-            return ((22 - pitch) / 7) - 1;
+            return ((22 - intPitch) / 7) - 1;
 
         case PERCUSSION_CLEF:
             return 0;

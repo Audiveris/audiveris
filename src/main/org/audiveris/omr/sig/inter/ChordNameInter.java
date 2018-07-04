@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
+import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.sig.inter.ChordNameInter.Degree.DegreeType;
 import static org.audiveris.omr.sig.inter.ChordNameInter.Kind.Type.*;
 import org.audiveris.omr.text.TextLine;
@@ -272,7 +273,15 @@ public class ChordNameInter
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
     //--------//
     // create //
     //--------//
@@ -285,26 +294,18 @@ public class ChordNameInter
      */
     public static SentenceInter create (TextLine line)
     {
-        List<WordInter> wordInters = new ArrayList<WordInter>();
-
-        for (TextWord word : line.getWords()) {
-            ChordNameInter wordInter = create(word);
-            wordInters.add(wordInter);
-        }
-
         SentenceInter sentence = new SentenceInter(
                 line.getBounds(),
-                line.getConfidence() * Inter.intrinsicRatio,
+                line.getConfidence() * Grades.intrinsicRatio,
                 line.getMeanFont(),
-                line.getRole(),
-                wordInters);
+                line.getRole());
 
         return sentence;
     }
 
-    //--------//
-    // create //
-    //--------//
+    //-------------//
+    // createValid //
+    //-------------//
     /**
      * Convenient method to try to build a ChordNameInter instance from a
      * provided piece of text.
@@ -312,7 +313,7 @@ public class ChordNameInter
      * @param textWord text the precise text of the chord symbol
      * @return a populated ChordNameInter instance if successful, null otherwise
      */
-    public static ChordNameInter create (TextWord textWord)
+    public static ChordNameInter createValid (TextWord textWord)
     {
         for (Pattern pattern : getPatterns()) {
             Matcher matcher = pattern.matcher(textWord.getValue());

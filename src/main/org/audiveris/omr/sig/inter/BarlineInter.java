@@ -23,6 +23,8 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
+import org.audiveris.omr.sheet.PartBarline;
+import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -31,7 +33,9 @@ import org.audiveris.omr.util.HorizontalSide;
 
 import java.awt.Point;
 import java.awt.geom.Line2D;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -41,7 +45,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BarlineInter} represents an interpretation of bar line (thin or thick
+ * Class {@code BarlineInter} represents an interpretation of barline (thin or thick
  * vertical segment).
  *
  * @author Hervé Bitteur
@@ -71,9 +75,27 @@ public class BarlineInter
                          Shape shape,
                          GradeImpacts impacts,
                          Line2D median,
-                         double width)
+                         Double width)
     {
         super(glyph, shape, impacts, median, width);
+    }
+
+    /**
+     * Creates a new BarlineInter object.
+     *
+     * @param glyph  the underlying glyph
+     * @param shape  the assigned shape
+     * @param grade  the assignment quality
+     * @param median the median line
+     * @param width  the bar line width
+     */
+    public BarlineInter (Glyph glyph,
+                         Shape shape,
+                         double grade,
+                         Line2D median,
+                         Double width)
+    {
+        super(glyph, shape, grade, median, width);
     }
 
     /**
@@ -81,7 +103,7 @@ public class BarlineInter
      */
     private BarlineInter ()
     {
-        super(null, null, null, null, 0);
+        super(null, null, null, null, null);
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -94,21 +116,23 @@ public class BarlineInter
         visitor.visit(this);
     }
 
-    //--------//
-    // delete //
-    //--------//
+    //-------//
+    // added //
+    //-------//
     /**
      * Since a BarlineInter instance is held by its containing staff, make sure staff
      * bar collection is updated.
+     *
+     * @see #remove(boolean)
      */
     @Override
-    public void delete ()
+    public void added ()
     {
-        if (staff != null) {
-            staff.removeBarline(this);
-        }
+        super.added();
 
-        super.delete();
+        if (staff != null) {
+            staff.addBarline(this);
+        }
     }
 
     //-------------------//
@@ -155,38 +179,33 @@ public class BarlineInter
         }
     }
 
-    //--------//
-    // isGood //
-    //--------//
-    @Override
-    public boolean isGood ()
+    /**
+     * Report the sequence of items (barlines and repeat dots if any) this barline
+     * is part of.
+     *
+     * @return the items sequence, composed of at least this barline
+     */
+    public SortedSet<Inter> getGroupItems ()
     {
-        return getGrade() >= 0.6; // TODO, quick & dirty
+        SortedSet<Inter> items = new TreeSet<Inter>(Inters.byFullAbscissa);
+        items.add(this);
+        browseGroup(this, items);
+
+        return items;
     }
 
     //------------//
-    // isStaffEnd //
+    // getMeasure //
     //------------//
-    public boolean isStaffEnd (HorizontalSide side)
+    public Measure getMeasure ()
     {
-        return staffEnd == side;
-    }
+        StaffBarlineInter sb = getStaffBarline();
 
-    //-------------//
-    // setStaffEnd //
-    //-------------//
-    public void setStaffEnd (HorizontalSide side)
-    {
-        staffEnd = side;
-    }
+        if (sb != null) {
+            return sb.getMeasure();
+        }
 
-    //-----------//
-    // internals //
-    //-----------//
-    @Override
-    protected String internals ()
-    {
-        return super.internals() + " " + shape;
+        return null;
     }
 
     //------------//
@@ -212,21 +231,115 @@ public class BarlineInter
         return null;
     }
 
+    //-----------------//
+    // getStaffBarline //
+    //-----------------//
     /**
-     * Report the sequence of items (barlines and repeat dots if any) this barline
-     * is part of.
+     * Report the StaffBarlineInter, if any, which contains this barline.
      *
-     * @return the items sequence, composed of at least this barline
+     * @return containing StaffBarlineInter, perhaps null currently
      */
-    public SortedSet<Inter> getGroupItems ()
+    public StaffBarlineInter getStaffBarline ()
     {
-        SortedSet<Inter> items = new TreeSet<Inter>(Inter.byFullAbscissa);
-        items.add(this);
-        browseGroup(this, items);
+        getPart();
 
-        return items;
+        PartBarline lbp = part.getLeftPartBarline();
+
+        if (lbp != null) {
+            StaffBarlineInter sb = lbp.getStaffBarline(part, staff);
+
+            if ((sb != null) && sb.contains(this)) {
+                return sb;
+            }
+        }
+
+        for (Measure measure : part.getMeasures()) {
+            for (PartBarline pb : measure.getContainedPartBarlines()) {
+                StaffBarlineInter sb = pb.getStaffBarline(part, staff);
+
+                if ((sb != null) && sb.contains(this)) {
+                    return sb;
+                }
+            }
+        }
+
+        return null;
     }
 
+    /**
+     * Report the system-level barline structure this barline is involved in.
+     *
+     * @return the containing "system barline"
+     */
+    public List<PartBarline> getSystemBarline ()
+    {
+        final List<PartBarline> systemBarline = new ArrayList<PartBarline>();
+        final StaffBarlineInter staffBarline = getStaffBarline();
+
+        if (staffBarline != null) {
+            return staffBarline.getSystemBarline();
+        }
+
+        return systemBarline;
+    }
+
+    //--------//
+    // isGood //
+    //--------//
+    @Override
+    public boolean isGood ()
+    {
+        return getGrade() >= 0.6; // TODO, quick & dirty
+    }
+
+    //------------//
+    // isStaffEnd //
+    //------------//
+    public boolean isStaffEnd (HorizontalSide side)
+    {
+        return staffEnd == side;
+    }
+
+    //--------//
+    // remove //
+    //--------//
+    /**
+     * Since a BarlineInter instance is held by its containing staff, make sure staff
+     * bar collection is updated.
+     *
+     * @param extensive true for non-manual removals only
+     * @see #added()
+     */
+    @Override
+    public void remove (boolean extensive)
+    {
+        if (staff != null) {
+            staff.removeBarline(this);
+        }
+
+        super.remove(extensive);
+    }
+
+    //-------------//
+    // setStaffEnd //
+    //-------------//
+    public void setStaffEnd (HorizontalSide side)
+    {
+        staffEnd = side;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    @Override
+    protected String internals ()
+    {
+        return super.internals() + " " + shape;
+    }
+
+    //-------------//
+    // browseGroup //
+    //-------------//
     private void browseGroup (BarlineInter bar,
                               SortedSet<Inter> items)
     {

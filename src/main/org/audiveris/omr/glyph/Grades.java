@@ -22,6 +22,7 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.classifier.Evaluation;
+import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 
 /**
@@ -36,48 +37,47 @@ public abstract class Grades
 
     private static final Constants constants = new Constants();
 
-    // Minimum values
-    //---------------
-    /** Minimum grade for a clef glyph */
-    public static final double clefMinGrade = constants.clefMinGrade.getValue();
-//
-//    /** Minimum grade for a forte glyph */
-//    public static final double forteMinGrade = constants.forteMinGrade.getValue();
-//
-//    /** Minimum grade for a hook glyph */
-//    public static final double hookMinGrade = constants.hookMinGrade.getValue();
-//
+    /** Ratio applied on intrinsic value, to leave room for contextual. */
+    public static final double intrinsicRatio = constants.intrinsicRatio.getValue();
 
-    /** Minimum grade for a key signature */
+    // Minimum global values
+    //----------------------
+    /** The minimum grade to consider an interpretation as acceptable. */
+    public static final double minInterGrade = intrinsicRatio * constants.minInterGrade.getValue();
+
+    /** The minimum contextual grade for an interpretation. */
+    public static final double minContextualGrade = constants.minContextualGrade.getValue();
+
+    /** The minimum grade to consider an interpretation as good. */
+    public static final double goodInterGrade = intrinsicRatio * constants.goodInterGrade.getValue();
+
+    /** The minimum grade to consider a relation as good. */
+    public static final double goodRelationGrade = constants.goodRelationGrade.getValue();
+
+    /** The minimum grade to consider a BarConnector as good. */
+    public static final double goodBarConnectorGrade = constants.goodBarConnectorGrade.getValue();
+
+    // Minimum specific values
+    //------------------------
+    /** Minimum grade for a clef glyph. */
+    public static final double clefMinGrade = constants.clefMinGrade.getValue();
+
+    /** Minimum grade for a key signature. */
     public static final double keySigMinGrade = constants.keySigMinGrade.getValue();
 
-    /** Minimum grade for a key signature item, phase #1 (component-based) */
+    /** Minimum grade for a key signature item, phase #1 (component-based). */
     public static final double keyAlterMinGrade1 = constants.keyAlterMinGrade1.getValue();
 
-    /** Minimum grade for a key signature item, phase #2 (staff slice-based) */
+    /** Minimum grade for a key signature item, phase #2 (staff slice-based). */
     public static final double keyAlterMinGrade2 = constants.keyAlterMinGrade2.getValue();
-//
-//    /** Minimum grade for a glyph left over */
-//    public static final double leftOverMinGrade = constants.leftOverMinGrade.getValue();
-//
-//    /** Minimum grade for a leaf glyph */
-//    public static final double ledgerNoteMinGrade = constants.ledgerNoteMinGrade.getValue();
-//
-//    /** Minimum grade for a merged note */
-//    public static final double mergedNoteMinGrade = constants.mergedNoteMinGrade.getValue();
-//
 
-    /** Minimum grade for a symbol glyph */
+    /** Minimum grade for a symbol glyph. */
     public static final double symbolMinGrade = constants.symbolMinGrade.getValue();
-//
-//    /** Minimum grade for a text glyph */
-//    public static final double textMinGrade = constants.textMinGrade.getValue();
-//
 
-    /** Minimum grade for a time glyph */
+    /** Minimum grade for a time glyph. */
     public static final double timeMinGrade = constants.timeMinGrade.getValue();
 
-    /** Minimum grade for a validation */
+    /** Minimum grade for a validation (during training phase). */
     public static final double validationMinGrade = constants.validationMinGrade.getValue();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -94,6 +94,10 @@ public abstract class Grades
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        private final Constant.Ratio intrinsicRatio = new Constant.Ratio(
+                0.8,
+                "Reduction ratio applied on any intrinsic grade");
+
         //
         // Minimum values (please keep them sorted by decreasing value)
         //
@@ -101,9 +105,29 @@ public abstract class Grades
                 0.80,
                 "Minimum grade for a validation");
 
+        private final Constant.Ratio minContextualGrade = new Constant.Ratio(
+                0.5,
+                "Default minimum interpretation contextual grade");
+
+        private final Constant.Ratio goodBarConnectorGrade = new Constant.Ratio(
+                0.65,
+                "Good interpretation grade for a bar connector");
+
+        private final Constant.Ratio goodInterGrade = new Constant.Ratio(
+                0.5,
+                "Default good interpretation grade");
+
+        private final Constant.Ratio goodRelationGrade = new Constant.Ratio(
+                0.5,
+                "Default good relation grade");
+
         private final Evaluation.Grade symbolMinGrade = new Evaluation.Grade(
                 0.15,
                 "Minimum grade for a symbol");
+
+        private final Constant.Ratio minInterGrade = new Constant.Ratio(
+                0.1,
+                "Default minimum interpretation grade");
 
         private final Evaluation.Grade keyAlterMinGrade1 = new Evaluation.Grade(
                 0.10,

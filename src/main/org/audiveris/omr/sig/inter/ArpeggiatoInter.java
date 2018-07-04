@@ -29,14 +29,16 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
-import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
+import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -49,7 +51,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "arpeggiato")
 public class ArpeggiatoInter
-        extends AbstractNotationInter
+        extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -87,6 +89,60 @@ public class ArpeggiatoInter
         visitor.visit(this);
     }
 
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        setAbnormal(true); // No chord linked yet
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if a chord is connected
+        setAbnormal(!sig.hasRelation(this, ChordArpeggiatoRelation.class));
+
+        return isAbnormal();
+    }
+
+    //------------------//
+    // createValidAdded //
+    //------------------//
+    /**
+     * (Try to) create and add an arpeggiato inter.
+     *
+     * @param glyph            the arpeggiato glyph
+     * @param grade            the interpretation quality
+     * @param system           the related system
+     * @param systemHeadChords abscissa-ordered list of head-chords in this system
+     * @return the created arpeggiato or null
+     */
+    public static ArpeggiatoInter createValidAdded (Glyph glyph,
+                                                    double grade,
+                                                    SystemInfo system,
+                                                    List<Inter> systemHeadChords)
+    {
+        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
+
+        Link link = arpeggiato.lookupLink(systemHeadChords, system);
+
+        if (link != null) {
+            system.getSig().addVertex(arpeggiato);
+            link.applyTo(arpeggiato);
+
+            return arpeggiato;
+        }
+
+        return null;
+    }
+
     //----------//
     // getVoice //
     //----------//
@@ -100,31 +156,50 @@ public class ArpeggiatoInter
         return null;
     }
 
-    //--------//
-    // create //
-    //--------//
+    //-------------//
+    // searchLinks //
+    //-------------//
+    @Override
+    public Collection<Link> searchLinks (SystemInfo system,
+                                         boolean doit)
+    {
+        // Not very optimized!
+        List<Inter> systemHeadChords = system.getSig().inters(HeadChordInter.class);
+        Collections.sort(systemHeadChords, Inters.byAbscissa);
+
+        Link link = lookupLink(systemHeadChords, system);
+
+        if (link == null) {
+            return Collections.emptyList();
+        }
+
+        if (doit) {
+            link.applyTo(this);
+        }
+
+        return Collections.singleton(link);
+    }
+
+    //------------//
+    // lookupLink //
+    //------------//
     /**
-     * (Try to) create an arpeggiato inter.
+     * Try to detect a link between this arpeggiato instance and a HeadChord nearby.
      *
-     * @param glyph            the arpeggiato glyph
-     * @param grade            the interpretation quality
-     * @param system           the related system
-     * @param systemHeadChords abscissa-ordered list of head-chords in this system
-     * @return the created arpeggiato or null
+     * @param systemHeadChords ordered collection of head chords in system
+     * @return the link found or null
      */
-    public static ArpeggiatoInter create (Glyph glyph,
-                                          double grade,
-                                          SystemInfo system,
-                                          List<Inter> systemHeadChords)
+    private Link lookupLink (List<Inter> systemHeadChords,
+                             SystemInfo system)
     {
         // Look for a head-chord on right side of this symbol
         // Use a lookup box (glyph height, predefined width)
         // For intersected head-chords, measure y overlap WRT glyph height
-        Rectangle luBox = glyph.getBounds();
+        Rectangle luBox = getBounds();
         luBox.x += luBox.width;
         luBox.width = system.getSheet().getScale().toPixels(constants.areaDx);
 
-        final List<Inter> chords = SIGraph.intersectedInters(
+        final List<Inter> chords = Inters.intersectedInters(
                 systemHeadChords,
                 GeoOrder.BY_ABSCISSA,
                 luBox);
@@ -157,12 +232,7 @@ public class ArpeggiatoInter
             return null;
         }
 
-        ArpeggiatoInter arpeggiato = new ArpeggiatoInter(glyph, grade);
-        system.getSig().addVertex(arpeggiato);
-        system.getSig().addEdge(bestChord, arpeggiato, rel);
-        arpeggiato.setStaff(bestChord.getLeadingNote().getStaff());
-
-        return arpeggiato;
+        return new Link(bestChord, rel, false);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

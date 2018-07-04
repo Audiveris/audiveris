@@ -31,6 +31,8 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
+import static javax.swing.Action.SHORT_DESCRIPTION;
+
 /**
  * Class {@code PluginAction} implements the concrete user action related to a
  * registered plugin.
@@ -45,7 +47,7 @@ class PluginAction
     private static final Logger logger = LoggerFactory.getLogger(PluginAction.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The related plugin */
+    /** The related plugin. */
     private final Plugin plugin;
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -56,7 +58,7 @@ class PluginAction
      */
     public PluginAction (Plugin plugin)
     {
-        super(plugin.getTitle());
+        super(plugin.getId());
         this.plugin = plugin;
         putValue(SHORT_DESCRIPTION, plugin.getDescription());
     }
@@ -73,5 +75,13 @@ class PluginAction
         if (book != null) {
             plugin.getTask(book).execute();
         }
+    }
+
+    //-----------//
+    // getPlugin //
+    //-----------//
+    public Plugin getPlugin ()
+    {
+        return plugin;
     }
 }

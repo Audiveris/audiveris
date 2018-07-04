@@ -38,7 +38,6 @@ import org.audiveris.omr.util.IntUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -114,7 +113,7 @@ public class InterIndex
     @Override
     public String getName ()
     {
-        return "inters";
+        return "interIndex";
     }
 
     //---------//
@@ -141,7 +140,7 @@ public class InterIndex
                                     this,
                                     SelectionHint.ENTITY_INIT,
                                     MouseMovement.PRESSING,
-                                    (inter != null) ? Arrays.asList(inter) : null));
+                                    inter));
                 }
             });
         }
