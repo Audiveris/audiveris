@@ -28,10 +28,10 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphCluster;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphLink;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
-import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
@@ -86,9 +86,10 @@ public class SymbolsBuilder
     /** Shape classifier to use. */
     private final Classifier classifier = ShapeClassifier.getInstance();
 
-    /** Shape second classifier to use. */
-    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
-
+    //
+    //    /** Shape second classifier to use. */
+    //    private final Classifier classifier2 = ShapeClassifier.getSecondInstance();
+    //
     /** Companion factory for symbols inters. */
     private final SymbolFactory factory;
 
@@ -202,13 +203,14 @@ public class SymbolsBuilder
                 2,
                 Grades.symbolMinGrade,
                 EnumSet.of(Classifier.Condition.CHECKED));
-//        Evaluation[] evals2 = classifier2.evaluate(
-//                glyph,
-//                system,
-//                2,
-//                Grades.symbolMinGrade, // Not OK for deep classifier!
-//                EnumSet.of(Classifier.Condition.CHECKED));
-//
+
+        //        Evaluation[] evals2 = classifier2.evaluate(
+        //                glyph,
+        //                system,
+        //                2,
+        //                Grades.symbolMinGrade, // Not OK for deep classifier!
+        //                EnumSet.of(Classifier.Condition.CHECKED));
+        //
         if (evals.length > 0) {
             //            // Create one interpretation for each acceptable evaluation
             //            for (Evaluation eval : evals) {
@@ -227,6 +229,7 @@ public class SymbolsBuilder
             } catch (Exception ex) {
                 logger.warn("Error in glyph evaluation " + ex, ex);
             }
+
             ///}
         }
     }

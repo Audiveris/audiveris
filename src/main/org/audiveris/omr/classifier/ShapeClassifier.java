@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.util.OmrExecutors;
 
@@ -55,7 +54,7 @@ public abstract class ShapeClassifier
             try {
                 logger.debug("Allocating instances for ShapeClassifier...");
                 ShapeClassifier.getInstance();
-                ShapeClassifier.getSecondInstance();
+                //                ShapeClassifier.getSecondInstance();
                 logger.debug("ShapeClassifier instances allocated.");
             } catch (Exception ex) {
                 logger.warn("Error pre-loading ShapeClassifier", ex);
@@ -80,27 +79,29 @@ public abstract class ShapeClassifier
      */
     public static Classifier getInstance ()
     {
-        if (useDeepClassifier()) {
-            return DeepClassifier.getInstance();
-        } else {
-            return BasicClassifier.getInstance();
-        }
+        //        if (useDeepClassifier()) {
+        //            return DeepClassifier.getInstance();
+        //        } else {
+        return BasicClassifier.getInstance();
+
+        //        }
     }
 
-    /**
-     * Report the second classifier instance in use.
-     *
-     * @return the second classifier
-     */
-    public static Classifier getSecondInstance ()
-    {
-        if (useDeepClassifier()) {
-            return BasicClassifier.getInstance();
-        } else {
-            return DeepClassifier.getInstance();
-        }
-    }
-
+    //
+    //    /**
+    //     * Report the second classifier instance in use.
+    //     *
+    //     * @return the second classifier
+    //     */
+    //    public static Classifier getSecondInstance ()
+    //    {
+    //        if (useDeepClassifier()) {
+    //            return BasicClassifier.getInstance();
+    //        } else {
+    //            return DeepClassifier.getInstance();
+    //        }
+    //    }
+    //
     //---------//
     // preload //
     //---------//
@@ -111,27 +112,27 @@ public abstract class ShapeClassifier
     {
     }
 
-    /**
-     * Tell whether we are using DeepClassifier (rather than old BasicClassifier).
-     *
-     * @return true for DeepClassifier, false for BasicClassifier
-     */
-    public static boolean useDeepClassifier ()
-    {
-        return constants.useDeepClassifier.isSet();
-    }
-
     //~ Inner Classes ------------------------------------------------------------------------------
+    //
+    //    /**
+    //     * Tell whether we are using DeepClassifier (rather than old BasicClassifier).
+    //     *
+    //     * @return true for DeepClassifier, false for BasicClassifier
+    //     */
+    //    public static boolean useDeepClassifier ()
+    //    {
+    //        return constants.useDeepClassifier.isSet();
+    //    }
+    //
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private final Constant.Boolean useDeepClassifier = new Constant.Boolean(
-                false,
-                "Should we use DeepClassifier? (rather than old BasicClassifier)");
+        //
+        //        private final Constant.Boolean useDeepClassifier = new Constant.Boolean(
+        //                false,
+        //                "Should we use DeepClassifier? (rather than old BasicClassifier)");
     }
 }

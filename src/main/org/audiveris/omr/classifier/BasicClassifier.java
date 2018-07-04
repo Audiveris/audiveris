@@ -27,16 +27,19 @@ import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.math.NeuralNetwork;
+import org.audiveris.omr.math.PoorManAlgebra.DataSet;
+import org.audiveris.omr.math.PoorManAlgebra.INDArray;
+import org.audiveris.omr.math.PoorManAlgebra.Nd4j;
+import org.audiveris.omr.util.Jaxb;
+import org.audiveris.omr.util.StopWatch;
 
-import org.deeplearning4j.optimize.api.IterationListener;
-
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
-import org.nd4j.linalg.factory.Nd4j;
-
+//import org.nd4j.linalg.api.ndarray.INDArray;
+//import org.nd4j.linalg.dataset.DataSet;
+//import org.nd4j.linalg.factory.Nd4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,10 +53,11 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlValue;
 
 /**
  * Class {@code BasicClassifier} is the pre-DL4J classifier, based on a home-built
@@ -151,9 +155,9 @@ public class BasicClassifier
     // addListener //
     //-------------//
     @Override
-    public void addListener (IterationListener listener)
+    public void addListener (TrainingMonitor listener)
     {
-        this.listener = (TrainingMonitor) listener;
+        this.listener = listener;
     }
 
     //-----------------------//
@@ -182,12 +186,6 @@ public class BasicClassifier
         }
 
         return evals;
-    }
-
-    @Override
-    public void removeListener (IterationListener listener)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //-------//
@@ -230,23 +228,34 @@ public class BasicClassifier
     @Override
     public void train (Collection<Sample> samples)
     {
+        logger.info("Training on {} samples", samples.size());
+
         if (samples.isEmpty()) {
             logger.warn("No sample to retrain neural classifier");
 
             return;
         }
 
+        StopWatch watch = new StopWatch("train");
+        watch.start("shuffle");
+
         // Shuffle the collection of samples
         final List<Sample> newSamples = new ArrayList<Sample>(samples);
         Collections.shuffle(newSamples);
 
         // Build raw dataset
+        watch.start("getRawDataSet");
+
         final DataSet dataSet = getRawDataSet(newSamples);
         final INDArray features = dataSet.getFeatures();
 
         // Record mean and standard deviation for every feature
+        watch.start("norms");
         norms = new Norms(features.mean(0), features.std(0));
         norms.stds.addi(Nd4j.scalar(Nd4j.EPS_THRESHOLD)); // Safer, to avoid later division by 0
+        logger.debug("means:{}", norms.means);
+        logger.debug("stds:{}", norms.stds);
+        watch.start("normalize");
         normalize(features);
 
         // Convert features for NeuralNetwork data format
@@ -258,6 +267,7 @@ public class BasicClassifier
         INDArray labels = dataSet.getLabels();
         double[][] inputs = new double[newSamples.size()][];
         double[][] desiredOutputs = new double[newSamples.size()][];
+        watch.start("build input & desiredOutputs");
 
         for (int ig = 0; ig < rows; ig++) {
             INDArray featureRow = features.getRow(ig);
@@ -275,6 +285,10 @@ public class BasicClassifier
             for (int j = 0; j < SHAPE_COUNT; j++) {
                 des[j] = labelRow.getDouble(j);
             }
+        }
+
+        if (constants.printWatch.isSet()) {
+            watch.print();
         }
 
         // Train
@@ -329,6 +343,59 @@ public class BasicClassifier
         return nn;
     }
 
+    //-----------//
+    // loadNorms //
+    //-----------//
+    /**
+     * {@inheritDoc}.
+     * <p>
+     * Rather than binary we use XML format.
+     *
+     * @param root the root path to file system
+     * @return the loaded Norms instance, or exception is thrown
+     * @throws Exception
+     */
+    @Override
+    protected Norms loadNorms (Path root)
+            throws Exception
+    {
+        final JAXBContext jaxbContext = JAXBContext.newInstance(MyVector.class);
+        final Unmarshaller um = jaxbContext.createUnmarshaller();
+
+        INDArray means = null;
+        INDArray stds = null;
+
+        final Path meansEntry = root.resolve(MEANS_XML_ENTRY_NAME);
+
+        if (meansEntry != null) {
+            InputStream is = Files.newInputStream(meansEntry); // READ by default
+            BufferedInputStream bis = new BufferedInputStream(is);
+            MyVector vector = (MyVector) um.unmarshal(bis);
+            means = Nd4j.create(vector.data);
+            logger.debug("means:{}", means);
+            bis.close();
+        }
+
+        final Path stdsEntry = root.resolve(STDS_XML_ENTRY_NAME);
+
+        if (stdsEntry != null) {
+            InputStream is = Files.newInputStream(stdsEntry); // READ by default
+            BufferedInputStream bis = new BufferedInputStream(is);
+            MyVector vector = (MyVector) um.unmarshal(bis);
+            stds = Nd4j.create(vector.data);
+            logger.debug("stds:{}", stds);
+            bis.close();
+        }
+
+        if ((means != null) && (stds != null)) {
+            logger.info("Classifier loaded XML norms.");
+
+            return new Norms(means, stds);
+        }
+
+        return null;
+    }
+
     //------------//
     // storeModel //
     //------------//
@@ -342,6 +409,41 @@ public class BasicClassifier
         bos.flush();
         bos.close();
         logger.info("Engine marshalled to {}", modelPath);
+    }
+
+    //------------//
+    // storeNorms //
+    //------------//
+    /**
+     * {@inheritDoc}.
+     * <p>
+     * Rather than binary, we use XML format.
+     *
+     * @throws Exception
+     */
+    @Override
+    protected void storeNorms (Path root)
+            throws Exception
+    {
+        final JAXBContext jaxbContext = JAXBContext.newInstance(MyVector.class);
+
+        {
+            Path means = root.resolve(MEANS_XML_ENTRY_NAME);
+            OutputStream bos = new BufferedOutputStream(Files.newOutputStream(means, CREATE));
+            MyVector vector = new MyVector(norms.means);
+            Jaxb.marshal(vector, bos, jaxbContext);
+            bos.flush();
+            bos.close();
+        }
+
+        {
+            Path stds = root.resolve(STDS_XML_ENTRY_NAME);
+            OutputStream bos = new BufferedOutputStream(Files.newOutputStream(stds, CREATE));
+            MyVector vector = new MyVector(norms.stds);
+            Jaxb.marshal(vector, bos, jaxbContext);
+            bos.flush();
+            bos.close();
+        }
     }
 
     //---------------//
@@ -388,6 +490,10 @@ public class BasicClassifier
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        private final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
         private final Constant.Ratio amplitude = new Constant.Ratio(
                 0.5,
                 "Initial weight amplitude");
@@ -402,63 +508,36 @@ public class BasicClassifier
         private final Constant.Ratio momentum = new Constant.Ratio(0.2, "Training momentum");
     }
 
-    //--------------//
-    // FeatureNames //
-    //--------------//
-    @XmlRootElement(name = "features")
-    private static class FeatureNames
+    //----------//
+    // MyVector //
+    //----------//
+    /**
+     * Meant to allow JAXB (un)marshalling of norms vectors.
+     */
+    @XmlAccessorType(XmlAccessType.NONE)
+    @XmlRootElement(name = "vector")
+    private static class MyVector
     {
-        //~ Static fields/initializers -------------------------------------------------------------
-
-        private static volatile JAXBContext jaxbContext;
-
         //~ Instance fields ------------------------------------------------------------------------
-        @XmlElement(name = "names")
-        private final StringArray names;
+
+        @XmlElement(name = "value")
+        public double[] data;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public FeatureNames (String[] strs)
+        public MyVector (INDArray features)
         {
-            names = new StringArray(strs);
+            int cols = features.columns();
+
+            data = new double[cols];
+
+            for (int j = 0; j < cols; j++) {
+                data[j] = features.getDouble(j);
+            }
         }
 
         /** Meant for JAXB. */
-        private FeatureNames ()
+        private MyVector ()
         {
-            this.names = null;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        private static JAXBContext getJaxbContext ()
-                throws JAXBException
-        {
-            // Lazy creation
-            if (jaxbContext == null) {
-                jaxbContext = JAXBContext.newInstance(FeatureNames.class);
-            }
-
-            return jaxbContext;
-        }
-    }
-
-    //-------------//
-    // StringArray //
-    //-------------//
-    private static class StringArray
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        @XmlValue
-        String[] strings;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public StringArray ()
-        {
-        }
-
-        public StringArray (String[] strings)
-        {
-            this.strings = strings;
         }
     }
 }

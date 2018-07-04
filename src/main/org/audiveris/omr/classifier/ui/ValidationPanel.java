@@ -26,22 +26,15 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.classifier.Classifier;
-import org.audiveris.omr.classifier.DeepClassifier;
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.Sample;
 import org.audiveris.omr.classifier.SampleSource;
 import org.audiveris.omr.classifier.ui.Trainer.Task;
 import static org.audiveris.omr.classifier.ui.Trainer.Task.Activity.*;
 import org.audiveris.omr.glyph.Grades;
-import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.Panel;
-
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.event.ActionEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -347,28 +339,29 @@ public class ValidationPanel
         falsePositiveValue.setText(Integer.toString(falsePositives.size()));
         weakNegativeValue.setText(Integer.toString(weakNegatives.size()));
 
-        // Additional evaluation
-        if (task.classifier instanceof DeepClassifier) {
-            final DeepClassifier deepClassifier = (DeepClassifier) task.classifier;
-            final MultiLayerNetwork model = deepClassifier.getModel();
-            DataSet dataSet = deepClassifier.getRawDataSet(samples);
-            deepClassifier.normalize(dataSet.getFeatures());
-
-            final List<String> names = Arrays.asList(
-                    ShapeSet.getPhysicalShapeNames());
-            org.deeplearning4j.eval.Evaluation eval = new org.deeplearning4j.eval.Evaluation(names);
-            INDArray guesses = model.output(dataSet.getFeatureMatrix());
-            eval.eval(dataSet.getLabels(), guesses);
-            System.out.println(eval.stats(true));
-
-            logger.info(
-                    String.format(
-                            "Accuracy: %s Precision: %s Recall: %s F1 Score: %s",
-                            df.format(eval.accuracy()),
-                            df.format(eval.precision()),
-                            df.format(eval.recall()),
-                            df.format(eval.f1())));
-        }
+        //
+        //        // Additional evaluation
+        //        if (task.classifier instanceof DeepClassifier) {
+        //            final DeepClassifier deepClassifier = (DeepClassifier) task.classifier;
+        //            final MultiLayerNetwork model = deepClassifier.getModel();
+        //            DataSet dataSet = deepClassifier.getRawDataSet(samples);
+        //            deepClassifier.normalize(dataSet.getFeatures());
+        //
+        //            final List<String> names = Arrays.asList(
+        //                    ShapeSet.getPhysicalShapeNames());
+        //            org.deeplearning4j.eval.Evaluation eval = new org.deeplearning4j.eval.Evaluation(names);
+        //            INDArray guesses = model.output(dataSet.getFeatureMatrix());
+        //            eval.eval(dataSet.getLabels(), guesses);
+        //            System.out.println(eval.stats(true));
+        //
+        //            logger.info(
+        //                    String.format(
+        //                            "Accuracy: %s Precision: %s Recall: %s F1 Score: %s",
+        //                            df.format(eval.accuracy()),
+        //                            df.format(eval.precision()),
+        //                            df.format(eval.recall()),
+        //                            df.format(eval.f1())));
+        //        }
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

@@ -10,6 +10,7 @@ dev/material/scale
 dev/material/classifier
 dev/temp-externals/*-javadoc.jar
 dev/temp-externals/*-sources.jar
+nbproject
 
 .gitignore
 .gradle/*

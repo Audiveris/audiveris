@@ -264,8 +264,8 @@ public class Trainer
 
         r += 2; // --------------------------------
         builder.add(definePanel(ShapeClassifier.getInstance()), cst.xy(1, r));
-        builder.add(definePanel(ShapeClassifier.getSecondInstance()), cst.xy(3, r));
-
+        //        builder.add(definePanel(ShapeClassifier.getSecondInstance()), cst.xy(3, r));
+        //
         frame.add(builder.getPanel());
 
         // Resource injection

@@ -24,9 +24,9 @@ package org.audiveris.omr.classifier;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.SystemInfo;
-
-import org.deeplearning4j.optimize.api.IterationListener;
-
+//
+//import org.deeplearning4j.optimize.api.IterationListener;
+//
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -65,7 +65,7 @@ public interface Classifier
      *
      * @param listener listener to register
      */
-    void addListener (IterationListener listener);
+    void addListener (TrainingMonitor listener);
 
     /**
      * Report the sorted sequence of best evaluation(s) found by the classifier on the
@@ -152,13 +152,14 @@ public interface Classifier
      * @return true if not noise, false otherwise
      */
     boolean isBigEnough (double weight);
-
-    /**
-     * Remove a training listener
-     *
-     * @param listener listener to unregister
-     */
-    void removeListener (IterationListener listener);
+//
+//    /**
+//     * Remove a training listener
+//     *
+//     * @param listener listener to unregister
+//     */
+//    void removeListener (IterationListener listener);
+//
 
     /**
      * Recreate a classifier from scratch.

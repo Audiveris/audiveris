@@ -22,7 +22,6 @@
 package org.audiveris.omr.glyph.ui;
 
 import org.audiveris.omr.classifier.BasicClassifier;
-import org.audiveris.omr.classifier.DeepClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.GlyphIndex;
@@ -194,15 +193,16 @@ public class SymbolsEditor
                         sheet.getGlyphIndex().getEntityService(),
                         interController,
                         constants.selectBasicClassifierBoard.isSet()));
-        boards.add(
-                new EvaluationBoard(
-                        true,
-                        sheet,
-                        DeepClassifier.getInstance(),
-                        sheet.getGlyphIndex().getEntityService(),
-                        interController,
-                        constants.selectDeepClassifierBoard.isSet()));
 
+        //        boards.add(
+        //                new EvaluationBoard(
+        //                        true,
+        //                        sheet,
+        //                        DeepClassifier.getInstance(),
+        //                        sheet.getGlyphIndex().getEntityService(),
+        //                        interController,
+        //                        constants.selectDeepClassifierBoard.isSet()));
+        //
         BoardsPane boardsPane = new BoardsPane(boards);
 
         // Create a hosting pane for the view

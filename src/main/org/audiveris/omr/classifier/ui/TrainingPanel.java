@@ -38,8 +38,6 @@ import org.audiveris.omr.ui.field.LIntegerField;
 import org.audiveris.omr.ui.field.LLabel;
 import org.audiveris.omr.ui.util.Panel;
 
-import org.deeplearning4j.nn.api.Model;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,34 +173,35 @@ class TrainingPanel
         return constants.listenerPeriod.getValue();
     }
 
-    @Override
-    public void invoke ()
-    {
-        invoked = true;
-    }
-
-    @Override
-    public boolean invoked ()
-    {
-        return invoked;
-    }
-
-    @Override
-    public void iterationDone (Model model,
-                               int iteration)
-    {
-        iterCount++;
-
-        if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
-            invoke();
-
-            final double score = model.score();
-            final int count = (int) iterCount;
-            logger.info(String.format("Score at iteration %d is %.5f", count, score));
-            display(epoch, count, score);
-        }
-    }
-
+    //
+    //    @Override
+    //    public void invoke ()
+    //    {
+    //        invoked = true;
+    //    }
+    //
+    //    @Override
+    //    public boolean invoked ()
+    //    {
+    //        return invoked;
+    //    }
+//
+//        @Override
+//        public void iterationDone (Model model,
+//                                   int iteration)
+//        {
+//            iterCount++;
+//
+//            if ((iterCount % constants.listenerPeriod.getValue()) == 0) {
+//                ///invoke();
+//
+//                final double score = model.score();
+//                final int count = (int) iterCount;
+//                logger.info(String.format("Score at iteration %d is %.5f", count, score));
+//                display(epoch, count, score);
+//            }
+//        }
+//
     @Override
     public void iterationPeriodDone (int iter,
                                      double score)

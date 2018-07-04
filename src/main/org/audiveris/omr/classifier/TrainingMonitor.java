@@ -21,13 +21,14 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-import org.deeplearning4j.optimize.api.IterationListener;
-
+//
+//import org.deeplearning4j.optimize.api.IterationListener;
+//
 /**
  * Monitoring interface about the training status of a classifier.
  */
-public interface TrainingMonitor
-        extends IterationListener
+public interface TrainingMonitor //        extends IterationListener
+
 {
     //~ Methods ------------------------------------------------------------------------------------
 
