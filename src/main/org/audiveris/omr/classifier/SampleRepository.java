@@ -119,7 +119,7 @@ public class SampleRepository
     public static final String SAMPLES_FILE_NAME = "samples.zip";
 
     /** Special name to refer to font-based samples: {@value}. */
-    private static final String SYMBOLS = "AAA_FONT_SYMBOLS";
+    private static final String SYMBOLS = "ALL_FONT_BASED_SYMBOLS";
 
     /**
      * Regex pattern for samples archive file name.
@@ -1167,11 +1167,13 @@ public class SampleRepository
                     }
                 }
 
-                //            watch.start("buildSymbols");
-                //            buildSymbols();
-                //
                 watch.start("loadSamples");
                 loadSamples(samplesRoot, loadListener);
+
+                // Build all font-based symbols only *after* samples have been loaded,
+                // this allows to cope with new shapes being defined in Shape class.
+                watch.start("buildSymbols");
+                buildSymbols();
 
                 // Tribes?
                 if (USE_TRIBES) {
@@ -1269,6 +1271,13 @@ public class SampleRepository
     public void removeSample (Sample sample)
     {
         SampleSheet sampleSheet = getSampleSheet(sample);
+
+        if (isSymbols(sampleSheet.getDescriptor().getName())) {
+            logger.info("A font-based symbol cannot be removed");
+
+            return;
+        }
+
         sampleSheet.privateRemoveSample(sample);
         sampleMap.remove(sample);
 
@@ -1616,9 +1625,15 @@ public class SampleRepository
                                     folder,
                                     SheetContainer.CONTAINER_ENTRY_NAME);
                         } else {
-                            sampleSheet = SampleSheet.unmarshal(file, desc);
-
                             boolean isSymbol = isSymbols(desc.getName());
+
+                            if (isSymbol) {
+                                logger.info("Skipping symbols entry");
+
+                                return FileVisitResult.CONTINUE;
+                            }
+
+                            sampleSheet = SampleSheet.unmarshal(file, desc);
                             nameMap.put(desc.getName(), sampleSheet);
 
                             for (Sample sample : sampleSheet.getAllSamples()) {
