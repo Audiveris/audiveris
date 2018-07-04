@@ -554,13 +554,12 @@ class SampleListing
     private class SamplePopup
             extends JPopupMenu
     {
-        //~ Constructors ---------------------------------------------------------------------------
 
+        //~ Constructors ---------------------------------------------------------------------------
         public SamplePopup ()
         {
             super("SamplePopup");
 
-            ///add(new JMenuItem(browser.getSampleController().getTestAction()));
             add(new JMenuItem(browser.getSampleController().getRemoveAction()));
 
             add(browser.getSampleController().getAssignAction().getMenu());
