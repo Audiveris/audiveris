@@ -223,7 +223,7 @@ public abstract class Symbols
         sym.put(DIGIT_2, new TextSymbol(DIGIT_2, "2"));
         sym.put(DIGIT_3, new TextSymbol(DIGIT_3, "3"));
         sym.put(DIGIT_4, new TextSymbol(DIGIT_4, "4"));
-        //        sym.put(DIGIT_5, new TextSymbol(DIGIT_5, "5"));
+        sym.put(DIGIT_5, new TextSymbol(DIGIT_5, "5"));
         //        sym.put(DIGIT_6, new TextSymbol(DIGIT_6, "6"));
         //        sym.put(DIGIT_7, new TextSymbol(DIGIT_7, "7"));
         //        sym.put(DIGIT_8, new TextSymbol(DIGIT_8, "8"));

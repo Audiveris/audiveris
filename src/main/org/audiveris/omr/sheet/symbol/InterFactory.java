@@ -877,6 +877,7 @@ public class InterFactory
         case DIGIT_2:
         case DIGIT_3:
         case DIGIT_4:
+        case DIGIT_5:
             return switches.getValue(Switch.fingerings) ? new FingeringInter(glyph, shape, grade)
                     : null;
 
@@ -1172,6 +1173,7 @@ public class InterFactory
         case DIGIT_2:
         case DIGIT_3:
         case DIGIT_4:
+        case DIGIT_5:
             return switches.getValue(Switch.fingerings) ? new FingeringInter(null, shape, GRADE)
                     : null; // No visit
 

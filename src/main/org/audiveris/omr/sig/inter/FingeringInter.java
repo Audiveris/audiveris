@@ -133,11 +133,10 @@ public class FingeringInter
         case DIGIT_4:
             return 4;
 
-        //
+        case DIGIT_5:
+            return 5;
+
         //        // Following shapes may be useless
-        //        case DIGIT_5:
-        //            return 5;
-        //
         //        case DIGIT_6:
         //            return 6;
         //
