@@ -22,9 +22,7 @@
 package org.audiveris.omr.glyph;
 
 import org.audiveris.omr.constant.Constant;
-
 import static org.audiveris.omr.glyph.Shape.*;
-
 import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
 import org.audiveris.omr.sheet.Sheet;
@@ -345,8 +343,8 @@ public class ShapeSet
                     DIGIT_1,
                     DIGIT_2,
                     DIGIT_3,
-                    DIGIT_4 //                    ,
-            //                    DIGIT_5,
+                    DIGIT_4,
+                    DIGIT_5 //  ,
             //                    DIGIT_6,
             //                    DIGIT_7,
             //                    DIGIT_8,

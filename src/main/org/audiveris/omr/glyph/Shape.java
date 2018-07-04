@@ -252,8 +252,8 @@ public enum Shape
     DIGIT_2("Digit 2"),
     DIGIT_3("Digit 3"),
     DIGIT_4("Digit 4"),
+    DIGIT_5("Digit 5"),
 
-    //    DIGIT_5("Digit 5"),
     //    DIGIT_6("Digit 6"),
     //    DIGIT_7("Digit 7"),
     //    DIGIT_8("Digit 8"),

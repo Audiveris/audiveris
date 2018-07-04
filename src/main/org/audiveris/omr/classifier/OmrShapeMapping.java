@@ -192,8 +192,7 @@ public abstract class OmrShapeMapping
         map.put(Shape.DIGIT_2, OmrShape.fingering2);
         map.put(Shape.DIGIT_3, OmrShape.fingering3);
         map.put(Shape.DIGIT_4, OmrShape.fingering4);
-        map.put(Shape.DIGIT_4, OmrShape.fingering4);
-        //        map.put(Shape.DIGIT_5, OmrShape.fingering5);
+        map.put(Shape.DIGIT_5, OmrShape.fingering5);
         //        map.put(Shape.ROMAN_I, OmrShape.none);
         //        map.put(Shape.ROMAN_II, OmrShape.none);
         //        map.put(Shape.ROMAN_III, OmrShape.none);
