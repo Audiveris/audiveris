@@ -153,12 +153,25 @@ public class SampleController
     //--------------//
     // AssignAction //
     //--------------//
+    /**
+     * Action to assign a new shape for a given sample.
+     * <p>
+     * This action can be accessed by different ways:<ul>
+     * <li>By pressing the assignButton in {@link SampleBoard},
+     * <li>By selecting the assign item in the private class SamplePopup menu, triggered by a
+     * right-click in {@link SampleListing}.
+     * </ul>
+     */
     public class AssignAction
             extends AbstractAction
     {
         //~ Instance fields ------------------------------------------------------------------------
 
+        /** Popup used by assign button in SampleBoard. */
         public JPopupMenu popup = new JPopupMenu();
+
+        /** Menu used by context popup in SampleListing. */
+        private final JMenu menu;
 
         ActionListener actionListener = new ActionListener()
         {
@@ -178,8 +191,12 @@ public class SampleController
         {
             super("Assign to...");
             putValue(javax.swing.Action.SHORT_DESCRIPTION, "Assign a new shape");
-
             ShapeSet.addAllShapes(popup, actionListener);
+
+            // Build menu for SamplePopup
+            menu = new JMenu("Assign to");
+            ShapeSet.addAllShapes(menu, actionListener);
+            menu.setToolTipText("Assign a new shape");
         }
 
         //~ Methods --------------------------------------------------------------------------------
@@ -196,12 +213,16 @@ public class SampleController
 
         public JMenu getMenu ()
         {
-            JMenu menu = new JMenu("Assign to");
-
-            ShapeSet.addAllShapes(menu, actionListener);
-            menu.setToolTipText("Assign a new shape");
-
             return menu;
+        }
+
+        @Override
+        public void setEnabled (boolean newValue)
+        {
+            super.setEnabled(newValue);
+
+            // Forward new value to containing menu in popup
+            menu.setEnabled(newValue);
         }
     }
 }

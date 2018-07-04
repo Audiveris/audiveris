@@ -554,9 +554,6 @@ class SampleListing
     private class SamplePopup
             extends JPopupMenu
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        private JMenu assignMenu;
 
         //~ Constructors ---------------------------------------------------------------------------
         public SamplePopup ()
@@ -565,7 +562,7 @@ class SampleListing
 
             add(new JMenuItem(browser.getSampleController().getRemoveAction()));
 
-            add(assignMenu = browser.getSampleController().getAssignAction().getMenu());
+            add(browser.getSampleController().getAssignAction().getMenu());
 
             final JMenu sortMenu = new JMenu("Sort by");
             sortMenu.add(new JMenuItem(new SortByWidthAction()));
@@ -573,12 +570,6 @@ class SampleListing
             sortMenu.add(new JMenuItem(new SortByWeightAction()));
             sortMenu.add(new JMenuItem(new SortByGradeAction()));
             add(sortMenu);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void setAssignEnabled (boolean bool)
-        {
-            assignMenu.setEnabled(bool);
         }
     }
 
