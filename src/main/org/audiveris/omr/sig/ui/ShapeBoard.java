@@ -75,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 
 /**
  * Class {@code ShapeBoard} hosts a palette of shapes for insertion and assignment of
@@ -173,7 +174,6 @@ public class ShapeBoard
 
                 if (glyph != null) {
                     ShapeButton button = (ShapeButton) e.getSource();
-                    shapeHistory.add(button.shape);
                     assignGlyph(glyph, button.shape);
                 }
             }
@@ -233,6 +233,19 @@ public class ShapeBoard
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------------//
+    // addToHistory //
+    //--------------//
+    /**
+     * Add a shape to recent history.
+     *
+     * @param shape the shape just used
+     */
+    public void addToHistory (Shape shape)
+    {
+        shapeHistory.add(shape);
+    }
+
     //---------//
     // onEvent //
     //---------//
@@ -668,7 +681,7 @@ public class ShapeBoard
                         dndOperation.drop(localPt);
 
                         // Update history
-                        shapeHistory.add(dndOperation.getGhost().getShape());
+                        addToHistory(dndOperation.getGhost().getShape());
                     }
                 }
             }
@@ -723,14 +736,13 @@ public class ShapeBoard
                 logger.debug("shape:{}", shape);
 
                 if (shape != null) {
-                    shapeHistory.add(shape);
-
                     Glyph glyph = sheet.getGlyphIndex().getSelectedGlyph();
 
                     if (glyph != null) {
                         assignGlyph(glyph, shape);
                     } else {
                         // Set focus on proper shape button
+                        addToHistory(shape);
                         shapeHistory.setFocus();
                     }
                 } else {
@@ -859,7 +871,7 @@ public class ShapeBoard
         public ShapeHistory ()
         {
             panel.setNoInsets();
-            panel.setPreferredSize(new Dimension(BOARD_WIDTH, 55));
+            panel.setPreferredSize(new Dimension(BOARD_WIDTH, 80));
             panel.setVisible(false);
 
             FlowLayout layout = new FlowLayout();
@@ -868,22 +880,46 @@ public class ShapeBoard
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        public void add (Shape shape)
+        /**
+         * Insert a shape in history.
+         * <p>
+         * This dynamically modifies the display of recently used shapes, and thus must be performed
+         * from EDT (and not from a background thread).
+         *
+         * @param shape the most recent shape
+         */
+        public void add (final Shape shape)
         {
-            shapes.remove(shape); // Remove duplicate if any
-            shapes.add(0, shape); // Insert at beginning of the list
+            if (!SwingUtilities.isEventDispatchThread()) {
+                try {
+                    SwingUtilities.invokeAndWait(
+                            new Runnable()
+                    {
+                        @Override
+                        public void run ()
+                        {
+                            add(shape);
+                        }
+                    });
+                } catch (Exception ex) {
+                    logger.warn("invokeAndWait error", ex);
+                }
+            } else {
+                shapes.remove(shape); // Remove duplicate if any
+                shapes.add(0, shape); // Insert at beginning of the list
 
-            // Check for maximum length
-            while (shapes.size() > constants.maxHistoryLength.getValue()) {
-                shapes.remove(shapes.size() - 1);
+                // Check for maximum length
+                while (shapes.size() > constants.maxHistoryLength.getValue()) {
+                    shapes.remove(shapes.size() - 1);
+                }
+
+                // Regenerate the buttons
+                panel.removeAll();
+                addButtons(panel, shapes);
+
+                panel.setVisible(true);
+                resizeBoard();
             }
-
-            // Regenerate the buttons
-            panel.removeAll();
-            addButtons(panel, shapes);
-
-            panel.setVisible(true);
-            resizeBoard();
         }
 
         /**

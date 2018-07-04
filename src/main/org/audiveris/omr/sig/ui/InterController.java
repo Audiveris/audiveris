@@ -759,6 +759,7 @@ public class InterController
 
             // Inter addition
             seq.add(new AdditionTask(sig, ghost, ghostBounds, links));
+            sheet.getSymbolsEditor().getShapeBoard().addToHistory(ghost.getShape());
 
             // Related additions if any
             if (ghost instanceof RestInter) {
@@ -916,6 +917,7 @@ public class InterController
 
                     sheet.getInterIndex().publish(null);
                     sheet.getGlyphIndex().publish(null);
+                    sheet.getSymbolsEditor().getShapeBoard().addToHistory(shape);
 
                     epilog(seq);
                 } catch (Throwable ex) {
