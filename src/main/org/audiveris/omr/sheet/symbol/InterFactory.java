@@ -761,7 +761,7 @@ public class InterFactory
 
         case SMALL_FLAG:
         case SMALL_FLAG_SLASH:
-            return new SmallFlagInter(null, shape, grade);
+            return new SmallFlagInter(glyph, shape, grade);
 
         // Rests
         case LONG_REST:
