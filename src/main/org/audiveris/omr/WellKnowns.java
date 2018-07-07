@@ -39,6 +39,8 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.jar.JarFile;
 
+import javax.swing.filechooser.FileSystemView;
+
 /**
  * Class {@code WellKnowns} gathers top public static final data to be shared within
  * Audiveris application.
@@ -397,19 +399,21 @@ public abstract class WellKnowns
     private static Path getFolderForWindows (FolderKind kind)
     {
         final String appdata = System.getenv("APPDATA");
+        final String userdata = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
 
         if (appdata == null) {
             throw new RuntimeException("APPDATA environment variable is not set");
         }
 
         final Path audiverisPath = Paths.get(appdata + TOOL_PREFIX);
+        final Path audiverisDataPath = Paths.get(userdata + "/" + TOOL_NAME);
 
         switch (kind) {
         case CONFIG:
             return audiverisPath.resolve("config");
 
         case DATA:
-            return audiverisPath.resolve("data");
+            return audiverisDataPath.resolve("data");
 
         default:
         case LOG:
