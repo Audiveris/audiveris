@@ -70,6 +70,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -204,7 +205,8 @@ public class ShapeBoard
     /** When mouse is pressed (start) and released (stop). */
     private final MyDropAdapter dropAdapter = new MyDropAdapter();
 
-    private MyKeyListener keyListener = new MyKeyListener();
+    /** To handle sequence of keys typed. */
+    private final MyKeyListener keyListener = new MyKeyListener();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -244,6 +246,19 @@ public class ShapeBoard
     public void addToHistory (Shape shape)
     {
         shapeHistory.add(shape);
+    }
+
+    //------------//
+    // getHistory //
+    //------------//
+    /**
+     * Report the recent shapes.
+     *
+     * @return list of most recent shapes
+     */
+    public List<Shape> getHistory ()
+    {
+        return shapeHistory.getShapes();
     }
 
     //---------//
@@ -920,6 +935,11 @@ public class ShapeBoard
                 panel.setVisible(true);
                 resizeBoard();
             }
+        }
+
+        public List<Shape> getShapes ()
+        {
+            return Collections.unmodifiableList(shapes);
         }
 
         /**
