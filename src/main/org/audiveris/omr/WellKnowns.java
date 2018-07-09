@@ -167,14 +167,11 @@ public abstract class WellKnowns
      */
     public static final Path EXAMPLES_FOLDER = DATA_FOLDER.resolve("examples");
 
-    /** The folder where temporary data can be stored. */
-    public static final Path TEMP_FOLDER = DATA_FOLDER.resolve("temp");
-
     /** The folder where training material is stored. */
-    public static final Path TRAIN_FOLDER = DATA_FOLDER.resolve("train");
+    public static final Path TRAIN_FOLDER = CONFIG_FOLDER.resolve("train");
 
     /** The default base for output folders. */
-    public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER.resolve("output");
+    public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER;		// BHT: skip "output"
 
     //----------//
     // USER LOG //
@@ -182,6 +179,9 @@ public abstract class WellKnowns
     //
     /** The folder where log files are stored. */
     public static final Path LOG_FOLDER = getFolder(FolderKind.LOG);
+
+    /** The folder where temporary data can be stored. */
+    public static final Path TEMP_FOLDER = LOG_FOLDER.resolve("temp");
 
     static {
         /** Logging configuration. */
@@ -413,7 +413,7 @@ public abstract class WellKnowns
             return audiverisPath.resolve("config");
 
         case DATA:
-            return audiverisDataPath.resolve("data");
+            return audiverisDataPath;		// BHT: skip "data"
 
         default:
         case LOG:
