@@ -48,6 +48,8 @@ import org.audiveris.omr.sig.inter.AbstractNoteInter;
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.QUARTER_DURATION;
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
+import org.audiveris.omr.sig.inter.ArpeggiatoInter;
+import org.audiveris.omr.sig.inter.ArticulationInter;
 import org.audiveris.omr.sig.inter.ClefInter;
 import org.audiveris.omr.sig.inter.DynamicsInter;
 import org.audiveris.omr.sig.inter.EndingInter;
@@ -58,6 +60,7 @@ import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.inter.KeyInter;
 import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.omr.sig.inter.MarkerInter;
+import org.audiveris.omr.sig.inter.OrnamentInter;
 import org.audiveris.omr.sig.inter.PedalInter;
 import org.audiveris.omr.sig.inter.RestChordInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
@@ -67,7 +70,9 @@ import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
+import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordDynamicsRelation;
+import org.audiveris.omr.sig.relation.ChordOrnamentRelation;
 import org.audiveris.omr.sig.relation.ChordPedalRelation;
 import org.audiveris.omr.sig.relation.ChordSentenceRelation;
 import org.audiveris.omr.sig.relation.ChordSyllableRelation;
@@ -87,6 +92,7 @@ import org.audiveris.omr.util.OmrExecutors;
 import static org.audiveris.omr.util.VerticalSide.*;
 import org.audiveris.proxymusic.AboveBelow;
 import org.audiveris.proxymusic.Accidental;
+import org.audiveris.proxymusic.Arpeggiate;
 import org.audiveris.proxymusic.Articulations;
 import org.audiveris.proxymusic.Attributes;
 import org.audiveris.proxymusic.Backup;
@@ -124,6 +130,8 @@ import org.audiveris.proxymusic.MidiInstrument;
 import org.audiveris.proxymusic.Notations;
 import org.audiveris.proxymusic.Note;
 import org.audiveris.proxymusic.NoteType;
+import org.audiveris.proxymusic.Notehead;
+import org.audiveris.proxymusic.NoteheadValue;
 import org.audiveris.proxymusic.ObjectFactory;
 import org.audiveris.proxymusic.Ornaments;
 import org.audiveris.proxymusic.OverUnder;
@@ -321,15 +329,6 @@ public class PartwiseBuilder
     //----------//
     // areEqual //
     //----------//
-    private static boolean areEqual (Time left,
-                                     Time right)
-    {
-        return (getNum(left).equals(getNum(right))) && (getDen(left).equals(getDen(right)));
-    }
-
-    //----------//
-    // areEqual //
-    //----------//
     private static boolean areEqual (Key left,
                                      Key right)
     {
@@ -353,38 +352,6 @@ public class PartwiseBuilder
                && Objects.equals(left.getSign(), right.getSign())
                && Objects.equals(left.getLine(), right.getLine())
                && Objects.equals(left.getClefOctaveChange(), right.getClefOctaveChange());
-    }
-
-    //--------//
-    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getDen (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
-            if (elem.getName().getLocalPart().equals("beat-type")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.error("No denominator found in {}", time);
-
-        return "";
-    }
-
-    //--------//
-    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getNum (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
-            if (elem.getName().getLocalPart().equals("beats")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.error("No numerator found in {}", time);
-
-        return "";
     }
 
     //---------//
@@ -804,7 +771,7 @@ public class PartwiseBuilder
             forward.setVoice("" + current.voice.getId());
             current.pmMeasure.getNoteOrBackupOrForward().add(forward);
 
-            // Staff ? (only if more than one staff in logicalPart)
+            // Staff? (only if more than one staff in logicalPart)
             insertStaffId(forward, chord.getTopStaff());
         } catch (Exception ex) {
             if (current.page.getDurationDivisor() != null) {
@@ -881,6 +848,72 @@ public class PartwiseBuilder
         }
 
         return true; // Since no previous clef was found for the same staff
+    }
+
+    //- All processing Methods ---------------------------------------------------------------------
+    //-------------------//
+    // processArpeggiato //
+    //-------------------//
+    /**
+     * Try to process an arpeggiato item.
+     *
+     * @param arpeggiate, perhaps null
+     */
+    private void processArpeggiato (ArpeggiatoInter arpeggiate)
+    {
+        if (arpeggiate == null) {
+            return;
+        }
+
+        try {
+            logger.debug("Visiting {}", arpeggiate);
+
+            Arpeggiate pmArpeggiate = factory.createArpeggiate();
+
+            // relative-x
+            pmArpeggiate.setRelativeX(
+                    toTenths(arpeggiate.getCenter().x - current.note.getCenterLeft().x));
+
+            // number ???
+            // TODO
+            //
+            getNotations().getTiedOrSlurOrTuplet().add(pmArpeggiate);
+        } catch (Exception ex) {
+            logger.warn("Error visiting " + arpeggiate, ex);
+        }
+    }
+
+    //---------------------//
+    // processArticulation //
+    //---------------------//
+    private void processArticulation (ArticulationInter articulation)
+    {
+        try {
+            logger.debug("Visiting {}", articulation);
+
+            JAXBElement<?> element = getArticulationObject(articulation.getShape());
+
+            // Staff?
+            Staff staff = current.note.getStaff();
+
+            // Placement
+            Class<?> classe = element.getDeclaredType();
+
+            Method method = classe.getMethod("setPlacement", AboveBelow.class);
+            method.invoke(
+                    element.getValue(),
+                    (articulation.getCenter().y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                    : AboveBelow.BELOW);
+
+            // Default-Y
+            method = classe.getMethod("setDefaultY", BigDecimal.class);
+            method.invoke(element.getValue(), yOf(articulation.getCenter(), staff));
+
+            // Include in Articulations
+            getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
+        } catch (Exception ex) {
+            logger.warn("Error visiting " + articulation, ex);
+        }
     }
 
     //----------------//
@@ -1261,7 +1294,7 @@ public class PartwiseBuilder
             // Precise dynamic signature
             pmDynamics.getPOrPpOrPpp().add(getDynamicsObject(dynamics.getShape()));
 
-            // Staff ?
+            // Staff?
             Staff staff = current.note.getStaff();
             insertStaffId(direction, staff);
 
@@ -1585,7 +1618,7 @@ public class PartwiseBuilder
             // Print?
             new MeasurePrint(measure).process();
 
-            // Left/mid barline ?
+            // Left/mid barline?
             PartBarline mid = measure.getMidPartBarline();
 
             if (mid != null) {
@@ -1664,7 +1697,7 @@ public class PartwiseBuilder
             for (Voice voice : measure.getVoices()) {
                 current.voice = voice;
 
-                // Need a backup ?
+                // Need a backup?
                 if (!timeCounter.equals(Rational.ZERO)) {
                     insertBackup(timeCounter);
                     timeCounter = Rational.ZERO;
@@ -1689,7 +1722,7 @@ public class PartwiseBuilder
                             AbstractChordInter chord = info.chord;
                             clefIters.push(slot.getXOffset(), chord.getTopStaff());
 
-                            // Need a forward before this chord ?
+                            // Need a forward before this chord?
                             Rational timeOffset = chord.getTimeOffset();
 
                             if (timeCounter.compareTo(timeOffset) < 0) {
@@ -1712,7 +1745,7 @@ public class PartwiseBuilder
                         }
                     }
 
-                    //                    // Need an ending forward ?
+                    //                    // Need an ending forward?
                     //                    if (!stack.isImplicit() && !stack.isFirstHalf()) {
                     //                        Rational termination = voice.getTermination();
                     //
@@ -1757,25 +1790,33 @@ public class PartwiseBuilder
             logger.debug("Visiting {}", note);
 
             final SIGraph sig = note.getSig();
-            current.note = note;
-
+            final Staff staff = note.getStaff();
             final AbstractChordInter chord = note.getChord();
             final boolean isFirstInChord = chord.getNotes().indexOf(note) == 0;
+
+            current.note = note;
+            current.pmNote = factory.createNote();
 
             // For first note in chord
             if (!current.measure.isDummy()) {
                 if (isFirstInChord) {
-                    // Chord events (direction, pedal, dynamics, TODO: others?)
+                    // Chord events (direction, pedal, dynamics, articulation, ornament)
                     for (Relation rel : sig.edgesOf(chord)) {
+                        final Inter other = sig.getOppositeInter(chord, rel);
+
                         if (rel instanceof ChordSentenceRelation) {
-                            processDirection((SentenceInter) sig.getOppositeInter(chord, rel));
+                            processDirection((SentenceInter) other);
                         } else if (rel instanceof ChordPedalRelation) {
-                            processPedal((PedalInter) sig.getOppositeInter(chord, rel));
+                            processPedal((PedalInter) other);
                         } else if (rel instanceof ChordWedgeRelation) {
                             HorizontalSide side = ((ChordWedgeRelation) rel).getSide();
-                            processWedge((WedgeInter) sig.getOppositeInter(chord, rel), side);
+                            processWedge((WedgeInter) other, side);
                         } else if (rel instanceof ChordDynamicsRelation) {
-                            processDynamics((DynamicsInter) sig.getOppositeInter(chord, rel));
+                            processDynamics((DynamicsInter) other);
+                        } else if (rel instanceof ChordArticulationRelation) {
+                            processArticulation((ArticulationInter) other);
+                        } else if (rel instanceof ChordOrnamentRelation) {
+                            processOrnament((OrnamentInter) other);
                         }
                     }
 
@@ -1786,18 +1827,16 @@ public class PartwiseBuilder
                     //                    process(chord.getChordSymbol());
                     //                }
                 }
+
+                // Arpeggiato involves every headChord note
+                if (chord instanceof HeadChordInter) {
+                    HeadChordInter headChord = (HeadChordInter) chord;
+                    processArpeggiato(headChord.getArpeggiato());
+                }
             }
 
-            current.pmNote = factory.createNote();
-
-            Staff staff = note.getStaff();
-
-            // Chord notation events for first note in chord
+            // Chord events for first note in chord
             if (isFirstInChord) {
-                //                for (Notation node : chord.getNotations()) {
-                //                    ///node.accept(this);
-                //                    process(node);
-                //                }
                 if (sig != null) {
                     for (Relation rel : sig.edgesOf(chord)) {
                         if (rel instanceof FermataChordRelation) {
@@ -1819,7 +1858,7 @@ public class PartwiseBuilder
                 //                }
             }
 
-            // Rest ?
+            // Rest?
             boolean isMeasureRest = false;
 
             if (note.getShape().isRest()) {
@@ -1886,7 +1925,7 @@ public class PartwiseBuilder
                         toTenths(noteLeft - current.measure.getAbscissa(LEFT, staff)));
             }
 
-            // Tuplet factor ?
+            // Tuplet factor?
             if (chord.getTupletFactor() != null) {
                 TimeModification timeModification = factory.createTimeModification();
                 timeModification.setActualNotes(
@@ -1945,22 +1984,21 @@ public class PartwiseBuilder
                 }
             }
 
-            //
-            //            // For specific mirrored note
-            //            if (note.getMirroredNote() != null) {
-            //                int fbn = note.getChord().getFlagsNumber() + note.getChord().getBeams().size();
-            //
-            //                if ((fbn > 0) && (note.getShape() == NOTEHEAD_VOID)) {
-            //                    // Indicate that the head should not be filled
-            //                    //   <notehead filled="no">normal</notehead>
-            //                    Notehead notehead = factory.createNotehead();
-            //                    notehead.setFilled(YesNo.NO);
-            //                    notehead.setValue(NoteheadValue.NORMAL);
-            //                    current.pmNote.setNotehead(notehead);
-            //                }
-            //            }
-            //
-            // Stem ?
+            // For specific mirrored note
+            if (note.getMirror() != null) {
+                int fbn = note.getChord().getFlagsNumber() + note.getChord().getBeams().size();
+
+                if ((fbn > 0) && (note.getShape() == Shape.NOTEHEAD_VOID)) {
+                    // Indicate that the head should not be filled
+                    //   <notehead filled="no">normal</notehead>
+                    Notehead notehead = factory.createNotehead();
+                    notehead.setFilled(YesNo.NO);
+                    notehead.setValue(NoteheadValue.NORMAL);
+                    current.pmNote.setNotehead(notehead);
+                }
+            }
+
+            // Stem?
             if (chord.getStem() != null) {
                 Stem pmStem = factory.createStem();
                 Point tail = chord.getTailLocation();
@@ -1975,7 +2013,7 @@ public class PartwiseBuilder
                 current.pmNote.setStem(pmStem);
             }
 
-            // Staff ?
+            // Staff?
             if (current.logicalPart.isMultiStaff()) {
                 current.pmNote.setStaff(new BigInteger("" + (1 + staff.getIndexInPart())));
             }
@@ -1986,7 +2024,7 @@ public class PartwiseBuilder
             }
 
             if (!note.getShape().isRest()) {
-                // Accidental ?
+                // Accidental?
                 HeadInter head = (HeadInter) note;
                 AlterInter alter = head.getAccidental();
 
@@ -1996,7 +2034,7 @@ public class PartwiseBuilder
                     current.pmNote.setAccidental(accidental);
                 }
 
-                // Beams ?
+                // Beams?
                 int beamCounter = 0;
 
                 for (AbstractBeamInter beam : chord.getBeams()) {
@@ -2031,7 +2069,7 @@ public class PartwiseBuilder
                     processSlur((SlurInter) sig.getOppositeInter(note, rel));
                 }
 
-                // Lyrics ?
+                // Lyrics?
                 for (Relation rel : sig.getRelations(chord, ChordSyllableRelation.class)) {
                     processSyllable((LyricItemInter) sig.getOppositeInter(chord, rel));
                 }
@@ -2045,6 +2083,32 @@ public class PartwiseBuilder
 
         // Safer...
         current.endNote();
+    }
+
+    //-----------------//
+    // processOrnament //
+    //-----------------//
+    @SuppressWarnings("unchecked")
+    private void processOrnament (OrnamentInter ornament)
+    {
+        try {
+            logger.debug("Visiting {}", ornament);
+
+            JAXBElement<?> element = getOrnamentObject(ornament.getShape());
+
+            // Placement?
+            Class<?> classe = element.getDeclaredType();
+            Method method = classe.getMethod("setPlacement", AboveBelow.class);
+            method.invoke(
+                    element.getValue(),
+                    (ornament.getCenter().y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                    : AboveBelow.BELOW);
+            // Everything is OK
+            // Include in ornaments
+            getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
+        } catch (Exception ex) {
+            logger.warn("Error visiting " + ornament, ex);
+        }
     }
 
     //-------------//
@@ -2119,7 +2183,7 @@ public class PartwiseBuilder
                 sound.setDamperPedal("no");
             }
 
-            // Staff ?
+            // Staff?
             Staff staff = current.note.getStaff();
             insertStaffId(direction, staff);
 
@@ -2273,88 +2337,6 @@ public class PartwiseBuilder
         }
     }
 
-    //- All Visiting Methods -----------------------------------------------------------------------
-    //    //--------------------//
-    //    // process Arpeggiate //
-    //    //--------------------//
-    //    private void process (OldArpeggiate arpeggiate)
-    //    {
-    //        try {
-    //            logger.debug("Visiting {}", arpeggiate);
-    //
-    //            Arpeggiate pmArpeggiate = factory.createArpeggiate();
-    //
-    //            // relative-x
-    //            pmArpeggiate.setRelativeX(
-    //                    toTenths(arpeggiate.getReferencePoint().x - current.note.getCenterLeft().x));
-    //
-    //            // number ???
-    //            // TODO
-    //            //
-    //            getNotations().getTiedOrSlurOrTuplet().add(pmArpeggiate);
-    //        } catch (Exception ex) {
-    //            logger.warn("Error visiting " + arpeggiate, ex);
-    //        }
-    //    }
-    //
-    //    //----------------------//
-    //    // process Articulation //
-    //    //----------------------//
-    //    private void process (OldArticulation articulation)
-    //    {
-    //        try {
-    //            logger.debug("Visiting {}", articulation);
-    //
-    //            JAXBElement<?> element = getArticulationObject(articulation.getShape());
-    //
-    //            // Staff ?
-    //            Staff staff = current.note.getStaff();
-    //
-    //            // Placement
-    //            Class<?> classe = element.getDeclaredType();
-    //
-    //            Method method = classe.getMethod("setPlacement", AboveBelow.class);
-    //            method.invoke(
-    //                    element.getValue(),
-    //                    (articulation.getReferencePoint().y < current.note.getCenter().y)
-    //                            ? AboveBelow.ABOVE : AboveBelow.BELOW);
-    //
-    //            // Default-Y
-    //            method = classe.getMethod("setDefaultY", BigDecimal.class);
-    //            method.invoke(element.getValue(), yOf(articulation.getReferencePoint(), staff));
-    //
-    //            // Include in Articulations
-    //            getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
-    //        } catch (Exception ex) {
-    //            logger.warn("Error visiting " + articulation, ex);
-    //        }
-    //    }
-    //
-    //    //------------------//
-    //    // process Ornament //
-    //    //------------------//
-    //    @SuppressWarnings("unchecked")
-    //    private void process (OldOrnament ornament)
-    //    {
-    //        try {
-    //            logger.debug("Visiting {}", ornament);
-    //
-    //            JAXBElement<?> element = getOrnamentObject(ornament.getShape());
-    //
-    //            // Placement?
-    //            Class<?> classe = element.getDeclaredType();
-    //            Method method = classe.getMethod("setPlacement", AboveBelow.class);
-    //            method.invoke(
-    //                    element.getValue(),
-    //                    (ornament.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
-    //                            : AboveBelow.BELOW);
-    //            // Everything is OK
-    //            // Include in ornaments
-    //            getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
-    //        } catch (Exception ex) {
-    //            logger.warn("Error visiting " + ornament, ex);
-    //        }
-    //    }
     //-----------------//
     // processSentence //
     //-----------------//
@@ -2646,7 +2628,7 @@ public class PartwiseBuilder
         // BeatType
         time.getTimeSignature().add(factory.createTimeBeatType("" + den));
 
-        // Symbol ?
+        // Symbol?
         if (shape != null) {
             switch (shape) {
             case COMMON_TIME:
@@ -2732,11 +2714,11 @@ public class PartwiseBuilder
             // Spread
             pmWedge.setSpread(toTenths(wedge.getSpread(side)));
 
-            // Staff ?
+            // Staff?
             Staff staff = current.note.getStaff();
             insertStaffId(direction, staff);
 
-            // Start or stop ?
+            // Start or stop?
             final Point2D refPoint;
 
             if (side == LEFT) {

@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sig.inter;
 
-import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
@@ -54,8 +53,6 @@ public class ArpeggiatoInter
         extends AbstractInter
 {
     //~ Static fields/initializers -----------------------------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(ArpeggiatoInter.class);
 
@@ -195,9 +192,10 @@ public class ArpeggiatoInter
         // Look for a head-chord on right side of this symbol
         // Use a lookup box (glyph height, predefined width)
         // For intersected head-chords, measure y overlap WRT glyph height
-        Rectangle luBox = getBounds();
+        final Scale scale = system.getSheet().getScale();
+        final Rectangle luBox = getBounds();
         luBox.x += luBox.width;
-        luBox.width = system.getSheet().getScale().toPixels(constants.areaDx);
+        luBox.width = scale.toPixels(ChordArpeggiatoRelation.getXGapMaximum(manual));
 
         final List<Inter> chords = Inters.intersectedInters(
                 systemHeadChords,
@@ -233,17 +231,5 @@ public class ArpeggiatoInter
         }
 
         return new Link(bestChord, rel, false);
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        Scale.Fraction areaDx = new Scale.Fraction(1.5, "Width of lookup area for embraced notes");
     }
 }
