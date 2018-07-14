@@ -23,6 +23,7 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
 import org.audiveris.omr.sig.inter.Inter;
 
@@ -74,6 +75,14 @@ public class ChordArpeggiatoRelation
     }
 
     //----------------//
+    // getXGapMaximum //
+    //----------------//
+    public static Scale.Fraction getXGapMaximum (boolean manual)
+    {
+        return manual ? constants.xGapMaxManual : constants.xGapMax;
+    }
+
+    //----------------//
     // isSingleSource //
     //----------------//
     @Override
@@ -119,5 +128,13 @@ public class ChordArpeggiatoRelation
         private final Constant.Ratio arpeggiatoSupportCoeff = new Constant.Ratio(
                 0.5,
                 "Supporting coeff for (source) arpeggiato");
+
+        private final Scale.Fraction xGapMax = new Scale.Fraction(
+                1.5,
+                "Maximum horizontal gap between arpeggiato & chord");
+
+        private final Scale.Fraction xGapMaxManual = new Scale.Fraction(
+                2.5,
+                "Maximum manual horizontal gap between arpeggiato & chord");
     }
 }

@@ -46,8 +46,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code OrnamentInter} represents an ornament interpretation.
- * (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED, GRACE_NOTE_SLASH,
- * GRACE_NOTE)
+ * (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT, MORDENT_INVERTED)
+ * and perhaps GRACE_NOTE_SLASH, GRACE_NOTE
  *
  * @author Hervé Bitteur
  */
@@ -65,7 +65,7 @@ public class OrnamentInter
      *
      * @param glyph underlying glyph
      * @param shape precise shape (TR, TURN, TURN_INVERTED, TURN_UP, TURN_SLASH, MORDENT,
-     *              MORDENT_INVERTED, GRACE_NOTE_SLASH, GRACE_NOTE)
+     *              MORDENT_INVERTED) and perhaps GRACE_NOTE_SLASH, GRACE_NOTE
      * @param grade evaluation value
      */
     public OrnamentInter (Glyph glyph,
@@ -106,6 +106,18 @@ public class OrnamentInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //---------------//
+    // checkAbnormal //
+    //---------------//
+    @Override
+    public boolean checkAbnormal ()
+    {
+        // Check if a chord is connected
+        setAbnormal(!sig.hasRelation(this, ChordOrnamentRelation.class));
+
+        return isAbnormal();
     }
 
     //------------------//

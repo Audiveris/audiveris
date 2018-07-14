@@ -30,15 +30,18 @@ import org.audiveris.omr.sig.inter.LyricItemInter;
 import org.audiveris.proxymusic.AccidentalText;
 import org.audiveris.proxymusic.AccidentalValue;
 import org.audiveris.proxymusic.BarStyle;
+import org.audiveris.proxymusic.BreathMark;
 import org.audiveris.proxymusic.DegreeTypeValue;
 import org.audiveris.proxymusic.Empty;
 import org.audiveris.proxymusic.EmptyPlacement;
+import org.audiveris.proxymusic.HorizontalTurn;
 import org.audiveris.proxymusic.KindValue;
 import org.audiveris.proxymusic.ObjectFactory;
 import org.audiveris.proxymusic.Step;
 import org.audiveris.proxymusic.StrongAccent;
 import org.audiveris.proxymusic.Syllabic;
 import org.audiveris.proxymusic.UpDown;
+import org.audiveris.proxymusic.YesNo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +61,7 @@ public abstract class MusicXML
 
     private static final Logger logger = LoggerFactory.getLogger(MusicXML.class);
 
-    /** Names of the various note types used in MusicXML */
+    /** Names of the various note types used in MusicXML. */
     private static final String[] noteTypeNames = new String[]{
         "256th", "128th", "64th", "32nd", "16th",
         "eighth", "quarter", "half", "whole", "breve",
@@ -157,10 +160,15 @@ public abstract class MusicXML
         case STACCATISSIMO:
             return factory.createArticulationsStaccatissimo(ep);
 
-        /** TODO: implement related shapes
-         * case BREATH_MARK :
-         * case CAESURA :
-         */
+        case BREATH_MARK:
+
+            BreathMark breathMark = factory.createBreathMark();
+            breathMark.setValue("comma");
+
+            return factory.createArticulationsBreathMark(breathMark);
+
+        case CAESURA:
+            return factory.createArticulationsCaesura(ep);
         }
 
         logger.error("Unsupported ornament shape:{}", shape);
@@ -306,9 +314,22 @@ public abstract class MusicXML
 
         case TURN:
             return factory.createOrnamentsTurn(factory.createHorizontalTurn());
+
+        case TURN_INVERTED:
+            return factory.createOrnamentsInvertedTurn(factory.createHorizontalTurn());
+
+        case TURN_SLASH: {
+            HorizontalTurn horizontalTurn = factory.createHorizontalTurn();
+            horizontalTurn.setSlash(YesNo.YES);
+
+            return factory.createOrnamentsInvertedTurn(horizontalTurn);
         }
 
-        logger.error("Unsupported ornament shape:{}", shape);
+        case TURN_UP:
+            return factory.createOrnamentsVerticalTurn(factory.createEmptyTrillSound());
+        }
+
+        logger.error("Unsupported ornament shape: {}", shape);
 
         return null;
     }
