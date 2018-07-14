@@ -98,7 +98,7 @@ public class ClefInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Kind of the clef. */
     @XmlAttribute
-    private final ClefKind kind;
+    private ClefKind kind;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -163,10 +163,30 @@ public class ClefInter
     private ClefInter ()
     {
         super(null, null, null, null, null, null);
-        this.kind = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        // Add it to containing measure stack
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
+
+            if (kind == null) {
+                kind = kindOf(getCenter(), shape, staff);
+                pitch = new Double(kind.pitch);
+            }
+        }
+    }
+
     //--------//
     // accept //
     //--------//
@@ -307,7 +327,7 @@ public class ClefInter
     //--------//
     // kindOf //
     //--------//
-    public static ClefKind kindOf (Glyph glyph,
+    public static ClefKind kindOf (Point center,
                                    Shape shape,
                                    Staff staff)
     {
@@ -321,7 +341,6 @@ public class ClefInter
         case C_CLEF:
 
             // Disambiguate between Alto C-clef (pp=0) and Tenor C-clef (pp=-2)
-            Point center = glyph.getCenter();
             int pp = (int) Math.rint(staff.pitchPositionOf(center));
 
             return (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;
