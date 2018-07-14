@@ -24,6 +24,7 @@ package org.audiveris.omr.sig.inter;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.sheet.Staff;
+import org.audiveris.omr.sheet.rhythm.MeasureStack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,6 @@ import java.awt.Point;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.audiveris.omr.sheet.rhythm.MeasureStack;
 
 /**
  * Class {@code ClefInter} handles a Clef interpretation.
@@ -96,7 +96,7 @@ public class ClefInter
     //~ Instance fields ----------------------------------------------------------------------------
     /** Kind of the clef. */
     @XmlAttribute
-    private final ClefKind kind;
+    private ClefKind kind;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -138,10 +138,30 @@ public class ClefInter
     private ClefInter ()
     {
         super(null, null, null, null, null, null);
-        this.kind = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
+    @Override
+    public void added ()
+    {
+        super.added();
+
+        // Add it to containing measure stack
+        MeasureStack stack = sig.getSystem().getStackAt(getCenter());
+
+        if (stack != null) {
+            stack.addInter(this);
+
+            if (kind == null) {
+                kind = kindOf(getCenter(), shape, staff);
+                pitch = new Double(kind.pitch);
+            }
+        }
+    }
+
     //--------//
     // create //
     //--------//
@@ -193,7 +213,7 @@ public class ClefInter
     //--------//
     // kindOf //
     //--------//
-    public static ClefKind kindOf (Glyph glyph,
+    public static ClefKind kindOf (Point center,
                                    Shape shape,
                                    Staff staff)
     {
@@ -207,7 +227,6 @@ public class ClefInter
         case C_CLEF:
 
             // Disambiguate between Alto C-clef (pp=0) and Tenor C-clef (pp=-2)
-            Point center = glyph.getCenter();
             int pp = (int) Math.rint(staff.pitchPositionOf(center));
 
             return (pp >= -1) ? ClefKind.ALTO : ClefKind.TENOR;

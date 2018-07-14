@@ -691,7 +691,7 @@ public class ClefBuilder
 
                 if (HEADER_CLEF_SHAPES.contains(shape)) {
                     final double grade = Grades.intrinsicRatio * eval.grade;
-                    ClefKind kind = ClefInter.kindOf(glyph, shape, staff);
+                    ClefKind kind = ClefInter.kindOf(glyph.getCenter(), shape, staff);
                     ClefInter bestInter = bestMap.get(kind);
 
                     if ((bestInter == null) || (bestInter.getGrade() < grade)) {
