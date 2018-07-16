@@ -1333,7 +1333,9 @@ public class BasicSheet
         }
 
         if (annotationIndex == null) {
-            if (stub.getLatestStep().compareTo(Step.ANNOTATIONS) >= 0) {
+            final Step latestStep = stub.getLatestStep();
+
+            if ((latestStep != null) && (latestStep.compareTo(Step.ANNOTATIONS) >= 0)) {
                 annotationIndex = AnnotationIndex.load(stub);
             } else {
                 annotationIndex = new AnnotationIndex();
