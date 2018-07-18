@@ -225,19 +225,29 @@ public class BasicSheet
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code BasicSheet} object with optional informations:
-     * binary table, scale and annotations.
+     * initial image, binary table, scale and annotations.
      *
      * @param stub            the related sheet stub
+     * @param image           the initial image, if any
      * @param binaryTable     the binary table, if any
      * @param scale           the scale information, if any
      * @param annotationIndex the annotations index, if any
      */
     public BasicSheet (SheetStub stub,
+                       BufferedImage image,
                        RunTable binaryTable,
                        Scale scale,
                        AnnotationIndex annotationIndex)
     {
         this(stub, annotationIndex);
+
+        if (image != null) {
+            try {
+                setImage(image);
+            } catch (Exception ex) {
+                logger.warn("Could not setImage {}", ex.toString(), ex);
+            }
+        }
 
         if (binaryTable != null) {
             setBinary(binaryTable);
@@ -443,7 +453,7 @@ public class BasicSheet
             locationService.subscribeStrongly(LocationEvent.class, picture);
 
             // Display sheet binary
-            PictureView pictureView = new PictureView(this);
+            PictureView pictureView = new PictureView(this, SheetTab.BINARY_TAB);
             stub.getAssembly().addViewTab(
                     SheetTab.BINARY_TAB,
                     pictureView,
@@ -452,21 +462,20 @@ public class BasicSheet
     }
 
     //-------------------//
-    // createPictureView //
+    // createInitialView //
     //-------------------//
     /**
-     * Create and display the picture view.
+     * Create and display the initial view.
      */
-    public void createPictureView ()
+    public void createInitialView ()
     {
         locationService.subscribeStrongly(LocationEvent.class, picture);
 
         // Display sheet picture
-        PictureView pictureView = new PictureView(this);
-        stub.getAssembly().addViewTab(
-                SheetTab.PICTURE_TAB,
-                pictureView,
-                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+        PictureView pictureView = new PictureView(this, SheetTab.INITIAL_TAB);
+        stub.getAssembly().addViewTab(SheetTab.INITIAL_TAB,
+                                      pictureView,
+                                      new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
 
     //----------------------//
@@ -482,40 +491,6 @@ public class BasicSheet
         }
     }
 
-    //
-    //    //--------------//
-    //    // deleteExport //
-    //    //--------------//
-    //    public void deleteExport ()
-    //    {
-    //        final Book book = getBook();
-    //
-    //        if (!book.isMultiSheet()) {
-    //            book.deleteExport(); // Simply delete the single-sheet book!
-    //        } else {
-    //            // path/to/scores/Book
-    //            Path bookPathSansExt = BookManager.getActualPath(
-    //                    book.getExportPathSansExt(),
-    //                    BookManager.getDefaultExportPathSansExt(book));
-    //
-    //            // Determine the output path (sans extension) for the provided sheet
-    //            final Path sheetPathSansExt = getSheetPathSansExt(bookPathSansExt);
-    //
-    //            // Multi-sheet book: <bookname>-sheet#<N>.mvt<M>.mxl
-    //            // Multi-sheet book: <bookname>-sheet#<N>.mxl
-    //            final Path folder = sheetPathSansExt.getParent();
-    //            final Path sheetName = sheetPathSansExt.getFileName(); // book-sheet#N
-    //
-    //            final String dirGlob = "glob:**/" + sheetName + "{/**,}";
-    //            final String filGlob = "glob:**/" + sheetName + "{/**,.*}";
-    //            final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
-    //
-    //            if (!paths.isEmpty()) {
-    //                BookManager.deletePaths(sheetName + " deletion", paths);
-    //            }
-    //        }
-    //    }
-    //
     //----------------//
     // displayDataTab //
     //----------------//
@@ -540,7 +515,7 @@ public class BasicSheet
         } else if (stub.isDone(Step.BINARY)) {
             createBinaryView(); // Display BINARY tab
         } else {
-            createPictureView(); // Display Picture tab
+            createInitialView(); // Display Picture tab
         }
 
         if (!stub.isValid()) {
@@ -834,10 +809,10 @@ public class BasicSheet
             throws StepException
     {
         try {
-            picture = new Picture(this, image, locationService);
+            picture = new Picture(this, image);
 
             if (OMR.gui != null) {
-                createPictureView();
+                createInitialView();
             }
 
             done(Step.LOAD);
@@ -1392,7 +1367,11 @@ public class BasicSheet
     private void setBinary (RunTable binaryTable)
     {
         try {
-            picture = new Picture(this, binaryTable);
+            if (picture == null) {
+                picture = new Picture(this, binaryTable);
+            } else {
+                picture.setTable(Picture.TableKey.BINARY, binaryTable, false);
+            }
 
             if (OMR.gui != null) {
                 createBinaryView();

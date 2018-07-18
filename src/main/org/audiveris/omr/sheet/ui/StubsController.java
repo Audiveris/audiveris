@@ -282,14 +282,6 @@ public class StubsController
                 logger.info("No locationService");
             }
 
-            if (sheet.getPicture() != null) {
-                if (sheet.getPicture().getPixelService() != null) {
-                    sheet.getPicture().getPixelService().dumpSubscribers();
-                } else {
-                    logger.info("No pixelService");
-                }
-            }
-
             for (Lag lag : sheet.getLagManager().getAllLags()) {
                 if (lag != null) {
                     if (lag.getEntityService() != null) {

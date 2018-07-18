@@ -117,15 +117,26 @@ public abstract class Jaxb
         InputStream is = null;
 
         try {
-            Unmarshaller um = jaxbContext.createUnmarshaller();
             is = Files.newInputStream(path, StandardOpenOption.READ);
 
-            return um.unmarshal(is);
+            return unmarshal(is, jaxbContext);
         } finally {
             if (is != null) {
                 is.close();
             }
         }
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    public static Object unmarshal (InputStream is,
+                                    JAXBContext jaxbContext)
+            throws IOException, JAXBException
+    {
+        Unmarshaller um = jaxbContext.createUnmarshaller();
+
+        return um.unmarshal(is);
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

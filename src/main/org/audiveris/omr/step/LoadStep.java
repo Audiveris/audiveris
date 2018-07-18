@@ -94,7 +94,7 @@ public class LoadStep
     @Override
     public SheetTab getSheetTab ()
     {
-        return SheetTab.PICTURE_TAB;
+        return SheetTab.INITIAL_TAB;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

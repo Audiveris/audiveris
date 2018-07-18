@@ -37,12 +37,11 @@ import org.audiveris.omr.image.PixelSource;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
+import org.audiveris.omr.sheet.Scale.Size;
 import org.audiveris.omr.sheet.grid.LineInfo;
 import org.audiveris.omr.ui.selection.LocationEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.PixelEvent;
-import org.audiveris.omr.ui.selection.SelectionService;
-import org.audiveris.omr.util.Jaxb;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
 
@@ -58,16 +57,12 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.media.jai.JAI;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -129,7 +124,11 @@ public class Picture
         /** The Median-filtered source. */
         MEDIAN,
         /** The source with staff lines removed. */
-        NO_STAFF;
+        NO_STAFF,
+        /** The source for classifier on small staves, if any. */
+        SMALL_TARGET,
+        /** The source for classifier on large staves. */
+        LARGE_TARGET;
     }
 
     /**
@@ -171,14 +170,8 @@ public class Picture
     @Navigable(false)
     private Sheet sheet;
 
-    /**
-     * Service object where gray level of pixel is to be written to when so asked for
-     * by the onEvent() method.
-     */
-    final SelectionService pixelService;
-
     /** The initial (gray-level) image, if any. */
-    private BufferedImage initialImage;
+    private final ImageHolder initialHolder = new ImageHolder("initial.png");
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -191,43 +184,37 @@ public class Picture
                     RunTable binaryTable)
     {
         initTransients(sheet);
-        pixelService = null;
 
         width = binaryTable.getWidth();
         height = binaryTable.getHeight();
 
         setTable(TableKey.BINARY, binaryTable, false);
 
-        // Remember the initial image
-        initialImage = null;
-        logger.debug("BinaryTable {}", binaryTable);
+        logger.debug("Picture with BinaryTable {}", binaryTable);
     }
 
     /**
      * Build a picture instance from a given original image.
      *
-     * @param sheet        the related sheet
-     * @param image        the provided original image
-     * @param pixelService service where pixel events are to be written
+     * @param sheet the related sheet
+     * @param image the provided original image
      * @throws ImageFormatException if the image format is unsupported
      */
     public Picture (Sheet sheet,
-                    BufferedImage image,
-                    SelectionService pixelService)
+                    BufferedImage image)
             throws ImageFormatException
     {
         initTransients(sheet);
-        this.pixelService = pixelService;
 
         // Make sure format, colors, etc are OK for us
         ///ImageUtil.printInfo(image, "Original image");
-        image = checkImage(image);
+        image = adjustImageFormat(image);
         width = image.getWidth();
         height = image.getHeight();
 
         // Remember the initial image
-        initialImage = image;
-        logger.debug("InitialImage {}", image);
+        initialHolder.setData(image, true);
+        logger.debug("Picture with InitialImage {}", image);
     }
 
     /**
@@ -238,7 +225,6 @@ public class Picture
         this.sheet = null;
         this.width = 0;
         this.height = 0;
-        this.pixelService = null;
         logger.debug("Picture unmarshalled by JAXB");
     }
 
@@ -298,11 +284,6 @@ public class Picture
     //---------------//
     public void disposeSource (SourceKey key)
     {
-        // Nullify cached data, if needed
-        if ((key == SourceKey.INITIAL) && constants.disposeOfInitialSource.isSet()) {
-            initialImage = null;
-        }
-
         sources.remove(key);
     }
 
@@ -439,7 +420,7 @@ public class Picture
      */
     public BufferedImage getImage (Rectangle rect)
     {
-        BufferedImage img = initialImage;
+        BufferedImage img = initialHolder.getData(sheet.getStub());
 
         if (img == null) {
             ByteProcessor buffer = getSource(SourceKey.BINARY);
@@ -462,7 +443,7 @@ public class Picture
      */
     public BufferedImage getInitialImage ()
     {
-        return initialImage;
+        return initialHolder.getData(sheet.getStub());
     }
 
     //------------------//
@@ -509,85 +490,6 @@ public class Picture
         return "Picture";
     }
 
-    //-----------------//
-    // getLevelService //
-    //-----------------//
-    /**
-     * @return the pixelService
-     */
-    public SelectionService getPixelService ()
-    {
-        return pixelService;
-    }
-
-    //-----------//
-    // getSource //
-    //-----------//
-    /**
-     * Report the desired source.
-     * If the source is not yet cached, build the source and store it in cache via weak reference.
-     *
-     * @param key the key of desired source
-     * @return the source ready to use
-     */
-    public ByteProcessor getSource (SourceKey key)
-    {
-        ByteProcessor src = getStrongRef(key);
-
-        if (src == null) {
-            switch (key) {
-            case INITIAL:
-                src = getInitialSource(initialImage);
-
-                break;
-
-            case BINARY:
-
-                // Built from binary run table, if available
-                RunTable table = getTable(TableKey.BINARY);
-
-                if (table != null) {
-                    src = table.getBuffer();
-                } else if (initialImage != null) {
-                    // Built via binarization of initial source
-                    src = binarized(getSource(SourceKey.INITIAL));
-                } else {
-                    logger.warn("Cannot provide BINARY source");
-
-                    return null;
-                }
-
-                break;
-
-            case GAUSSIAN:
-                // Built from median
-                src = gaussianFiltered(getSource(SourceKey.MEDIAN));
-
-                break;
-
-            case MEDIAN:
-                // Built from no_staff
-                src = medianFiltered(getSource(SourceKey.NO_STAFF));
-
-                break;
-
-            case NO_STAFF:
-                // Built by erasing StaffLines glyphs from binary source
-                src = buildNoStaffBuffer();
-
-                break;
-            }
-
-            if (src != null) {
-                // Store in cache
-                sources.put(key, new WeakReference<ByteProcessor>(src));
-                logger.debug("{} source built as {}", key, src);
-            }
-        }
-
-        return src;
-    }
-
     //----------//
     // getTable //
     //----------//
@@ -608,19 +510,6 @@ public class Picture
         final RunTable table = tableHolder.getData(sheet.getStub());
 
         return table;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the width of the picture image.
-     *
-     * @return the current width value, in pixels.
-     */
-    public int getWidth ()
-    {
-        return width;
     }
 
     //----------//
@@ -680,53 +569,6 @@ public class Picture
         }
     }
 
-    //---------//
-    // onEvent //
-    //---------//
-    /**
-     * Call-back triggered when sheet location has been modified.
-     * Based on sheet location, we forward the INITIAL pixel gray level to
-     * whoever is interested in it.
-     *
-     * @param event the (sheet) location event
-     */
-    @Override
-    public void onEvent (LocationEvent event)
-    {
-        if (initialImage == null) {
-            return;
-        }
-
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            Integer level = null;
-
-            // Compute and forward pixel gray level
-            Rectangle rect = event.getData();
-
-            if (rect != null) {
-                Point pt = rect.getLocation();
-
-                // Check that we are not pointing outside the image
-                if ((pt.x >= 0) && (pt.x < getWidth()) && (pt.y >= 0) && (pt.y < getHeight())) {
-                    ByteProcessor src = getSource(SourceKey.INITIAL);
-
-                    if (src != null) {
-                        level = src.get(pt.x, pt.y);
-                    }
-                }
-            }
-
-            pixelService.publish(new PixelEvent(this, event.hint, event.movement, level));
-        } catch (Exception ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
     //-------------//
     // removeTable //
     //-------------//
@@ -764,41 +606,179 @@ public class Picture
         }
     }
 
+    //-------------------//
+    // getPatchInterline //
+    //-------------------//
+    /**
+     * Report the interline value expected by the patch classifier.
+     *
+     * @return patch classifier expected interline
+     */
+    public static int getPatchInterline ()
+    {
+        return constants.patchInterline.getValue();
+    }
+
+    //-----------//
+    // getSource //
+    //-----------//
+    /**
+     * Report the desired source.
+     * If the source is not yet cached, build the source and store it in cache via weak reference.
+     *
+     * @param key the key of desired source
+     * @return the source ready to use
+     */
+    public ByteProcessor getSource (SourceKey key)
+    {
+        ByteProcessor src = getStrongRef(key);
+
+        if (src == null) {
+            switch (key) {
+            case INITIAL:
+                src = getInitialSource(getInitialImage());
+
+                break;
+
+            case BINARY:
+
+                // Built from binary run table, if available
+                RunTable table = getTable(TableKey.BINARY);
+
+                if (table != null) {
+                    src = table.getBuffer();
+                } else {
+                    // Built via binarization of initial source if any
+                    ByteProcessor initial = getSource(SourceKey.INITIAL);
+
+                    if (initial != null) {
+                        src = binarized(initial);
+                    } else {
+                        logger.warn("Cannot provide BINARY source");
+
+                        return null;
+                    }
+                }
+
+                break;
+
+            case GAUSSIAN:
+                // Built from median
+                src = gaussianFiltered(getSource(SourceKey.MEDIAN));
+
+                break;
+
+            case MEDIAN:
+                // Built from no_staff
+                src = medianFiltered(getSource(SourceKey.NO_STAFF));
+
+                break;
+
+            case NO_STAFF:
+                // Built by erasing StaffLines glyphs from binary source
+                src = buildNoStaffBuffer();
+
+                break;
+
+            case SMALL_TARGET:
+                // Scale small staves to expected patch classifier interline
+                src = buildTarget(Size.SMALL);
+
+                break;
+
+            case LARGE_TARGET:
+                // Scale large staves to expected patch classifier interline
+                src = buildTarget(Size.LARGE);
+
+                break;
+
+            default:
+                logger.error("Source " + key + " is not yet supported");
+            }
+
+            if (src != null) {
+                // Store in cache
+                sources.put(key, new WeakReference<ByteProcessor>(src));
+                logger.debug("{} source built as {}", key, src);
+            }
+        }
+
+        return src;
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the width of the picture image.
+     *
+     * @return the current width value, in pixels.
+     */
+    public int getWidth ()
+    {
+        return width;
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    /**
+     * Call-back triggered when sheet location has been modified.
+     * Based on sheet location, we forward the INITIAL pixel gray level to
+     * whoever is interested in it.
+     *
+     * @param event the (sheet) location event
+     */
+    @Override
+    public void onEvent (LocationEvent event)
+    {
+        if (initialHolder.hasNoData()) {
+            return;
+        }
+
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            Integer level = null;
+
+            // Compute and forward pixel gray level
+            Rectangle rect = event.getData();
+
+            if (rect != null) {
+                Point pt = rect.getLocation();
+
+                // Check that we are not pointing outside the image
+                if ((pt.x >= 0) && (pt.x < getWidth()) && (pt.y >= 0) && (pt.y < getHeight())) {
+                    ByteProcessor src = getSource(SourceKey.INITIAL);
+
+                    if (src != null) {
+                        level = src.get(pt.x, pt.y);
+                    }
+                }
+            }
+
+            sheet.getLocationService()
+                    .publish(new PixelEvent(this, event.hint, event.movement, level));
+        } catch (Exception ex) {
+            logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
     //-------//
     // store //
     //-------//
     public void store (Path sheetFolder,
                        Path oldSheetFolder)
     {
+        // Initial image, if any
+        initialHolder.storeData(sheetFolder, oldSheetFolder);
+
         // Each handled table
-        for (Entry<TableKey, RunTableHolder> entry : tables.entrySet()) {
-            final TableKey key = entry.getKey();
-            final RunTableHolder holder = entry.getValue();
-            final Path tablepath = sheetFolder.resolve(key + ".xml");
-
-            if (!holder.hasData()) {
-                if (oldSheetFolder != null) {
-                    try {
-                        // Copy from old book file to new
-                        Path oldTablePath = oldSheetFolder.resolve(key + ".xml");
-                        Files.copy(oldTablePath, tablepath);
-                        logger.info("Copied {}", tablepath);
-                    } catch (IOException ex) {
-                        logger.warn("Error in picture.store " + ex, ex);
-                    }
-                }
-            } else if (holder.isModified()) {
-                try {
-                    Files.deleteIfExists(tablepath);
-
-                    RunTable table = holder.getData(sheet.getStub());
-                    Jaxb.marshal(table, tablepath, JAXBContext.newInstance(RunTable.class));
-                    holder.setModified(false);
-                    logger.info("Stored {}", tablepath);
-                } catch (Exception ex) {
-                    logger.warn("Error in picture.store " + ex, ex);
-                }
-            }
+        for (RunTableHolder holder : tables.values()) {
+            holder.storeData(sheetFolder, oldSheetFolder);
         }
     }
 
@@ -919,32 +899,61 @@ public class Picture
         return new ByteProcessor(img);
     }
 
-    //------------//
-    // checkImage //
-    //------------//
-    private BufferedImage checkImage (BufferedImage img)
-            throws ImageFormatException
+    //-------------//
+    // buildTarget //
+    //-------------//
+    /**
+     * Build a scaled buffer meant for page / patch classifier.
+     * <p>
+     * We use the initial image if available, otherwise the binary image.
+     *
+     * @param size the target staff size, either LARGE or SMALL
+     * @return the properly scaled buffer
+     */
+    private ByteProcessor buildTarget (Size size)
     {
-        // Check image format
-        img = adjustImageFormat(img);
+        final Scale scale = sheet.getScale();
 
-        // Check pixel size and compute grayFactor accordingly
-        ColorModel colorModel = img.getColorModel();
-        int pixelSize = colorModel.getPixelSize();
-        logger.debug("colorModel={} pixelSize={}", colorModel, pixelSize);
+        if (scale == null) {
+            logger.error("No scale defined yet for sheet");
 
-        //        if (pixelSize == 1) {
-        //            grayFactor = 1;
-        //        } else if (pixelSize <= 8) {
-        //            grayFactor = (int) Math.rint(128 / Math.pow(2, pixelSize - 1));
-        //        } else if (pixelSize <= 16) {
-        //            grayFactor = (int) Math.rint(32768 / Math.pow(2, pixelSize - 1));
-        //        } else {
-        //            throw new RuntimeException("Unsupported pixel size: " + pixelSize);
-        //        }
-        //
-        //        logger.debug("grayFactor={}", grayFactor);
-        return img;
+            return null;
+        }
+
+        ByteProcessor source = getSource(SourceKey.INITIAL);
+
+        if (source != null) {
+            logger.info("Building classifier target from initial image");
+        } else {
+            logger.info("Building classifier target from binary image");
+            source = getSource(SourceKey.BINARY);
+        }
+
+        final int target = getPatchInterline();
+
+        switch (size) {
+        case SMALL: {
+            final Integer smallInterline = scale.getSmallInterline();
+
+            if (smallInterline == null) {
+                logger.warn("No small interline in this sheet");
+
+                return null;
+            }
+
+            final double ratio = (double) target / smallInterline;
+
+            return (ratio != 1.0) ? scaledBuffer(source, ratio) : source;
+        }
+
+        default:
+        case LARGE: {
+            final int interline = scale.getInterline();
+            final double ratio = (double) target / interline;
+
+            return (ratio != 1.0) ? scaledBuffer(source, ratio) : source;
+        }
+        }
     }
 
     //--------------//
@@ -969,6 +978,29 @@ public class Picture
         return null;
     }
 
+    //--------------//
+    // scaledBuffer //
+    //--------------//
+    /**
+     * Report a scaled version of the provided buffer, according to the desired ratio.
+     *
+     * @param binBuffer initial (binary) buffer
+     * @param ratio     desired ratio
+     * @return the scaled buffer (no longer binary)
+     */
+    private ByteProcessor scaledBuffer (ByteProcessor binBuffer,
+                                        double ratio)
+    {
+        final int scaledWidth = (int) Math.ceil(binBuffer.getWidth() * ratio);
+        final int scaledHeight = (int) Math.ceil(binBuffer.getHeight() * ratio);
+        final ByteProcessor scaledBuffer = (ByteProcessor) binBuffer.resize(
+                scaledWidth,
+                scaledHeight,
+                true); // True => use averaging when down-scaling
+
+        return scaledBuffer;
+    }
+
     //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
@@ -983,7 +1015,7 @@ public class Picture
                 "Should we print out the stop watch(es)?");
 
         private final Constant.Boolean disposeOfInitialSource = new Constant.Boolean(
-                true,
+                false,
                 "Should we dispose of initial source once binarized?");
 
         private final Constant.Integer gaussianRadius = new Constant.Integer(
@@ -995,5 +1027,10 @@ public class Picture
                 "pixels",
                 1,
                 "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
+
+        private final Constant.Integer patchInterline = new Constant.Integer(
+                "pixels",
+                10,
+                "Target interline for patch classifier input image");
     }
 }

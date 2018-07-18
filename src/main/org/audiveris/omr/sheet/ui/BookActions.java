@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
+import ij.process.ByteProcessor;
+
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.classifier.ui.SampleBrowser;
@@ -394,10 +396,46 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public void displayAnnotations (ActionEvent e)
     {
-        SheetStub stub = StubsController.getCurrentStub();
+        final SheetStub stub = StubsController.getCurrentStub();
 
         if (stub.isDone(Step.ANNOTATIONS)) {
-            stub.getSheet().displayAnnotationTab();
+            final SheetAssembly assembly = stub.getAssembly();
+            final SheetTab tab = SheetTab.ANNOTATION_TAB;
+
+            if (assembly.getPane(tab.label) == null) {
+                stub.getSheet().displayAnnotationTab();
+            } else {
+                assembly.selectViewTab(tab);
+            }
+        } else {
+            logger.info("No annotations available yet.");
+        }
+    }
+
+    //---------------//
+    // displayBinary //
+    //---------------//
+    /**
+     * Action that allows to display the view on binary image
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void displayBinary (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub.isDone(Step.BINARY)) {
+            final SheetAssembly assembly = stub.getAssembly();
+            final SheetTab tab = SheetTab.BINARY_TAB;
+
+            if (assembly.getPane(tab.label) == null) {
+                ((BasicSheet) stub.getSheet()).createBinaryView();
+            } else {
+                assembly.selectViewTab(tab);
+            }
+        } else {
+            logger.info("No binary image available yet.");
         }
     }
 
@@ -412,10 +450,41 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public void displayData (ActionEvent e)
     {
-        SheetStub stub = StubsController.getCurrentStub();
+        final SheetStub stub = StubsController.getCurrentStub();
 
         if (stub.isDone(Step.GRID)) {
-            stub.getSheet().displayDataTab();
+            final SheetAssembly assembly = stub.getAssembly();
+            final SheetTab tab = SheetTab.DATA_TAB;
+
+            if (assembly.getPane(tab.label) == null) {
+                stub.getSheet().displayDataTab();
+            } else {
+                assembly.selectViewTab(tab);
+            }
+        } else {
+            logger.info("No data buffer available yet.");
+        }
+    }
+
+    //----------------//
+    // displayInitial //
+    //----------------//
+    /**
+     * Action that allows to display the view on initial image.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void displayInitial (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+        final SheetAssembly assembly = stub.getAssembly();
+        final SheetTab tab = SheetTab.INITIAL_TAB;
+
+        if (assembly.getPane(tab.label) == null) {
+            ((BasicSheet) stub.getSheet()).createInitialView();
+        } else {
+            assembly.selectViewTab(tab);
         }
     }
 
@@ -430,47 +499,24 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public void displayNoStaff (ActionEvent e)
     {
-        SheetStub stub = StubsController.getCurrentStub();
+        final SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub == null) {
-            return;
-        }
+        if (stub.isDone(Step.GRID)) {
+            final SheetAssembly assembly = stub.getAssembly();
+            final SheetTab tab = SheetTab.NO_STAFF_TAB;
 
-        SheetAssembly assembly = stub.getAssembly();
-
-        if (assembly.getPane(SheetTab.NO_STAFF_TAB.label) == null) {
-            Sheet sheet = stub.getSheet(); // This may load the sheet...
-            assembly.addViewTab(
-                    SheetTab.NO_STAFF_TAB,
-                    new ScrollImageView(
-                            sheet,
-                            new ImageView(
-                                    sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF).getBufferedImage())),
-                    new BoardsPane(new PixelBoard(sheet)));
-        }
-    }
-
-    //----------------//
-    // displayPicture //
-    //----------------//
-    /**
-     * Action that allows to display the view on image (or binary table)
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public void displayPicture (ActionEvent e)
-    {
-        SheetStub stub = StubsController.getCurrentStub();
-
-        if (stub == null) {
-            return;
-        }
-
-        if (stub.isDone(Step.BINARY)) {
-            ((BasicSheet) stub.getSheet()).createBinaryView();
+            if (assembly.getPane(tab.label) == null) {
+                Sheet sheet = stub.getSheet(); // This may load the sheet...
+                ByteProcessor noStaff = sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF);
+                assembly.addViewTab(
+                        tab,
+                        new ScrollImageView(sheet, new ImageView(noStaff.getBufferedImage())),
+                        new BoardsPane(new PixelBoard(sheet)));
+            } else {
+                assembly.selectViewTab(tab);
+            }
         } else {
-            ((BasicSheet) stub.getSheet()).createPictureView();
+            logger.info("No staff lines available yet.");
         }
     }
 
@@ -485,22 +531,25 @@ public class BookActions
     @Action(enabledProperty = STUB_AVAILABLE)
     public void displayStaffLineGlyphs (ActionEvent e)
     {
-        SheetStub stub = StubsController.getCurrentStub();
+        final SheetStub stub = StubsController.getCurrentStub();
 
-        if (stub == null) {
-            return;
-        }
+        if (stub.isDone(Step.GRID)) {
+            final SheetAssembly assembly = stub.getAssembly();
+            final SheetTab tab = SheetTab.STAFF_LINE_TAB;
 
-        SheetAssembly assembly = stub.getAssembly();
-
-        if (assembly.getPane(SheetTab.STAFF_LINE_TAB.label) == null) {
-            Sheet sheet = stub.getSheet(); // This may load the sheet...
-            assembly.addViewTab(
-                    SheetTab.STAFF_LINE_TAB,
-                    new ScrollImageView(
-                            sheet,
-                            new ImageView(sheet.getPicture().buildStaffLineGlyphsImage())),
-                    new BoardsPane(new PixelBoard(sheet)));
+            if (assembly.getPane(tab.label) == null) {
+                Sheet sheet = stub.getSheet(); // This may load the sheet...
+                assembly.addViewTab(
+                        tab,
+                        new ScrollImageView(
+                                sheet,
+                                new ImageView(sheet.getPicture().buildStaffLineGlyphsImage())),
+                        new BoardsPane(new PixelBoard(sheet)));
+            } else {
+                assembly.selectViewTab(tab);
+            }
+        } else {
+            logger.info("No staff lines available yet.");
         }
     }
 

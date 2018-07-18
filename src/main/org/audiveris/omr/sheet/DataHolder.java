@@ -25,12 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import static java.nio.file.StandardOpenOption.CREATE;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "holder")
-public class DataHolder<T>
+public abstract class DataHolder<T>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -58,92 +58,175 @@ public class DataHolder<T>
             DataHolder.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** Containing sheet. */
-    protected Sheet sheet;
-
-    /** Specific class. */
-    protected Class<T> classe;
-
     /** Direct access to data, if any. */
-    private T data;
+    protected T data;
 
     /** Path to data on disk. */
     @XmlAttribute(name = "path")
-    private final String pathString;
+    protected final String pathString;
+
+    /** To avoid useless marshalling to disk. */
+    protected boolean modified = false;
+
+    /** To avoid multiple load attempts. */
+    protected boolean hasNoData = false;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code DataHolder} object.
+     *
+     * @param pathString dedicated path within sheet internals
      */
-    public DataHolder ()
+    public DataHolder (String pathString)
     {
-        this.classe = null;
-        this.sheet = null;
-        this.pathString = null;
+        this.pathString = pathString;
     }
 
     /**
      * Creates a new {@code DataHolder} object.
-     *
-     * @param sheet      the containing sheet
-     * @param classe     specific data class
-     * @param pathString dedicated path within sheet internals
      */
-    public DataHolder (Sheet sheet,
-                       Class<T> classe,
-                       String pathString)
+    protected DataHolder ()
     {
-        this.sheet = sheet;
-        this.classe = classe;
-        this.pathString = pathString;
+        this.pathString = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // getData //
+    //---------//
     /**
      * Return the handled data.
      *
+     * @param stub the related stub instance
      * @return the data, ready to use
      */
-    public T getData ()
+    public T getData (SheetStub stub)
     {
         if (data == null) {
-            final Book book = sheet.getStub().getBook();
+            if (hasNoData) {
+                return null;
+            }
 
             try {
-                book.getLock().lock();
+                stub.getBook().getLock().lock();
 
                 if (data == null) {
-                    JAXBContext jaxbContext = JAXBContext.newInstance(classe);
-                    Unmarshaller um = jaxbContext.createUnmarshaller();
-
                     // Open book file system
-                    Path dataFile = book.openSheetFolder(sheet.getStub().getNumber())
-                            .resolve(pathString);
-                    logger.debug("path: {}", dataFile);
+                    Path path = stub.getBook().openSheetFolder(stub.getNumber()).resolve(
+                            pathString);
+                    logger.debug("path: {}", path);
 
-                    InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
-                    data = (T) um.unmarshal(is);
-                    is.close();
-                    logger.info("Loaded {}", dataFile);
-                    dataFile.getFileSystem().close(); // Close book file system
+                    if (Files.exists(path)) {
+                        InputStream is = Files.newInputStream(path, StandardOpenOption.READ);
+                        data = load(is);
+                        is.close();
+                        logger.debug("Loaded {}", path);
+                    } else {
+                        hasNoData = true;
+                        logger.info("No {}", path);
+                    }
+
+                    path.getFileSystem().close(); // Close book file system
+                    modified = false;
                 }
             } catch (Exception ex) {
-                logger.warn("Error unmarshalling from " + pathString, ex);
+                logger.warn("Error reading data from " + pathString, ex);
             } finally {
-                book.getLock().unlock();
+                stub.getBook().getLock().unlock();
             }
         }
 
         return data;
     }
 
+    //---------//
+    // hasData //
+    //---------//
     public boolean hasData ()
     {
         return data != null;
     }
 
-    public void setData (T data)
+    //-----------//
+    // hasNoData //
+    //-----------//
+    public boolean hasNoData ()
+    {
+        return hasNoData;
+    }
+
+    //------------//
+    // isModified //
+    //------------//
+    public boolean isModified ()
+    {
+        return modified;
+    }
+
+    //---------//
+    // setData //
+    //---------//
+    public void setData (T data,
+                         boolean modified)
     {
         this.data = data;
+        setModified(modified);
     }
+
+    //-------------//
+    // setModified //
+    //-------------//
+    public void setModified (boolean bool)
+    {
+        modified = bool;
+    }
+
+    //-----------//
+    // storeData //
+    //-----------//
+    public void storeData (Path sheetFolder,
+                           Path oldSheetFolder)
+    {
+        final Path path = sheetFolder.resolve(pathString);
+        OutputStream os = null;
+
+        try {
+            if (!hasData()) {
+                if (oldSheetFolder != null) {
+                    // Copy from old book file to new
+                    Path oldPath = oldSheetFolder.resolve(pathString);
+                    Files.copy(oldPath, path);
+                    logger.info("Copied {}", path);
+                }
+            } else if (isModified()) {
+                try {
+                    Files.deleteIfExists(path);
+
+                    os = Files.newOutputStream(path, CREATE);
+                    store(os);
+                    setModified(false);
+                    logger.info("Stored {}", path);
+                } finally {
+                    if (os != null) {
+                        os.flush();
+                        os.close();
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in storeData " + ex, ex);
+        }
+    }
+
+    //------//
+    // load //
+    //------//
+    protected abstract T load (InputStream is)
+            throws Exception;
+
+    //-------//
+    // store //
+    //-------//
+    protected abstract void store (OutputStream os)
+            throws Exception;
 }

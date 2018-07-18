@@ -32,7 +32,6 @@ import org.audiveris.omr.classifier.ui.AnnotationService;
 import org.audiveris.omr.classifier.ui.AnnotationView;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.ui.PixelBoard;
@@ -121,12 +120,26 @@ public class AnnotationsStep
     {
         try {
             // Scale image if different from expected interline
-            RunTable binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
-            ByteProcessor binBuffer = binary.getBuffer();
-            int interline = sheet.getScale().getInterline();
-            int expected = constants.expectedInterline.getValue();
-            double ratio = (double) expected / interline;
-            ByteProcessor buf = (ratio != 1.0) ? scaledBuffer(binBuffer, ratio) : binBuffer;
+            final int interline = sheet.getScale().getInterline();
+            final int expected = constants.expectedInterline.getValue();
+            final double ratio = (double) expected / interline;
+            final Picture picture = sheet.getPicture();
+            final ByteProcessor buf;
+
+            if (expected == Picture.getPatchInterline()) {
+                // Buffer is available as a standard source
+                buf = picture.getSource(Picture.SourceKey.LARGE_TARGET);
+            } else {
+                // Build buffer from scaled standard initial or binary
+                ByteProcessor buffer = picture.getSource(Picture.SourceKey.INITIAL);
+
+                if (buffer == null) {
+                    buffer = picture.getSource(Picture.SourceKey.BINARY);
+                }
+
+                buf = (ratio != 1.0) ? scaledBuffer(buffer, ratio) : buffer;
+            }
+
             BufferedImage img = buf.getBufferedImage();
             String name = sheet.getId();
             File file = WellKnowns.TEMP_FOLDER.resolve(name + ".png").toFile();

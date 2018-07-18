@@ -23,20 +23,18 @@ package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.sheet.Picture.TableKey;
+import org.audiveris.omr.util.Jaxb;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
+import java.io.OutputStream;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code RunTableHolder} holds the reference to a run table, at least the path
@@ -46,22 +44,13 @@ import javax.xml.bind.annotation.XmlAttribute;
  */
 @XmlAccessorType(value = XmlAccessType.NONE)
 public class RunTableHolder
+        extends DataHolder<RunTable>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            RunTableHolder.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunTableHolder.class);
 
-    //~ Instance fields ----------------------------------------------------------------------------
-    /** Direct access to data, if any. */
-    private RunTable data;
-
-    /** Path to data on disk. */
-    @XmlAttribute(name = "path")
-    private final String pathString;
-
-    /** To avoid useless marshalling to disk. */
-    private boolean modified = false;
+    private static JAXBContext jaxbContext;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -71,89 +60,49 @@ public class RunTableHolder
      */
     public RunTableHolder (TableKey key)
     {
-        pathString = key + ".xml";
+        super(key + ".xml");
     }
 
     /** No-arg constructor needed for JAXB. */
     private RunTableHolder ()
     {
-        pathString = null;
+        super();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //---------//
-    // getData //
-    //---------//
-    /**
-     * Return the handled data.
-     *
-     * @param stub the related stub instance
-     * @return the data, ready to use
-     */
-    public RunTable getData (SheetStub stub)
+    //------//
+    // load //
+    //------//
+    @Override
+    protected RunTable load (InputStream is)
+            throws Exception
     {
-        if (data == null) {
+        return (RunTable) Jaxb.unmarshal(is, getJaxbContext());
+    }
+
+    //-------//
+    // store //
+    //-------//
+    @Override
+    protected void store (OutputStream os)
+            throws Exception
+    {
+        Jaxb.marshal(data, os, getJaxbContext());
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private JAXBContext getJaxbContext ()
+    {
+        if (jaxbContext == null) {
             try {
-                stub.getBook().getLock().lock();
-
-                if (data == null) {
-                    JAXBContext jaxbContext = JAXBContext.newInstance(RunTable.class);
-                    Unmarshaller um = jaxbContext.createUnmarshaller();
-
-                    // Open book file system
-                    Path dataFile = stub.getBook().openSheetFolder(stub.getNumber())
-                            .resolve(pathString);
-                    logger.debug("path: {}", dataFile);
-
-                    InputStream is = Files.newInputStream(dataFile, StandardOpenOption.READ);
-                    data = (RunTable) um.unmarshal(is);
-                    is.close();
-
-                    dataFile.getFileSystem().close(); // Close book file system
-                    modified = false;
-                    logger.debug("Loaded {}", dataFile);
-                }
-            } catch (Exception ex) {
-                logger.warn("Error unmarshalling from " + pathString, ex);
-            } finally {
-                stub.getBook().getLock().unlock();
+                jaxbContext = JAXBContext.newInstance(RunTable.class);
+            } catch (JAXBException ex) {
+                logger.error("Cannot build JAXB context " + ex, ex);
             }
         }
 
-        return data;
-    }
-
-    //---------//
-    // hasData //
-    //---------//
-    public boolean hasData ()
-    {
-        return data != null;
-    }
-
-    //------------//
-    // isModified //
-    //------------//
-    public boolean isModified ()
-    {
-        return modified;
-    }
-
-    //---------//
-    // setData //
-    //---------//
-    public void setData (RunTable data,
-                         boolean modified)
-    {
-        this.data = data;
-        setModified(modified);
-    }
-
-    //-------------//
-    // setModified //
-    //-------------//
-    public void setModified (boolean bool)
-    {
-        modified = bool;
+        return jaxbContext;
     }
 }

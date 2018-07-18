@@ -677,12 +677,13 @@ public class BasicStub
     {
         try {
             if (getLatestStep().compareTo(Step.ANNOTATIONS) >= 0) {
+                BufferedImage initialImage = getSheet().getPicture().getInitialImage();
                 RunTable binaryTable = grabBinaryTable();
                 Scale scale = getSheet().getScale();
                 AnnotationIndex annotationIndex = getSheet().getAnnotationIndex();
 
                 doReset();
-                sheet = new BasicSheet(this, binaryTable, scale, annotationIndex);
+                sheet = new BasicSheet(this, initialImage, binaryTable, scale, annotationIndex);
                 logger.info("Sheet#{} reset to ANNOTATIONS.", number);
             } else {
                 logger.info("No annotations yet for Sheet#{}", number);
@@ -700,10 +701,11 @@ public class BasicStub
     public void resetToBinary ()
     {
         try {
+            BufferedImage initialImage = getSheet().getPicture().getInitialImage();
             RunTable binaryTable = grabBinaryTable();
 
             doReset();
-            sheet = new BasicSheet(this, binaryTable, null, null);
+            sheet = new BasicSheet(this, initialImage, binaryTable, null, null);
             logger.info("Sheet#{} reset to BINARY.", number);
         } catch (Throwable ex) {
             logger.warn("Could not reset to BINARY {}", ex.toString(), ex);

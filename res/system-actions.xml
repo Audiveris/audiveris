@@ -50,7 +50,8 @@
     <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotScale"               topic="PLOTS"/>
     <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotStem"                topic="PLOTS"/>
     <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotStaves"              topic="PLOTS"/>
-    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayPicture"/>
+    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayInitial"/>
+    <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayBinary"/>
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayAnnotations"/>
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayData"/>
     <action domain="SHEET" section="25" class="org.audiveris.omr.sheet.ui.BookActions" method="displayNoStaff"          topic="SPECIFIC_TABS"/>

@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.ui;
 
-import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.score.ui.SheetPopupMenu;
 import org.audiveris.omr.sheet.Picture;
@@ -50,7 +49,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JPopupMenu;
-import javax.swing.SwingWorker;
 
 /**
  * Class {@code PictureView} defines the view dedicated to the display of the picture
@@ -73,15 +71,21 @@ public class PictureView
     /** Pop-up page menu. */
     private final SheetPopupMenu pageMenu;
 
+    /** Initial or Binary tab. */
+    private final SheetTab sheetTab;
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a new {@code PictureView} instance, dedicated to a sheet.
      *
-     * @param sheet the related sheet
+     * @param sheet    the related sheet
+     * @param sheetTab the desired tab (initial or binary)
      */
-    public PictureView (Sheet sheet)
+    public PictureView (Sheet sheet,
+                        SheetTab sheetTab)
     {
         this.sheet = sheet;
+        this.sheetTab = sheetTab;
 
         view = new MyView();
         view.setName("Picture-View");
@@ -144,79 +148,30 @@ public class PictureView
         @Override
         public void render (final Graphics2D g)
         {
-            // Check we have all needed data
-            // If not, use SwingWorker to spawn a task to retrieve the data and then do the painting
             final ViewParameters viewParams = ViewParameters.getInstance();
             final boolean input = viewParams.isInputPainting();
             final boolean output = viewParams.isOutputPainting();
             final boolean voice = viewParams.isVoicePainting();
 
-            boolean ok = true;
-
-            if (input) {
-                Picture picture = sheet.getPicture();
-                BufferedImage initial = picture.getInitialImage();
-
-                if ((initial == null) && !picture.hasTableReady(Picture.TableKey.BINARY)) {
-                    ok = false;
-                }
-            }
-
-            if (ok) {
-                RunTable table = sheet.getPicture().getTable(Picture.TableKey.BINARY);
-                doRender(g, input, output, voice, table);
-            } else {
-                // Spawn
-                new SwingWorker<RunTable, Void>()
-                {
-                    @Override
-                    protected RunTable doInBackground ()
-                            throws Exception
-                    {
-                        try {
-                            LogUtil.start(sheet.getStub());
-
-                            return sheet.getPicture().getTable(Picture.TableKey.BINARY);
-                        } finally {
-                            LogUtil.stopStub();
-                        }
-                    }
-
-                    @Override
-                    protected void done ()
-                    {
-                        repaint();
-                    }
-                }.execute();
-            }
-        }
-
-        private void doRender (Graphics2D g,
-                               boolean input,
-                               boolean output,
-                               boolean voice,
-                               RunTable table)
-        {
             final Color oldColor = g.getColor();
             g.setRenderingHint(KEY_ANTIALIASING, VALUE_ANTIALIAS_OFF);
 
-            // Render the picture image (either initial or binary)
             if (input) {
-                Picture picture = sheet.getPicture();
-                BufferedImage initial = picture.getInitialImage();
+                final Picture picture = sheet.getPicture();
 
-                if (initial != null) {
+                if (sheetTab == SheetTab.INITIAL_TAB) {
+                    final BufferedImage initial = picture.getInitialImage();
                     g.drawRenderedImage(initial, null);
-                } else if (table != null) {
+                } else {
+                    final RunTable table = picture.getTable(Picture.TableKey.BINARY);
                     table.render(g, new Point(0, 0));
                 }
             }
 
             // Render the recognized score entities?
             if (output) {
-                final boolean mixed = input;
-                final boolean coloredVoices = mixed ? false : voice;
-                g.setColor(mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
+                final boolean coloredVoices = input ? false : voice;
+                g.setColor(input ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
                 new SheetResultPainter(sheet, g, coloredVoices, true, false).process();
             }
 
