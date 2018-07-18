@@ -27,6 +27,7 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.classifier.AnnotationIndex;
 import org.audiveris.omr.classifier.AnnotationJsonParser;
+import org.audiveris.omr.classifier.PatchClassifier;
 import org.audiveris.omr.classifier.ui.AnnotationBoard;
 import org.audiveris.omr.classifier.ui.AnnotationService;
 import org.audiveris.omr.classifier.ui.AnnotationView;
@@ -126,7 +127,7 @@ public class AnnotationsStep
             final Picture picture = sheet.getPicture();
             final ByteProcessor buf;
 
-            if (expected == Picture.getPatchInterline()) {
+            if (expected == PatchClassifier.getPatchInterline()) {
                 // Buffer is available as a standard source
                 buf = picture.getSource(Picture.SourceKey.LARGE_TARGET);
             } else {

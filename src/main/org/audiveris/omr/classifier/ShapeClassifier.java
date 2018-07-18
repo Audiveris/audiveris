@@ -53,10 +53,11 @@ public abstract class ShapeClassifier
                 throws Exception
         {
             try {
-                logger.debug("Allocating instances for ShapeClassifier...");
-                ShapeClassifier.getInstance();
-                ShapeClassifier.getSecondInstance();
-                logger.debug("ShapeClassifier instances allocated.");
+                logger.info("Allocating instances for ShapeClassifier...");
+                ShapeClassifier.getPatchClassifier();
+                //                ShapeClassifier.getInstance();
+                //                ShapeClassifier.getSecondInstance();
+                logger.info("ShapeClassifier instances allocated.");
             } catch (Exception ex) {
                 logger.warn("Error pre-loading ShapeClassifier", ex);
                 throw ex;
@@ -80,11 +81,15 @@ public abstract class ShapeClassifier
      */
     public static Classifier getInstance ()
     {
-        if (useDeepClassifier()) {
-            return DeepClassifier.getInstance();
-        } else {
-            return BasicClassifier.getInstance();
-        }
+        logger.warn("getInstance() is no longer operational");
+
+        return null;
+
+        //        if (useDeepClassifier()) {
+        //            return DeepClassifier.getInstance();
+        //        } else {
+        //            return BasicClassifier.getInstance();
+        //        }
     }
 
     /**
@@ -94,11 +99,15 @@ public abstract class ShapeClassifier
      */
     public static Classifier getSecondInstance ()
     {
-        if (useDeepClassifier()) {
-            return BasicClassifier.getInstance();
-        } else {
-            return DeepClassifier.getInstance();
-        }
+        logger.warn("getSecondInstance() is no longer operational");
+
+        return null;
+
+        //        if (useDeepClassifier()) {
+        //            return BasicClassifier.getInstance();
+        //        } else {
+        //            return DeepClassifier.getInstance();
+        //        }
     }
 
     //---------//
@@ -119,6 +128,14 @@ public abstract class ShapeClassifier
     public static boolean useDeepClassifier ()
     {
         return constants.useDeepClassifier.isSet();
+    }
+
+    //--------------------//
+    // getPatchClassifier //
+    //--------------------//
+    private static PatchClassifier getPatchClassifier ()
+    {
+        return PatchClassifier.getInstance();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

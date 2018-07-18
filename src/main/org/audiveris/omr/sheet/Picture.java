@@ -24,6 +24,7 @@ package org.audiveris.omr.sheet;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 
+import org.audiveris.omr.classifier.PatchClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -490,135 +491,6 @@ public class Picture
         return "Picture";
     }
 
-    //----------//
-    // getTable //
-    //----------//
-    /**
-     * Report the desired table.
-     *
-     * @param key key of desired table
-     * @return the table found, if any, null otherwise
-     */
-    public RunTable getTable (TableKey key)
-    {
-        RunTableHolder tableHolder = tables.get(key);
-
-        if (tableHolder == null) {
-            return null;
-        }
-
-        final RunTable table = tableHolder.getData(sheet.getStub());
-
-        return table;
-    }
-
-    //----------//
-    // hasTable //
-    //----------//
-    /**
-     * Report whether the desired table is known
-     *
-     * @param key key of desired table
-     * @return true if we have a tableHolder, false otherwise
-     */
-    public boolean hasTable (TableKey key)
-    {
-        return tables.get(key) != null;
-    }
-
-    //---------------//
-    // hasTableReady //
-    //---------------//
-    /**
-     * Report whether the desired table is known and loaded.
-     *
-     * @param key key of desired table
-     * @return true if we have a tableHolder with loaded data
-     */
-    public boolean hasTableReady (TableKey key)
-    {
-        RunTableHolder tableHolder = tables.get(key);
-
-        if (tableHolder == null) {
-            return false;
-        }
-
-        return tableHolder.hasData();
-    }
-
-    //----------------//
-    // medianFiltered //
-    //----------------//
-    public ByteProcessor medianFiltered (ByteProcessor src)
-    {
-        StopWatch watch = new StopWatch("Median");
-
-        try {
-            watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
-
-            final int radius = constants.medianRadius.getValue();
-            logger.debug("Image filtered with median kernel radius: {}", radius);
-
-            MedianGrayFilter medianFilter = new MedianGrayFilter(radius);
-
-            return medianFilter.filter(src);
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
-
-    //-------------//
-    // removeTable //
-    //-------------//
-    /**
-     * Remove a table.
-     *
-     * @param key table key
-     */
-    public void removeTable (TableKey key)
-    {
-        tables.remove(key);
-    }
-
-    //----------//
-    // setTable //
-    //----------//
-    /**
-     * Register a table.
-     *
-     * @param key      table key
-     * @param table    table to register
-     * @param modified true if not saved on disk
-     */
-    public final void setTable (TableKey key,
-                                RunTable table,
-                                boolean modified)
-    {
-        RunTableHolder tableHolder = new RunTableHolder(key);
-        tableHolder.setData(table, modified);
-        tables.put(key, tableHolder);
-
-        switch (key) {
-        case BINARY:
-            disposeSource(SourceKey.BINARY);
-        }
-    }
-
-    //-------------------//
-    // getPatchInterline //
-    //-------------------//
-    /**
-     * Report the interline value expected by the patch classifier.
-     *
-     * @return patch classifier expected interline
-     */
-    public static int getPatchInterline ()
-    {
-        return constants.patchInterline.getValue();
-    }
-
     //-----------//
     // getSource //
     //-----------//
@@ -707,6 +579,28 @@ public class Picture
     }
 
     //----------//
+    // getTable //
+    //----------//
+    /**
+     * Report the desired table.
+     *
+     * @param key key of desired table
+     * @return the table found, if any, null otherwise
+     */
+    public RunTable getTable (TableKey key)
+    {
+        RunTableHolder tableHolder = tables.get(key);
+
+        if (tableHolder == null) {
+            return null;
+        }
+
+        final RunTable table = tableHolder.getData(sheet.getStub());
+
+        return table;
+    }
+
+    //----------//
     // getWidth //
     //----------//
     /**
@@ -717,6 +611,63 @@ public class Picture
     public int getWidth ()
     {
         return width;
+    }
+
+    //----------//
+    // hasTable //
+    //----------//
+    /**
+     * Report whether the desired table is known
+     *
+     * @param key key of desired table
+     * @return true if we have a tableHolder, false otherwise
+     */
+    public boolean hasTable (TableKey key)
+    {
+        return tables.get(key) != null;
+    }
+
+    //---------------//
+    // hasTableReady //
+    //---------------//
+    /**
+     * Report whether the desired table is known and loaded.
+     *
+     * @param key key of desired table
+     * @return true if we have a tableHolder with loaded data
+     */
+    public boolean hasTableReady (TableKey key)
+    {
+        RunTableHolder tableHolder = tables.get(key);
+
+        if (tableHolder == null) {
+            return false;
+        }
+
+        return tableHolder.hasData();
+    }
+
+    //----------------//
+    // medianFiltered //
+    //----------------//
+    public ByteProcessor medianFiltered (ByteProcessor src)
+    {
+        StopWatch watch = new StopWatch("Median");
+
+        try {
+            watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
+
+            final int radius = constants.medianRadius.getValue();
+            logger.debug("Image filtered with median kernel radius: {}", radius);
+
+            MedianGrayFilter medianFilter = new MedianGrayFilter(radius);
+
+            return medianFilter.filter(src);
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
     }
 
     //---------//
@@ -764,6 +715,43 @@ public class Picture
                     .publish(new PixelEvent(this, event.hint, event.movement, level));
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //-------------//
+    // removeTable //
+    //-------------//
+    /**
+     * Remove a table.
+     *
+     * @param key table key
+     */
+    public void removeTable (TableKey key)
+    {
+        tables.remove(key);
+    }
+
+    //----------//
+    // setTable //
+    //----------//
+    /**
+     * Register a table.
+     *
+     * @param key      table key
+     * @param table    table to register
+     * @param modified true if not saved on disk
+     */
+    public final void setTable (TableKey key,
+                                RunTable table,
+                                boolean modified)
+    {
+        RunTableHolder tableHolder = new RunTableHolder(key);
+        tableHolder.setData(table, modified);
+        tables.put(key, tableHolder);
+
+        switch (key) {
+        case BINARY:
+            disposeSource(SourceKey.BINARY);
         }
     }
 
@@ -929,7 +917,7 @@ public class Picture
             source = getSource(SourceKey.BINARY);
         }
 
-        final int target = getPatchInterline();
+        final int target = PatchClassifier.getPatchInterline();
 
         switch (size) {
         case SMALL: {
@@ -1014,10 +1002,6 @@ public class Picture
                 false,
                 "Should we print out the stop watch(es)?");
 
-        private final Constant.Boolean disposeOfInitialSource = new Constant.Boolean(
-                false,
-                "Should we dispose of initial source once binarized?");
-
         private final Constant.Integer gaussianRadius = new Constant.Integer(
                 "pixels",
                 1,
@@ -1027,10 +1011,5 @@ public class Picture
                 "pixels",
                 1,
                 "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
-
-        private final Constant.Integer patchInterline = new Constant.Integer(
-                "pixels",
-                10,
-                "Target interline for patch classifier input image");
     }
 }
