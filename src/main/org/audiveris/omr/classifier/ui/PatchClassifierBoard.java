@@ -26,8 +26,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
 
-import ij.process.ByteProcessor;
-
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.OmrEvaluation;
 import org.audiveris.omr.classifier.PatchClassifier;
@@ -45,6 +43,7 @@ import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.Navigable;
+import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +76,8 @@ public class PatchClassifierBoard
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(PatchClassifierBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            PatchClassifierBoard.class);
 
     /** Events this board is interested in. */
     private static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
@@ -180,35 +180,18 @@ public class PatchClassifierBoard
         Rectangle rect = locEvent.getData();
 
         if (rect != null) {
-            final double[][] pixels = new double[CONTEXT_HEIGHT][CONTEXT_WIDTH];
+            Wrapper<BufferedImage> imageWrapper = new Wrapper<BufferedImage>(null);
             OmrEvaluation[] evals = PatchClassifier.getInstance().getOmrEvaluations(
                     sheet,
                     GeoUtil.centerOf(rect),
                     sheet.getInterline(),
-                    pixels);
-            subImagePanel.setImage(imageOf(pixels));
+                    imageWrapper);
+            subImagePanel.setImage(imageWrapper.value);
             selector.setEvals(evals);
         } else {
             subImagePanel.setImage(null);
             selector.setEvals(null);
         }
-    }
-
-    //---------//
-    // imageOf //
-    //---------//
-    private BufferedImage imageOf (double[][] pixels)
-    {
-        // Store a path copy on disk
-        final ByteProcessor patch = new ByteProcessor(CONTEXT_WIDTH, CONTEXT_HEIGHT);
-
-        for (int w = 0; w < CONTEXT_WIDTH; w++) {
-            for (int h = 0; h < CONTEXT_HEIGHT; h++) {
-                patch.set(w, h, (int) pixels[h][w]);
-            }
-        }
-
-        return patch.getBufferedImage();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

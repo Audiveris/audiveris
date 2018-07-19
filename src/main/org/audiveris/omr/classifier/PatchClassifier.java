@@ -29,19 +29,26 @@ import org.audiveris.omr.sheet.Picture.SourceKey;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.UriUtil;
+import org.audiveris.omr.util.Wrapper;
 import org.audiveris.omrdataset.api.OmrShape;
 
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -124,22 +131,35 @@ public class PatchClassifier
     }
 
     //-------------------//
+    // getPatchInterline //
+    //-------------------//
+    /**
+     * Report the interline value expected by the patch classifier.
+     *
+     * @return patch classifier expected interline
+     */
+    public static int getPatchInterline ()
+    {
+        return INTERLINE;
+    }
+
+    //-------------------//
     // getOmrEvaluations //
     //-------------------//
     /**
      * Report, by decreasing quality, the shapes found at provided location,
      * using the provided interline scaling value.
      *
-     * @param sheet     the sheet at hand
-     * @param location  provided location in sheet
-     * @param interline relevant interline (staff or system)
-     * @param pixel     (output) array to be populated by patch pixels
+     * @param sheet        the sheet at hand
+     * @param location     provided location in sheet
+     * @param interline    relevant interline (staff or system)
+     * @param imageWrapper (output) if not null, to be populated by patch image
      * @return the top shapes found
      */
     public OmrEvaluation[] getOmrEvaluations (Sheet sheet,
                                               Point location,
                                               int interline,
-                                              double[][] pixels)
+                                              Wrapper<BufferedImage> imageWrapper)
     {
         logger.info("Patching sheet at ({}, {}).", location.x, location.y);
 
@@ -166,6 +186,8 @@ public class PatchClassifier
         final int yMin = pt.y - (CONTEXT_HEIGHT / 2);
 
         // Extract patch pixels from scaled image
+        final double[][] pixels = new double[CONTEXT_HEIGHT][CONTEXT_WIDTH];
+
         for (int w = 0; w < CONTEXT_WIDTH; w++) {
             for (int h = 0; h < CONTEXT_HEIGHT; h++) {
                 int x = xMin + w;
@@ -183,7 +205,13 @@ public class PatchClassifier
 
         ///storePixels(location, pixels);
         //
-        INDArray features = Nd4j.create(pixels).reshape(1, 1, CONTEXT_HEIGHT, CONTEXT_WIDTH);
+        // Output patch image if so asked for
+        if (imageWrapper != null) {
+            imageWrapper.value = imageOf(pixels);
+        }
+
+        INDArray features = Nd4j.create(pixels)
+                .reshape(1, 1, CONTEXT_HEIGHT, CONTEXT_WIDTH);
 
         // Network inference
         INDArray output = model.outputSingle(features);
@@ -202,19 +230,6 @@ public class PatchClassifier
         Collections.sort(evalList);
 
         return evalList.toArray(new OmrEvaluation[evalList.size()]);
-    }
-
-    //-------------------//
-    // getPatchInterline //
-    //-------------------//
-    /**
-     * Report the interline value expected by the patch classifier.
-     *
-     * @return patch classifier expected interline
-     */
-    public static int getPatchInterline ()
-    {
-        return INTERLINE;
     }
 
     //------//
@@ -262,6 +277,28 @@ public class PatchClassifier
         return model;
     }
 
+    //---------//
+    // imageOf //
+    //---------//
+    /**
+     * Generate a BufferedImage out of the populated pixels
+     *
+     * @param pixels populated pixels
+     * @return suitable BufferedImage
+     */
+    private BufferedImage imageOf (double[][] pixels)
+    {
+        final ByteProcessor patch = new ByteProcessor(CONTEXT_WIDTH, CONTEXT_HEIGHT);
+
+        for (int w = 0; w < CONTEXT_WIDTH; w++) {
+            for (int h = 0; h < CONTEXT_HEIGHT; h++) {
+                patch.set(w, h, (int) pixels[h][w]);
+            }
+        }
+
+        return patch.getBufferedImage();
+    }
+
     //--------------//
     // isCompatible //
     //--------------//
@@ -296,20 +333,10 @@ public class PatchClassifier
     private void storePixels (Point location,
                               double[][] pixels)
     {
-        // Store a path copy on disk
-        final ByteProcessor patch = new ByteProcessor(CONTEXT_WIDTH, CONTEXT_HEIGHT);
-
-        for (int w = 0; w < CONTEXT_WIDTH; w++) {
-            for (int h = 0; h < CONTEXT_HEIGHT; h++) {
-                patch.set(w, h, (int) pixels[h][w]);
-            }
-        }
-
-        Path path = WellKnowns.TEMP_FOLDER.resolve(
-                "p_" + location.x + "_" + location.y + ".png");
+        Path path = WellKnowns.TEMP_FOLDER.resolve("p_" + location.x + "_" + location.y + ".png");
 
         try {
-            ImageIO.write(patch.getBufferedImage(), "png", path.toFile());
+            ImageIO.write(imageOf(pixels), "png", path.toFile());
             logger.info("Patch saved as {}", path);
         } catch (Exception ex) {
             logger.warn("Could not store image {}", path, ex);
