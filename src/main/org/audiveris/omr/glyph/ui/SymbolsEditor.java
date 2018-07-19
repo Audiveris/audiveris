@@ -21,8 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.glyph.ui;
 
-import org.audiveris.omr.classifier.BasicClassifier;
-import org.audiveris.omr.classifier.DeepClassifier;
+import org.audiveris.omr.classifier.ui.PatchClassifierBoard;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.GlyphIndex;
@@ -64,7 +63,9 @@ import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
+
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
+
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.Navigable;
@@ -76,8 +77,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
+
 import java.awt.Stroke;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -186,23 +189,28 @@ public class SymbolsEditor
                 new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet(), true));
         boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
         boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
-        boards.add(
-                new EvaluationBoard(
-                        true,
+        boards.add(new PatchClassifierBoard(
                         sheet,
-                        BasicClassifier.getInstance(),
-                        sheet.getGlyphIndex().getEntityService(),
-                        interController,
-                        constants.selectBasicClassifierBoard.isSet()));
-        boards.add(
-                new EvaluationBoard(
-                        true,
-                        sheet,
-                        DeepClassifier.getInstance(),
-                        sheet.getGlyphIndex().getEntityService(),
-                        interController,
-                        constants.selectDeepClassifierBoard.isSet()));
+                        sheet.getLocationService(),
+                        constants.selectPatchClassifierBoard.isSet()));
 
+        //        boards.add(
+        //                new EvaluationBoard(
+        //                        true,
+        //                        sheet,
+        //                        BasicClassifier.getInstance(),
+        //                        sheet.getGlyphIndex().getEntityService(),
+        //                        interController,
+        //                        constants.selectBasicClassifierBoard.isSet()));
+        //        boards.add(
+        //                new EvaluationBoard(
+        //                        true,
+        //                        sheet,
+        //                        DeepClassifier.getInstance(),
+        //                        sheet.getGlyphIndex().getEntityService(),
+        //                        interController,
+        //                        constants.selectDeepClassifierBoard.isSet()));
+        //
         BoardsPane boardsPane = new BoardsPane(boards);
 
         // Create a hosting pane for the view
@@ -376,8 +384,12 @@ public class SymbolsEditor
                 true,
                 "Should we select Shape board by default?");
 
-        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
+        private final Constant.Boolean selectPatchClassifierBoard = new Constant.Boolean(
                 true,
+                "Should we select Patch Classifier board by default?");
+
+        private final Constant.Boolean selectBasicClassifierBoard = new Constant.Boolean(
+                false,
                 "Should we select Basic Classifier board by default?");
 
         private final Constant.Boolean selectDeepClassifierBoard = new Constant.Boolean(

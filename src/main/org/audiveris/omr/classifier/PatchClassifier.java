@@ -5,7 +5,7 @@
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
 //
-//  Copyright ©  Audiveris 2017. All rights reserved.
+//  Copyright © Audiveris 2018. All rights reserved.
 //
 //  This program is free software: you can redistribute it and/or modify it under the terms of the
 //  GNU Affero General Public License as published by the Free Software Foundation, either version
@@ -22,6 +22,7 @@
 package org.audiveris.omr.classifier;
 
 import ij.process.ByteProcessor;
+
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Picture.SourceKey;
@@ -29,11 +30,11 @@ import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.UriUtil;
 import org.audiveris.omrdataset.api.OmrShape;
+
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +42,9 @@ import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 /**
  * Class {@code PatchClassifier} is the first shot of a patch classifier.
@@ -52,6 +53,7 @@ import java.util.List;
  * a sub-image (a "patch" of fixed size) centered on a given image location.
  *
  * @author Hervé Bitteur
+ * @author Raphael Emberger
  */
 public class PatchClassifier
 {
@@ -69,10 +71,10 @@ public class PatchClassifier
     public static final int CONTEXT_WIDTH = 40;
 
     /** Value used for background pixel feature: {@value}. */
-    public static final int BACKGROUND = 0;
+    public static final int BACKGROUND = 255;
 
     /** Value used for foreground pixel feature: {@value}. */
-    public static final int FOREGROUND = 255;
+    public static final int FOREGROUND = 0;
 
     /**
      * Name of file containing the trained model.
@@ -122,19 +124,6 @@ public class PatchClassifier
     }
 
     //-------------------//
-    // getPatchInterline //
-    //-------------------//
-    /**
-     * Report the interline value expected by the patch classifier.
-     *
-     * @return patch classifier expected interline
-     */
-    public static int getPatchInterline ()
-    {
-        return INTERLINE;
-    }
-
-    //-------------------//
     // getOmrEvaluations //
     //-------------------//
     /**
@@ -144,13 +133,16 @@ public class PatchClassifier
      * @param sheet     the sheet at hand
      * @param location  provided location in sheet
      * @param interline relevant interline (staff or system)
+     * @param pixel     (output) array to be populated by patch pixels
      * @return the top shapes found
      */
     public OmrEvaluation[] getOmrEvaluations (Sheet sheet,
                                               Point location,
-                                              int interline)
+                                              int interline,
+                                              double[][] pixels)
     {
         logger.info("Patching sheet at ({}, {}).", location.x, location.y);
+
         final Scale scale = sheet.getScale();
 
         // Select properly scaled source
@@ -170,32 +162,34 @@ public class PatchClassifier
         // From provided location in original image, derive pt in scaled image
         final double ratio = (double) INTERLINE / interline;
         final Point pt = PointUtil.rounded(PointUtil.times(location, ratio));
-        int xMin = pt.x - (int) ((CONTEXT_WIDTH / 2) * ratio);
-        int yMin = pt.y - (int) ((CONTEXT_HEIGHT / 2) * ratio);
+        final int xMin = pt.x - (CONTEXT_WIDTH / 2);
+        final int yMin = pt.y - (CONTEXT_HEIGHT / 2);
 
         // Extract patch pixels from scaled image
-        final double[][] pixels = new double[CONTEXT_HEIGHT][CONTEXT_WIDTH];
         for (int w = 0; w < CONTEXT_WIDTH; w++) {
             for (int h = 0; h < CONTEXT_HEIGHT; h++) {
                 int x = xMin + w;
                 int y = yMin + h;
-                if (x < 0 || x >= bp.getWidth()) {
-                    pixels[h][w] = 0.0;
-                } else if (y < 0 || y >= bp.getHeight()) {
-                    pixels[h][w] = 0.0;
+
+                if ((x < 0) || (x >= bp.getWidth())) {
+                    pixels[h][w] = BACKGROUND;
+                } else if ((y < 0) || (y >= bp.getHeight())) {
+                    pixels[h][w] = BACKGROUND;
                 } else {
                     pixels[h][w] = bp.get(x, y);
                 }
             }
         }
 
+        ///storePixels(location, pixels);
+        //
         INDArray features = Nd4j.create(pixels).reshape(1, 1, CONTEXT_HEIGHT, CONTEXT_WIDTH);
 
         // Network inference
         INDArray output = model.outputSingle(features);
 
         // Extract and sort evaluations
-        List<OmrEvaluation> evalList = new ArrayList<>();
+        List<OmrEvaluation> evalList = new ArrayList<OmrEvaluation>();
         OmrShape[] values = OmrShape.values();
 
         for (int i = 0; i < output.length(); i++) {
@@ -208,6 +202,19 @@ public class PatchClassifier
         Collections.sort(evalList);
 
         return evalList.toArray(new OmrEvaluation[evalList.size()]);
+    }
+
+    //-------------------//
+    // getPatchInterline //
+    //-------------------//
+    /**
+     * Report the interline value expected by the patch classifier.
+     *
+     * @return patch classifier expected interline
+     */
+    public static int getPatchInterline ()
+    {
+        return INTERLINE;
     }
 
     //------//
@@ -225,18 +232,22 @@ public class PatchClassifier
         ComputationGraph model = null;
         Path path = WellKnowns.TRAIN_FOLDER.resolve(fileName);
         logger.debug("Searching for patch classifier model...");
+
         if (!Files.exists(path)) {
             logger.info("No model found at {}. Searching in resource folder...", path);
             path = Paths.get(UriUtil.toURI(WellKnowns.RES_URI, fileName));
         }
+
         if (Files.exists(path)) {
             logger.debug("Found model at {}", path);
             logger.debug("Loading Model...");
+
             try {
                 model = KerasModelImport.importKerasModelAndWeights(path.toString());
             } catch (Exception ex) {
                 logger.warn("Load error {}", ex.toString(), ex);
             }
+
             logger.debug("Model loaded.");
 
             if (!isCompatible(model)) {
@@ -247,6 +258,7 @@ public class PatchClassifier
         } else {
             logger.warn("Couldn't find patch classifier model. Expected: {}", path);
         }
+
         return model;
     }
 
@@ -270,10 +282,37 @@ public class PatchClassifier
         List<String> inputs = conf.getNetworkInputs();
         List<String> outputs = conf.getNetworkOutputs();
         boolean compatability = true;
-        compatability &= inputs.size() == 1;
+        compatability &= (inputs.size() == 1);
         compatability &= inputs.get(0).equals("input_1");
-        compatability &= outputs.size() == 1;
+        compatability &= (outputs.size() == 1);
         compatability &= outputs.get(0).equals("dense_1_loss");
+
         return compatability;
+    }
+
+    //-------------//
+    // storePixels //
+    //-------------//
+    private void storePixels (Point location,
+                              double[][] pixels)
+    {
+        // Store a path copy on disk
+        final ByteProcessor patch = new ByteProcessor(CONTEXT_WIDTH, CONTEXT_HEIGHT);
+
+        for (int w = 0; w < CONTEXT_WIDTH; w++) {
+            for (int h = 0; h < CONTEXT_HEIGHT; h++) {
+                patch.set(w, h, (int) pixels[h][w]);
+            }
+        }
+
+        Path path = WellKnowns.TEMP_FOLDER.resolve(
+                "p_" + location.x + "_" + location.y + ".png");
+
+        try {
+            ImageIO.write(patch.getBufferedImage(), "png", path.toFile());
+            logger.info("Patch saved as {}", path);
+        } catch (Exception ex) {
+            logger.warn("Could not store image {}", path, ex);
+        }
     }
 }
