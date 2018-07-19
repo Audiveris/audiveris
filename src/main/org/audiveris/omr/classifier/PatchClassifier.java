@@ -22,32 +22,22 @@
 package org.audiveris.omr.classifier;
 
 import ij.process.ByteProcessor;
-
-import org.apache.commons.io.FileUtils;
-
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Picture.SourceKey;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.UriUtil;
-import org.audiveris.omr.util.ZipFileSystem;
 import org.audiveris.omrdataset.api.OmrShape;
-
+import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.graph.ComputationGraph;
-import org.deeplearning4j.util.ModelSerializer;
-
+import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
+import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -73,10 +63,10 @@ public class PatchClassifier
     public static final int INTERLINE = 10;
 
     /** Height of patch, within scaled image: {@value}. */
-    public static final int CONTEXT_HEIGHT = 96;
+    public static final int CONTEXT_HEIGHT = 160;
 
     /** Width of patch, within scaled image: {@value}. */
-    public static final int CONTEXT_WIDTH = 48;
+    public static final int CONTEXT_WIDTH = 40;
 
     /** Value used for background pixel feature: {@value}. */
     public static final int BACKGROUND = 0;
@@ -88,14 +78,13 @@ public class PatchClassifier
      * Name of file containing the trained model.
      * To be searched in user location first, then in default location second.
      */
-    public static final String FILE_NAME = "patch-classifier.zip";
+    public static final String FILE_NAME = "patch-classifier.h5";
 
     /** The singleton. */
     private static volatile PatchClassifier INSTANCE;
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying network.
-     * TODO: Either a simple MultiLayerNetwork or a more complex ComputationGraph
      * To my knowledge, the ComputationGraph would better fit our needs.
      */
     private final ComputationGraph model;
@@ -161,6 +150,7 @@ public class PatchClassifier
                                               Point location,
                                               int interline)
     {
+        logger.info("Patching sheet at ({}, {}).", location.x, location.y);
         final Scale scale = sheet.getScale();
 
         // Select properly scaled source
@@ -180,34 +170,37 @@ public class PatchClassifier
         // From provided location in original image, derive pt in scaled image
         final double ratio = (double) INTERLINE / interline;
         final Point pt = PointUtil.rounded(PointUtil.times(location, ratio));
-        int xMin = pt.x - (CONTEXT_WIDTH / 2);
-        int yMin = pt.y - (CONTEXT_HEIGHT / 2);
+        int xMin = pt.x - (int) ((CONTEXT_WIDTH / 2) * ratio);
+        int yMin = pt.y - (int) ((CONTEXT_HEIGHT / 2) * ratio);
 
         // Extract patch pixels from scaled image
-        final double[] pixels = new double[CONTEXT_HEIGHT * CONTEXT_WIDTH];
-        int i = 0;
-
-        for (int y = yMin; y < (yMin + CONTEXT_HEIGHT); y++) {
-            for (int x = xMin; x < (xMin + CONTEXT_WIDTH); x++) {
-                int val = bp.get(x, y);
-                //TODO: val = 255 - val; // Inversion????? CHECK THIS
-                pixels[i++] = val;
+        final double[][] pixels = new double[CONTEXT_HEIGHT][CONTEXT_WIDTH];
+        for (int w = 0; w < CONTEXT_WIDTH; w++) {
+            for (int h = 0; h < CONTEXT_HEIGHT; h++) {
+                int x = xMin + w;
+                int y = yMin + h;
+                if (x < 0 || x >= bp.getWidth()) {
+                    pixels[h][w] = 0.0;
+                } else if (y < 0 || y >= bp.getHeight()) {
+                    pixels[h][w] = 0.0;
+                } else {
+                    pixels[h][w] = bp.get(x, y);
+                }
             }
         }
 
-        INDArray features = Nd4j.create(pixels);
+        INDArray features = Nd4j.create(pixels).reshape(1, 1, CONTEXT_HEIGHT, CONTEXT_WIDTH);
 
         // Network inference
-        //TODO: I have not used ComputationGraph yet, so please check this is the correct method
         INDArray output = model.outputSingle(features);
 
         // Extract and sort evaluations
-        List<OmrEvaluation> evalList = new ArrayList<OmrEvaluation>();
+        List<OmrEvaluation> evalList = new ArrayList<>();
         OmrShape[] values = OmrShape.values();
 
-        for (int is = 0; is < values.length; is++) {
-            OmrShape omrShape = values[is];
-            double grade = output.getDouble(is);
+        for (int i = 0; i < output.length(); i++) {
+            OmrShape omrShape = values[i];
+            double grade = output.getDouble(i);
 
             evalList.add(new OmrEvaluation(omrShape, grade));
         }
@@ -229,109 +222,32 @@ public class PatchClassifier
      */
     protected ComputationGraph load (String fileName)
     {
-        // First, try user data, if any, in local EVAL folder
-        logger.debug("AbstractClassifier. Trying user data");
-
-        {
-            final Path path = WellKnowns.TRAIN_FOLDER.resolve(fileName);
-
-            if (Files.exists(path)) {
-                try {
-                    Path root = ZipFileSystem.open(path);
-                    logger.debug("loadModel...");
-
-                    ComputationGraph model = loadModel(root);
-                    logger.debug("loaded.");
-                    root.getFileSystem().close();
-
-                    if (!isCompatible(model)) {
-                        logger.warn(
-                                "Obsolete classifier user data in {}, trying default data",
-                                path);
-                    } else {
-                        // Tell user we are not using the default
-                        logger.info("Classifier data loaded from local {}", path);
-
-                        return model; // Normal exit
-                    }
-                } catch (Exception ex) {
-                    logger.warn("Load error {}", ex.toString(), ex);
-                }
-            }
+        ComputationGraph model = null;
+        Path path = WellKnowns.TRAIN_FOLDER.resolve(fileName);
+        logger.debug("Searching for patch classifier model...");
+        if (!Files.exists(path)) {
+            logger.info("No model found at {}. Searching in resource folder...", path);
+            path = Paths.get(UriUtil.toURI(WellKnowns.RES_URI, fileName));
         }
-
-        // Second, use default data (in program RES folder)
-        logger.debug("AbstractClassifier. Trying default data");
-
-        final URI uri = UriUtil.toURI(WellKnowns.RES_URI, fileName);
-
-        try {
-            // Must be a path to a true zip *file*
-            final Path zipPath;
-            logger.debug("uri={}", uri);
-
-            if (uri.toString().startsWith("jar:")) {
-                // We have a .zip within a .jar
-                // Quick fix: copy the .zip into a separate temp file
-                // Investigate a better solution!
-                File tmpFile = File.createTempFile("AbstractClassifier-", ".tmp");
-                logger.debug("tmpFile={}", tmpFile);
-                tmpFile.deleteOnExit();
-
-                InputStream is = uri.toURL().openStream();
-                FileUtils.copyInputStreamToFile(is, tmpFile);
-                is.close();
-                zipPath = tmpFile.toPath();
-            } else {
-                zipPath = Paths.get(uri);
+        if (Files.exists(path)) {
+            logger.debug("Found model at {}", path);
+            logger.debug("Loading Model...");
+            try {
+                model = KerasModelImport.importKerasModelAndWeights(path.toString());
+            } catch (Exception ex) {
+                logger.warn("Load error {}", ex.toString(), ex);
             }
-
-            final Path root = ZipFileSystem.open(zipPath);
-            ComputationGraph model = loadModel(root);
-            root.getFileSystem().close();
+            logger.debug("Model loaded.");
 
             if (!isCompatible(model)) {
-                logger.warn(
-                        "Obsolete classifier default data in {}, please retrain from scratch",
-                        uri);
+                logger.error("Classifier is not compatible!");
             } else {
-                logger.info("Classifier data loaded from default uri {}", uri);
-
-                return model; // Normal exit
+                logger.debug("Classifier data successfully loaded.");
             }
-        } catch (Exception ex) {
-            logger.warn("Load error on {} {}", uri, ex.toString(), ex);
+        } else {
+            logger.warn("Couldn't find patch classifier model. Expected: {}", path);
         }
-
-        return null; // No suitable model found
-    }
-
-    //-----------//
-    // loadModel //
-    //-----------//
-    /**
-     * Load the model from the provided root path (root of zip archive).
-     *
-     * @param root provided root path
-     * @return the loaded trained model
-     * @throws IOException if load failed
-     */
-    protected ComputationGraph loadModel (Path root)
-            throws IOException
-    {
-        InputStream is = null;
-
-        try {
-            final Path path = root.resolve(FILE_NAME);
-            is = Files.newInputStream(path);
-
-            //TODO: check this method
-            return ModelSerializer.restoreComputationGraph(is);
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
+        return model;
     }
 
     //--------------//
@@ -350,6 +266,14 @@ public class PatchClassifier
     private boolean isCompatible (ComputationGraph model)
     {
         //TODO: implement this method
-        return true;
+        ComputationGraphConfiguration conf = model.getConfiguration();
+        List<String> inputs = conf.getNetworkInputs();
+        List<String> outputs = conf.getNetworkOutputs();
+        boolean compatability = true;
+        compatability &= inputs.size() == 1;
+        compatability &= inputs.get(0).equals("input_1");
+        compatability &= outputs.size() == 1;
+        compatability &= outputs.get(0).equals("dense_1_loss");
+        return compatability;
     }
 }
