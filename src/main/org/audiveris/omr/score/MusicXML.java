@@ -37,6 +37,7 @@ import org.audiveris.proxymusic.EmptyPlacement;
 import org.audiveris.proxymusic.HorizontalTurn;
 import org.audiveris.proxymusic.KindValue;
 import org.audiveris.proxymusic.ObjectFactory;
+import org.audiveris.proxymusic.RightLeftMiddle;
 import org.audiveris.proxymusic.Step;
 import org.audiveris.proxymusic.StrongAccent;
 import org.audiveris.proxymusic.Syllabic;
@@ -109,12 +110,25 @@ public abstract class MusicXML
     /**
      * Report the MusicXML bar style for a recognized Barline style
      *
-     * @param style the Audiveris barline style
+     * @param style    the Audiveris barline style
+     * @param location position of barline with respect to containing measure
      * @return the MusicXML bar style
      */
-    public static BarStyle barStyleOf (PartBarline.Style style)
+    public static BarStyle barStyleOf (PartBarline.Style style,
+                                       RightLeftMiddle location)
     {
         try {
+            // Special trick for back-to-back config
+            if (style == PartBarline.Style.LIGHT_HEAVY_LIGHT) {
+                switch (location) {
+                case LEFT:
+                    return BarStyle.HEAVY_LIGHT;
+                case MIDDLE:
+                    return BarStyle.LIGHT_LIGHT; // What else?
+                case RIGHT:
+                    return BarStyle.LIGHT_HEAVY;
+                }
+            }
             return BarStyle.valueOf(style.name());
         } catch (Exception ex) {
             throw new IllegalArgumentException("Unknown bar style " + style, ex);

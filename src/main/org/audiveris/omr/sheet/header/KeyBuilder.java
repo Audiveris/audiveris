@@ -1599,7 +1599,7 @@ public class KeyBuilder
             for (KeySlice slice : roi) {
                 KeyAlterInter alter = slice.getAlter();
 
-                if (alter != null) {
+                if (alter != null && !alter.isRemoved()) {
                     alters.add(alter);
 
                     if (box == null) {

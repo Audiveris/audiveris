@@ -976,7 +976,7 @@ public class PartwiseBuilder
                                     : RightLeftMiddle.LEFT);
 
                     BarStyleColor barStyleColor = factory.createBarStyleColor();
-                    barStyleColor.setValue(barStyleOf(style));
+                    barStyleColor.setValue(barStyleOf(style, location));
                     pmBarline.setBarStyle(barStyleColor);
 
                     switch (location) {
