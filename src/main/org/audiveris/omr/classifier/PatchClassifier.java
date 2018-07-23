@@ -22,7 +22,6 @@
 package org.audiveris.omr.classifier;
 
 import ij.process.ByteProcessor;
-
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.sheet.Picture.SourceKey;
@@ -31,17 +30,15 @@ import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.util.UriUtil;
 import org.audiveris.omr.util.Wrapper;
 import org.audiveris.omrdataset.api.OmrShape;
-
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
-
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
@@ -50,8 +47,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 /**
  * Class {@code PatchClassifier} is the first shot of a patch classifier.
@@ -218,10 +213,10 @@ public class PatchClassifier
 
         // Extract and sort evaluations
         List<OmrEvaluation> evalList = new ArrayList<OmrEvaluation>();
-        OmrShape[] values = OmrShape.values();
+        ArrayList<OmrShape> values = getOmrShapeList();
 
         for (int i = 0; i < output.length(); i++) {
-            OmrShape omrShape = values[i];
+            OmrShape omrShape = values.get(i);
             double grade = output.getDouble(i);
 
             evalList.add(new OmrEvaluation(omrShape, grade));
@@ -325,6 +320,139 @@ public class PatchClassifier
         compatability &= outputs.get(0).equals("dense_1_loss");
 
         return compatability;
+    }
+
+    //---------//
+    // getOmrShapeList //
+    //---------//
+
+    /**
+     * Get a list of OMR shapes to map the probabilities of the NN to.
+     *
+     * @return Correctly ordered list of OMR shapes to map the probabilities to.
+     */
+    private ArrayList<OmrShape> getOmrShapeList() {
+        ArrayList<OmrShape> shapes = new ArrayList<>();
+        shapes.add(OmrShape.none);
+        shapes.add(OmrShape.brace);
+        shapes.add(OmrShape.repeatDot);
+        shapes.add(OmrShape.segno);
+        shapes.add(OmrShape.coda);
+        shapes.add(OmrShape.gClef);
+        shapes.add(OmrShape.cClefAlto);
+        shapes.add(OmrShape.cClefTenor);
+        shapes.add(OmrShape.fClef);
+        shapes.add(OmrShape.unpitchedPercussionClef1);
+        shapes.add(OmrShape.gClefChange);
+        shapes.add(OmrShape.cClefAltoChange);
+        shapes.add(OmrShape.cClefTenorChange);
+        shapes.add(OmrShape.fClefChange);
+        shapes.add(OmrShape.clef8);
+        shapes.add(OmrShape.clef15);
+        shapes.add(OmrShape.timeSig0);
+        shapes.add(OmrShape.timeSig1);
+        shapes.add(OmrShape.timeSig2);
+        shapes.add(OmrShape.timeSig3);
+        shapes.add(OmrShape.timeSig4);
+        shapes.add(OmrShape.timeSig5);
+        shapes.add(OmrShape.timeSig6);
+        shapes.add(OmrShape.timeSig7);
+        shapes.add(OmrShape.timeSig8);
+        shapes.add(OmrShape.timeSig9);
+        shapes.add(OmrShape.timeSigCommon);
+        shapes.add(OmrShape.timeSigCutCommon);
+        shapes.add(OmrShape.noteheadBlack);
+        shapes.add(OmrShape.noteheadBlackSmall);
+        shapes.add(OmrShape.noteheadHalf);
+        shapes.add(OmrShape.noteheadHalfSmall);
+        shapes.add(OmrShape.noteheadWhole);
+        shapes.add(OmrShape.noteheadWholeSmall);
+        shapes.add(OmrShape.noteheadDoubleWhole);
+        shapes.add(OmrShape.augmentationDot);
+        shapes.add(OmrShape.flag8thUp);
+        shapes.add(OmrShape.flag16thUp);
+        shapes.add(OmrShape.flag32ndUp);
+        shapes.add(OmrShape.flag64thUp);
+        shapes.add(OmrShape.flag128thUp);
+        shapes.add(OmrShape.flag8thDown);
+        shapes.add(OmrShape.flag16thDown);
+        shapes.add(OmrShape.flag32ndDown);
+        shapes.add(OmrShape.flag64thDown);
+        shapes.add(OmrShape.flag128thDown);
+        shapes.add(OmrShape.accidentalFlat);
+        shapes.add(OmrShape.accidentalFlatSmall);
+        shapes.add(OmrShape.accidentalNatural);
+        shapes.add(OmrShape.accidentalNaturalSmall);
+        shapes.add(OmrShape.accidentalSharp);
+        shapes.add(OmrShape.accidentalSharpSmall);
+        shapes.add(OmrShape.accidentalDoubleSharp);
+        shapes.add(OmrShape.accidentalDoubleFlat);
+        shapes.add(OmrShape.keyFlat);
+        shapes.add(OmrShape.keyNatural);
+        shapes.add(OmrShape.keySharp);
+        shapes.add(OmrShape.articAccentAbove);
+        shapes.add(OmrShape.articAccentBelow);
+        shapes.add(OmrShape.articStaccatoAbove);
+        shapes.add(OmrShape.articStaccatoBelow);
+        shapes.add(OmrShape.articTenutoAbove);
+        shapes.add(OmrShape.articTenutoBelow);
+        shapes.add(OmrShape.articStaccatissimoAbove);
+        shapes.add(OmrShape.articStaccatissimoBelow);
+        shapes.add(OmrShape.articMarcatoAbove);
+        shapes.add(OmrShape.articMarcatoBelow);
+        shapes.add(OmrShape.fermataAbove);
+        shapes.add(OmrShape.fermataBelow);
+        shapes.add(OmrShape.caesura);
+        shapes.add(OmrShape.restLonga);
+        shapes.add(OmrShape.restDoubleWhole);
+        shapes.add(OmrShape.restWhole);
+        shapes.add(OmrShape.restHalf);
+        shapes.add(OmrShape.restQuarter);
+        shapes.add(OmrShape.rest8th);
+        shapes.add(OmrShape.rest16th);
+        shapes.add(OmrShape.rest32nd);
+        shapes.add(OmrShape.rest64th);
+        shapes.add(OmrShape.rest128th);
+        shapes.add(OmrShape.restHBar);
+        shapes.add(OmrShape.dynamicPiano);
+        shapes.add(OmrShape.dynamicMezzo);
+        shapes.add(OmrShape.dynamicForte);
+        shapes.add(OmrShape.dynamicPPPPP);
+        shapes.add(OmrShape.dynamicPPPP);
+        shapes.add(OmrShape.dynamicPPP);
+        shapes.add(OmrShape.dynamicPP);
+        shapes.add(OmrShape.dynamicMP);
+        shapes.add(OmrShape.dynamicMF);
+        shapes.add(OmrShape.dynamicFF);
+        shapes.add(OmrShape.dynamicFFF);
+        shapes.add(OmrShape.dynamicFFFF);
+        shapes.add(OmrShape.dynamicFFFFF);
+        shapes.add(OmrShape.dynamicFortePiano);
+        shapes.add(OmrShape.dynamicSforzando1);
+        shapes.add(OmrShape.dynamicSforzato);
+        shapes.add(OmrShape.dynamicRinforzando2);
+        shapes.add(OmrShape.graceNoteAcciaccaturaStemUp);
+        shapes.add(OmrShape.graceNoteAppoggiaturaStemUp);
+        shapes.add(OmrShape.graceNoteAcciaccaturaStemDown);
+        shapes.add(OmrShape.graceNoteAppoggiaturaStemDown);
+        shapes.add(OmrShape.ornamentTrill);
+        shapes.add(OmrShape.ornamentTurn);
+        shapes.add(OmrShape.ornamentTurnInverted);
+        shapes.add(OmrShape.ornamentMordent);
+        shapes.add(OmrShape.stringsDownBow);
+        shapes.add(OmrShape.stringsUpBow);
+        shapes.add(OmrShape.arpeggiato);
+        shapes.add(OmrShape.keyboardPedalPed);
+        shapes.add(OmrShape.keyboardPedalUp);
+        shapes.add(OmrShape.tuplet3);
+        shapes.add(OmrShape.tuplet6);
+        shapes.add(OmrShape.fingering0);
+        shapes.add(OmrShape.fingering1);
+        shapes.add(OmrShape.fingering2);
+        shapes.add(OmrShape.fingering3);
+        shapes.add(OmrShape.fingering4);
+        shapes.add(OmrShape.fingering5);
+        return shapes;
     }
 
     //-------------//
