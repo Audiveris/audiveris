@@ -67,7 +67,8 @@ public class PartBarline
     //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Barline style.
-     * Identical to (or subset of) MusicXML BarStyle, to avoid strict dependency on MusicXML.
+     * Identical to (or subset of) MusicXML BarStyle, to avoid strict dependency on MusicXML with
+     * the addition of LIGHT_HEAVY_LIGHT to handle back-to-back configuration.
      */
     public static enum Style
     {
@@ -83,7 +84,10 @@ public class PartBarline
         HEAVY_HEAVY,
         TICK,
         SHORT,
-        NONE;
+        NONE,
+
+        /** LIGHT_HEAVY_LIGHT is not part of MusicXML. */
+        LIGHT_HEAVY_LIGHT;
     }
 
     //~ Instance fields ----------------------------------------------------------------------------

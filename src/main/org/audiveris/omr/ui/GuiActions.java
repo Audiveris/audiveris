@@ -761,7 +761,7 @@ public class GuiActions
         private final Constant.String manualUrl = new Constant.String(
                 //"docs/manual/handbook.html",
                 "https://bacchushlg.gitbooks.io/audiveris-5-1/content/",
-                "URL of local Audiveris manual");
+                "URL of Audiveris manual");
 
         private final Constant.Boolean boardsWindowDisplayed = new Constant.Boolean(
                 true,
