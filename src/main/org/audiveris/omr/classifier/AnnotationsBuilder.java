@@ -54,6 +54,7 @@ import org.audiveris.omr.sig.inter.SegmentInter;
 import org.audiveris.omr.sig.inter.SentenceInter;
 import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.SmallBeamInter;
+import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
@@ -114,6 +115,7 @@ public class AnnotationsBuilder
         excludedInterClasses.add(SentenceInter.class);
         excludedInterClasses.add(SlurInter.class);
         excludedInterClasses.add(SmallBeamInter.class);
+        excludedInterClasses.add(StaffBarlineInter.class);
         ///excludedInterClasses.add(StemInter.class);
         excludedInterClasses.add(TimeNumberInter.class); // Processed via TimePairInter
         excludedInterClasses.add(WedgeInter.class);
