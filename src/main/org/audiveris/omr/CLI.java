@@ -502,7 +502,7 @@ public class CLI
         //~ Instance fields ------------------------------------------------------------------------
 
         /** Should symbols annotations be produced?. */
-        @Option(name = "-annotate", hidden = true, usage = "Annotate book symbols")
+        @Option(name = "-annotate", usage = "(advanced) Annotate book symbols")
         boolean annotate;
 
         /** Batch mode. */
@@ -534,11 +534,11 @@ public class CLI
         boolean print;
 
         /** Ability to run a class on each valid sheet. */
-        @Option(name = "-run", usage = "Run provided class on valid sheets", handler = ClassOptionHandler.class)
+        @Option(name = "-run", usage = "(advanced) Run provided class on valid sheets", handler = ClassOptionHandler.class)
         Class runClass;
 
         /** Should samples be produced?. */
-        @Option(name = "-sample", usage = "Sample all book symbols")
+        @Option(name = "-sample", usage = "(advanced) Sample all book symbols")
         boolean sample;
 
         /** Should book be saved?. */
@@ -550,7 +550,7 @@ public class CLI
         private ArrayList<Integer> sheets;
 
         /** Specific step. */
-        @Option(name = "-step", usage = "Define a specific processing step")
+        @Option(name = "-step", usage = "Define a specific target step")
         Step step;
 
         /** Should book be transcribed?. */
