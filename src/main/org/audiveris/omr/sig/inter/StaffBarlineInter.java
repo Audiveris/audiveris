@@ -39,6 +39,9 @@ import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.util.Entities;
 import org.audiveris.omr.util.HorizontalSide;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -77,8 +80,11 @@ public class StaffBarlineInter
         extends AbstractInter
         implements InterEnsemble
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(StaffBarlineInter.class);
+
+    //~ Instance fields ----------------------------------------------------------------------------
     // Transient data
     //---------------
     //
@@ -365,6 +371,20 @@ public class StaffBarlineInter
     public List<Inter> getMembers ()
     {
         return EnsembleHelper.getMembers(this, Inters.byCenterAbscissa);
+    }
+
+    //--------------//
+    // getMiddleBar //
+    //--------------//
+    public BarlineInter getMiddleBar ()
+    {
+        final List<Inter> bars = getMembers();
+
+        if (bars.size() != 3) {
+            return null;
+        }
+
+        return (BarlineInter) bars.get(1);
     }
 
     //----------------//
@@ -672,7 +692,8 @@ public class StaffBarlineInter
     //--------------//
     public boolean isLeftRepeat ()
     {
-        return (getStyle() == HEAVY_LIGHT) && hasDotsOnRight();
+        return ((getStyle() == HEAVY_LIGHT) || (getStyle() == LIGHT_HEAVY_LIGHT))
+               && hasDotsOnRight();
     }
 
     //---------------//
@@ -680,7 +701,8 @@ public class StaffBarlineInter
     //---------------//
     public boolean isRightRepeat ()
     {
-        return (getStyle() == LIGHT_HEAVY) && hasDotsOnLeft();
+        return ((getStyle() == LIGHT_HEAVY) || (getStyle() == LIGHT_HEAVY_LIGHT))
+               && hasDotsOnLeft();
     }
 
     //--------------//
@@ -730,15 +752,25 @@ public class StaffBarlineInter
         case 1:
             return (getLeftBar().getShape() == Shape.THIN_BARLINE) ? REGULAR : HEAVY;
 
-        case 2: {
+        case 2:
+
             if (getLeftBar().getShape() == Shape.THIN_BARLINE) {
                 return (getRightBar().getShape() == Shape.THIN_BARLINE) ? LIGHT_LIGHT : LIGHT_HEAVY;
             } else {
                 return (getRightBar().getShape() == Shape.THIN_BARLINE) ? HEAVY_LIGHT : HEAVY_HEAVY;
             }
-        }
+
+        case 3:
+
+            if ((getLeftBar().getShape() == Shape.THIN_BARLINE)
+                && (getMiddleBar().getShape() == Shape.THICK_BARLINE)
+                && (getRightBar().getShape() == Shape.THIN_BARLINE)) {
+                return LIGHT_HEAVY_LIGHT;
+            }
 
         default:
+            logger.warn("Unknown style for {}", this);
+
             return null;
         }
     }
@@ -774,6 +806,8 @@ public class StaffBarlineInter
             return Style.LIGHT_HEAVY; // Bof! + dots on both sides
 
         default:
+            logger.warn("No style for barline shape {}", shape);
+
             return null;
         }
     }

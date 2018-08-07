@@ -22,8 +22,10 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.BasicContainment;
+import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
+import org.audiveris.omr.sig.relation.ChordArticulationRelation;
+import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -35,6 +37,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -171,6 +175,50 @@ public class HeadChordInter
         }
 
         return clone;
+    }
+
+    //---------------//
+    // getArpeggiato //
+    //---------------//
+    /**
+     * Report the chord arpeggiato if any.
+     *
+     * @return related arpeggiato or null
+     */
+    public ArpeggiatoInter getArpeggiato ()
+    {
+        for (Relation rel : sig.getRelations(this, ChordArpeggiatoRelation.class)) {
+            return ((ArpeggiatoInter) sig.getOppositeInter(this, rel));
+        }
+
+        return null;
+    }
+
+    //------------------//
+    // getArticulations //
+    //------------------//
+    /**
+     * Report the chord articulations if any.
+     *
+     * @return list of articulations, perhaps empty
+     */
+    public List<ArticulationInter> getArticulations ()
+    {
+        List<ArticulationInter> found = null;
+
+        for (Relation rel : sig.getRelations(this, ChordArticulationRelation.class)) {
+            if (found == null) {
+                found = new ArrayList<ArticulationInter>();
+            }
+
+            found.add((ArticulationInter) sig.getOppositeInter(this, rel));
+        }
+
+        if (found == null) {
+            return Collections.EMPTY_LIST;
+        }
+
+        return found;
     }
 
     //-----------//
