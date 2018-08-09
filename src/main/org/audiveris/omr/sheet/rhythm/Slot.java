@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -538,17 +539,16 @@ public class Slot
             voiceChords.put(chord.getVoice().getId(), chord);
         }
 
-        final int voiceMax = stack.getVoices().size();
         boolean started = false;
 
-        for (int iv = 1; iv <= voiceMax; iv++) {
+        for (Entry<Integer, AbstractChordInter> entry : voiceChords.entrySet()) {
             if (started) {
                 sb.append(", ");
             } else {
                 started = true;
             }
 
-            AbstractChordInter chord = voiceChords.get(iv);
+            final AbstractChordInter chord = entry.getValue();
 
             if (chord != null) {
                 sb.append("V").append(chord.getVoice().getId());
@@ -604,7 +604,7 @@ public class Slot
 
             // Try to reuse an existing voice in same part
             for (Voice voice : measure.getVoices()) {
-                if (voice.isFree(this) && voice.getStartingStaff() == chord.getTopStaff()) {
+                if (voice.isFree(this) && (voice.getStartingStaff() == chord.getTopStaff())) {
                     chord.setVoice(voice);
 
                     break;
