@@ -44,11 +44,9 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.stem.StemScaler;
-
 import static org.audiveris.omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
-
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;
@@ -469,28 +467,6 @@ public class BookActions
     }
 
     //----------------//
-    // displayInitial //
-    //----------------//
-    /**
-     * Action that allows to display the view on initial image.
-     *
-     * @param e the event that triggered this action
-     */
-    @Action(enabledProperty = STUB_AVAILABLE)
-    public void displayInitial (ActionEvent e)
-    {
-        final SheetStub stub = StubsController.getCurrentStub();
-        final SheetAssembly assembly = stub.getAssembly();
-        final SheetTab tab = SheetTab.INITIAL_TAB;
-
-        if (assembly.getPane(tab.label) == null) {
-            ((BasicSheet) stub.getSheet()).createInitialView();
-        } else {
-            assembly.selectViewTab(tab);
-        }
-    }
-
-    //----------------//
     // displayNoStaff //
     //----------------//
     /**
@@ -519,6 +495,28 @@ public class BookActions
             }
         } else {
             logger.info("No staff lines available yet.");
+        }
+    }
+
+    //----------------//
+    // displayInitial //
+    //----------------//
+    /**
+     * Action that allows to display the view on initial image.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void displayInitial (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+        final SheetAssembly assembly = stub.getAssembly();
+        final SheetTab tab = SheetTab.INITIAL_TAB;
+
+        if (assembly.getPane(tab.label) == null) {
+            ((BasicSheet) stub.getSheet()).createInitialView();
+        } else {
+            assembly.selectViewTab(tab);
         }
     }
 

@@ -48,6 +48,7 @@ import org.audiveris.omr.score.ui.BookPdfOutput;
 import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
+import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.SheetGradedPainter;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
@@ -449,18 +450,21 @@ public class BasicSheet
                 logger.warn("invokeAndWait error", ex);
             }
         } else {
-            if (stub.getAssembly().getPane(SheetTab.BINARY_TAB.label) != null) {
-                return;
+            final SheetAssembly assembly = stub.getAssembly();
+            final SheetTab tab = SheetTab.BINARY_TAB;
+
+            if (assembly.getPane(tab.label) == null) {
+                locationService.subscribeStrongly(LocationEvent.class, picture);
+
+                // Display sheet binary
+                PictureView pictureView = new PictureView(this, tab);
+                assembly.addViewTab(
+                        tab,
+                        pictureView,
+                        new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+            } else {
+                assembly.selectViewTab(tab);
             }
-
-            locationService.subscribeStrongly(LocationEvent.class, picture);
-
-            // Display sheet binary
-            PictureView pictureView = new PictureView(this, SheetTab.BINARY_TAB);
-            stub.getAssembly().addViewTab(
-                    SheetTab.BINARY_TAB,
-                    pictureView,
-                    new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
         }
     }
 
@@ -503,6 +507,7 @@ public class BasicSheet
     {
         try {
             getSymbolsEditor();
+            stub.getAssembly().selectViewTab(SheetTab.DATA_TAB);
         } catch (Throwable ex) {
             logger.warn("Error in displayDataTab " + ex, ex);
         }
