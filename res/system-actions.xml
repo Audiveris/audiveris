@@ -71,7 +71,7 @@
     <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="toggleTranslucency"  item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="toggleVoices"        item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton" />
     <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="toggleErrors"        item="javax.swing.JCheckBoxMenuItem"   button="javax.swing.JToggleButton"/>
-    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="switchSelections"                                           button="javax.swing.JButton" />
+    <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="switchSelections"                                           button="javax.swing.JButton" topic="SPECIFIC_VIEWS"/>
     <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="switchLayers"                                               button="javax.swing.JButton"/>
     <action domain="VIEW" section="40" class="org.audiveris.omr.ui.ViewParameters"     method="toggleSlots"                                 item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="40" class="org.audiveris.omr.ui.ViewParameters"     method="toggleAnnotations"                           item="javax.swing.JCheckBoxMenuItem"/>
@@ -93,7 +93,7 @@
 <!--    <action domain="TOOL" section="20"  class="org.audiveris.omr.ui.GuiActions" method="defineShapeColors" />-->
     <action domain="TOOL" section="30" class="org.audiveris.omr.ui.GuiActions"        method="showMemory" />
     <action domain="TOOL" section="40" class="org.audiveris.omr.ui.GuiActions"        method="defineOptions" />
-    <action domain="TOOL" section="40" class="org.audiveris.omr.ui.GuiActions"        method="defineTopics" />
+    <action domain="TOOL" section="50" class="org.audiveris.omr.ui.GuiActions"        method="defineTopics" />
 
     <action domain="PLUGIN" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="invokeDefaultPlugin" button="javax.swing.JButton" />
 
