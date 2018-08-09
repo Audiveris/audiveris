@@ -418,17 +418,20 @@ public class BookActions
             return;
         }
 
-        SheetAssembly assembly = stub.getAssembly();
+        final SheetAssembly assembly = stub.getAssembly();
+        final SheetTab tab = SheetTab.NO_STAFF_TAB;
 
-        if (assembly.getPane(SheetTab.NO_STAFF_TAB.label) == null) {
+        if (assembly.getPane(tab.label) == null) {
             Sheet sheet = stub.getSheet(); // This may load the sheet...
             assembly.addViewTab(
-                    SheetTab.NO_STAFF_TAB,
+                    tab,
                     new ScrollImageView(
                             sheet,
                             new ImageView(
                                     sheet.getPicture().getSource(Picture.SourceKey.NO_STAFF).getBufferedImage())),
                     new BoardsPane(new PixelBoard(sheet)));
+        } else {
+            assembly.selectViewTab(tab);
         }
     }
 
@@ -473,16 +476,19 @@ public class BookActions
             return;
         }
 
-        SheetAssembly assembly = stub.getAssembly();
+        final SheetAssembly assembly = stub.getAssembly();
+        final SheetTab tab = SheetTab.STAFF_LINE_TAB;
 
-        if (assembly.getPane(SheetTab.STAFF_LINE_TAB.label) == null) {
+        if (assembly.getPane(tab.label) == null) {
             Sheet sheet = stub.getSheet(); // This may load the sheet...
             assembly.addViewTab(
-                    SheetTab.STAFF_LINE_TAB,
+                    tab,
                     new ScrollImageView(
                             sheet,
                             new ImageView(sheet.getPicture().buildStaffLineGlyphsImage())),
                     new BoardsPane(new PixelBoard(sheet)));
+        } else {
+            assembly.selectViewTab(tab);
         }
     }
 
