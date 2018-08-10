@@ -859,10 +859,10 @@ bg=#aaffaa</panel_attributes>
     <coordinates>
       <x>510</x>
       <y>700</y>
-      <w>330</w>
+      <w>270</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>fixed-shape symbols, reduction, rest-based chords</panel_attributes>
+    <panel_attributes>fixed-shape symbols, rest-based chords</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
