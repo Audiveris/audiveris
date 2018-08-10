@@ -909,7 +909,7 @@ public class NoteHeadsBuilder
                 "Minimum good beam width to exclude heads");
 
         private final Scale.Fraction barHorizontalMargin = new Scale.Fraction(
-                0.35,
+                0.1,
                 "Horizontal margin around frozen barline or connector");
 
         private final Scale.Fraction barVerticalMargin = new Scale.Fraction(
