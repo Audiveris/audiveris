@@ -68,13 +68,13 @@
     <action domain="VIEW" section="30" class="org.audiveris.omr.ui.ViewParameters"     method="switchLayers"                                               button="javax.swing.JButton"/>
     <action domain="VIEW" section="40" class="org.audiveris.omr.ui.ViewParameters"     method="toggleSlots"                                 item="javax.swing.JCheckBoxMenuItem"/>
     <action domain="VIEW" section="40" class="org.audiveris.omr.ui.ViewParameters"     method="toggleAnnotations"                           item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleMarks"         topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+<!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleMarks"         topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
     <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleStaffLines"    topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleStaffPeaks"    topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+<!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleStaffPeaks"    topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
     <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleLines"         topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleLetters"       topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+<!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleLetters"       topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
     <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleAttachments"   topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
-    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleSentences"     topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>
+<!--    <action domain="VIEW" section="50" class="org.audiveris.omr.ui.ViewParameters"     method="toggleSentences"     topic="SPECIFIC_ITEMS"  item="javax.swing.JCheckBoxMenuItem"/>-->
     <action domain="VIEW" section="60" class="org.audiveris.omr.ui.GuiActions"         method="toggleBoards"        topic="WINDOW_LAYOUT"   item="javax.swing.JCheckBoxMenuItem"/>
 <!--    <action domain="VIEW" section="60" class="org.audiveris.omr.ui.GuiActions"         method="toggleLog"           topic="WINDOW_LAYOUT"   item="javax.swing.JCheckBoxMenuItem"/>-->
 <!--    <action domain="VIEW" section="60" class="org.audiveris.omr.ui.GuiActions"         method="toggleErrors"        topic="WINDOW_LAYOUT"   item="javax.swing.JCheckBoxMenuItem"/>-->

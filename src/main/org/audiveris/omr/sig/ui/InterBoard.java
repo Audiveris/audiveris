@@ -99,7 +99,7 @@ public class InterBoard
     /** ComboBox for text role. */
     private final LComboBox<TextRole> roleCombo = new LComboBox<TextRole>(
             "Role",
-            "Role of the Text",
+            "Role of the Sentence",
             TextRole.values());
 
     /** Input/Output : textual content. */
