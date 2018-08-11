@@ -302,9 +302,13 @@ public class ScaleBuilder
                 100,
                 "Maximum interline value (in pixels)");
 
-        private final Constant.Ratio minCountRatio = new Constant.Ratio(
+        private final Constant.Ratio minBlackCountRatio = new Constant.Ratio(
                 0.1,
-                "Ratio of total runs for peak acceptance");
+                "Ratio of total runs for black peak acceptance");
+
+        private final Constant.Ratio minComboCountRatio = new Constant.Ratio(
+                0.05,
+                "Ratio of total runs for combo peak acceptance");
 
         private final Constant.Ratio minGainRatio = new Constant.Ratio(
                 0.03,
@@ -489,7 +493,7 @@ public class ScaleBuilder
             final int area = comboFunction.getArea();
             final List<Range> comboPeaks = comboFinder.findPeaks(
                     1,
-                    null,
+                    (int) Math.rint(area * constants.minComboCountRatio.getValue()),
                     (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
                     constants.minGainRatio.getValue());
 
@@ -546,7 +550,7 @@ public class ScaleBuilder
             final int area = blackFunction.getArea();
             final List<Range> blackPeaks = blackFinder.findPeaks(
                     1,
-                    (int) Math.rint(area * constants.minCountRatio.getValue()),
+                    (int) Math.rint(area * constants.minBlackCountRatio.getValue()),
                     (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
                     constants.minGainRatio.getValue());
 
