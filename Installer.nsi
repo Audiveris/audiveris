@@ -11,6 +11,8 @@
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
+!include "FileAssociation.nsh"
+
 
 ; MUI Settings
 !define MUI_ABORTWARNING
@@ -125,6 +127,9 @@ Section "Hauptgruppe" SEC01
 ; Shortcuts
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   !insertmacro MUI_STARTMENU_WRITE_END
+  
+${registerExtension} "$INSTDIR\bin\${PRODUCT_NAME}.bat" ".omr" "OpticalMusicRecognition_File"
+  
 SectionEnd
 
 Section -AdditionalIcons
