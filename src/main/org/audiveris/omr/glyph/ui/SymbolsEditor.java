@@ -42,6 +42,7 @@ import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sheet.rhythm.Slot;
 import org.audiveris.omr.sheet.ui.PixelBoard;
 import org.audiveris.omr.sheet.ui.SelectionPainter;
+import org.audiveris.omr.sheet.ui.SheetAssembly;
 import org.audiveris.omr.sheet.ui.SheetGradedPainter;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
@@ -206,8 +207,9 @@ public class SymbolsEditor
         BoardsPane boardsPane = new BoardsPane(boards);
 
         // Create a hosting pane for the view
-        ScrollView slv = new ScrollView(view);
-        sheet.getStub().getAssembly().addViewTab(SheetTab.DATA_TAB, slv, boardsPane);
+        final SheetAssembly assembly = sheet.getStub().getAssembly();
+        assembly.addViewTab(SheetTab.DATA_TAB, new ScrollView(view), boardsPane);
+        assembly.lockViewTab(SheetTab.DATA_TAB);
     }
 
     //~ Methods ------------------------------------------------------------------------------------

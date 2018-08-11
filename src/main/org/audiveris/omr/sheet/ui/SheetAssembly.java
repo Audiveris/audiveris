@@ -56,7 +56,6 @@ import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -98,7 +97,7 @@ public class SheetAssembly
     private final LogSlider slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 5, 0);
 
     /** Tabbed container for all views of the sheet. */
-    private final JTabbedPane viewsPane = new ClosableTabbedPane()
+    private final ClosableTabbedPane viewsPane = new ClosableTabbedPane()
     {
         @Override
         public boolean tabAboutToClose (int tabIndex)
@@ -391,6 +390,25 @@ public class SheetAssembly
     public SheetStub getStub ()
     {
         return stub;
+    }
+
+    //-------------//
+    // lockViewTab //
+    //-------------//
+    /**
+     * Make the provided tab non closable.
+     *
+     * @param tab the tab to lock
+     */
+    public void lockViewTab (SheetTab tab)
+    {
+        for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
+            if (viewsPane.getTitleAt(i).equals(tab.label)) {
+                viewsPane.removeClosingButton(i);
+
+                return;
+            }
+        }
     }
 
     //-----------//

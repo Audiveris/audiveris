@@ -449,7 +449,7 @@ bg=#aaffaa</panel_attributes>
       <h>30</h>
     </coordinates>
     <panel_attributes>CURVES
-bg=#ffaaaa</panel_attributes>
+bg=#aaffaa</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -859,10 +859,10 @@ bg=#aaffaa</panel_attributes>
     <coordinates>
       <x>510</x>
       <y>700</y>
-      <w>330</w>
+      <w>270</w>
       <h>30</h>
     </coordinates>
-    <panel_attributes>fixed-shape symbols, reduction, rest-based chords</panel_attributes>
+    <panel_attributes>fixed-shape symbols, rest-based chords</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -952,7 +952,7 @@ bg=#aaffaa</panel_attributes>
       <h>30</h>
     </coordinates>
     <panel_attributes>RHYTHMS
-bg=#ffaaaa</panel_attributes>
+bg=#aaffaa</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -1008,7 +1008,7 @@ bg=#ffaaaa</panel_attributes>
       <h>30</h>
     </coordinates>
     <panel_attributes>PAGE
-bg=#ffaaaa</panel_attributes>
+bg=#aaffaa</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
@@ -1082,25 +1082,23 @@ bg=#ffaaaa</panel_attributes>
     <coordinates>
       <x>0</x>
       <y>870</y>
-      <w>140</w>
-      <h>50</h>
+      <w>120</w>
+      <h>30</h>
     </coordinates>
-    <panel_attributes>*Sequential*
-bg=#ffaaaa
-(1 thread per sheet)</panel_attributes>
+    <panel_attributes>bg=#ffaaaa
+whole sheet</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.baselet.element.old.element.State</type>
     <coordinates>
       <x>0</x>
-      <y>930</y>
-      <w>140</w>
-      <h>50</h>
+      <y>910</y>
+      <w>120</w>
+      <h>30</h>
     </coordinates>
-    <panel_attributes>*Multithreaded*
-bg=#aaffaa
-(1 thread per system)</panel_attributes>
+    <panel_attributes>bg=#aaffaa
+system by system</panel_attributes>
     <additional_attributes/>
   </element>
   <element>

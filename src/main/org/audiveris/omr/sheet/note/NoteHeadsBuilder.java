@@ -31,7 +31,9 @@ import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
+
 import static org.audiveris.omr.image.Anchored.Anchor.*;
+
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.ShapeDescriptor;
@@ -63,7 +65,9 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.util.Dumping;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.StopWatch;
@@ -81,7 +85,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -165,8 +168,8 @@ public class NoteHeadsBuilder
     /** The competing interpretations for the system. */
     private List<Inter> systemCompetitors;
 
-    /** The forbidden rectangles around connectors and frozen barlines. */
-    private List<Rectangle> systemBarRectangles;
+    /** The forbidden areas around connectors and frozen barlines. */
+    private List<Area> systemBarAreas;
 
     /** The vertical (stem) seeds for the system. */
     private List<Glyph> systemSeeds;
@@ -236,7 +239,7 @@ public class NoteHeadsBuilder
     public void buildHeads ()
     {
         StopWatch watch = new StopWatch("buildHeads S#" + system.getId());
-        systemBarRectangles = getSystemBarRectangles();
+        systemBarAreas = getSystemBarAreas();
         systemCompetitors = getSystemCompetitors(); // Competitors
         systemSeeds = system.getGroupedGlyphs(GlyphGroup.VERTICAL_SEED); // Vertical seeds
         Collections.sort(systemSeeds, Glyphs.byOrdinate);
@@ -526,12 +529,12 @@ public class NoteHeadsBuilder
         return list;
     }
 
-    //------------------------//
-    // getSystemBarRectangles //
-    //------------------------//
-    private List<Rectangle> getSystemBarRectangles ()
+    //-------------------//
+    // getSystemBarAreas //
+    //-------------------//
+    private List<Area> getSystemBarAreas ()
     {
-        List<Rectangle> rects = new ArrayList<Rectangle>();
+        List<Area> areas = new ArrayList<Area>();
         List<Inter> inters = sig.inters(
                 new Predicate<Inter>()
         {
@@ -547,13 +550,11 @@ public class NoteHeadsBuilder
         Collections.sort(inters, Inters.byOrdinate);
 
         for (Inter inter : inters) {
-            // Add margin around bar bounds
-            Rectangle box = inter.getBounds();
-            box.grow(params.hBarMargin, params.vBarMargin);
-            rects.add(box);
+            AbstractVerticalInter vertical = (AbstractVerticalInter) inter;
+            areas.add(vertical.getArea());
         }
 
-        return rects;
+        return areas;
     }
 
     //----------------------//
@@ -909,7 +910,7 @@ public class NoteHeadsBuilder
                 "Minimum good beam width to exclude heads");
 
         private final Scale.Fraction barHorizontalMargin = new Scale.Fraction(
-                0.35,
+                0.1,
                 "Horizontal margin around frozen barline or connector");
 
         private final Scale.Fraction barVerticalMargin = new Scale.Fraction(
@@ -1143,7 +1144,7 @@ public class NoteHeadsBuilder
 
         private final List<Inter> competitors;
 
-        private final List<Rectangle> barRectangles;
+        private final List<Area> barAreas;
 
         private final List<LedgerAdapter> ledgers;
 
@@ -1205,7 +1206,7 @@ public class NoteHeadsBuilder
                 final double above = ((interline * dir) / 2) - vMargin;
                 final double below = ((interline * dir) / 2) + vMargin;
                 Area barsArea = line.getArea(above, below);
-                barRectangles = getBarRectangles(barsArea);
+                barAreas = getBarAreas(barsArea);
             }
 
             if (constants.allowAttachments.isSet()) {
@@ -1226,23 +1227,17 @@ public class NoteHeadsBuilder
         // barInvolved //
         //-------------//
         /**
-         * Check whether the provided rectangle would intersect neighborhood of frozen
+         * Check whether the provided rectangle would intersect area of frozen
          * barline/connector.
          *
          * @param rect provided rectangle
-         * @return true if neighborhood hit
+         * @return true if area hit
          */
         private boolean barInvolved (Rectangle rect)
         {
-            int xBreak = rect.x + rect.width;
-
-            for (Rectangle r : barRectangles) {
-                if (r.intersects(rect)) {
+            for (Area a : barAreas) {
+                if (a.intersects(rect)) {
                     return true;
-                }
-
-                if (r.x >= xBreak) {
-                    break; // Since barRectangles are ordered by abscissa
                 }
             }
 
@@ -1368,67 +1363,25 @@ public class NoteHeadsBuilder
             }
         }
 
-        //------------------//
-        // getBarRectangles //
-        //------------------//
+        //-------------//
+        // getBarAreas //
+        //-------------//
         /**
-         * Build the list of rectangles around connectors and frozen barlines.
+         * Build the list of areas around connectors and frozen barlines.
          *
-         * @return the bar-centered rectangles
+         * @return the bar-centered areas
          */
-        private List<Rectangle> getBarRectangles (Area area)
+        private List<Area> getBarAreas (Area area)
         {
-            List<Rectangle> kept = new ArrayList<Rectangle>();
+            List<Area> kept = new ArrayList<Area>();
 
-            for (Rectangle r : systemBarRectangles) {
-                if (area.intersects(r)) {
+            for (Area r : systemBarAreas) {
+                if (area.intersects(r.getBounds())) {
                     kept.add(r);
                 }
             }
 
-            // Sort by abscissa for more efficient lookup
-            Collections.sort(
-                    kept,
-                    new Comparator<Rectangle>()
-            {
-                @Override
-                public int compare (Rectangle r1,
-                                    Rectangle r2)
-                {
-                    return Integer.compare(r1.x, r2.x);
-                }
-            });
-
             return kept;
-        }
-
-        //---------------------//
-        // getBarSafeAbscissae //
-        //---------------------//
-        /**
-         * Select the x values sufficiently away from frozen barlines and connectors.
-         *
-         * @param scanLeft  range starting abscissa
-         * @param scanRight range stopping abscissa
-         * @return an array of booleans, telling which x values are allowed
-         */
-        private boolean[] getBarSafeAbscissae (int scanLeft,
-                                               int scanRight)
-        {
-            final boolean[] allowed = new boolean[scanRight - scanLeft + 1];
-            Arrays.fill(allowed, true);
-
-            for (Rectangle rect : barRectangles) {
-                for (int x = rect.x; x < (rect.x + rect.width); x++) {
-                    int ix = x - scanLeft;
-
-                    if ((ix >= 0) && (ix < allowed.length)) {
-                        allowed[ix] = false;
-                    }
-                }
-            }
-
-            return allowed;
         }
 
         //---------------------------//

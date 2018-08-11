@@ -415,12 +415,16 @@ public class BasicLine
      */
     public Line2D.Double toDouble ()
     {
-        checkLineParameters();
+        try {
+            checkLineParameters();
 
-        if (isRatherVertical) {
-            return new Line2D.Double(xAtY(yMin), yMin, xAtY(yMax), yMax);
-        } else {
-            return new Line2D.Double(xMin, yAtX(xMin), xMax, yAtX(xMax));
+            if (isRatherVertical) {
+                return new Line2D.Double(xAtY(yMin), yMin, xAtY(yMax), yMax);
+            } else {
+                return new Line2D.Double(xMin, yAtX(xMin), xMax, yAtX(xMax));
+            }
+        } catch (UndefinedLineException ulex) {
+            return null; // Not enough points
         }
     }
 
@@ -588,6 +592,8 @@ public class BasicLine
      */
     private void compute ()
     {
+        dirty = false;
+
         if (n < 2) {
             throw new UndefinedLineException("Not enough defining points : " + n);
         }
@@ -612,7 +618,6 @@ public class BasicLine
         }
 
         normalize();
-        dirty = false;
     }
 
     //-----------//
