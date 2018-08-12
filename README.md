@@ -1,55 +1,62 @@
 # audiveris
 
 This repository contains source code for the latest generation of Audiveris optical
-music recognition (OMR) engine.
+music recognition (OMR) application.
 
 ## Main features
 
-As opposed to Audiveris [earlier generation][6], which was a stand-alone OMR application composed
-of an engine and a (limited) user interface, this repository is focused on the OMR engine.
+Derived from Audiveris [earlier generation][6] (4.x versions), which was limited to fast processing
+of small high-quality scores in memory, this repository (starting with Audiveris 5.x versions) is
+significantly more ambitious:
+* Good recognition efficiency on real-world quality scores (as seen on [IMSLP][10] site)
+* Effective support for large scores (with up to hundreds of pages)
+* Convenient user-oriented interface to detect and correct most OMR errors
+* Openness to external access
+* Available on Windows, Linux and MacOS
 
-The internals of OMR engine are made publicly available, either directly by XML-based ".omr" 
-project files or via the Java API of this software.
+The core of engine music information (OMR data) is fully documented and made publicly available,
+either directly via XML-based `.omr` project files or via the Java API of this software:
+* Audiveris includes an integrated exporter, which can write a subset of OMR data into [MusicXML][8]
+  3.0 format.
+* Other exporters are expected to build upon this OMR data to support other target formats.
 
-The engine can directly export data using [MusicXML][8] 3.0 format, via an integrated exporter.
-Other exporters could build upon the engine to support other target formats.
+## Installing and running (Windows only)
 
-NOTA: The engine provides a small integrated UI which is meant for the developer to analyze, 
-tune or train the various parts of the engine, but not to correct the final score.
-Full GUIs, meant for the end-user, are expected to be provided by external editors.
+TBD:------------------------------------------------------------------------------  
+TBD: _Update this section once Windows installer gets available!_  
+TBD:------------------------------------------------------------------------------
 
-## Building and running
+## Building and running (Windows, Linux, MacOS)
 
 First of all, you'll need the following dependencies installed and working from
 the command line:
+* [Java Development Kit (JDK)][1], version 7 or 8 (preferred), but not 9 or 10 yet.
+  Audiveris 5.1 can run on both 32-bit and 64-bit architectures.
+* [Git](https://git-scm.com) version control system.
 
-+ [Java Development Kit (JDK) version 7 or later (version 8 is recommended)][1].
-  **Please ensure you're running a 64-bit JVM. Audiveris doesn't support a 32-bit
-  JVM because deeplearning4j is 64-bit only.**
-+ [Git](https://git-scm.com) version control system.
-
-Besides the above mentioned tools you'll need to have Tesseract language files for
-[Tesseract OCR][2] to work properly. Please keep in mind that Tesseract is mandatory
-for both building and running Audiveris. __It's currently not possible to use
-Audiveris without Tesseract.__
-
-You'll need at least the english language data. Other required languages can be
-installed, too. Please check [this guide][3] for further details.
+Beside the above mentioned tools, you'll need Tesseract language files for
+[Tesseract OCR][2] to work properly.
+Please keep in mind that Tesseract is mandatory
+for both building and running Audiveris.
+__It is currently not possible to use Audiveris without Tesseract.__  
+You'll need at least the english (`eng`) language data.
+Other languages can be installed too, like `deu`, `ita`, `fra`, etc.
+Please check the [Tesseract guide][3] for further details.
 
 Moreover, opening PDFs containing vector graphics on Unix-like platforms
 (including the Mac) requires [FreeType library][4] to be available in your $PATH.
-Fortunately, every known OS distribution already contains a package for FreeType.
+Fortunately, every known Unix-like OS distribution already contains a package for FreeType.
 
 To download Audiveris project, use the following command in a directory of your choice:
 
-`git clone https://github.com/Audiveris/audiveris.git` 
+`git clone https://github.com/Audiveris/audiveris.git`
 
 This will create a sub-directory named "audiveris" in your current directory and populate it with
-project material (notably source code and build procedure). 
+project material (notably source code and build procedure).
 
 Now move to this "audiveris" project directory:
 
-`cd audiveris` 
+`cd audiveris`
 
 Once in this "audiveris" project directory, you can:
 
@@ -67,7 +74,8 @@ Once in this "audiveris" project directory, you can:
 
 ## Further Information
 
-Users and Developers are encouraged to read our [Wiki][5].
+Users and Developers are advised to read the specific [User Handbook for 5.1][9],
+and the more general [Wiki][5].
 
 [1]: http://www.oracle.com/technetwork/java/javase/downloads/index.html
 [2]: https://github.com/tesseract-ocr/tesseract
@@ -77,3 +85,5 @@ Users and Developers are encouraged to read our [Wiki][5].
 [6]: https://github.com/Audiveris/audiveris-eg
 [7]: https://github.com/Audiveris
 [8]: http://www.musicxml.com/
+[9]: https://bacchushlg.gitbooks.io/audiveris-5-1/content/
+[10]: https://imslp.org/

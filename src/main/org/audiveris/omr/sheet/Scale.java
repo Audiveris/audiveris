@@ -724,8 +724,11 @@ public class Scale
     {
         StringBuilder sb = new StringBuilder("Scale{");
 
-        sb.append("line").append(lineScale);
-        sb.append(" interline").append(interlineScale);
+        if (lineScale != null) {
+            sb.append("line").append(lineScale).append(" ");
+        }
+
+        sb.append("interline").append(interlineScale);
 
         if (beamScale != null) {
             sb.append(" ").append(beamScale);
