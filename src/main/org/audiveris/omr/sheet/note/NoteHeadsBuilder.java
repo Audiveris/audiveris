@@ -31,9 +31,7 @@ import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.image.Anchored.Anchor;
-
 import static org.audiveris.omr.image.Anchored.Anchor.*;
-
 import org.audiveris.omr.image.DistanceTable;
 import org.audiveris.omr.image.PixelDistance;
 import org.audiveris.omr.image.ShapeDescriptor;
@@ -65,9 +63,7 @@ import org.audiveris.omr.sig.inter.Inters;
 import org.audiveris.omr.sig.inter.LedgerInter;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.util.Dumping;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.StopWatch;
@@ -160,7 +156,7 @@ public class NoteHeadsBuilder
     private final Parameters params;
 
     /** Minimum width of templates. */
-    private int minTemplateWidth = 0; // TODO
+    private final int minTemplateWidth;
 
     /** The <b>properly scaled</b> templates to use, based on <b>current</b> staff. */
     private Catalog catalog;
@@ -226,6 +222,9 @@ public class NoteHeadsBuilder
 
         // Compute window in x
         xOffsets = computeXOffsets();
+
+        // Compute a reasonable minTemplateWidth
+        minTemplateWidth = computeMinTemplateWidth();
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -339,6 +338,19 @@ public class NoteHeadsBuilder
         }
 
         return filtered;
+    }
+
+    //-------------------------//
+    // computeMinTemplateWidth //
+    //-------------------------//
+    /**
+     * Report a reasonable minimum template width (to protect against image right limit).
+     *
+     * @return min template width
+     */
+    private int computeMinTemplateWidth ()
+    {
+        return sheet.getScale().getInterline(); // Not too stupid...
     }
 
     //-----------------//
