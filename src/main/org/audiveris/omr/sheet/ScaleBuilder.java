@@ -408,6 +408,12 @@ public class ScaleBuilder
         //-------------//
         /**
          * Populate the combo histogram.
+         * <p>
+         * A combo is the total length of blackRun + next whiteRun or whiteRun + next blackRun.
+         * <p>
+         * NOTA: Roughly, all counts are doubled by the way we count the combos.
+         * This has no real impact, because area (integral) which is used as the base for quorum
+         * is also doubled.
          */
         public void buildCombos ()
         {
@@ -585,7 +591,7 @@ public class ScaleBuilder
                 xMax = Math.max(xMax, comboPeak2.max);
             }
 
-            xMax = (xMax * 5) / 4; // Add some margin
+            xMax = Math.min(sheet.getWidth() - 1, (xMax * 5) / 2); // Add some margin
 
             Scale scale = sheet.getScale();
             String xLabel = "Lengths - " + ((scale != null) ? scale.toString(false) : "NO_SCALE");

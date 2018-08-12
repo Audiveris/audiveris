@@ -308,9 +308,9 @@ public class HiLoPeakFinder
                 for (int x = hilo.min; x <= hilo.max; x++) {
                     hiloSeries.add(x, function.getDerivative(x));
                 }
-            }
 
-            hiloSeries.add(hilo.max, null); // No line between hilos
+                hiloSeries.add(hilo.max, null); // No line between hilos
+            }
         }
 
         return hiloSeries;
@@ -458,12 +458,12 @@ public class HiLoPeakFinder
     {
         // Peaks
         if ((getPeaks() != null) && !peaks.isEmpty()) {
-            plotter.add(getPeakSeries(), Colors.CHART_PEAK);
+            plotter.add(getPeakSeries(x1, x2), Colors.CHART_PEAK);
         }
 
         // HiLos
         if (hilos != null) {
-            plotter.add(getHiloSeries(), Colors.CHART_HILO, true); // With shapes
+            plotter.add(getHiloSeries(x1, x2), Colors.CHART_HILO, true); // With shapes
         }
 
         // Values (w/ threshold?)
