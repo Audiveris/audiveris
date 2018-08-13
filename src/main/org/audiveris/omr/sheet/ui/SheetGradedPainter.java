@@ -23,13 +23,12 @@ package org.audiveris.omr.sheet.ui;
 
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Sheet;
+import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.inter.Inter;
 import org.audiveris.omr.sig.ui.SigPainter;
-import org.audiveris.omr.ui.ViewParameters;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import org.audiveris.omr.sheet.rhythm.Voice;
 
 /**
  * Class {@code SheetGradedPainter} paints a sheet using shape-based colors and
@@ -40,18 +39,30 @@ import org.audiveris.omr.sheet.rhythm.Voice;
 public class SheetGradedPainter
         extends SheetPainter
 {
-    //~ Constructors -------------------------------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
+    private final boolean withVoices;
+
+    private final boolean withTranslucency;
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code SheetGradedPainter} object.
      *
-     * @param sheet the sheet to paint
-     * @param g     Graphic context
+     * @param sheet            the sheet to paint
+     * @param g                Graphic context
+     * @param withVoices       true for colored voices
+     * @param withTranslucency true for translucency
      */
     public SheetGradedPainter (Sheet sheet,
-                               Graphics g)
+                               Graphics g,
+                               boolean withVoices,
+                               boolean withTranslucency)
     {
         super(sheet, g);
+
+        this.withVoices = withVoices;
+        this.withTranslucency = withTranslucency;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -71,12 +82,8 @@ public class SheetGradedPainter
     private class GradedSigPainter
             extends SigPainter
     {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** View parameters. */
-        private final ViewParameters viewParams = ViewParameters.getInstance();
-
         //~ Constructors ---------------------------------------------------------------------------
+
         public GradedSigPainter (Graphics g,
                                  Scale scale)
         {
@@ -100,7 +107,7 @@ public class SheetGradedPainter
             Color base = inter.getColor();
 
             // Voice-based color?
-            if (!inter.isAbnormal() && viewParams.isVoicePainting()) {
+            if (!inter.isAbnormal() && withVoices) {
                 final Voice voice = inter.getVoice();
 
                 if (voice != null) {
@@ -111,7 +118,7 @@ public class SheetGradedPainter
             final Color color;
 
             // Should we use translucency?
-            if (viewParams.isTranslucentPainting()) {
+            if (withTranslucency) {
                 // Prefer contextual grade over intrinsic grade when available
                 final double grade = inter.getBestGrade();
 

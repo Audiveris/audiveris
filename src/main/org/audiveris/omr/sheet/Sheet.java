@@ -375,6 +375,13 @@ public interface Sheet
     void printAnnotations (Path sheetPrintPath);
 
     /**
+     * Print the sheet mixed output using PNG format.
+     *
+     * @param sheetPrintPath path of sheet print file
+     */
+    void printMix (Path sheetPrintPath);
+
+    /**
      * In non batch mode, apply the registered item renderings on the provided graphics.
      *
      * @param g the graphics context

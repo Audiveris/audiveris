@@ -48,6 +48,7 @@ import org.audiveris.omr.score.ui.BookPdfOutput;
 import org.audiveris.omr.sheet.ui.BinarizationBoard;
 import org.audiveris.omr.sheet.ui.PictureView;
 import org.audiveris.omr.sheet.ui.PixelBoard;
+import org.audiveris.omr.sheet.ui.SheetGradedPainter;
 import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.SheetTab;
 import org.audiveris.omr.sheet.ui.StubsController;
@@ -75,7 +76,9 @@ import org.audiveris.omr.util.Navigable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -473,9 +476,10 @@ public class BasicSheet
 
         // Display sheet picture
         PictureView pictureView = new PictureView(this, SheetTab.INITIAL_TAB);
-        stub.getAssembly().addViewTab(SheetTab.INITIAL_TAB,
-                                      pictureView,
-                                      new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
+        stub.getAssembly().addViewTab(
+                SheetTab.INITIAL_TAB,
+                pictureView,
+                new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
     }
 
     //----------------------//
@@ -986,6 +990,46 @@ public class BasicSheet
             logger.info("Sheet annotations printed to {}", sheetPrintPath);
         } catch (Exception ex) {
             logger.warn("Cannot print sheet annotations to " + sheetPrintPath + " " + ex, ex);
+        }
+    }
+
+    //----------//
+    // printMix //
+    //----------//
+    @Override
+    public void printMix (Path sheetPrintPath)
+    {
+        try {
+            Path parent = sheetPrintPath.getParent();
+
+            if (!Files.exists(parent)) {
+                Files.createDirectories(parent);
+            }
+
+            BufferedImage img = new BufferedImage(
+                    getWidth(),
+                    getHeight(),
+                    BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = img.createGraphics();
+
+            // White background
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, getWidth(), getHeight());
+
+            // Binary
+            RunTable table = picture.getTable(Picture.TableKey.BINARY);
+            g.setColor(Color.LIGHT_GRAY);
+            table.render(g, new Point(0, 0));
+
+            // Inters with their color
+            new SheetGradedPainter(this, g, false, false).process();
+
+            // To disk
+            ImageIO.write(img, "png", sheetPrintPath.toFile());
+
+            logger.info("Sheet mix printed to {}", sheetPrintPath);
+        } catch (Exception ex) {
+            logger.warn("Cannot print sheet mix to " + sheetPrintPath + " " + ex, ex);
         }
     }
 

@@ -44,9 +44,11 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.stem.StemScaler;
+
 import static org.audiveris.omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
+
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;
@@ -1091,6 +1093,35 @@ public class BookActions
         return new PrintSheetTask(stub.getSheet(), sheetPrintPath);
     }
 
+    //-----------------//
+    // printSheetMixAs //
+    //-----------------//
+    /**
+     * Write the currently selected sheet, both input and output, to a user-provided
+     * location.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = STUB_IDLE)
+    public Task<Void, Void> printSheetMixAs (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        if (stub == null) {
+            return null;
+        }
+
+        // Let the user select a PNG output file
+        final Path sheetPrintPath = choosePngPath(stub, "");
+
+        if ((sheetPrintPath == null) || !confirmed(sheetPrintPath)) {
+            return null;
+        }
+
+        return new PrintSheetMixTask(stub.getSheet(), sheetPrintPath);
+    }
+
     //------//
     // redo //
     //------//
@@ -1699,6 +1730,28 @@ public class BookActions
                 "Choose sheet print target");
     }
 
+    //---------------//
+    // choosePngPath //
+    //---------------//
+    private Path choosePngPath (SheetStub stub,
+                                String preExt)
+    {
+        final String PNG_EXTENSION = ".png";
+        final Book book = stub.getBook();
+        final String ext = preExt + PNG_EXTENSION;
+        final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
+        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
+        final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
+        final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
+
+        return UIUtil.pathChooser(
+                true,
+                OMR.gui.getFrame(),
+                defaultSheetPath,
+                filter(ext),
+                "Choose sheet png target");
+    }
+
     //-----------//
     // confirmed //
     //-----------//
@@ -1946,6 +1999,43 @@ public class BookActions
             try {
                 LogUtil.start(sheet.getStub());
                 sheet.printAnnotations(sheetPrintPath);
+            } finally {
+                LogUtil.stopStub();
+            }
+
+            return null;
+        }
+    }
+
+    //-------------------//
+    // PrintSheetMixTask //
+    //-------------------//
+    public static class PrintSheetMixTask
+            extends VoidTask
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Sheet sheet;
+
+        final Path sheetPrintPath;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PrintSheetMixTask (Sheet sheet,
+                                  Path sheetPrintPath)
+        {
+            this.sheet = sheet;
+            this.sheetPrintPath = sheetPrintPath;
+
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        protected Void doInBackground ()
+                throws InterruptedException
+        {
+            try {
+                LogUtil.start(sheet.getStub());
+                sheet.printMix(sheetPrintPath);
             } finally {
                 LogUtil.stopStub();
             }

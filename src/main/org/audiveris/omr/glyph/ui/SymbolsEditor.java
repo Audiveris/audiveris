@@ -63,9 +63,7 @@ import org.audiveris.omr.ui.ViewParameters.SelectionMode;
 import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.selection.MouseMovement;
-
 import static org.audiveris.omr.ui.selection.SelectionHint.*;
-
 import org.audiveris.omr.ui.util.UIUtil;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.Navigable;
@@ -77,10 +75,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-
 import static java.awt.RenderingHints.KEY_ANTIALIASING;
 import static java.awt.RenderingHints.VALUE_ANTIALIAS_ON;
-
 import java.awt.Stroke;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -189,7 +185,8 @@ public class SymbolsEditor
                 new SymbolGlyphBoard(glyphsController, constants.selectGlyphBoard.isSet(), true));
         boards.add(new InterBoard(sheet, constants.selectInterBoard.isSet()));
         boards.add(shapeBoard = new ShapeBoard(sheet, this, constants.selectShapeBoard.isSet()));
-        boards.add(new PatchClassifierBoard(
+        boards.add(
+                new PatchClassifierBoard(
                         sheet,
                         sheet.getLocationService(),
                         constants.selectPatchClassifierBoard.isSet()));
@@ -623,7 +620,11 @@ public class SymbolsEditor
                 }
 
                 // Inters (with graded colors)
-                new SheetGradedPainter(sheet, g).process();
+                new SheetGradedPainter(
+                        sheet,
+                        g,
+                        viewParams.isVoicePainting(),
+                        viewParams.isTranslucentPainting()).process();
 
                 // Display staff line splines?
                 if (ViewParameters.getInstance().isStaffLinePainting()) {
