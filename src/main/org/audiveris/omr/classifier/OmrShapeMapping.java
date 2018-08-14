@@ -114,11 +114,25 @@ public abstract class OmrShapeMapping
         map.put(OmrShape.cClefTenor, Shape.C_CLEF);
 
         //        map.put(OmrShape.cClefAltoChange, Shape.XXX);
-        //        map.put(OmrShape.cClefTenor, Shape.XXX);
         //
         map.put(OmrShape.keyFlat, Shape.FLAT);
         map.put(OmrShape.keySharp, Shape.SHARP);
         map.put(OmrShape.keyNatural, Shape.NATURAL);
+
+        map.put(OmrShape.articAccentAbove, Shape.ACCENT);
+        map.put(OmrShape.articAccentBelow, Shape.ACCENT);
+
+        map.put(OmrShape.articMarcatoAbove, Shape.STRONG_ACCENT);
+        map.put(OmrShape.articMarcatoBelow, Shape.STRONG_ACCENT);
+
+        map.put(OmrShape.articStaccatissimoAbove, Shape.STACCATISSIMO);
+        map.put(OmrShape.articStaccatissimoBelow, Shape.STACCATISSIMO);
+
+        map.put(OmrShape.articStaccatoAbove, Shape.STACCATO);
+        map.put(OmrShape.articStaccatoBelow, Shape.STACCATO);
+
+        map.put(OmrShape.articTenutoAbove, Shape.TENUTO);
+        map.put(OmrShape.articTenutoBelow, Shape.TENUTO);
 
         //
         //        map.put(OmrShape.graceNoteAcciaccaturaStemDown, Shape.XXX);

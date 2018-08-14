@@ -21,6 +21,9 @@
 // </editor-fold>
 package org.audiveris.omr.ui.util;
 
+import org.audiveris.omr.constant.Constant;
+import org.audiveris.omr.constant.ConstantSet;
+
 import java.awt.Component;
 import java.awt.Graphics;
 import java.util.Objects;
@@ -35,7 +38,7 @@ public class FixedWidthIcon
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final int width = 35; // TODO: use an application constant
+    private static final Constants constants = new Constants();
 
     //~ Instance fields ----------------------------------------------------------------------------
     private final Icon icon;
@@ -62,7 +65,7 @@ public class FixedWidthIcon
     @Override
     public int getIconWidth ()
     {
-        return width;
+        return constants.iconWidth.getValue();
     }
 
     @Override
@@ -72,6 +75,21 @@ public class FixedWidthIcon
                            int y)
     {
         int w = icon.getIconWidth();
-        icon.paintIcon(c, g, x + ((width - w) / 2), y);
+        icon.paintIcon(c, g, x + ((getIconWidth() - w) / 2), y);
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Integer iconWidth = new Constant.Integer(
+                "pixels",
+                30,
+                "Fixed icon width");
     }
 }

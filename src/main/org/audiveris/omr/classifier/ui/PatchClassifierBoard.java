@@ -28,11 +28,15 @@ import com.jgoodies.forms.layout.FormSpecs;
 
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.classifier.OmrEvaluation;
+import org.audiveris.omr.classifier.OmrShapeMapping;
 import org.audiveris.omr.classifier.PatchClassifier;
+
 import static org.audiveris.omr.classifier.PatchClassifier.CONTEXT_HEIGHT;
 import static org.audiveris.omr.classifier.PatchClassifier.CONTEXT_WIDTH;
+
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.ui.Board;
@@ -41,6 +45,8 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.selection.SelectionService;
 import org.audiveris.omr.ui.selection.UserEvent;
+import org.audiveris.omr.ui.symbol.ShapeSymbol;
+import org.audiveris.omr.ui.util.FixedWidthIcon;
 import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Wrapper;
@@ -160,7 +166,7 @@ public class PatchClassifierBoard
     private void defineLayout ()
     {
         FormLayout layout = new FormLayout(
-                "61dlu," + Panel.getFieldInterval() + ",pref",
+                "pref," + Panel.getFieldInterval() + ",pref",
                 "pref");
 
         PanelBuilder builder = new PanelBuilder(layout, getBody());
@@ -352,7 +358,7 @@ public class PatchClassifierBoard
 
         private void defineLayout ()
         {
-            String colSpec = Panel.makeColumns(2);
+            String colSpec = "right:20dlu, 1dlu, 141dlu";
             FormLayout layout = new FormLayout(colSpec, "");
 
             for (int i = 0; i < buttons.size(); i++) {
@@ -370,7 +376,7 @@ public class PatchClassifierBoard
                 int r = (2 * i) + 1; // --------------------------------
                 EvalButton evb = buttons.get(i);
                 builder.add(evb.grade, cst.xy(1, r));
-                builder.add(evb.button, cst.xyw(3, r, 5));
+                builder.add(evb.button, cst.xy(3, r));
             }
         }
 
@@ -430,8 +436,12 @@ public class PatchClassifierBoard
                     button.setVisible(true);
                     button.setEnabled(enabled);
                     button.setText(text);
-                    //                    ShapeSymbol symbol = eval.omrShape.getDecoratedSymbol();
-                    //                    button.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
+
+                    // Display a shape icon if possible
+                    Shape shape = OmrShapeMapping.shapeOf(eval.omrShape);
+                    ShapeSymbol symbol = (shape != null) ? shape.getDecoratedSymbol() : null;
+                    button.setIcon((symbol != null) ? new FixedWidthIcon(symbol) : null);
+
                     grade.setVisible(true);
                     grade.setText(String.format("%.4f", eval.grade));
                 } else {
