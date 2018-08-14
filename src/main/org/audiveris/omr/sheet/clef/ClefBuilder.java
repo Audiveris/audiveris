@@ -28,7 +28,6 @@ import org.audiveris.omr.classifier.Annotation;
 import org.audiveris.omr.classifier.AnnotationIndex;
 import org.audiveris.omr.classifier.Classifier;
 import org.audiveris.omr.classifier.Evaluation;
-import org.audiveris.omr.classifier.ShapeClassifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
@@ -144,7 +143,7 @@ public class ClefBuilder
     private Rectangle innerRect;
 
     /** Shape classifier to use. */
-    private final Classifier classifier = ShapeClassifier.getInstance();
+    private final Classifier classifier = null; ///ShapeClassifier.getInstance();
 
     /** All glyphs submitted to classifier. */
     private final Set<Glyph> glyphCandidates = new LinkedHashSet<Glyph>();

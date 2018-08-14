@@ -107,7 +107,10 @@ public class ChordArpeggiatoRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final ArpeggiatoInter arpeggiato = (ArpeggiatoInter) e.getEdgeTarget();
-        arpeggiato.checkAbnormal();
+
+        if (!arpeggiato.isRemoved()) {
+            arpeggiato.checkAbnormal();
+        }
     }
 
     @Override

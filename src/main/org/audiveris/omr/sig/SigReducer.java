@@ -35,6 +35,7 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.header.StaffHeader;
 import org.audiveris.omr.sheet.rhythm.Measure;
+import org.audiveris.omr.sheet.stem.StemsBuilder;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
@@ -1109,7 +1110,7 @@ public class SigReducer
     {
         logger.debug("S#{} checkStemsLengths", system.getId());
 
-        final int minStemExtension = scale.toPixels(constants.minStemExtension);
+        final int minStemExtension = scale.toPixels(StemsBuilder.getMinStemExtension());
         final List<Inter> stems = sig.inters(Shape.STEM);
         int modifs = 0;
 
@@ -2117,9 +2118,5 @@ public class SigReducer
         private final Scale.Fraction maxTupletSlurWidth = new Scale.Fraction(
                 3,
                 "Maximum width for slur around tuplet");
-
-        private final Scale.Fraction minStemExtension = new Scale.Fraction(
-                1.5,
-                "Minimum vertical extension of a stem beyond last head");
     }
 }

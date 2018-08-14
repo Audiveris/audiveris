@@ -25,10 +25,10 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphFactory;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
-import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory.CompoundConstructor;
 import org.audiveris.omr.glyph.dynamic.SectionCompound;
@@ -38,11 +38,10 @@ import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
-
 import static org.audiveris.omr.run.Orientation.*;
-
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.sheet.Scale;
+import org.audiveris.omr.sheet.Scale.Fraction;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.Skew;
 import org.audiveris.omr.sheet.SystemInfo;
@@ -60,22 +59,16 @@ import org.audiveris.omr.sig.relation.Exclusion.Cause;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
-
 import static org.audiveris.omr.sig.relation.StemPortion.*;
-
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
-
 import static org.audiveris.omr.util.VerticalSide.*;
-
 import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
@@ -220,6 +213,19 @@ public class StemsBuilder
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------------------//
+    // getMinStemExtension //
+    //---------------------//
+    /**
+     * Report the minimum extension that goes from last head to end of stem.
+     *
+     * @return the defined constant
+     */
+    public static Fraction getMinStemExtension ()
+    {
+        return constants.minStemExtension;
+    }
+
     //--------------//
     // linkCueBeams //
     //--------------//
@@ -297,7 +303,8 @@ public class StemsBuilder
         Collections.sort(systemBeams, Inters.byAbscissa);
 
         // The abscissa-sorted head interpretations for this system
-        final List<Inter> systemHeads = sig.inters(ShapeSet.getStemTemplateNotes(system.getSheet()));
+        final List<Inter> systemHeads = sig.inters(
+                ShapeSet.getStemTemplateNotes(system.getSheet()));
         Collections.sort(systemHeads, Inters.byAbscissa);
 
         // First phase, look around heads for stems (and beams if any)
@@ -1901,7 +1908,7 @@ public class StemsBuilder
             maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum(false));
             maxYGap = scale.toPixels(VerticalsBuilder.getMaxYGap());
             minHeadSectionContribution = scale.toPixels(constants.minHeadSectionContribution);
-            minStemExtension = scale.toPixels(constants.minStemExtension);
+            minStemExtension = scale.toPixels(getMinStemExtension());
             minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
             minBeamStemsGap = scale.toPixels(constants.minBeamStemsGap);
 

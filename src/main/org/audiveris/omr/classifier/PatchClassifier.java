@@ -156,7 +156,7 @@ public class PatchClassifier
                                               int interline,
                                               Wrapper<BufferedImage> imageWrapper)
     {
-        logger.info("Patching sheet at ({}, {}).", location.x, location.y);
+        logger.debug("Patching sheet at ({}, {}).", location.x, location.y);
 
         final Scale scale = sheet.getScale();
 
@@ -322,16 +322,16 @@ public class PatchClassifier
         return compatability;
     }
 
-    //---------//
+    //-----------------//
     // getOmrShapeList //
-    //---------//
-
+    //-----------------//
     /**
      * Get a list of OMR shapes to map the probabilities of the NN to.
      *
      * @return Correctly ordered list of OMR shapes to map the probabilities to.
      */
-    private ArrayList<OmrShape> getOmrShapeList() {
+    private ArrayList<OmrShape> getOmrShapeList ()
+    {
         ArrayList<OmrShape> shapes = new ArrayList<>();
         shapes.add(OmrShape.none);
         shapes.add(OmrShape.brace);

@@ -78,6 +78,9 @@ public class BasicContainment
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         InterEnsemble ensemble = (InterEnsemble) e.getEdgeSource();
-        ensemble.invalidateCache();
+
+        if (!ensemble.isRemoved()) {
+            ensemble.invalidateCache();
+        }
     }
 }

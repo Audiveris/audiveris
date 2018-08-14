@@ -1843,7 +1843,23 @@ public class Measure
     @Override
     public String toString ()
     {
-        return "{Measure#" + stack.getPageId() + "P" + part.getId() + "}";
+        StringBuilder sb = new StringBuilder("Measure#");
+
+        if (stack != null) {
+            sb.append(stack.getPageId());
+        } else {
+            sb.append("-NOSTACK-");
+        }
+
+        sb.append("P");
+
+        if (part != null) {
+            sb.append(part.getId());
+        } else {
+            sb.append("-NOPART-");
+        }
+
+        return sb.toString();
     }
 
     //----------------//

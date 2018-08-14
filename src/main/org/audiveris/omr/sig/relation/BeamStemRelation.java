@@ -88,6 +88,80 @@ public class BeamStemRelation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //-----------------------//
+    // computeExtensionPoint //
+    //-----------------------//
+    /**
+     * Compute the extension point where beam meets stem.
+     * <p>
+     * As for HeadStemRelation, the extension point is the <b>last</b> point where stem meets beam
+     * when going along stem from head to beam.
+     *
+     * @param beam the provided beam
+     * @param stem the provided stem
+     * @return the corresponding extension point
+     */
+    public static Point2D computeExtensionPoint (AbstractBeamInter beam,
+                                                 StemInter stem)
+    {
+        // Determine if stem is above or below the beam, to choose proper beam border
+        // If stem is below the beam, we choose the top border of beam.
+        Line2D stemMedian = stem.getMedian();
+        Point2D stemMiddle = PointUtil.middle(stemMedian);
+        int above = beam.getMedian().relativeCCW(stemMiddle);
+        Line2D beamBorder = beam.getBorder((above < 0) ? TOP : BOTTOM);
+
+        return LineUtil.intersection(stemMedian, beamBorder);
+    }
+
+    //----------------//
+    // getBeamPortion //
+    //----------------//
+    /**
+     * @return the beamPortion
+     */
+    public BeamPortion getBeamPortion ()
+    {
+        return beamPortion;
+    }
+
+    //----------------//
+    // getStemPortion //
+    //----------------//
+    @Override
+    public StemPortion getStemPortion (Inter source,
+                                       Line2D stemLine,
+                                       Scale scale)
+    {
+        double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
+
+        return (extensionPoint.getY() < midStem) ? StemPortion.STEM_TOP : StemPortion.STEM_BOTTOM;
+    }
+
+    //------------------//
+    // getXInGapMaximum //
+    //------------------//
+    public static Scale.Fraction getXInGapMaximum (boolean manual)
+    {
+        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
+    }
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum (boolean manual)
+    {
+        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum (boolean manual)
+    {
+        return manual ? constants.yGapMaxManual : constants.yGapMax;
+    }
+
     //-------//
     // added //
     //-------//
@@ -146,80 +220,6 @@ public class BeamStemRelation
         beam.checkAbnormal();
     }
 
-    //-----------------------//
-    // computeExtensionPoint //
-    //-----------------------//
-    /**
-     * Compute the extension point where beam meets stem.
-     * <p>
-     * As for HeadStemRelation, the extension point is the <b>last</b> point where stem meets beam
-     * when going along stem from head to beam.
-     *
-     * @param beam the provided beam
-     * @param stem the provided stem
-     * @return the corresponding extension point
-     */
-    public static Point2D computeExtensionPoint (AbstractBeamInter beam,
-                                                 StemInter stem)
-    {
-        // Determine if stem is above or below the beam, to choose proper beam border
-        // If stem is below the beam, we choose the top border of beam.
-        Line2D stemMedian = stem.getMedian();
-        Point2D stemMiddle = PointUtil.middle(stemMedian);
-        int above = beam.getMedian().relativeCCW(stemMiddle);
-        Line2D beamBorder = beam.getBorder((above < 0) ? TOP : BOTTOM);
-
-        return LineUtil.intersection(stemMedian, beamBorder);
-    }
-
-    //------------------//
-    // getXInGapMaximum //
-    //------------------//
-    public static Scale.Fraction getXInGapMaximum (boolean manual)
-    {
-        return manual ? constants.xInGapMaxManual : constants.xInGapMax;
-    }
-
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum (boolean manual)
-    {
-        return manual ? constants.xOutGapMaxManual : constants.xOutGapMax;
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum (boolean manual)
-    {
-        return manual ? constants.yGapMaxManual : constants.yGapMax;
-    }
-
-    //----------------//
-    // getBeamPortion //
-    //----------------//
-    /**
-     * @return the beamPortion
-     */
-    public BeamPortion getBeamPortion ()
-    {
-        return beamPortion;
-    }
-
-    //----------------//
-    // getStemPortion //
-    //----------------//
-    @Override
-    public StemPortion getStemPortion (Inter source,
-                                       Line2D stemLine,
-                                       Scale scale)
-    {
-        double midStem = (stemLine.getY1() + stemLine.getY2()) / 2;
-
-        return (extensionPoint.getY() < midStem) ? StemPortion.STEM_TOP : StemPortion.STEM_BOTTOM;
-    }
-
     //----------------//
     // isSingleSource //
     //----------------//
@@ -247,12 +247,20 @@ public class BeamStemRelation
         // If stem has a chord with heads, remove all beam-head relations
         final AbstractBeamInter beam = (AbstractBeamInter) e.getEdgeSource();
         final StemInter stem = (StemInter) e.getEdgeTarget();
-        final SIGraph sig = stem.getSig();
 
-        for (HeadChordInter headChord : stem.getChords()) {
-            for (Inter inter : headChord.getNotes()) {
-                HeadInter head = (HeadInter) inter;
-                sig.removeEdge(beam, head);
+        /**
+         * CAVEAT: if a beam (with beam-stem and beam-head relations) is removed,
+         * the graph will automatically remove these relations, so also removing here
+         * the beam-head relation might lead to NPE in graph...
+         */
+        if (!beam.isRemoved() && !stem.isRemoved()) {
+            final SIGraph sig = stem.getSig();
+
+            for (HeadChordInter headChord : stem.getChords()) {
+                for (Inter inter : headChord.getNotes()) {
+                    HeadInter head = (HeadInter) inter;
+                    sig.removeEdge(beam, head);
+                }
             }
         }
     }

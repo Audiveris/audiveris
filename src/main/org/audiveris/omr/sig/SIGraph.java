@@ -1112,7 +1112,7 @@ public class SIGraph
     public boolean removeVertex (Inter inter)
     {
         if (!inter.isRemoved()) {
-            logger.error("Do not use removeVertex() directly. Use inter.delete() instead.");
+            logger.error("Do not use removeVertex() directly. Use inter.remove() instead.");
             throw new IllegalStateException("Do not use removeVertex() directly");
         }
 

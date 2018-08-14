@@ -131,7 +131,10 @@ public class FlagStemRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final FlagInter flag = (FlagInter) e.getEdgeSource();
-        flag.checkAbnormal();
+
+        if (!flag.isRemoved()) {
+            flag.checkAbnormal();
+        }
     }
 
     //----------------//

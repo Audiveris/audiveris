@@ -81,7 +81,7 @@ public abstract class ShapeClassifier
      */
     public static Classifier getInstance ()
     {
-        logger.warn("getInstance() is no longer operational");
+        logger.warn("ShapeClassifier.getInstance() is no longer operational");
 
         return null;
 
@@ -99,7 +99,7 @@ public abstract class ShapeClassifier
      */
     public static Classifier getSecondInstance ()
     {
-        logger.warn("getSecondInstance() is no longer operational");
+        logger.warn("ShapeClassifier.getSecondInstance() is no longer operational");
 
         return null;
 

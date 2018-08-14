@@ -120,7 +120,10 @@ public class AlterHeadRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final AlterInter alter = (AlterInter) e.getEdgeSource();
-        alter.checkAbnormal();
+
+        if (!alter.isRemoved()) {
+            alter.checkAbnormal();
+        }
     }
 
     //--------------//

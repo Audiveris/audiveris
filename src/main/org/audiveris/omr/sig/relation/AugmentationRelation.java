@@ -115,7 +115,10 @@ public class AugmentationRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final AugmentationDotInter dot = (AugmentationDotInter) e.getEdgeSource();
-        dot.checkAbnormal();
+
+        if (!dot.isRemoved()) {
+            dot.checkAbnormal();
+        }
     }
 
     //---------------//
