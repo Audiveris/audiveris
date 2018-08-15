@@ -358,7 +358,7 @@ public class PatchClassifierBoard
 
         private void defineLayout ()
         {
-            String colSpec = "right:20dlu, 1dlu, 141dlu";
+            String colSpec = "right:25dlu, 1dlu, 136dlu";
             FormLayout layout = new FormLayout(colSpec, "");
 
             for (int i = 0; i < buttons.size(); i++) {
