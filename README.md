@@ -66,7 +66,7 @@ Once in this "audiveris" project directory, you can:
     `gradlew.bat run` (Windows)
 
 ### Arch Linux
-For the AUR(Arch User Repository) there exist two packages which can be installed by hand(or with your AUR-helper of trust). One is [`audiveris`](https://aur.archlinux.org/packages/audiveris) which uses the 5.1 release and the other one is [`audiveris-git`](https://aur.archlinux.org/packages/audiveris-git) which tracks the `master` branch. To install, simply execute:
+For the AUR(Arch User Repository) there exist two packages which can be installed by hand(or with your AUR-helper of trust). One is [`audiveris`](https://aur.archlinux.org/packages/audiveris) which uses the [`5.1.0-rc` release](https://github.com/Audiveris/audiveris/releases/tag/5.1.0-rc) and the other one is [`audiveris-git`](https://aur.archlinux.org/packages/audiveris-git) which tracks the `master` branch. To install, simply execute:
 ```bash
 git clone https://aur.archlinux.org/audiveris.git
 #git clone https://aur.archlinux.org/audiveris-git.git
