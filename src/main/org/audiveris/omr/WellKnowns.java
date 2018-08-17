@@ -145,9 +145,6 @@ public abstract class WellKnowns
     /** The folder where global configuration data is stored. */
     public static final Path CONFIG_FOLDER = getFolder(FolderKind.CONFIG);
 
-    /** The folder where plugin scripts are found. */
-    public static final Path PLUGINS_FOLDER = CONFIG_FOLDER.resolve("plugins");
-
     //-----------// read-write area
     // USER DATA // User-specific data, except configuration stuff
     //-----------//
@@ -215,8 +212,8 @@ public abstract class WellKnowns
     {
         //~ Enumeration constant initializers ------------------------------------------------------
 
-        CONFIG,
         DATA,
+        CONFIG,
         LOG;
     }
 
@@ -337,10 +334,10 @@ public abstract class WellKnowns
             final Path audiverisPath = Paths.get(xdg + TOOL_PREFIX);
 
             switch (kind) {
-            case CONFIG:
+            case DATA:
                 return audiverisPath;
 
-            case DATA:
+            case CONFIG:
                 return audiverisPath;
 
             default:
@@ -357,11 +354,11 @@ public abstract class WellKnowns
         }
 
         switch (kind) {
-        case CONFIG:
-            return Paths.get(home + "/.config" + TOOL_PREFIX);
-
         case DATA:
             return Paths.get(home + "/.local/share" + TOOL_PREFIX);
+
+        case CONFIG:
+            return Paths.get(home + "/.config" + TOOL_PREFIX);
 
         default:
         case LOG:
@@ -381,11 +378,11 @@ public abstract class WellKnowns
         }
 
         switch (kind) {
-        case CONFIG:
-            return Paths.get(home + "/Library/Application Support/" + TOOL_PREFIX);
-
         case DATA:
             return Paths.get(home + "/Library/" + TOOL_PREFIX + "/data");
+
+        case CONFIG:
+            return Paths.get(home + "/Library/Application Support/" + TOOL_PREFIX);
 
         default:
         case LOG:
@@ -398,22 +395,24 @@ public abstract class WellKnowns
     //---------------------//
     private static Path getFolderForWindows (FolderKind kind)
     {
+        // User Application Data
         final String appdata = System.getenv("APPDATA");
-        final String userdata = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
 
         if (appdata == null) {
             throw new RuntimeException("APPDATA environment variable is not set");
         }
 
         final Path audiverisPath = Paths.get(appdata + TOOL_PREFIX);
-        final Path audiverisDataPath = Paths.get(userdata + "/" + TOOL_NAME);
+
+        // User Documents
+        final String userDocs = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
 
         switch (kind) {
+        case DATA:
+            return Paths.get(userDocs + "/" + TOOL_NAME);
+
         case CONFIG:
             return audiverisPath.resolve("config");
-
-        case DATA:
-            return audiverisDataPath;		// BHT: skip "data"
 
         default:
         case LOG:
@@ -542,11 +541,11 @@ public abstract class WellKnowns
     private static String xdgProperty (FolderKind kind)
     {
         switch (kind) {
-        case CONFIG:
-            return "XDG_CONFIG_HOME";
-
         case DATA:
             return "XDG_DATA_HOME";
+
+        case CONFIG:
+            return "XDG_CONFIG_HOME";
 
         default:
         case LOG:
