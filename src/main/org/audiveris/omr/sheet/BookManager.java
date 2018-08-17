@@ -648,10 +648,6 @@ public class BookManager
                 "",
                 "History of books most recently loaded or saved");
 
-        private final Constant.String scriptHistory = new Constant.String(
-                "",
-                "History of scripts most recently loaded or saved");
-
         private final Constant.Integer historySize = new Constant.Integer(
                 "count",
                 10,
