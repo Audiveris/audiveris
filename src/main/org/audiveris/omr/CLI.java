@@ -25,6 +25,7 @@ import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
+import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.RunClass;
 import org.audiveris.omr.step.Step;
@@ -556,6 +557,10 @@ public class CLI
         @Option(name = "-transcribe", usage = "Transcribe whole book")
         boolean transcribe;
 
+        /** Should a sheet mix be exported after transcription? */
+        @Option(name = "-export-sheet-mix", usage = "Export sheet mix after transcription")
+        boolean export_sheet_mix;
+
         /** Optional "--" separator. */
         @Argument
         @Option(name = "--", handler = StopOptionHandler.class)
@@ -765,6 +770,19 @@ public class CLI
 
                 if (params.transcribe) {
                     book.reduceScores();
+                }
+
+                if (params.export_sheet_mix) {
+                    // TODO: Make this cleaner
+                    for (SheetStub stub : book.getStubs()) {
+                        final String PNG_EXTENSION = ".png";
+                        final String ext = PNG_EXTENSION;
+                        final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
+                        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
+                        final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
+                        final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
+                        stub.getSheet().printMix(defaultSheetPath);
+                    }
                 }
 
                 // Specific class to run?
