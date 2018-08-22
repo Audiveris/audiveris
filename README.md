@@ -110,10 +110,9 @@ Once inside the audiveris project directory, you can:
     This creates a `build` folder in the repository root, which amongst others contains a `distributions` folder, where the archived/zipped libraries are. To run audiveris from those files, execute:
     
     ```sh
-    cd build/distributions
     # Extract the archive
-    tar -xf Audiveris.tar
-    #unzip Audiveris.zip
+    tar -xf build/distributions/Audiveris.tar
+    #unzip build/distributions/Audiveris.zip
     # Run audiveris(Append arguments if needed)
     java -cp "Audiveris/lib/*" Audiveris
     ```
