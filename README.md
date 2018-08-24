@@ -49,7 +49,7 @@ For the full page classifier, clone the [Detection-Service-repository][detection
 git clone https://github.com/tuggeluk/Detection_Service.git
 ``` 
 
-This classifier needs [Python 3][python], including the modules: numpy, tensorflow, pandas, pillow and flask. To install those, execute:
+This classifier needs [Python 2/3][python], including the modules: numpy, tensorflow, pandas, pillow and flask. To install those, execute:
 
 ```sh
 pip install numpy tensorflow pandas pillow flask
