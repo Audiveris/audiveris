@@ -775,12 +775,10 @@ public class CLI
                 if (params.export_sheet_mix) {
                     // TODO: Make this cleaner
                     for (SheetStub stub : book.getStubs()) {
-                        final String PNG_EXTENSION = ".png";
-                        final String ext = PNG_EXTENSION;
                         final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
                         final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
                         final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
-                        final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
+                        final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ".png");
                         stub.getSheet().printMix(defaultSheetPath);
                     }
                 }
