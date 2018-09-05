@@ -1083,7 +1083,7 @@ public class BasicBook
             new BookPdfOutput(BasicBook.this, pdfPath.toFile()).write(null);
             setPrintPath(pdfPath);
         } catch (Exception ex) {
-            logger.warn("Cannot write PDF to " + pdfPath, ex);
+            logger.warn("Cannot write PDF to {} {}", pdfPath, ex.toString(), ex);
         }
     }
 
