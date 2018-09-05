@@ -11,6 +11,7 @@
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
+; code from "http://nsis.sourceforge.net/File_Association"
 !include "FileAssociation.nsh"
 
 
@@ -47,7 +48,7 @@ var ICONS_GROUP
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "Setup_Audiveris.exe"
+OutFile "Setup_Audiveris_${VERSION}.exe"
 InstallDir "$PROGRAMFILES\Audiveris"
 ShowInstDetails show
 ShowUnInstDetails show
@@ -128,8 +129,9 @@ Section "Hauptgruppe" SEC01
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   !insertmacro MUI_STARTMENU_WRITE_END
   
-${registerExtension} "$INSTDIR\bin\${PRODUCT_NAME}.bat" ".omr" "OpticalMusicRecognition_File"
-  
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1 "Do you want to register omr-files to Audiveris?" IDNO +2
+  ${registerExtension} "$INSTDIR\bin\${PRODUCT_NAME}.bat" ".omr" "OpticalMusicRecognition_File"
+
 SectionEnd
 
 Section -AdditionalIcons
