@@ -795,12 +795,6 @@ public class CLI
                     }
                 }
 
-                // Book print?
-                if (params.print) {
-                    logger.debug("Print book");
-                    book.print();
-                }
-
                 // Book export?
                 if (params.export) {
                     logger.debug("Export book");
@@ -817,6 +811,12 @@ public class CLI
                 if (params.annotate) {
                     logger.debug("Annotate book");
                     book.annotate();
+                }
+
+                // Book print?
+                if (params.print) {
+                    logger.debug("Print book");
+                    book.print();
                 }
 
                 // Book save?
