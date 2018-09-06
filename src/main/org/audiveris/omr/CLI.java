@@ -531,7 +531,7 @@ public class CLI
         boolean force;
 
         /** Help mode. */
-        @Option(name = "-help", help = true, usage = "Display general help then stops")
+        @Option(name = "-help", help = true, usage = "Display general help then stop")
         boolean helpMode;
 
         /** The map of application options. */
