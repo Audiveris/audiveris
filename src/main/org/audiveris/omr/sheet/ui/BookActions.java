@@ -1689,9 +1689,9 @@ public class BookActions
     private Path choosePrintPath (Book book,
                                   String preExt)
     {
-        final String ext = preExt + OMR.PDF_EXTENSION;
+        final String ext = preExt + OMR.PRINT_EXTENSION;
         Path defaultBookPath = BookManager.getDefaultPrintPath(book);
-        Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
+        Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
 
         if (!preExt.isEmpty()) {
             bookSansExt = FileUtil.avoidExtensions(bookSansExt, preExt);
@@ -1714,9 +1714,9 @@ public class BookActions
                                   String preExt)
     {
         final Book book = stub.getBook();
-        final String ext = preExt + OMR.PDF_EXTENSION;
+        final String ext = preExt + OMR.PRINT_EXTENSION;
         final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
-        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
+        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
         final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
 
@@ -1738,7 +1738,7 @@ public class BookActions
         final Book book = stub.getBook();
         final String ext = preExt + PNG_EXTENSION;
         final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
-        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
+        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
         final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ext);
 

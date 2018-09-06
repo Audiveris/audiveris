@@ -296,7 +296,7 @@ public class BookManager
             return book.getPrintPath();
         }
 
-        return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.PDF_EXTENSION);
+        return getDefaultBookFolder(book).resolve(book.getRadix() + OMR.PRINT_EXTENSION);
     }
 
     //-------------//
