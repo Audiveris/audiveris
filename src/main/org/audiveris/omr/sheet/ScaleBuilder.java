@@ -319,7 +319,7 @@ public class ScaleBuilder
                 "Ratio of total runs for derivative acceptance");
 
         private final Constant.Ratio minBeamFraction = new Constant.Ratio(
-                0.25,
+                0.275, // 0.25,
                 "Minimum ratio between beam thickness and interline");
 
         private final Constant.Ratio maxSecondRatio = new Constant.Ratio(
