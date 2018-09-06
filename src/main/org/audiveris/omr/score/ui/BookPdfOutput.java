@@ -30,6 +30,7 @@ import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Sheet;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.sheet.ui.SimpleSheetPainter;
+import org.audiveris.omr.step.Step;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +98,12 @@ public class BookPdfOutput
             fos = new FileOutputStream(file);
 
             for (SheetStub stub : stubs) {
+                if (!stub.isDone(Step.GRID)) {
+                    logger.info("{} has not reached GRID step yet, no printout.", stub);
+
+                    continue;
+                }
+
                 final int width = stub.getSheet().getWidth();
                 final int height = stub.getSheet().getHeight();
 
