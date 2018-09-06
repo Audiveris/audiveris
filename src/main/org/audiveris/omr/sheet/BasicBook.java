@@ -24,7 +24,7 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.ProgramId;
 import org.audiveris.omr.WellKnowns;
-import static org.audiveris.omr.classifier.Annotations.BOOK_ANNOTATIONS_SUFFIX;
+import org.audiveris.omr.classifier.Annotations;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -264,7 +264,8 @@ public class BasicBook
 
         try {
             final Path bookFolder = BookManager.getDefaultBookFolder(this);
-            final Path path = bookFolder.resolve(getRadix() + BOOK_ANNOTATIONS_SUFFIX);
+            final Path path = bookFolder.resolve(
+                    getRadix() + Annotations.BOOK_ANNOTATIONS_EXTENSION);
             root = ZipFileSystem.create(path);
 
             for (SheetStub stub : getValidStubs()) {
@@ -1052,7 +1053,7 @@ public class BasicBook
             new BookPdfOutput(BasicBook.this, pdfPath.toFile()).write(null);
             setPrintPath(pdfPath);
         } catch (Exception ex) {
-            logger.warn("Cannot write PDF to {} {}", pdfPath, ex.toString(), ex);
+            logger.warn("Cannot print to {} {}", pdfPath, ex.toString(), ex);
         }
     }
 

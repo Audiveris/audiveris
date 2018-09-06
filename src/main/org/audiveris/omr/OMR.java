@@ -43,8 +43,8 @@ public abstract class OMR
     /** The (double) extension used for opus output files: {@value}. */
     public static final String OPUS_EXTENSION = ".opus.mxl";
 
-    /** The extension used for compressed score print files: {@value}. */
-    public static final String PDF_EXTENSION = ".pdf";
+    /** The extension used for score print files: {@value}. */
+    public static final String PRINT_EXTENSION = "-print.pdf";
 
     /** The extension used for Audiveris book files: {@value}. */
     public static final String BOOK_EXTENSION = ".omr";

@@ -162,7 +162,7 @@ public class AnnotationsBuilder
         annotations.setSource(WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF);
         annotations.setSheetInfo(
                 new SheetInfo(
-                        sheet.getId() + Annotations.SHEET_IMAGE_SUFFIX,
+                        sheet.getId() + Annotations.SHEET_IMAGE_EXTENSION,
                         new Dimension(sheet.getWidth(), sheet.getHeight())));
 
         // Populate system by system
