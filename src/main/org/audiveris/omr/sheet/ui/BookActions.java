@@ -933,7 +933,7 @@ public class BookActions
                 true,
                 OMR.gui.getFrame(),
                 BookManager.getDefaultPrintPath(book),
-                new OmrFileFilter(OMR.PDF_EXTENSION),
+                new OmrFileFilter(OMR.PRINT_EXTENSION),
                 "Choose book print target");
 
         if ((bookPrintPath == null) || !confirmed(bookPrintPath)) {
@@ -963,9 +963,9 @@ public class BookActions
 
         // Let the user select a PDF output file
         final Book book = stub.getBook();
-        final String ext = OMR.PDF_EXTENSION;
+        final String ext = OMR.PRINT_EXTENSION;
         final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
-        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
+        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
         final String suffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
         final Path defaultSheetPath = Paths.get(bookSansExt + suffix + ext);
 

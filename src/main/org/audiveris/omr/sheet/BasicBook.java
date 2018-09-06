@@ -24,7 +24,7 @@ package org.audiveris.omr.sheet;
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.ProgramId;
 import org.audiveris.omr.WellKnowns;
-import static org.audiveris.omr.classifier.Annotations.BOOK_ANNOTATIONS_SUFFIX;
+import org.audiveris.omr.classifier.Annotations;
 import org.audiveris.omr.classifier.SampleRepository;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
@@ -264,7 +264,8 @@ public class BasicBook
 
         try {
             final Path bookFolder = BookManager.getDefaultBookFolder(this);
-            final Path path = bookFolder.resolve(getRadix() + BOOK_ANNOTATIONS_SUFFIX);
+            final Path path = bookFolder.resolve(
+                    getRadix() + Annotations.BOOK_ANNOTATIONS_EXTENSION);
             root = ZipFileSystem.create(path);
 
             for (SheetStub stub : getValidStubs()) {
@@ -588,37 +589,6 @@ public class BasicBook
         }
     }
 
-    //
-    //    //--------------//
-    //    // deleteExport //
-    //    //--------------//
-    //    public void deleteExport ()
-    //    {
-    //        // Determine the output path for the provided book: path/to/scores/Book
-    //        Path bookPathSansExt = BookManager.getActualPath(
-    //                getExportPathSansExt(),
-    //                BookManager.getDefaultExportPathSansExt(this));
-    //
-    //        // One-sheet book: <bookname>.mxl
-    //        // One-sheet book: <bookname>.mvt<M>.mxl
-    //        // One-sheet book: <bookname>/... (perhaps some day: 1 directory per book)
-    //        //
-    //        // Multi-sheet book: <bookname>-sheet#<N>.mxl
-    //        // Multi-sheet book: <bookname>-sheet#<N>.mvt<M>.mxl
-    //        final Path folder = isMultiSheet() ? bookPathSansExt : bookPathSansExt.getParent();
-    //        final Path bookName = bookPathSansExt.getFileName(); // bookname
-    //
-    //        final String dirGlob = "glob:**/" + bookName + "{/**,}";
-    //        final String filGlob = "glob:**/" + bookName + "{/**,.*}";
-    //        final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
-    //
-    //        if (!paths.isEmpty()) {
-    //            BookManager.deletePaths(bookName + " deletion", paths);
-    //        } else {
-    //            logger.info("Nothing to delete");
-    //        }
-    //    }
-    //
     //--------//
     // export //
     //--------//
@@ -1083,7 +1053,7 @@ public class BasicBook
             new BookPdfOutput(BasicBook.this, pdfPath.toFile()).write(null);
             setPrintPath(pdfPath);
         } catch (Exception ex) {
-            logger.warn("Cannot write PDF to {} {}", pdfPath, ex.toString(), ex);
+            logger.warn("Cannot print to {} {}", pdfPath, ex.toString(), ex);
         }
     }
 

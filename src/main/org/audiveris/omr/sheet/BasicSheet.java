@@ -364,11 +364,11 @@ public class BasicSheet
 
         try {
             // Sheet annotations
-            Path annPath = sheetFolder.resolve(getId() + Annotations.SHEET_ANNOTATIONS_SUFFIX);
+            Path annPath = sheetFolder.resolve(getId() + Annotations.SHEET_ANNOTATIONS_EXTENSION);
             new AnnotationsBuilder(this, annPath).processSheet();
 
             // Sheet image
-            Path imgPath = sheetFolder.resolve(getId() + Annotations.SHEET_IMAGE_SUFFIX);
+            Path imgPath = sheetFolder.resolve(getId() + Annotations.SHEET_IMAGE_EXTENSION);
             RunTable runTable = picture.getTable(Picture.TableKey.BINARY);
             BufferedImage img = runTable.getBufferedImage();
             os = Files.newOutputStream(imgPath, CREATE);
