@@ -201,14 +201,6 @@ public class Main
         return constants.processSystemsInParallel.isSet();
     }
 
-    //----------------------//
-    // saveSheetOnEveryStep //
-    //----------------------//
-    public static boolean saveSheetOnEveryStep ()
-    {
-        return constants.saveSheetOnEveryStep.isSet();
-    }
-
     //-------------//
     // checkLocale //
     //-------------//
@@ -376,10 +368,6 @@ public class Main
         private final Constant.Boolean processSystemsInParallel = new Constant.Boolean(
                 false,
                 "Should we process all systems in parallel in a sheet?");
-
-        private final Constant.Boolean saveSheetOnEveryStep = new Constant.Boolean(
-                true,
-                "Should we save sheet after every successful step?");
 
         private final Constant.Integer sheetStepTimeOut = new Constant.Integer(
                 "Seconds",

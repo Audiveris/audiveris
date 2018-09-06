@@ -190,6 +190,19 @@ public class CLI
         return params.helpMode;
     }
 
+    //--------//
+    // isSave //
+    //--------//
+    /**
+     * Report whether we save every step result.
+     *
+     * @return true for saving every step
+     */
+    public boolean isSave ()
+    {
+        return params.save;
+    }
+
     //-----------------//
     // parseParameters //
     //-----------------//
@@ -540,8 +553,8 @@ public class CLI
         @Option(name = "-sample", usage = "(advanced) Sample all book symbols")
         boolean sample;
 
-        /** Should book be saved?. */
-        @Option(name = "-save", usage = "Save book")
+        /** Should book be saved on every successful batch step?. */
+        @Option(name = "-save", usage = "Save book on every successful batch step")
         boolean save;
 
         /** The set of sheet IDs to load. */
@@ -801,17 +814,6 @@ public class CLI
                 if (params.print) {
                     logger.debug("Print book");
                     book.print();
-                }
-
-                // Book save?
-                if (params.save) {
-                    logger.debug("Save book");
-
-                    if (book.isModified()) {
-                        book.store(BookManager.getDefaultSavePath(book), false);
-                    } else {
-                        logger.info("No need to save {}", book);
-                    }
                 }
             } catch (ProcessingCancellationException pce) {
                 logger.warn("Cancelled " + book);

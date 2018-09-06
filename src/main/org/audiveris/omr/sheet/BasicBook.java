@@ -588,37 +588,6 @@ public class BasicBook
         }
     }
 
-    //
-    //    //--------------//
-    //    // deleteExport //
-    //    //--------------//
-    //    public void deleteExport ()
-    //    {
-    //        // Determine the output path for the provided book: path/to/scores/Book
-    //        Path bookPathSansExt = BookManager.getActualPath(
-    //                getExportPathSansExt(),
-    //                BookManager.getDefaultExportPathSansExt(this));
-    //
-    //        // One-sheet book: <bookname>.mxl
-    //        // One-sheet book: <bookname>.mvt<M>.mxl
-    //        // One-sheet book: <bookname>/... (perhaps some day: 1 directory per book)
-    //        //
-    //        // Multi-sheet book: <bookname>-sheet#<N>.mxl
-    //        // Multi-sheet book: <bookname>-sheet#<N>.mvt<M>.mxl
-    //        final Path folder = isMultiSheet() ? bookPathSansExt : bookPathSansExt.getParent();
-    //        final Path bookName = bookPathSansExt.getFileName(); // bookname
-    //
-    //        final String dirGlob = "glob:**/" + bookName + "{/**,}";
-    //        final String filGlob = "glob:**/" + bookName + "{/**,.*}";
-    //        final List<Path> paths = FileUtil.walkDown(folder, dirGlob, filGlob);
-    //
-    //        if (!paths.isEmpty()) {
-    //            BookManager.deletePaths(bookName + " deletion", paths);
-    //        } else {
-    //            logger.info("Nothing to delete");
-    //        }
-    //    }
-    //
     //--------//
     // export //
     //--------//

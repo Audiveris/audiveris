@@ -887,7 +887,7 @@ public class BasicStub
             future.get(timeout, TimeUnit.SECONDS);
 
             // At end of each step, save sheet to disk?
-            if ((OMR.gui == null) && Main.saveSheetOnEveryStep()) {
+            if ((OMR.gui == null) && Main.getCli().isSave()) {
                 logger.debug("calling storeSheet");
                 storeSheet();
             }
