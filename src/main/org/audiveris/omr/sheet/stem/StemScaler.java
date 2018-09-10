@@ -28,6 +28,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.image.ImageUtil;
 import org.audiveris.omr.math.HiLoPeakFinder;
+import org.audiveris.omr.math.HiLoPeakFinder.Quorum;
 import org.audiveris.omr.math.IntegerFunction;
 import org.audiveris.omr.math.Range;
 import org.audiveris.omr.run.Orientation;
@@ -155,9 +156,11 @@ public class StemScaler
     private StemScale computeStem ()
     {
         final int area = histoKeeper.function.getArea();
+        histoKeeper.peakFinder.setQuorum(
+                new Quorum((int) Math.rint(area * constants.minValueRatio.getValue())));
+
         final List<Range> stemPeaks = histoKeeper.peakFinder.findPeaks(
                 1,
-                (int) Math.rint(area * constants.minValueRatio.getValue()),
                 (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
                 constants.minGainRatio.getValue());
 

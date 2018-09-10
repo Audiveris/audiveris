@@ -72,8 +72,8 @@ public class HiLoPeakFinder
     /** Threshold for y values. */
     private int minValue;
 
-    /** Threshold for peak top y value, if any. */
-    private Integer minTopValue;
+    /** Quorum on y value, if any. */
+    private Quorum quorum;
 
     /** Threshold for y derivatives. */
     private int minDerivative;
@@ -155,12 +155,10 @@ public class HiLoPeakFinder
      * @return the (perhaps empty but not null) collection of peaks, sorted by decreasing count
      */
     public List<Range> findPeaks (int minValue,
-                                  Integer minTopValue,
                                   int minDerivative,
                                   double minGainRatio)
     {
         this.minValue = minValue;
-        this.minTopValue = minTopValue;
         this.minDerivative = minDerivative;
         this.minGainRatio = minGainRatio;
 
@@ -177,8 +175,6 @@ public class HiLoPeakFinder
         // Convert each hilo to a peak with adjusted limits
         for (Range hilo : decreasing) {
             int i = hilos.indexOf(hilo);
-
-            ///int pMin = Math.max(hilo.min - 2, 1);
             int pMin = Math.max(hilo.min - 1, 1);
 
             if (i > 0) {
@@ -187,15 +183,8 @@ public class HiLoPeakFinder
                 pMin = Math.max(pMin, (prevPeak != null) ? (prevPeak.max + 1) : (prevHiLo.max + 1));
             }
 
-            ///int pMax = Math.min(hilo.max + 1, counts.length - 1);
             int pMax = hilo.max;
 
-            //
-            // if (i < (hilos.size() - 1)) {
-            //     Range nextHiLo = hilos.get(i + 1);
-            //     Range nextPeak = hiloToPeak.get(nextHiLo);
-            //     pMax = Math.min(pMax, (nextPeak != null) ? (nextPeak.min - 1) : (nextHiLo.min - 1));
-            // }
             Range peak = createPeak(pMin, hilo.main, pMax);
             hiloToPeak.put(hilo, peak);
             peaks.add(peak);
@@ -205,11 +194,11 @@ public class HiLoPeakFinder
             Collections.sort(peaks, byReverseMainValue);
 
             // Is there a min top value to check?
-            if (minTopValue != null) {
+            if (quorum != null) {
                 for (int i = 0; i < peaks.size(); i++) {
                     Range peak = peaks.get(i);
 
-                    if (function.getValue(peak.main) < minTopValue) {
+                    if (function.getValue(peak.main) < quorum.minTop) {
                         peaks.retainAll(peaks.subList(0, i));
                     }
                 }
@@ -412,10 +401,10 @@ public class HiLoPeakFinder
         // Function values
         XYSeries valueSeries = function.getValueSeries(x1, x2);
 
-        if (minTopValue != null) {
+        if (quorum != null) {
             valueSeries.add(x1, null); // Cut link with function values
-            valueSeries.add(x1, minTopValue);
-            valueSeries.add(x2, minTopValue);
+            valueSeries.add(quorum.xMin != null ? quorum.xMin : x1, quorum.minTop);
+            valueSeries.add(quorum.xMax != null ? quorum.xMax : x2, quorum.minTop);
         }
 
         return valueSeries;
@@ -477,6 +466,19 @@ public class HiLoPeakFinder
         }
 
         return plotter;
+    }
+
+    //-----------//
+    // setQuorum //
+    //-----------//
+    /**
+     * Assign quorum information.
+     *
+     * @param quorum quorum level and perhaps range
+     */
+    public void setQuorum (Quorum quorum)
+    {
+        this.quorum = quorum;
     }
 
     //------------//
@@ -634,6 +636,38 @@ public class HiLoPeakFinder
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //--------//
+    // Quorum //
+    //--------//
+    /**
+     * Defines a quorum level, with optional x range.
+     */
+    public static class Quorum
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        public final int minTop;
+
+        public final Integer xMin;
+
+        public final Integer xMax;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Quorum (int minTop,
+                       Integer xMin,
+                       Integer xMax)
+        {
+            this.minTop = minTop;
+            this.xMin = xMin;
+            this.xMax = xMax;
+        }
+
+        public Quorum (int minTop)
+        {
+            this(minTop, null, null);
+        }
+    }
+
     //---------//
     // DerPeak //
     //---------//

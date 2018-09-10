@@ -75,6 +75,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.audiveris.omr.sheet.header.StaffHeader;
+import org.audiveris.omr.math.HiLoPeakFinder.Quorum;
 
 /**
  * Class {@code KeyBuilder} retrieves a staff key signature through the vertical
@@ -650,9 +651,9 @@ public class KeyBuilder
     //-------------------//
     private List<Range> retrieveHiLoPeaks ()
     {
+        peakFinder.setQuorum(new Quorum(params.minPeakCumul));
         final List<Range> hiloPeaks = peakFinder.findPeaks(
                 params.maxSpaceCumul + 1, // minValue
-                params.minPeakCumul, // minTopValue
                 params.minPeakDerivative, // minDerivative
                 params.minGainRatio); // minGainRatio
         Collections.sort(hiloPeaks, Range.byMain);
@@ -1126,9 +1127,9 @@ public class KeyBuilder
             }
         }
 
-        //---------//
-        // process //
-        //---------//
+        //--------------------//
+        // processAnnotations //
+        //--------------------//
         /**
          * Process the potential key signature of the underlying staff in isolation,
          * based on annotations sequence.
