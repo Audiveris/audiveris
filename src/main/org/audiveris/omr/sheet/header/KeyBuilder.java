@@ -25,8 +25,10 @@ import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.Shape.FLAT;
 import static org.audiveris.omr.glyph.Shape.SHARP;
+
 import org.audiveris.omr.math.HiLoPeakFinder;
 import org.audiveris.omr.math.IntegerFunction;
 import org.audiveris.omr.math.Range;
@@ -67,6 +69,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.audiveris.omr.math.HiLoPeakFinder.Quorum;
 
 /**
  * Class {@code KeyBuilder} retrieves a staff key signature through the vertical
@@ -612,9 +615,9 @@ public class KeyBuilder
     //-------------------//
     private List<Range> retrieveHiLoPeaks ()
     {
+        peakFinder.setQuorum(new Quorum(params.minPeakCumul));
         final List<Range> hiloPeaks = peakFinder.findPeaks(
                 params.maxSpaceCumul + 1, // minValue
-                params.minPeakCumul, // minTopValue
                 params.minPeakDerivative, // minDerivative
                 params.minGainRatio); // minGainRatio
         Collections.sort(hiloPeaks, Range.byMain);

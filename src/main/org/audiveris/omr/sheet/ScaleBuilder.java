@@ -25,6 +25,7 @@ import static org.audiveris.omr.WellKnowns.LINE_SEPARATOR;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.math.HiLoPeakFinder;
+import org.audiveris.omr.math.HiLoPeakFinder.Quorum;
 import org.audiveris.omr.math.IntegerFunction;
 import org.audiveris.omr.math.Range;
 import org.audiveris.omr.run.Run;
@@ -161,8 +162,6 @@ public class ScaleBuilder
         histoKeeper.buildCombos();
         histoKeeper.retrieveInterlinePeaks(); // -> comboPeak (or StepException thrown), comboPeak2?
 
-        histoKeeper.retrieveBeamKey(); // -> beamKey?
-
         // Check we have acceptable resolution.  If not, throw StepException
         checkResolution();
 
@@ -212,28 +211,39 @@ public class ScaleBuilder
     //-------------//
     /**
      * Report the beam scale information for the sheet.
-     * We use the retrieved beam key if any, otherwise we extrapolate a probable beam height as a
-     * ratio of main white length.
+     * <p>
+     * We try to retrieve a beam key in black histogram, otherwise we extrapolate a probable beam
+     * height based on minimum and maximum height values.
      *
      * @return the beam scale
      */
     private BeamScale computeBeam ()
     {
+        // Scale data?
+        if (comboPeak == null) {
+            logger.warn("No global scale information available");
+
+            return null;
+        }
+
+        // Beam peak?
+        final double minBeamFraction = constants.minBeamFraction.getValue();
+        final int minHeight = Math.max(
+                blackPeak.max,
+                (int) Math.rint(minBeamFraction * comboPeak.main));
+        final int maxHeight = getMainWhite();
+        beamKey = histoKeeper.retrieveBeamKey(minHeight, maxHeight);
+
         if (beamKey != null) {
             return new BeamScale(beamKey, false);
         }
 
-        if (comboPeak != null) {
-            final int guess = (int) Math.rint(
-                    constants.beamAsWhiteRatio.getValue() * getMaxWhite());
-            logger.info("No beam key found, guessed value {}", guess);
+        // Beam extrapolation from height possible range
+        final int guess = (int) Math.rint(
+                minHeight + ((maxHeight - minHeight) * constants.beamRangeRatio.getValue()));
+        logger.info("No beam key found, guessed value: {}", guess);
 
-            return new BeamScale(guess, true);
-        }
-
-        logger.warn("No global scale information available");
-
-        return null;
+        return new BeamScale(guess, true);
     }
 
     //------------------//
@@ -264,23 +274,23 @@ public class ScaleBuilder
         }
     }
 
-    //-------------//
-    // getMaxWhite //
-    //-------------//
+    //--------------//
+    // getMainWhite //
+    //--------------//
     /**
-     * Return the maximum white gap between (larger) staff lines.
+     * Return the main white gap between (larger) staff lines.
      *
-     * @return (larger) white gap
+     * @return (larger) mean white gap
      */
-    private int getMaxWhite ()
+    private int getMainWhite ()
     {
-        int maxCombo = comboPeak.max;
+        int mainCombo = comboPeak.main;
 
         if (comboPeak2 != null) {
-            maxCombo = Math.max(maxCombo, comboPeak2.max);
+            mainCombo = Math.max(mainCombo, comboPeak2.main);
         }
 
-        return maxCombo - blackPeak.min;
+        return mainCombo - blackPeak.main;
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
@@ -302,14 +312,6 @@ public class ScaleBuilder
                 100,
                 "Maximum interline value (in pixels)");
 
-        private final Constant.Ratio minBlackCountRatio = new Constant.Ratio(
-                0.1,
-                "Ratio of total runs for black peak acceptance");
-
-        private final Constant.Ratio minComboCountRatio = new Constant.Ratio(
-                0.05,
-                "Ratio of total runs for combo peak acceptance");
-
         private final Constant.Ratio minGainRatio = new Constant.Ratio(
                 0.03,
                 "Minimum ratio of peak runs for peak extension");
@@ -318,17 +320,21 @@ public class ScaleBuilder
                 0.025,
                 "Ratio of total runs for derivative acceptance");
 
-        private final Constant.Ratio minBeamFraction = new Constant.Ratio(
-                0.275, // 0.25,
-                "Minimum ratio between beam thickness and interline");
-
         private final Constant.Ratio maxSecondRatio = new Constant.Ratio(
                 2.0,
                 "Maximum ratio between second and first combined peak");
 
-        private final Constant.Ratio beamAsWhiteRatio = new Constant.Ratio(
-                0.75,
-                "Default beam height defined as ratio of background peak");
+        private final Constant.Ratio minBeamFraction = new Constant.Ratio(
+                0.275, // 0.25,
+                "Minimum ratio between beam thickness and interline");
+
+        private final Constant.Ratio minBeamCountRatio = new Constant.Ratio(
+                0.02,
+                "Ratio of total runs for beam peak acceptance");
+
+        private final Constant.Ratio beamRangeRatio = new Constant.Ratio(
+                0.5,
+                "Ratio of beam range for extrapolation");
 
         private final Constant.Ratio minBlackRatio = new Constant.Ratio(
                 0.001,
@@ -339,9 +345,9 @@ public class ScaleBuilder
     // HistoKeeper //
     //-------------//
     /**
-     * This class builds the precise vertical foreground and background run lengths,
-     * it retrieves the various peaks and is able to display a chart on the related
-     * populations.
+     * This class handles the histograms of vertical lengths for black runs (foreground)
+     * and combo runs (black + white and white + black).
+     * It retrieves the various peaks and is able to display a chart on the related populations.
      */
     private class HistoKeeper
     {
@@ -363,6 +369,8 @@ public class ScaleBuilder
         //~ Constructors ---------------------------------------------------------------------------
         public HistoKeeper ()
         {
+            // We assume at least one staff in sheet, hence some maximum values for relevant white
+            // and black runs.
             maxBlack = binary.getHeight() / 16;
             maxWhite = binary.getHeight() / 4;
             logger.debug(
@@ -464,23 +472,33 @@ public class ScaleBuilder
          * Take most frequent black local max for which key (beam thickness) is larger than a
          * minimum fraction of interline and smaller than main white gap between (large) staff
          * lines.
+         *
+         * @param minHeight start value for height range
+         * @param maxHeight stop value for height range
          */
-        public void retrieveBeamKey ()
+        public Integer retrieveBeamKey (int minHeight,
+                                        int maxHeight)
         {
-            double minBeamFraction = constants.minBeamFraction.getValue();
-            int minHeight = Math.max(
-                    blackPeak.max,
-                    (int) Math.rint(minBeamFraction * comboPeak.main));
-            int maxHeight = getMaxWhite();
             List<Integer> localMaxima = blackFunction.getLocalMaxima(minHeight, maxHeight);
+
+            // Quorum on height histo
+            final int totalArea = blackFunction.getArea();
+            final double ratio = constants.minBeamCountRatio.getValue();
+            final int quorum = (int) Math.rint(totalArea * ratio);
+            logger.info("Beam minHeight:{} maxHeight:{} quorum:{}", minHeight, maxHeight, quorum);
+            blackFinder.setQuorum(new Quorum(quorum, minHeight, maxHeight));
 
             for (int local : localMaxima) {
                 if ((local >= minHeight) && (local <= maxHeight)) {
-                    beamKey = local;
+                    if (blackFunction.getValue(local) >= quorum) {
+                        return local;
+                    }
 
                     break;
                 }
             }
+
+            return null;
         }
 
         //------------------------//
@@ -499,7 +517,6 @@ public class ScaleBuilder
             final int area = comboFunction.getArea();
             final List<Range> comboPeaks = comboFinder.findPeaks(
                     1,
-                    (int) Math.rint(area * constants.minComboCountRatio.getValue()),
                     (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
                     constants.minGainRatio.getValue());
 
@@ -556,7 +573,6 @@ public class ScaleBuilder
             final int area = blackFunction.getArea();
             final List<Range> blackPeaks = blackFinder.findPeaks(
                     1,
-                    (int) Math.rint(area * constants.minBlackCountRatio.getValue()),
                     (int) Math.rint(area * constants.minDerivativeRatio.getValue()),
                     constants.minGainRatio.getValue());
 
