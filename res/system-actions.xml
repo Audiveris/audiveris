@@ -44,6 +44,7 @@
     <action domain="SHEET" section="10" class="org.audiveris.omr.sheet.ui.BookActions" method="resetSheetToBinary"/>
     <action domain="SHEET" section="15" class="org.audiveris.omr.sheet.ui.BookActions" method="transcribeSheet"/>
     <action domain="SHEET" section="18" class="org.audiveris.omr.sheet.ui.BookActions" method="invalidateSheet"/>
+    <action domain="SHEET" section="19" class="org.audiveris.omr.sheet.ui.BookActions" method="defineSheetParameters"                   button="javax.swing.JButton"/>
     <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotScale"               topic="PLOTS"/>
     <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotStem"                topic="PLOTS"/>
     <action domain="SHEET" section="20" class="org.audiveris.omr.sheet.ui.BookActions" method="plotStaves"              topic="PLOTS"/>
