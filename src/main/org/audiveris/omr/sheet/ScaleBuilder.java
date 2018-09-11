@@ -170,7 +170,29 @@ public class ScaleBuilder
         Scale smallScale = (smallInterlineScale == null) ? null
                 : new Scale(smallInterlineScale, null, null, null);
 
-        return new Scale(computeInterline(), new LineScale(blackPeak), computeBeam(), smallScale);
+        // Respect user-assigned scale info, if any
+        final Scale scl = sheet.getScale();
+        final Scale scale;
+
+        if (scl != null) {
+            scale = new Scale(
+                    (scl.getInterlineScale() != null) ? scl.getInterlineScale() : computeInterline(),
+                    (scl.getLineScale() != null) ? scl.getLineScale() : new LineScale(blackPeak),
+                    (scl.getBeamScale() != null) ? scl.getBeamScale() : computeBeam(),
+                    (scl.getSmallScale() != null) ? scl.getSmallScale() : smallScale);
+
+            if (scl.getStemScale() != null) {
+                scale.setStemScale(scl.getStemScale());
+            }
+        } else {
+            scale = new Scale(
+                    computeInterline(),
+                    new LineScale(blackPeak),
+                    computeBeam(),
+                    smallScale);
+        }
+
+        return scale;
     }
 
     //-----------------//

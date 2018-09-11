@@ -264,7 +264,7 @@ public interface Book
     Path getPrintPath ();
 
     /**
-     * Report the processing switches defined at bookk level, if any.
+     * Report the processing switches defined at book level, if any.
      *
      * @return the processing switches
      */

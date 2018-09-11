@@ -1,6 +1,6 @@
 //------------------------------------------------------------------------------------------------//
 //                                                                                                //
-//                                    S w i t c h e s P a r a m                                   //
+//                                P r o c e s s i n g S w i t c h e s                             //
 //                                                                                                //
 //------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -115,17 +115,18 @@ public class ProcessingSwitches
     {
         return map.get(key);
     }
-
-    public Boolean getSpecific (Switch key)
-    {
-        Param<Boolean> param = getParam(key);
-
-        if (param == null) {
-            return null;
-        }
-
-        return param.getSpecific();
-    }
+//
+//    public Boolean getSpecific (Switch key)
+//    {
+//        Param<Boolean> param = getParam(key);
+//
+//        if (param == null) {
+//            return null;
+//        }
+//
+//        return param.getSpecific();
+//    }
+//
 
     public Boolean getValue (Switch key)
     {
@@ -164,28 +165,29 @@ public class ProcessingSwitches
             }
         }
     }
-
-    public void setSpecific (Switch key,
-                             Boolean specific)
-    {
-        if (specific == null) {
-            map.remove(key);
-        } else {
-            Param<Boolean> param = getParam(key);
-
-            if (param == null) {
-                map.put(key, param = new BooleanParam());
-
-                if (parent != null) {
-                    param.setParent(parent.getParam(key));
-                }
-            }
-
-            param.setSpecific(specific);
-        }
-    }
-
+//
+//    public void setSpecific (Switch key,
+//                             Boolean specific)
+//    {
+//        if (specific == null) {
+//            map.remove(key);
+//        } else {
+//            Param<Boolean> param = getParam(key);
+//
+//            if (param == null) {
+//                map.put(key, param = new BooleanParam());
+//
+//                if (parent != null) {
+//                    param.setParent(parent.getParam(key));
+//                }
+//            }
+//
+//            param.setSpecific(specific);
+//        }
+//    }
+//
     //~ Inner Classes ------------------------------------------------------------------------------
+
     public static class Adapter
             extends XmlAdapter<Adapter.MyEntries, ProcessingSwitches>
     {

@@ -23,7 +23,6 @@ package org.audiveris.omr.score.ui;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 import org.audiveris.omr.image.AdaptiveDescriptor;
 import org.audiveris.omr.image.FilterDescriptor;
@@ -36,19 +35,16 @@ import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.text.Language;
 import org.audiveris.omr.text.OCR.UnavailableOcrException;
 import org.audiveris.omr.ui.field.SpinnerUtil;
-import org.audiveris.omr.ui.util.Panel;
 import org.audiveris.omr.util.param.Param;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -73,8 +69,9 @@ import javax.swing.event.ListSelectionListener;
  * <p>
  * It addresses:
  * <ul>
- * <li>Text language specification</li>
  * <li>Binarization parameters</li>
+ * <li>Text language specification</li>
+ * <li>Support for specific features</li>
  * <!-- TODO <li>Name and instrument related to each score part</li> -->
  * </ul>
  *
@@ -110,9 +107,6 @@ public class ScoreParameters
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreParameters.class);
 
-    /** Standard column spec for 4 fields. */
-    private static final String colSpec4 = "12dlu,1dlu,100dlu,1dlu,35dlu,1dlu,right:12dlu";
-
     //~ Instance fields ----------------------------------------------------------------------------
     /** The swing component of this panel. */
     private final JTabbedPane component = new JTabbedPane();
@@ -121,7 +115,7 @@ public class ScoreParameters
     private final Book book;
 
     /** The panel dedicated to setting of defaults. */
-    private final TabPanel defaultPanel;
+    private final ScopedPanel defaultPanel;
 
     //~ Constructors -------------------------------------------------------------------------------
     /**
@@ -140,11 +134,11 @@ public class ScoreParameters
         component.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
 
         // Allocate all required panels (default / book? / sheets??)
-        final TabPanel bookPanel;
-        TabPanel sheetPanel = null; // Only for multi-sheet book
+        final ScopedPanel bookPanel;
+        ScopedPanel sheetPanel = null; // Only for multi-sheet book
 
         // Default panel
-        List<Pane> defaultPanes = new ArrayList<Pane>();
+        List<XactDataPane> defaultPanes = new ArrayList<XactDataPane>();
         defaultPanes.add(new FilterPane(null, FilterDescriptor.defaultFilter));
         defaultPanes.add(createTextPane(null, Language.ocrDefaultLanguages));
 
@@ -155,12 +149,12 @@ public class ScoreParameters
             defaultPanes.add(switchPane);
         }
 
-        defaultPanel = new TabPanel("Default settings", defaultPanes);
+        defaultPanel = new ScopedPanel("Default settings", defaultPanes);
         component.addTab("Default", null, defaultPanel, defaultPanel.getName());
 
         // Book panel?
         if (book != null) {
-            List<Pane> bookPanes = new ArrayList<Pane>();
+            List<XactDataPane> bookPanes = new ArrayList<XactDataPane>();
             bookPanes.add(
                     new FilterPane(
                             (FilterPane) defaultPanel.getPane(FilterPane.class),
@@ -172,16 +166,16 @@ public class ScoreParameters
 
             for (Switch key : Switch.values()) {
                 Param<Boolean> bp = book.getProcessingSwitches().getParam(key);
-                bookPanes.add(new SwitchPane(key, defaultPanel.getSwitchPane(key), bp));
+                bookPanes.add(new SwitchPane(key, getPane(defaultPanel, key), bp));
             }
 
-            bookPanel = new TabPanel("Book settings", bookPanes);
+            bookPanel = new ScopedPanel("Book settings", bookPanes);
             component.addTab(book.getRadix(), null, bookPanel, bookPanel.getName());
 
             // Sheets panels?
             if (book.isMultiSheet()) {
                 for (SheetStub s : book.getStubs()) {
-                    List<Pane> sheetPanes = new ArrayList<Pane>();
+                    List<XactDataPane> sheetPanes = new ArrayList<XactDataPane>();
                     sheetPanes.add(
                             new FilterPane(
                                     (FilterPane) bookPanel.getPane(FilterPane.class),
@@ -193,10 +187,10 @@ public class ScoreParameters
 
                     for (Switch key : Switch.values()) {
                         Param<Boolean> bp = s.getProcessingSwitches().getParam(key);
-                        sheetPanes.add(new SwitchPane(key, bookPanel.getSwitchPane(key), bp));
+                        sheetPanes.add(new SwitchPane(key, getPane(bookPanel, key), bp));
                     }
 
-                    TabPanel panel = new TabPanel("Sheet settings", sheetPanes);
+                    ScopedPanel panel = new ScopedPanel("Sheet settings", sheetPanes);
                     String label = "S#" + s.getNumber();
 
                     if (s == stub) {
@@ -232,10 +226,10 @@ public class ScoreParameters
         try {
             // Commit all specific values, if any, to their model object
             for (int t = 0, tBreak = component.getTabCount(); t < tBreak; t++) {
-                final TabPanel panel = (TabPanel) component.getComponentAt(t);
+                final ScopedPanel panel = (ScopedPanel) component.getComponentAt(t);
                 boolean modified = false;
 
-                for (Pane pane : panel.panes) {
+                for (XactDataPane pane : panel.getPanes()) {
                     modified |= pane.commit();
                 }
 
@@ -278,14 +272,14 @@ public class ScoreParameters
     public void stateChanged (ChangeEvent e)
     {
         // Refresh the new current panel
-        TabPanel panel = (TabPanel) component.getSelectedComponent();
+        ScopedPanel panel = (ScopedPanel) component.getSelectedComponent();
 
         PaneLoop:
-        for (Pane pane : panel.panes) {
+        for (XactDataPane pane : panel.getPanes()) {
             if (!pane.isSelected()) {
                 // Use the first parent with any specific value
-                Pane highestPane = pane;
-                Pane p = pane.parent;
+                XactDataPane highestPane = pane;
+                XactDataPane p = pane.parent;
 
                 while (p != null) {
                     if (p.isSelected()) {
@@ -302,6 +296,32 @@ public class ScoreParameters
                 pane.display(highestPane.model.getSourceValue());
             }
         }
+    }
+
+    //---------//
+    // getPane //
+    //---------//
+    /**
+     * Retrieve a SwitchPane knowing its key.
+     *
+     * @param panel containing panel
+     * @param key   desired key
+     * @return corresponding pane
+     */
+    private static SwitchPane getPane (ScopedPanel panel,
+                                       Switch key)
+    {
+        for (XactDataPane pane : panel.getPanes()) {
+            if (pane instanceof SwitchPane) {
+                SwitchPane switchPane = (SwitchPane) pane;
+
+                if (switchPane.getKey() == key) {
+                    return switchPane;
+                }
+            }
+        }
+
+        return null;
     }
 
     //----------------//
@@ -331,240 +351,15 @@ public class ScoreParameters
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //-------------//
-    // BooleanPane //
-    //-------------//
-    /**
-     * A template for pane with just one boolean.
-     * Scope can be: default, book, sheet.
-     */
-    private abstract static class BooleanPane
-            extends Pane<Boolean>
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Boolean box. */
-        protected final JCheckBox bbox = new JCheckBox();
-
-        protected final JLabel label;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public BooleanPane (String title,
-                            Pane parent,
-                            String text,
-                            String tip,
-                            Param<Boolean> model)
-        {
-            super(title, parent, model);
-
-            this.label = new JLabel(text, SwingConstants.RIGHT);
-
-            if (tip != null) {
-                bbox.setToolTipText(tip);
-            }
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            r = super.defineLayout(builder, cst, r);
-
-            builder.add(label, cst.xyw(3, r, 1));
-            builder.add(bbox, cst.xyw(7, r, 1));
-
-            return r + 2;
-        }
-
-        @Override
-        public void setEnabled (boolean bool)
-        {
-            bbox.setEnabled(bool);
-            label.setEnabled(bool);
-        }
-
-        @Override
-        protected void display (Boolean content)
-        {
-            bbox.setSelected(content);
-        }
-
-        @Override
-        protected Boolean read ()
-        {
-            return bbox.isSelected();
-        }
-    }
-
-    //------//
-    // Pane //
-    //------//
-    /**
-     * A pane is able to host data, check data validity and apply the requested
-     * modifications.
-     */
-    private abstract static class Pane<E>
-            implements ActionListener
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Model parameter (cannot be null). */
-        protected final Param<E> model;
-
-        /** Parent pane, if any. */
-        protected final Pane<E> parent;
-
-        /** Box for selecting specific vs inherited data. */
-        protected final JCheckBox selBox;
-
-        /** Title for the pane. */
-        protected final String title;
-
-        /** Separator. */
-        protected final JLabel separator;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Pane (String title,
-                     Pane parent,
-                     Param<E> model)
-        {
-            this.parent = parent;
-
-            if (model == null) {
-                throw new IllegalArgumentException("Null model for pane '" + title + "'");
-            }
-
-            this.model = model;
-            this.title = title;
-
-            separator = new JLabel(title);
-            separator.setHorizontalAlignment(SwingConstants.LEFT);
-            separator.setEnabled(false);
-
-            selBox = new JCheckBox();
-
-            selBox.addActionListener(this);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            // Pane (de)selection (programmatic or manual)
-            boolean sel = isSelected();
-            setEnabled(sel);
-            separator.setEnabled(sel);
-
-            final E value;
-
-            if (e == null) {
-                value = model.getValue();
-            } else if (!sel) {
-                value = (parent != null) ? parent.read() : model.getSourceValue();
-            } else {
-                return;
-            }
-
-            display(value);
-        }
-
-        /**
-         * Commit the modifications, for the items that are not handled by the
-         * ParametersTask, which means all actions related to default values.
-         */
-        public boolean commit ()
-        {
-            if (isSelected()) {
-                return model.setSpecific(read());
-            } else {
-                return model.setSpecific(null);
-            }
-        }
-
-        /**
-         * Build the related user interface
-         *
-         * @param builder the shared panel builder
-         * @param cst     the cell constraints
-         * @param r       initial row value
-         * @return final row value
-         */
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            // Draw the specific/inherit box + separating line
-            builder.add(selBox, cst.xyw(1, r, 1));
-
-            ///builder.addSeparator(title, cst.xyw(3, r, 5));
-            builder.add(separator, cst.xyw(3, r, 5));
-            r += 2;
-
-            return r;
-        }
-
-        /**
-         * Report the count of needed logical rows.
-         * Typically 2 (the label separator plus 1 line of data)
-         */
-        public int getLogicalRowCount ()
-        {
-            return 2;
-        }
-
-        /**
-         * User has selected (and enabled) this pane
-         *
-         * @return true if selected
-         */
-        public boolean isSelected ()
-        {
-            return selBox.isSelected();
-        }
-
-        /**
-         * User selects (or deselects) this pane
-         *
-         * @param bool true for selection
-         */
-        public void setSelected (boolean bool)
-        {
-            selBox.setSelected(bool);
-        }
-
-        /**
-         * Write the parameter into the fields content
-         *
-         * @param content the data to display
-         */
-        protected abstract void display (E content);
-
-        /**
-         * Read the parameter as defined by the fields content.
-         *
-         * @return the pane parameter
-         */
-        protected abstract E read ();
-
-        /**
-         * Set the enabled flag for all data fields
-         *
-         * @param bool the flag value
-         */
-        protected abstract void setEnabled (boolean bool);
-    }
-
     //------------//
     // FilterPane //
     //------------//
     /**
      * Pane to define the pixel binarization parameters.
-     * Scope can be: default, score, page.
+     * Scope can be: default, book, sheet.
      */
     private static class FilterPane
-            extends Pane<FilterDescriptor>
+            extends XactDataPane<FilterDescriptor>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -790,16 +585,20 @@ public class ScoreParameters
     //------------//
     // SwitchPane //
     //------------//
+    /**
+     * A pane for one boolean switch.
+     * Scope can be: default, book, sheet.
+     */
     private static class SwitchPane
             extends BooleanPane
     {
         //~ Instance fields ------------------------------------------------------------------------
 
-        private final Switch key;
+        final Switch key;
 
         //~ Constructors ---------------------------------------------------------------------------
         public SwitchPane (Switch key,
-                           Pane parent,
+                           XactDataPane parent,
                            Param<Boolean> model)
         {
             super(key.getConstant().getDescription(), parent, "", null, model);
@@ -843,92 +642,6 @@ public class ScoreParameters
     }
 
     //----------//
-    // TabPanel //
-    //----------//
-    /**
-     * A panel corresponding to a tab.
-     */
-    private static final class TabPanel
-            extends Panel
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Collection of individual data panes. */
-        private final List<Pane> panes = new ArrayList<Pane>();
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public TabPanel (String name,
-                         List<Pane> panes)
-        {
-            setName(name);
-
-            for (Pane pane : panes) {
-                if (pane != null) {
-                    this.panes.add(pane);
-                }
-            }
-
-            defineLayout();
-
-            for (Pane pane : this.panes) {
-                // Pane is pre-selected if model has specific data
-                final boolean isSpecific = pane.model.isSpecific();
-                pane.selBox.setSelected(isSpecific);
-
-                // Fill pane data
-                pane.actionPerformed(null);
-            }
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        public void defineLayout ()
-        {
-            // Compute the total number of logical rows
-            int logicalRowCount = 0;
-
-            for (Pane pane : panes) {
-                logicalRowCount += pane.getLogicalRowCount();
-            }
-
-            FormLayout layout = new FormLayout(colSpec4, Panel.makeRows(logicalRowCount));
-            PanelBuilder builder = new PanelBuilder(layout, this);
-
-            CellConstraints cst = new CellConstraints();
-            int r = 1;
-
-            for (Pane pane : panes) {
-                r = pane.defineLayout(builder, cst, r);
-            }
-        }
-
-        public Pane getPane (Class classe)
-        {
-            for (Pane pane : panes) {
-                if (classe.isAssignableFrom(pane.getClass())) {
-                    return pane;
-                }
-            }
-
-            return null;
-        }
-
-        public SwitchPane getSwitchPane (Switch key)
-        {
-            for (Pane pane : panes) {
-                if (pane instanceof SwitchPane) {
-                    SwitchPane switchPane = (SwitchPane) pane;
-
-                    if (switchPane.getKey() == key) {
-                        return switchPane;
-                    }
-                }
-            }
-
-            return null;
-        }
-    }
-
-    //----------//
     // TextPane //
     //----------//
     /**
@@ -936,7 +649,7 @@ public class ScoreParameters
      * Scope can be: default, book, sheet.
      */
     private static class TextPane
-            extends Pane<String>
+            extends XactDataPane<String>
             implements ListSelectionListener
     {
         //~ Instance fields ------------------------------------------------------------------------

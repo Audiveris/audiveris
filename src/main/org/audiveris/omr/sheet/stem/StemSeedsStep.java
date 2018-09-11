@@ -86,11 +86,16 @@ public class StemSeedsStep
     protected Void doProlog (Sheet sheet)
             throws StepException
     {
-        // Retrieve typical stem width on global sheet
-        StemScale stemScale = new StemScaler(sheet).retrieveStemWidth();
+        StemScale stemScale = sheet.getScale().getStemScale();
 
-        logger.info("{}", stemScale);
-        sheet.getScale().setStemScale(stemScale);
+        // Respect user-assigned stem scale if any
+        if (stemScale == null) {
+            // Retrieve typical stem width on global sheet
+            stemScale = new StemScaler(sheet).retrieveStemWidth();
+
+            logger.info("{}", stemScale);
+            sheet.getScale().setStemScale(stemScale);
+        }
 
         return null;
     }
