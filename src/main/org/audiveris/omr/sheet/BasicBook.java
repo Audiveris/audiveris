@@ -806,6 +806,7 @@ public class BasicBook
      * @param page provided page
      * @return containing score (can it be null?)
      */
+    @Override
     public Score getScore (Page page)
     {
         for (Score score : scores) {

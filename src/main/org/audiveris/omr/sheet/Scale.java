@@ -93,6 +93,32 @@ public class Scale
     private static final Logger logger = LoggerFactory.getLogger(Scale.class);
 
     //~ Enumerations -------------------------------------------------------------------------------
+    public static enum Item
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
+        line("Line thickness"),
+        interline("Interline"),
+        smallInterline("Small interline"),
+        beam("Beam thickness"),
+        stem("Stem thickness");
+
+        //~ Instance fields ------------------------------------------------------------------------
+        private final String description;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        Item (String description)
+        {
+            this.description = description;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public String getDescription ()
+        {
+            return description;
+        }
+    }
+
     public enum Size
     {
         //~ Enumeration constant initializers ------------------------------------------------------
@@ -106,7 +132,7 @@ public class Scale
     //~ Instance fields ----------------------------------------------------------------------------
     /** Interline scale. */
     @XmlElement(name = "interline")
-    private final InterlineScale interlineScale;
+    private InterlineScale interlineScale;
 
     /** Line thickness scale. */
     @XmlElement(name = "line")
@@ -152,10 +178,8 @@ public class Scale
         this.smallScale = smallScale;
     }
 
-    /** No-arg constructor, needed by JAXB. */
-    private Scale ()
+    public Scale ()
     {
-        this.interlineScale = null;
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -170,6 +194,19 @@ public class Scale
     public Double getBeamMeanDistance ()
     {
         return beamScale.getDistanceMean();
+    }
+
+    //--------------//
+    // getBeamScale //
+    //--------------//
+    /**
+     * Report the beam scale.
+     *
+     * @return the beam scale
+     */
+    public BeamScale getBeamScale ()
+    {
+        return beamScale;
     }
 
     //----------------------//
@@ -326,6 +363,38 @@ public class Scale
         throw new IllegalArgumentException("No interline scale for provided value " + interline);
     }
 
+    //--------------//
+    // getItemValue //
+    //--------------//
+    /**
+     * Report the value of a specific item.
+     *
+     * @param item desired item
+     * @return item value, perhaps null
+     */
+    public Integer getItemValue (Item item)
+    {
+        switch (item) {
+        case line:
+            return getFore();
+
+        case interline:
+            return getInterline();
+
+        case smallInterline:
+            return getSmallInterline();
+
+        case beam:
+            return getBeamThickness();
+
+        case stem:
+            return getStemThickness();
+
+        default:
+            throw new IllegalArgumentException("No value defined for scaling item " + item);
+        }
+    }
+
     //------------------------//
     // getLargeInterlineScale //
     //------------------------//
@@ -337,6 +406,19 @@ public class Scale
     public InterlineScale getLargeInterlineScale ()
     {
         return interlineScale;
+    }
+
+    //--------------//
+    // getLineScale //
+    //--------------//
+    /**
+     * Report the line scale.
+     *
+     * @return the lineScale
+     */
+    public LineScale getLineScale ()
+    {
+        return lineScale;
     }
 
     //------------//
@@ -496,6 +578,19 @@ public class Scale
         return smallScale;
     }
 
+    //--------------//
+    // getStemScale //
+    //--------------//
+    /**
+     * Report the stem scale.
+     *
+     * @return the stem scale
+     */
+    public StemScale getStemScale ()
+    {
+        return stemScale;
+    }
+
     //------------------//
     // getStemThickness //
     //------------------//
@@ -504,8 +599,12 @@ public class Scale
      *
      * @return the most frequent stem thickness
      */
-    public int getStemThickness ()
+    public Integer getStemThickness ()
     {
+        if (stemScale == null) {
+            return null;
+        }
+
         return stemScale.getMain();
     }
 
@@ -595,6 +694,40 @@ public class Scale
     public void setBlackHeadScale (BlackHeadScale blackHeadScale)
     {
         this.blackHeadScale = blackHeadScale;
+    }
+
+    //--------------//
+    // setItemValue //
+    //--------------//
+    /**
+     * Assign a value to a specific item.
+     *
+     * @param item desired item
+     * @param v    new value
+     * @return the modified scale object
+     */
+    public Object setItemValue (Item item,
+                                int v)
+    {
+        switch (item) {
+        case line:
+            return lineScale = new LineScale(v, v, v);
+
+        case interline:
+            return interlineScale = new InterlineScale(v, v, v);
+
+        case smallInterline:
+            return smallScale = new Scale(new InterlineScale(v, v, v), null, null, null);
+
+        case beam:
+            return beamScale = new BeamScale(v, false);
+
+        case stem:
+            return stemScale = new StemScale(v, v);
+
+        default:
+            throw new IllegalArgumentException("No value defined for scaling item " + item);
+        }
     }
 
     //-------------------//
@@ -714,7 +847,7 @@ public class Scale
     @Override
     public String toString ()
     {
-        return toString(/* full: */true);
+        return toString(true);
     }
 
     //----------//
@@ -725,10 +858,12 @@ public class Scale
         StringBuilder sb = new StringBuilder("Scale{");
 
         if (lineScale != null) {
-            sb.append("line").append(lineScale).append(" ");
+            sb.append("  line").append(lineScale);
         }
 
-        sb.append("interline").append(interlineScale);
+        if (interlineScale != null) {
+            sb.append(" interline").append(interlineScale);
+        }
 
         if (beamScale != null) {
             sb.append(" ").append(beamScale);

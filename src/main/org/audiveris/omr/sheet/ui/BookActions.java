@@ -30,6 +30,7 @@ import org.audiveris.omr.log.LogUtil;
 import org.audiveris.omr.plugin.Plugin;
 import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.ui.ScoreParameters;
+import org.audiveris.omr.score.ui.SheetParameters;
 import org.audiveris.omr.sheet.BasicSheet;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
@@ -381,6 +382,69 @@ public class BookActions
     public void defineParameters (ActionEvent e)
     {
         applyUserSettings(StubsController.getCurrentStub());
+    }
+
+    //-----------------------//
+    // defineSheetParameters //
+    //-----------------------//
+    /**
+     * Launch the dialog to set up sheet parameters.
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = STUB_AVAILABLE)
+    public void defineSheetParameters (ActionEvent e)
+    {
+        final SheetStub stub = StubsController.getCurrentStub();
+
+        try {
+            final WrappedBoolean apply = new WrappedBoolean(false);
+            final SheetParameters sheetParams = new SheetParameters(stub.getSheet());
+            final JOptionPane optionPane = new JOptionPane(
+                    sheetParams.getComponent(),
+                    JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.OK_CANCEL_OPTION);
+            final String frameTitle = stub.getId() + " parameters";
+            final JDialog dialog = new JDialog(OMR.gui.getFrame(), frameTitle, true); // Modal flag
+            dialog.setContentPane(optionPane);
+            dialog.setName("sheetParams");
+
+            optionPane.addPropertyChangeListener(
+                    new PropertyChangeListener()
+            {
+                @Override
+                public void propertyChange (PropertyChangeEvent e)
+                {
+                    String prop = e.getPropertyName();
+
+                    if (dialog.isVisible()
+                        && (e.getSource() == optionPane)
+                        && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+                        Object obj = optionPane.getValue();
+                        int value = (Integer) obj;
+                        apply.set(value == JOptionPane.OK_OPTION);
+
+                        // Exit only if user gives up or enters correct data
+                        if (!apply.isSet() || sheetParams.commit()) {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                        } else {
+                            // Incorrect data, so don't exit yet
+                            try {
+                                // TODO: Is there a more civilized way?
+                                optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
+                }
+            });
+
+            dialog.pack();
+            OmrGui.getApplication().show(dialog);
+        } catch (Exception ex) {
+            logger.warn("Error in SheetParameters", ex);
+        }
     }
 
     //-------------//

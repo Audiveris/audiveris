@@ -1069,10 +1069,10 @@ public class BasicSheet
 
         // Fall-through!
         case BINARY:
-        case SCALE:
             scale = null;
 
         // Fall-through!
+        case SCALE:
         case GRID:
             pages.clear();
             stub.clearPageRefs();
