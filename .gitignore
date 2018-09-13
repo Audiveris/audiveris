@@ -48,3 +48,6 @@ target/*
 # Ignore system files
 .DS_Store
 Thumb.db
+/bin/
+/build/
+/.gradle/
