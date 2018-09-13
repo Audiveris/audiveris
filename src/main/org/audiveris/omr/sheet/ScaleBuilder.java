@@ -129,7 +129,7 @@ public class ScaleBuilder
     {
         if (histoKeeper == null) {
             try {
-                retrieveScale();
+                doRetrieveScale(true); // Dummy retrieval
             } catch (StepException ignored) {
             }
         }
@@ -142,57 +142,10 @@ public class ScaleBuilder
     //---------------//
     // retrieveScale //
     //---------------//
-    /**
-     * Retrieve the global scale counts by processing the provided picture runs,
-     * make decisions about the validity of current picture as a music page and store
-     * the results as a {@link Scale} instance in the related sheet.
-     *
-     * @return scale data for the sheet
-     * @throws StepException if processing must stop for this sheet.
-     */
     public Scale retrieveScale ()
             throws StepException
     {
-        binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
-        histoKeeper = new HistoKeeper();
-
-        histoKeeper.buildBlacks();
-        histoKeeper.retrieveLinePeak(); // -> blackPeak (or StepException thrown)
-
-        histoKeeper.buildCombos();
-        histoKeeper.retrieveInterlinePeaks(); // -> comboPeak (or StepException thrown), comboPeak2?
-
-        // Check we have acceptable resolution.  If not, throw StepException
-        checkResolution();
-
-        // Here, we keep going on with scale data
-        InterlineScale smallInterlineScale = computeSmallInterline();
-        Scale smallScale = (smallInterlineScale == null) ? null
-                : new Scale(smallInterlineScale, null, null, null);
-
-        // Respect user-assigned scale info, if any
-        final Scale scl = sheet.getScale();
-        final Scale scale;
-
-        if (scl != null) {
-            scale = new Scale(
-                    (scl.getInterlineScale() != null) ? scl.getInterlineScale() : computeInterline(),
-                    (scl.getLineScale() != null) ? scl.getLineScale() : new LineScale(blackPeak),
-                    (scl.getBeamScale() != null) ? scl.getBeamScale() : computeBeam(),
-                    (scl.getSmallScale() != null) ? scl.getSmallScale() : smallScale);
-
-            if (scl.getStemScale() != null) {
-                scale.setStemScale(scl.getStemScale());
-            }
-        } else {
-            scale = new Scale(
-                    computeInterline(),
-                    new LineScale(blackPeak),
-                    computeBeam(),
-                    smallScale);
-        }
-
-        return scale;
+        return doRetrieveScale(false);
     }
 
     //-----------------//
@@ -294,6 +247,69 @@ public class ScaleBuilder
         } else {
             return new InterlineScale(comboPeak);
         }
+    }
+
+    //-----------------//
+    // doRetrieveScale //
+    //-----------------//
+    /**
+     * Retrieve the global scale counts by processing the provided picture runs,
+     * make decisions about the validity of current picture as a music page and store
+     * the results as a {@link Scale} instance in the related sheet.
+     *
+     * @param dummy true for dummy retrieval (just for the chart)
+     * @return scale data for the sheet
+     * @throws StepException if processing must stop for this sheet.
+     */
+    private Scale doRetrieveScale (boolean dummy)
+            throws StepException
+    {
+        binary = sheet.getPicture().getTable(Picture.TableKey.BINARY);
+        histoKeeper = new HistoKeeper();
+
+        histoKeeper.buildBlacks();
+        histoKeeper.retrieveLinePeak(); // -> blackPeak (or StepException thrown)
+
+        histoKeeper.buildCombos();
+        histoKeeper.retrieveInterlinePeaks(); // -> comboPeak (or StepException thrown), comboPeak2?
+
+        if (dummy) {
+            computeBeam(); // Just for the chart
+
+            return null;
+        }
+
+        // Check we have acceptable resolution.  If not, throw StepException
+        checkResolution();
+
+        // Here, we keep going on with scale data
+        InterlineScale smallInterlineScale = computeSmallInterline();
+        Scale smallScale = (smallInterlineScale == null) ? null
+                : new Scale(smallInterlineScale, null, null, null);
+
+        // Respect user-assigned scale info, if any
+        final Scale scl = sheet.getScale();
+        final Scale scale;
+
+        if (scl != null) {
+            scale = new Scale(
+                    (scl.getInterlineScale() != null) ? scl.getInterlineScale() : computeInterline(),
+                    (scl.getLineScale() != null) ? scl.getLineScale() : new LineScale(blackPeak),
+                    (scl.getBeamScale() != null) ? scl.getBeamScale() : computeBeam(),
+                    (scl.getSmallScale() != null) ? scl.getSmallScale() : smallScale);
+
+            if (scl.getStemScale() != null) {
+                scale.setStemScale(scl.getStemScale());
+            }
+        } else {
+            scale = new Scale(
+                    computeInterline(),
+                    new LineScale(blackPeak),
+                    computeBeam(),
+                    smallScale);
+        }
+
+        return scale;
     }
 
     //--------------//
