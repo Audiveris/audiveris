@@ -335,8 +335,12 @@ public class AugmentationDotInter
         for (Inter ic : chords) {
             HeadChordInter chord = (HeadChordInter) ic;
 
-            // Heads are processed bottom up within their chord
-            for (Inter ih : chord.getNotes()) {
+            // Heads are reported bottom up within their chord
+            // So, we need to sort the list top down
+            List<? extends Inter> chordHeads = chord.getNotes();
+            Collections.sort(chordHeads, Inters.byCenterOrdinate);
+
+            for (Inter ih : chordHeads) {
                 HeadInter head = (HeadInter) ih;
 
                 // Check head is within reach and not yet augmented

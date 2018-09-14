@@ -23,10 +23,10 @@ package org.audiveris.omr.sheet.symbol;
 
 import org.audiveris.omr.classifier.Evaluation;
 import org.audiveris.omr.glyph.Glyph;
-import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.math.GeoOrder;
+import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.Rational;
 import org.audiveris.omr.sheet.Part;
@@ -55,6 +55,7 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
@@ -104,7 +105,7 @@ public class DotFactory
 
     private final Scale scale;
 
-    /** Dot candidates. Sorted bottom up */
+    /** Dot candidates. Sorted top down. */
     private final List<Dot> dots = new ArrayList<Dot>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -678,10 +679,32 @@ public class DotFactory
         }
 
         //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Very specific sorting of dots.
+         * If the 2 dots overlap vertically, return left one first.
+         * Otherwise, return top one first.
+         *
+         * @param that the other dot
+         * @return order sign
+         */
         @Override
         public int compareTo (Dot that)
         {
-            return Glyphs.byReverseBottom.compare(glyph, that.glyph);
+            final Glyph g1 = this.glyph;
+            final Glyph g2 = that.glyph;
+
+            if (g1 == g2) {
+                return 0;
+            }
+
+            final Rectangle b1 = g1.getBounds();
+            final Rectangle b2 = g2.getBounds();
+
+            if (GeoUtil.yOverlap(b1, b2) > 0) {
+                return Integer.compare(b1.x, b2.x);
+            } else {
+                return Integer.compare(b1.y, b2.y);
+            }
         }
 
         @Override
