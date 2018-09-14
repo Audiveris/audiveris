@@ -106,7 +106,7 @@ public class DotFactory
 
     private final Scale scale;
 
-    /** Dot candidates. Sorted bottom up */
+    /** Dot candidates. Sorted top down */
     private final List<Dot> dots = new ArrayList<Dot>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -738,12 +738,14 @@ public class DotFactory
         @Override
         public int compareTo (Dot that)
         {
-            final Rectangle thisBounds = this.getBounds();
-            final Rectangle thatBounds = that.getBounds();
+            final Rectangle b1 = this.getBounds();
+            final Rectangle b2 = that.getBounds();
 
-            return Integer.compare(
-                    thisBounds.y + thisBounds.height,
-                    thatBounds.y + thatBounds.height);
+            if (GeoUtil.yOverlap(b1, b2) > 0) {
+                return Integer.compare(b1.x, b2.x);
+            } else {
+                return Integer.compare(b1.y, b2.y);
+            }
         }
     }
 
