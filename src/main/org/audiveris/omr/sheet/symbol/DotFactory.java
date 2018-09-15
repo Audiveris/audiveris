@@ -110,7 +110,7 @@ public class DotFactory
 
     private final Scale scale;
 
-    /** Dot candidates. Sorted top down */
+    /** Dot candidates. Sorted top down, then left to right. */
     private final List<Dot> dots = new ArrayList<Dot>();
 
     //~ Constructors -------------------------------------------------------------------------------
@@ -755,6 +755,20 @@ public class DotFactory
 
             for (Link link : links) {
                 link.applyTo(aug);
+
+                // Specific case for mirrored head
+                if (link.partner instanceof HeadInter) {
+                    Inter mirror = link.partner.getMirror();
+
+                    if (mirror != null) {
+                        logger.debug(
+                                "Edge from {} to mirrored {} and {}",
+                                aug,
+                                link.partner,
+                                mirror);
+                        sig.addEdge(aug, mirror, link.relation.duplicate());
+                    }
+                }
             }
         }
     }

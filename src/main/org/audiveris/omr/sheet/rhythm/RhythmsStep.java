@@ -42,7 +42,9 @@ import org.audiveris.omr.sig.inter.TimeNumberInter;
 import org.audiveris.omr.sig.inter.TimePairInter;
 import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
+import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
+import org.audiveris.omr.sig.relation.DoubleDotRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.ui.AdditionTask;
@@ -98,7 +100,9 @@ public class RhythmsStep
         forStack.add(MeasureStack.class);
 
         // Relations
+        forStack.add(AugmentationRelation.class);
         forStack.add(BeamStemRelation.class);
+        forStack.add(DoubleDotRelation.class);
         forStack.add(HeadStemRelation.class);
     }
 
@@ -200,11 +204,9 @@ public class RhythmsStep
                 Class classe = relation.getClass();
 
                 if (isImpactedBy(classe, forStack)) {
-                    if (sig.containsEdge(relation)) {
-                        Inter source = sig.getEdgeSource(relation);
-                        MeasureStack stack = system.getStackAt(source.getCenter());
-                        impact.onStacks.add(stack);
-                    }
+                    Inter source = relationTask.getSource();
+                    MeasureStack stack = system.getStackAt(source.getCenter());
+                    impact.onStacks.add(stack);
                 }
             }
         }

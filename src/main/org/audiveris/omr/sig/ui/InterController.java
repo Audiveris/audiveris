@@ -56,6 +56,7 @@ import org.audiveris.omr.sig.inter.SlurInter;
 import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.WordInter;
+import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BasicContainment;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
@@ -499,6 +500,22 @@ public class InterController
 
                     // Finally, add relation
                     seq.add(new LinkTask(sig, source, target, relation));
+
+                    // Specific case for dot augmenting mirrored heads
+                    if (relation instanceof AugmentationRelation
+                        && target instanceof HeadInter) {
+                        Inter mirror = target.getMirror();
+
+                        if (mirror != null) {
+                            logger.debug(
+                                    "LinkTask from {} to mirrored {} and {}",
+                                    source,
+                                    target,
+                                    mirror);
+                            seq.add(new LinkTask(sig, source, mirror, relation.duplicate()));
+                        }
+                    }
+
                     seq.performDo();
                     epilog(seq);
                 } catch (Throwable ex) {

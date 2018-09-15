@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -322,7 +323,7 @@ public class AugmentationDotInter
     /**
      * Look up for a possible link with a head.
      * <p>
-     * Assumption: System dots are already in place or they are processed bottom up.
+     * Assumption: System dots are already in place or they are processed top down.
      *
      * @param systemHeadChords system head chords, sorted by abscissa
      * @param system           containing system
@@ -517,11 +518,31 @@ public class AugmentationDotInter
             return Collections.emptyList();
         }
 
-        if (doit) {
-            link.applyTo(this);
+        // Specific case for mirrored head: build a separate link to mirror
+        Link linkMirror = null;
+
+        if (link.partner instanceof HeadInter) {
+            final Inter mirrorHead = link.partner.getMirror();
+
+            if (mirrorHead != null) {
+                logger.debug("Link from {} to mirrored {} and {}", this, link.partner, mirrorHead);
+                linkMirror = new Link(mirrorHead, link.relation.duplicate(), true);
+            }
         }
 
-        return Collections.singleton(link);
+        if (doit) {
+            link.applyTo(this);
+
+            if (linkMirror != null) {
+                linkMirror.applyTo(this);
+            }
+        }
+
+        if (linkMirror != null) {
+            return Arrays.asList(link, linkMirror);
+        } else {
+            return Collections.singleton(link);
+        }
     }
 
     //--------------//
