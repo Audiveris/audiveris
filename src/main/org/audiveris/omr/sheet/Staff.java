@@ -707,7 +707,6 @@ public class Staff
             searchBox = new Rectangle2D.Double(point.getX(), bottom, 0, point.getY() - bottom + 1);
         }
 
-        //searchBox.grow(interline, interline);
         searchBox.setRect(
                 searchBox.getX() - specificInterline,
                 searchBox.getY() - specificInterline,

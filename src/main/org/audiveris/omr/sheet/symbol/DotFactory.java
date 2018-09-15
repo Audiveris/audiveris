@@ -22,6 +22,7 @@
 package org.audiveris.omr.sheet.symbol;
 
 import org.audiveris.omr.classifier.Evaluation;
+import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
@@ -34,6 +35,7 @@ import org.audiveris.omr.sheet.PartBarline;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.SystemInfo;
+import org.audiveris.omr.sheet.note.NotePosition;
 import org.audiveris.omr.sheet.rhythm.Measure;
 import org.audiveris.omr.sheet.rhythm.MeasureStack;
 import org.audiveris.omr.sig.SIGraph;
@@ -55,7 +57,6 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
 
 import org.slf4j.Logger;
@@ -91,6 +92,8 @@ import java.util.Set;
 public class DotFactory
 {
     //~ Static fields/initializers -----------------------------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(DotFactory.class);
 
@@ -134,14 +137,23 @@ public class DotFactory
      * All symbols may not be available yet, so only instant processing is launched on the dot (as
      * a repeat dot, as a staccato dot).
      * <p>
+     * Whatever the role of a dot, it cannot be stuck (or too close) to a staff line or ledger.
+     * <p>
      * The symbol is also saved as a dot candidate for later processing.
      *
-     * @param eval  evaluation result
-     * @param glyph underlying glyph
+     * @param eval         evaluation result
+     * @param glyph        underlying glyph
+     * @param closestStaff staff closest to the dot
      */
     public void instantDotChecks (Evaluation eval,
-                                  Glyph glyph)
+                                  Glyph glyph,
+                                  Staff closestStaff)
     {
+        // Discard glyph too close to staff line or ledger
+        if (!checkDistanceToLine(glyph, closestStaff)) {
+            return;
+        }
+
         // Simply record the candidate dot
         Dot dot = new Dot(eval, glyph);
         dots.add(dot);
@@ -201,6 +213,56 @@ public class DotFactory
                 } else if (otherBox.x >= xBreak) {
                     break;
                 }
+            }
+        }
+    }
+
+    //---------------------//
+    // checkDistanceToLine //
+    //---------------------//
+    /**
+     * Check that dot glyph is vertically distant from staff line or ledger.
+     *
+     * @param glyph the dot glyph to check
+     * @param staff the closest staff
+     * @return true if OK
+     */
+    private boolean checkDistanceToLine (Glyph glyph,
+                                         Staff staff)
+    {
+        final Point center = glyph.getCenter();
+        final NotePosition notePosition = staff.getNotePosition(center);
+        final double pitch = notePosition.getPitchPosition();
+
+        if ((Math.abs(pitch) > staff.getLineCount()) && (notePosition.getLedger() == null)) {
+            if (glyph.isVip()) {
+                logger.info("VIP glyph#{} dot isolated OK", glyph.getId());
+            }
+
+            return true;
+        } else {
+            // Distance to line/ledger specified in interline fraction
+            double linePitch = 2 * Math.rint(pitch / 2);
+            double distance = Math.abs(pitch - linePitch) / 2;
+
+            if (distance >= constants.minDyFromLine.getValue()) {
+                if (glyph.isVip()) {
+                    logger.info(
+                            "VIP glyph#{} dot distance:{} OK",
+                            glyph.getId(),
+                            String.format("%.2f", distance));
+                }
+
+                return true;
+            } else {
+                if (glyph.isVip()) {
+                    logger.info(
+                            "VIP glyph#{} dot distance:{} too close",
+                            glyph.getId(),
+                            String.format("%.2f", distance));
+                }
+
+                return false;
             }
         }
     }
@@ -655,6 +717,19 @@ public class DotFactory
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Scale.Fraction minDyFromLine = new Scale.Fraction(
+                0.3,
+                "Minimum vertical distance between dot center and staff line/ledger");
+    }
+
     //-----//
     // Dot //
     //-----//

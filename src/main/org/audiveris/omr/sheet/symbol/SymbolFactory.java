@@ -338,7 +338,7 @@ public class SymbolFactory
         // - STACCATO_DOT
         // - AUGMENTATION_DOT
         case DOT_set:
-            dotFactory.instantDotChecks(eval, glyph);
+            dotFactory.instantDotChecks(eval, glyph, closestStaff);
 
             return null;
 
