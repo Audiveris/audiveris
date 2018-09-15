@@ -26,6 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sig.inter.AugmentationDotInter;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.sig.ui.InterController;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
@@ -37,6 +38,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code AugmentationRelation} represents the relation between an augmentation
  * dot and the related note (head or rest) instance.
+ * <p>
+ * NOTA: An augmentation can be considered as linked to at most one note (<b>single target</b>)
+ * since the case of pair of mirrored heads (which can indeed be targeted by the same dot)
+ * is addressed specifically within {@link InterController#link} method.
  *
  * @author Hervé Bitteur
  */
@@ -105,7 +110,7 @@ public class AugmentationRelation
     @Override
     public boolean isSingleTarget ()
     {
-        return true;
+        return true; // See explanation in class header
     }
 
     //---------//
