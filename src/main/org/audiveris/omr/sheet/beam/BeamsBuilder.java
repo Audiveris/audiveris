@@ -1692,7 +1692,7 @@ public class BeamsBuilder
                 "Low minimum height for a beam or hook, specified as ratio of typical beam");
 
         private final Constant.Ratio maxHeightRatioHigh = new Constant.Ratio(
-                1.3,
+                1.4, // 1.3,
                 "High maximum height for a beam or hook, specified as ratio of typical beam");
 
         private final Constant.Ratio cornerMarginRatio = new Constant.Ratio(
