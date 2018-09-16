@@ -69,7 +69,7 @@ Section "Hauptgruppe" SEC01
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   !insertmacro MUI_STARTMENU_WRITE_END
   
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1 "Do you want to register omr-files to Audiveris?" IDNO +2
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1 "Do you want to associate '.omr' file extension with Audiveris?" IDNO +2
   ${registerExtension} "$INSTDIR\bin\${PRODUCT_NAME}.bat" ".omr" "OpticalMusicRecognition_File"
 
 SectionEnd
