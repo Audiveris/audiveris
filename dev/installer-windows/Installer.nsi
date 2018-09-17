@@ -126,5 +126,6 @@ Section Uninstall
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   ${unregisterExtension} ".omr" "OpticalMusicRecognition_File"
+  DeleteRegKey HKCR "OpticalMusicRecognition_File" ; brute force delete
   SetAutoClose true
 SectionEnd
