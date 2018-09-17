@@ -71,6 +71,7 @@ Section "Hauptgruppe" SEC01
   
   MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1 "Do you want to associate '.omr' file extension with Audiveris?" IDNO +2
   ${registerExtension} "$INSTDIR\bin\${PRODUCT_NAME}.bat" ".omr" "OpticalMusicRecognition_File"
+  WriteRegStr HKCR "OpticalMusicRecognition_File\DefaultIcon" "" "$INSTDIR\bin\icon-256.ico,0"
 
 SectionEnd
 
