@@ -1,10 +1,15 @@
 /*
 _____________________________________________________________________________
  
-                       File Association
+                       File Association With Icon
 _____________________________________________________________________________
  
  Based on code taken from http://nsis.sourceforge.net/File_Association 
+
+ Added icon as a 4th parameter in RegisterExtension, since the executable may
+ not always be a .exe, and thus we need a separate way to pass the precise
+ icon container, be it a .exe, a .dll, a .ico, etc,
+ optionally with an icon index within the icon container.
  
  Usage in script:
  1. !include "FileAssociation.nsh"
@@ -16,13 +21,15 @@ _____________________________________________________________________________
  
 _____________________________________________________________________________
  
- ${RegisterExtension} "[executable]" "[extension]" "[description]"
+ ${RegisterExtension} "[executable]" "[extension]" "[description]" "[icon]"
  
 "[executable]"     ; executable which opens the file format
                    ;
 "[extension]"      ; extension, which represents the file format to open
                    ;
 "[description]"    ; description for the extension. This will be display in Windows Explorer.
+                   ;
+"[icon]"           ; icon container[,index].
                    ;
  
  
@@ -73,9 +80,10 @@ _____________________________________________________________________________
  
  
  
-!macro RegisterExtensionCall _EXECUTABLE _EXTENSION _DESCRIPTION
+!macro RegisterExtensionCall _EXECUTABLE _EXTENSION _DESCRIPTION _ICON
   !verbose push
   !verbose ${_FileAssociation_VERBOSE}
+  Push `${_ICON}`
   Push `${_DESCRIPTION}`
   Push `${_EXTENSION}`
   Push `${_EXECUTABLE}`
@@ -107,35 +115,39 @@ _____________________________________________________________________________
   !verbose push
   !verbose ${_FileAssociation_VERBOSE}
  
-  Exch $R2 ;exe
+  Exch $R3 ;exe
   Exch
-  Exch $R1 ;ext
+  Exch $R2 ;ext
   Exch
   Exch 2
-  Exch $R0 ;desc
+  Exch $R1 ;desc
   Exch 2
+  Exch 3
+  Exch $R0 ;icon
+  Exch 3
   Push $0
   Push $1
  
-  ReadRegStr $1 HKCR $R1 ""  ; read current file association
+  ReadRegStr $1 HKCR $R2 ""  ; read current file association
   StrCmp "$1" "" NoBackup  ; is it empty
-  StrCmp "$1" "$R0" NoBackup  ; is it our own
-    WriteRegStr HKCR $R1 "backup_val" "$1"  ; backup current value
+  StrCmp "$1" "$R1" NoBackup  ; is it our own
+    WriteRegStr HKCR $R2 "backup_val" "$1"  ; backup current value
 NoBackup:
-  WriteRegStr HKCR $R1 "" "$R0"  ; set our file association
+  WriteRegStr HKCR $R2 "" "$R1"  ; set our file association
  
-  ReadRegStr $0 HKCR $R0 ""
+  ReadRegStr $0 HKCR $R1 ""
   StrCmp $0 "" 0 Skip
-    WriteRegStr HKCR "$R0" "" "$R0"
-    WriteRegStr HKCR "$R0\shell" "" "open"
-    WriteRegStr HKCR "$R0\DefaultIcon" "" "$R2,0"
+    WriteRegStr HKCR "$R1" "" "$R1"
+    WriteRegStr HKCR "$R1\shell" "" "open"
+    WriteRegStr HKCR "$R1\DefaultIcon" "" "$R0" ; set icon
 Skip:
-  WriteRegStr HKCR "$R0\shell\open\command" "" '"$R2" "%1"'
-  WriteRegStr HKCR "$R0\shell\edit" "" "Edit $R0"
-  WriteRegStr HKCR "$R0\shell\edit\command" "" '"$R2" "%1"'
+  WriteRegStr HKCR "$R1\shell\open\command" "" '"$R3" "%1"'
+  WriteRegStr HKCR "$R1\shell\edit" "" "Edit $R1"
+  WriteRegStr HKCR "$R1\shell\edit\command" "" '"$R3" "%1"'
  
   Pop $1
   Pop $0
+  Pop $R3
   Pop $R2
   Pop $R1
   Pop $R0

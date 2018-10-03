@@ -204,6 +204,24 @@ sourceSets {
     }
 }
 
+// Build Windows installer
+// TODO: limit this task to Windows!
+// TODO: handle 32 and 64 bit. How to express dependencies for tesseract/leptonica???
+task buildWindowsInstaller(type:Exec) {
+    description "Build installers for Windows"
+    
+    // We need to call NSIS compiler (makensis.exe) perhaps on path?
+    // With /D option for each symbol
+    // With the Installer.nsi as input
+    //
+    commandLine "cmd", "/c",\
+    "C:/Program Files (x86)/NSIS/makensis.exe",\
+    "/DPRODUCT_VERSION=$programVersion",\
+    "/DPROJECT_DIR=$projectDir",\
+    "/DTARGET_OS=$targetOS",\
+    "$projectDir/dev/installer-windows/Installer.nsi"
+}
+
 javadoc {
     doFirst {
         copy {
