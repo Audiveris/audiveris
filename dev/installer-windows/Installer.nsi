@@ -5,15 +5,17 @@
 ; PRODUCT_VERSION:  Product version
 ; PROJECT_DIR:      Project root directory
 ; TARGET_OS:        OS name and architecture (windows-x86 or windows-x86_64)
+; SUFFIX:           Optional suffix ("32" or "") to cope with 32/64 coexisting installations
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Audiveris"
-;!define PRODUCT_VERSION "5.1"
 !define PRODUCT_PUBLISHER "Audiveris Team"
 !define PRODUCT_WEB_SITE "http://www.audiveris.org"
-!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}${SUFFIX}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 !define PRODUCT_STARTMENU_REGVAL "NSIS:StartMenuDir"
+
+!include "LogicLib.nsh"
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
@@ -38,7 +40,7 @@
 ; Start menu page
 var ICONS_GROUP
 !define MUI_STARTMENUPAGE_NODISABLE
-!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Audiveris"
+!define MUI_STARTMENUPAGE_DEFAULTFOLDER "Audiveris${SUFFIX}"
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "${PRODUCT_UNINST_ROOT_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "${PRODUCT_UNINST_KEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "${PRODUCT_STARTMENU_REGVAL}"
@@ -49,7 +51,7 @@ var ICONS_GROUP
 
 ; Finish page
 !define MUI_FINISHPAGE_RUN "$INSTDIR\bin\Audiveris.bat"
-!define MUI_FINISHPAGE_RUN_TEXT "Run Audiveris program now"
+!define MUI_FINISHPAGE_RUN_TEXT "Launch Audiveris"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -61,32 +63,36 @@ var ICONS_GROUP
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "${PROJECT_DIR}\build\Audiveris_Setup-${PRODUCT_VERSION}-${TARGET_OS}.exe"
-InstallDir "$PROGRAMFILES\Audiveris"
+OutFile "${PROJECT_DIR}\build\installers\Audiveris_Setup-${PRODUCT_VERSION}-${TARGET_OS}.exe"
 ShowInstDetails show
 ShowUnInstDetails show
 
-Section "Hauptgruppe" SEC01
-  CreateDirectory "${PROJECT_DIR}\build\installers"
+Function .onInit
+    ${If} $INSTDIR == "" ; /D= was not used on the command line
+        ${If} "${SUFFIX}" == "32"
+            StrCpy $INSTDIR "$PROGRAMFILES\Audiveris${SUFFIX}"
+        ${Else}
+            StrCpy $INSTDIR "$PROGRAMFILES64\Audiveris${SUFFIX}"
+        ${EndIf}
+    ${EndIf}
+FunctionEnd
 
-  SetOutPath "$INSTDIR\bin"
+Section "Hauptgruppe" SEC01
+  SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File "${PROJECT_DIR}\build\distributions\Audiveris\bin\Audiveris"
-  File "${PROJECT_DIR}\build\distributions\Audiveris\bin\Audiveris.bat"
-  File "${PROJECT_DIR}\res\icon-256.ico"
-  SetOutPath "$INSTDIR\lib"
-  File "${PROJECT_DIR}\build\distributions\Audiveris\lib\*.jar"
+  File /r "${PROJECT_DIR}\build\installers\${TARGET_OS}\*"
  
   SetOutPath "$PROGRAMFILES\tesseract-ocr\tessdata"
   SetOverwrite ifnewer
   File "C:\Program Files (x86)\tesseract-ocr\tessdata\*.*"
+
   ; Shortcuts
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   !insertmacro MUI_STARTMENU_WRITE_END
   
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1 "Do you want to associate '.omr' file extension with Audiveris?" IDNO +2
-  ${registerExtension} "$INSTDIR\bin\${PRODUCT_NAME}.bat" ".omr" "OpticalMusicRecognition_File" "$INSTDIR\bin\icon-256.ico"
-
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON1 "Do you want to associate '.omr' file extension with Audiveris?" IDNO noAsso
+    ${registerExtension} "$INSTDIR\bin\${PRODUCT_NAME}.bat" ".omr" "OpticalMusicRecognition_File" "$INSTDIR\bin\icon-256.ico"
+  noAsso:
 SectionEnd
 
 Section -AdditionalIcons
@@ -115,20 +121,46 @@ Function un.onUninstSuccess
 FunctionEnd
 
 Function un.onInit
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Do you want to uninstall $(^Name) and all their components?" IDYES +2
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Do you want to uninstall $(^Name)?" IDYES +2
   Abort
   MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Do you want to keep the configuration data?" IDYES +2
   RmDir /r "$AppData\AudiverisLtd\audiveris"
 FunctionEnd
 
+!macro BadPathsCheck
+StrCpy $R0 $INSTDIR "" -2
+StrCmp $R0 ":\" bad
+StrCpy $R0 $INSTDIR "" -14
+StrCmp $R0 "\Program Files" bad
+StrCpy $R0 $INSTDIR "" -19
+StrCmp $R0 "\Program Files(x86)" bad
+StrCpy $R0 $INSTDIR "" -8
+StrCmp $R0 "\Windows" bad
+StrCpy $R0 $INSTDIR "" -6
+StrCmp $R0 "\WinNT" bad
+StrCpy $R0 $INSTDIR "" -9
+StrCmp $R0 "\system32" bad
+StrCpy $R0 $INSTDIR "" -8
+StrCmp $R0 "\Desktop" bad
+StrCpy $R0 $INSTDIR "" -23
+StrCmp $R0 "\Documents and Settings" bad
+StrCpy $R0 $INSTDIR "" -13
+StrCmp $R0 "\My Documents" bad done
+bad:
+  MessageBox MB_OK|MB_ICONSTOP "Install path invalid!"
+  Abort
+done:
+!macroend
+
 Section Uninstall
+  ; Check that the uninstall isn't dangerous.
+  !insertmacro BadPathsCheck
+
   ; Delete installed software
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
-  Delete "$INSTDIR\lib\*.*"
-  Delete "$INSTDIR\bin\Audiveris.bat"
-  Delete "$INSTDIR\bin\Audiveris"
-  Delete "$INSTDIR\bin\icon-256.ico"
+  Delete "$INSTDIR\lib\*"
+  Delete "$INSTDIR\bin\*"
   RMDir "$INSTDIR\lib"
   RMDir "$INSTDIR\bin"
   RMDir "$INSTDIR"
