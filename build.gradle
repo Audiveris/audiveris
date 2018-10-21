@@ -213,28 +213,30 @@ sourceSets {
     }
 }
 
-// Closure to find path of NSIS compiler and store it into project.ext.makensisPath
-// First testing on PATH then on standard program files locations
-def setMakensisPath = {
-    ["", "C:/Program Files (x86)/NSIS/", "C:/Program Files/NSIS/"].each { prefix ->        
+// Make sure we have an NSIS compiler available and store it into project.ext.makensisPath
+task findNsisCompiler {
+    description "Find path to NSIS compiler"
+    onlyIf {"windows" == "${project.ext.targetOSName}"}
+    
+    doLast {
+        // First test on PATH, then on standard program files locations
+        ["", "C:/Program Files (x86)/NSIS/", "C:/Program Files/NSIS/"].each { prefix ->        
+            if (project.ext.makensisPath == null) {
+                try {
+                    def path = "${prefix}makensis.exe"
+                    def proc = [path, "/VERSION"].execute()
+                    proc.waitFor()
+                    println "NSIS compiler $path found, version " + proc.in.text.trim()
+                    project.ext.makensisPath = path
+                } catch (ignored) {
+                }    
+            }
+        }
+    
         if (project.ext.makensisPath == null) {
-            ///println "Checking makensis at ${prefix} ..."
-            try {
-                def path = "${prefix}makensis.exe"
-                def proc = [path, "/VERSION"].execute()
-                proc.waitFor()
-                println "NSIS compiler $path found, version " + proc.in.text.trim()
-                project.ext.makensisPath = path
-            } catch (ignored) {
-            }    
+            throw new RuntimeException("Cannot find NSIS compiler (makensis.exe)!")       
         }
     }
-
-    if (project.ext.makensisPath == null) {
-        throw new RuntimeException("Cannot find NSIS compiler!")       
-    }
-    
-    return project.ext.makensisPath
 }
 
 // All installers
@@ -245,10 +247,9 @@ task installers {
 
 // Windows installers for 32-bit and 64-bit
 ['windows-x86', 'windows-x86_64'].each { os ->
-    task "installer_$os"(type: Exec, dependsOn: [jar, startScripts]) {
+    task "installer_$os"(type: Exec, dependsOn: [findNsisCompiler, jar, startScripts]) {
         group "Installers"
-        description "Builds installer for $os"
-        
+        description "Builds installer for $os"        
         onlyIf {"windows" == "${project.ext.targetOSName}"}
 
         // Filter line that starts with "CLASSPATH="  or "set CLASSPATH=" findClasspath,
@@ -278,23 +279,17 @@ task installers {
                 from configurations.compile // Compile jars
                 from configurations."runtime-$os" // OS-specific jars 
             }
+       
+            // Set NSIS compiler command line
+            def suffix = (os == "windows-x86_64")? "" : "32"    
+            commandLine "cmd", "/c",\
+                "${project.ext.makensisPath}",\
+                "/DPRODUCT_VERSION=$programVersion",\
+                "/DPROJECT_DIR=$projectDir",\
+                "/DTARGET_OS=$os",\
+                "/DSUFFIX=$suffix",\
+                "$projectDir/dev/installer-windows/Installer.nsi"
         }
-
-        // We need to call NSIS compiler (makensis.exe)
-        // With /D option for each symbol
-        // With the Installer.nsi as input
-        
-        setMakensisPath(); // Set project.ext.makensisPath or abort        
-        def suffix = (os == "windows-x86_64")? "" : "32"    
-        
-        ///commandLine "cmd", "/c", "echo", "dummy command."
-        commandLine "cmd", "/c",\
-        "${project.ext.makensisPath}",\
-        "/DPRODUCT_VERSION=$programVersion",\
-        "/DPROJECT_DIR=$projectDir",\
-        "/DTARGET_OS=$os",\
-        "/DSUFFIX=$suffix",\
-        "$projectDir/dev/installer-windows/Installer.nsi"
     }
     
     installers.dependsOn("installer_$os")

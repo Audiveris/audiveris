@@ -6,6 +6,9 @@
 ; PROJECT_DIR:      Project root directory
 ; TARGET_OS:        OS name and architecture (windows-x86 or windows-x86_64)
 ; SUFFIX:           Optional suffix ("32" or "") to cope with 32/64 coexisting installations
+!ifndef SUFFIX
+  !define SUFFIX ""
+!endif
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Audiveris"
