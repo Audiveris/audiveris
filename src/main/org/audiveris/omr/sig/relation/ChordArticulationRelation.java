@@ -116,7 +116,10 @@ public class ChordArticulationRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final ArticulationInter articulation = (ArticulationInter) e.getEdgeTarget();
-        articulation.checkAbnormal();
+
+        if (!articulation.isRemoved()) {
+            articulation.checkAbnormal();
+        }
     }
 
     //---------------//

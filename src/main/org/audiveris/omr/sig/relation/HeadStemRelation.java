@@ -218,8 +218,13 @@ public class HeadStemRelation
         final HeadInter head = (HeadInter) e.getEdgeSource();
         final StemInter stem = (StemInter) e.getEdgeTarget();
 
-        head.checkAbnormal();
-        stem.checkAbnormal();
+        if (!head.isRemoved()) {
+            head.checkAbnormal();
+        }
+
+        if (!stem.isRemoved()) {
+            stem.checkAbnormal();
+        }
     }
 
     //-------------//
@@ -313,12 +318,12 @@ public class HeadStemRelation
                 "Maximum manual horizontal overlap between stem & head");
 
         private final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.25,
+                0.275,
                 "Maximum horizontal gap between stem & head");
 
         private final Scale.Fraction xOutGapMaxManual = new Scale.Fraction(
                 0.35,
-                "Maximum manualhorizontal gap between stem & head");
+                "Maximum manual horizontal gap between stem & head");
 
         private final Scale.Fraction yGapMax = new Scale.Fraction(
                 0.8,

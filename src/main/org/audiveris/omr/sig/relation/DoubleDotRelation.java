@@ -115,7 +115,10 @@ public class DoubleDotRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final AugmentationDotInter secondDot = (AugmentationDotInter) e.getEdgeSource();
-        secondDot.checkAbnormal();
+
+        if (!secondDot.isRemoved()) {
+            secondDot.checkAbnormal();
+        }
     }
 
     //---------------//

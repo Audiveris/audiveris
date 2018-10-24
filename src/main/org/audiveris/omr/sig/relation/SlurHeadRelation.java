@@ -172,7 +172,10 @@ public class SlurHeadRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final SlurInter slur = (SlurInter) e.getEdgeSource();
-        slur.checkAbnormal();
+
+        if (!slur.isRemoved()) {
+            slur.checkAbnormal();
+        }
     }
 
     //--------------//

@@ -24,6 +24,9 @@ package org.audiveris.omr.sig.relation;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -38,6 +41,8 @@ public class BeamHeadRelation
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(BeamHeadRelation.class);
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

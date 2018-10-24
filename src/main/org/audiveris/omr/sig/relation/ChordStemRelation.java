@@ -77,6 +77,9 @@ public class ChordStemRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         HeadChordInter headChord = (HeadChordInter) e.getEdgeSource();
-        headChord.invalidateCache();
+
+        if (!headChord.isRemoved()) {
+            headChord.invalidateCache();
+        }
     }
 }

@@ -104,7 +104,10 @@ public class ChordTupletRelation
     public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
     {
         final TupletInter tuplet = (TupletInter) e.getEdgeTarget();
-        tuplet.checkAbnormal();
+
+        if (!tuplet.isRemoved()) {
+            tuplet.checkAbnormal();
+        }
     }
 
     //----------------//
