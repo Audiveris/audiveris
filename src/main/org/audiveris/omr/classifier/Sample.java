@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.classifier;
 
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.run.RunTable;
@@ -45,7 +44,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlRootElement(name = "sample")
 public class Sample
-        extends BasicGlyph
+        extends Glyph
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

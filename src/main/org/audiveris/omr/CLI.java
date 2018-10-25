@@ -789,7 +789,7 @@ public class CLI
                     // TODO: Make this cleaner
                     for (SheetStub stub : book.getStubs()) {
                         final Path defaultBookPath = BookManager.getDefaultPrintPath(book);
-                        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PDF_EXTENSION);
+                        final Path bookSansExt = FileUtil.avoidExtensions(defaultBookPath, OMR.PRINT_EXTENSION);
                         final String sheetSuffix = book.isMultiSheet() ? (OMR.SHEET_SUFFIX + stub.getNumber()) : "";
                         final Path defaultSheetPath = Paths.get(bookSansExt + sheetSuffix + ".png");
                         stub.getSheet().printMix(defaultSheetPath);

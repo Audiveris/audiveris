@@ -22,7 +22,6 @@
 package org.audiveris.omr.sheet;
 
 import org.audiveris.omr.classifier.Annotation;
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.GlyphIndex;
@@ -138,7 +137,7 @@ public class SystemInfo
     @XmlList
     @XmlIDREF
     @XmlElement(name = "free-glyphs")
-    private Set<BasicGlyph> freeGlyphs;
+    private Set<Glyph> freeGlyphs;
 
     /**
      * Symbol Interpretation Graph for this system.
@@ -231,10 +230,10 @@ public class SystemInfo
     public void addFreeGlyph (Glyph glyph)
     {
         if (freeGlyphs == null) {
-            freeGlyphs = new LinkedHashSet<BasicGlyph>();
+            freeGlyphs = new LinkedHashSet<Glyph>();
         }
 
-        freeGlyphs.add((BasicGlyph) glyph);
+        freeGlyphs.add(glyph);
     }
 
     //---------//
@@ -1234,7 +1233,7 @@ public class SystemInfo
     public void removeFreeGlyph (Glyph glyph)
     {
         if (freeGlyphs != null) {
-            freeGlyphs.remove((BasicGlyph) glyph);
+            freeGlyphs.remove(glyph);
 
             if (freeGlyphs.isEmpty()) {
                 freeGlyphs = null;
@@ -1253,7 +1252,7 @@ public class SystemInfo
     public void removeGroupedGlyphs (GlyphGroup group)
     {
         if (freeGlyphs != null) {
-            for (Iterator<BasicGlyph> it = freeGlyphs.iterator(); it.hasNext();) {
+            for (Iterator<Glyph> it = freeGlyphs.iterator(); it.hasNext();) {
                 final Glyph glyph = it.next();
                 final EnumSet<GlyphGroup> glyphGroups = glyph.getGroups();
 

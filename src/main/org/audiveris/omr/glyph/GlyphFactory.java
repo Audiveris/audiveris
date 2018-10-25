@@ -128,7 +128,7 @@ public class GlyphFactory
 
         final RunTable runTable = new RunTableFactory(VERTICAL).createTable(buffer);
 
-        return new BasicGlyph(box.x, box.y, runTable);
+        return new Glyph(box.x, box.y, runTable);
     }
 
     //-------------//
@@ -251,7 +251,7 @@ public class GlyphFactory
         }
 
         // Store created glyph
-        final Glyph glyph = new BasicGlyph(offset.x + dx, offset.y + dy, table);
+        final Glyph glyph = new Glyph(offset.x + dx, offset.y + dy, table);
         glyph.addGroup(group);
         created.add(glyph);
     }

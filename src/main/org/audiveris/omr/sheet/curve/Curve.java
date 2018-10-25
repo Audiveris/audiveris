@@ -21,7 +21,6 @@
 // </editor-fold>
 package org.audiveris.omr.sheet.curve;
 
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
 import org.audiveris.omr.run.Run;
@@ -457,7 +456,7 @@ public abstract class Curve
         // Build glyph (TODO: table a bit too high, should be trimmed?)
         if (curveTable.getSize() > 0) {
             Glyph curveGlyph = sheet.getGlyphIndex().registerOriginal(
-                    new BasicGlyph(fatBox.x, fatBox.y, curveTable));
+                    new Glyph(fatBox.x, fatBox.y, curveTable));
             setGlyph(curveGlyph);
             logger.debug("{} -> {}", this, curveGlyph);
 

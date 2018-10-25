@@ -26,7 +26,6 @@ import ij.process.ByteProcessor;
 import org.audiveris.omr.classifier.OmrShapeMapping;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
@@ -591,7 +590,7 @@ public class HeadInter
 
         // Glyph
         glyph = sheet.getGlyphIndex().registerOriginal(
-                new BasicGlyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable));
+                new Glyph(descBox.x + foreBox.x, descBox.y + foreBox.y, runTable));
 
         // Use glyph bounds as inter bounds
         bounds = glyph.getBounds();
