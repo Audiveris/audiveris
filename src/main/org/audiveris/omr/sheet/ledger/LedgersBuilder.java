@@ -29,6 +29,7 @@ import org.audiveris.omr.check.CheckSuite;
 import org.audiveris.omr.check.Failure;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
+import org.audiveris.omr.glyph.AbstractWeightedEntity;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.Filament;
@@ -389,7 +390,7 @@ public class LedgersBuilder
             Rectangle stickBox = stick.getBounds();
 
             for (LedgerInter ledger : prevLedgers) {
-                if (ledger.getGlyph() == stick) {
+                if ((AbstractWeightedEntity) ledger.getGlyph() == (AbstractWeightedEntity) stick) {
                     // This may occur when manually using the ledger check
                     continue;
                 }

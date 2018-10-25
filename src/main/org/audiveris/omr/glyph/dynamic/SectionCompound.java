@@ -24,7 +24,6 @@ package org.audiveris.omr.glyph.dynamic;
 import ij.process.ByteProcessor;
 
 import org.audiveris.omr.glyph.AbstractWeightedEntity;
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.lag.Section;
@@ -459,7 +458,7 @@ public class SectionCompound
         final RunTable runTable = factory.createTable(buffer);
 
         // Allocate glyph with proper offset
-        final Glyph glyph = new BasicGlyph(bounds.x, bounds.y, runTable);
+        final Glyph glyph = new Glyph(bounds.x, bounds.y, runTable);
         glyph.addGroup(group);
 
         return glyph;

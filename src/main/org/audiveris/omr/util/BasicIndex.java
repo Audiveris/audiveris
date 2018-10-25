@@ -21,7 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
-import org.audiveris.omr.glyph.BasicGlyph;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.ui.selection.EntityService;
 import org.audiveris.omr.ui.symbol.BasicSymbol;
 
@@ -491,7 +491,7 @@ public class BasicIndex<E extends Entity>
         //~ Instance fields ------------------------------------------------------------------------
 
         @XmlElementRefs({
-            @XmlElementRef(type = BasicGlyph.class)
+            @XmlElementRef(type = Glyph.class)
             , @XmlElementRef(type = BasicSymbol.class)
         })
         ArrayList<E> list; // Flat list of entities (each with its embedded id)

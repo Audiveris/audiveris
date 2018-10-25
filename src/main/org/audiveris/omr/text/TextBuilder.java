@@ -25,7 +25,6 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory;
@@ -881,7 +880,7 @@ public class TextBuilder
                             constructor);
                     Glyph rel = compound.toGlyph(null);
                     Glyph wordGlyph = glyphIndex.registerOriginal(
-                            new BasicGlyph(rel.getLeft() + dx, rel.getTop() + dy, rel.getRunTable()));
+                            new Glyph(rel.getLeft() + dx, rel.getTop() + dy, rel.getRunTable()));
 
                     // Link TextWord -> Glyph
                     word.setGlyph(wordGlyph);
@@ -1352,7 +1351,7 @@ public class TextBuilder
                 // Register char underlying glyph
                 SectionCompound compound = CompoundFactory.buildCompound(charSections, constructor);
                 Glyph relGlyph = compound.toGlyph(null);
-                Glyph absGlyph = new BasicGlyph(
+                Glyph absGlyph = new Glyph(
                         relGlyph.getLeft() + dx,
                         relGlyph.getTop() + dy,
                         relGlyph.getRunTable());

@@ -22,7 +22,7 @@
 package org.audiveris.omr.classifier;
 
 import org.audiveris.omr.classifier.SheetContainer.Descriptor;
-import org.audiveris.omr.glyph.BasicGlyph;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.util.FileUtil;
@@ -349,7 +349,7 @@ public class SampleSheet
         for (Tribe tribe : getTribes()) {
             Sample tribeBest = tribe.getHead();
 
-            if (((BasicGlyph) tribeBest).equals(best) && (tribeBest.shape == best.shape)) {
+            if (((Glyph) tribeBest).equals(best) && (tribeBest.shape == best.shape)) {
                 currentTribe = tribe;
 
                 break;

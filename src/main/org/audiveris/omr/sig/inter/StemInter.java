@@ -23,7 +23,6 @@ package org.audiveris.omr.sig.inter;
 
 import ij.process.ByteProcessor;
 
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.Shape;
 import static org.audiveris.omr.run.Orientation.VERTICAL;
@@ -367,8 +366,7 @@ public class StemInter
         final RunTable table = factory.createTable(buffer, roi).trim(stemOffset);
         final int x = glyph.getLeft() + stemOffset.x;
         final int y = glyph.getTop() + roi.y + stemOffset.y;
-        final Glyph g = sheet.getGlyphIndex().registerOriginal(
-                new BasicGlyph(x, y, table));
+        final Glyph g = sheet.getGlyphIndex().registerOriginal(new Glyph(x, y, table));
 
         // Create sub-stem
         final StemInter subStem = new StemInter(g, getGrade());

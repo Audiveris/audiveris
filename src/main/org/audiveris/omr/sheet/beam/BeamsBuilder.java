@@ -25,12 +25,11 @@ import ij.process.ByteProcessor;
 
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.BasicGlyph;
 import org.audiveris.omr.glyph.Glyph;
+import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.glyph.GlyphGroup;
 import org.audiveris.omr.image.AreaMask;
 import org.audiveris.omr.lag.Lag;
 import org.audiveris.omr.math.AreaUtil;
@@ -39,9 +38,7 @@ import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.math.Population;
 import org.audiveris.omr.run.Orientation;
-
 import static org.audiveris.omr.run.Orientation.VERTICAL;
-
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.sheet.Picture;
@@ -64,15 +61,11 @@ import org.audiveris.omr.util.ByteUtil;
 import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
 import org.audiveris.omr.util.VerticalSide;
-
 import static org.audiveris.omr.util.VerticalSide.*;
-
 import org.audiveris.omr.util.WrappedInteger;
 
 import org.slf4j.Logger;
@@ -1529,7 +1522,7 @@ public class BeamsBuilder
             for (int dx = 0; dx < box.width; dx++) {
                 p.x = box.x + dx;
 
-                if (p.x < filterWidth && p.y < filterHeight) {
+                if ((p.x < filterWidth) && (p.y < filterHeight)) {
                     final int val = pixelFilter.get(p.x, p.y);
 
                     if ((val == 0) && beam.contains(p)) {
@@ -1543,8 +1536,7 @@ public class BeamsBuilder
         RunTable runTable = new RunTableFactory(VERTICAL).createTable(buf);
 
         // Glyph
-        Glyph glyph = sheet.getGlyphIndex().registerOriginal(
-                new BasicGlyph(box.x, box.y, runTable));
+        Glyph glyph = sheet.getGlyphIndex().registerOriginal(new Glyph(box.x, box.y, runTable));
 
         if (glyph.getWeight() == 0) {
             logger.warn("No pixels for {}", beam);
