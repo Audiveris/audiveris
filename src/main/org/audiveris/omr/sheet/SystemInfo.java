@@ -1468,7 +1468,7 @@ public class SystemInfo
     //----------------//
     // initTransients //
     //----------------//
-    void initTransients (BasicSheet sheet,
+    void initTransients (Sheet sheet,
                          Page page)
     {
         this.sheet = sheet;

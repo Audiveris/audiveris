@@ -145,7 +145,7 @@ public class BasicStub
     private Book book;
 
     /** Full sheet material, if any. */
-    private volatile BasicSheet sheet;
+    private volatile Sheet sheet;
 
     /** The step being performed on the sheet. */
     private volatile Step currentStep;
@@ -434,7 +434,7 @@ public class BasicStub
     // getSheet //
     //----------//
     @Override
-    public BasicSheet getSheet ()
+    public Sheet getSheet ()
     {
         if (sheet == null) {
             synchronized (this) {
@@ -448,7 +448,7 @@ public class BasicStub
                     if (!isDone(Step.LOAD)) {
                         // LOAD not yet performed: load from book image file
                         try {
-                            sheet = new BasicSheet(this, (BufferedImage) null);
+                            sheet = new Sheet(this, (BufferedImage) null);
                         } catch (StepException ignored) {
                             logger.info("Could not load sheet for stub {}", this);
                         }
@@ -463,13 +463,12 @@ public class BasicStub
                             // Open the book file system
                             try {
                                 book.getLock().lock();
-                                sheetFile = book.openSheetFolder(number).resolve(
-                                        BasicSheet.getSheetFileName(number));
+                                sheetFile = book.openSheetFolder(number).resolve(Sheet.getSheetFileName(number));
 
                                 InputStream is = Files.newInputStream(
                                         sheetFile,
                                         StandardOpenOption.READ);
-                                sheet = BasicSheet.unmarshal(is);
+                                sheet = Sheet.unmarshal(is);
 
                                 // Close the stream as well as the book file system
                                 is.close();
@@ -687,7 +686,7 @@ public class BasicStub
             }
 
             doReset();
-            sheet = new BasicSheet(this, binaryTable);
+            sheet = new Sheet(this, binaryTable);
             logger.info("Sheet#{} reset to BINARY.", number);
         } catch (Throwable ex) {
             logger.warn("Could not reset to BINARY {}", ex.toString(), ex);
