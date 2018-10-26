@@ -621,7 +621,7 @@ public class Book
             }
 
             for (int num : sheetNumbers) {
-                stubs.add(new BasicStub(this, num));
+                stubs.add(new SheetStub(this, num));
             }
         }
     }

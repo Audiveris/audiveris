@@ -173,7 +173,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dd><ul>
  * <li>{@link #getSymbolsEditor}</li>
  * <li>{@link #createBinaryView}</li>
- * <li>{@link #createPictureView}</li>
+ * <li>{@link #createInitialView}</li>
  * <li>{@link #displayDataTab}</li>
  * <li>{@link #displayMainTabs}</li>
  * <li>{@link #getErrorsEditor}</li>
@@ -1512,7 +1512,7 @@ public class Sheet
      */
     private void done (Step step)
     {
-        ((BasicStub) stub).done(step);
+        ((SheetStub) stub).done(step);
     }
 
     //---------//
