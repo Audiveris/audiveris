@@ -26,6 +26,7 @@ import org.audiveris.omr.ProgramId;
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.classifier.Annotations;
 import org.audiveris.omr.classifier.SampleRepository;
+import org.audiveris.omr.classifier.ui.AnnotationPainter;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.image.FilterDescriptor;
@@ -43,6 +44,7 @@ import org.audiveris.omr.score.ui.BookPdfOutput;
 import static org.audiveris.omr.sheet.Sheet.INTERNALS_RADIX;
 import org.audiveris.omr.sheet.rhythm.Voices;
 import org.audiveris.omr.sheet.ui.BookBrowser;
+import org.audiveris.omr.sheet.ui.SheetResultPainter;
 import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.step.ProcessingCancellationException;
 import org.audiveris.omr.step.Step;
@@ -1292,21 +1294,50 @@ public class Book
                 BookManager.getDefaultPrintPath(this));
 
         try {
-            new BookPdfOutput(Book.this, pdfPath.toFile()).write(null);
+            new BookPdfOutput(Book.this, pdfPath.toFile()).write(
+                    null,
+                    new SheetResultPainter.PdfResultPainter());
             setPrintPath(pdfPath);
         } catch (Exception ex) {
             logger.warn("Cannot print to {} {}", pdfPath, ex.toString(), ex);
         }
     }
 
+    //------------------//
+    // printAnnotations //
+    //------------------//
+    public void printAnnotations ()
+    {
+        // Path to print file
+        final Path pdfPath = BookManager.getActualPath(
+                getPrintPath(),
+                BookManager.getDefaultPrintPath(this));
+
+        printAnnotations(pdfPath);
+    }
+
+    //------------------//
+    // printAnnotations //
+    //------------------//
+    /**
+     * Print annotations of this book in PDF format.
+     *
+     * @param pdfPath Path to target PDF output file
+     */
+    public void printAnnotations (Path pdfPath)
+    {
+        try {
+            new BookPdfOutput(Book.this, pdfPath.toFile()).write(
+                    null,
+                    new AnnotationPainter.SimpleAnnotationPainter());
+        } catch (Exception ex) {
+            logger.warn("Cannot write PDF to " + pdfPath, ex);
+        }
+    }
+
     //---------------//
     // reachBookStep //
     //---------------//
-    /**
-     * Print annotations of this book in PDF format.
-     */
-    void printAnnotations (Path bookPrintPath);
-
     /**
      * Reach a specific step (and all needed intermediate steps) on all valid sheets
      * of this book.
@@ -1501,14 +1532,24 @@ public class Book
         scores.clear();
     }
 
-    //---------------//
-    // resetToBinary //
-    //---------------//
+    //--------------------//
+    // resetToAnnotations //
+    //--------------------//
     /**
      * Reset all valid sheets of this book to their ANNOTATIONS step.
      */
-    void resetToAnnotations ();
+    public void resetToAnnotations ()
+    {
+        for (SheetStub stub : getValidStubs()) {
+            stub.resetToAnnotations();
+        }
 
+        scores.clear();
+    }
+
+    //---------------//
+    // resetToBinary //
+    //---------------//
     /**
      * Reset all valid sheets of this book to their BINARY step.
      */
