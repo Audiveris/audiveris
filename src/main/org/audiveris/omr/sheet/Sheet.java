@@ -1354,7 +1354,7 @@ public class Sheet
      */
     private void done (Step step)
     {
-        ((BasicStub) stub).done(step);
+        ((SheetStub) stub).done(step);
     }
 
     //---------//
