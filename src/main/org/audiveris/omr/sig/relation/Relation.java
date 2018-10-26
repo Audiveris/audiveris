@@ -23,94 +23,215 @@ package org.audiveris.omr.sig.relation;
 
 import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
+import org.audiveris.omr.util.Jaxb;
 
 import org.jgrapht.event.GraphEdgeChangeEvent;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
- * Interface {@code Relation} describes a relation between two Interpretation instances.
+ * Abstract class {@code Relation} describes a relation between two Inter instances.
  *
  * @author Hervé Bitteur
  */
-public interface Relation
+@XmlAccessorType(XmlAccessType.NONE)
+public abstract class Relation
+        implements Cloneable
 {
-    //~ Methods ------------------------------------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
+    // Persistent data
+    //----------------
+    //
+    /** Indicates that this relation was set manually. */
+    @XmlAttribute(name = "manual")
+    @XmlJavaTypeAdapter(type = boolean.class, value = Jaxb.BooleanPositiveAdapter.class)
+    private boolean manual;
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // added //
+    //-------//
     /**
      * Notifies that this relation has been added to the sig.
      *
      * @param e the relation event.
      */
-    void added (GraphEdgeChangeEvent<Inter, Relation> e);
+    public void added (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        // No-op by default
+    }
 
+    //-----------//
+    // duplicate //
+    //-----------//
     /**
      * Clone a relation.
      *
      * @return the cloned relation
      */
-    Relation duplicate ();
+    public Relation duplicate ()
+    {
+        try {
+            return (Relation) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            return null;
+        }
+    }
 
+    //------------//
+    // getDetails //
+    //------------//
     /**
      * Details for tip.
      *
      * @return relation details
      */
-    String getDetails ();
+    public String getDetails ()
+    {
+        return internals();
+    }
 
+    //---------//
+    // getName //
+    //---------//
     /**
      * Short name.
      *
      * @return the relation short name
      */
-    String getName ();
+    public String getName ()
+    {
+        return Relations.nameOf(getClass());
+    }
 
+    //----------//
+    // isManual //
+    //----------//
     /**
      * Report whether this relation has been set manually.
      *
      * @return true if manual
      */
-    boolean isManual ();
+    public boolean isManual ()
+    {
+        return manual;
+    }
 
     /**
      * Tell if, seen from a given target, there can be at most one source.
      *
      * @return true if source number is limited to 1, false by default
      */
-    boolean isSingleSource ();
+    public abstract boolean isSingleSource ();
 
     /**
      * Tell if, seen from a given source, there can be at most one target.
      *
      * @return true if target number is limited to 1, false by default
      */
-    boolean isSingleTarget ();
+    public abstract boolean isSingleTarget ();
 
+    //---------//
+    // removed //
+    //---------//
     /**
      * Notifies that this relation has been removed from the sig.
      *
      * @param e the relation event.
      */
-    void removed (GraphEdgeChangeEvent<Inter, Relation> e);
+    public void removed (GraphEdgeChangeEvent<Inter, Relation> e)
+    {
+        // No-op by default
+    }
 
+    //----------//
+    // seenFrom //
+    //----------//
     /**
      * Relation description when seen from one of its involved inters
      *
      * @param inter the interpretation point of view
      * @return the inter-based description
      */
-    String seenFrom (Inter inter);
+    public String seenFrom (Inter inter)
+    {
+        final StringBuilder sb = new StringBuilder(toString());
+        final SIGraph sig = inter.getSig();
 
+        if (sig != null) {
+            final Inter source = sig.getEdgeSource(this);
+
+            if (source != inter) {
+                sb.append("<-").append(source);
+            } else {
+                final Inter target = sig.getEdgeTarget(this);
+
+                if (target != inter) {
+                    sb.append("->").append(target);
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    //-----------//
+    // setManual //
+    //-----------//
     /**
      * Set this relation as a manual one.
      *
      * @param manual new value
      */
-    void setManual (boolean manual);
+    public void setManual (boolean manual)
+    {
+        this.manual = manual;
+    }
 
+    //--------------//
+    // toLongString //
+    //--------------//
     /**
      * Report a long description of the relation
      *
      * @param sig the containing sig
      * @return long description
      */
-    String toLongString (SIGraph sig);
+    public String toLongString (SIGraph sig)
+    {
+        final Inter source = sig.getEdgeSource(this);
+        final Inter target = sig.getEdgeTarget(this);
+        final StringBuilder sb = new StringBuilder();
+
+        sb.append(source);
+        sb.append("-");
+        sb.append(getName());
+        sb.append(":");
+        sb.append(getDetails());
+        sb.append("-");
+        sb.append(target);
+
+        return sb.toString();
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getName();
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    protected String internals ()
+    {
+        return isManual() ? "MANUAL" : "";
+    }
 }

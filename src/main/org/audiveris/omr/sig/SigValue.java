@@ -77,7 +77,7 @@ import org.audiveris.omr.sig.inter.TimeWholeInter;
 import org.audiveris.omr.sig.inter.TupletInter;
 import org.audiveris.omr.sig.inter.WedgeInter;
 import org.audiveris.omr.sig.inter.WordInter;
-import org.audiveris.omr.sig.relation.AbstractRelation;
+import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
@@ -402,7 +402,7 @@ public class SigValue
             , @XmlElementRef(type = StemAlignmentRelation.class)
             , @XmlElementRef(type = TimeTopBottomRelation.class)
         })
-        public AbstractRelation relation;
+        public Relation relation;
 
         //~ Constructors ---------------------------------------------------------------------------
         /**
@@ -418,7 +418,7 @@ public class SigValue
         {
             this.sourceId = source.getId();
             this.targetId = target.getId();
-            this.relation = (AbstractRelation) relation;
+            this.relation = (Relation) relation;
         }
 
         /**

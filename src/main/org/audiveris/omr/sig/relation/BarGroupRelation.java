@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "bar-group")
 public class BarGroupRelation
-        extends AbstractRelation
+        extends Relation
 {
     //~ Instance fields ----------------------------------------------------------------------------
 

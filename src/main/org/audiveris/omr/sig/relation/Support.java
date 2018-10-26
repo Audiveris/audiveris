@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Class {@code Support} is a relation between interpretation instances that
+ * Abstract class {@code Support} is a relation between interpretation instances that
  * support one another.
  * <p>
  * Typical example is a mutual support between a stem and a note head, or between a stem and a beam.
@@ -43,7 +43,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "support")
 public abstract class Support
-        extends AbstractRelation
+        extends Relation
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
