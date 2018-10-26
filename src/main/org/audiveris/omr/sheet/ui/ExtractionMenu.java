@@ -42,8 +42,10 @@ import java.nio.file.Path;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
+
 import static javax.swing.Action.NAME;
 import static javax.swing.Action.SHORT_DESCRIPTION;
+
 import javax.swing.JMenuItem;
 
 /**

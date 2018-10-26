@@ -25,10 +25,14 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
+
 import static org.audiveris.omr.glyph.Shape.CODA;
 import static org.audiveris.omr.glyph.Shape.SEGNO;
+
 import org.audiveris.omr.math.Rational;
+
 import static org.audiveris.omr.score.MusicXML.*;
+
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
@@ -45,7 +49,9 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
+
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.QUARTER_DURATION;
+
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
@@ -84,12 +90,18 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
+
 import static org.audiveris.omr.text.TextRole.*;
+
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
+
 import org.audiveris.omr.util.OmrExecutors;
+
 import static org.audiveris.omr.util.VerticalSide.*;
+
 import org.audiveris.proxymusic.AboveBelow;
 import org.audiveris.proxymusic.Accidental;
 import org.audiveris.proxymusic.Arpeggiate;

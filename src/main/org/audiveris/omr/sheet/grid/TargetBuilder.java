@@ -37,7 +37,9 @@ import org.audiveris.omr.ui.Colors;
 import org.audiveris.omr.ui.util.ItemRenderer;
 import org.audiveris.omr.ui.view.ScrollView;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 
 import org.slf4j.Logger;

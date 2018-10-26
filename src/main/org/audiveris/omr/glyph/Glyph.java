@@ -67,8 +67,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  * A glyph has no intrinsic orientation, hence some methods such as {@link #getLength} require that
  * view orientation be provided as a parameter.
  * <p>
- * A glyph has no shape, see {@link Inter} class for glyph interpretation and
- * {@link org.audiveris.omr.classifier.Sample} class for training of shape classifiers.
+ * A glyph has no shape, see {@link org.audiveris.omr.sig.inter.Inter} class for glyph
+ * interpretation and {@link org.audiveris.omr.classifier.Sample} class for training of shape
+ * classifiers.
  * <p>
  * Additional features are made available via the {@link Glyphs} class.
  *
