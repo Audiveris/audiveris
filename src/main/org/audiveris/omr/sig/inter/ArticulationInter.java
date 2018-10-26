@@ -179,6 +179,7 @@ public class ArticulationInter
      * @param annotationId     ID of original annotation if any
      * @param bounds           bounding box
      * @param omrShape         detected shape
+     * @param grade            assigned grade
      * @param system           containing system
      * @param systemHeadChords system head chords, ordered by abscissa
      * @return the created articulation or null

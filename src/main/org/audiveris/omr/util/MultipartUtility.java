@@ -50,9 +50,9 @@ public class MultipartUtility
      * This constructor initializes a new HTTP POST request with content type
      * is set to multipart/form-data
      *
-     * @param requestURL
-     * @param charset
-     * @throws IOException
+     * @param requestURL string value of URL to connect to
+     * @param charset    character set to be used
+     * @throws IOException if any IO goes wrong
      */
     public MultipartUtility (String requestURL,
                              Charset charset)
@@ -80,9 +80,9 @@ public class MultipartUtility
     /**
      * Adds a upload file section to the request
      *
-     * @param fieldName  name attribute in <input type="file" name="..." />
+     * @param fieldName  name attribute in &lt;input type="file" name="..." /&gt;
      * @param uploadFile a File to be uploaded
-     * @throws IOException
+     * @throws IOException if any IO goes wrong
      */
     public void addFilePart (String fieldName,
                              File uploadFile)
@@ -149,7 +149,7 @@ public class MultipartUtility
      *
      * @return a list of Strings as response in case the server returned
      *         status OK, otherwise an exception is thrown.
-     * @throws IOException
+     * @throws IOException if any IO goes wrong
      */
     public List<String> finish ()
             throws IOException

@@ -22,14 +22,15 @@
 package org.audiveris.omr.util;
 
 import org.audiveris.omr.classifier.Annotation;
-import org.audiveris.omr.glyph.BasicGlyph;
+import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.ui.symbol.BasicSymbol;
+
+import java.util.ArrayList;
 
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import java.util.ArrayList;
 
 /**
  * Class {@code IndexValue}
@@ -44,7 +45,7 @@ public class IndexValue<E extends Entity>
     //~ Instance fields ----------------------------------------------------------------------------
 
     @XmlElementRefs({
-        @XmlElementRef(type = BasicGlyph.class)
+        @XmlElementRef(type = Glyph.class)
         , @XmlElementRef(type = BasicSymbol.class)
         , @XmlElementRef(type = Annotation.class)
     })

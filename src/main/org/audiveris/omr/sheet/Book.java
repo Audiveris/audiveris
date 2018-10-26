@@ -165,6 +165,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <dd><ul>
  * <li>{@link #reset}</li>
  * <li>{@link #resetToBinary}</li>
+ * <li>{@link #resetToAnnotations}</li>
  * <li>{@link #transcribe}</li>
  * <li>{@link #reachBookStep}</li>
  * <li>{@link #updateScores}</li>
@@ -192,6 +193,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * <li>{@link #getPrintPath}</li>
  * <li>{@link #setPrintPath}</li>
  * <li>{@link #print}</li>
+ * <li>{@link #printAnnotations()}</li>
+ * <li>{@link #printAnnotations(java.nio.file.Path)}</li>
  * <li>{@link #getBookPath}</li>
  * <li>{@link #store()}</li>
  * <li>{@link #store(java.nio.file.Path, boolean)}</li>

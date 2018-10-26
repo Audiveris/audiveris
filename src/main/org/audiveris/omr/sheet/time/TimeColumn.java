@@ -57,7 +57,7 @@ import org.audiveris.omr.util.Predicate;
  * <p>
  * Subclasses:<ul>
  * <li>{@link HeaderTimeColumn} works for system header.
- * <li>{@link BasicColumn} works for time signatures found outside of system header.
+ * <li>{@link BasicTimeColumn} works for time signatures found outside of system header.
  * </ul>
  */
 public abstract class TimeColumn
