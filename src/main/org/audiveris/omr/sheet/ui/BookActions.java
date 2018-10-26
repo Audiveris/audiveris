@@ -33,7 +33,6 @@ import org.audiveris.omr.plugin.Plugin;
 import org.audiveris.omr.plugin.PluginsManager;
 import org.audiveris.omr.score.ui.ScoreParameters;
 import org.audiveris.omr.score.ui.SheetParameters;
-import org.audiveris.omr.sheet.BasicSheet;
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.BookManager;
 import org.audiveris.omr.sheet.ExportPattern;
@@ -45,11 +44,9 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.stem.StemScaler;
-
 import static org.audiveris.omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
-
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;
@@ -496,7 +493,7 @@ public class BookActions
             final SheetTab tab = SheetTab.BINARY_TAB;
 
             if (assembly.getPane(tab.label) == null) {
-                ((BasicSheet) stub.getSheet()).createBinaryView();
+                stub.getSheet().createBinaryView();
             } else {
                 assembly.selectViewTab(tab);
             }
@@ -548,7 +545,7 @@ public class BookActions
         final SheetTab tab = SheetTab.INITIAL_TAB;
 
         if (assembly.getPane(tab.label) == null) {
-            ((BasicSheet) stub.getSheet()).createInitialView();
+            stub.getSheet().createInitialView();
         } else {
             assembly.selectViewTab(tab);
         }
