@@ -22,7 +22,7 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sig.relation.BasicContainment;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class {@code HeadChordInter} is a AbstractChordInter composed of heads and possibly
  * a stem.
  * <p>
- * Heads are linked via {@link BasicContainment} relation and stem via {@link ChordStemRelation}.
+ * Heads are linked via {@link Containment} relation and stem via {@link ChordStemRelation}.
  *
  * @author Hervé Bitteur
  */

@@ -34,7 +34,7 @@ import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.sheet.rhythm.Voice;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.sig.SIGraph;
-import org.audiveris.omr.sig.relation.BasicContainment;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.ui.Colors;
@@ -415,7 +415,7 @@ public abstract class AbstractInter
         Set<Inter> ensembles = null;
 
         for (Relation rel : sig.incomingEdgesOf(this)) {
-            if (rel instanceof BasicContainment) {
+            if (rel instanceof Containment) {
                 if (ensembles == null) {
                     ensembles = new LinkedHashSet<Inter>();
                 }
@@ -652,7 +652,7 @@ public abstract class AbstractInter
     public InterEnsemble getEnsemble ()
     {
         for (Relation rel : sig.incomingEdgesOf(this)) {
-            if (rel instanceof BasicContainment) {
+            if (rel instanceof Containment) {
                 return (InterEnsemble) sig.getOppositeInter(this, rel);
             }
         }
@@ -1015,7 +1015,7 @@ public abstract class AbstractInter
 
                     for (Relation rel : relsCopy) {
                         // A member may be contained by several ensembles (case of TimeNumberInter)
-                        if (rel instanceof BasicContainment) {
+                        if (rel instanceof Containment) {
                             InterEnsemble ens = (InterEnsemble) sig.getOppositeInter(this, rel);
 
                             if (ens.getMembers().size() == 1) {
