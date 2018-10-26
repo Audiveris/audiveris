@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "chord-stem")
 public class ChordStemRelation
-        extends AbstractRelation
+        extends Relation
 {
     //~ Methods ------------------------------------------------------------------------------------
 

@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "exclusion")
 public class Exclusion
-        extends AbstractRelation
+        extends Relation
 {
     //~ Enumerations -------------------------------------------------------------------------------
 

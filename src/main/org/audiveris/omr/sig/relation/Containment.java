@@ -38,7 +38,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "containment")
 public class Containment
-        extends AbstractRelation
+        extends Relation
 {
     //~ Methods ------------------------------------------------------------------------------------
 
