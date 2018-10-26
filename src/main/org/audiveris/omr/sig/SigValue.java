@@ -82,7 +82,7 @@ import org.audiveris.omr.sig.relation.AlterHeadRelation;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
 import org.audiveris.omr.sig.relation.BarConnectionRelation;
 import org.audiveris.omr.sig.relation.BarGroupRelation;
-import org.audiveris.omr.sig.relation.BasicContainment;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.BeamHeadRelation;
 import org.audiveris.omr.sig.relation.BeamStemRelation;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
@@ -368,7 +368,7 @@ public class SigValue
             , @XmlElementRef(type = AugmentationRelation.class)
             , @XmlElementRef(type = BarConnectionRelation.class)
             , @XmlElementRef(type = BarGroupRelation.class)
-            , @XmlElementRef(type = BasicContainment.class)
+            , @XmlElementRef(type = Containment.class)
             , @XmlElementRef(type = Exclusion.class)
             , @XmlElementRef(type = BeamHeadRelation.class)
             , @XmlElementRef(type = BeamStemRelation.class)
