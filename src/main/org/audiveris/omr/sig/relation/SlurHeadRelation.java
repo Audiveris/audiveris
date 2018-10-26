@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "slur-head")
 public class SlurHeadRelation
-        extends AbstractSupport
+        extends Support
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

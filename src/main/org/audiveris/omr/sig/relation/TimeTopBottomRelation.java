@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "time-top-bottom")
 public class TimeTopBottomRelation
-        extends AbstractSupport
+        extends Support
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

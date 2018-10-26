@@ -44,7 +44,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "connection")
 public abstract class AbstractConnection
-        extends AbstractSupport
+        extends Support
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

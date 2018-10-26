@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "beam-head")
 public class BeamHeadRelation
-        extends AbstractSupport
+        extends Support
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

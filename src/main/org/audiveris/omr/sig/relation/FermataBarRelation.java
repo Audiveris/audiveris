@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "fermata-bar")
 public class FermataBarRelation
-        extends AbstractSupport
+        extends Support
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 

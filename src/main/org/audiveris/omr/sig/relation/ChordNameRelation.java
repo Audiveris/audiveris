@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "chord-name")
 public class ChordNameRelation
-        extends AbstractSupport
+        extends Support
 {
     //~ Methods ------------------------------------------------------------------------------------
 

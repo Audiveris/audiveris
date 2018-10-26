@@ -97,8 +97,8 @@ public class Link
     @Override
     public int compareTo (Link that)
     {
-        AbstractSupport s1 = (AbstractSupport) this.relation;
-        AbstractSupport s2 = (AbstractSupport) that.relation;
+        Support s1 = (Support) this.relation;
+        Support s2 = (Support) that.relation;
 
         return Double.compare(s1.getGrade(), s2.getGrade());
     }

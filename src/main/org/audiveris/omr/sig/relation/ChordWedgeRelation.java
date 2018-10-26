@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "chord-wedge")
 public class ChordWedgeRelation
-        extends AbstractSupport
+        extends Support
 {
     //~ Instance fields ----------------------------------------------------------------------------
 

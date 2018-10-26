@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "chord-dynamics")
 public class ChordDynamicsRelation
-        extends AbstractSupport
+        extends Support
 {
     //~ Methods ------------------------------------------------------------------------------------
 

@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "stem-alignment")
 public class StemAlignmentRelation
-        extends AbstractSupport
+        extends Support
 {
     //~ Methods ------------------------------------------------------------------------------------
 
