@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "chord-pedal")
 public class ChordPedalRelation
-        extends AbstractSupport
+        extends Support
 {
     //~ Methods ------------------------------------------------------------------------------------
 

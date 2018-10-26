@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name = "chord-syllable")
 public class ChordSyllableRelation
-        extends AbstractSupport
+        extends Support
 {
     //~ Methods ------------------------------------------------------------------------------------
 
