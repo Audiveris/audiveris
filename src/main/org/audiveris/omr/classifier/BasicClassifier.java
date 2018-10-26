@@ -353,7 +353,7 @@ public class BasicClassifier
      *
      * @param root the root path to file system
      * @return the loaded Norms instance, or exception is thrown
-     * @throws Exception
+     * @throws Exception if anything goes wrong
      */
     @Override
     protected Norms loadNorms (Path root)
@@ -419,7 +419,7 @@ public class BasicClassifier
      * <p>
      * Rather than binary, we use XML format.
      *
-     * @throws Exception
+     * @throws Exception if anything goes wrong
      */
     @Override
     protected void storeNorms (Path root)

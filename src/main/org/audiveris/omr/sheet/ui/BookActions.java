@@ -43,9 +43,11 @@ import org.audiveris.omr.sheet.Staff;
 import org.audiveris.omr.sheet.StaffManager;
 import org.audiveris.omr.sheet.grid.StaffProjector;
 import org.audiveris.omr.sheet.stem.StemScaler;
+
 import static org.audiveris.omr.sheet.ui.StubDependent.BOOK_IDLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_AVAILABLE;
 import static org.audiveris.omr.sheet.ui.StubDependent.STUB_IDLE;
+
 import org.audiveris.omr.sig.ui.InterController;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.ui.BoardsPane;

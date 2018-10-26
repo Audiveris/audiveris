@@ -149,7 +149,6 @@ public class HiLoPeakFinder
      * A peak can extend from HiLo.min -1 to HiLo.max, unless there is a HiLo or even a peak nearby.
      *
      * @param minValue      minimum value to be part of a peak
-     * @param minTopValue   peak top value threshold or null
      * @param minDerivative peak derivative threshold
      * @param minGainRatio  value gain ratio for peak widening
      * @return the (perhaps empty but not null) collection of peaks, sorted by decreasing count

@@ -196,7 +196,7 @@ public abstract class PoorManAlgebra
          *
          * @param dis the data input stream to read from
          * @return the INDArray
-         * @throws IOException
+         * @throws IOException if anything goes wrong in Input
          */
         public static INDArray read (DataInputStream dis)
                 throws IOException
@@ -220,7 +220,7 @@ public abstract class PoorManAlgebra
          *
          * @param arr              the array to write
          * @param dataOutputStream the data output stream to write to
-         * @throws IOException
+         * @throws IOException if anything goes wrong in Output
          */
         public static void write (INDArray arr,
                                   DataOutputStream dataOutputStream)

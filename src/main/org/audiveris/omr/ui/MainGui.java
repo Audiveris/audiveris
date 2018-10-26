@@ -308,8 +308,7 @@ public class MainGui
             }
 
             final SheetStub stub = stubEvent.getData();
-            SwingUtilities.invokeLater(
-                    new Runnable()
+            SwingUtilities.invokeLater(new Runnable()
             {
                 @Override
                 public void run ()

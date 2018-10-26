@@ -23,7 +23,7 @@ package org.audiveris.omr.image;
 
 import org.audiveris.omr.OMR;
 import org.audiveris.omr.image.ImageLoading.Loader;
-import org.audiveris.omr.sheet.BasicBook;
+import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Book;
 
 import org.kohsuke.args4j.Argument;
@@ -74,7 +74,7 @@ public class SheetCounter
 
                 try {
                     if (str.endsWith(OMR.BOOK_EXTENSION)) {
-                        Book book = BasicBook.loadBook(path);
+                        Book book = Book.loadBook(path);
                         int all = book.getStubs().size();
                         int valid = book.getValidStubs().size();
                         printResult(all, valid, path);

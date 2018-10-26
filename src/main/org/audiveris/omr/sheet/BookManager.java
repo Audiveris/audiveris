@@ -335,7 +335,7 @@ public class BookManager
     @Override
     public Book loadBook (Path bookPath)
     {
-        Book book = BasicBook.loadBook(bookPath);
+        Book book = Book.loadBook(bookPath);
 
         if (book != null) {
             addBook(book);
@@ -487,7 +487,7 @@ public class BookManager
     @Override
     public Book loadInput (Path path)
     {
-        final Book book = new BasicBook(path);
+        final Book book = new Book(path);
 
         // Alias?
         if (AliasPatterns.useAliasPatterns()) {
