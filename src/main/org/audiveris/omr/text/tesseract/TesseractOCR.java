@@ -21,6 +21,7 @@
 // </editor-fold>
 package org.audiveris.omr.text.tesseract;
 
+import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.sheet.Scale;
@@ -261,44 +262,44 @@ public class TesseractOCR
     //---------------//
     private Path findOcrFolder ()
     {
-//        // First, try to use TESSDATA_PREFIX environment variable
-//        // which might denote a Tesseract installation
-//        final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
-//        final String tessPrefix = System.getenv(TESSDATA_PREFIX);
-//
-//        if (tessPrefix != null) {
-//            Path dir = Paths.get(tessPrefix);
-//
-//            if (Files.isDirectory(dir)) {
-//                return dir;
-//            }
-//        }
-//
-//        if (WellKnowns.WINDOWS) {
-//            // Fallback to default directory on Windows
-//            final String pf32 = WellKnowns.OS_ARCH.equals("x86") ? "ProgramFiles"
-//                    : "ProgramFiles(x86)";
-//
-//            return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
-//        } else if (WellKnowns.LINUX) {
-//            // Scan common Linux TESSDATA locations
-//            final String[] linuxOcrLocations = {
-//                "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
-//                "/usr/share", // OpenSUSE
-//                "/usr/share/tesseract" // Fedora
-//            };
-//
-//            return scanOcrLocations(linuxOcrLocations);
-//        } else if (WellKnowns.MAC_OS_X) {
-//            // Scan common Macintosh TESSDATA locations
-//            final String[] macOcrLocations = {
-//                "/opt/local/share", // Macports
-//                "/usr/local/opt/tesseract/share" // Homebrew
-//            };
-//
-//            return scanOcrLocations(macOcrLocations);
-//        }
-//
+        // First, try to use TESSDATA_PREFIX environment variable
+        // which might denote a Tesseract installation
+        final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
+        final String tessPrefix = System.getenv(TESSDATA_PREFIX);
+
+        if (tessPrefix != null) {
+            Path dir = Paths.get(tessPrefix);
+
+            if (Files.isDirectory(dir)) {
+                return dir;
+            }
+        }
+
+        if (WellKnowns.WINDOWS) {
+            // Fallback to default directory on Windows
+            final String pf32 = WellKnowns.OS_ARCH.equals("x86") ? "ProgramFiles"
+                    : "ProgramFiles(x86)";
+
+            return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
+        } else if (WellKnowns.LINUX) {
+            // Scan common Linux TESSDATA locations
+            final String[] linuxOcrLocations = {
+                "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
+                "/usr/share", // OpenSUSE
+                "/usr/share/tesseract" // Fedora
+            };
+
+            return scanOcrLocations(linuxOcrLocations);
+        } else if (WellKnowns.MAC_OS_X) {
+            // Scan common Macintosh TESSDATA locations
+            final String[] macOcrLocations = {
+                "/opt/local/share", // Macports
+                "/usr/local/opt/tesseract/share" // Homebrew
+            };
+
+            return scanOcrLocations(macOcrLocations);
+        }
+
         logger.warn(ocrNotFoundMsg);
 
         return null;
