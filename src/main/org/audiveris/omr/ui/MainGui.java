@@ -40,6 +40,8 @@ import org.audiveris.omr.sheet.ui.StubsController;
 import org.audiveris.omr.sig.ui.SigPainter;
 import org.audiveris.omr.step.ui.StepMenu;
 import org.audiveris.omr.step.ui.StepMonitoring;
+import org.audiveris.omr.text.OCR;
+import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.ui.action.ActionManager;
 import org.audiveris.omr.ui.action.Actions;
 import org.audiveris.omr.ui.selection.MouseMovement;
@@ -308,7 +310,8 @@ public class MainGui
             }
 
             final SheetStub stub = stubEvent.getData();
-            SwingUtilities.invokeLater(new Runnable()
+            SwingUtilities.invokeLater(
+                    new Runnable()
             {
                 @Override
                 public void run ()
@@ -502,6 +505,10 @@ public class MainGui
         logger.debug("MainGui. 2/startup");
         logger.info("{} version {}", WellKnowns.TOOL_NAME, WellKnowns.TOOL_REF);
         logger.info("\n{}", LogUtil.allInitialMessages());
+
+        if (!OcrUtil.getOcr().isAvailable()) {
+            logger.warn("{} Check log file for more details.", OCR.NO_OCR);
+        }
 
         // Make the OmrGui instance available for the other classes
         OMR.gui = this;

@@ -135,9 +135,6 @@ public abstract class WellKnowns
             ? toURI(WellKnowns.class.getClassLoader().getResource("res"))
             : Paths.get("res").toUri();
 
-    /** The folder where Tesseract OCR material is stored. */
-    public static final Path OCR_FOLDER = getOcrFolder();
-
     //-------------// read-write area
     // USER CONFIG // Configuration files the user can edit on his own
     //-------------//
@@ -168,7 +165,7 @@ public abstract class WellKnowns
     public static final Path TRAIN_FOLDER = CONFIG_FOLDER.resolve("train");
 
     /** The default base for output folders. */
-    public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER;		// BHT: skip "output"
+    public static final Path DEFAULT_BASE_FOLDER = DATA_FOLDER; // BHT: skip "output"
 
     //----------//
     // USER LOG //
@@ -203,9 +200,6 @@ public abstract class WellKnowns
         /** Disable use of JAI native MediaLib, by default. */
         disableMediaLib();
     }
-
-    private static final String ocrNotFoundMsg = "Tesseract data could not be found. "
-                                                 + "Try setting the TESSDATA_PREFIX environment variable to the parent folder of \"tessdata\".";
 
     //~ Enumerations -------------------------------------------------------------------------------
     private static enum FolderKind
@@ -318,7 +312,9 @@ public abstract class WellKnowns
         } else if (LINUX) {
             return getFolderForLinux(kind);
         } else {
-            throw new RuntimeException("Platform unknown");
+            printError("Platform unknown: " + kind);
+
+            return null;
         }
     }
 
@@ -350,7 +346,9 @@ public abstract class WellKnowns
         final String home = System.getenv("HOME");
 
         if (home == null) {
-            throw new RuntimeException("HOME environment variable is not set");
+            printError("HOME environment variable is not set");
+
+            return null;
         }
 
         switch (kind) {
@@ -374,7 +372,9 @@ public abstract class WellKnowns
         final String home = System.getenv("HOME");
 
         if (home == null) {
-            throw new RuntimeException("HOME environment variable is not set");
+            printError("HOME environment variable is not set");
+
+            return null;
         }
 
         switch (kind) {
@@ -399,7 +399,9 @@ public abstract class WellKnowns
         final String appdata = System.getenv("APPDATA");
 
         if (appdata == null) {
-            throw new RuntimeException("APPDATA environment variable is not set");
+            printError("APPDATA environment variable is not set");
+
+            return null;
         }
 
         final Path audiverisPath = Paths.get(appdata + TOOL_PREFIX);
@@ -445,53 +447,6 @@ public abstract class WellKnowns
         return null;
     }
 
-    //--------------//
-    // getOcrFolder //
-    //--------------//
-    private static Path getOcrFolder ()
-    {
-        // common Macintosh TESSDATA locations
-        final String[] macOcrLocations = {
-            "/opt/local/share", // Macports
-            "/usr/local/opt/tesseract/share" // Homebrew
-        };
-
-        // common Linux TESSDATA locations
-        final String[] linuxOcrLocations = {
-            "/usr/share/tesseract-ocr", // Debian, Ubuntu and derivatives
-            "/usr/share", // OpenSUSE
-            "/usr/share/tesseract" // Fedora
-        };
-
-        // First, try to use TESSDATA_PREFIX environment variable
-        // which might denote a Tesseract installation
-        final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
-        final String tessPrefix = System.getenv(TESSDATA_PREFIX);
-
-        if (tessPrefix != null) {
-            Path dir = Paths.get(tessPrefix);
-
-            if (Files.isDirectory(dir)) {
-                return dir;
-            }
-        }
-
-        // Fallback to default directory on Windows
-        if (WINDOWS) {
-            final String pf32 = OS_ARCH.equals("x86") ? "ProgramFiles" : "ProgramFiles(x86)";
-
-            return Paths.get(System.getenv(pf32)).resolve("tesseract-ocr");
-
-            // scan common locations on Mac and Linux
-        } else if (LINUX) {
-            return scanOcrLocations(linuxOcrLocations);
-        } else if (MAC_OS_X) {
-            return scanOcrLocations(macOcrLocations);
-        }
-
-        throw new InstallationException(ocrNotFoundMsg);
-    }
-
     //-----------------//
     // logDeclaredData //
     //-----------------//
@@ -500,15 +455,28 @@ public abstract class WellKnowns
         // Note: Logger initialization has been differed until now
         final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isTraceEnabled()) {
             for (Field field : WellKnowns.class.getDeclaredFields()) {
                 try {
-                    logger.debug("{}= {}", field.getName(), field.get(null));
+                    logger.trace("{}= {}", field.getName(), field.get(null));
                 } catch (IllegalAccessException ex) {
                     ex.printStackTrace();
                 }
             }
         }
+    }
+
+    //------------//
+    // printError //
+    //------------//
+    /**
+     * Fallback solution, since we cannot reliably use exception in static initializer.
+     *
+     * @param msg the error message
+     */
+    private static void printError (String msg)
+    {
+        System.err.println("*** INIT_ERROR occurred in class WellKnowns: " + msg);
     }
 
     //----------------//
@@ -517,22 +485,6 @@ public abstract class WellKnowns
     private static boolean runningFromJar ()
     {
         return CLASS_CONTAINER.toString().toLowerCase().endsWith(".jar");
-    }
-
-    //------------------//
-    // scanOcrLocations //
-    //------------------//
-    private static Path scanOcrLocations (String[] locations)
-    {
-        for (String loc : locations) {
-            final Path path = Paths.get(loc);
-
-            if (Files.exists(path.resolve("tessdata"))) {
-                return path;
-            }
-        }
-
-        throw new InstallationException(ocrNotFoundMsg);
     }
 
     //-------------//
@@ -550,24 +502,6 @@ public abstract class WellKnowns
         default:
         case LOG:
             return "XDG_CACHE_HOME";
-        }
-    }
-
-    //~ Inner Classes ------------------------------------------------------------------------------
-    //-----------------------//
-    // InstallationException //
-    //-----------------------//
-    /**
-     * Exception used to signal an installation error.
-     */
-    public static class InstallationException
-            extends RuntimeException
-    {
-        //~ Constructors ---------------------------------------------------------------------------
-
-        public InstallationException (String message)
-        {
-            super(message);
         }
     }
 }

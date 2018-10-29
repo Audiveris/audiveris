@@ -33,7 +33,7 @@ import org.audiveris.omr.sheet.ProcessingSwitches;
 import org.audiveris.omr.sheet.ProcessingSwitches.Switch;
 import org.audiveris.omr.sheet.SheetStub;
 import org.audiveris.omr.text.Language;
-import org.audiveris.omr.text.OCR.UnavailableOcrException;
+import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.ui.field.SpinnerUtil;
 import org.audiveris.omr.util.param.Param;
 
@@ -140,7 +140,12 @@ public class ScoreParameters
         // Default panel
         List<XactDataPane> defaultPanes = new ArrayList<XactDataPane>();
         defaultPanes.add(new FilterPane(null, FilterDescriptor.defaultFilter));
-        defaultPanes.add(createTextPane(null, Language.ocrDefaultLanguages));
+
+        TextPane defaultTextPane = createTextPane(null, Language.ocrDefaultLanguages);
+
+        if (defaultTextPane != null) {
+            defaultPanes.add(defaultTextPane);
+        }
 
         ProcessingSwitches defaultSwitches = ProcessingSwitches.getDefaultSwitches();
 
@@ -159,10 +164,14 @@ public class ScoreParameters
                     new FilterPane(
                             (FilterPane) defaultPanel.getPane(FilterPane.class),
                             book.getBinarizationFilter()));
-            bookPanes.add(
-                    createTextPane(
-                            (TextPane) defaultPanel.getPane(TextPane.class),
-                            book.getOcrLanguages()));
+
+            TextPane bookTextPane = createTextPane(
+                    (TextPane) defaultPanel.getPane(TextPane.class),
+                    book.getOcrLanguages());
+
+            if (bookTextPane != null) {
+                bookPanes.add(bookTextPane);
+            }
 
             for (Switch key : Switch.values()) {
                 Param<Boolean> bp = book.getProcessingSwitches().getParam(key);
@@ -180,10 +189,14 @@ public class ScoreParameters
                             new FilterPane(
                                     (FilterPane) bookPanel.getPane(FilterPane.class),
                                     s.getBinarizationFilter()));
-                    sheetPanes.add(
-                            createTextPane(
-                                    (TextPane) bookPanel.getPane(TextPane.class),
-                                    s.getOcrLanguages()));
+
+                    TextPane sheetTextPane = createTextPane(
+                            (TextPane) bookPanel.getPane(TextPane.class),
+                            s.getOcrLanguages());
+
+                    if (sheetTextPane != null) {
+                        sheetPanes.add(sheetTextPane);
+                    }
 
                     for (Switch key : Switch.values()) {
                         Param<Boolean> bp = s.getProcessingSwitches().getParam(key);
@@ -338,13 +351,15 @@ public class ScoreParameters
     private TextPane createTextPane (TextPane parent,
                                      Param<String> model)
     {
-        // Caution: The language pane needs Tesseract up & running
-        try {
-            return new TextPane(parent, model);
-        } catch (UnavailableOcrException ex) {
-            logger.info("No language pane for lack of OCR");
-        } catch (Throwable ex) {
-            logger.warn("Error creating language pane", ex);
+        // The language pane needs Tesseract up & running
+        if (OcrUtil.getOcr().isAvailable()) {
+            try {
+                return new TextPane(parent, model);
+            } catch (Throwable ex) {
+                logger.warn("Error creating language pane", ex);
+            }
+        } else {
+            logger.info("No language pane for lack of OCR.");
         }
 
         return null;
