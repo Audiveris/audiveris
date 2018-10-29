@@ -31,6 +31,7 @@ import org.audiveris.omr.step.StepException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -73,9 +74,16 @@ public class TextsStep
     protected Context doProlog (Sheet sheet)
             throws StepException
     {
+        List<TextLine> lines = new ArrayList<TextLine>();
+
         // Launch OCR on the whole sheet
         SheetScanner scanner = new SheetScanner(sheet);
-        List<TextLine> lines = scanner.scanSheet();
+
+        if (OcrUtil.getOcr().isAvailable()) {
+            lines.addAll(scanner.scanSheet());
+        } else {
+            logger.warn("TEXTS step: {}", OCR.NO_OCR);
+        }
 
         // Make all this available for system-level processing
         return new Context(scanner.getBuffer(), lines);

@@ -23,6 +23,7 @@ package org.audiveris.omr.text.tesseract;
 
 import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.text.FontInfo;
+import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.TextChar;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextWord;
@@ -45,6 +46,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -156,12 +158,16 @@ public class TesseractOrder
      */
     public List<TextLine> process ()
     {
+        if (!OcrUtil.getOcr().isAvailable()) {
+            return Collections.EMPTY_LIST;
+        }
+
         try {
-            //api = new TessBaseAPI(WellKnowns.OCR_FOLDER.toString());
+            final Path ocrFolder = TesseractOCR.getInstance().getOcrFolder();
             api = new TessBaseAPI();
 
             // Init API with proper language
-            if (api.Init(WellKnowns.OCR_FOLDER.toString(), lang) != 0) {
+            if (api.Init(ocrFolder.toString(), lang) != 0) {
                 logger.warn("Could not initialize Tesseract with lang {}", lang);
 
                 return finish(null);

@@ -33,8 +33,12 @@ import java.util.Set;
  */
 public interface OCR
 {
-    //~ Enumerations -------------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** Standard NO_OCR message: {@value}. */
+    static String NO_OCR = "No OCR is available!";
+
+    //~ Enumerations -------------------------------------------------------------------------------
     /** Handling of image layout. */
     enum LayoutMode
     {
@@ -56,18 +60,18 @@ public interface OCR
     Set<String> getLanguages ();
 
     /**
+     * Return OCR engine identification.
+     *
+     * @return string containing the name and the version of the OCR engine.
+     */
+    String identify ();
+
+    /**
      * Report whether the OCR engine is available.
      *
      * @return true if OCR is OK
      */
     boolean isAvailable ();
-
-    /**
-     * Return OCR engine identification.
-     *
-     * @return string containing the name and the version of the OCR engine.
-     */
-    String identify();
 
     /**
      * Launch the recognition of the provided image, whose language is specified.
@@ -97,5 +101,17 @@ public interface OCR
     static class UnavailableOcrException
             extends RuntimeException
     {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public UnavailableOcrException (String msg)
+        {
+            super(msg);
+        }
+
+        public UnavailableOcrException (String msg,
+                                        Throwable cause)
+        {
+            super(msg, cause);
+        }
     }
 }

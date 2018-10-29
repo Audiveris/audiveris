@@ -57,19 +57,19 @@ import org.audiveris.omr.sig.inter.StaffBarlineInter;
 import org.audiveris.omr.sig.inter.StemInter;
 import org.audiveris.omr.sig.inter.WordInter;
 import org.audiveris.omr.sig.relation.AugmentationRelation;
-import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Link;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.sig.ui.UITask.OpKind;
-
 import static org.audiveris.omr.sig.ui.UITask.OpKind.*;
-
 import org.audiveris.omr.sig.ui.UITaskList.Option;
 import org.audiveris.omr.step.Step;
 import org.audiveris.omr.text.BlockScanner;
+import org.audiveris.omr.text.OCR;
+import org.audiveris.omr.text.OcrUtil;
 import org.audiveris.omr.text.TextBuilder;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
@@ -79,9 +79,7 @@ import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.SelectionHint;
 import org.audiveris.omr.ui.util.UIThread;
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.*;
-
 import org.audiveris.omr.util.VoidTask;
 
 import org.slf4j.Logger;
@@ -428,11 +426,10 @@ public class InterController
                             if ((stemChords.isEmpty() && (headChord.getStem() != null))
                                 || (!stemChords.isEmpty() && !stemChords.contains(headChord))) {
                                 // Extract head from headChord
-                                seq.add(new UnlinkTask(
+                                seq.add(
+                                        new UnlinkTask(
                                                 sig,
-                                                sig.getRelation(headChord,
-                                                        head,
-                                                        Containment.class)));
+                                                sig.getRelation(headChord, head, Containment.class)));
 
                                 if (headChord.getNotes().size() <= 1) {
                                     // Remove headChord getting empty
@@ -784,7 +781,8 @@ public class InterController
                 // Wrap this rest within a rest chord
                 RestChordInter restChord = new RestChordInter(-1);
                 restChord.setStaff(staff);
-                seq.add(new AdditionTask(
+                seq.add(
+                        new AdditionTask(
                                 sig,
                                 restChord,
                                 ghostBounds,
@@ -859,6 +857,12 @@ public class InterController
             protected Void doInBackground ()
             {
                 try {
+                    if (!OcrUtil.getOcr().isAvailable()) {
+                        logger.info(OCR.NO_OCR);
+
+                        return null;
+                    }
+
                     final Point centroid = glyph.getCentroid();
                     final SystemInfo system = sheet.getSystemManager().getClosestSystem(
                             centroid);
@@ -898,11 +902,13 @@ public class InterController
                                     : new WordInter(textWord);
 
                             if (sentence != null) {
-                                seq.add(new AdditionTask(
+                                seq.add(
+                                        new AdditionTask(
                                                 sig,
                                                 word,
                                                 textWord.getBounds(),
-                                                Arrays.asList(new Link(sentence, new Containment(), false))));
+                                                Arrays.asList(
+                                                        new Link(sentence, new Containment(), false))));
                             } else {
                                 sentence = lyrics ? LyricLineInter.create(line)
                                         : ((role == TextRole.ChordName)
@@ -915,7 +921,8 @@ public class InterController
                                                 word,
                                                 textWord.getBounds(),
                                                 Collections.EMPTY_SET));
-                                seq.add(new AdditionTask(
+                                seq.add(
+                                        new AdditionTask(
                                                 sig,
                                                 sentence,
                                                 line.getBounds(),
