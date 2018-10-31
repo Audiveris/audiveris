@@ -402,8 +402,18 @@ public class HiLoPeakFinder
 
         if (quorum != null) {
             valueSeries.add(x1, null); // Cut link with function values
-            valueSeries.add(quorum.xMin != null ? quorum.xMin : x1, quorum.minTop);
-            valueSeries.add(quorum.xMax != null ? quorum.xMax : x2, quorum.minTop);
+
+            if (quorum.xMin != null) {
+                x1 = quorum.xMin;
+            }
+
+            valueSeries.add(x1, quorum.minTop);
+
+            if (quorum.xMax != null) {
+                x2 = quorum.xMax;
+            }
+
+            valueSeries.add(x2, quorum.minTop);
         }
 
         return valueSeries;
@@ -542,7 +552,7 @@ public class HiLoPeakFinder
         int total = function.getValue(main);
         int start = main;
         int stop = main;
-        thresholds.put(main, new Double(0));
+        thresholds.put(main, 0.0);
 
         do {
             int before = (start == pMin) ? 0 : function.getValue(start - 1);

@@ -445,13 +445,11 @@ public class StaffBarlineInter
                 return GeoUtil.centerOf(bounds);
 
             case DOUBLE_BARLINE:
+            case REVERSE_FINAL_BARLINE:
                 return new Point(bounds.x + (int) Math.rint(0.9 * bounds.width), y);
 
             case FINAL_BARLINE:
                 return new Point(bounds.x + (int) Math.rint(0.7 * bounds.width), y);
-
-            case REVERSE_FINAL_BARLINE:
-                return new Point(bounds.x + (int) Math.rint(0.9 * bounds.width), y);
 
             case LEFT_REPEAT_SIGN:
             case RIGHT_REPEAT_SIGN:

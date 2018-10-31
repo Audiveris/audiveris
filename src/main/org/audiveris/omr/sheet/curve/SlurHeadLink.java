@@ -46,7 +46,7 @@ public class SlurHeadLink
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
-    public static Comparator<SlurHeadLink> byEuclidean = new Comparator<SlurHeadLink>()
+    public static final Comparator<SlurHeadLink> byEuclidean = new Comparator<SlurHeadLink>()
     {
         @Override
         public int compare (SlurHeadLink o1,

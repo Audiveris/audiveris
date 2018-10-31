@@ -519,7 +519,7 @@ public class StaffProjector
                 staff.setAbscissa(RIGHT, xMax);
             } else {
                 // No significant line chunks, ignore them and stay with peak as the limit
-                final int peakMid = (endPeak.getStart() + endPeak.getStop()) / 2;
+                final int peakMid = (endPeak.getStart() + endPeak.getStop()) >>> 1;
                 logger.debug(
                         "Staff#{} RIGHT set at peak {} (vs {})",
                         staff.getId(),
@@ -1284,12 +1284,36 @@ public class StaffProjector
         @Override
         public int compareTo (Blank that)
         {
+            // This is a total ordering of blanks (within the same staff projection)
             return Integer.compare(this.start, that.start);
+        }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Blank) {
+                return compareTo((Blank) obj) == 0;
+            }
+
+            return false;
         }
 
         public int getWidth ()
         {
             return stop - start + 1;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 3;
+            hash = (79 * hash) + this.start;
+
+            return hash;
         }
 
         @Override

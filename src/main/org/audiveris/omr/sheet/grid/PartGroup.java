@@ -38,7 +38,7 @@ public class PartGroup
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To compare groups by their first staff ID. */
-    public static Comparator<PartGroup> byFirstId = new Comparator<PartGroup>()
+    public static final Comparator<PartGroup> byFirstId = new Comparator<PartGroup>()
     {
         @Override
         public int compare (PartGroup pg1,

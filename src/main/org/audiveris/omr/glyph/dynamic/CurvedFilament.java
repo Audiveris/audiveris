@@ -333,13 +333,15 @@ public class CurvedFilament
                 }
 
                 // Lookup corresponding section(s)
-                int probeWidth = InterlineScale.toPixels(interline, Filament.getProbeWidth());
+                int probeWidth = InterlineScale.toPixels(
+                        interline,
+                        Filament.getProbeWidth());
                 Orientation orientation = getRoughOrientation();
                 final Point2D point = points.get(idx);
                 Point2D orientedPt = orientation.oriented(points.get(idx));
                 Rectangle2D rect = new Rectangle2D.Double(
-                        orientedPt.getX() - (probeWidth / 2),
-                        orientedPt.getY() - (probeWidth / 2),
+                        orientedPt.getX() - (probeWidth / 2.0),
+                        orientedPt.getY() - (probeWidth / 2.0),
                         probeWidth,
                         probeWidth);
                 List<Section> found = new ArrayList<Section>();
@@ -509,5 +511,34 @@ public class CurvedFilament
                 nextBisector.getP2());
 
         return Math.hypot(inter.getX() - point.getX(), inter.getY() - point.getY());
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // Constructor //
+    //-------------//
+    public static final class Constructor
+            implements CompoundFactory.CompoundConstructor
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final int interline;
+
+        private final int segmentLength;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Constructor (int interline,
+                            int segmentLength)
+        {
+            this.interline = interline;
+            this.segmentLength = segmentLength;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public SectionCompound newInstance ()
+        {
+            return new CurvedFilament(interline, segmentLength);
+        }
     }
 }

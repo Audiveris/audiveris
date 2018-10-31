@@ -244,7 +244,7 @@ public class BarFilamentFactory
     /**
      * Class {@code Parameters} gathers all scale-dependent parameters.
      */
-    private class Parameters
+    private static class Parameters
     {
         //~ Instance fields ------------------------------------------------------------------------
 

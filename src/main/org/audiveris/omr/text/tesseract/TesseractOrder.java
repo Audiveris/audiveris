@@ -70,7 +70,7 @@ public class TesseractOrder
     private static final String UTF8 = "UTF-8";
 
     /** To avoid repetitive warnings if OCR binding failed. */
-    private static boolean userWarned;
+    private static volatile boolean userWarned;
 
     static {
         IIORegistry registry = IIORegistry.getDefaultInstance();
@@ -202,40 +202,6 @@ public class TesseractOrder
         }
     }
 
-    private Line2D Baseline (ResultIterator rit,
-                             int level)
-    {
-        IntPointer x1 = new IntPointer(0);
-        IntPointer y1 = new IntPointer(0);
-        IntPointer x2 = new IntPointer(0);
-        IntPointer y2 = new IntPointer(0);
-
-        if (rit.Baseline(level, x1, y1, x2, y2)) {
-            return new Line2D.Double(x1.get(), y1.get(), x2.get(), y2.get());
-        } else {
-            return null;
-        }
-    }
-
-    private Rectangle BoundingBox (PageIterator it,
-                                   int level)
-    {
-        IntPointer left = new IntPointer(0);
-        IntPointer top = new IntPointer(0);
-        IntPointer right = new IntPointer(0);
-        IntPointer bottom = new IntPointer(0);
-
-        if (it.BoundingBox(level, left, top, right, bottom)) {
-            return new Rectangle(
-                    left.get(),
-                    top.get(),
-                    right.get() - left.get(),
-                    bottom.get() - top.get());
-        } else {
-            return null;
-        }
-    }
-
     //--------//
     // finish //
     //--------//
@@ -256,6 +222,40 @@ public class TesseractOrder
         }
 
         return lines;
+    }
+
+    private Line2D getBaseline (ResultIterator rit,
+                                int level)
+    {
+        IntPointer x1 = new IntPointer(0);
+        IntPointer y1 = new IntPointer(0);
+        IntPointer x2 = new IntPointer(0);
+        IntPointer y2 = new IntPointer(0);
+
+        if (rit.Baseline(level, x1, y1, x2, y2)) {
+            return new Line2D.Double(x1.get(), y1.get(), x2.get(), y2.get());
+        } else {
+            return null;
+        }
+    }
+
+    private Rectangle getBoundingBox (PageIterator it,
+                                      int level)
+    {
+        IntPointer left = new IntPointer(0);
+        IntPointer top = new IntPointer(0);
+        IntPointer right = new IntPointer(0);
+        IntPointer bottom = new IntPointer(0);
+
+        if (it.BoundingBox(level, left, top, right, bottom)) {
+            return new Rectangle(
+                    left.get(),
+                    top.get(),
+                    right.get() - left.get(),
+                    bottom.get() - top.get());
+        } else {
+            return null;
+        }
     }
 
     //---------//
@@ -355,9 +355,9 @@ public class TesseractOrder
                     }
 
                     word = new TextWord(
-                            BoundingBox(it, RIL_WORD),
+                            getBoundingBox(it, RIL_WORD),
                             it.GetUTF8Text(RIL_WORD).getString(UTF8),
-                            Baseline(it, RIL_WORD),
+                            getBaseline(it, RIL_WORD),
                             it.Confidence(RIL_WORD) / 100.0,
                             fontInfo,
                             line);
@@ -378,7 +378,7 @@ public class TesseractOrder
                 // Char/symbol to be processed
                 wordAddChars(
                         word,
-                        BoundingBox(it, RIL_SYMBOL),
+                        getBoundingBox(it, RIL_SYMBOL),
                         it.GetUTF8Text(RIL_SYMBOL).getString(UTF8));
             } while (it.Next(nextLevel));
 

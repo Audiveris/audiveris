@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Component;
+import java.util.Comparator;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -71,7 +72,7 @@ import javax.swing.JTextField;
  * @author Hervé Bitteur
  */
 public abstract class Board
-        implements EventSubscriber<UserEvent>, Comparable<Board>
+        implements EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -103,6 +104,17 @@ public abstract class Board
     public static final Desc EVAL = new Desc("Eval", 800);
 
     public static final Desc CHECK = new Desc("Check", 900);
+
+    /** To sort boards by their position. */
+    public static final Comparator<Board> byPosition = new Comparator<Board>()
+    {
+        @Override
+        public int compare (Board b1,
+                            Board b2)
+        {
+            return Integer.compare(b1.position, b2.position);
+        }
+    };
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The board instance name. */
@@ -211,21 +223,6 @@ public abstract class Board
                 ((JTextField) comp).setText("");
             }
         }
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Allow to sort boards according to their preferred display position.
-     *
-     * @param that the other board to compare to
-     * @return comparison result
-     */
-    @Override
-    public int compareTo (Board that)
-    {
-        return Integer.signum(this.position - that.position);
     }
 
     //---------//

@@ -68,7 +68,7 @@ public class SheetGradedPainter
     //------------------//
     // GradedSigPainter //
     //------------------//
-    private class GradedSigPainter
+    private static class GradedSigPainter
             extends SigPainter
     {
         //~ Instance fields ------------------------------------------------------------------------

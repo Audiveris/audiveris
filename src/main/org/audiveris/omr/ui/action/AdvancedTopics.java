@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
@@ -271,9 +272,8 @@ public abstract class AdvancedTopics
         //~ Constructors ---------------------------------------------------------------------------
         public PluginPane ()
         {
-            // ComboBox for triggered step
-            box = new JComboBox<String>(
-                    PluginsManager.getInstance().getPluginIds().toArray(new String[0]));
+            final Collection<String> ids = PluginsManager.getInstance().getPluginIds();
+            box = new JComboBox<String>(ids.toArray(new String[ids.size()]));
             box.setToolTipText("Default plugin to be launched");
             box.setSelectedItem(PluginsManager.defaultPluginId.getValue());
 

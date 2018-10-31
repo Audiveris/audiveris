@@ -412,11 +412,11 @@ public enum Shape
     //
     private static final Logger logger = LoggerFactory.getLogger(Shape.class);
 
-    /** Last physical shape */
+    /** Last physical shape. */
     public static final Shape LAST_PHYSICAL_SHAPE = CLUTTER;
 
-    /** A comparator based on shape name */
-    public static Comparator<Shape> alphaComparator = new Comparator<Shape>()
+    /** A comparator based on shape name. */
+    public static final Comparator<Shape> alphaComparator = new Comparator<Shape>()
     {
         @Override
         public int compare (Shape o1,
@@ -426,29 +426,28 @@ public enum Shape
         }
     };
 
-    //
-    /** Explanation of the glyph shape */
+    /** Explanation of the glyph shape. */
     private final String description;
 
-    /** Potential related symbol */
+    /** Potential related symbol. */
     private ShapeSymbol symbol;
 
-    /** Potential related decorated symbol for menus */
+    /** Potential related decorated symbol for menus. */
     private ShapeSymbol decoratedSymbol;
 
-    /** Remember the fact that this shape has no related symbol */
+    /** Remember the fact that this shape has no related symbol. */
     private boolean hasNoSymbol;
 
-    /** Remember the fact that this shape has no related decorated symbol */
+    /** Remember the fact that this shape has no related decorated symbol. */
     private boolean hasNoDecoratedSymbol;
 
-    /** Potential related physical shape */
+    /** Potential related physical shape. */
     private Shape physicalShape;
 
-    /** Related color */
+    /** Related color. */
     private Color color;
 
-    /** Related color constant */
+    /** Related color constant. */
     private Constant.Color constantColor;
 
     //--------------------------------------------------------------------------

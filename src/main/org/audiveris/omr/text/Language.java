@@ -79,7 +79,7 @@ public class Language
     private static final String NO_SPEC = "eng";
 
     /** Collection of supported languages, lazily created. */
-    private static SupportedLanguages supportedLanguages;
+    private static volatile SupportedLanguages supportedLanguages;
 
     //~ Constructors -------------------------------------------------------------------------------
     /** Not meant to be instantiated. */

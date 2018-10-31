@@ -590,7 +590,7 @@ public class ShapeSet
 
         for (int i = 0; i < names.size(); i++) {
             String comma = (i < (names.size() - 1)) ? "," : "";
-            sb.append(String.format("\"%-18s // %3d\n", names.get(i) + "\"" + comma, i));
+            sb.append(String.format("\"%-18s // %3d%n", names.get(i) + "\"" + comma, i));
         }
 
         sb.append("};");

@@ -664,7 +664,7 @@ public class BeamStructure
             border.setOffset(dy);
         }
 
-        Collections.sort(sectionBorders); // By vertical offset WRT ref line
+        Collections.sort(sectionBorders, SectionBorder.byOrdinateOffset);
 
         // Retrieve groups of offset values, roughly separated by beam height
         // Each group will correspond to a separate beam line
@@ -881,9 +881,19 @@ public class BeamStructure
      * Gathers info about a border line (top or bottom) of a section.
      */
     private static class SectionBorder
-            implements Comparable<SectionBorder>
     {
         //~ Static fields/initializers -------------------------------------------------------------
+
+        static Comparator<SectionBorder> byOrdinateOffset = new Comparator<SectionBorder>()
+        {
+            @Override
+            public int compare (SectionBorder o1,
+                                SectionBorder o2)
+            {
+                // Sort by increasing ordinate offset WRT glyph reference line
+                return Double.compare(o1.dy, o2.dy);
+            }
+        };
 
         static Comparator<SectionBorder> byReverseLength = new Comparator<SectionBorder>()
         {
@@ -911,13 +921,6 @@ public class BeamStructure
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int compareTo (SectionBorder that)
-        {
-            // Sort by increasing ordinate
-            return Double.compare(this.dy, that.dy);
-        }
-
         public void setOffset (double dy)
         {
             this.dy = dy;

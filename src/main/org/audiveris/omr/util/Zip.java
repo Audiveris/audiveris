@@ -21,6 +21,8 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.WellKnowns;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,7 +146,7 @@ public abstract class Zip
                 ZipEntry entry = (ZipEntry) entries.nextElement();
                 InputStream is = zf.getInputStream(entry);
 
-                return new InputStreamReader(is);
+                return new InputStreamReader(is, WellKnowns.FILE_ENCODING);
             }
         } catch (FileNotFoundException ex) {
             System.err.println(ex.toString());
@@ -177,7 +179,7 @@ public abstract class Zip
             ZipEntry ze = new ZipEntry(file.getName());
             zos.putNextEntry(ze);
 
-            return new OutputStreamWriter(zos);
+            return new OutputStreamWriter(zos, WellKnowns.FILE_ENCODING);
         } catch (FileNotFoundException ex) {
             System.err.println(ex.toString());
             System.err.println(file + " not found");

@@ -98,7 +98,7 @@ public class SlantedSymbol
             Rectangle2D r = layout.getBounds();
 
             // Abscissa reduction because of slanted characters
-            // It's value depends on whether we have a 'f' or not
+            // Its value depends on whether we have a 'f' or not
             float dx;
             int c = code - MusicFont.CODE_OFFSET;
 
@@ -181,7 +181,8 @@ public class SlantedSymbol
 
         // layout not used
         // rect for global image
-        // Sequence of layouts
+        //
+        // Sequence of layouts:
         SmartLayout[] layouts;
     }
 
@@ -195,7 +196,7 @@ public class SlantedSymbol
         // The standard character glyph
         final TextLayout layout;
 
-        // Translation before & after
+        // Translation before and after
         final float dx;
 
         //~ Constructors ---------------------------------------------------------------------------

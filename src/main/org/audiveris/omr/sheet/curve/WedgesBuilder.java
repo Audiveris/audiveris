@@ -311,11 +311,4 @@ public class WedgesBuilder
             }
         }
     }
-
-    //-----------//
-    // WedgeInfo //
-    //-----------//
-    private class WedgeInfo
-    {
-    }
 }

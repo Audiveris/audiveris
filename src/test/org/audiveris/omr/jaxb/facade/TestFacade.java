@@ -97,7 +97,7 @@ public class TestFacade
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, IOException
     {
         System.out.println("================================================================");
         System.out.println("Unmarshalling ...");
@@ -106,6 +106,7 @@ public class TestFacade
         Unmarshaller um = jaxbContext.createUnmarshaller();
         InputStream is = new FileInputStream(source);
         MyClass mc = (MyClass) um.unmarshal(is);
+        is.close();
         System.out.println("Unmarshalled from " + source);
         new Dumping().dump(mc);
         System.out.println("Map class: " + mc.allEntities.getClass());

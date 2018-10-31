@@ -66,6 +66,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -174,8 +175,8 @@ public class DotFactory
      */
     public void lateDotChecks ()
     {
-        // Sort dots by reverse ordinate
-        Collections.sort(dots);
+        // Sort dots carefully
+        Collections.sort(dots, Dot.comparator);
 
         // Run all late checks
         lateAugmentationChecks(); // Note-Dot and Note-Dot-Dot configurations
@@ -751,10 +752,47 @@ public class DotFactory
      * Remember a dot candidate, for late processing.
      */
     private static class Dot
-            implements Comparable<Dot>
     {
-        //~ Instance fields ------------------------------------------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
+        /**
+         * Very specific sorting of dots.
+         * <p>
+         * If the 2 dots overlap vertically, return left one first.
+         * Otherwise, return top one first.
+         *
+         * @param that the other dot
+         * @return order sign
+         */
+        public static final Comparator<Dot> comparator = new Comparator<Dot>()
+        {
+            @Override
+            public int compare (Dot d1,
+                                Dot d2)
+            {
+                if (d1 == d2) {
+                    return 0;
+                }
+
+                final Glyph g1 = d1.glyph;
+                final Glyph g2 = d2.glyph;
+
+                if (g1 == g2) {
+                    return 0;
+                }
+
+                final Rectangle b1 = g1.getBounds();
+                final Rectangle b2 = g2.getBounds();
+
+                if (GeoUtil.yOverlap(b1, b2) > 0) {
+                    return Integer.compare(b1.x, b2.x);
+                } else {
+                    return Integer.compare(b1.y, b2.y);
+                }
+            }
+        };
+
+        //~ Instance fields ------------------------------------------------------------------------
         final Evaluation eval; // Evaluation result
 
         final Glyph glyph; // Underlying glyph
@@ -768,34 +806,6 @@ public class DotFactory
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        /**
-         * Very specific sorting of dots.
-         * If the 2 dots overlap vertically, return left one first.
-         * Otherwise, return top one first.
-         *
-         * @param that the other dot
-         * @return order sign
-         */
-        @Override
-        public int compareTo (Dot that)
-        {
-            final Glyph g1 = this.glyph;
-            final Glyph g2 = that.glyph;
-
-            if (g1 == g2) {
-                return 0;
-            }
-
-            final Rectangle b1 = g1.getBounds();
-            final Rectangle b2 = g2.getBounds();
-
-            if (GeoUtil.yOverlap(b1, b2) > 0) {
-                return Integer.compare(b1.x, b2.x);
-            } else {
-                return Integer.compare(b1.y, b2.y);
-            }
-        }
-
         @Override
         public String toString ()
         {

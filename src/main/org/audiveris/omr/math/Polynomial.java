@@ -30,8 +30,12 @@ package org.audiveris.omr.math;
  */
 public class Polynomial
 {
-    //~ Instance fields ----------------------------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
+    /** Epsilon value meant for equality testing: {@value}. */
+    private static final double EPSILON = 1E-5;
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The degree of polynomial */
     protected int degree;
 
@@ -176,7 +180,7 @@ public class Polynomial
         }
 
         for (int i = degree; i >= 0; i--) {
-            if (coefficients[i] != that.coefficients[i]) {
+            if (Math.abs(coefficients[i] - that.coefficients[i]) > EPSILON) {
                 return false;
             }
         }
@@ -322,24 +326,24 @@ public class Polynomial
             return coefficients[1] + "x + " + coefficients[0];
         }
 
-        String s = coefficients[degree] + "x^" + degree;
+        StringBuilder sb = new StringBuilder(coefficients[degree] + "x^" + degree);
 
         for (int i = degree - 1; i >= 0; i--) {
             if (coefficients[i] == 0) {
                 continue;
             } else if (coefficients[i] > 0) {
-                s = s + " + " + (coefficients[i]);
+                sb.append(" + ").append(coefficients[i]);
             } else if (coefficients[i] < 0) {
-                s = s + " - " + (-coefficients[i]);
+                sb.append(" - ").append(-coefficients[i]);
             }
 
             if (i == 1) {
-                s += "x";
+                sb.append("x");
             } else if (i > 1) {
-                s = s + "x^" + i;
+                sb.append("x^").append(i);
             }
         }
 
-        return s;
+        return sb.toString();
     }
 }

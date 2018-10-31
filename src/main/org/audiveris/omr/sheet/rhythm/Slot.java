@@ -219,6 +219,20 @@ public class Slot
         return Double.compare(xOffset, other.xOffset);
     }
 
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof Slot) {
+            return compareTo((Slot) obj) == 0;
+        }
+
+        return false;
+    }
+
     //-------------------//
     // getChordJustAbove //
     //-------------------//
@@ -371,6 +385,15 @@ public class Slot
         return xOffset;
     }
 
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (59 * hash) + this.xOffset;
+
+        return hash;
+    }
+
     //--------------//
     // isSuspicious //
     //--------------//
@@ -399,7 +422,7 @@ public class Slot
      */
     public void setSuspicious (boolean suspicious)
     {
-        this.suspicious = suspicious ? true : null;
+        this.suspicious = suspicious;
     }
 
     //---------------//

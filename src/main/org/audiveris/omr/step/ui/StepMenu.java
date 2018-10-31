@@ -149,7 +149,7 @@ public class StepMenu
                     try {
                         Step sofar = stub.getLatestStep();
 
-                        if ((sofar != null) & (sofar.compareTo(step) >= 0)) {
+                        if ((sofar != null) && (sofar.compareTo(step) >= 0)) {
                             int answer = JOptionPane.showConfirmDialog(
                                     OMR.gui.getFrame(),
                                     "About to re-perform step " + step + " from scratch."

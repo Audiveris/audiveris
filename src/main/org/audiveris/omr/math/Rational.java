@@ -174,7 +174,7 @@ public class Rational
     // compareTo //
     //-----------//
     /**
-     * Comparison
+     * Comparison for total ordering.
      *
      * @param that the other rational instance
      * @return -1, 0, 1 if this &lt;, ==, &gt; that respectively
@@ -182,6 +182,10 @@ public class Rational
     @Override
     public int compareTo (Rational that)
     {
+        if (this == that) {
+            return 0;
+        }
+
         int a = this.num * that.den;
         int b = this.den * that.num;
 
@@ -197,7 +201,7 @@ public class Rational
 
             return A.compareTo(B);
         } else {
-            return Integer.signum(a - b);
+            return Integer.compare(a, b);
         }
     }
 

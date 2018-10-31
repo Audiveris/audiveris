@@ -393,7 +393,7 @@ public class AugmentationDotInter
         for (Link link : links) {
             HeadInter head = (HeadInter) link.partner;
 
-            if ((head.getIntegerPitch() % 2) == 1) {
+            if ((head.getIntegerPitch() % 2) != 0) {
                 return link;
             }
         }

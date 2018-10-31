@@ -327,7 +327,7 @@ public class ShapeBoard
                              List<Shape> shapes)
     {
         for (Shape shape : shapes) {
-            ShapeButton button = new ShapeButton(shape);
+            ShapeButton button = new ShapeButton(shape, keyListener);
             button.addMouseListener(mouseListener); // For double-click
             button.addMouseListener(dropAdapter); // For DnD transfer and double-click
             button.addMouseMotionListener(motionAdapter); // For dragging
@@ -562,7 +562,7 @@ public class ShapeBoard
     /**
      * A button dedicated to a shape.
      */
-    public class ShapeButton
+    public static class ShapeButton
             extends JButton
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -570,7 +570,8 @@ public class ShapeBoard
         final Shape shape;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public ShapeButton (Shape shape)
+        public ShapeButton (Shape shape,
+                            MyKeyListener keyListener)
         {
             this.shape = shape;
             setIcon(shape.getDecoratedSymbol());

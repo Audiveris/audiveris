@@ -95,6 +95,7 @@ public class PageRef
     @Override
     public int compareTo (PageRef that)
     {
+        // This is a total ordering
         if (this.sheetNumber != that.sheetNumber) {
             return Integer.compare(this.sheetNumber, that.sheetNumber);
         }

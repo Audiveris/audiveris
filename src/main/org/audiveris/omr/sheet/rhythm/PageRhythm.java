@@ -83,7 +83,7 @@ public class PageRhythm
     private static final Logger logger = LoggerFactory.getLogger(PageRhythm.class);
 
     /** Adjustable rhythm classes. (FRAT: Flag, RestChord, AugmentationDot, Tuplet) */
-    public static final Class<?>[] FRAT_CLASSES = new Class<?>[]{
+    private static final Class<?>[] FRAT_CLASSES = new Class<?>[]{
         FlagInter.class, RestChordInter.class,
         AugmentationDotInter.class, TupletInter.class
     };

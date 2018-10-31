@@ -182,8 +182,8 @@ public class BasicLineTest
             BasicLine l = new BasicLine(xx, yy);
             print(l);
 
-            double md = l.getMeanDistance();
-            fail("Exception should be raised" + " when using a line not properly defined");
+            l.getMeanDistance();
+            fail("Exception should be raised when using a line not properly defined");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -197,7 +197,7 @@ public class BasicLineTest
         try {
             BasicLine l = new BasicLine(xx, yy);
             print(l);
-            fail("Exception should be raised" + " when line is singularly defined");
+            fail("Exception should be raised when line is singularly defined");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -241,7 +241,7 @@ public class BasicLineTest
             l.includePoint(0, 0);
             l.includePoint(0, 1);
 
-            double y = l.yAtX(0d);
+            l.yAtX(0d);
             fail("Exception should be raised" + " when Yat is called on a vertical line");
         } catch (Exception expected) {
             checkException(expected);

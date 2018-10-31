@@ -25,6 +25,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.Inter;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -37,10 +38,27 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class Link
-        implements Comparable<Link>
-{
-    //~ Instance fields ----------------------------------------------------------------------------
 
+{
+    //~ Static fields/initializers -----------------------------------------------------------------
+
+    /**
+     * For comparing Link instances by decreasing grade.
+     */
+    public static final Comparator<Link> byReverseGrade = new Comparator<Link>()
+    {
+        @Override
+        public int compare (Link l1,
+                            Link l2)
+        {
+            Support s1 = (Support) l1.relation;
+            Support s2 = (Support) l2.relation;
+
+            return Double.compare(s2.getGrade(), s1.getGrade());
+        }
+    };
+
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The other Inter instance, the one to be linked with. */
     public Inter partner;
 
@@ -68,6 +86,9 @@ public class Link
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // applyTo //
+    //---------//
     /**
      * Add the relation between the provided inter and the partner.
      *
@@ -88,21 +109,15 @@ public class Link
     public static Link bestOf (List<Link> links)
     {
         if (links.size() > 1) {
-            Collections.sort(links);
+            Collections.sort(links, byReverseGrade);
         }
 
         return links.isEmpty() ? null : links.get(0);
     }
 
-    @Override
-    public int compareTo (Link that)
-    {
-        Support s1 = (Support) this.relation;
-        Support s2 = (Support) that.relation;
-
-        return Double.compare(s1.getGrade(), s2.getGrade());
-    }
-
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {

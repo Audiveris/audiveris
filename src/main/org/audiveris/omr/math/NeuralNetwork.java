@@ -125,8 +125,8 @@ public class NeuralNetwork
      * @param hiddenSize   number of cells in hidden layer
      * @param outputSize   number of cells in output layer
      * @param amplitude    amplitude (less than or = 1.0) for initial random values
-     * @param inputLabels  array of labels for input cells, or null
-     * @param outputLabels array of labels for output cells, or null
+     * @param inputLabels  array of labels for input cells, perhaps empty
+     * @param outputLabels array of labels for output cells, perhaps empty
      */
     public NeuralNetwork (int inputSize,
                           int hiddenSize,
@@ -151,17 +151,17 @@ public class NeuralNetwork
         // Labels for input, if any
         this.inputLabels = new StringArray(inputLabels);
 
-        if ((inputLabels != null) && (inputLabels.length != inputSize)) {
+        if (inputLabels.length != inputSize) {
             throw new IllegalArgumentException(
-                    "Inconsistent input labels " + inputLabels + " vs " + inputSize);
+                    "Inconsistent input labels size " + inputLabels.length + " vs " + inputSize);
         }
 
         // Labels for output, if any
         this.outputLabels = new StringArray(outputLabels);
 
-        if ((outputLabels != null) && (outputLabels.length != outputSize)) {
+        if (outputLabels.length != outputSize) {
             throw new IllegalArgumentException(
-                    "Inconsistent output labels " + outputLabels + " vs " + outputSize);
+                    "Inconsistent output labels size " + outputLabels.length + " vs " + outputSize);
         }
 
         logger.debug("Network created");
@@ -175,8 +175,8 @@ public class NeuralNetwork
      * @param hiddenSize   number of cells in hidden layer
      * @param outputSize   number of cells in output layer
      * @param amplitude    amplitude (less than or = 1.0) for initial random values
-     * @param inputLabels  array of labels for input cells, or null
-     * @param outputLabels array of labels for output cells, or null
+     * @param inputLabels  array of labels for input cells, perhaps empty
+     * @param outputLabels array of labels for output cells, perhaps empty
      * @param learningRate learning rate factor
      * @param momentum     momentum from last adjustment
      * @param epochs       number of epochs in training
@@ -328,9 +328,9 @@ public class NeuralNetwork
      * Marshal the NeuralNetwork to its XML file
      *
      * @param os the XML output stream, which is not closed by this method
-     * @throws JAXBException if a XML serialization error occurred
+     * @throws JAXBException      if a XML serialization error occurred
      * @throws XMLStreamException if there are any problems writing to the stream
-     * @throws IOException if something goes wrong during IO operations
+     * @throws IOException        if something goes wrong during IO operations
      */
     public void marshal (OutputStream os)
             throws JAXBException, XMLStreamException, IOException

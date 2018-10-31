@@ -135,11 +135,36 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
                 relations.add(new Relation(shape, s));
             }
 
-            Collections.sort(relations);
+            // Sort by increasing distance
+            Collections.sort(
+                    relations,
+                    new Comparator<Relation>()
+            {
+                @Override
+                public int compare (Relation r1,
+                                    Relation r2)
+                {
+                    return Double.compare(r1.distance, r2.distance);
+                }
+            });
+
             allRelations.add(new ShapeRelations(shape, relations));
         }
 
-        Collections.sort(allRelations);
+        // Sort by increasing distance
+        Collections.sort(
+                allRelations,
+                new Comparator<ShapeRelations>()
+        {
+            @Override
+            public int compare (ShapeRelations o1,
+                                ShapeRelations o2)
+            {
+                return Double.compare(
+                        o1.relations.get(0).distance,
+                        o2.relations.get(0).distance);
+            }
+        });
 
         for (ShapeRelations shapeRelations : allRelations) {
             StringBuilder sb = new StringBuilder();
@@ -177,7 +202,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
     // Relation //
     //----------//
     private class Relation
-            implements Comparable<Relation>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -198,12 +222,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
-        public int compareTo (Relation other)
-        {
-            return Double.compare(distance, other.distance);
-        }
-
-        @Override
         public String toString ()
         {
             return String.format(Locale.US, "%30s %5.3f ", to.toString(), distance);
@@ -214,7 +232,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
     // ShapeRelations //
     //----------------//
     private class ShapeRelations
-            implements Comparable<ShapeRelations>
     {
         //~ Instance fields ------------------------------------------------------------------------
 
@@ -228,13 +245,6 @@ public class MomentsExtractorTest<D extends OrthogonalMoments<D>>
         {
             this.shape = shape;
             this.relations = relations;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int compareTo (ShapeRelations that)
-        {
-            return Double.compare(this.relations.get(0).distance, that.relations.get(0).distance);
         }
     }
 }

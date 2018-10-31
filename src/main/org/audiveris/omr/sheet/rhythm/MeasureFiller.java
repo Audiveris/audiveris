@@ -45,7 +45,7 @@ public class MeasureFiller
     private static final Logger logger = LoggerFactory.getLogger(MeasureFiller.class);
 
     /** Filling classes. (Clefs and Key signatures) */
-    public static final Class<?>[] FILLING_CLASSES = new Class<?>[]{ClefInter.class, KeyInter.class};
+    private static final Class<?>[] FILLING_CLASSES = new Class<?>[]{ClefInter.class, KeyInter.class};
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Containing system. */

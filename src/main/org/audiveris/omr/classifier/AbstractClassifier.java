@@ -110,7 +110,7 @@ public abstract class AbstractClassifier<M extends Object>
     public static final String STDS_XML_ENTRY_NAME = "stds.xml";
 
     /** A special evaluation array, used to report NOISE. */
-    protected static final Evaluation[] noiseEvaluations = {
+    private static final Evaluation[] noiseEvaluations = {
         new Evaluation(
         Shape.NOISE,
         Evaluation.ALGORITHM)
@@ -249,8 +249,7 @@ public abstract class AbstractClassifier<M extends Object>
             return noiseEvaluations;
         } else {
             Evaluation[] evals = getNaturalEvaluations(glyph, interline);
-            // Order the evals from best to worst
-            Arrays.sort(evals);
+            Arrays.sort(evals, Evaluation.byReverseGrade); // Order the evals from best to worst
 
             return evals;
         }

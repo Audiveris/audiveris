@@ -271,4 +271,29 @@ public class StraightFilament
             computeLine();
         }
     }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // Constructor //
+    //-------------//
+    public static final class Constructor
+            implements CompoundFactory.CompoundConstructor
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final int interline;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Constructor (int interline)
+        {
+            this.interline = interline;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public SectionCompound newInstance ()
+        {
+            return new StraightFilament(interline);
+        }
+    }
 }

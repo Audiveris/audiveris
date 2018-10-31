@@ -88,7 +88,7 @@ public class FilamentIndex
 
         // User filament service?
         if (OMR.gui != null) {
-            FilamentService filamentService = new FilamentService();
+            FilamentService filamentService = new FilamentService(this, sheet);
             setEntityService(filamentService);
 
             //
@@ -182,14 +182,15 @@ public class FilamentIndex
     //-----------------//
     // FilamentService //
     //-----------------//
-    private class FilamentService
+    private static class FilamentService
             extends EntityService<Filament>
     {
         //~ Constructors ---------------------------------------------------------------------------
 
-        public FilamentService ()
+        public FilamentService (FilamentIndex index,
+                                Sheet sheet)
         {
-            super(FilamentIndex.this, sheet.getLocationService(), eventsAllowed);
+            super(index, sheet.getLocationService(), eventsAllowed);
         }
     }
 }

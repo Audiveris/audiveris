@@ -473,7 +473,7 @@ public class GlyphIndex
     /**
      * This iterator skips the weak references that are no longer valid.
      */
-    private class SkippingIterator
+    private static class SkippingIterator
             implements Iterator<Glyph>
     {
         //~ Instance fields ------------------------------------------------------------------------

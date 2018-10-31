@@ -79,9 +79,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
 import static java.nio.file.StandardOpenOption.CREATE;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -1277,6 +1275,9 @@ public class Sheet
     void reset (Step step)
     {
         switch (step) {
+        default:
+            break;
+
         case LOAD:
             picture = null;
 
@@ -1298,8 +1299,6 @@ public class Sheet
             systemManager.reset();
             glyphsController = null;
             symbolsEditor = null;
-
-        default:
         }
 
         // Clear errors and history for this step

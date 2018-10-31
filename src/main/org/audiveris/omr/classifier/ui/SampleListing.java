@@ -280,6 +280,37 @@ class SampleListing
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
+    //--------------//
+    // GradedSample //
+    //--------------//
+    private static class GradedSample
+    {
+        //~ Static fields/initializers -------------------------------------------------------------
+
+        public static final Comparator<GradedSample> byReverseGrade = new Comparator<GradedSample>()
+        {
+            @Override
+            public int compare (GradedSample o1,
+                                GradedSample o2)
+            {
+                return Double.compare(o2.grade, o1.grade); // By decreasing grade
+            }
+        };
+
+        //~ Instance fields ------------------------------------------------------------------------
+        final double grade;
+
+        final Sample sample;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public GradedSample (double grade,
+                             Sample sample)
+        {
+            this.grade = grade;
+            this.sample = sample;
+        }
+    }
+
     //----------------//
     // SampleRenderer //
     //----------------//
@@ -554,8 +585,8 @@ class SampleListing
     private class SamplePopup
             extends JPopupMenu
     {
-
         //~ Constructors ---------------------------------------------------------------------------
+
         public SamplePopup ()
         {
             super("SamplePopup");
@@ -773,38 +804,14 @@ class SampleListing
             }
 
             logger.info("All grades computed.");
-            Collections.sort(list);
+
+            Collections.sort(list, GradedSample.byReverseGrade);
             logger.info("Samples sorted.");
+
             shapePane.model.clear();
 
             for (GradedSample gradedSample : list) {
                 shapePane.model.addElement(gradedSample.sample);
-            }
-        }
-
-        //~ Inner Classes --------------------------------------------------------------------------
-        private class GradedSample
-                implements Comparable<GradedSample>
-        {
-            //~ Instance fields --------------------------------------------------------------------
-
-            final double grade;
-
-            final Sample sample;
-
-            //~ Constructors -----------------------------------------------------------------------
-            public GradedSample (double grade,
-                                 Sample sample)
-            {
-                this.grade = grade;
-                this.sample = sample;
-            }
-
-            //~ Methods ----------------------------------------------------------------------------
-            @Override
-            public int compareTo (GradedSample that)
-            {
-                return Double.compare(that.grade, this.grade); // By decreasing grade
             }
         }
     }

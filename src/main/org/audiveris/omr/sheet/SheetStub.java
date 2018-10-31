@@ -149,7 +149,8 @@ public class SheetStub
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(SheetStub.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SheetStub.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -886,11 +887,11 @@ public class SheetStub
             throws Exception
     {
         if (modified) {
-            book.getLock().lock();
-
-            Path bookPath = BookManager.getDefaultSavePath(book);
+            final Lock lock = book.getLock();
+            lock.lock();
 
             try {
+                Path bookPath = BookManager.getDefaultSavePath(book);
                 Path root = ZipFileSystem.open(bookPath);
                 book.storeBookInfo(root); // Book info (book.xml)
 
@@ -898,7 +899,7 @@ public class SheetStub
                 sheet.store(sheetFolder, null);
                 root.getFileSystem().close();
             } finally {
-                book.getLock().unlock();
+                lock.unlock();
             }
         }
     }
@@ -925,7 +926,8 @@ public class SheetStub
             }
 
             if (OMR.gui != null) {
-                SwingUtilities.invokeLater(new Runnable()
+                SwingUtilities.invokeLater(
+                        new Runnable()
                 {
                     @Override
                     public void run ()
@@ -1028,7 +1030,8 @@ public class SheetStub
             }
 
             // Implement a timeout for this step on the stub
-            future = OmrExecutors.getCachedLowExecutor().submit(new Callable<Void>()
+            future = OmrExecutors.getCachedLowExecutor().submit(
+                    new Callable<Void>()
             {
                 @Override
                 public Void call ()

@@ -29,7 +29,6 @@ import org.audiveris.omr.check.CheckSuite;
 import org.audiveris.omr.check.Failure;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
-import org.audiveris.omr.glyph.AbstractWeightedEntity;
 import org.audiveris.omr.glyph.Glyph;
 import org.audiveris.omr.glyph.GlyphIndex;
 import org.audiveris.omr.glyph.dynamic.Filament;
@@ -39,7 +38,9 @@ import org.audiveris.omr.lag.Section;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
+
 import static org.audiveris.omr.run.Orientation.*;
+
 import org.audiveris.omr.sheet.Picture;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
@@ -61,7 +62,9 @@ import org.audiveris.omr.ui.selection.EntityListEvent;
 import org.audiveris.omr.ui.selection.MouseMovement;
 import org.audiveris.omr.ui.selection.UserEvent;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.NamedDouble;
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.Predicate;
@@ -390,11 +393,6 @@ public class LedgersBuilder
             Rectangle stickBox = stick.getBounds();
 
             for (LedgerInter ledger : prevLedgers) {
-                if ((AbstractWeightedEntity) ledger.getGlyph() == (AbstractWeightedEntity) stick) {
-                    // This may occur when manually using the ledger check
-                    continue;
-                }
-
                 Rectangle ledgerBox = ledger.getBounds();
 
                 if (GeoUtil.xOverlap(stickBox, ledgerBox) > minAbscissaOverlap) {

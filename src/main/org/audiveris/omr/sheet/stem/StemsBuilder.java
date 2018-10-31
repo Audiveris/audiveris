@@ -30,7 +30,6 @@ import org.audiveris.omr.glyph.Glyphs;
 import org.audiveris.omr.glyph.Shape;
 import org.audiveris.omr.glyph.ShapeSet;
 import org.audiveris.omr.glyph.dynamic.CompoundFactory;
-import org.audiveris.omr.glyph.dynamic.CompoundFactory.CompoundConstructor;
 import org.audiveris.omr.glyph.dynamic.SectionCompound;
 import org.audiveris.omr.glyph.dynamic.StraightFilament;
 import org.audiveris.omr.lag.Section;
@@ -38,7 +37,9 @@ import org.audiveris.omr.math.GeoOrder;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.LineUtil;
 import org.audiveris.omr.run.Orientation;
+
 import static org.audiveris.omr.run.Orientation.*;
+
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.Fraction;
@@ -59,16 +60,22 @@ import org.audiveris.omr.sig.relation.Exclusion.Cause;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.StemPortion;
+
 import static org.audiveris.omr.sig.relation.StemPortion.*;
+
 import org.audiveris.omr.ui.symbol.MusicFont;
 import org.audiveris.omr.ui.symbol.ShapeSymbol;
 import org.audiveris.omr.util.Corner;
 import org.audiveris.omr.util.Dumping;
 import org.audiveris.omr.util.HorizontalSide;
+
 import static org.audiveris.omr.util.HorizontalSide.*;
+
 import org.audiveris.omr.util.Navigable;
 import org.audiveris.omr.util.StopWatch;
+
 import static org.audiveris.omr.util.VerticalSide.*;
+
 import org.audiveris.omr.util.Wrapper;
 
 import org.slf4j.Logger;
@@ -176,7 +183,7 @@ public class StemsBuilder
     private List<Inter> systemBeams;
 
     /** Stems interpretations for this system. */
-    private List<StemInter> systemStems = new ArrayList<StemInter>();
+    private final List<StemInter> systemStems = new ArrayList<StemInter>();
 
     private VerticalsBuilder verticalsBuilder;
 
@@ -202,14 +209,7 @@ public class StemsBuilder
         ShapeSymbol symbol = Shape.NOTEHEAD_BLACK.getSymbol();
         headSymbolDim = symbol.getDimension(MusicFont.getHeadFont(scale, scale.getInterline()));
 
-        stemConstructor = new CompoundConstructor()
-        {
-            @Override
-            public SectionCompound newInstance ()
-            {
-                return new StraightFilament(scale.getInterline());
-            }
-        };
+        stemConstructor = new StraightFilament.Constructor(scale.getInterline());
     }
 
     //~ Methods ------------------------------------------------------------------------------------

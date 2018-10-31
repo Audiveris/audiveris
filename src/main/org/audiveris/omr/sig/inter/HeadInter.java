@@ -458,7 +458,7 @@ public class HeadInter
         // Specific between notes
         if (that instanceof HeadInter) {
             if (this.isVip() && ((HeadInter) that).isVip()) {
-                //logger.info("AbstractHeadInter checking overlaps between {} and {}", this, that);
+                logger.info("HeadInter checking overlaps between {} and {}", this, that);
             }
 
             HeadInter thatHead = (HeadInter) that;

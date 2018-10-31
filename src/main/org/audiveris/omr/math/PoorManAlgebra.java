@@ -166,7 +166,7 @@ public abstract class PoorManAlgebra
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
-        public static double EPS_THRESHOLD = 1e-5;
+        public static final double EPS_THRESHOLD = 1e-5;
 
         //~ Methods --------------------------------------------------------------------------------
         /**

@@ -94,7 +94,7 @@ public class BoardsPane
             board.setParent(this);
         }
 
-        Collections.sort(this.boards);
+        Collections.sort(this.boards, Board.byPosition);
 
         component = new Panel();
         component.setNoInsets();
@@ -136,7 +136,7 @@ public class BoardsPane
 
         boards.add(board);
         board.setParent(this);
-        Collections.sort(this.boards);
+        Collections.sort(this.boards, Board.byPosition);
         update();
 
         if (board.isSelected()) {

@@ -37,6 +37,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.EnumSet;
+import java.util.Objects;
 
 /**
  * Class {@code StaffPeak} represents a peak in staff projection onto x-axis.
@@ -160,8 +161,13 @@ public class StaffPeak
     @Override
     public int compareTo (StaffPeak that)
     {
-        if (this.getStaff() != that.getStaff()) {
-            return Staff.byId.compare(this.getStaff(), that.getStaff());
+        if (this == that) {
+            return 0;
+        }
+
+        // Total ordering, first by staff order, then by abscissa in staff
+        if (this.staff != that.staff) {
+            return Staff.byId.compare(this.staff, that.staff);
         }
 
         return Integer.compare(this.start, that.start);
@@ -175,6 +181,20 @@ public class StaffPeak
         Point2D mid = new Point2D.Double((start + stop) / 2.0, (top + bottom) / 2.0);
 
         dsk = skew.deskewed(mid);
+    }
+
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof StaffPeak) {
+            return compareTo((StaffPeak) obj) == 0;
+        }
+
+        return false;
     }
 
     //-----------//
@@ -339,6 +359,16 @@ public class StaffPeak
         return stop - start + 1;
     }
 
+    @Override
+    public int hashCode ()
+    {
+        int hash = 5;
+        hash = (71 * hash) + Objects.hashCode(staff);
+        hash = (71 * hash) + this.start;
+
+        return hash;
+    }
+
     //---------//
     // isBrace //
     //---------//
@@ -407,32 +437,6 @@ public class StaffPeak
         return attrs.contains(attr);
     }
 
-    //-----//
-    // set //
-    //-----//
-    /**
-     * Set the provided attribute to this instance.
-     *
-     * @param attr provided attribute
-     */
-    public final void set (Attribute attr)
-    {
-        attrs.add(attr);
-    }
-
-    //-------//
-    // unset //
-    //-------//
-    /**
-     * Un-set the provided attribute to this instance.
-     *
-     * @param attr provided attribute
-     */
-    public final void unset (Attribute attr)
-    {
-        attrs.remove(attr);
-    }
-
     //------------//
     // isStaffEnd //
     //------------//
@@ -458,6 +462,19 @@ public class StaffPeak
                 isBrace() ? Colors.STAFF_PEAK_BRACE
                         : (isBracket() ? Colors.STAFF_PEAK_BRACKET : Colors.STAFF_PEAK));
         g.fillRect(start, top, stop - start + 1, bottom - top + 1);
+    }
+
+    //-----//
+    // set //
+    //-----//
+    /**
+     * Set the provided attribute to this instance.
+     *
+     * @param attr provided attribute
+     */
+    public final void set (Attribute attr)
+    {
+        attrs.add(attr);
     }
 
     //---------------//
@@ -549,6 +566,19 @@ public class StaffPeak
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-------//
+    // unset //
+    //-------//
+    /**
+     * Un-set the provided attribute to this instance.
+     *
+     * @param attr provided attribute
+     */
+    public final void unset (Attribute attr)
+    {
+        attrs.remove(attr);
     }
 
     //-----------//

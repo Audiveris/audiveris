@@ -424,7 +424,7 @@ public class IntegerFunction
 
         for (int x = xMin + 1; x <= xMax; x++) {
             int der = getDerivative(x);
-            stream.format(" %d:%d/%+d\n", x, getValue(x), der);
+            stream.format(" %d:%d/%+d%n", x, getValue(x), der);
         }
 
         stream.println("]");

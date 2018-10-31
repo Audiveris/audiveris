@@ -35,9 +35,8 @@ public class NaturalSplineTest
         double[] yy = new double[]{};
 
         try {
-            NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
+            NaturalSpline.interpolate(xx, yy);
             fail("Exception should be raised when no points are defined");
-            System.out.println(spline.toString());
         } catch (IllegalArgumentException expected) {
             checkException(expected);
         }
@@ -53,9 +52,8 @@ public class NaturalSplineTest
         double[] yy = new double[]{1};
 
         try {
-            NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
+            NaturalSpline.interpolate(xx, yy);
             fail("Exception should be raised when only one point is defined");
-            System.out.println(spline.toString());
         } catch (IllegalArgumentException expected) {
             checkException(expected);
         }
@@ -105,9 +103,8 @@ public class NaturalSplineTest
         double[] yy = new double[]{1};
 
         try {
-            NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
+            NaturalSpline.interpolate(xx, yy);
             fail("Exception should be raised when no points are defined");
-            System.out.println(spline.toString());
         } catch (IllegalArgumentException expected) {
             checkException(expected);
         }
@@ -157,9 +154,8 @@ public class NaturalSplineTest
         double[] yy = null;
 
         try {
-            NaturalSpline spline = NaturalSpline.interpolate(xx, yy);
+            NaturalSpline.interpolate(xx, yy);
             fail("Exception should be raised when no points are defined");
-            System.out.println(spline.toString());
         } catch (NullPointerException expected) {
             checkException(expected);
         }

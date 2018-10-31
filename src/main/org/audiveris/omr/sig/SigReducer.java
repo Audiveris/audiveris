@@ -314,8 +314,8 @@ public class SigReducer
             }
 
             // Mutual head support within same shape
-            for (Shape shape : heads.keySet()) {
-                List<Inter> list = new ArrayList<Inter>(heads.get(shape));
+            for (Set<Inter> set : heads.values()) {
+                List<Inter> list = new ArrayList<Inter>(set);
 
                 for (int i = 0; i < list.size(); i++) {
                     HeadInter h1 = (HeadInter) list.get(i);
@@ -940,17 +940,17 @@ public class SigReducer
             for (Staff staff : system.getStaves()) {
                 SortedMap<Integer, List<LedgerInter>> map = staff.getLedgerMap();
 
-                // Need a set copy to avoid concurrent modifications
-                Set<Entry<Integer, List<LedgerInter>>> setCopy;
-                setCopy = new LinkedHashSet<Entry<Integer, List<LedgerInter>>>(map.entrySet());
+                // Need a read-only copy to avoid concurrent modifications
+                List<Entry<Integer, List<LedgerInter>>> staffLedgers;
+                staffLedgers = new ArrayList<Entry<Integer, List<LedgerInter>>>(map.entrySet());
 
-                for (Entry<Integer, List<LedgerInter>> entry : setCopy) {
+                for (Entry<Integer, List<LedgerInter>> entry : staffLedgers) {
                     int index = entry.getKey();
 
                     // Need a list copy to avoid concurrent modifications
-                    List<LedgerInter> ledgersCopy = new ArrayList<LedgerInter>(entry.getValue());
+                    List<LedgerInter> lineLedgers = new ArrayList<LedgerInter>(entry.getValue());
 
-                    for (LedgerInter ledger : ledgersCopy) {
+                    for (LedgerInter ledger : lineLedgers) {
                         if (!ledgerHasHeadOrLedger(staff, index, ledger, allHeads)) {
                             if (ledger.isVip()) {
                                 logger.info("VIP deleting orphan ledger {}", ledger);
@@ -1778,7 +1778,7 @@ public class SigReducer
             boolean taken = false;
 
             for (AbstractNoteInter note : notes) {
-                if (note instanceof HeadInter && ((note.getIntegerPitch() % 2) == 1)) {
+                if (note instanceof HeadInter && ((note.getIntegerPitch() % 2) != 0)) {
                     taken = true;
 
                     break;
@@ -1798,7 +1798,7 @@ public class SigReducer
             boolean taken = false;
 
             for (AbstractNoteInter note : notes) {
-                if (note instanceof HeadInter && ((note.getIntegerPitch() % 2) == 1)) {
+                if (note instanceof HeadInter && ((note.getIntegerPitch() % 2) != 0)) {
                     taken = true;
 
                     break;

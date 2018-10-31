@@ -850,14 +850,7 @@ public class TextBuilder
         final int dy = (offset != null) ? offset.y : 0;
         final GlyphIndex glyphIndex = sheet.getGlyphIndex();
         final int interline = sheet.getInterline();
-        final CompoundConstructor constructor = new CompoundConstructor()
-        {
-            @Override
-            public SectionCompound newInstance ()
-            {
-                return new SectionCompound(interline);
-            }
-        };
+        final CompoundConstructor constructor = new SectionCompound.Constructor(interline);
 
         for (TextLine line : lines) {
             logger.debug("  mapping {}", line);
@@ -1321,14 +1314,8 @@ public class TextBuilder
                                                  Point offset)
     {
         final SortedSet<Section> wordSections = new TreeSet<Section>(Section.byFullAbscissa);
-        final CompoundConstructor constructor = new CompoundConstructor()
-        {
-            @Override
-            public SectionCompound newInstance ()
-            {
-                return new SectionCompound(sheet.getInterline());
-            }
-        };
+        final CompoundConstructor constructor = new SectionCompound.Constructor(
+                sheet.getInterline());
 
         final int dx = (offset != null) ? offset.x : 0;
         final int dy = (offset != null) ? offset.y : 0;
@@ -1554,7 +1541,7 @@ public class TextBuilder
                             word.getChars()));
 
             //            }
-            if ((subWords != null) && !subWords.isEmpty()) {
+            if (!subWords.isEmpty()) {
                 toRemove.add(word);
                 toAdd.addAll(subWords);
             }

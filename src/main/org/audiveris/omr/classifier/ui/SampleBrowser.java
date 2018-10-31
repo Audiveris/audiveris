@@ -91,10 +91,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-
 import static javax.swing.JSplitPane.HORIZONTAL_SPLIT;
 import static javax.swing.JSplitPane.VERTICAL_SPLIT;
-
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
@@ -911,9 +909,10 @@ public class SampleBrowser
         boardsPane.addBoard(new SampleBoard(sampleController));
         boardsPane.addBoard(
                 new SampleEvaluationBoard(sampleController, BasicClassifier.getInstance()));
-//        boardsPane.addBoard(
-//                new SampleEvaluationBoard(sampleController, DeepClassifier.getInstance()));
-//
+
+        //        boardsPane.addBoard(
+        //                new SampleEvaluationBoard(sampleController, DeepClassifier.getInstance()));
+        //
         JSplitPane centerPane = new JSplitPane(
                 VERTICAL_SPLIT,
                 sheetSelector,
@@ -1223,7 +1222,7 @@ public class SampleBrowser
     /**
      * An evaluation board dedicated to evaluation / reassign of samples.
      */
-    private class SampleEvaluationBoard
+    private static class SampleEvaluationBoard
             extends EvaluationBoard
     {
         //~ Constructors ---------------------------------------------------------------------------
@@ -1244,18 +1243,19 @@ public class SampleBrowser
         @Override
         protected void evaluate (Glyph glyph)
         {
-            if (glyph == null) {
-                // Blank the output
-                selector.setEvals(null, null);
-            } else {
+            if (glyph instanceof Sample) {
+                final Sample sample = (Sample) glyph;
                 selector.setEvals(
                         classifier.evaluate(
                                 glyph,
-                                ((Sample) glyph).getInterline(),
+                                sample.getInterline(),
                                 selector.evalCount(),
                                 0.0, // minGrade
                                 Classifier.NO_CONDITIONS),
                         glyph);
+            } else {
+                // Blank the output
+                selector.setEvals(null, null);
             }
         }
     }

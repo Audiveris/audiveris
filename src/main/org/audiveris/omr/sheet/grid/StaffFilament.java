@@ -485,7 +485,7 @@ public class StaffFilament
 
         //~ Inner Classes --------------------------------------------------------------------------
         /** Convey a point together with its relative cluster position.. */
-        private class Neighbor
+        private static class Neighbor
         {
             //~ Instance fields --------------------------------------------------------------------
 

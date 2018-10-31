@@ -76,7 +76,7 @@ public abstract class Clock
      *
      * @return A standardized date + time string
      */
-    public static String getDate ()
+    public synchronized static String getDate ()
     {
         return dateFormatter.format(new Date());
     }

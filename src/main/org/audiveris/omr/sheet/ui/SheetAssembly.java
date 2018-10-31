@@ -96,16 +96,8 @@ public class SheetAssembly
     /** To manually control the zoom ratio. */
     private final LogSlider slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 5, 0);
 
-    /** Tabbed container for all views of the sheet. */
-    private final ClosableTabbedPane viewsPane = new ClosableTabbedPane()
-    {
-        @Override
-        public boolean tabAboutToClose (int tabIndex)
-        {
-            return OMR.gui.displayConfirmation(
-                    getTitleAt(tabIndex) + " tab is about to close." + "\nDo you confirm?");
-        }
-    };
+    /** Closable tabbed container for all views of the sheet. */
+    private final ViewsPane viewsPane = new ViewsPane();
 
     /** Zoom, with default ratio set to 1. */
     private final Zoom zoom = new Zoom(slider, 1);
@@ -656,6 +648,25 @@ public class SheetAssembly
                     m.getExtent(),
                     m.getMinimum(),
                     m.getMaximum());
+        }
+    }
+
+    //-----------//
+    // ViewsPane //
+    //-----------//
+    /**
+     * Closable tabbed pane, with user confirmation on tab closing.
+     */
+    private static class ViewsPane
+            extends ClosableTabbedPane
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public boolean tabAboutToClose (int tabIndex)
+        {
+            return OMR.gui.displayConfirmation(
+                    getTitleAt(tabIndex) + " tab is about to close." + "\nDo you confirm?");
         }
     }
 

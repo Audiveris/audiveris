@@ -22,10 +22,10 @@
 package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Shape;
-import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.ChordArpeggiatoRelation;
 import org.audiveris.omr.sig.relation.ChordArticulationRelation;
 import org.audiveris.omr.sig.relation.ChordStemRelation;
+import org.audiveris.omr.sig.relation.Containment;
 import org.audiveris.omr.sig.relation.FlagStemRelation;
 import org.audiveris.omr.sig.relation.HeadStemRelation;
 import org.audiveris.omr.sig.relation.Relation;
@@ -64,8 +64,9 @@ public class HeadChordInter
             HeadChordInter.class);
 
     /**
-     * Compare two heads (assumed to be) of the same chord, ordered by
-     * increasing distance from chord head ordinate.
+     * Compare two heads (assumed to be) of the same chord, ordered by increasing
+     * distance from chord head ordinate.
+     * It implements total ordering.
      */
     public static final Comparator<HeadInter> headComparator = new Comparator<HeadInter>()
     {
@@ -77,9 +78,18 @@ public class HeadChordInter
                 return 0;
             }
 
-            AbstractChordInter c1 = n1.getChord();
+            final Point p1 = n1.getCenter();
+            final Point p2 = n2.getCenter();
+            final int yCmp = Integer.compare(p1.y, p2.y);
 
-            return c1.getStemDir() * (n1.getCenter().y - n2.getCenter().y);
+            if (yCmp != 0) {
+                final AbstractChordInter chord = n1.getChord();
+
+                return chord.getStemDir() * yCmp;
+            }
+
+            // Total ordering: use abscissa to separate heads with identical ordinates (rare case)
+            return Integer.compare(p1.x, p2.x);
         }
     };
 

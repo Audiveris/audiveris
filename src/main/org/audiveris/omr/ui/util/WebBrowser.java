@@ -206,7 +206,7 @@ public class WebBrowser
         //If it's not supported, see if we have the Mac FileManager
         if (WellKnowns.MAC_OS_X) {
             try {
-                final Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
+                Class.forName("com.apple.eio.FileManager");
 
                 return new WebBrowser()
                 {

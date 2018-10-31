@@ -157,7 +157,7 @@ public class ClefInter
 
             if (kind == null) {
                 kind = kindOf(getCenter(), shape, staff);
-                pitch = new Double(kind.pitch);
+                pitch = Double.valueOf(kind.pitch);
             }
         }
     }

@@ -265,7 +265,6 @@ public class ChordNameInter
      */
     private ChordNameInter ()
     {
-        super(null);
         this.root = null;
         this.kind = null;
         this.bass = null;
@@ -442,11 +441,13 @@ public class ChordNameInter
     private static List<Pattern> getPatterns ()
     {
         if (patterns == null) {
-            patterns = new ArrayList<Pattern>();
+            List<Pattern> ps = new ArrayList<Pattern>();
 
             for (String raw : raws) {
-                patterns.add(Pattern.compile(raw));
+                ps.add(Pattern.compile(raw));
             }
+
+            patterns = ps;
         }
 
         return patterns;
@@ -628,7 +629,7 @@ public class ChordNameInter
 
                 // Deg alter
                 final String altStr = getGroup(matcher, DEG_ALTER);
-                final Integer alter = (altStr != null) ? Alter.toAlter(altStr) : null;
+                final Integer alter = Alter.toAlter(altStr);
 
                 degrees.add(new Degree(deg, alter, type, ""));
             }

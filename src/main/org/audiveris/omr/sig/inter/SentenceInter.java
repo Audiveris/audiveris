@@ -65,7 +65,7 @@ public class SentenceInter
             SentenceInter.class);
 
     /** For ordering sentences by their de-skewed ordinate. */
-    public static Comparator<SentenceInter> byOrdinate = new Comparator<SentenceInter>()
+    public static final Comparator<SentenceInter> byOrdinate = new Comparator<SentenceInter>()
     {
         @Override
         public int compare (SentenceInter s1,

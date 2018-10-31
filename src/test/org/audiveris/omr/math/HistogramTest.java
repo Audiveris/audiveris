@@ -333,7 +333,8 @@ public class HistogramTest
     private void assertElementsEqual (Entry<Integer, Integer> expected,
                                       Entry<Integer, Integer> actual)
     {
-        if ((expected.getKey() != actual.getKey()) || (expected.getValue() != actual.getValue())) {
+        if (!expected.getKey().equals(actual.getKey())
+            || !expected.getValue().equals(actual.getValue())) {
             throw new AssertionError("Expected: " + expected + " Actual: " + actual);
         }
     }

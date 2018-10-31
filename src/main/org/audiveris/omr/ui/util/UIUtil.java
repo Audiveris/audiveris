@@ -230,8 +230,10 @@ public abstract class UIUtil
 
             Component parentFrame = parent;
 
-            while (parentFrame.getParent() != null) {
-                parentFrame = parentFrame.getParent();
+            if (parentFrame != null) {
+                while (parentFrame.getParent() != null) {
+                    parentFrame = parentFrame.getParent();
+                }
             }
 
             try {
@@ -266,16 +268,15 @@ public abstract class UIUtil
         } else {
             final JFileChooser fc = new JFileChooser();
             // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6317789
-//            final JFileChooser fc = new JFileChooser()
-//            {
-//                @Override
-//                public void updateUI ()
-//                {
-//                    putClientProperty("FileChooser.useShellFolder", false);
-//                    super.updateUI();
-//                }
-//            };
-
+            //            final JFileChooser fc = new JFileChooser()
+            //            {
+            //                @Override
+            //                public void updateUI ()
+            //                {
+            //                    putClientProperty("FileChooser.useShellFolder", false);
+            //                    super.updateUI();
+            //                }
+            //            };
             fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
             // Pre-select the directory, and potentially the file to save to

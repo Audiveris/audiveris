@@ -24,6 +24,8 @@ package org.audiveris.omr.classifier;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.glyph.Shape;
 
+import java.util.Comparator;
+
 /**
  * Class {@code Evaluation} gathers a glyph shape, its grade and, if any, details about
  * its failure (name of the check that failed).
@@ -31,7 +33,6 @@ import org.audiveris.omr.glyph.Shape;
  * @author Hervé Bitteur
  */
 public class Evaluation
-        implements Comparable<Evaluation>
 {
     //~ Static fields/initializers -----------------------------------------------------------------
 
@@ -40,6 +41,19 @@ public class Evaluation
 
     /** Confidence for in structurally assigned. */
     public static final double ALGORITHM = 2;
+
+    /**
+     * For comparing Evaluation instances by decreasing grade.
+     */
+    public static final Comparator<Evaluation> byReverseGrade = new Comparator<Evaluation>()
+    {
+        @Override
+        public int compare (Evaluation e1,
+                            Evaluation e2)
+        {
+            return Double.compare(e2.grade, e1.grade); // Reverse order: highest to lowest
+        }
+    };
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The evaluated shape. */
@@ -69,21 +83,6 @@ public class Evaluation
     }
 
     //~ Methods ------------------------------------------------------------------------------------
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * To sort from best to worst.
-     *
-     * @param that the other evaluation instance
-     * @return -1,0 or +1
-     */
-    @Override
-    public int compareTo (Evaluation that)
-    {
-        return Double.compare(that.grade, this.grade); // Reverse order: highest to lowest
-    }
-
     //----------//
     // toString //
     //----------//

@@ -33,6 +33,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -68,7 +69,7 @@ public class Zoom
     private static final Logger logger = LoggerFactory.getLogger(Zoom.class);
 
     // To assign a unique Id
-    private static int globalId;
+    private static AtomicInteger globalId = new AtomicInteger(0);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Unique event, created lazily */
@@ -84,7 +85,7 @@ public class Zoom
     protected double ratio;
 
     // Unique Id (to ease debugging)
-    private int id = ++globalId;
+    private int id = globalId.incrementAndGet();
 
     //~ Constructors -------------------------------------------------------------------------------
     /**

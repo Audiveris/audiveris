@@ -51,10 +51,10 @@ public class ShapeSymbol
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The symbol meta data */
-    public static DataFlavor DATA_FLAVOR = new DataFlavor(SymbolIcon.class, "shape-symbol");
+    public static final DataFlavor DATA_FLAVOR = new DataFlavor(SymbolIcon.class, "shape-symbol");
 
     /** Composite used for decoration */
-    protected static AlphaComposite decoComposite = AlphaComposite.getInstance(
+    protected static final AlphaComposite decoComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.15f);
 
