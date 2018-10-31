@@ -302,7 +302,7 @@ public class SampleRepository
 
         logger.info("{} added {} to {}", this, sample, sampleSheet);
 
-        fireStateChanged(new AdditionEvent(sample));
+        fireStateChanged(new AdditionEvent(sample, this));
     }
 
     //-----------------//
@@ -1274,7 +1274,7 @@ public class SampleRepository
 
         logger.info("{} removed {} from {}", this, sample, sampleSheet);
 
-        fireStateChanged(new RemovalEvent(sample));
+        fireStateChanged(new RemovalEvent(sample, this));
     }
 
     //-------------//
@@ -1299,7 +1299,7 @@ public class SampleRepository
         }
 
         sheetContainer.removeDescriptor(descriptor);
-        fireStateChanged(new SheetRemovalEvent(descriptor));
+        fireStateChanged(new SheetRemovalEvent(descriptor, this));
     }
 
     //--------//
@@ -1727,7 +1727,7 @@ public class SampleRepository
     /**
      * Event used to carry information about sample addition performed.
      */
-    public class AdditionEvent
+    public static class AdditionEvent
             extends ChangeEvent
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -1735,9 +1735,10 @@ public class SampleRepository
         public final Sample sample; // The added sample
 
         //~ Constructors ---------------------------------------------------------------------------
-        public AdditionEvent (Sample sample)
+        public AdditionEvent (Sample sample,
+                              SampleRepository repo)
         {
-            super(SampleRepository.this);
+            super(repo);
             this.sample = sample;
         }
     }
@@ -1748,7 +1749,7 @@ public class SampleRepository
     /**
      * Event used to carry information about sample removal performed.
      */
-    public class RemovalEvent
+    public static class RemovalEvent
             extends ChangeEvent
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -1756,9 +1757,10 @@ public class SampleRepository
         public final Sample sample; // The removed sample
 
         //~ Constructors ---------------------------------------------------------------------------
-        public RemovalEvent (Sample sample)
+        public RemovalEvent (Sample sample,
+                             SampleRepository repo)
         {
-            super(SampleRepository.this);
+            super(repo);
             this.sample = sample;
         }
     }
@@ -1769,7 +1771,7 @@ public class SampleRepository
     /**
      * Event used to carry information about sheet removal performed.
      */
-    public class SheetRemovalEvent
+    public static class SheetRemovalEvent
             extends ChangeEvent
     {
         //~ Instance fields ------------------------------------------------------------------------
@@ -1777,9 +1779,10 @@ public class SampleRepository
         public final Descriptor descriptor; // Descriptor of the removed sheet
 
         //~ Constructors ---------------------------------------------------------------------------
-        public SheetRemovalEvent (Descriptor descriptor)
+        public SheetRemovalEvent (Descriptor descriptor,
+                                  SampleRepository repo)
         {
-            super(SampleRepository.this);
+            super(repo);
             this.descriptor = descriptor;
         }
     }

@@ -582,7 +582,6 @@ public class PeakGraph
                                      HorizontalSide side)
     {
         final Staff staff = peak.getStaff();
-        final StaffProjector projector = projectorOf(staff);
         final List<Section> allSections = new ArrayList<Section>(peak.getFilament().getMembers());
 
         StaffPeak p = new StaffPeak(

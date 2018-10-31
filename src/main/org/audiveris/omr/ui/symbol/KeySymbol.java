@@ -68,7 +68,7 @@ public abstract class KeySymbol
     {
         MyParams p = new MyParams();
 
-        p.stepDy = font.getStaffInterline() / 2;
+        p.stepDy = font.getStaffInterline() / 2.0;
 
         // One item
         p.layout = layout(font);

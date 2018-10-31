@@ -83,7 +83,7 @@ public class LagController
     {
         if (view == null) {
             displayFrame();
-        } else if (view != null) {
+        } else {
             view.repaint();
         }
     }

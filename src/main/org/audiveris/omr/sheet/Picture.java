@@ -750,6 +750,9 @@ public class Picture
         tables.put(key, tableHolder);
 
         switch (key) {
+        default:
+            break;
+
         case BINARY:
             disposeSource(SourceKey.BINARY);
         }
@@ -866,12 +869,14 @@ public class Picture
 
                     if (glyph == null) {
                         logger.warn("glyph is null for line " + line + " staff:" + staff);
-                    } else if (glyph.getRunTable() == null) {
-                        logger.warn("glyph runtable is null");
+                    } else {
+                        if (glyph.getRunTable() == null) {
+                            logger.warn("glyph runtable is null");
+                        } else {
+                            glyph.getRunTable().render(g, glyph.getTopLeft());
+                            linesErased = true;
+                        }
                     }
-
-                    linesErased = true;
-                    glyph.getRunTable().render(g, glyph.getTopLeft());
                 }
             }
         }

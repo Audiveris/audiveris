@@ -6,13 +6,13 @@
 package org.audiveris.omr.glyph;
 
 import static org.audiveris.omr.run.Orientation.HORIZONTAL;
+
 import org.audiveris.omr.run.Run;
 import org.audiveris.omr.run.RunTable;
 
 import org.junit.Test;
 
 import java.awt.Dimension;
-import java.awt.Point;
 
 /**
  *
@@ -42,8 +42,7 @@ public class GlyphFactoryTest
         System.out.println("createGlyphs");
 
         RunTable runTable = createHorizontalInstance();
-        Point offset = null;
-        GlyphFactory.buildGlyphs(runTable, offset);
+        GlyphFactory.buildGlyphs(runTable, null);
     }
 
     //--------------------------//

@@ -143,7 +143,7 @@ public class GuiActions
     public void browseGlobalSamples (ActionEvent e)
     {
         CursorController.launchWithDelayedMessage(
-                "Launching sample browser...",
+                "Launching global sample browser...",
                 new Runnable()
         {
             @Override
@@ -179,7 +179,7 @@ public class GuiActions
 
         if (repoPath != null) {
             CursorController.launchWithDelayedMessage(
-                    "Launching sample browser...",
+                    "Launching local sample browser...",
                     new Runnable()
             {
                 @Override

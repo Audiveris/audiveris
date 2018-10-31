@@ -28,6 +28,7 @@ import org.audiveris.omr.step.Step;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -366,6 +367,31 @@ public class ErrorsEditor
         {
             // Very basic indeed !!!
             return toString().compareTo(other.toString());
+        }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Record) {
+                return compareTo((Record) obj) == 0;
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 7;
+            hash = (37 * hash) + Objects.hashCode(this.step);
+            hash = (37 * hash) + Objects.hashCode(this.glyph);
+            hash = (37 * hash) + Objects.hashCode(this.text);
+
+            return hash;
         }
 
         @Override

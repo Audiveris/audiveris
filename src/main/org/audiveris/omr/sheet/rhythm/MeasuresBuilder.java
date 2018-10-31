@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.TreeMap;
 
 /**
@@ -166,7 +167,7 @@ public class MeasuresBuilder
             }
 
             int ibLast = barlines.indexOf(bLast);
-            groups.add(new Group(barlines.subList(i, ibLast + 1)));
+            groups.add(new Group(barlines.subList(i, ibLast + 1), system));
             i = ibLast;
         }
 
@@ -437,6 +438,29 @@ public class MeasuresBuilder
         }
 
         @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Column) {
+                return compareTo((Column) obj) == 0;
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 7;
+            hash = (23 * hash) + Objects.hashCode(this.getDeskewedAbscissa());
+
+            return hash;
+        }
+
+        @Override
         public String toString ()
         {
             StringBuilder sb = new StringBuilder();
@@ -522,7 +546,7 @@ public class MeasuresBuilder
                     barline.freeze();
 
                     List<Group> staffGroups = staffMap.get(staff);
-                    staffGroups.add(new Group(Collections.singletonList(barline)));
+                    staffGroups.add(new Group(Collections.singletonList(barline), system));
                     Collections.sort(staffGroups);
                     staff.addBarline(barline);
                 }
@@ -538,9 +562,7 @@ public class MeasuresBuilder
                     x += group.getDeskewedAbscissa();
                 }
 
-                if (!groups.isEmpty()) {
-                    xDsk = x / groups.size();
-                }
+                xDsk = x / groups.size();
             }
 
             return xDsk;
@@ -570,7 +592,7 @@ public class MeasuresBuilder
     /**
      * A group of barlines in a staff.
      */
-    private class Group
+    private static class Group
             extends ArrayList<BarlineInter>
             implements Comparable<Group>
     {
@@ -583,7 +605,8 @@ public class MeasuresBuilder
         final Point2D dsk;
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Group (List<BarlineInter> barlines)
+        public Group (List<BarlineInter> barlines,
+                      SystemInfo system)
         {
             addAll(barlines);
 

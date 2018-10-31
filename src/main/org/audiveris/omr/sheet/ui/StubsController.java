@@ -294,20 +294,16 @@ public class StubsController
                 }
             }
 
-            if (sheet.getFilamentIndex() != null) {
-                if (sheet.getFilamentIndex().getEntityService() != null) {
-                    sheet.getFilamentIndex().getEntityService().dumpSubscribers();
-                } else {
-                    logger.info("No filamentService");
-                }
+            if (sheet.getFilamentIndex().getEntityService() != null) {
+                sheet.getFilamentIndex().getEntityService().dumpSubscribers();
+            } else {
+                logger.info("No filamentService");
             }
 
-            if (sheet.getGlyphIndex() != null) {
-                if (sheet.getGlyphIndex().getEntityService() != null) {
-                    sheet.getGlyphIndex().getEntityService().dumpSubscribers();
-                } else {
-                    logger.info("No glyphService");
-                }
+            if (sheet.getGlyphIndex().getEntityService() != null) {
+                sheet.getGlyphIndex().getEntityService().dumpSubscribers();
+            } else {
+                logger.info("No glyphService");
             }
 
             if (sheet.getInterIndex() != null) {

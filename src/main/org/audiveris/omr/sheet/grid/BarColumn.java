@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.TreeSet;
 
 /**
@@ -298,22 +299,26 @@ public class BarColumn
      */
     public static class Chain
             extends TreeSet<StaffPeak>
-            implements Comparable<Chain>
     {
-        //~ Constructors ---------------------------------------------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
+        /** To sort by (de-skewed) abscissa. */
+        public static final Comparator<Chain> byAbscissa = new Comparator<Chain>()
+        {
+            @Override
+            public int compare (Chain c1,
+                                Chain c2)
+            {
+                return Double.compare(
+                        c1.first().getDeskewedAbscissa(),
+                        c2.first().getDeskewedAbscissa());
+            }
+        };
+
+        //~ Constructors ---------------------------------------------------------------------------
         public Chain (Collection<StaffPeak> peaks)
         {
             addAll(peaks);
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int compareTo (Chain that)
-        {
-            return Double.compare(
-                    this.first().getDeskewedAbscissa(),
-                    that.first().getDeskewedAbscissa());
         }
     }
 }

@@ -745,10 +745,10 @@ public class Part
     {
         if (lyrics != null) {
             lyrics.remove(lyric);
-        }
 
-        if (lyrics.isEmpty()) {
-            lyrics = null;
+            if (lyrics.isEmpty()) {
+                lyrics = null;
+            }
         }
     }
 

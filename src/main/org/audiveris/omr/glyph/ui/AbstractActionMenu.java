@@ -110,7 +110,8 @@ public abstract class AbstractActionMenu
         JMenu prevMenu = getMenu();
 
         for (int level = 0; level <= maxLevel; level++) {
-            JMenu currentMenu = (level == 0) ? getMenu() : new SeparableMenu("Continued ...");
+            SeparableMenu currentMenu = (level == 0) ? getMenu() : new SeparableMenu(
+                    "Continued ...");
 
             for (Integer tag : tags) {
                 for (Map.Entry<DynAction, Integer> entry : dynActions.entrySet()) {
@@ -126,9 +127,7 @@ public abstract class AbstractActionMenu
                 currentMenu.addSeparator();
             }
 
-            if (currentMenu instanceof SeparableMenu) {
-                ((SeparableMenu) currentMenu).trimSeparator();
-            }
+            currentMenu.trimSeparator();
 
             if ((level > 0) && (currentMenu.getMenuComponentCount() > 0)) {
                 // Insert this menu as a submenu of the previous one
@@ -163,7 +162,7 @@ public abstract class AbstractActionMenu
      * Base implementation, to register the dynamic actions that need
      * to be updated according to the current glyph selection context.
      */
-    protected abstract class DynAction
+    protected abstract static class DynAction
             extends AbstractAction
     {
         //~ Instance fields ------------------------------------------------------------------------

@@ -55,7 +55,7 @@ public class ProcessingSwitches
     private static final Logger logger = LoggerFactory.getLogger(ProcessingSwitches.class);
 
     /** Default switches values. */
-    private static ProcessingSwitches defaultSwitches;
+    private static volatile ProcessingSwitches defaultSwitches;
 
     //~ Enumerations -------------------------------------------------------------------------------
     /** Enumerated names, based on defined constants. */

@@ -29,6 +29,9 @@ import org.audiveris.omr.sig.BasicImpacts;
 import org.audiveris.omr.sig.GradeImpacts;
 import org.audiveris.omr.util.HorizontalSide;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 
@@ -53,6 +56,8 @@ public class WedgeInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(WedgeInter.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Top line. */
@@ -198,6 +203,11 @@ public class WedgeInter
             case DIMINUENDO:
                 l1 = new Line2D.Double(b.x, b.y, b.x + b.width, b.y + (b.height / 2));
                 l2 = new Line2D.Double(b.x, b.y + b.height, b.x + b.width, b.y + (b.height / 2));
+
+                break;
+
+            default:
+                logger.warn("Unknown wedge shape: {}", shape);
 
                 break;
             }

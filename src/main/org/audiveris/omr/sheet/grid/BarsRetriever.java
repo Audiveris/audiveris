@@ -208,22 +208,10 @@ public class BarsRetriever
         params = new Parameters(scale);
 
         // Specific constructors
-        braceConstructor = new CompoundConstructor()
-        {
-            @Override
-            public SectionCompound newInstance ()
-            {
-                return new CurvedFilament(scale.getInterline(), params.braceSegmentLength);
-            }
-        };
-        serifConstructor = new CompoundConstructor()
-        {
-            @Override
-            public SectionCompound newInstance ()
-            {
-                return new StraightFilament(scale.getInterline());
-            }
-        };
+        braceConstructor = new CurvedFilament.Constructor(
+                scale.getInterline(),
+                params.braceSegmentLength);
+        serifConstructor = new StraightFilament.Constructor(scale.getInterline());
 
         // Companions
         staffManager = sheet.getStaffManager();
@@ -593,9 +581,9 @@ public class BarsRetriever
             chainList.add(chain);
         }
 
-        // Sort all chains within each system
+        // Sort all chains by deskewed abscissa within each system
         for (List<Chain> chains : chainMap.values()) {
-            Collections.sort(chains);
+            Collections.sort(chains, Chain.byAbscissa);
         }
 
         // Try to aggregate chains into full-size columns

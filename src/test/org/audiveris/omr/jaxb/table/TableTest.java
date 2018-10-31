@@ -98,7 +98,7 @@ public class TableTest
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, IOException
     {
         System.out.println("=========================================================");
         System.out.println("Unmarshalling ...");
@@ -106,6 +106,7 @@ public class TableTest
         File source = new File(dir, fileName);
         InputStream is = new FileInputStream(source);
         Unmarshaller um = jaxbContext.createUnmarshaller();
+        is.close();
 
         Table table = (Table) um.unmarshal(is);
         System.out.println("Unmarshalled from " + source);

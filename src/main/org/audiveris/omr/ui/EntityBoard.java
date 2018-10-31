@@ -67,8 +67,8 @@ public class EntityBoard<E extends Entity>
 
     private static final Logger logger = LoggerFactory.getLogger(EntityBoard.class);
 
-    /** Events this board is interested in */
-    protected static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
+    /** Events this board is interested in. */
+    private static final Class<?>[] eventsRead = new Class<?>[]{EntityListEvent.class};
 
     //~ Enumerations -------------------------------------------------------------------------------
     /** To select precise ID option. */

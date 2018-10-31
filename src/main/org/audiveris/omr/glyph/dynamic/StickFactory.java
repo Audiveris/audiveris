@@ -603,7 +603,7 @@ public class StickFactory
     //------------//
     // Parameters //
     //------------//
-    private class Parameters
+    private static class Parameters
     {
         //~ Instance fields ------------------------------------------------------------------------
 

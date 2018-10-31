@@ -49,8 +49,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -608,8 +608,8 @@ public class FilamentFactory<F extends Filament>
                 }
 
                 // Compute position gap, taking thickness into account
-                double oneThickness = one.getWeight() / one.getLength(orientation);
-                double twoThickness = two.getWeight() / two.getLength(orientation);
+                double oneThickness = (double) one.getWeight() / one.getLength(orientation);
+                double twoThickness = (double) two.getWeight() / two.getLength(orientation);
                 int posMargin = (int) Math.rint(Math.max(oneThickness, twoThickness) / 2);
                 double posGap = Math.abs(gapStop.getY() - gapStart.getY()) - posMargin;
 
@@ -1107,45 +1107,6 @@ public class FilamentFactory<F extends Filament>
         private final Scale.Fraction minLengthForDeltaSlope = new Scale.Fraction(
                 10,
                 "Minimum filament length to apply delta slope test");
-    }
-
-    //----------------//
-    // DistantSection //
-    //----------------//
-    /**
-     * Meant to ease sorting of sections according to their distance to line.
-     */
-    private static class DistantSection
-            implements Comparable<DistantSection>
-    {
-        //~ Instance fields ------------------------------------------------------------------------
-
-        /** Underlying section. */
-        final Section section;
-
-        /** Distance to line. */
-        final double dist;
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public DistantSection (Section section,
-                               double dist)
-        {
-            this.section = section;
-            this.dist = dist;
-        }
-
-        //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int compareTo (DistantSection that)
-        {
-            return Double.compare(dist, that.dist);
-        }
-
-        @Override
-        public String toString ()
-        {
-            return dist + "/" + section;
-        }
     }
 
     //------------//

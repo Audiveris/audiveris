@@ -629,7 +629,7 @@ public class Page
      */
     public void setMovementStart (boolean movementStart)
     {
-        this.movementStart = movementStart ? Boolean.TRUE : null;
+        this.movementStart = movementStart;
     }
 
     //----------//

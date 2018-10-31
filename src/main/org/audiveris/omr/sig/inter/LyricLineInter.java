@@ -23,7 +23,6 @@ package org.audiveris.omr.sig.inter;
 
 import org.audiveris.omr.glyph.Grades;
 import org.audiveris.omr.sheet.Part;
-import org.audiveris.omr.sheet.SystemInfo;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextLine;
 import org.audiveris.omr.text.TextRole;
@@ -135,7 +134,6 @@ public class LyricLineInter
         LyricLineInter nextLine = null;
 
         // Check existence of similar line in following system part (within the same page)
-        SystemInfo system = sig.getSystem();
         Part nextPart = staff.getPart().getFollowingInPage();
 
         if (nextPart != null) {
@@ -172,7 +170,6 @@ public class LyricLineInter
     public LyricLineInter getPrecedingLine ()
     {
         // Check existence of similar line in preceding system part
-        SystemInfo system = sig.getSystem();
         Part prevPart = staff.getPart().getPrecedingInPage();
 
         if ((prevPart != null) && (prevPart.getLyrics().size() >= number)) {

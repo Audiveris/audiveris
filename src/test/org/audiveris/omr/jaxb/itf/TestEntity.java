@@ -94,7 +94,7 @@ public class TestEntity
     }
 
     private void unmarshall ()
-            throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException, IOException
     {
         System.out.println("=========================================================");
         System.out.println("Unmarshalling ...");
@@ -104,6 +104,7 @@ public class TestEntity
         InputStream is = new FileInputStream(source);
 
         MyBasicIndex index = (MyBasicIndex) um.unmarshal(is);
+        is.close();
         System.out.println("Unmarshalled from " + source);
         new Dumping().dump(index);
         System.out.println("index: " + index);

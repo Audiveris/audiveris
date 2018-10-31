@@ -70,7 +70,7 @@ public class BeamItem
                              int topDy,
                              int bottomDy)
     {
-        final double shiftY = (bottomDy - topDy) / 2;
+        final double shiftY = (bottomDy - topDy) / 2.0;
         final double beltHeight = height + topDy + bottomDy;
 
         Point2D p1 = LineUtil.intersectionAtX(median, median.getX1() - dx);

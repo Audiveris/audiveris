@@ -101,7 +101,7 @@ public class RunTable
     private static final Logger logger = LoggerFactory.getLogger(
             RunTable.class);
 
-    private static JAXBContext jaxbContext;
+    private static volatile JAXBContext jaxbContext;
 
     //~ Instance fields ----------------------------------------------------------------------------
     // Persistent data

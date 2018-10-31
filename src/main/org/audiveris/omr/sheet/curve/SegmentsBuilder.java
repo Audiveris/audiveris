@@ -226,16 +226,13 @@ public class SegmentsBuilder
         needGlobalModel(segment);
 
         GradeImpacts impacts = computeImpacts(segment, true);
+        SegmentInter inter = new SegmentInter(segment, impacts);
+        Glyph glyph = segment.retrieveGlyph(sheet, params.maxRunDistance);
 
-        if (impacts != null) {
-            SegmentInter inter = new SegmentInter(segment, impacts);
-            Glyph glyph = segment.retrieveGlyph(sheet, params.maxRunDistance);
-
-            if (glyph != null) {
-                inter.setGlyph(glyph);
-                inters.add(inter);
-                segments.add(inter);
-            }
+        if (glyph != null) {
+            inter.setGlyph(glyph);
+            inters.add(inter);
+            segments.add(inter);
         }
     }
 

@@ -25,14 +25,10 @@ import org.audiveris.omr.WellKnowns;
 import org.audiveris.omr.constant.Constant;
 import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.Shape;
-
 import static org.audiveris.omr.glyph.Shape.CODA;
 import static org.audiveris.omr.glyph.Shape.SEGNO;
-
 import org.audiveris.omr.math.Rational;
-
 import static org.audiveris.omr.score.MusicXML.*;
-
 import org.audiveris.omr.sheet.Book;
 import org.audiveris.omr.sheet.Part;
 import org.audiveris.omr.sheet.PartBarline;
@@ -49,9 +45,7 @@ import org.audiveris.omr.sig.SIGraph;
 import org.audiveris.omr.sig.inter.AbstractBeamInter;
 import org.audiveris.omr.sig.inter.AbstractChordInter;
 import org.audiveris.omr.sig.inter.AbstractNoteInter;
-
 import static org.audiveris.omr.sig.inter.AbstractNoteInter.QUARTER_DURATION;
-
 import org.audiveris.omr.sig.inter.AbstractTimeInter;
 import org.audiveris.omr.sig.inter.AlterInter;
 import org.audiveris.omr.sig.inter.ArpeggiatoInter;
@@ -90,18 +84,12 @@ import org.audiveris.omr.sig.relation.Relation;
 import org.audiveris.omr.sig.relation.SlurHeadRelation;
 import org.audiveris.omr.text.FontInfo;
 import org.audiveris.omr.text.TextRole;
-
 import static org.audiveris.omr.text.TextRole.*;
-
 import org.audiveris.omr.util.HorizontalSide;
-
 import static org.audiveris.omr.util.HorizontalSide.LEFT;
 import static org.audiveris.omr.util.HorizontalSide.RIGHT;
-
 import org.audiveris.omr.util.OmrExecutors;
-
 import static org.audiveris.omr.util.VerticalSide.*;
-
 import org.audiveris.proxymusic.AboveBelow;
 import org.audiveris.proxymusic.Accidental;
 import org.audiveris.proxymusic.Arpeggiate;
@@ -1149,36 +1137,34 @@ public class PartwiseBuilder
 
             String content = sentence.getValue();
 
-            if (content != null) {
-                Direction direction = factory.createDirection();
-                DirectionType directionType = factory.createDirectionType();
-                FormattedText pmWords = factory.createFormattedText();
-                Point location = sentence.getLocation();
+            Direction direction = factory.createDirection();
+            DirectionType directionType = factory.createDirectionType();
+            FormattedText pmWords = factory.createFormattedText();
+            Point location = sentence.getLocation();
 
-                pmWords.setValue(content);
+            pmWords.setValue(content);
 
-                // Staff
-                Staff staff = current.note.getStaff();
-                insertStaffId(direction, staff);
+            // Staff
+            Staff staff = current.note.getStaff();
+            insertStaffId(direction, staff);
 
-                // Placement
-                direction.setPlacement(
-                        (location.y < current.note.getCenter().y) ? AboveBelow.ABOVE : AboveBelow.BELOW);
+            // Placement
+            direction.setPlacement(
+                    (location.y < current.note.getCenter().y) ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
-                // default-y
-                pmWords.setDefaultY(yOf(location, staff));
+            // default-y
+            pmWords.setDefaultY(yOf(location, staff));
 
-                // Font information
-                setFontInfo(pmWords, sentence);
+            // Font information
+            setFontInfo(pmWords, sentence);
 
-                // relative-x
-                pmWords.setRelativeX(toTenths(location.x - current.note.getCenterLeft().x));
+            // relative-x
+            pmWords.setRelativeX(toTenths(location.x - current.note.getCenterLeft().x));
 
-                // Everything is now OK
-                directionType.getWords().add(pmWords);
-                direction.getDirectionType().add(directionType);
-                current.pmMeasure.getNoteOrBackupOrForward().add(direction);
-            }
+            // Everything is now OK
+            directionType.getWords().add(pmWords);
+            direction.getDirectionType().add(directionType);
+            current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
             logger.warn("Error visiting " + sentence, ex);
         }
@@ -1569,7 +1555,7 @@ public class PartwiseBuilder
             //            // default-y
             //            empty.setDefaultY(yOf(marker.getCenterLeft(), staff));
             //
-            // Need also a Sound element (TODO: We don't do anything with sound!)
+            // Need also a Sound element
             Sound sound = factory.createSound();
             direction.setSound(sound);
             sound.setDivisions(new BigDecimal(current.page.simpleDurationOf(QUARTER_DURATION)));
@@ -1586,6 +1572,38 @@ public class PartwiseBuilder
                 directionType.getSegno().add(empty);
 
                 break;
+
+            case DA_CAPO: {
+                FormattedText text = new FormattedText();
+                text.setValue("D.C.");
+                directionType.getWords().add(text);
+                sound.setDacapo(YesNo.YES);
+            }
+
+            break;
+
+            case DAL_SEGNO: {
+                // Example:
+                //  <direction placement="above">
+                //	<direction-type>
+                //	    <words font-style="italic">D.S. al Fine</words>
+                //	</direction-type>
+                //	<sound dalsegno="9"/>
+                //  </direction>
+                FormattedText text = new FormattedText();
+                text.setValue("D.S.");
+                directionType.getWords().add(text);
+
+                //TODO: we need to point back to id of measure where segno is located
+                ///sound.setDalsegno(measureId); // NO, not this measure, but the target measure!
+            }
+
+            break;
+
+            default:
+                logger.warn("Unknown marker shape: {}", marker.getShape());
+
+                return;
             }
 
             // Everything is now OK
@@ -2299,20 +2317,18 @@ public class PartwiseBuilder
                     scaling.setTenths(new BigDecimal(40));
 
                     // [Defaults]/PageLayout (using first page)
-                    if (firstPage.getDimension() != null) {
-                        PageLayout pageLayout = factory.createPageLayout();
-                        defaults.setPageLayout(pageLayout);
-                        pageLayout.setPageHeight(toTenths(firstPage.getDimension().height));
-                        pageLayout.setPageWidth(toTenths(firstPage.getDimension().width));
+                    PageLayout pageLayout = factory.createPageLayout();
+                    defaults.setPageLayout(pageLayout);
+                    pageLayout.setPageHeight(toTenths(firstPage.getDimension().height));
+                    pageLayout.setPageWidth(toTenths(firstPage.getDimension().width));
 
-                        PageMargins pageMargins = factory.createPageMargins();
-                        pageMargins.setType(MarginType.BOTH);
-                        pageMargins.setLeftMargin(pageHorizontalMargin);
-                        pageMargins.setRightMargin(pageHorizontalMargin);
-                        pageMargins.setTopMargin(pageVerticalMargin);
-                        pageMargins.setBottomMargin(pageVerticalMargin);
-                        pageLayout.getPageMargins().add(pageMargins);
-                    }
+                    PageMargins pageMargins = factory.createPageMargins();
+                    pageMargins.setType(MarginType.BOTH);
+                    pageMargins.setLeftMargin(pageHorizontalMargin);
+                    pageMargins.setRightMargin(pageHorizontalMargin);
+                    pageMargins.setTopMargin(pageVerticalMargin);
+                    pageMargins.setBottomMargin(pageVerticalMargin);
+                    pageLayout.getPageMargins().add(pageMargins);
                 }
 
                 // [Defaults]/LyricFont
@@ -2387,26 +2403,24 @@ public class PartwiseBuilder
                 typedText.setValue(sentence.getValue());
 
                 // Additional type information?
-                if (role != null) {
-                    switch (role) {
-                    case CreatorArranger:
-                        typedText.setType("arranger");
+                switch (role) {
+                case CreatorArranger:
+                    typedText.setType("arranger");
 
-                        break;
+                    break;
 
-                    case CreatorComposer:
-                        typedText.setType("composer");
+                case CreatorComposer:
+                    typedText.setType("composer");
 
-                        break;
+                    break;
 
-                    case CreatorLyricist:
-                        typedText.setType("lyricist");
+                case CreatorLyricist:
+                    typedText.setType("lyricist");
 
-                        break;
+                    break;
 
-                    default:
-                        break;
-                    }
+                default:
+                    break;
                 }
 
                 scorePartwise.getIdentification().getCreator().add(typedText);
@@ -2652,6 +2666,8 @@ public class PartwiseBuilder
                 time.setSymbol(TimeSymbol.CUT);
 
                 break;
+
+            default:
             }
         }
 

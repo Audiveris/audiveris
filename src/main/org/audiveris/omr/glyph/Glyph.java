@@ -191,7 +191,7 @@ public class Glyph
                         Integer.toHexString(hashCode())));
 
         if (isVip()) {
-            sb.append(String.format("   vip%n", getId()));
+            sb.append(String.format("   vip%n"));
         }
 
         sb.append(String.format("   bounds=%s%n", getBounds()));

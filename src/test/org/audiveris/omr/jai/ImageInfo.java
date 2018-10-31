@@ -122,6 +122,11 @@ public class ImageInfo
             System.out.println("undefined");
 
             break;
+
+        default:
+            System.out.println("unknown type: " + sm.getDataType());
+
+            break;
         }
 
         // Display info about the ColorModel of the image.
@@ -145,6 +150,11 @@ public class ImageInfo
 
             case Transparency.TRANSLUCENT:
                 System.out.println("translucent");
+
+                break;
+
+            default:
+                System.out.println("unknown transparency: " + cm.getTransparency());
 
                 break;
             }

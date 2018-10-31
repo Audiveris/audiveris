@@ -101,7 +101,7 @@ public class SpotsController
     {
         if (view == null) {
             displayFrame();
-        } else if (view != null) {
+        } else {
             view.repaint();
         }
     }

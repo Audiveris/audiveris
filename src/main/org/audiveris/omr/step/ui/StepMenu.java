@@ -170,7 +170,7 @@ public class StepMenu
                         try {
                             LogUtil.start(stub);
                             stub.reachStep(step, true);
-                            logger.info("End of step {}", step);
+                            logger.info("End of sheet step {}", step);
                         } finally {
                             LogUtil.stopStub();
                         }

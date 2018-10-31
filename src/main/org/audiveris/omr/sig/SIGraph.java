@@ -1291,40 +1291,6 @@ public class SIGraph
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------
-    //--------------//
-    // Contribution //
-    //--------------//
-    /**
-     * Meant to sort the actual contributions brought by supporting partners.
-     */
-    private static class Contribution
-    {
-        //~ Static fields/initializers -------------------------------------------------------------
-
-        public static Comparator<Contribution> byReverseValue = new Comparator<Contribution>()
-        {
-            @Override
-            public int compare (Contribution o1,
-                                Contribution o2)
-            {
-                return Double.compare(o2.value, o1.value);
-            }
-        };
-
-        //~ Instance fields ------------------------------------------------------------------------
-        final Inter partner; // Contributing partner
-
-        final double value; // Concrete contribution brought by the partner
-
-        //~ Constructors ---------------------------------------------------------------------------
-        public Contribution (Inter partner,
-                             double ratio)
-        {
-            this.partner = partner;
-            value = ratio * partner.getGrade();
-        }
-    }
-
     //----------//
     // Sequence //
     //----------//

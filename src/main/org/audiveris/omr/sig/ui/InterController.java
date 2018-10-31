@@ -1056,7 +1056,7 @@ public class InterController
             }
         });
 
-        if ((staff == null) && constants.useStaffLink.isSet()) {
+        if (constants.useStaffLink.isSet()) {
             // Try to use link
             SystemInfo prevSystem = null;
             StaffLoop:

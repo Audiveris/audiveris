@@ -52,14 +52,18 @@ public class WeakGlyph
     @Override
     public int compareTo (WeakGlyph that)
     {
+        if (this == that) {
+            return 0;
+        }
+
         final Glyph thisGlyph = this.get();
         final Glyph thatGlyph = that.get();
 
-        if (thisGlyph == null) {
-            if (thatGlyph == null) {
-                return 0;
-            }
+        if (thisGlyph == thatGlyph) {
+            return 0;
+        }
 
+        if (thisGlyph == null) {
             return -1;
         }
 

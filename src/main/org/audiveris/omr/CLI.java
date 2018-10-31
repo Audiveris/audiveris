@@ -251,7 +251,7 @@ public class CLI
             sb.append(toolName).append(" ");
         }
 
-        sb.append(trimmedArgs);
+        sb.append(Arrays.toString(trimmedArgs));
         logger.info(sb.toString());
     }
 
@@ -479,7 +479,7 @@ public class CLI
                     break;
                 }
 
-                int minusPos = param.indexOf("-");
+                int minusPos = param.indexOf('-');
 
                 if (minusPos != -1) {
                     // " a - b " or a-b

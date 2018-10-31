@@ -361,6 +361,41 @@ public class MusicFont
     }
 
     //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj instanceof MusicFont) {
+            MusicFont that = (MusicFont) obj;
+
+            if (this.staffInterline != that.staffInterline) {
+                return false;
+            }
+
+            return super.equals(obj);
+        }
+
+        return false;
+    }
+
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = (71 * hash) + this.staffInterline;
+
+        return hash;
+    }
+
+    //--------//
     // layout //
     //--------//
     /**

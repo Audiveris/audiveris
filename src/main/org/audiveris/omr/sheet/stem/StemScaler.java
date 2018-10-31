@@ -309,7 +309,7 @@ public class StemScaler
     //--------------//
     // StemsCleaner //
     //--------------//
-    private class StemsCleaner
+    private static class StemsCleaner
             extends PageCleaner
     {
         //~ Constructors ---------------------------------------------------------------------------

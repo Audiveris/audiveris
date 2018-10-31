@@ -29,7 +29,7 @@ import java.util.StringTokenizer;
 /**
  * Class {@code StructureElement}
  *
- * @author Hervé Bitteur
+ * @author ?
  */
 public class StructureElement
         implements MorphoConstants
@@ -39,6 +39,9 @@ public class StructureElement
     private static final Logger logger = LoggerFactory.getLogger(StructureElement.class);
 
     static final String EOL = System.getProperty("line.separator");
+
+    /** Epsilon value meant for equality testing: {@value}. */
+    private static final double EPSILON = 1E-5;
 
     //~ Instance fields ----------------------------------------------------------------------------
     private int[] mask;
@@ -484,13 +487,13 @@ public class StructureElement
         String token = st.nextToken();
 
         try {
-            d = new Double(token);
+            d = Double.valueOf(token);
         } catch (NumberFormatException e) {
             d = null;
         }
 
         if (d != null) {
-            return (d.doubleValue());
+            return d;
         } else {
             return 0.0;
         }
@@ -548,13 +551,13 @@ public class StructureElement
         int sz = this.width * this.height;
         int[] mask = new int[sz];
 
-        if ((alpha == 0) || (alpha == Math.PI)) {
+        if ((Math.abs(alpha) < EPSILON) || (Math.abs(alpha - Math.PI) < EPSILON)) {
             //for (int i=0;i<height-1;i++)
             // IJ.log("shift "+shift);
             for (int j = shift; j < (width - shift); j++) {
                 mask[j] = 255;
             }
-        } else if (alpha == (Math.PI / 2)) {
+        } else if (Math.abs(alpha - (Math.PI / 2)) < EPSILON) {
             for (int i = shift; i < (height - shift); i++) {
                 //for (int j=0;j<width;j++)
                 mask[i] = 255;
@@ -665,8 +668,8 @@ public class StructureElement
 
         //System.out.println("nnz: "+N);
         int h = sz / w;
-        int p = (int) Math.floor(h / 2);
-        int q = (int) Math.floor(w / 2);
+        int p = (int) Math.floor(h / 2.0);
+        int q = (int) Math.floor(w / 2.0);
 
         // System.out.println("p: "+p);
         //  System.out.println("q: "+q);

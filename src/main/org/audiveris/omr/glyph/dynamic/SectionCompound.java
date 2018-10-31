@@ -31,9 +31,7 @@ import org.audiveris.omr.math.Barycenter;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.math.PointUtil;
 import org.audiveris.omr.run.Orientation;
-
 import static org.audiveris.omr.run.Orientation.*;
-
 import org.audiveris.omr.run.RunTable;
 import org.audiveris.omr.run.RunTableFactory;
 import org.audiveris.omr.util.ByteUtil;
@@ -526,5 +524,30 @@ public class SectionCompound
     {
         weight = null;
         bounds = null;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------------//
+    // Constructor //
+    //-------------//
+    public static final class Constructor
+            implements CompoundFactory.CompoundConstructor
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final int interline;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Constructor (int interline)
+        {
+            this.interline = interline;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public SectionCompound newInstance ()
+        {
+            return new SectionCompound(interline);
+        }
     }
 }

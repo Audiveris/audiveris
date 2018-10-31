@@ -217,6 +217,9 @@ public class LagManager
                 rebuildBothLags();
 
                 return lagMap.get(key);
+
+            default:
+                break;
             }
         }
 

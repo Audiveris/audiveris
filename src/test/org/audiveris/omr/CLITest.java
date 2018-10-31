@@ -102,7 +102,7 @@ public class CLITest
         String[] args = new String[]{"-run", "fooBar"};
 
         try {
-            CLI.Parameters params = instance.parseParameters(args);
+            instance.parseParameters(args);
 
             fail();
         } catch (CmdLineException ex) {
@@ -190,7 +190,7 @@ public class CLITest
         String[] args = new String[]{"-step"};
 
         try {
-            CLI.Parameters params = instance.parseParameters(args);
+            instance.parseParameters(args);
 
             fail();
         } catch (CmdLineException ex) {

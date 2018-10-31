@@ -322,9 +322,6 @@ public class Options
 
         Set<Object> matches = UnitManager.getInstance().searchUnits(searchString);
         rows = unitTreeTable.setNodesSelection(matches);
-
-        if (rows == null) {
-            rowIndex = null;
-        }
+        rowIndex = null;
     }
 }

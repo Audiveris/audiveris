@@ -76,7 +76,19 @@ public abstract class CurvesBuilder
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(CurvesBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            CurvesBuilder.class);
+
+    /** To sort Extension instances by decreasing grade. */
+    private static final Comparator<Extension> byReverseGrade = new Comparator<Extension>()
+    {
+        @Override
+        public int compare (Extension e1,
+                            Extension e2)
+        {
+            return Double.compare(e2.getGrade(), e1.getGrade());
+        }
+    };
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
@@ -103,17 +115,6 @@ public abstract class CurvesBuilder
 
     /** (Current) orientation for walking along a curve. */
     protected boolean reverse;
-
-    /** To sort Extension instances by decreasing grade. */
-    private final Comparator<Extension> byReverseGrade = new Comparator<Extension>()
-    {
-        @Override
-        public int compare (Extension e1,
-                            Extension e2)
-        {
-            return Double.compare(e2.getGrade(), e1.getGrade());
-        }
-    };
 
     /** (Debug) tells whether an arc is being debugged. */
     protected boolean debugArc;
@@ -254,13 +255,6 @@ public abstract class CurvesBuilder
                                          Set<Inter> inters);
 
     /**
-     * Additional filtering if any on the provided clump.
-     *
-     * @param clump the collection of slur candidates to be pruned down to one slur
-     */
-    protected abstract void pruneClump (Set<Inter> clump);
-
-    /**
      * Report the number of points at beginning of arc tested for connection.
      *
      * @return the number of points for which distance will be checked, or null for no limit
@@ -274,6 +268,13 @@ public abstract class CurvesBuilder
      * @return the unit vector which extends the curve end
      */
     protected abstract Point2D getEndVector (Curve curve);
+
+    /**
+     * Additional filtering if any on the provided clump.
+     *
+     * @param clump the collection of slur candidates to be pruned down to one slur
+     */
+    protected abstract void pruneClump (Set<Inter> clump);
 
     /**
      * Among the clump of curves built from a common trunk on 'reverse' side, weed out

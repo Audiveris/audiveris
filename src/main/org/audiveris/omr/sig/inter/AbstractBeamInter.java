@@ -138,10 +138,6 @@ public abstract class AbstractBeamInter
                                  double grade)
     {
         super(null, null, shape, grade);
-
-        if (median != null) {
-            computeArea();
-        }
     }
 
     //~ Methods ------------------------------------------------------------------------------------
@@ -571,7 +567,6 @@ public abstract class AbstractBeamInter
         final Line2D top = getBorder(VerticalSide.TOP);
         final Line2D bottom = getBorder(VerticalSide.BOTTOM);
         final int xOut = scale.toPixels(BeamStemRelation.getXOutGapMaximum(manual));
-        final int xIn = scale.toPixels(BeamStemRelation.getXInGapMaximum(manual));
         final int yGap = scale.toPixels(BeamStemRelation.getYGapMaximum(manual));
 
         final Path2D lu = new Path2D.Double();

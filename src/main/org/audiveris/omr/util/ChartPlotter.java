@@ -45,7 +45,7 @@ public class ChartPlotter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Height of marks below zero line. */
-    public static double MARK = 2.5;
+    public static final double MARK = 2.5;
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** Collection of series. */

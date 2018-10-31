@@ -1215,8 +1215,8 @@ public class NoteHeadsBuilder
             {
                 // Horizontal slice to detect bars/connectors
                 final double vMargin = scale.toPixelsDouble(constants.barVerticalMargin);
-                final double above = ((interline * dir) / 2) - vMargin;
-                final double below = ((interline * dir) / 2) + vMargin;
+                final double above = ((interline * dir) / 2.0) - vMargin;
+                final double below = ((interline * dir) / 2.0) + vMargin;
                 Area barsArea = line.getArea(above, below);
                 barAreas = getBarAreas(barsArea);
             }

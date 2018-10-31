@@ -210,9 +210,9 @@ public class SheetDiff
 
         watch.start("xor");
 
-        BufferedImage xor = ImageUtil.invert(ImageUtil.xor(input, output));
-
+        ///BufferedImage xor = ImageUtil.invert(ImageUtil.xor(input, output));
         ///ImageUtil.saveOnDisk(xor, sheet.getPage().getId() + ".XOR");
+        //
         for (DiffKind kind : DiffKind.values()) {
             watch.start(kind.toString());
 

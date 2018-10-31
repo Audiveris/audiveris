@@ -489,7 +489,7 @@ public class Rubber
                     zoom.scale(v);
                 }
 
-                final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+                UIUtil.setAbsoluteStroke(g, 1f);
                 g.setColor(Color.BLACK);
                 g.draw(v);
             }

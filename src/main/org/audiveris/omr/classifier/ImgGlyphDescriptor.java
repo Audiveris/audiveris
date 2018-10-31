@@ -41,6 +41,9 @@ public class ImgGlyphDescriptor
 
     private static final Logger logger = LoggerFactory.getLogger(ImgGlyphDescriptor.class);
 
+    /** Empty labels array. */
+    private static final String[] NO_LABELS = new String[0];
+
     //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new {@code ImgGlyphDescriptor} object.
@@ -54,7 +57,7 @@ public class ImgGlyphDescriptor
     @Override
     public String[] getFeatureLabels ()
     {
-        return null;
+        return NO_LABELS;
     }
 
     @Override

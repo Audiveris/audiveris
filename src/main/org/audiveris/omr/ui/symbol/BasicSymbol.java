@@ -89,7 +89,7 @@ public class BasicSymbol
             2);
 
     /** A transformation for really small icon display. */
-    protected static AffineTransform tiny = AffineTransform.getScaleInstance(0.5, 0.5);
+    protected static final AffineTransform tiny = AffineTransform.getScaleInstance(0.5, 0.5);
 
     //~ Instance fields ----------------------------------------------------------------------------
     /** To flag an icon symbol. */

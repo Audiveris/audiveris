@@ -68,6 +68,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -198,8 +199,8 @@ public class DotFactory
      */
     public void lateDotChecks ()
     {
-        // Sort dots by reverse ordinate
-        Collections.sort(dots);
+        // Sort dots carefully
+        Collections.sort(dots, Dot.comparator);
 
         // Run all late checks
         lateAugmentationChecks(); // Note-Dot and Note-Dot-Dot configurations
@@ -547,9 +548,14 @@ public class DotFactory
             double pitch = (pp > 0) ? 1 : (-1);
             Glyph glyph = dot.getGlyph();
             int annId = dot.getAnnotationId();
-            RepeatDotInter repeat = (glyph != null)
-                    ? new RepeatDotInter(glyph, grade, staff, pitch)
-                    : new RepeatDotInter(annId, dotBounds, grade, staff, pitch);
+            final RepeatDotInter repeat;
+
+            if (glyph != null) {
+                repeat = new RepeatDotInter(glyph, grade, staff, pitch);
+            } else {
+                repeat = new RepeatDotInter(annId, dotBounds, grade, staff, pitch);
+            }
+
             sig.addVertex(repeat);
             sig.addEdge(repeat, bestBar, bestRel);
 
@@ -809,10 +815,40 @@ public class DotFactory
      * Remember a dot candidate, for late processing.
      */
     private abstract static class Dot
-            implements Comparable<Dot>
     {
-        //~ Methods --------------------------------------------------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
+        /**
+         * Very specific sorting of dots.
+         * <p>
+         * If the 2 dots overlap vertically, return left one first.
+         * Otherwise, return top one first.
+         *
+         * @param that the other dot
+         * @return order sign
+         */
+        public static final Comparator<Dot> comparator = new Comparator<Dot>()
+        {
+            @Override
+            public int compare (Dot d1,
+                                Dot d2)
+            {
+                if (d1 == d2) {
+                    return 0;
+                }
+
+                final Rectangle b1 = d1.getBounds();
+                final Rectangle b2 = d2.getBounds();
+
+                if (GeoUtil.yOverlap(b1, b2) > 0) {
+                    return Integer.compare(b1.x, b2.x);
+                } else {
+                    return Integer.compare(b1.y, b2.y);
+                }
+            }
+        };
+
+        //~ Methods --------------------------------------------------------------------------------
         public abstract int getAnnotationId ();
 
         public abstract Rectangle getBounds ();
@@ -824,19 +860,6 @@ public class DotFactory
         public abstract OmrShape getOmrShape ();
 
         public abstract boolean isVip ();
-
-        @Override
-        public int compareTo (Dot that)
-        {
-            final Rectangle b1 = this.getBounds();
-            final Rectangle b2 = that.getBounds();
-
-            if (GeoUtil.yOverlap(b1, b2) > 0) {
-                return Integer.compare(b1.x, b2.x);
-            } else {
-                return Integer.compare(b1.y, b2.y);
-            }
-        }
     }
 
     //---------------//

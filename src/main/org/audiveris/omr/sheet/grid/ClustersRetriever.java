@@ -26,9 +26,7 @@ import org.audiveris.omr.constant.ConstantSet;
 import org.audiveris.omr.glyph.dynamic.Compounds;
 import org.audiveris.omr.math.GeoUtil;
 import org.audiveris.omr.run.Orientation;
-
 import static org.audiveris.omr.run.Orientation.*;
-
 import org.audiveris.omr.sheet.Scale;
 import org.audiveris.omr.sheet.Scale.InterlineScale;
 import org.audiveris.omr.sheet.Sheet;
@@ -1101,7 +1099,7 @@ public class ClustersRetriever
             }
         }
 
-        Collections.sort(list);
+        Collections.sort(list, FilY.byOrdinate);
 
         return list;
     }
@@ -1208,9 +1206,18 @@ public class ClustersRetriever
      * knowing their ordinate at a common abscissa value.
      */
     private static class FilY
-            implements Comparable<FilY>
     {
         //~ Instance fields ------------------------------------------------------------------------
+
+        public static final Comparator<FilY> byOrdinate = new Comparator<FilY>()
+        {
+            @Override
+            public int compare (FilY f1,
+                                FilY f2)
+            {
+                return Double.compare(f1.y, f2.y);
+            }
+        };
 
         final StaffFilament filament;
 
@@ -1225,12 +1232,6 @@ public class ClustersRetriever
         }
 
         //~ Methods --------------------------------------------------------------------------------
-        @Override
-        public int compareTo (FilY that)
-        {
-            return Double.compare(this.y, that.y);
-        }
-
         @Override
         public String toString ()
         {

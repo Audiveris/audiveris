@@ -114,6 +114,9 @@ public class MacApplication
             book.createStubs(null);
             book.createStubsTabs(null); // Tabs are now accessible
             break;
+
+        default:
+            break;
         }
 
         return null;

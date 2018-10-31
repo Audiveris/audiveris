@@ -67,6 +67,19 @@ public class BarConnection
     }
 
     //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (obj instanceof BarConnection) {
+            return super.equals(obj);
+        }
+
+        return false;
+    }
+
     //---------//
     // getArea //
     //---------//
@@ -99,6 +112,15 @@ public class BarConnection
     public double getWidth ()
     {
         return (topPeak.getWidth() + bottomPeak.getWidth()) / 2d;
+    }
+
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        return super.hashCode();
     }
 
     //~ Inner Classes ------------------------------------------------------------------------------

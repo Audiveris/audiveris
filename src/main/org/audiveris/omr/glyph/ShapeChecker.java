@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
@@ -61,7 +62,7 @@ public class ShapeChecker
             ShapeChecker.class);
 
     /** Singleton */
-    private static ShapeChecker INSTANCE;
+    private static volatile ShapeChecker INSTANCE;
 
     //~ Instance fields ----------------------------------------------------------------------------
     //
@@ -168,7 +169,7 @@ public class ShapeChecker
      * @param shapes  the shape(s) for which the check applies
      */
     private void addChecker (Checker checker,
-                             Shape... shapes)
+                             Collection<Shape> shapes)
     {
         for (Shape shape : shapes) {
             Collection<Checker> checks = checkerMap.get(shape);
@@ -195,7 +196,7 @@ public class ShapeChecker
                              ShapeSet... shapeRanges)
     {
         for (ShapeSet range : shapeRanges) {
-            addChecker(checker, range.getShapes().toArray(new Shape[0]));
+            addChecker(checker, range.getShapes());
         }
     }
 
@@ -493,11 +494,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker(
-                "StaffGap",
-                Rests.getShapes(),
-                Dynamics.getShapes(),
-                Articulations.getShapes())
+        new Checker("StaffGap", Rests.getShapes(), Dynamics.getShapes(), Articulations.getShapes())
         {
             @Override
             public boolean check (SystemInfo system,
@@ -700,7 +697,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("SystemTop", DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK)
+        new Checker("SystemTop", Arrays.asList(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK))
         {
             @Override
             public boolean check (SystemInfo system,
@@ -743,17 +740,10 @@ public class ShapeChecker
 
         //~ Constructors ---------------------------------------------------------------------------
         public Checker (String name,
-                        Shape... shapes)
-        {
-            this.name = name;
-            addChecker(this, shapes);
-        }
-
-        public Checker (String name,
                         Collection<Shape> shapes)
         {
             this.name = name;
-            addChecker(this, shapes.toArray(new Shape[0]));
+            addChecker(this, shapes);
         }
 
         @SuppressWarnings({"unchecked", "varargs"})
@@ -768,7 +758,7 @@ public class ShapeChecker
                 allShapes.addAll(col);
             }
 
-            addChecker(this, allShapes.toArray(new Shape[allShapes.size()]));
+            addChecker(this, allShapes);
         }
 
         public Checker (String name,
@@ -789,7 +779,7 @@ public class ShapeChecker
 
             all.addAll(collection);
 
-            addChecker(this, all.toArray(new Shape[0]));
+            addChecker(this, all);
         }
 
         public Checker (String name,
@@ -800,7 +790,7 @@ public class ShapeChecker
             List<Shape> all = new ArrayList<Shape>();
             all.add(shape);
 
-            addChecker(this, all.toArray(new Shape[0]));
+            addChecker(this, all);
         }
 
         //~ Methods --------------------------------------------------------------------------------

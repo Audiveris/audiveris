@@ -156,7 +156,7 @@ public class SelectionPainter
     //---------------------//
     // SelectionSigPainter //
     //---------------------//
-    private class SelectionSigPainter
+    private static class SelectionSigPainter
             extends SigPainter
     {
         //~ Constructors ---------------------------------------------------------------------------

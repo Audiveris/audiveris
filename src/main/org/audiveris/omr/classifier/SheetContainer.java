@@ -35,6 +35,7 @@ import static java.util.Collections.EMPTY_LIST;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -509,6 +510,20 @@ public class SheetContainer
             return name.compareTo(other.name);
         }
 
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof Descriptor) {
+                return compareTo((Descriptor) obj) == 0;
+            }
+
+            return false;
+        }
+
         public List<String> getAliases ()
         {
             return aliases;
@@ -536,6 +551,15 @@ public class SheetContainer
         public String getName ()
         {
             return name;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 7;
+            hash = (59 * hash) + Objects.hashCode(this.name);
+
+            return hash;
         }
 
         public boolean isAlias (String str)

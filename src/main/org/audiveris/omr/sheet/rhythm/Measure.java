@@ -2025,6 +2025,29 @@ public class Measure
         {
             return Integer.compare(staffIndexInPart, that.staffIndexInPart);
         }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+
+            if (obj instanceof KeyEntry) {
+                return compareTo((KeyEntry) obj) == 0;
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 7;
+            hash = (37 * hash) + this.staffIndexInPart;
+
+            return hash;
+        }
     }
 }
 //

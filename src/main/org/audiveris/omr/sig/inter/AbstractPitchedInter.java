@@ -47,7 +47,7 @@ public abstract class AbstractPitchedInter
     //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To order from bottom to top. */
-    public static Comparator<AbstractPitchedInter> bottomUp = new Comparator<AbstractPitchedInter>()
+    public static final Comparator<AbstractPitchedInter> bottomUp = new Comparator<AbstractPitchedInter>()
     {
         @Override
         public int compare (AbstractPitchedInter p1,

@@ -21,10 +21,13 @@
 // </editor-fold>
 package org.audiveris.omr.util;
 
+import org.audiveris.omr.WellKnowns;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -64,6 +67,8 @@ public class WindowsRegistry
         cmdArgs.addAll(Arrays.asList(args));
         logger.debug("cmdArgs: {}", cmdArgs);
 
+        BufferedReader br = null;
+
         try {
             // Spawn cmd process
             ProcessBuilder pb = new ProcessBuilder(cmdArgs);
@@ -73,8 +78,9 @@ public class WindowsRegistry
 
             // Read output
             InputStream is = process.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
+            InputStreamReader isr = new InputStreamReader(is, WellKnowns.FILE_ENCODING);
+            br = new BufferedReader(isr);
+
             String line;
 
             while ((line = br.readLine()) != null) {
@@ -84,8 +90,18 @@ public class WindowsRegistry
             // Wait for process completion
             int exitValue = process.waitFor();
             logger.debug("Exit value is: {}", exitValue);
+        } catch (RuntimeException rex) {
+            throw rex;
         } catch (Exception ex) {
             logger.warn("Error running " + cmdArgs, ex);
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {
+                    logger.warn("Error closing cmd reader {}", ex.toString(), ex);
+                }
+            }
         }
 
         return output;

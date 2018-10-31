@@ -36,7 +36,7 @@ public class ClusteringTest
 
         // generate random values according to some laws
         for (int i = 0; i < N; i++) {
-            double r = (100 * i) / N;
+            double r = (100 * i) / (double) N;
 
             if (r < 20) { // 20% of law #1
                 x[i] = gaussianSample(2.0, 0.5);
@@ -81,7 +81,7 @@ public class ClusteringTest
 
         // display mixture coefficients and law parameters
         for (int k = 0; k < G; k++) {
-            System.out.printf("%f * %s\n", pi[k], laws[k]);
+            System.out.printf("%f * %s%n", pi[k], laws[k]);
         }
     }
 }

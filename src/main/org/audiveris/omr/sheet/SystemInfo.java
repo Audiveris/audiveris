@@ -358,7 +358,24 @@ public class SystemInfo
     @Override
     public int compareTo (SystemInfo that)
     {
-        return Integer.compare(id, that.id);
+        return Integer.compare(id, that.id); // This is a total ordering
+    }
+
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj instanceof SystemInfo) {
+            return compareTo((SystemInfo) obj) == 0;
+        }
+
+        return false;
     }
 
     //----------------//
@@ -1159,6 +1176,17 @@ public class SystemInfo
         return width;
     }
 
+    //----------//
+    // hashCode //
+    //----------//
+    @Override
+    public int hashCode ()
+    {
+        int hash = 7;
+        hash = 67 * hash + this.id;
+        return hash;
+    }
+
     //------------//
     // isIndented //
     //------------//
@@ -1311,7 +1339,7 @@ public class SystemInfo
      */
     public void setIndented (boolean indented)
     {
-        this.indented = indented ? Boolean.TRUE : null;
+        this.indented = indented;
     }
 
     //-----------//
