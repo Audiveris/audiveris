@@ -89,9 +89,9 @@ sourceSets {
 
 // Declare Lombok appropriately to avoid deprecation warnings in Gradle >= 4.6
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.16.20'
-    annotationProcessor 'org.projectlombok:lombok:1.16.20'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.16.20'
+    compileOnly 'org.projectlombok:lombok:1.18.2'
+    annotationProcessor 'org.projectlombok:lombok:1.18.2'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.2'
 }
 
 dependencies {
