@@ -58,6 +58,7 @@ import org.audiveris.omr.sig.relation.RepeatDotBarRelation;
 import org.audiveris.omr.sig.relation.RepeatDotPairRelation;
 import org.audiveris.omr.util.HorizontalSide;
 import static org.audiveris.omr.util.HorizontalSide.*;
+import org.audiveris.omrdataset.api.OmrShape;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,8 +100,8 @@ public class DotFactory
     private static final Logger logger = LoggerFactory.getLogger(DotFactory.class);
 
     //~ Instance fields ----------------------------------------------------------------------------
-    /** The related symbol factory. */
-    private final InterFactory symbolFactory;
+    /** The related inter factory. */
+    private final InterFactory interFactory;
 
     /** The related system. */
     private final SystemInfo system;
@@ -116,13 +117,13 @@ public class DotFactory
     /**
      * Creates a new DotFactory object.
      *
-     * @param symbolFactory the mother factory
-     * @param system        underlying system
+     * @param interFactory the mother factory
+     * @param system       underlying system
      */
-    public DotFactory (InterFactory symbolFactory,
+    public DotFactory (InterFactory interFactory,
                        SystemInfo system)
     {
-        this.symbolFactory = symbolFactory;
+        this.interFactory = interFactory;
         this.system = system;
         sig = system.getSig();
         scale = system.getSheet().getScale();
@@ -156,7 +157,7 @@ public class DotFactory
         }
 
         // Simply record the candidate dot
-        Dot dot = new Dot(eval, glyph);
+        Dot dot = new GlyphDot(eval, glyph);
         dots.add(dot);
 
         // Run instant checks
@@ -463,8 +464,9 @@ public class DotFactory
     private void instantCheckRepeat (Dot dot)
     {
         // Check vertical pitch position within the staff: close to +1 or -1
-        final Point center = dot.glyph.getCenter();
-        final double pp = system.estimatedPitch(center);
+        final Rectangle dotBounds = dot.getBounds();
+        final Point dotPt = GeoUtil.centerOf(dotBounds);
+        final double pp = system.estimatedPitch(dotPt);
         double pitchDif = Math.abs(Math.abs(pp) - 1);
         double maxDif = RepeatDotBarRelation.getYGapMaximum(false).getValue();
 
@@ -475,12 +477,11 @@ public class DotFactory
 
         final int maxDx = scale.toPixels(RepeatDotBarRelation.getXOutGapMaximum(false));
         final int maxDy = scale.toPixels(RepeatDotBarRelation.getYGapMaximum(false));
-        final Point dotPt = dot.glyph.getCenter();
         final Rectangle luBox = new Rectangle(dotPt);
         luBox.grow(maxDx, maxDy);
 
         final List<Inter> bars = Inters.intersectedInters(
-                symbolFactory.getSystemBars(),
+                interFactory.getSystemBars(),
                 GeoOrder.BY_ABSCISSA,
                 luBox);
 
@@ -519,15 +520,28 @@ public class DotFactory
         }
 
         if (bestRel != null) {
-            final Staff staff = system.getClosestStaff(center); // Staff is OK
-            double grade = Grades.intrinsicRatio * dot.eval.grade;
+            final Staff staff = system.getClosestStaff(dotPt); // Staff is OK
+            double grade = Grades.intrinsicRatio * dot.getGrade();
             double pitch = (pp > 0) ? 1 : (-1);
-            RepeatDotInter repeat = new RepeatDotInter(dot.glyph, grade, staff, pitch);
+            Glyph glyph = dot.getGlyph();
+            int annId = dot.getAnnotationId();
+            final RepeatDotInter repeat;
+
+            if (glyph != null) {
+                repeat = new RepeatDotInter(glyph, grade, staff, pitch);
+            } else {
+                repeat = null; // Placeholder
+            }
+
             sig.addVertex(repeat);
             sig.addEdge(repeat, bestBar, bestRel);
 
-            if (dot.glyph.isVip()) {
-                logger.info("VIP Created {} from glyph#{}", repeat, dot.glyph.getId());
+            if (dot.isVip()) {
+                if (glyph != null) {
+                    logger.info("VIP Created {} from glyph#{}", repeat, glyph.getId());
+                } else {
+                    logger.info("VIP Created {} from annotation#{}", repeat, annId);
+                }
             }
         }
     }
@@ -544,12 +558,24 @@ public class DotFactory
      */
     private void instantCheckStaccato (Dot dot)
     {
-        ArticulationInter.createValidAdded(
-                dot.glyph,
-                Shape.STACCATO,
-                Grades.intrinsicRatio * dot.eval.grade,
-                system,
-                symbolFactory.getSystemHeadChords());
+        Glyph glyph = dot.getGlyph();
+
+        if (glyph != null) {
+            ArticulationInter.createValidAdded(
+                    glyph,
+                    Shape.STACCATO,
+                    Grades.intrinsicRatio * dot.getGrade(),
+                    system,
+                    interFactory.getSystemHeadChords());
+//        } else {
+//            ArticulationInter.createValidAdded(
+//                    dot.getAnnotationId(),
+//                    dot.getBounds(),
+//                    dot.getOmrShape(),
+//                    Grades.intrinsicRatio * dot.getGrade(),
+//                    system,
+//                    interFactory.getSystemHeadChords());
+        }
     }
 
     //------------------------//
@@ -590,12 +616,14 @@ public class DotFactory
     private void lateDotAugmentationCheck (Dot dot,
                                            List<Inter> systemFirsts)
     {
-        if (dot.glyph.isVip()) {
+        if (dot.isVip()) {
             logger.info("VIP lateDotAugmentationCheck for {}", dot);
         }
 
-        double grade = Grades.intrinsicRatio * dot.eval.grade;
-        AugmentationDotInter second = new AugmentationDotInter(dot.glyph, grade);
+        double grade = Grades.intrinsicRatio * dot.getGrade();
+        Glyph glyph = dot.getGlyph();
+        int annId = dot.getAnnotationId();
+        AugmentationDotInter second = new AugmentationDotInter(glyph, grade);
         Link bestDotLink = Link.bestOf(second.lookupDotLinks(systemFirsts, system));
 
         if (bestDotLink != null) {
@@ -621,7 +649,13 @@ public class DotFactory
         }
 
         for (Dot dot : dots) {
-            Rectangle dotBox = dot.glyph.getBounds();
+            Glyph glyph = dot.getGlyph();
+
+            if (glyph == null) {
+                continue;
+            }
+
+            Rectangle dotBox = dot.getBounds();
             FermataDotInter dotInter = null;
 
             for (Inter arc : arcs) {
@@ -634,7 +668,7 @@ public class DotFactory
                 }
 
                 if (halfBox.intersects(dotBox)) {
-                    final Point dotCenter = dot.glyph.getCenter();
+                    final Point dotCenter = GeoUtil.centerOf(dotBox);
                     double xGap = Math.abs(
                             dotCenter.x - (halfBox.x + (halfBox.width / 2)));
                     double yTarget = (arc.getShape() == Shape.FERMATA_ARC_BELOW)
@@ -646,14 +680,14 @@ public class DotFactory
 
                     if (rel.getGrade() >= rel.getMinGrade()) {
                         if (dotInter == null) {
-                            double grade = Grades.intrinsicRatio * dot.eval.grade;
-                            dotInter = new FermataDotInter(dot.glyph, grade);
+                            double grade = Grades.intrinsicRatio * dot.getGrade();
+                            dotInter = new FermataDotInter(glyph, grade);
                             sig.addVertex(dotInter);
                             logger.debug("Created {}", dotInter);
                         }
 
                         sig.addEdge(dotInter, arc, rel);
-                        logger.debug("{} matches dot glyph#{}", arc, dot.glyph.getId());
+                        logger.debug("{} matches dot glyph#{}", arc, glyph.getId());
                     }
                 }
             }
@@ -674,23 +708,24 @@ public class DotFactory
      */
     private void lateNoteAugmentationCheck (Dot dot)
     {
-        if (dot.glyph.isVip()) {
+        if (dot.isVip()) {
             logger.info("VIP lateNoteAugmentationCheck for {}", dot);
         }
 
-        double grade = Grades.intrinsicRatio * dot.eval.grade;
-        AugmentationDotInter aug = new AugmentationDotInter(dot.glyph, grade);
+        double grade = Grades.intrinsicRatio * dot.getGrade();
+        Glyph glyph = dot.getGlyph();
+        AugmentationDotInter aug = new AugmentationDotInter(glyph, grade);
 
         List<Link> links = new ArrayList<Link>();
         Link headLink = aug.lookupHeadLink(
-                symbolFactory.getSystemHeadChords(),
+                interFactory.getSystemHeadChords(),
                 system);
 
         if (headLink != null) {
             links.add(headLink);
         }
 
-        links.addAll(aug.lookupRestLinks(symbolFactory.getSystemRests(), system));
+        links.addAll(aug.lookupRestLinks(interFactory.getSystemRests(), system));
 
         if (!links.isEmpty()) {
             sig.addVertex(aug);
@@ -751,7 +786,7 @@ public class DotFactory
     /**
      * Remember a dot candidate, for late processing.
      */
-    private static class Dot
+    private abstract static class Dot
     {
         //~ Static fields/initializers -------------------------------------------------------------
 
@@ -774,15 +809,8 @@ public class DotFactory
                     return 0;
                 }
 
-                final Glyph g1 = d1.glyph;
-                final Glyph g2 = d2.glyph;
-
-                if (g1 == g2) {
-                    return 0;
-                }
-
-                final Rectangle b1 = g1.getBounds();
-                final Rectangle b2 = g2.getBounds();
+                final Rectangle b1 = d1.getBounds();
+                final Rectangle b2 = d2.getBounds();
 
                 if (GeoUtil.yOverlap(b1, b2) > 0) {
                     return Integer.compare(b1.x, b2.x);
@@ -792,14 +820,38 @@ public class DotFactory
             }
         };
 
-        //~ Instance fields ------------------------------------------------------------------------
-        final Evaluation eval; // Evaluation result
+        //~ Methods --------------------------------------------------------------------------------
+        public abstract int getAnnotationId ();
 
-        final Glyph glyph; // Underlying glyph
+        public abstract Rectangle getBounds ();
+
+        public abstract Glyph getGlyph ();
+
+        public abstract double getGrade ();
+
+        public abstract OmrShape getOmrShape ();
+
+        public abstract boolean isVip ();
+    }
+
+    //----------//
+    // GlyphDot //
+    //----------//
+    /**
+     * Glyph-based dot.
+     */
+    private static class GlyphDot
+            extends Dot
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Glyph glyph; // Underlying glyph
+
+        private final Evaluation eval; // Evaluation result
 
         //~ Constructors ---------------------------------------------------------------------------
-        public Dot (Evaluation eval,
-                    Glyph glyph)
+        public GlyphDot (Evaluation eval,
+                         Glyph glyph)
         {
             this.eval = eval;
             this.glyph = glyph;
@@ -807,10 +859,46 @@ public class DotFactory
 
         //~ Methods --------------------------------------------------------------------------------
         @Override
+        public int getAnnotationId ()
+        {
+            return 0;
+        }
+
+        @Override
+        public Rectangle getBounds ()
+        {
+            return glyph.getBounds();
+        }
+
+        @Override
+        public Glyph getGlyph ()
+        {
+            return glyph;
+        }
+
+        @Override
+        public double getGrade ()
+        {
+            return eval.grade;
+        }
+
+        @Override
+        public OmrShape getOmrShape ()
+        {
+            return null;
+        }
+
+        @Override
+        public boolean isVip ()
+        {
+            return glyph.isVip();
+        }
+
+        @Override
         public String toString ()
         {
-            StringBuilder sb = new StringBuilder("{Dot");
-            sb.append(" glyph#").append(glyph.getId());
+            StringBuilder sb = new StringBuilder("GlyphDot{");
+            sb.append("glyph#").append(glyph.getId());
             sb.append(" ").append(eval);
             sb.append("}");
 
