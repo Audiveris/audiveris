@@ -210,6 +210,8 @@ public abstract class SigPainter
     //---------------//
     /**
      * Build a panel which displays all defined voice ID colors.
+     * <p>
+     * Separate numbers for first staff and second staff as: 1234 - 5678
      *
      * @return the populated voice panel
      */
@@ -217,8 +219,18 @@ public abstract class SigPainter
     {
         final int length = voiceColors.length;
         final Font font = new Font("SansSerif", Font.BOLD, 22);
-        final Color background = Color.WHITE; //new Color(220, 220, 220);
-        final FormLayout layout = Panel.makeLabelsLayout(1, length, "0dlu", "10dlu");
+        final Color background = Color.WHITE;
+        final StringBuilder sbc = new StringBuilder();
+
+        for (int i = 0; i <= length; i++) {
+            if (i != 0) {
+                sbc.append(",");
+            }
+
+            sbc.append("10dlu");
+        }
+
+        final FormLayout layout = new FormLayout(sbc.toString(), "pref");
         final Panel panel = new Panel();
         final PanelBuilder builder = new PanelBuilder(layout, panel);
         final CellConstraints cst = new CellConstraints();
@@ -226,6 +238,8 @@ public abstract class SigPainter
         // Adjust dimensions
         final Dimension cellDim = new Dimension(5, 22);
         panel.setInsets(3, 0, 0, 3); // TLBR
+
+        final int mid = length / 2;
 
         for (int c = 1; c <= length; c++) {
             final Color color = new Color(voiceColors[c - 1].getRGB()); // Remove alpha
@@ -235,7 +249,20 @@ public abstract class SigPainter
             label.setOpaque(true);
             label.setBackground(background);
             label.setForeground(color);
-            builder.add(label, cst.xy((2 * c) - 1, 1));
+            int col = (c <= mid) ? c : c + 1;
+            builder.add(label, cst.xy(col, 1));
+        }
+
+        // Separation between staves
+        {
+            final Color color = Color.BLACK;
+            final JLabel label = new JLabel("=");
+            label.setPreferredSize(cellDim);
+            label.setFont(font);
+            label.setOpaque(true);
+            label.setBackground(background);
+            label.setForeground(color);
+            builder.add(label, cst.xy(mid + 1, 1));
         }
 
         return panel;
@@ -690,6 +717,16 @@ public abstract class SigPainter
         g.draw(wedge.getLine2());
     }
 
+    //----------//
+    // setColor //
+    //----------//
+    /**
+     * Use color adapted to current inter and global viewing parameters.
+     *
+     * @param inter the interpretation to colorize
+     */
+    protected abstract void setColor (Inter inter);
+
     //---------//
     // colorOf //
     //---------//
@@ -797,16 +834,6 @@ public abstract class SigPainter
     {
         OmrFont.paint(g, layout, location, alignment);
     }
-
-    //----------//
-    // setColor //
-    //----------//
-    /**
-     * Use color adapted to current inter and global viewing parameters.
-     *
-     * @param inter the interpretation to colorize
-     */
-    protected abstract void setColor (Inter inter);
 
     //-----------//
     // paintWord //
