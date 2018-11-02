@@ -106,9 +106,10 @@ public class TableTest
         File source = new File(dir, fileName);
         InputStream is = new FileInputStream(source);
         Unmarshaller um = jaxbContext.createUnmarshaller();
-        is.close();
 
         Table table = (Table) um.unmarshal(is);
+        is.close();
+
         System.out.println("Unmarshalled from " + source);
 
         new Dumping().dump(table);
